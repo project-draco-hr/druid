@@ -1,0 +1,10 @@
+{
+  try {
+    log.info("Coordinator asking Worker[%s] to add" + " task[%s]",theWorker.getHost(),task.getId());
+    cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(JOINER.join(config.getTaskPath(),theWorker.getHost(),task.getId()),jsonMapper.writeValueAsBytes(new TaskHolder(task,taskContext)));
+  }
+ catch (  Exception e) {
+    log.error(e,"Exception creating task[%s] for worker node[%s]",task.getId(),theWorker.getHost());
+    throw Throwables.propagate(e);
+  }
+}

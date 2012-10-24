@@ -1,0 +1,6 @@
+{
+  final DateTimeZone tz=DateTimeZone.forID("America/Los_Angeles");
+  final DateTime baseTime=new DateTime("2012-11-03T10:00:00",tz);
+  assertSame(Lists.newArrayList(new DateTime("2012-10-29T00:00:00.000-07:00"),new DateTime("2012-11-05T00:00:00.000-08:00"),new DateTime("2012-11-12T00:00:00.000-08:00"),new DateTime("2012-11-19T00:00:00.000-08:00")),new PeriodGranularity(new Period("P1W"),null,tz).iterable(baseTime.getMillis(),baseTime.plus(Weeks.weeks(3)).getMillis()));
+  assertSame(Lists.newArrayList(new DateTime("2012-11-03T10:00:00.000-07:00"),new DateTime("2012-11-10T10:00:00.000-08:00"),new DateTime("2012-11-17T10:00:00.000-08:00")),new PeriodGranularity(new Period("P1W"),baseTime,tz).iterable(baseTime.getMillis(),baseTime.plus(Weeks.weeks(3)).getMillis()));
+}

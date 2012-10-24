@@ -1,0 +1,29 @@
+{
+  HttpServletRequest request;
+  HttpServletResponse response;
+  try {
+    request=(HttpServletRequest)req;
+    response=(HttpServletResponse)res;
+  }
+ catch (  ClassCastException e) {
+    throw new ServletException("non-HTTP request or response");
+  }
+  if (redirectInfo.doLocal()) {
+    chain.doFilter(request,response);
+  }
+ else {
+    URL url=redirectInfo.getRedirectURL(request.getQueryString(),request.getRequestURI());
+    log.info("Forwarding request to [%s]",url);
+    if (request.getMethod().equals(HttpMethod.POST)) {
+      try {
+        forward(request,url);
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+ else {
+      response.sendRedirect(url.toString());
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  return new Iterator<T>(){
+    private int currIndex=0;
+    @Override public boolean hasNext(){
+      return currIndex < indexed.size();
+    }
+    @Override public T next(){
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      return indexed.get(currIndex++);
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+;
+}

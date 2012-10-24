@@ -1,0 +1,10 @@
+{
+  if (!endBuffer.hasRemaining()) {
+    endBuffer.rewind();
+    flattener.write(StupidResourceHolder.create(endBuffer));
+    endBuffer=LongBuffer.allocate(sizePer);
+    endBuffer.mark();
+  }
+  endBuffer.put(value);
+  ++numInserted;
+}

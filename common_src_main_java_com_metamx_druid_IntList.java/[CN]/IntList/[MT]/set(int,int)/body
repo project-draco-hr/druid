@@ -1,0 +1,17 @@
+{
+  int subListIndex=index / allocateSize;
+  if (subListIndex >= baseLists.size()) {
+    for (int i=baseLists.size(); i <= subListIndex; ++i) {
+      baseLists.add(null);
+    }
+  }
+  int[] baseList=baseLists.get(subListIndex);
+  if (baseList == null) {
+    baseList=new int[allocateSize];
+    baseLists.set(subListIndex,baseList);
+  }
+  baseList[index % allocateSize]=value;
+  if (index > maxIndex) {
+    maxIndex=index;
+  }
+}

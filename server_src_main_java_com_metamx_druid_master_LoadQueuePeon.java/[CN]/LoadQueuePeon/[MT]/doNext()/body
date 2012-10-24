@@ -1,0 +1,21 @@
+{
+synchronized (lock) {
+    if (currentlyLoading == null) {
+      if (!segmentsToDrop.isEmpty()) {
+        currentlyLoading=segmentsToDrop.first();
+        log.info("Server[%s] dropping [%s]",basePath,currentlyLoading);
+      }
+ else       if (!segmentsToLoad.isEmpty()) {
+        currentlyLoading=segmentsToLoad.first();
+        log.info("Server[%s] loading [%s]",basePath,currentlyLoading);
+      }
+ else {
+        return;
+      }
+      submitExecutable();
+    }
+ else {
+      log.info("Server[%s] skipping doNext() because something is currently loading[%s].",basePath,currentlyLoading);
+    }
+  }
+}

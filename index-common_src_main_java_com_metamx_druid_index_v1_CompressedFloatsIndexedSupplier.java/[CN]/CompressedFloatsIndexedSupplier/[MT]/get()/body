@@ -1,0 +1,52 @@
+{
+  return new IndexedFloats(){
+    int currIndex=-1;
+    ResourceHolder<FloatBuffer> holder;
+    FloatBuffer buffer;
+    @Override public int size(){
+      return totalSize;
+    }
+    @Override public float get(    int index){
+      int bufferNum=index / sizePer;
+      int bufferIndex=index % sizePer;
+      if (bufferNum != currIndex) {
+        loadBuffer(bufferNum);
+      }
+      return buffer.get(buffer.position() + bufferIndex);
+    }
+    @Override public void fill(    int index,    float[] toFill){
+      if (totalSize - index < toFill.length) {
+        throw new IndexOutOfBoundsException(String.format("Cannot fill array of size[%,d] at index[%,d].  Max size[%,d]",toFill.length,index,totalSize));
+      }
+      int bufferNum=index / sizePer;
+      int bufferIndex=index % sizePer;
+      int leftToFill=toFill.length;
+      while (leftToFill > 0) {
+        if (bufferNum != currIndex) {
+          loadBuffer(bufferNum);
+        }
+        buffer.mark();
+        buffer.position(buffer.position() + bufferIndex);
+        final int numToGet=Math.min(buffer.remaining(),leftToFill);
+        buffer.get(toFill,toFill.length - leftToFill,numToGet);
+        buffer.reset();
+        leftToFill-=numToGet;
+        ++bufferNum;
+        bufferIndex=0;
+      }
+    }
+    private void loadBuffer(    int bufferNum){
+      Closeables.closeQuietly(holder);
+      holder=baseFloatBuffers.get(bufferNum);
+      buffer=holder.get();
+      currIndex=bufferNum;
+    }
+    @Override public String toString(){
+      return "CompressedFloatsIndexedSupplier_Anonymous{" + "currIndex=" + currIndex + ", sizePer="+ sizePer+ ", numChunks="+ baseFloatBuffers.size()+ ", totalSize="+ totalSize+ '}';
+    }
+    @Override public void close() throws IOException {
+      Closeables.close(holder,false);
+    }
+  }
+;
+}

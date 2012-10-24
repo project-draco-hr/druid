@@ -1,0 +1,17 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    try {
+      if (curatorFramework.checkExists().forPath(getStatusPathForId(status.getId())) == null) {
+        announceStatus(status);
+        return;
+      }
+      curatorFramework.setData().forPath(getStatusPathForId(status.getId()),jsonMapper.writeValueAsBytes(status));
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

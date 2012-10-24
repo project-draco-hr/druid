@@ -1,0 +1,8 @@
+{
+  for (  BalancerSegmentHolder holder : currentlyMovingSegments.values()) {
+    holder.reduceLifetime();
+    if (holder.getLifetime() <= 0) {
+      emitter.emit(new AlertEvent.Builder().build("Balancer move segments queue has a segment stuck",ImmutableMap.<String,Object>builder().put("segment",holder.getSegment().getIdentifier()).build()));
+    }
+  }
+}

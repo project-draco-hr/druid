@@ -1,0 +1,16 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    if (strategy == null) {
+      throw new ISE("Management requires a strategy, please provide a strategy.");
+    }
+    if (!yp.isStarted()) {
+      throw new ISE("Management does not work without a running yellow pages.");
+    }
+    yp.registerListener(config.getInventoryIdPath(),masterPeon);
+    doStart();
+    started=true;
+  }
+}

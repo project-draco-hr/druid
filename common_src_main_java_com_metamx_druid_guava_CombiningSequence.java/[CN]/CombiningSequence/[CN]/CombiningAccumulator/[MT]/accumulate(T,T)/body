@@ -1,0 +1,13 @@
+{
+  if (!accumulatedSomething) {
+    accumulatedSomething=true;
+  }
+  if (prevValue == null) {
+    return mergeFn.apply(t,null);
+  }
+  if (ordering.compare(prevValue,t) == 0) {
+    return mergeFn.apply(prevValue,t);
+  }
+  retVal.set(accumulator.accumulate(retVal.get(),prevValue));
+  return t;
+}

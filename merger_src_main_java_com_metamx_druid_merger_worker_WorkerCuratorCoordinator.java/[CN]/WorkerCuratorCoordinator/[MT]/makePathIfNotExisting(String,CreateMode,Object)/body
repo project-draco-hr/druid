@@ -1,0 +1,10 @@
+{
+  if (curatorFramework.checkExists().forPath(path) == null) {
+    try {
+      curatorFramework.create().creatingParentsIfNeeded().withMode(mode).forPath(path,jsonMapper.writeValueAsBytes(data));
+    }
+ catch (    Exception e) {
+      log.warn(e,"Could not create path[%s], perhaps it already exists?",path);
+    }
+  }
+}

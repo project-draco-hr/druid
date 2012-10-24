@@ -1,0 +1,10 @@
+{
+  add("2011-05-01/2011-05-10","5",10);
+  assertValues(Arrays.asList(createExpected("2011-05-01/2011-05-09","5",10)),timeline.lookup(new Interval("2011-05-01/2011-05-09")));
+  Assert.assertEquals(makeSingle(10),timeline.remove(new Interval("2011-05-01/2011-05-10"),"5",makeSingle(10)));
+  assertValues(Arrays.asList(createExpected("2011-05-01/2011-05-09","4",9)),timeline.lookup(new Interval("2011-05-01/2011-05-09")));
+  add("2011-05-01/2011-05-10","5",10);
+  assertValues(Arrays.asList(createExpected("2011-05-01/2011-05-09","5",10)),timeline.lookup(new Interval("2011-05-01/2011-05-09")));
+  Assert.assertEquals(makeSingle(9),timeline.remove(new Interval("2011-05-01/2011-05-10"),"4",makeSingle(9)));
+  assertValues(Arrays.asList(createExpected("2011-05-01/2011-05-09","5",10)),timeline.lookup(new Interval("2011-05-01/2011-05-09")));
+}

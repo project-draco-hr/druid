@@ -1,0 +1,8 @@
+{
+  final ByteBuffer buffer=ByteBuffer.allocate(intList.length() * Ints.BYTES);
+  final IntBuffer intBuf=buffer.asIntBuffer();
+  for (int i=0; i < intList.length(); ++i) {
+    intBuf.put(intList.get(i));
+  }
+  return new IntBufferIndexedInts(buffer.asReadOnlyBuffer());
+}

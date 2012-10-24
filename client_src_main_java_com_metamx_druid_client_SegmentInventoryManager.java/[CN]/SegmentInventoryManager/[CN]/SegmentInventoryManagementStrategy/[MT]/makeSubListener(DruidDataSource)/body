@@ -1,0 +1,16 @@
+{
+  return new Pair<String,PhoneBookPeon<?>>(baseObject.getName(),new PhoneBookPeon<DataSegment>(){
+    @Override public Class<DataSegment> getObjectClazz(){
+      return DataSegment.class;
+    }
+    @Override public void newEntry(    String name,    DataSegment segment){
+      log.info("Adding dataSegment[%s].",segment);
+      baseObject.addSegment(name,segment);
+    }
+    @Override public void entryRemoved(    String name){
+      log.info("Partition[%s] deleted.",name);
+      baseObject.removePartition(name);
+    }
+  }
+);
+}

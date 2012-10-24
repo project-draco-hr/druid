@@ -1,0 +1,48 @@
+{
+  log.info("Starting zkCoordinator for server[%s] with config[%s]",me,config);
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    if (yp.lookup(loadQueueLocation,Object.class) == null) {
+      yp.post(config.getLoadQueueLocation(),me.getName(),ImmutableMap.of("created",new DateTime().toString()));
+    }
+    if (yp.lookup(servedSegmentsLocation,Object.class) == null) {
+      yp.post(config.getServedSegmentsLocation(),me.getName(),ImmutableMap.of("created",new DateTime().toString()));
+    }
+    loadCache();
+    yp.announce(config.getAnnounceLocation(),me.getName(),me.getStringProps());
+    peons.add(new Pair<String,PhoneBookPeon<?>>(loadQueueLocation,new PhoneBookPeon<DataSegmentChangeRequest>(){
+      @Override public Class<DataSegmentChangeRequest> getObjectClazz(){
+        return DataSegmentChangeRequest.class;
+      }
+      @Override public void newEntry(      String nodeName,      DataSegmentChangeRequest segment){
+        log.info("New node[%s] with segmentClass[%s]",nodeName,segment.getClass());
+        try {
+          segment.go(ZkCoordinator.this);
+          yp.unpost(loadQueueLocation,nodeName);
+          log.info("Completed processing for node[%s]",nodeName);
+        }
+ catch (        Throwable t) {
+          yp.unpost(loadQueueLocation,nodeName);
+          log.error(t,"Uncaught throwable made it through loading.  Node[%s/%s]",loadQueueLocation,nodeName);
+          Map<String,Object> exceptionMap=Maps.newHashMap();
+          exceptionMap.put("node",loadQueueLocation);
+          exceptionMap.put("nodeName",nodeName);
+          exceptionMap.put("nodeProperties",segment.toString());
+          exceptionMap.put("exception",t.getMessage());
+          emitter.emit(new AlertEvent.Builder().build("Uncaught exception related to segment load/unload",exceptionMap));
+          throw Throwables.propagate(t);
+        }
+      }
+      @Override public void entryRemoved(      String name){
+        log.info("%s was removed",name);
+      }
+    }
+));
+    for (    Pair<String,PhoneBookPeon<?>> peon : peons) {
+      yp.registerListener(peon.lhs,peon.rhs);
+    }
+    started=true;
+  }
+}

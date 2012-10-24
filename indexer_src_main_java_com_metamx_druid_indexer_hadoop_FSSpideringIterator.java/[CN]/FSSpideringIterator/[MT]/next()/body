@@ -1,0 +1,17 @@
+{
+  while (hasNext()) {
+    if (statii[index].isDir()) {
+      if (statuses == null) {
+        statuses=spiderPathPropogateExceptions(fs,statii[index].getPath());
+      }
+ else       if (statuses.hasNext()) {
+        return statuses.next();
+      }
+    }
+ else {
+      ++index;
+      return statii[index - 1];
+    }
+  }
+  throw new NoSuchElementException();
+}

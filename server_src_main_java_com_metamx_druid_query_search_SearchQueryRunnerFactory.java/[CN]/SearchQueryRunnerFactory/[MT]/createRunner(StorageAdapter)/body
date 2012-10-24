@@ -1,0 +1,19 @@
+{
+  return new QueryRunner<Result<SearchResultValue>>(){
+    @Override public Sequence<Result<SearchResultValue>> run(    final Query<Result<SearchResultValue>> input){
+      if (!(input instanceof SearchQuery)) {
+        throw new ISE("Got a [%s] which isn't a %s",input.getClass(),GroupByQuery.class);
+      }
+      final SearchQuery query=(SearchQuery)input;
+      return new BaseSequence<Result<SearchResultValue>,Iterator<Result<SearchResultValue>>>(new BaseSequence.IteratorMaker<Result<SearchResultValue>,Iterator<Result<SearchResultValue>>>(){
+        @Override public Iterator<Result<SearchResultValue>> make(){
+          return Lists.newArrayList(new SearchResultBuilder(adapter.getInterval().getStart(),adapter.searchDimensions(query,Filters.convertDimensionFilters(query.getDimensionsFilter()))).build()).iterator();
+        }
+        @Override public void cleanup(        Iterator<Result<SearchResultValue>> toClean){
+        }
+      }
+);
+    }
+  }
+;
+}

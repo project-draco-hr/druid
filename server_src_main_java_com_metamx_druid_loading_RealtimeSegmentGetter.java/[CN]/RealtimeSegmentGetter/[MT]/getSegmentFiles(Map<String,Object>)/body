@@ -1,0 +1,12 @@
+{
+  try {
+    File cacheFile=(File)loadSpec.get("file");
+    if (!cacheFile.exists()) {
+      throw new StorageAdapterLoadingException("Unable to find persisted file!");
+    }
+    return cacheFile;
+  }
+ catch (  Exception e) {
+    throw new StorageAdapterLoadingException(e,e.getMessage());
+  }
+}

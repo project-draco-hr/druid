@@ -1,0 +1,11 @@
+{
+  init();
+  if (jp.isClosed()) {
+    return false;
+  }
+  if (jp.getCurrentToken() == JsonToken.END_ARRAY) {
+    Closeables.closeQuietly(jp);
+    return false;
+  }
+  return true;
+}

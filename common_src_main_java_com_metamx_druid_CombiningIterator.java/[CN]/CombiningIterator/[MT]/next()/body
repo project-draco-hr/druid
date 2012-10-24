@@ -1,0 +1,19 @@
+{
+  if (!hasNext()) {
+    throw new NoSuchElementException();
+  }
+  InType res=null;
+  while (hasNext()) {
+    if (res == null) {
+      res=fn.apply(it.next(),null);
+      continue;
+    }
+    if (comparator.compare(res,it.peek()) == 0) {
+      res=fn.apply(res,it.next());
+    }
+ else {
+      break;
+    }
+  }
+  return res;
+}

@@ -1,0 +1,9 @@
+{
+  Map<String,Object> theMap=parser.parse(input);
+  final List<String> dimensions=dataSpec.hasCustomDimensions() ? dataSpec.getDimensions() : Lists.newArrayList(Sets.difference(theMap.keySet(),dimensionExclusions));
+  final DateTime timestamp=timestampSpec.extractTimestamp(theMap);
+  if (timestamp == null) {
+    throw new NullPointerException(String.format("Null timestamp in input string: %s",input.length() < 100 ? input : input.substring(0,100) + "..."));
+  }
+  return new MapBasedInputRow(timestamp.getMillis(),dimensions,theMap);
+}

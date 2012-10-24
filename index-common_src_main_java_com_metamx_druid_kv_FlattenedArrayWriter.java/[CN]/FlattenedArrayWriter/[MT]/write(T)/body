@@ -1,0 +1,11 @@
+{
+  if (prevObject != null && strategy.compare(prevObject,objectToWrite) >= 0) {
+    objectsSorted=false;
+  }
+  byte[] bytesToWrite=strategy.toBytes(objectToWrite);
+  ++numWritten;
+  valuesOut.write(Ints.toByteArray(bytesToWrite.length));
+  valuesOut.write(bytesToWrite);
+  headerOut.write(Ints.toByteArray((int)valuesOut.getCount()));
+  prevObject=objectToWrite;
+}

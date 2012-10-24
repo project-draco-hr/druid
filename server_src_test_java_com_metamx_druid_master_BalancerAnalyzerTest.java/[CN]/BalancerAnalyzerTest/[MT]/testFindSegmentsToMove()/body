@@ -1,0 +1,22 @@
+{
+  EasyMock.expect(high.getSizeUsed()).andReturn(6L);
+  EasyMock.expect(high.getPercentUsed()).andReturn(60.0);
+  EasyMock.expect(high.getMaxSize()).andReturn(10L);
+  EasyMock.replay(high);
+  EasyMock.expect(low.getSizeUsed()).andReturn(2L);
+  EasyMock.expect(low.getPercentUsed()).andReturn(20.0);
+  EasyMock.expect(low.getMaxSize()).andReturn(10L);
+  EasyMock.replay(low);
+  EasyMock.expect(segment.getSize()).andReturn(1L).atLeastOnce();
+  EasyMock.replay(segment);
+  EasyMock.expect(dataSource.getSegments()).andReturn(Sets.newHashSet(segment));
+  EasyMock.replay(dataSource);
+  EasyMock.expect(server.getDataSources()).andReturn(Lists.newArrayList(dataSource));
+  EasyMock.replay(server);
+  BalancerAnalyzer analyzer=new BalancerAnalyzer();
+  analyzer.init(high,low);
+  Assert.assertEquals(analyzer.findSegmentsToMove(server).iterator().next().getSegment(),segment);
+  EasyMock.verify(server);
+  EasyMock.verify(dataSource);
+  EasyMock.verify(segment);
+}

@@ -1,0 +1,27 @@
+{
+  return new ConcatQueryRunner<Row>(Sequences.map(Sequences.simple(queryRunners),new Function<QueryRunner<Row>,QueryRunner<Row>>(){
+    @Override public QueryRunner<Row> apply(    final QueryRunner<Row> input){
+      return new QueryRunner<Row>(){
+        @Override public Sequence<Row> run(        final Query<Row> query){
+          Future<Sequence<Row>> future=queryExecutor.submit(new Callable<Sequence<Row>>(){
+            @Override public Sequence<Row> call() throws Exception {
+              return new ExecutorExecutingSequence<Row>(input.run(query),queryExecutor);
+            }
+          }
+);
+          try {
+            return future.get();
+          }
+ catch (          InterruptedException e) {
+            throw Throwables.propagate(e);
+          }
+catch (          ExecutionException e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+;
+    }
+  }
+));
+}

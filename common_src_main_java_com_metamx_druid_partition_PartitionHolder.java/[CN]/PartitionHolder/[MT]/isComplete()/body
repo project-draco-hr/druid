@@ -1,0 +1,21 @@
+{
+  if (holderSet.isEmpty()) {
+    return false;
+  }
+  Iterator<PartitionChunk<T>> iter=holderSet.iterator();
+  PartitionChunk<T> curr=iter.next();
+  if (!curr.isStart()) {
+    return false;
+  }
+  while (iter.hasNext()) {
+    PartitionChunk<T> next=iter.next();
+    if (!curr.abuts(next)) {
+      return false;
+    }
+    curr=next;
+  }
+  if (!curr.isEnd()) {
+    return false;
+  }
+  return true;
+}

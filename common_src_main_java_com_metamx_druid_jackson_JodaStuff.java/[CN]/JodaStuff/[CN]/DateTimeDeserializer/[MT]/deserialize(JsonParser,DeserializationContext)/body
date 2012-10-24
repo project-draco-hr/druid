@@ -1,0 +1,14 @@
+{
+  JsonToken t=jp.getCurrentToken();
+  if (t == JsonToken.VALUE_NUMBER_INT) {
+    return new DateTime(jp.getLongValue());
+  }
+  if (t == JsonToken.VALUE_STRING) {
+    String str=jp.getText().trim();
+    if (str.length() == 0) {
+      return null;
+    }
+    return ISODateTimeFormat.dateTimeParser().withOffsetParsed().parseDateTime(str);
+  }
+  throw ctxt.mappingException(getValueClass());
+}

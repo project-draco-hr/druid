@@ -1,0 +1,15 @@
+{
+  DelegatingStorageAdapterLoader delegateLoader=new DelegatingStorageAdapterLoader();
+  final S3SegmentGetter segmentGetter=new S3SegmentGetter(s3Client,config);
+  final S3ZippedSegmentGetter zippedGetter=new S3ZippedSegmentGetter(s3Client,config);
+  final RealtimeSegmentGetter realtimeGetter=new RealtimeSegmentGetter(config);
+  final StorageAdapterFactory factory;
+  if ("mmap".equals(config.getQueryableFactoryType())) {
+    factory=new MMappedStorageAdapterFactory();
+  }
+ else {
+    throw new ISE("Unknown queryableFactoryType[%s]",config.getQueryableFactoryType());
+  }
+  delegateLoader.setLoaderTypes(ImmutableMap.<String,StorageAdapterLoader>builder().put("s3",new SingleStorageAdapterLoader(segmentGetter,factory)).put("s3_zip",new SingleStorageAdapterLoader(zippedGetter,factory)).put("realtime",new SingleStorageAdapterLoader(realtimeGetter,factory)).build());
+  return delegateLoader;
+}

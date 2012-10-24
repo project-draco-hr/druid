@@ -1,0 +1,27 @@
+{
+  Iterable<DruidDataSource> dataSources=Iterables.concat(Iterables.transform(serverInventoryManager.getInventory(),new Function<DruidServer,DruidDataSource>(){
+    @Override public DruidDataSource apply(    @Nullable DruidServer input){
+      return input.getDataSource(dataSourceName);
+    }
+  }
+));
+  List<DruidDataSource> validDataSources=Lists.newArrayList();
+  for (  DruidDataSource dataSource : dataSources) {
+    if (dataSource != null) {
+      validDataSources.add(dataSource);
+    }
+  }
+  if (validDataSources.isEmpty()) {
+    return null;
+  }
+  Map<String,DataSegment> segmentMap=Maps.newHashMap();
+  for (  DruidDataSource dataSource : validDataSources) {
+    if (dataSource != null) {
+      Iterable<DataSegment> segments=dataSource.getSegments();
+      for (      DataSegment segment : segments) {
+        segmentMap.put(segment.getIdentifier(),segment);
+      }
+    }
+  }
+  return new DruidDataSource(dataSourceName,ImmutableMap.<String,String>of()).addSegments(segmentMap);
+}

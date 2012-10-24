@@ -1,0 +1,5 @@
+{
+  QuerySegmentSpec spec=jsonMapper.readValue("{\"type\": \"intervals\", \"intervals\":[\"2011-08-01/2011-10-10\", \"2011-11-01/2011-11-10\"]}",QuerySegmentSpec.class);
+  Assert.assertTrue(spec instanceof MultipleIntervalSegmentSpec);
+  Assert.assertEquals(ImmutableList.of(new Interval("2011-08-01/2011-10-10"),new Interval("2011-11-01/2011-11-10")),spec.getIntervals());
+}

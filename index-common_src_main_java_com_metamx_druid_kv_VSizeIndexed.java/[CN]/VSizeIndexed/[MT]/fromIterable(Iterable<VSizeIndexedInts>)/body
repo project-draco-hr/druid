@@ -1,0 +1,41 @@
+{
+  Iterator<VSizeIndexedInts> objects=objectsIterable.iterator();
+  if (!objects.hasNext()) {
+    final ByteBuffer buffer=ByteBuffer.allocate(4).putInt(0);
+    buffer.flip();
+    return new VSizeIndexed(buffer,4);
+  }
+  int numBytes=-1;
+  int count=0;
+  while (objects.hasNext()) {
+    VSizeIndexedInts next=objects.next();
+    if (numBytes == -1) {
+      numBytes=next.getNumBytes();
+    }
+    ++count;
+  }
+  ByteArrayOutputStream headerBytes=new ByteArrayOutputStream(4 + (count * 4));
+  ByteArrayOutputStream valueBytes=new ByteArrayOutputStream();
+  int offset=0;
+  try {
+    headerBytes.write(Ints.toByteArray(count));
+    for (    VSizeIndexedInts object : objectsIterable) {
+      if (object.getNumBytes() != numBytes) {
+        throw new ISE("val.numBytes[%s] != numBytesInValue[%s]",object.getNumBytes(),numBytes);
+      }
+      byte[] bytes=object.getBytesNoPadding();
+      offset+=bytes.length;
+      headerBytes.write(Ints.toByteArray(offset));
+      valueBytes.write(bytes);
+    }
+    valueBytes.write(new byte[4 - numBytes]);
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+  ByteBuffer theBuffer=ByteBuffer.allocate(headerBytes.size() + valueBytes.size());
+  theBuffer.put(headerBytes.toByteArray());
+  theBuffer.put(valueBytes.toByteArray());
+  theBuffer.flip();
+  return new VSizeIndexed(theBuffer.asReadOnlyBuffer(),numBytes);
+}

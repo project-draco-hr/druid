@@ -1,0 +1,18 @@
+{
+  out.write(ByteBuffer.wrap(version));
+  serializerUtils.writeString(out,holder.name);
+  serializerUtils.writeString(out,holder.typeName);
+switch (holder.type) {
+case FLOAT:
+    holder.floatType.writeToChannel(out);
+  break;
+case COMPLEX:
+if (holder.complexType instanceof GenericIndexed) {
+  ((GenericIndexed)holder.complexType).writeToChannel(out);
+}
+ else {
+  throw new IAE("Cannot serialize out MetricHolder for complex type that is not a GenericIndexed");
+}
+break;
+}
+}

@@ -1,0 +1,21 @@
+{
+  Interval actualInterval=interval;
+  if (!actualInterval.overlaps(index.dataInterval)) {
+    return ImmutableList.of();
+  }
+  if (actualInterval.getStart().isBefore(index.dataInterval.getStart())) {
+    actualInterval=actualInterval.withStart(index.dataInterval.getStart());
+  }
+  if (actualInterval.getEnd().isAfter(index.dataInterval.getEnd())) {
+    actualInterval=actualInterval.withEnd(index.dataInterval.getEnd());
+  }
+  final Iterable<Cursor> iterable;
+  if (filter == null) {
+    iterable=new NoFilterCursorIterable(index,actualInterval,gran);
+  }
+ else {
+    Offset offset=new ConciseOffset(filter.goConcise(new MMappedInvertedIndexSelector(index)));
+    iterable=new CursorIterable(index,actualInterval,gran,offset);
+  }
+  return FunctionalIterable.create(iterable).keep(Functions.<Cursor>identity());
+}

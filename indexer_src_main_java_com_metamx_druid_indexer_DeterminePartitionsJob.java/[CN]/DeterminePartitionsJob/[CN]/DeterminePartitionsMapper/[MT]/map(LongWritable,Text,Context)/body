@@ -1,0 +1,29 @@
+{
+  Map<String,Object> values=parser.parse(value.toString());
+  final DateTime timestamp;
+  final String tsStr=(String)values.get(config.getTimestampColumnName());
+  try {
+    timestamp=timestampConverter.apply(tsStr);
+  }
+ catch (  IllegalArgumentException e) {
+    if (config.isIgnoreInvalidRows()) {
+      context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
+      return;
+    }
+ else {
+      throw e;
+    }
+  }
+  final Optional<Interval> maybeInterval=config.getGranularitySpec().bucketInterval(timestamp);
+  if (maybeInterval.isPresent()) {
+    final DateTime bucket=maybeInterval.get().getStart();
+    final String outKey=keyJoiner.join(bucket.toString(),partitionDimension);
+    final Object dimValue=values.get(partitionDimension);
+    if (!(dimValue instanceof String)) {
+      throw new IAE("Cannot partition on a tag-style dimension[%s], line was[%s]",partitionDimension,value);
+    }
+    final byte[] groupKey=outKey.getBytes(Charsets.UTF_8);
+    write(context,groupKey,"",1);
+    write(context,groupKey,(String)dimValue,1);
+  }
+}

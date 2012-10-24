@@ -1,0 +1,17 @@
+{
+  if (interval.getEndMillis() == interval.getStartMillis()) {
+    return Lists.newArrayList(interval);
+  }
+  List<Interval> intervals=Lists.newArrayList();
+  Iterator<Long> timestamps=new PeriodGranularity(period,null,null).iterable(interval.getStartMillis(),interval.getEndMillis()).iterator();
+  long start=Math.max(timestamps.next(),interval.getStartMillis());
+  while (timestamps.hasNext()) {
+    long end=timestamps.next();
+    intervals.add(new Interval(start,end));
+    start=end;
+  }
+  if (start < interval.getEndMillis()) {
+    intervals.add(new Interval(start,interval.getEndMillis()));
+  }
+  return intervals;
+}

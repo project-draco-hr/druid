@@ -1,0 +1,30 @@
+{
+  Preconditions.checkState(config.getGranularitySpec() instanceof UniformGranularitySpec,String.format("Cannot use %s without %s",GranularUnprocessedPathSpec.class.getSimpleName(),UniformGranularitySpec.class.getSimpleName()));
+  final Path betaInput=new Path(getInputPath());
+  final FileSystem fs=betaInput.getFileSystem(job.getConfiguration());
+  final Granularity segmentGranularity=((UniformGranularitySpec)config.getGranularitySpec()).getGranularity();
+  Map<DateTime,Long> inputModifiedTimes=new TreeMap<DateTime,Long>(Comparators.inverse(Comparators.<Comparable>comparable()));
+  for (  FileStatus status : FSSpideringIterator.spiderIterable(fs,betaInput)) {
+    final DateTime key=segmentGranularity.toDate(status.getPath().toString());
+    final Long currVal=inputModifiedTimes.get(key);
+    final long mTime=status.getModificationTime();
+    inputModifiedTimes.put(key,currVal == null ? mTime : Math.max(currVal,mTime));
+  }
+  Set<Interval> bucketsToRun=Sets.newTreeSet(Comparators.intervals());
+  for (  Map.Entry<DateTime,Long> entry : inputModifiedTimes.entrySet()) {
+    DateTime timeBucket=entry.getKey();
+    long mTime=entry.getValue();
+    String bucketOutput=String.format("%s/%s",config.getSegmentOutputDir(),segmentGranularity.toPath(timeBucket));
+    for (    FileStatus fileStatus : FSSpideringIterator.spiderIterable(fs,new Path(bucketOutput))) {
+      if (fileStatus.getModificationTime() > mTime) {
+        bucketsToRun.add(new Interval(timeBucket,segmentGranularity.increment(timeBucket)));
+        break;
+      }
+    }
+    if (bucketsToRun.size() >= maxBuckets) {
+      break;
+    }
+  }
+  config.setGranularitySpec(new UniformGranularitySpec(segmentGranularity,Lists.newArrayList(bucketsToRun)));
+  return super.addInputPaths(config,job);
+}

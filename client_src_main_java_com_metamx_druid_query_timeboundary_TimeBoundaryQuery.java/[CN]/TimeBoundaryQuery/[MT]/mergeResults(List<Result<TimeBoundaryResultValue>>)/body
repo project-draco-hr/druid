@@ -1,0 +1,16 @@
+{
+  DateTime min=new DateTime(Long.MAX_VALUE);
+  DateTime max=new DateTime(Long.MIN_VALUE);
+  for (  Result<TimeBoundaryResultValue> result : results) {
+    TimeBoundaryResultValue val=result.getValue();
+    DateTime currMinTime=val.getMinTime();
+    if (currMinTime.isBefore(min)) {
+      min=currMinTime;
+    }
+    DateTime currMaxTime=val.getMaxTime();
+    if (currMaxTime.isAfter(max)) {
+      max=currMaxTime;
+    }
+  }
+  return Arrays.asList(new Result<TimeBoundaryResultValue>(min,new TimeBoundaryResultValue(ImmutableMap.<String,Object>of(TimeBoundaryQuery.MIN_TIME,min,TimeBoundaryQuery.MAX_TIME,max))));
+}

@@ -1,0 +1,9 @@
+{
+  timeline=makeStringIntegerTimeline();
+  add("2011-01-01/2011-01-05","1",1);
+  add("2011-01-05/2011-01-10","2",2);
+  add("2011-01-10/2011-01-15","3",3);
+  add("2011-01-15/2011-01-20","4",4);
+  timeline.remove(new Interval("2011-01-15/2011-01-20"),"4",makeSingle(4));
+  assertValues(Arrays.asList(createExpected("2011-01-01/2011-01-05","1",1),createExpected("2011-01-05/2011-01-10","2",2),createExpected("2011-01-10/2011-01-15","3",3)),timeline.lookup(new Interval(new DateTime(0),new DateTime(Long.MAX_VALUE))));
+}

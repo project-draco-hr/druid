@@ -1,0 +1,17 @@
+{
+  if (currentlyLoading != null) {
+switch (currentlyLoading.getType()) {
+case LOAD:
+      segmentsToLoad.remove(currentlyLoading);
+    queuedSize.addAndGet(-currentlyLoading.getSegmentSize());
+  break;
+case DROP:
+segmentsToDrop.remove(currentlyLoading);
+break;
+default :
+throw new UnsupportedOperationException();
+}
+currentlyLoading.executeCallbacks();
+currentlyLoading=null;
+}
+}

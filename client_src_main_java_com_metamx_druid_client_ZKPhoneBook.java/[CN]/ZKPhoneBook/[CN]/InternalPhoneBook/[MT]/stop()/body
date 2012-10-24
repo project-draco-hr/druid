@@ -1,0 +1,10 @@
+{
+synchronized (lock) {
+    for (    Map.Entry<String,PhoneBookPeon> entry : announcementListeners.entrySet()) {
+      unregisterListener(entry.getKey(),entry.getValue());
+    }
+    for (    Table.Cell<String,String,Object> cell : announcements.cellSet()) {
+      unannounce(cell.getRowKey(),cell.getColumnKey());
+    }
+  }
+}

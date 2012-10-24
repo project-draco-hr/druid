@@ -1,0 +1,17 @@
+{
+  String s3Bucket=MapUtils.getString(loadSpec,"bucket");
+  String s3Path=MapUtils.getString(loadSpec,"key");
+  S3Object s3Obj=null;
+  try {
+    s3Obj=s3Client.getObjectDetails(new S3Bucket(s3Bucket),s3Path);
+  }
+ catch (  S3ServiceException e) {
+    log.warn(e,"Exception when trying to lookup size for s3://%s/%s",s3Bucket,s3Path);
+    return null;
+  }
+  if (s3Obj == null) {
+    log.warn("s3Object for s3://%s/%s was null.",s3Bucket,s3Path);
+    return null;
+  }
+  return s3Obj.getContentLength();
+}

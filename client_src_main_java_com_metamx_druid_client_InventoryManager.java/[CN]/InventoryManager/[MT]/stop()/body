@@ -1,0 +1,15 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    yp.unregisterListener(config.getInventoryIdPath(),masterPeon);
+    for (    Map.Entry<String,PhoneBookPeon<?>> entry : dataSourcePeons.entrySet()) {
+      yp.unregisterListener(yp.combineParts(Arrays.asList(config.getInventoryPath(),entry.getKey())),entry.getValue());
+    }
+    dataSources.clear();
+    dataSourcePeons.clear();
+    doStop();
+    started=false;
+  }
+}

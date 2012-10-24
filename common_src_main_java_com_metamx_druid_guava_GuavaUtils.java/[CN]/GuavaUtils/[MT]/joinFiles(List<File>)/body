@@ -1,0 +1,22 @@
+{
+  return new InputSupplier<BufferedReader>(){
+    @Override public BufferedReader getInput() throws IOException {
+      return new BufferedReader(CharStreams.join(Iterables.transform(files,new Function<File,InputSupplier<InputStreamReader>>(){
+        @Override public InputSupplier<InputStreamReader> apply(        final File input){
+          return new InputSupplier<InputStreamReader>(){
+            @Override public InputStreamReader getInput() throws IOException {
+              InputStream baseStream=new FileInputStream(input);
+              if (input.getName().endsWith(".gz")) {
+                baseStream=new GZIPInputStream(baseStream);
+              }
+              return new InputStreamReader(baseStream,Charsets.UTF_8);
+            }
+          }
+;
+        }
+      }
+)).getInput());
+    }
+  }
+;
+}

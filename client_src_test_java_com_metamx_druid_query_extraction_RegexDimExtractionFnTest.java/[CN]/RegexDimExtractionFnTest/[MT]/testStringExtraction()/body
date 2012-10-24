@@ -1,0 +1,12 @@
+{
+  String regex="(.)";
+  DimExtractionFn dimExtractionFn=new RegexDimExtractionFn(regex);
+  Set<String> extracted=Sets.newHashSet();
+  for (  String testString : testStrings) {
+    extracted.add(dimExtractionFn.apply(testString));
+  }
+  Assert.assertEquals(3,extracted.size());
+  Assert.assertTrue(extracted.contains("a"));
+  Assert.assertTrue(extracted.contains("b"));
+  Assert.assertTrue(extracted.contains("c"));
+}

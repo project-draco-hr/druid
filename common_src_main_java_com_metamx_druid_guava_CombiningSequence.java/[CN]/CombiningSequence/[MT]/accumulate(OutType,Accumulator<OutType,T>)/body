@@ -1,0 +1,6 @@
+{
+  final AtomicReference<OutType> retVal=new AtomicReference<OutType>(initValue);
+  final CombiningAccumulator<OutType> combiningAccumulator=new CombiningAccumulator<OutType>(retVal,accumulator);
+  T lastValue=baseSequence.accumulate(null,combiningAccumulator);
+  return combiningAccumulator.accumulatedSomething() ? accumulator.accumulate(retVal.get(),lastValue) : initValue;
+}

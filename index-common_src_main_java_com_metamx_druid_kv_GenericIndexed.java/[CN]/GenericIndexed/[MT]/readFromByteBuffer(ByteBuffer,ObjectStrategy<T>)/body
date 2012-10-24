@@ -1,0 +1,12 @@
+{
+  byte versionFromBuffer=buffer.get();
+  if (version == versionFromBuffer) {
+    boolean allowReverseLookup=buffer.get() == 0x1;
+    int size=buffer.getInt();
+    ByteBuffer bufferToUse=buffer.asReadOnlyBuffer();
+    bufferToUse.limit(bufferToUse.position() + size);
+    buffer.position(bufferToUse.limit());
+    return new GenericIndexed<T>(bufferToUse,strategy,allowReverseLookup);
+  }
+  throw new IAE("Unknown version[%s]",versionFromBuffer);
+}

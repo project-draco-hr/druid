@@ -1,0 +1,14 @@
+{
+synchronized (lock) {
+    String dataSourceName=segment.getDataSource();
+    DruidDataSource dataSource=dataSources.get(dataSourceName);
+    if (dataSource == null) {
+      dataSource=new DruidDataSource(dataSourceName,ImmutableMap.of("client","side"));
+      dataSources.put(dataSourceName,dataSource);
+    }
+    dataSource.addSegment(segmentName,segment);
+    segments.put(segmentName,segment);
+    currSize+=segment.getSize();
+  }
+  return this;
+}

@@ -1,0 +1,34 @@
+{
+  final boolean needRename;
+  if (outputFS.exists(finalIndexZipFilePath)) {
+    final FileStatus zipFile=outputFS.getFileStatus(indexZipFilePath);
+    final FileStatus finalIndexZipFile=outputFS.getFileStatus(finalIndexZipFilePath);
+    if (zipFile.getModificationTime() >= finalIndexZipFile.getModificationTime() || zipFile.getLen() != finalIndexZipFile.getLen()) {
+      log.info("File[%s / %s / %sB] existed, but wasn't the same as [%s / %s / %sB]",finalIndexZipFile.getPath(),new DateTime(finalIndexZipFile.getModificationTime()),finalIndexZipFile.getLen(),zipFile.getPath(),new DateTime(zipFile.getModificationTime()),zipFile.getLen());
+      outputFS.delete(finalIndexZipFilePath,false);
+      needRename=true;
+    }
+ else {
+      log.info("File[%s / %s / %sB] existed and will be kept",finalIndexZipFile.getPath(),new DateTime(finalIndexZipFile.getModificationTime()),finalIndexZipFile.getLen());
+      needRename=false;
+    }
+  }
+ else {
+    needRename=true;
+  }
+  if (needRename && !outputFS.rename(indexZipFilePath,finalIndexZipFilePath)) {
+    return false;
+  }
+  final Path descriptorPath=new Path(indexBasePath,"descriptor.json");
+  if (outputFS.exists(descriptorPath)) {
+    outputFS.delete(descriptorPath,false);
+  }
+  final FSDataOutputStream descriptorOut=outputFS.create(descriptorPath);
+  try {
+    jsonMapper.writeValue(descriptorOut,segment);
+  }
+  finally {
+    descriptorOut.close();
+  }
+  return true;
+}

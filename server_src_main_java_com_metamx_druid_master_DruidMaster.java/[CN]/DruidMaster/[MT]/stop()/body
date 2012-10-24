@@ -1,0 +1,12 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    stopBeingMaster();
+    yp.unregisterListener(config.getBasePath(),masterPeon);
+    started=false;
+    exec.shutdownNow();
+    peonExec.shutdownNow();
+  }
+}

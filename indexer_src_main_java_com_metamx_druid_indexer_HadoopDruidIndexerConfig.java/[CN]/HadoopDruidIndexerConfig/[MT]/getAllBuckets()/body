@@ -1,0 +1,19 @@
+{
+  return FunctionalIterable.create(getSegmentGranularIntervals()).transformCat(new Function<Interval,Iterable<Bucket>>(){
+    @Override public Iterable<Bucket> apply(    Interval input){
+      final DateTime bucketTime=input.getStart();
+      final List<HadoopyShardSpec> specs=shardSpecs.get(bucketTime);
+      if (specs == null) {
+        return ImmutableList.of();
+      }
+      return FunctionalIterable.create(specs).transform(new Function<HadoopyShardSpec,Bucket>(){
+        int i=0;
+        @Override public Bucket apply(        HadoopyShardSpec input){
+          return new Bucket(input.getShardNum(),bucketTime,i++);
+        }
+      }
+);
+    }
+  }
+);
+}

@@ -1,0 +1,10 @@
+{
+  if (filters.size() == 1) {
+    return filters.get(0).goConcise(selector);
+  }
+  List<ImmutableConciseSet> conciseSets=Lists.newArrayList();
+  for (int i=0; i < filters.size(); i++) {
+    conciseSets.add(filters.get(i).goConcise(selector));
+  }
+  return ImmutableConciseSet.union(conciseSets);
+}

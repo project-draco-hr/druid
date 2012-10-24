@@ -1,0 +1,13 @@
+{
+  final MinMaxPriorityQueue<Worker> workerQueue=MinMaxPriorityQueue.<Worker>orderedBy(new Comparator<Worker>(){
+    @Override public int compare(    Worker w1,    Worker w2){
+      return Ints.compare(w1.getTasks().size(),w2.getTasks().size());
+    }
+  }
+).create(taskInventoryManager.getInventory());
+  if (workerQueue.isEmpty()) {
+    log.error("No worker nodes found!");
+    throw new RuntimeException();
+  }
+  return workerQueue.peek();
+}

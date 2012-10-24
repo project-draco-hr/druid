@@ -1,0 +1,8 @@
+{
+  for (  DruidServer server : serverInventoryManager.getInventory()) {
+    if (server.getSegments().containsKey(segmentId)) {
+      return Response.status(Response.Status.OK).entity(server.getSegments().get(segmentId)).build();
+    }
+  }
+  return Response.status(Response.Status.NOT_FOUND).build();
+}

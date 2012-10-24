@@ -1,0 +1,12 @@
+{
+  DataSegment[] sortedOrder={makeDataSegment("test1","2011-01-01/2011-01-02","a"),makeDataSegment("test1","2011-01-02/2011-01-03","a"),makeDataSegment("test1","2011-01-02/2011-01-03","b"),makeDataSegment("test2","2011-01-01/2011-01-02","a"),makeDataSegment("test2","2011-01-02/2011-01-03","a"),makeDataSegment("test1","2011-02-01/2011-02-02","a"),makeDataSegment("test1","2011-02-02/2011-02-03","a"),makeDataSegment("test1","2011-02-02/2011-02-03","b"),makeDataSegment("test2","2011-02-01/2011-02-02","a"),makeDataSegment("test2","2011-02-02/2011-02-03","a")};
+  List<DataSegment> shuffled=Lists.newArrayList(sortedOrder);
+  Collections.shuffle(shuffled);
+  Set<DataSegment> theSet=Sets.newTreeSet(DataSegment.bucketMonthComparator());
+  theSet.addAll(shuffled);
+  int index=0;
+  for (  DataSegment dataSegment : theSet) {
+    Assert.assertEquals(sortedOrder[index],dataSegment);
+    ++index;
+  }
+}

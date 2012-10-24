@@ -1,0 +1,23 @@
+{
+  if (jp == null) {
+    try {
+      jp=objectMapper.getJsonFactory().createJsonParser(future.get());
+      if (jp.nextToken() != JsonToken.START_ARRAY) {
+        throw new IAE("Next token wasn't a START_ARRAY, was[%s]",jp.getCurrentToken());
+      }
+ else {
+        jp.nextToken();
+        objectCodec=jp.getCodec();
+      }
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+catch (    InterruptedException e) {
+      throw Throwables.propagate(e);
+    }
+catch (    ExecutionException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

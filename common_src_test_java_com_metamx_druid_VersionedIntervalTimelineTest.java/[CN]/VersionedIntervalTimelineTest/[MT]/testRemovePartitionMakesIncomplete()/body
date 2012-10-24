@@ -1,0 +1,7 @@
+{
+  testIncompletePartitionDoesNotOvershadow();
+  final IntegerPartitionChunk<Integer> chunk=IntegerPartitionChunk.make(null,10,0,60);
+  Assert.assertEquals(chunk,timeline.remove(new Interval("2011-10-05/2011-10-07"),"6",chunk));
+  assertValues(ImmutableList.of(createExpected("2011-10-05/2011-10-06","5",5)),timeline.lookup(new Interval("2011-10-05/2011-10-07")));
+  Assert.assertTrue("Expected no overshadowed entries",timeline.findOvershadowed().isEmpty());
+}

@@ -1,0 +1,43 @@
+{
+  final TaskQueue tq=newTaskQueue();
+  final Task t1=newTask("T1","G0","bar",new Interval("2011-01-01/P1D"));
+  final Task t2=newTask("T2","G1","bar",new Interval("2011-01-02/P1D"));
+  final Task t3=newTask("T3","G0","bar",new Interval("2011-01-03/P1D"));
+  final Task t4=newTask("T4","G0","bar",new Interval("2011-01-02/P5D"));
+  final Task t0=newContinuedTask("T0","G0","bar",new Interval("2011-01-01/P3D"),ImmutableList.of(t1,t2,t3,t4));
+  tq.add(t0);
+  final VersionedTaskWrapper wt0=tq.poll();
+  Assert.assertEquals("wt0 task id","T0",wt0.getTask().getId());
+  Assert.assertNull("null poll #1",tq.poll());
+  Thread.sleep(5);
+  tq.done(t0,t0.run(null,null));
+  final Set<String> taken=Sets.newHashSet();
+  while (true) {
+    Thread.sleep(5);
+    final VersionedTaskWrapper taskWrapper=tq.poll();
+    if (taskWrapper != null) {
+      Assert.assertEquals(String.format("%s version",taskWrapper.getTask().getId()),wt0.getVersion(),taskWrapper.getVersion());
+      taken.add(taskWrapper.getTask().getId());
+    }
+ else {
+      break;
+    }
+  }
+  Assert.assertEquals("taken",Sets.newHashSet("T1","T3"),taken);
+  tq.done(t1,t1.run(null,null));
+  Assert.assertNull("null poll #2",tq.poll());
+  tq.done(t3,t3.run(null,null));
+  final VersionedTaskWrapper wt2=tq.poll();
+  Assert.assertEquals("wt2 task id","T2",wt2.getTask().getId());
+  Assert.assertEquals("wt2 group id","G1",wt2.getTask().getGroupId());
+  Assert.assertNotSame("wt2 version",wt0.getVersion(),wt2.getVersion());
+  Assert.assertNull("null poll #3",tq.poll());
+  tq.done(t2,t2.run(null,null));
+  final VersionedTaskWrapper wt4=tq.poll();
+  Assert.assertEquals("wt4 task id","T4",wt4.getTask().getId());
+  Assert.assertEquals("wt4 group id","G0",wt4.getTask().getGroupId());
+  Assert.assertNotSame("wt4 version",wt0.getVersion(),wt4.getVersion());
+  Assert.assertNotSame("wt4 version",wt2.getVersion(),wt4.getVersion());
+  tq.done(t4,t4.run(null,null));
+  Assert.assertNull("null poll #4",tq.poll());
+}

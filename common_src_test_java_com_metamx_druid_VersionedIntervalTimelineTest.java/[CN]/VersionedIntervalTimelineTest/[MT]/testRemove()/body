@@ -1,0 +1,8 @@
+{
+  for (  TimelineObjectHolder<String,Integer> holder : timeline.findOvershadowed()) {
+    for (    PartitionChunk<Integer> chunk : holder.getObject()) {
+      timeline.remove(holder.getInterval(),holder.getVersion(),chunk);
+    }
+  }
+  Assert.assertTrue(timeline.findOvershadowed().isEmpty());
+}

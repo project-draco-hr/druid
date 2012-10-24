@@ -1,0 +1,11 @@
+{
+  DateTime actualIntervalStart=index.dataInterval.getStart();
+  DateTime actualIntervalEnd=index.dataInterval.getEnd();
+  if (index.dataInterval.contains(interval.getStart())) {
+    actualIntervalStart=interval.getStart();
+  }
+  if (index.dataInterval.contains(interval.getEnd())) {
+    actualIntervalEnd=interval.getEnd();
+  }
+  return computeOffsets(actualIntervalStart.getMillis(),0,actualIntervalEnd.getMillis(),index.timeOffsets.length);
+}

@@ -1,0 +1,9 @@
+{
+  final String segmentIDs=Joiner.on("_").join(Iterables.transform(Ordering.natural().sortedCopy(segments),new Function<DataSegment,String>(){
+    @Override public String apply(    DataSegment x){
+      return String.format("%s_%s_%s_%s",x.getInterval().getStart(),x.getInterval().getEnd(),x.getVersion(),x.getShardSpec().getPartitionNum());
+    }
+  }
+));
+  return String.format("%s_%s",dataSource,DigestUtils.shaHex(segmentIDs).toLowerCase());
+}

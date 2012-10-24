@@ -1,0 +1,28 @@
+{
+  String toServer=server.getName();
+  LoadQueuePeon toPeon=params.getLoadManagementPeons().get(toServer);
+  for (  final BalancerSegmentHolder segment : Sets.newHashSet(segments)) {
+    String fromServer=segment.getServer().getName();
+    DataSegment segmentToMove=segment.getSegment();
+    final String segmentName=segmentToMove.getIdentifier();
+    if (!toPeon.getSegmentsToLoad().contains(segmentToMove) && (server.getSegment(segmentName) == null) && new ServerHolder(server,toPeon).getAvailableSize() > segmentToMove.getSize()) {
+      log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServer,toServer);
+      try {
+        master.moveSegment(fromServer,toServer,segmentToMove.getIdentifier(),new LoadPeonCallback(){
+          @Override protected void execute(){
+            currentlyMovingSegments.remove(segmentName,segment);
+          }
+        }
+);
+        currentlyMovingSegments.put(segmentName,segment);
+      }
+ catch (      Exception e) {
+        log.warn("Exception occurred [%s]",e.getMessage());
+        continue;
+      }
+    }
+ else {
+      currentlyMovingSegments.remove(segment);
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  String json="{ \"type\": \"duration\", \"duration\": \"3600000\" }";
+  QueryGranularity gran=mapper.readValue(json,QueryGranularity.class);
+  Assert.assertEquals(new DurationGranularity(3600000,null),gran);
+  json="{ \"type\": \"duration\", \"duration\": \"5\", \"origin\": \"2012-09-01T00:00:00.002Z\" }";
+  gran=mapper.readValue(json,QueryGranularity.class);
+  Assert.assertEquals(new DurationGranularity(5,2),gran);
+  DurationGranularity expected=new DurationGranularity(5,2);
+  Assert.assertEquals(expected,mapper.readValue(mapper.writeValueAsString(expected),QueryGranularity.class));
+}

@@ -1,0 +1,52 @@
+{
+  final String taskPath=JOINER.join(config.getTaskPath(),worker.getHost(),task.getId());
+  final String statusPath=JOINER.join(config.getStatusPath(),worker.getHost(),task.getId());
+  PathChildrenCache monitor=monitors.get(worker.getHost());
+  if (monitor == null) {
+    monitor=new PathChildrenCache(cf,JOINER.join(config.getStatusPath(),worker.getHost()),false);
+    monitor.start();
+  }
+  final PathChildrenCache statusMonitor=monitor;
+  statusMonitor.getListenable().addListener(new PathChildrenCacheListener(){
+    @Override public void childEvent(    CuratorFramework curatorFramework,    PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+      try {
+        if (pathChildrenCacheEvent.getData().getPath().equals(statusPath)) {
+          if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
+            throw new ISE("Worker[%s] dropped Task[%s]!",worker.getHost(),task.getId());
+          }
+          TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(statusPath),TaskStatus.class);
+          if (taskStatus.isComplete()) {
+            if (callback != null) {
+              callback.notify(taskStatus);
+            }
+            cf.delete().guaranteed().forPath(statusPath);
+            cf.delete().guaranteed().forPath(taskPath);
+            statusMonitor.close();
+          }
+        }
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception while cleaning up task[%s]. Retrying",task.getId());
+        retryPolicy.registerRunnable(new Runnable(){
+          @Override public void run(){
+            try {
+              if (cf.checkExists().forPath(statusPath) != null) {
+                cf.delete().guaranteed().forPath(statusPath);
+              }
+              if (cf.checkExists().forPath(taskPath) != null) {
+                cf.delete().guaranteed().forPath(taskPath);
+              }
+              statusMonitor.close();
+            }
+ catch (            Exception e) {
+              throw Throwables.propagate(e);
+            }
+          }
+        }
+);
+        retryTask(task,taskContext,callback,retryPolicy);
+      }
+    }
+  }
+);
+}

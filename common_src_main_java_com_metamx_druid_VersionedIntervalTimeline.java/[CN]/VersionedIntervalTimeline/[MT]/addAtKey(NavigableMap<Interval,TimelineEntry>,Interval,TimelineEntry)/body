@@ -1,0 +1,56 @@
+{
+  boolean retVal=false;
+  Interval currKey=key;
+  Interval entryInterval=entry.getTrueInterval();
+  if (!currKey.overlaps(entryInterval)) {
+    return false;
+  }
+  while (currKey != null && currKey.overlaps(entryInterval)) {
+    Interval nextKey=timeline.higherKey(currKey);
+    int versionCompare=versionComparator.compare(entry.getVersion(),timeline.get(currKey).getVersion());
+    if (versionCompare < 0) {
+      if (currKey.contains(entryInterval)) {
+        return true;
+      }
+ else       if (currKey.getStart().isBefore(entryInterval.getStart())) {
+        entryInterval=new Interval(currKey.getEnd(),entryInterval.getEnd());
+      }
+ else {
+        addIntervalToTimeline(new Interval(entryInterval.getStart(),currKey.getStart()),entry,timeline);
+        if (entryInterval.getEnd().isAfter(currKey.getEnd())) {
+          entryInterval=new Interval(currKey.getEnd(),entryInterval.getEnd());
+        }
+ else {
+          entryInterval=null;
+        }
+      }
+    }
+ else     if (versionCompare > 0) {
+      TimelineEntry oldEntry=timeline.remove(currKey);
+      if (currKey.contains(entryInterval)) {
+        addIntervalToTimeline(new Interval(currKey.getStart(),entryInterval.getStart()),oldEntry,timeline);
+        addIntervalToTimeline(new Interval(entryInterval.getEnd(),currKey.getEnd()),oldEntry,timeline);
+        addIntervalToTimeline(entryInterval,entry,timeline);
+        return true;
+      }
+ else       if (currKey.getStart().isBefore(entryInterval.getStart())) {
+        addIntervalToTimeline(new Interval(currKey.getStart(),entryInterval.getStart()),oldEntry,timeline);
+      }
+ else       if (entryInterval.getEnd().isBefore(currKey.getEnd())) {
+        addIntervalToTimeline(new Interval(entryInterval.getEnd(),currKey.getEnd()),oldEntry,timeline);
+      }
+    }
+ else {
+      if (timeline.get(currKey).equals(entry)) {
+        timeline.remove(currKey);
+      }
+ else {
+        throw new UnsupportedOperationException(String.format("Cannot add overlapping segments [%s and %s] with the same version [%s]",currKey,entryInterval,entry.getVersion()));
+      }
+    }
+    currKey=nextKey;
+    retVal=true;
+  }
+  addIntervalToTimeline(entryInterval,entry,timeline);
+  return retVal;
+}

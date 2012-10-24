@@ -1,0 +1,9 @@
+{
+  String type=MapUtils.getString(descriptor,"type");
+  SizeLookup adjuster=lookups.get(type);
+  if (adjuster == null) {
+    log.warn("Unknown type[%s] for SizeAdjuster, known types are %s",type,lookups.keySet());
+    return null;
+  }
+  return adjuster.lookupSize(descriptor);
+}

@@ -1,0 +1,7 @@
+{
+  if (taskToolbox == null) {
+    final RestS3Service s3Client=new RestS3Service(new AWSCredentials(props.getProperty("com.metamx.aws.accessKey"),props.getProperty("com.metamx.aws.secretKey")));
+    final SegmentPusher segmentPusher=new S3SegmentPusher(s3Client,configFactory.build(S3SegmentPusherConfig.class),jsonMapper);
+    taskToolbox=new TaskToolbox(coordinatorConfig,emitter,s3Client,segmentPusher,jsonMapper);
+  }
+}

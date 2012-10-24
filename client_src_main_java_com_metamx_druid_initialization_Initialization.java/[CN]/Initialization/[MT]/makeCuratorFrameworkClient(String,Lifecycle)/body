@@ -1,0 +1,13 @@
+{
+  final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(zkHosts).retryPolicy(new ExponentialBackoffRetry(1000,30)).build();
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      framework.start();
+    }
+    @Override public void stop(){
+      framework.close();
+    }
+  }
+);
+  return framework;
+}

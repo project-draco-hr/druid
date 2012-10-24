@@ -1,0 +1,14 @@
+{
+  log.info("Stopping ZkCoordinator with config[%s]",config);
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    for (    Pair<String,PhoneBookPeon<?>> peon : peons) {
+      yp.unregisterListener(peon.lhs,peon.rhs);
+    }
+    peons.clear();
+    yp.unannounce(config.getAnnounceLocation(),me.getName());
+    started=false;
+  }
+}

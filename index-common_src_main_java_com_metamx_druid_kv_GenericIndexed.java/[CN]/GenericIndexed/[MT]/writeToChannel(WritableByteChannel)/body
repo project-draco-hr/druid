@@ -1,0 +1,6 @@
+{
+  channel.write(ByteBuffer.wrap(new byte[]{version,allowReverseLookup ? (byte)0x1 : (byte)0x0}));
+  channel.write(ByteBuffer.wrap(Ints.toByteArray(theBuffer.remaining() + 4)));
+  channel.write(ByteBuffer.wrap(Ints.toByteArray(size)));
+  channel.write(theBuffer.asReadOnlyBuffer());
+}

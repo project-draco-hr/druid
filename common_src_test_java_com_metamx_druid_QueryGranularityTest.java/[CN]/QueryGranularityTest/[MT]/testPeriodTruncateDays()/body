@@ -1,0 +1,7 @@
+{
+  final DateTime origin=new DateTime("2012-01-02T05:00:00.000-08:00");
+  QueryGranularity periodOrigin=new PeriodGranularity(new Period("P2D"),origin,DateTimeZone.forID("America/Los_Angeles"));
+  assertSame(Lists.newArrayList(new DateTime("2011-12-31T05:00:00.000-08:00"),new DateTime("2012-01-02T05:00:00.000-08:00"),new DateTime("2012-01-04T05:00:00.000-08:00")),Lists.newArrayList(periodOrigin.truncate(new DateTime("2012-01-01T05:00:04.123-08:00").getMillis()),periodOrigin.truncate(new DateTime("2012-01-02T07:00:04.123-08:00").getMillis()),periodOrigin.truncate(new DateTime("2012-01-04T07:20:04.123-08:00").getMillis())));
+  QueryGranularity periodNoOrigin=new PeriodGranularity(new Period("P2D"),null,DateTimeZone.forID("America/Los_Angeles"));
+  assertSame(Lists.newArrayList(new DateTime("2012-01-01T00:00:00.000-08:00"),new DateTime("2012-01-01T00:00:00.000-08:00"),new DateTime("2012-01-03T00:00:00.000-08:00")),Lists.newArrayList(periodNoOrigin.truncate(new DateTime("2012-01-01T05:00:04.123-08:00").getMillis()),periodNoOrigin.truncate(new DateTime("2012-01-02T07:00:04.123-08:00").getMillis()),periodNoOrigin.truncate(new DateTime("2012-01-04T07:20:04.123-08:00").getMillis())));
+}

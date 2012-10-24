@@ -1,0 +1,13 @@
+{
+  final HadoopDruidIndexerConfig cfg;
+  try {
+    cfg=jsonMapper.readValue("{" + "\"segmentGranularity\":\"day\"" + "}",HadoopDruidIndexerConfig.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  cfg.setIntervals(Lists.newArrayList(new Interval("2012-03-01/P1D")));
+  final UniformGranularitySpec granularitySpec=(UniformGranularitySpec)cfg.getGranularitySpec();
+  Assert.assertEquals("getIntervals",Lists.newArrayList(new Interval("2012-03-01/P1D")),granularitySpec.getIntervals());
+  Assert.assertEquals("getGranularity","DAY",granularitySpec.getGranularity().toString());
+}

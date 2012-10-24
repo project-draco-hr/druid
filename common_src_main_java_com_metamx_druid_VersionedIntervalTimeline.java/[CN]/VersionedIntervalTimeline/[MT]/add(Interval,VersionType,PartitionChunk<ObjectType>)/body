@@ -1,0 +1,31 @@
+{
+  try {
+    lock.writeLock().lock();
+    Map<VersionType,TimelineEntry> exists=allTimelineEntries.get(interval);
+    TimelineEntry entry=null;
+    if (exists == null) {
+      entry=new TimelineEntry(interval,version,new PartitionHolder<ObjectType>(object));
+      TreeMap<VersionType,TimelineEntry> versionEntry=Maps.newTreeMap(versionComparator);
+      versionEntry.put(version,entry);
+      allTimelineEntries.put(interval,versionEntry);
+    }
+ else {
+      entry=exists.get(version);
+      if (entry == null) {
+        entry=new TimelineEntry(interval,version,new PartitionHolder<ObjectType>(object));
+        exists.put(version,entry);
+      }
+ else {
+        PartitionHolder<ObjectType> partitionHolder=entry.getPartitionHolder();
+        partitionHolder.add(object);
+      }
+    }
+    if (entry.getPartitionHolder().isComplete()) {
+      add(completePartitionsTimeline,interval,entry);
+    }
+    add(incompletePartitionsTimeline,interval,entry);
+  }
+  finally {
+    lock.writeLock().unlock();
+  }
+}

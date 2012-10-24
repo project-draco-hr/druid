@@ -1,0 +1,19 @@
+{
+  if (index >= size) {
+    throw new IllegalArgumentException(String.format("Index[%s] >= size[%s]",index,size));
+  }
+  ByteBuffer myBuffer=theBuffer.asReadOnlyBuffer();
+  int startOffset=0;
+  int endOffset;
+  if (index == 0) {
+    endOffset=myBuffer.getInt();
+  }
+ else {
+    myBuffer.position(myBuffer.position() + ((index - 1) * Ints.BYTES));
+    startOffset=myBuffer.getInt();
+    endOffset=myBuffer.getInt();
+  }
+  myBuffer.position(valuesOffset + startOffset);
+  myBuffer.limit(myBuffer.position() + (endOffset - startOffset) + bufferBytes);
+  return myBuffer.hasRemaining() ? new VSizeIndexedInts(myBuffer,numBytes) : null;
+}

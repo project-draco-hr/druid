@@ -1,0 +1,10 @@
+{
+  log.info("Stopping WorkerCuratorCoordinator for worker[%s]",worker.getHost());
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    curatorFramework.delete().guaranteed().forPath(getAnnouncementsPathForWorker());
+    started=false;
+  }
+}

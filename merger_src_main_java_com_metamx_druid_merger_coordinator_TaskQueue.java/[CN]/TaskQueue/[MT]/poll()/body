@@ -1,0 +1,21 @@
+{
+  giant.lock();
+  try {
+    log.info("Checking for doable work");
+    for (    final Task task : queue) {
+      final Optional<String> maybeVersion=tryLock(task);
+      if (maybeVersion.isPresent()) {
+        Preconditions.checkState(active,"wtf? Found task when inactive");
+        taskStorage.setVersion(task.getId(),maybeVersion.get());
+        queue.remove(task);
+        log.info("Task claimed: %s",task);
+        return new VersionedTaskWrapper(task,maybeVersion.get());
+      }
+    }
+    log.info("No doable work found.");
+    return null;
+  }
+  finally {
+    giant.unlock();
+  }
+}

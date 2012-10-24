@@ -1,0 +1,8 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  DruidServer server=serverInventoryManager.getInventoryValue(serverName);
+  if (server == null) {
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+  return builder.status(Response.Status.OK).entity(server).build();
+}

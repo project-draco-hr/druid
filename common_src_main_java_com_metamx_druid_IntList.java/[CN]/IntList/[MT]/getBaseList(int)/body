@@ -1,0 +1,11 @@
+{
+  final int[] array=baseLists.get(index);
+  if (array == null) {
+    return null;
+  }
+  final IntBuffer retVal=IntBuffer.wrap(array);
+  if (index + 1 == baseListCount()) {
+    retVal.limit(maxIndex - (index * allocateSize));
+  }
+  return retVal.asReadOnlyBuffer();
+}

@@ -1,0 +1,48 @@
+{
+  log.debug("Mapping v8 index[%s]",inDir);
+  long startTime=System.currentTimeMillis();
+  InputStream indexIn=null;
+  try {
+    indexIn=new FileInputStream(new File(inDir,"index.drd"));
+    byte theVersion=(byte)indexIn.read();
+    if (theVersion != VERSION_ID) {
+      throw new IllegalArgumentException(String.format("Unknown version[%s]",theVersion));
+    }
+  }
+  finally {
+    Closeables.close(indexIn,false);
+  }
+  SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);
+  ByteBuffer indexBuffer=smooshedFiles.mapFile("index.drd");
+  indexBuffer.get();
+  final GenericIndexed<String> availableDimensions=GenericIndexed.readFromByteBuffer(indexBuffer,GenericIndexed.stringStrategy);
+  final GenericIndexed<String> availableMetrics=GenericIndexed.readFromByteBuffer(indexBuffer,GenericIndexed.stringStrategy);
+  final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
+  CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromByteBuffer(smooshedFiles.mapFile(makeTimeFile(inDir,BYTE_ORDER).getName()),BYTE_ORDER);
+  Map<String,MetricHolder> metrics=Maps.newLinkedHashMap();
+  for (  String metric : availableMetrics) {
+    final String metricFilename=makeMetricFile(inDir,metric,BYTE_ORDER).getName();
+    final MetricHolder holder=MetricHolder.fromByteBuffer(smooshedFiles.mapFile(metricFilename));
+    if (!metric.equals(holder.getName())) {
+      throw new ISE("Metric[%s] loaded up metric[%s] from disk.  File names do matter.",metric,holder.getName());
+    }
+    metrics.put(metric,holder);
+  }
+  Map<String,GenericIndexed<String>> dimValueLookups=Maps.newHashMap();
+  Map<String,VSizeIndexed> dimColumns=Maps.newHashMap();
+  Map<String,GenericIndexed<ImmutableConciseSet>> invertedIndexed=Maps.newHashMap();
+  for (  String dimension : IndexedIterable.create(availableDimensions)) {
+    ByteBuffer dimBuffer=smooshedFiles.mapFile(makeDimFile(inDir,dimension).getName());
+    String fileDimensionName=serializerUtils.readString(dimBuffer);
+    Preconditions.checkState(dimension.equals(fileDimensionName),"Dimension file[%s] has dimension[%s] in it!?",makeDimFile(inDir,dimension),fileDimensionName);
+    dimValueLookups.put(dimension,GenericIndexed.readFromByteBuffer(dimBuffer,GenericIndexed.stringStrategy));
+    dimColumns.put(dimension,VSizeIndexed.readFromByteBuffer(dimBuffer));
+  }
+  ByteBuffer invertedBuffer=smooshedFiles.mapFile("inverted.drd");
+  for (int i=0; i < availableDimensions.size(); ++i) {
+    invertedIndexed.put(serializerUtils.readString(invertedBuffer),GenericIndexed.readFromByteBuffer(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
+  }
+  final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimColumns,invertedIndexed);
+  log.debug("Mapped v8 index[%s] in %,d millis",inDir,System.currentTimeMillis() - startTime);
+  return retVal;
+}

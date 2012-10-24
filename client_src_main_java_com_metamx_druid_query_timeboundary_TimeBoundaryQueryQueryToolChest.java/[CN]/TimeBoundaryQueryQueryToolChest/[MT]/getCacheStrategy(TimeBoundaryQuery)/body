@@ -1,0 +1,28 @@
+{
+  return new CacheStrategy<Result<TimeBoundaryResultValue>,TimeBoundaryQuery>(){
+    @Override public byte[] computeCacheKey(    TimeBoundaryQuery query){
+      return ByteBuffer.allocate(2).put(TIMEBOUNDARY_QUERY).put(query.getCacheKey()).array();
+    }
+    @Override public Function<Result<TimeBoundaryResultValue>,Object> prepareForCache(){
+      return new Function<Result<TimeBoundaryResultValue>,Object>(){
+        @Override public Object apply(        Result<TimeBoundaryResultValue> input){
+          return Lists.newArrayList(input.getTimestamp().getMillis(),input.getValue());
+        }
+      }
+;
+    }
+    @Override public Function<Object,Result<TimeBoundaryResultValue>> pullFromCache(){
+      return new Function<Object,Result<TimeBoundaryResultValue>>(){
+        @Override @SuppressWarnings("unchecked") public Result<TimeBoundaryResultValue> apply(        @Nullable Object input){
+          List<Object> result=(List<Object>)input;
+          return new Result<TimeBoundaryResultValue>(new DateTime(result.get(0)),new TimeBoundaryResultValue(result.get(1)));
+        }
+      }
+;
+    }
+    @Override public Sequence<Result<TimeBoundaryResultValue>> mergeSequences(    Sequence<Sequence<Result<TimeBoundaryResultValue>>> seqOfSequences){
+      return new MergeSequence<Result<TimeBoundaryResultValue>>(getOrdering(),seqOfSequences);
+    }
+  }
+;
+}

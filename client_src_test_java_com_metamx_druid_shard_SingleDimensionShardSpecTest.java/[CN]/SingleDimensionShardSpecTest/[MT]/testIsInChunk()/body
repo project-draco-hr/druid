@@ -1,0 +1,16 @@
+{
+  Map<SingleDimensionShardSpec,List<Pair<Boolean,Map<String,String>>>> tests=ImmutableMap.<SingleDimensionShardSpec,List<Pair<Boolean,Map<String,String>>>>builder().put(makeSpec(null,null),makeList(true,null,true,"a",true,"h",true,"p",true,"y")).put(makeSpec(null,"m"),makeList(true,null,true,"a",true,"h",false,"p",false,"y")).put(makeSpec("a","h"),makeList(false,null,true,"a",false,"h",false,"p",false,"y")).put(makeSpec("d","u"),makeList(false,null,false,"a",true,"h",true,"p",false,"y")).put(makeSpec("h",null),makeList(false,null,false,"a",true,"h",true,"p",true,"y")).build();
+  for (  Map.Entry<SingleDimensionShardSpec,List<Pair<Boolean,Map<String,String>>>> entry : tests.entrySet()) {
+    SingleDimensionShardSpec spec=entry.getKey();
+    for (    Pair<Boolean,Map<String,String>> pair : entry.getValue()) {
+      final InputRow inputRow=new MapBasedInputRow(0,ImmutableList.of("billy"),Maps.transformValues(pair.rhs,new Function<String,Object>(){
+        @Override public Object apply(        String input){
+          return input;
+        }
+      }
+));
+      Assert.assertEquals(String.format("spec[%s], map[%s]",spec,pair.rhs),pair.lhs,spec.isInChunk(pair.rhs));
+      Assert.assertEquals(String.format("spec[%s], row[%s]",spec,inputRow),pair.lhs,spec.isInChunk(inputRow));
+    }
+  }
+}

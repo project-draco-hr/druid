@@ -1,0 +1,12 @@
+{
+  final GenericIndexed<String> lookup=dimValueLookups.get(dimension);
+  if (lookup == null) {
+    return emptySet;
+  }
+  int indexOf=lookup.indexOf(value);
+  if (indexOf < 0) {
+    return emptySet;
+  }
+  ImmutableConciseSet retVal=invertedIndexes.get(dimension).get(indexOf);
+  return (retVal == null) ? emptySet : retVal;
+}

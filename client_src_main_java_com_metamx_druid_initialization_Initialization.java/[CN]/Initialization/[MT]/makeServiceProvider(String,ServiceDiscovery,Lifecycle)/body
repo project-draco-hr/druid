@@ -1,0 +1,18 @@
+{
+  final ServiceProvider serviceProvider=serviceDiscovery.serviceProviderBuilder().serviceName(serviceName).build();
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      serviceProvider.start();
+    }
+    @Override public void stop(){
+      try {
+        serviceProvider.close();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+  return serviceProvider;
+}

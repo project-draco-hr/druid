@@ -1,0 +1,17 @@
+{
+  final List<DataSegment> segments=segmentsToMerge.getSegments();
+  final List<String> segmentNames=Lists.transform(segments,new Function<DataSegment,String>(){
+    @Override public String apply(    DataSegment input){
+      return input.getIdentifier();
+    }
+  }
+);
+  log.info("[%s] Found %d segments to merge %s",dataSource,segments.size(),segmentNames);
+  try {
+    mergerClient.runRequest(dataSource,segments);
+  }
+ catch (  Exception e) {
+    log.error(e,"[%s] Merging error for segments [%s]",dataSource,segmentNames);
+  }
+  return segments.size();
+}

@@ -1,0 +1,25 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  Histogram histogram=(Histogram)o;
+  if (count != histogram.count) {
+    return false;
+  }
+  if (Float.compare(histogram.max,max) != 0) {
+    return false;
+  }
+  if (Float.compare(histogram.min,min) != 0) {
+    return false;
+  }
+  if (!Arrays.equals(bins,histogram.bins)) {
+    return false;
+  }
+  if (!Arrays.equals(breaks,histogram.breaks)) {
+    return false;
+  }
+  return true;
+}

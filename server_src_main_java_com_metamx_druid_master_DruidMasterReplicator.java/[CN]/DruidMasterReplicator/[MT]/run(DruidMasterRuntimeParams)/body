@@ -1,0 +1,25 @@
+{
+  if (!currentlyCloningSegments.isEmpty() || !currentlyRemovingSegments.isEmpty()) {
+    if (!currentlyCloningSegments.isEmpty()) {
+      reduceLifetimes("clone",params,currentlyCloningSegments);
+      params=params.buildFromExisting().withMessage(String.format("Still waiting on %,d replicant(s) to be created",currentlyCloningSegments.size())).build();
+    }
+ else {
+      params=params.buildFromExisting().withMessage("Created 0 replicants").build();
+    }
+    if (!currentlyRemovingSegments.isEmpty()) {
+      reduceLifetimes("drop",params,currentlyRemovingSegments);
+      params=params.buildFromExisting().withMessage(String.format("Still waiting on %,d replicant(s) to be dropped",currentlyRemovingSegments.size())).build();
+    }
+ else {
+      params=params.buildFromExisting().withMessage("Removed 0 replicants").build();
+    }
+    return params;
+  }
+  segmentsToClone.clear();
+  segmentsToDrop.clear();
+  updateSegmentCount(params);
+  cloneSegments(params);
+  dropSegments(params);
+  return params.buildFromExisting().withMessage(String.format("Created %,d replicants",currentlyCloningSegments.size())).withMessage(String.format("Removed %,d replicants",currentlyRemovingSegments.size())).withCreatedReplicantCount(currentlyCloningSegments.size()).withDestroyedReplicantCount(currentlyRemovingSegments.size()).build();
+}

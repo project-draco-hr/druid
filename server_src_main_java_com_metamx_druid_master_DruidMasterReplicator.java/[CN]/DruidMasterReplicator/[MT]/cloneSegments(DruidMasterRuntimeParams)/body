@@ -1,0 +1,40 @@
+{
+  final Set<ServerHolder> serverHolders=Sets.newTreeSet(new Comparator<ServerHolder>(){
+    @Override public int compare(    ServerHolder lhs,    ServerHolder rhs){
+      return lhs.getPercentUsed().compareTo(rhs.getPercentUsed());
+    }
+  }
+);
+  serverHolders.addAll(Collections2.transform(params.getHistoricalServers(),new Function<DruidServer,ServerHolder>(){
+    @Override public ServerHolder apply(    DruidServer input){
+      return new ServerHolder(input,params.getLoadManagementPeons().get(input.getName()));
+    }
+  }
+));
+  for (  final ReplicatorSegmentHolder segmentHolder : segmentsToClone) {
+    String from=segmentHolder.getServers().get(0).getName();
+    DataSegment segment=segmentHolder.getSegment();
+    final String segmentName=segment.getIdentifier();
+    try {
+      for (      ServerHolder serverHolder : serverHolders) {
+        String to=serverHolder.getServer().getName();
+        LoadQueuePeon peon=serverHolder.getPeon();
+        if (!peon.getSegmentsToLoad().contains(segment) && (serverHolder.getServer().getSegment(segmentName) == null) && serverHolder.getAvailableSize() > segment.getSize()) {
+          log.info("Replicating [%s] on [%s] to [%s]",segmentName,from,to);
+          master.cloneSegment(from,to,segmentName,new LoadPeonCallback(){
+            @Override protected void execute(){
+              currentlyCloningSegments.remove(segmentName);
+            }
+          }
+);
+          currentlyCloningSegments.put(segmentName,segmentHolder);
+          break;
+        }
+      }
+    }
+ catch (    Exception e) {
+      log.warn("Exception occured [%s]",e.getMessage());
+      continue;
+    }
+  }
+}

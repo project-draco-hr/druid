@@ -1,0 +1,17 @@
+{
+  super(order,new BufferConverter<LongBuffer>(){
+    @Override public LongBuffer convert(    ByteBuffer buf){
+      return buf.asLongBuffer();
+    }
+    @Override public int compare(    LongBuffer lhs,    LongBuffer rhs){
+      return Ordering.natural().nullsFirst().compare(lhs,rhs);
+    }
+    @Override public int sizeOf(    int count){
+      return count * Longs.BYTES;
+    }
+    @Override public LongBuffer combine(    ByteBuffer into,    LongBuffer from){
+      return into.asLongBuffer().put(from);
+    }
+  }
+);
+}

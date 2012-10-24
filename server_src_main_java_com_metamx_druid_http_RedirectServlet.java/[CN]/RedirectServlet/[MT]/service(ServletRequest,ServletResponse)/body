@@ -1,0 +1,19 @@
+{
+  HttpServletRequest request;
+  HttpServletResponse response;
+  try {
+    request=(HttpServletRequest)req;
+    response=(HttpServletResponse)res;
+  }
+ catch (  ClassCastException e) {
+    throw new ServletException("non-HTTP request or response");
+  }
+  if (redirectInfo.doLocal()) {
+    super.service(request,response);
+  }
+ else {
+    URL url=redirectInfo.getRedirectURL(request.getQueryString(),request.getRequestURI());
+    log.info("Forwarding request to [%s]",url);
+    response.sendRedirect(url.toString());
+  }
+}

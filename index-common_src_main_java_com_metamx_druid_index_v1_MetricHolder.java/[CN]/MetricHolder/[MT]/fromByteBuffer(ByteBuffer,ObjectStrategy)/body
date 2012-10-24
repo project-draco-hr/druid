@@ -1,0 +1,27 @@
+{
+  final byte ver=buf.get();
+  if (version[0] != ver) {
+    throw new ISE("Unknown version[%s] of MetricHolder",ver);
+  }
+  final String metricName=serializerUtils.readString(buf);
+  final String typeName=serializerUtils.readString(buf);
+  MetricHolder holder=new MetricHolder(metricName,typeName);
+switch (holder.type) {
+case FLOAT:
+    holder.floatType=CompressedFloatsIndexedSupplier.fromByteBuffer(buf,ByteOrder.nativeOrder());
+  break;
+case COMPLEX:
+if (strategy != null) {
+  holder.complexType=GenericIndexed.readFromByteBuffer(buf,strategy);
+}
+ else {
+  final ComplexMetricSerde serdeForType=ComplexMetrics.getSerdeForType(holder.getTypeName());
+  if (serdeForType == null) {
+    throw new ISE("Unknown type[%s], cannot load.",holder.getTypeName());
+  }
+  holder.complexType=GenericIndexed.readFromByteBuffer(buf,serdeForType.getObjectStrategy());
+}
+break;
+}
+return holder;
+}

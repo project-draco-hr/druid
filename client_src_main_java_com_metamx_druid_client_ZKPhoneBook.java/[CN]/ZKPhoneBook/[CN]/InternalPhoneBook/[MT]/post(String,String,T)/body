@@ -1,0 +1,26 @@
+{
+  if (!zkClient.exists(serviceName)) {
+    zkClient.createPersistent(serviceName);
+  }
+  final String path=getPath(serviceName,nodeName);
+  if (zkClient.exists(path)) {
+    zkClient.updateDataSerialized(path,new DataUpdater<Object>(){
+      @Override public Object update(      Object currentData){
+        try {
+          return jsonMapper.writeValueAsString(properties);
+        }
+ catch (        IOException e) {
+          log.error(e,"Exception when updating value of [%s].  Using currentData.",path);
+          return currentData;
+        }
+      }
+    }
+);
+  }
+  try {
+    zkClient.createPersistent(path,jsonMapper.writeValueAsString(properties));
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+}

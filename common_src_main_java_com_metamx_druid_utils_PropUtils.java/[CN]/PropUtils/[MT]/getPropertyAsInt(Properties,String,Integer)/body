@@ -1,0 +1,17 @@
+{
+  String retVal=props.getProperty(property);
+  if (retVal == null) {
+    if (defaultValue == null) {
+      throw new ISE("Property[%s] not specified.",property);
+    }
+ else {
+      return defaultValue;
+    }
+  }
+  try {
+    return Integer.parseInt(retVal);
+  }
+ catch (  NumberFormatException e) {
+    throw new ISE(e,"Property[%s] is expected to be an int, it is not[%s].",retVal);
+  }
+}

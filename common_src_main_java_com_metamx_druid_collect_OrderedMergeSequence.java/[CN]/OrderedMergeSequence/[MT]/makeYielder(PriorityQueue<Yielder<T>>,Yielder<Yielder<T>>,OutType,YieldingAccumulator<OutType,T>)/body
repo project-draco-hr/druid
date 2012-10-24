@@ -1,0 +1,60 @@
+{
+  OutType retVal=initVal;
+  while (!accumulator.yielded() && (!pQueue.isEmpty() || !oldDudeAtCrosswalk.isDone())) {
+    Yielder<T> yielder;
+    if (oldDudeAtCrosswalk.isDone()) {
+      yielder=pQueue.remove();
+    }
+ else     if (pQueue.isEmpty()) {
+      yielder=oldDudeAtCrosswalk.get();
+      oldDudeAtCrosswalk=oldDudeAtCrosswalk.next(null);
+    }
+ else {
+      Yielder<T> queueYielder=pQueue.peek();
+      Yielder<T> iterYielder=oldDudeAtCrosswalk.get();
+      if (ordering.compare(queueYielder.get(),iterYielder.get()) <= 0) {
+        yielder=pQueue.remove();
+      }
+ else {
+        yielder=oldDudeAtCrosswalk.get();
+        oldDudeAtCrosswalk=oldDudeAtCrosswalk.next(null);
+      }
+    }
+    retVal=accumulator.accumulate(retVal,yielder.get());
+    yielder=yielder.next(null);
+    if (yielder.isDone()) {
+      try {
+        yielder.close();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+ else {
+      pQueue.add(yielder);
+    }
+  }
+  if (!accumulator.yielded()) {
+    return Yielders.done(retVal,oldDudeAtCrosswalk);
+  }
+  final OutType yieldVal=retVal;
+  final Yielder<Yielder<T>> finalOldDudeAtCrosswalk=oldDudeAtCrosswalk;
+  return new Yielder<OutType>(){
+    @Override public OutType get(){
+      return yieldVal;
+    }
+    @Override public Yielder<OutType> next(    OutType initValue){
+      accumulator.reset();
+      return makeYielder(pQueue,finalOldDudeAtCrosswalk,initValue,accumulator);
+    }
+    @Override public boolean isDone(){
+      return false;
+    }
+    @Override public void close() throws IOException {
+      while (!pQueue.isEmpty()) {
+        pQueue.remove().close();
+      }
+    }
+  }
+;
+}

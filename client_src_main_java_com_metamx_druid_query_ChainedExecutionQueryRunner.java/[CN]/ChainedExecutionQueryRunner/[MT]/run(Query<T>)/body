@@ -1,0 +1,34 @@
+{
+  return new BaseSequence<T,Iterator<T>>(new BaseSequence.IteratorMaker<T,Iterator<T>>(){
+    @Override public Iterator<T> make(){
+      List<Future<List<T>>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,Future<List<T>>>(){
+        @Override public Future<List<T>> apply(        final QueryRunner<T> input){
+          return exec.submit(new Callable<List<T>>(){
+            @Override public List<T> call() throws Exception {
+              return Sequences.toList(input.run(query),Lists.<T>newArrayList());
+            }
+          }
+);
+        }
+      }
+));
+      return new MergeIterable<T>(ordering.nullsFirst(),Iterables.transform(futures,new Function<Future<List<T>>,Iterable<T>>(){
+        @Override public Iterable<T> apply(        Future<List<T>> input){
+          try {
+            return input.get();
+          }
+ catch (          InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+catch (          ExecutionException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+)).iterator();
+    }
+    @Override public void cleanup(    Iterator<T> tIterator){
+    }
+  }
+);
+}

@@ -1,0 +1,39 @@
+{
+  LogLevelAdjuster.register();
+  Lifecycle lifecycle=new Lifecycle();
+  RealtimeNode rn=RealtimeNode.builder().build();
+  lifecycle.addManagedInstance(rn);
+  PhoneBook dummyPhoneBook=new ZKPhoneBook(new DefaultObjectMapper(),null,null){
+    @Override public boolean isStarted(){
+      return true;
+    }
+  }
+;
+  rn.setPhoneBook(dummyPhoneBook);
+  MetadataUpdater dummyMetadataUpdater=new MetadataUpdater(new DefaultObjectMapper(),Config.createFactory(Initialization.loadProperties()).build(MetadataUpdaterConfig.class),dummyPhoneBook,null){
+    @Override public void publishSegment(    DataSegment segment) throws IOException {
+    }
+    @Override public void unannounceSegment(    DataSegment segment) throws IOException {
+    }
+    @Override public void announceSegment(    DataSegment segment) throws IOException {
+    }
+  }
+;
+  rn.setMetadataUpdater(dummyMetadataUpdater);
+  rn.setSegmentPusher(new SegmentPusher(){
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      return segment;
+    }
+  }
+);
+  rn.registerJacksonSubtype(new NamedType(RandomFirehoseFactory.class,"rand"));
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    t.printStackTrace();
+    System.exit(2);
+  }
+  lifecycle.join();
+}

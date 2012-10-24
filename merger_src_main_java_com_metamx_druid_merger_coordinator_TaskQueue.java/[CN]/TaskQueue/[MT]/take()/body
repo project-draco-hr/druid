@@ -1,0 +1,14 @@
+{
+  giant.lock();
+  try {
+    VersionedTaskWrapper taskWrapper;
+    while ((taskWrapper=poll()) == null) {
+      log.info("Waiting for work...");
+      workMayBeAvailable.await();
+    }
+    return taskWrapper;
+  }
+  finally {
+    giant.unlock();
+  }
+}

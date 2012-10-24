@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    started=true;
+    if (!yp.isStarted()) {
+      throw new ISE("Master cannot perform without his yellow pages.");
+    }
+    becomeMaster();
+    yp.registerListener(config.getBasePath(),masterPeon);
+  }
+}

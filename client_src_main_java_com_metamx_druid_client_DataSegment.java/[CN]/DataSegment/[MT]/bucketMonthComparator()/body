@@ -1,0 +1,15 @@
+{
+  return new Comparator<DataSegment>(){
+    @Override public int compare(    DataSegment lhs,    DataSegment rhs){
+      int retVal;
+      DateTime lhsMonth=Granularity.MONTH.truncate(lhs.getInterval().getStart());
+      DateTime rhsMonth=Granularity.MONTH.truncate(rhs.getInterval().getStart());
+      retVal=lhsMonth.compareTo(rhsMonth);
+      if (retVal != 0) {
+        return retVal;
+      }
+      return lhs.compareTo(rhs);
+    }
+  }
+;
+}

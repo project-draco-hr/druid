@@ -1,0 +1,27 @@
+{
+  if (!currentlyMovingSegments.isEmpty()) {
+    reduceLifetimes(params.getEmitter());
+    return params.buildFromExisting().withMessage(String.format("Still waiting on %,d segments to be moved",currentlyMovingSegments.size())).build();
+  }
+  TreeSet<ServerHolder> servers=Sets.newTreeSet(Comparators.inverse(new Comparator<ServerHolder>(){
+    @Override public int compare(    ServerHolder lhs,    ServerHolder rhs){
+      return lhs.getPercentUsed().compareTo(rhs.getPercentUsed());
+    }
+  }
+));
+  for (  DruidServer server : params.getHistoricalServers()) {
+    servers.add(new ServerHolder(server,params.getLoadManagementPeons().get(server.getName())));
+  }
+  if (servers.size() <= 1) {
+    log.info("No unique values found for highest and lowest percent used servers: nothing to balance");
+    return params;
+  }
+  ServerHolder highestPercentUsedServer=servers.first();
+  ServerHolder lowestPercentUsedServer=servers.last();
+  analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
+  log.info("Percent difference in percent size used between highest/lowest servers: %s%%",analyzer.getPercentDiff());
+  log.info("Highest percent used [%s]: size used[%s], percent used[%s%%]",highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
+  log.info("Lowest percent used [%s]: size used[%s], percent used[%s%%]",lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
+  moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
+  return params.buildFromExisting().withMessage(String.format("Moved %,d segment(s)",currentlyMovingSegments.size())).withMovedCount(currentlyMovingSegments.size()).build();
+}

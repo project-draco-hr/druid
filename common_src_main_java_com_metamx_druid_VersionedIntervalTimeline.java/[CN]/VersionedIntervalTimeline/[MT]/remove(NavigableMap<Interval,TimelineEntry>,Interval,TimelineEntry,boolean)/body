@@ -1,0 +1,19 @@
+{
+  List<Interval> intervalsToRemove=Lists.newArrayList();
+  TimelineEntry removed=timeline.get(interval);
+  if (removed == null) {
+    Iterator<Map.Entry<Interval,TimelineEntry>> iter=timeline.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<Interval,TimelineEntry> timelineEntry=iter.next();
+      if (timelineEntry.getValue() == entry) {
+        intervalsToRemove.add(timelineEntry.getKey());
+      }
+    }
+  }
+ else {
+    intervalsToRemove.add(interval);
+  }
+  for (  Interval i : intervalsToRemove) {
+    remove(timeline,i,incompleteOk);
+  }
+}

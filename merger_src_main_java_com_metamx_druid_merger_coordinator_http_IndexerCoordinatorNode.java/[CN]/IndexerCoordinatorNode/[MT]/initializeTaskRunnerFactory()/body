@@ -1,0 +1,25 @@
+{
+  if (taskRunnerFactory == null) {
+    if (config.getRunnerImpl().equals("remote")) {
+      taskRunnerFactory=new TaskRunnerFactory(){
+        @Override public TaskRunner build(){
+          final ScheduledExecutorService retryScheduledExec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("RemoteRunnerRetryExec--%d").build());
+          return new RemoteTaskRunner(jsonMapper,taskInventoryManager,indexerZkConfig,curatorFramework,retryScheduledExec,new RetryPolicyFactory(configFactory.build(RetryPolicyConfig.class)));
+        }
+      }
+;
+    }
+ else     if (config.getRunnerImpl().equals("local")) {
+      taskRunnerFactory=new TaskRunnerFactory(){
+        @Override public TaskRunner build(){
+          final ExecutorService runnerExec=Executors.newFixedThreadPool(config.getNumLocalThreads());
+          return new LocalTaskRunner(taskToolbox,runnerExec);
+        }
+      }
+;
+    }
+ else {
+      throw new IllegalStateException(String.format("Invalid runner implementation: %s",config.getRunnerImpl()));
+    }
+  }
+}

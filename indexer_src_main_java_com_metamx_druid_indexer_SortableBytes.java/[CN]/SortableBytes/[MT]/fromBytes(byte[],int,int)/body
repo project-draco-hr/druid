@@ -1,0 +1,5 @@
+{
+  int groupKeySize=ByteBuffer.wrap(bytes,offset,length).getInt();
+  int sortKeyOffset=offset + 4 + groupKeySize;
+  return new SortableBytes(Arrays.copyOfRange(bytes,offset + 4,sortKeyOffset),Arrays.copyOfRange(bytes,sortKeyOffset,offset + length));
+}

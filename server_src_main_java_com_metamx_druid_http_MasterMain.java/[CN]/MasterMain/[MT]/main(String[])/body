@@ -1,0 +1,72 @@
+{
+  LogLevelAdjuster.register();
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final Properties props=Initialization.loadProperties();
+  final ConfigurationObjectFactory configFactory=Config.createFactory(props);
+  final Lifecycle lifecycle=new Lifecycle();
+  final HttpClient httpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),lifecycle);
+  final ServiceEmitter emitter=new ServiceEmitter(props.getProperty("druid.service"),props.getProperty("druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
+  final RestS3Service s3Client=new RestS3Service(new AWSCredentials(props.getProperty("com.metamx.aws.accessKey"),props.getProperty("com.metamx.aws.secretKey")));
+  final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
+  final PhoneBook masterYp=Initialization.createYellowPages(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final SegmentInventoryManager segmentInventoryManager=new SegmentInventoryManager(configFactory.build(SegmentInventoryManagerConfig.class),masterYp);
+  final ServerInventoryManager serverInventoryManager=new ServerInventoryManager(configFactory.build(ServerInventoryManagerConfig.class),masterYp);
+  final DbConnectorConfig dbConnectorConfig=configFactory.build(DbConnectorConfig.class);
+  final DBI dbi=new DbConnector(dbConnectorConfig).getDBI();
+  DbConnector.createSegmentTable(dbi,dbConnectorConfig);
+  final DatabaseSegmentManager databaseSegmentManager=new DatabaseSegmentManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseSegmentManager-Exec--%d"),configFactory.build(DatabaseSegmentManagerConfig.class),dbi);
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor()));
+  lifecycle.addManagedInstance(healthMonitor);
+  final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
+  final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
+  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig.getZkHosts(),lifecycle);
+  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,configFactory.build(ServiceDiscoveryConfig.class),lifecycle);
+  final ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
+  final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,new TheSizeAdjuster(configFactory.build(TheSizeAdjusterConfig.class),jsonMapper,ImmutableMap.<String,SizeLookup>of("s3",new S3SizeLookup(s3Client)),zkClient),masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
+  lifecycle.addManagedInstance(master);
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.error(t,"Error when starting up.  Failing.");
+    System.exit(1);
+  }
+  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+    @Override public void run(){
+      log.info("Running shutdown hook");
+      lifecycle.stop();
+    }
+  }
+));
+  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryManager,databaseSegmentManager,druidClusterInfo,master,jsonMapper));
+  final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
+  final RedirectInfo redirectInfo=new RedirectInfo(){
+    @Override public boolean doLocal(){
+      return ((master != null) && master.isClusterMaster());
+    }
+    @Override public URL getRedirectURL(    String queryString,    String requestURI){
+      try {
+        return (queryString == null) ? new URL(String.format("http://%s%s",druidClusterInfo.getMasterHost(),requestURI)) : new URL(String.format("http://%s%s?%s",druidClusterInfo.getMasterHost(),requestURI,queryString));
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+;
+  final Context staticContext=new Context(server,"/static",Context.SESSIONS);
+  staticContext.addServlet(new ServletHolder(new RedirectServlet(redirectInfo)),"/*");
+  staticContext.setResourceBase(ServerMain.class.getClassLoader().getResource("static").toExternalForm());
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  root.addEventListener(new GuiceServletConfig(injector));
+  root.addFilter(new FilterHolder(new RedirectFilter(HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),new Lifecycle()),new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
+  root.addFilter(GuiceFilter.class,"/info/*",0);
+  root.addFilter(GuiceFilter.class,"/master/*",0);
+  server.start();
+  server.join();
+}

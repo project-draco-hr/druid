@@ -1,0 +1,12 @@
+{
+  if (duration == null) {
+    Duration totalDuration=new Duration(0);
+    for (    Interval interval : querySegmentSpec.getIntervals()) {
+      if (interval != null) {
+        totalDuration=totalDuration.plus(interval.toDuration());
+      }
+    }
+    duration=totalDuration;
+  }
+  return duration;
+}

@@ -1,0 +1,24 @@
+{
+  ArrayList<Interval> retVal=Lists.newArrayList();
+  TreeSet<Interval> sortedIntervals=Sets.newTreeSet(Comparators.intervalsByStartThenEnd());
+  for (  Interval interval : intervals) {
+    sortedIntervals.add(interval);
+  }
+  if (sortedIntervals.isEmpty()) {
+    return Lists.newArrayList();
+  }
+  Iterator<Interval> intervalsIter=sortedIntervals.iterator();
+  Interval currInterval=intervalsIter.next();
+  while (intervalsIter.hasNext()) {
+    Interval next=intervalsIter.next();
+    if (currInterval.overlaps(next) || currInterval.abuts(next)) {
+      currInterval=new Interval(currInterval.getStart(),next.getEnd());
+    }
+ else {
+      retVal.add(currInterval);
+      currInterval=next;
+    }
+  }
+  retVal.add(currInterval);
+  return retVal;
+}

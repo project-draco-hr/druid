@@ -1,0 +1,21 @@
+{
+  if (index >= size) {
+    throw new IllegalArgumentException(String.format("Index[%s] >= size[%s]",index,size));
+  }
+  ByteBuffer myBuffer=theBuffer.asReadOnlyBuffer();
+  int startOffset=4;
+  int endOffset;
+  if (index == 0) {
+    endOffset=myBuffer.getInt();
+  }
+ else {
+    myBuffer.position(myBuffer.position() + ((index - 1) * 4));
+    startOffset=myBuffer.getInt() + 4;
+    endOffset=myBuffer.getInt();
+  }
+  if (startOffset == endOffset) {
+    return null;
+  }
+  myBuffer.position(valuesOffset + startOffset);
+  return strategy.fromByteBuffer(myBuffer,endOffset - startOffset);
+}

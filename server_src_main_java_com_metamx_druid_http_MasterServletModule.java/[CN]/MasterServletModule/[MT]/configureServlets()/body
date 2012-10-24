@@ -1,0 +1,9 @@
+{
+  bind(InfoResource.class);
+  bind(MasterResource.class);
+  bind(ServerInventoryManager.class).toInstance(serverInventoryManager);
+  bind(DatabaseSegmentManager.class).toInstance(segmentInventoryManager);
+  bind(DruidMaster.class).toInstance(master);
+  bind(DruidClusterInfo.class).toInstance(druidClusterInfo);
+  serve("/*").with(GuiceContainer.class);
+}

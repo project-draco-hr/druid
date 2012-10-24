@@ -1,0 +1,8 @@
+{
+  final String property="druid.request.logging.dir";
+  final String loggingDir=props.getProperty(property);
+  if (loggingDir == null) {
+    throw new ISE("property[%s] not set.",property);
+  }
+  return new FileRequestLogger(exec,new File(loggingDir));
+}

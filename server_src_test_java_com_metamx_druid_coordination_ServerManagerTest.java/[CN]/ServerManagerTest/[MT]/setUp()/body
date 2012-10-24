@@ -1,0 +1,30 @@
+{
+  EmittingLogger.registerEmitter(new NoopServiceEmitter());
+  factory=new MyQueryRunnerFactory();
+  serverManager=new ServerManager(new StorageAdapterLoader(){
+    @Override public StorageAdapter getAdapter(    final Map<String,Object> loadSpec){
+      return new StorageAdapterForTesting(MapUtils.getString(loadSpec,"version"),(Interval)loadSpec.get("interval"));
+    }
+    @Override public void cleanupAdapter(    Map<String,Object> loadSpec) throws StorageAdapterLoadingException {
+    }
+  }
+,new QueryRunnerFactoryConglomerate(){
+    @Override public <T,QueryType extends Query<T>>QueryRunnerFactory<T,QueryType> findFactory(    QueryType query){
+      return (QueryRunnerFactory)factory;
+    }
+  }
+,new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
+  loadQueryable("test","1",new Interval("P1d/2011-04-01"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-02"));
+  loadQueryable("test","2",new Interval("P1d/2011-04-02"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-03"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-04"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-05"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T01"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T02"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T03"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T05"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T06"));
+  loadQueryable("test2","1",new Interval("P1d/2011-04-01"));
+  loadQueryable("test2","1",new Interval("P1d/2011-04-02"));
+}

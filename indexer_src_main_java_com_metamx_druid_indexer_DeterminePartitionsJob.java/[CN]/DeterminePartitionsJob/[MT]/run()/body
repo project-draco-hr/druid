@@ -1,0 +1,63 @@
+{
+  try {
+    Job job=new Job(new Configuration(),String.format("%s-determine_partitions-%s",config.getDataSource(),config.getIntervals()));
+    job.getConfiguration().set("io.sort.record.percent","0.19");
+    for (    String propName : System.getProperties().stringPropertyNames()) {
+      Configuration conf=job.getConfiguration();
+      if (propName.startsWith("hadoop.")) {
+        conf.set(propName.substring("hadoop.".length()),System.getProperty(propName));
+      }
+    }
+    job.setInputFormatClass(TextInputFormat.class);
+    job.setMapperClass(DeterminePartitionsMapper.class);
+    job.setMapOutputValueClass(Text.class);
+    SortableBytes.useSortableBytesAsKey(job);
+    job.setCombinerClass(DeterminePartitionsCombiner.class);
+    job.setReducerClass(DeterminePartitionsReducer.class);
+    job.setOutputKeyClass(BytesWritable.class);
+    job.setOutputValueClass(Text.class);
+    job.setOutputFormatClass(DeterminePartitionsJob.DeterminePartitionsOutputFormat.class);
+    FileOutputFormat.setOutputPath(job,config.makeIntermediatePath());
+    config.addInputPaths(job);
+    config.intoConfiguration(job);
+    job.setJarByClass(DeterminePartitionsJob.class);
+    job.submit();
+    log.info("Job submitted, status available at %s",job.getTrackingURL());
+    final boolean retVal=job.waitForCompletion(true);
+    if (retVal) {
+      log.info("Job completed, loading up partitions for intervals[%s].",config.getSegmentGranularIntervals());
+      FileSystem fileSystem=null;
+      Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+      int shardCount=0;
+      for (      Interval segmentGranularity : config.getSegmentGranularIntervals()) {
+        DateTime bucket=segmentGranularity.getStart();
+        final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0));
+        if (fileSystem == null) {
+          fileSystem=partitionInfoPath.getFileSystem(job.getConfiguration());
+        }
+        if (fileSystem.exists(partitionInfoPath)) {
+          List<ShardSpec> specs=config.jsonMapper.readValue(Utils.openInputStream(job,partitionInfoPath),new TypeReference<List<ShardSpec>>(){
+          }
+);
+          List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(specs.size());
+          for (int i=0; i < specs.size(); ++i) {
+            actualSpecs.add(new HadoopyShardSpec(specs.get(i),shardCount++));
+            log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
+          }
+          shardSpecs.put(bucket,actualSpecs);
+        }
+ else {
+          log.info("Path[%s] didn't exist!?",partitionInfoPath);
+        }
+      }
+      config.setShardSpecs(shardSpecs);
+    }
+ else {
+      log.info("Job completed unsuccessfully.");
+    }
+    return retVal;
+  }
+ catch (  Exception e) {
+    throw new RuntimeException(e);
+  }
+}

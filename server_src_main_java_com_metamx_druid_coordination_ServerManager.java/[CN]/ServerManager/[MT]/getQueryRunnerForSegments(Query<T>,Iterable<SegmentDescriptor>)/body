@@ -1,0 +1,28 @@
+{
+  final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
+  if (factory == null) {
+    log.makeAlert("Unknown query type, [%s]",query.getClass()).addData("dataSource",query.getDataSource()).emit();
+    return new NoopQueryRunner<T>();
+  }
+  final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
+  final VersionedIntervalTimeline<String,StorageAdapter> timeline=dataSources.get(query.getDataSource());
+  if (timeline == null) {
+    return new NoopQueryRunner<T>();
+  }
+  FunctionalIterable<QueryRunner<T>> adapters=FunctionalIterable.create(specs).transformCat(new Function<SegmentDescriptor,Iterable<QueryRunner<T>>>(){
+    @Override @SuppressWarnings("unchecked") public Iterable<QueryRunner<T>> apply(    @Nullable SegmentDescriptor input){
+      final PartitionHolder<StorageAdapter> entry=timeline.findEntry(input.getInterval(),input.getVersion());
+      if (entry == null) {
+        return null;
+      }
+      final PartitionChunk<StorageAdapter> chunk=entry.getChunk(input.getPartitionNumber());
+      if (chunk == null) {
+        return null;
+      }
+      final StorageAdapter adapter=chunk.getObject();
+      return Arrays.<QueryRunner<T>>asList(buildAndDecorateQueryRunner(factory,toolChest,adapter,new SpecificSegmentSpec(input)));
+    }
+  }
+);
+  return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,adapters)),toolChest);
+}

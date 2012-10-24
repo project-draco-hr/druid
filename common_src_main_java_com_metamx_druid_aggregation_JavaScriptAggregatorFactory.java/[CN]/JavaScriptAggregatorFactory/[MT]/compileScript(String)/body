@@ -1,0 +1,36 @@
+{
+  final Context cx=Context.enter();
+  cx.setOptimizationLevel(9);
+  final ScriptableObject scope=cx.initStandardObjects();
+  Script compiledScript=cx.compileString(script,"script",1,null);
+  compiledScript.exec(cx,scope);
+  final Function fnAggregate=getScriptFunction("aggregate",scope);
+  final Function fnReset=getScriptFunction("reset",scope);
+  final Function fnCombine=getScriptFunction("combine",scope);
+  return new JavaScriptAggregator.ScriptAggregator(){
+    @Override public double aggregate(    double current,    FloatMetricSelector[] selectorList){
+      final int size=selectorList.length;
+      final Object[] args=new Object[size + 1];
+      args[0]=current;
+      int i=0;
+      while (i < size) {
+        args[i + 1]=selectorList[i++].get();
+      }
+      Object res=fnAggregate.call(cx,scope,scope,args);
+      return Context.toNumber(res);
+    }
+    @Override public double combine(    double a,    double b){
+      Object res=fnCombine.call(cx,scope,scope,new Object[]{a,b});
+      return Context.toNumber(res);
+    }
+    @Override public double reset(){
+      Object res=fnReset.call(cx,scope,scope,new Object[]{});
+      return Context.toNumber(res);
+    }
+    @Override protected void finalize() throws Throwable {
+      cx.exit();
+      super.finalize();
+    }
+  }
+;
+}

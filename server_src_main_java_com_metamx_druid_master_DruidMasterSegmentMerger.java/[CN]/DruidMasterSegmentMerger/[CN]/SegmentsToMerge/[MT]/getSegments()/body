@@ -1,0 +1,13 @@
+{
+  return ImmutableSet.copyOf(FunctionalIterable.create(timelineObjects).transformCat(new Function<Pair<TimelineObjectHolder<String,DataSegment>,Interval>,Iterable<DataSegment>>(){
+    @Override public Iterable<DataSegment> apply(    Pair<TimelineObjectHolder<String,DataSegment>,Interval> input){
+      return Iterables.transform(input.lhs.getObject(),new Function<PartitionChunk<DataSegment>,DataSegment>(){
+        @Override public DataSegment apply(        PartitionChunk<DataSegment> input){
+          return input.getObject();
+        }
+      }
+);
+    }
+  }
+)).asList();
+}

@@ -1,0 +1,10 @@
+{
+  final Level theLevel=Level.toLevel(level,null);
+  if (theLevel == null) {
+    throw new IllegalArgumentException("Unknown level: " + level);
+  }
+  if (log.isInfoEnabled()) {
+    log.info(String.format("Setting log level for package[%s] => [%s]",packageName,theLevel));
+  }
+  Logger.getLogger(packageName).setLevel(theLevel);
+}

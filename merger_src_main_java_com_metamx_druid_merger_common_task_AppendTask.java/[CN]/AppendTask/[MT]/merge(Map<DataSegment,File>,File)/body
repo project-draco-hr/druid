@@ -1,0 +1,24 @@
+{
+  VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural().nullsFirst());
+  for (  DataSegment segment : segments.keySet()) {
+    timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+  }
+  final List<SegmentToMergeHolder> segmentsToMerge=Lists.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<String,DataSegment>,SegmentToMergeHolder>(){
+    @Override public SegmentToMergeHolder apply(    TimelineObjectHolder<String,DataSegment> input){
+      final DataSegment segment=input.getObject().getChunk(0).getObject();
+      final File file=Preconditions.checkNotNull(segments.get(segment),"File for segment %s",segment.getIdentifier());
+      return new SegmentToMergeHolder(segment,input.getInterval(),file);
+    }
+  }
+);
+  List<IndexableAdapter> adapters=Lists.newArrayList();
+  for (  final SegmentToMergeHolder holder : segmentsToMerge) {
+    adapters.add(new RowboatFilteringIndexAdapter(new MMappedIndexAdapter(IndexIO.mapDir(holder.getFile())),new Predicate<Rowboat>(){
+      @Override public boolean apply(      @Nullable Rowboat input){
+        return holder.getInterval().contains(input.getTimestamp());
+      }
+    }
+));
+  }
+  return IndexMerger.append(adapters,outDir);
+}

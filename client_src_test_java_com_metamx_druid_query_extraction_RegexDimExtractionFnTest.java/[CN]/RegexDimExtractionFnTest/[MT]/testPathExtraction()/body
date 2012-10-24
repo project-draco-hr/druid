@@ -1,0 +1,11 @@
+{
+  String regex="/([^/]+)/";
+  DimExtractionFn dimExtractionFn=new RegexDimExtractionFn(regex);
+  Set<String> extracted=Sets.newHashSet();
+  for (  String path : paths) {
+    extracted.add(dimExtractionFn.apply(path));
+  }
+  Assert.assertEquals(2,extracted.size());
+  Assert.assertTrue(extracted.contains("druid"));
+  Assert.assertTrue(extracted.contains("dash"));
+}

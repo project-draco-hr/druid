@@ -1,0 +1,16 @@
+{
+synchronized (lock) {
+    actualPages.start();
+    for (    Map.Entry<String,Map<String,Object>> services : stoppedPages.getAnnouncements().entrySet()) {
+      String serviceName=services.getKey();
+      for (      Map.Entry<String,Object> announcements : services.getValue().entrySet()) {
+        String nodeName=announcements.getKey();
+        actualPages.announce(serviceName,nodeName,announcements.getValue());
+      }
+    }
+    for (    Map.Entry<String,PhoneBookPeon> listenerEntry : stoppedPages.getListeners().entries()) {
+      actualPages.registerListener(listenerEntry.getKey(),listenerEntry.getValue());
+    }
+    started=true;
+  }
+}

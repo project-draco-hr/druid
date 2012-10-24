@@ -1,0 +1,5 @@
+{
+  final byte[] bytes=bytesWritable.getBytes();
+  int length=ByteBuffer.wrap(bytes).getInt();
+  return (ByteBuffer.wrap(bytes,4,length).hashCode() & Integer.MAX_VALUE) % numPartitions;
+}

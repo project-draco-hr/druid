@@ -1,0 +1,28 @@
+{
+  final ServerSelector selector;
+synchronized (lock) {
+    log.info("Removing segment[%s] from server[%s].",segmentId,server);
+    selector=selectors.get(segmentId);
+    if (selector == null) {
+      log.warn("Told to remove non-existant segment[%s]",segmentId);
+      return;
+    }
+    if (!selector.removeServer(server)) {
+      log.warn("Asked to disassociate non-existant association between server[%s] and segment[%s]",server,segmentId);
+    }
+    if (selector.isEmpty()) {
+      DataSegment segment=selector.getSegment();
+      VersionedIntervalTimeline<String,ServerSelector> timeline=timelines.get(segment.getDataSource());
+      selectors.remove(segmentId);
+      if (timeline.remove(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(selector)) == null) {
+        log.warn("Asked to remove timeline entry[interval: %s, version: %s] that doesn't exist",segment.getInterval(),segment.getVersion());
+      }
+      runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
+        @Override public CallbackAction apply(        @Nullable SegmentCallback input){
+          return input.segmentRemoved(server,selector.getSegment());
+        }
+      }
+);
+    }
+  }
+}

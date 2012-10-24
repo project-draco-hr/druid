@@ -1,0 +1,25 @@
+{
+  createNewZipEntry(out,filename);
+  long numRead=0;
+  InputStream in=null;
+  try {
+    in=new FileInputStream(new File(mergedBase,filename));
+    byte[] buf=new byte[0x10000];
+    int read;
+    while (true) {
+      read=in.read(buf);
+      if (read == -1) {
+        break;
+      }
+      out.write(buf,0,read);
+      numRead+=read;
+      context.progress();
+    }
+  }
+  finally {
+    Closeables.closeQuietly(in);
+  }
+  out.closeEntry();
+  context.progress();
+  return numRead;
+}

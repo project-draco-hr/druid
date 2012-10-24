@@ -1,0 +1,31 @@
+{
+  return new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> input){
+      GroupByQuery query=(GroupByQuery)input;
+      List<Interval> condensed=query.getIntervals();
+      final List<AggregatorFactory> aggs=Lists.transform(query.getAggregatorSpecs(),new Function<AggregatorFactory,AggregatorFactory>(){
+        @Override public AggregatorFactory apply(        @Nullable AggregatorFactory input){
+          return input.getCombiningFactory();
+        }
+      }
+);
+      final List<String> dimensions=Lists.transform(query.getDimensions(),new Function<DimensionSpec,String>(){
+        @Override public String apply(        @Nullable DimensionSpec input){
+          return input.getOutputName();
+        }
+      }
+);
+      final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(condensed.get(0).getStartMillis(),query.getGranularity(),aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
+        @Override public IncrementalIndex accumulate(        IncrementalIndex accumulated,        Row in){
+          if (accumulated.add(Rows.toInputRow(in,dimensions)) > maxRows) {
+            throw new ISE("Computation exceeds maxRows limit[%s]",maxRows);
+          }
+          return accumulated;
+        }
+      }
+);
+      return Sequences.simple(index);
+    }
+  }
+;
+}

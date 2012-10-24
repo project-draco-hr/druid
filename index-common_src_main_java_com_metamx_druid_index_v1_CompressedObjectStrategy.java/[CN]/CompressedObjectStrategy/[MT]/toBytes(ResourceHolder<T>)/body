@@ -1,0 +1,9 @@
+{
+  T val=holder.get();
+  ByteBuffer buf=ByteBuffer.allocate(converter.sizeOf(val.remaining())).order(order);
+  converter.combine(buf,val);
+  final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder();
+  LZFChunk chunk=encoder.get().encodeChunk(buf.array(),0,buf.array().length);
+  Closeables.closeQuietly(encoder);
+  return chunk.getData();
+}

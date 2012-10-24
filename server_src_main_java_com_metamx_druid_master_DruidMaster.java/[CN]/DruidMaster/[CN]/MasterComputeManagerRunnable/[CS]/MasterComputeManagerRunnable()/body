@@ -1,0 +1,56 @@
+{
+  super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterHelper(){
+    @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
+      Collection<DruidServer> servers=serverInventoryManager.getInventory();
+      if (log.isDebugEnabled()) {
+        log.debug("Servers");
+        for (        DruidServer druidServer : servers) {
+          log.debug("  %s",druidServer);
+          log.debug("    -- DataSources");
+          for (          DruidDataSource druidDataSource : druidServer.getDataSources()) {
+            log.debug("    %s",druidDataSource);
+          }
+        }
+      }
+      final Set<DruidServer> historicalServers=Sets.newHashSet();
+      for (      DruidServer server : servers) {
+        if (server.getType().equalsIgnoreCase("historical")) {
+          historicalServers.add(server);
+        }
+      }
+      final Map<String,DruidServer> availableServerMap=Maps.newHashMap();
+      final Set<DataSegment> unservicedSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
+      unservicedSegments.addAll(params.getAvailableSegments());
+      for (      DruidServer server : historicalServers) {
+        availableServerMap.put(server.getName(),server);
+        for (        DruidDataSource dataSource : server.getDataSources()) {
+          for (          DataSegment segment : dataSource.getSegments()) {
+            unservicedSegments.remove(segment);
+          }
+        }
+        if (!loadManagementPeons.containsKey(server.getName())) {
+          String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
+          LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
+          log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
+          loadManagementPeons.put(server.getName(),loadQueuePeon);
+          yp.registerListener(basePath,loadQueuePeon);
+        }
+      }
+      for (      String name : loadManagementPeons.keySet()) {
+        if (!availableServerMap.containsKey(name)) {
+          log.info("Removing listener for server[%s] which is no longer there.",name);
+          LoadQueuePeon peon=loadManagementPeons.remove(name);
+          peon.stop();
+          yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
+        }
+      }
+      for (      LoadQueuePeon peon : loadManagementPeons.values()) {
+        for (        DataSegment segment : peon.getSegmentsToLoad()) {
+          unservicedSegments.remove(segment);
+        }
+      }
+      return params.buildFromExisting().withAvailableServerMap(availableServerMap).withHistoricalServers(historicalServers).withUnservicedSegments(unservicedSegments).build();
+    }
+  }
+,new DruidMasterAssigner(DruidMaster.this),new DruidMasterDropper(DruidMaster.this),new DruidMasterReplicator(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
+}

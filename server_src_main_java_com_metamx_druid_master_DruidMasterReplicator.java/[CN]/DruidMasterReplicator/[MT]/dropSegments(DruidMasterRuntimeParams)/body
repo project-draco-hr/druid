@@ -1,0 +1,23 @@
+{
+  for (  final ReplicatorSegmentHolder holder : segmentsToDrop) {
+    String from=holder.getServers().get(0).getName();
+    DataSegment segment=holder.getSegment();
+    final String segmentName=segment.getIdentifier();
+    if (!params.getLoadManagementPeons().get(from).getSegmentsToDrop().contains(segment)) {
+      log.info("Dropping [%s] on [%s]",segmentName,from);
+      try {
+        master.dropSegment(from,segmentName,new LoadPeonCallback(){
+          @Override protected void execute(){
+            currentlyRemovingSegments.remove(segmentName);
+          }
+        }
+);
+        currentlyRemovingSegments.put(segmentName,holder);
+      }
+ catch (      Exception e) {
+        log.warn("Exception occurred [%s]",e.getMessage());
+        continue;
+      }
+    }
+  }
+}

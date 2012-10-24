@@ -1,0 +1,17 @@
+{
+  final Optional<Interval> timeBucket=getGranularitySpec().bucketInterval(new DateTime(theMap.get(getTimestampColumnName())));
+  if (!timeBucket.isPresent()) {
+    return Optional.absent();
+  }
+  final List<HadoopyShardSpec> shards=shardSpecs.get(timeBucket.get().getStart());
+  if (shards == null || shards.isEmpty()) {
+    return Optional.absent();
+  }
+  for (  final HadoopyShardSpec hadoopyShardSpec : shards) {
+    final ShardSpec actualSpec=hadoopyShardSpec.getActualSpec();
+    if (actualSpec.isInChunk(theMap)) {
+      return Optional.of(new Bucket(hadoopyShardSpec.getShardNum(),timeBucket.get().getStart(),actualSpec.getPartitionNum()));
+    }
+  }
+  throw new ISE("row[%s] doesn't fit in any shard[%s]",theMap,shards);
+}

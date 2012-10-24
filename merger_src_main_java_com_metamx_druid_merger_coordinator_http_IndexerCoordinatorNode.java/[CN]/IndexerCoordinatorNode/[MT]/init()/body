@@ -1,0 +1,42 @@
+{
+  scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  initializeEmitter();
+  initializeMonitors();
+  initializeIndexerCoordinatorConfig();
+  initializeMergeDBCoordinator();
+  initializeTaskToolbox();
+  initializeTaskStorage();
+  initializeTaskQueue();
+  initializeJacksonInjections();
+  initializeJacksonSubtypes();
+  initializeCurator();
+  initializeIndexerZkConfig();
+  initializeTaskInventoryManager();
+  initializeTaskRunnerFactory();
+  initializeTaskMaster();
+  initializeServer();
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  lifecycle.addManagedInstance(monitorScheduler);
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskQueue));
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
+  root.addEventListener(new GuiceServletConfig(injector));
+  root.addFilter(new FilterHolder(new RedirectFilter(HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),new Lifecycle()),new ToStringResponseHandler(Charsets.UTF_8),new RedirectInfo(){
+    @Override public boolean doLocal(){
+      return taskMaster.isLeading();
+    }
+    @Override public URL getRedirectURL(    String queryString,    String requestURI){
+      try {
+        return new URL(String.format("http://%s%s",taskMaster.getLeader(),requestURI));
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+)),"/*",0);
+  root.addFilter(GuiceFilter.class,"/mmx/merger/v1/*",0);
+  initialized=true;
+}

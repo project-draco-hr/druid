@@ -1,0 +1,12 @@
+{
+  testRemove();
+  add("2011-10-06/2011-10-07","6",IntegerPartitionChunk.make(null,10,0,60));
+  assertValues(ImmutableList.of(createExpected("2011-10-05/2011-10-06","5",5)),timeline.lookup(new Interval("2011-10-05/2011-10-07")));
+  Assert.assertTrue("Expected no overshadowed entries",timeline.findOvershadowed().isEmpty());
+  add("2011-10-06/2011-10-07","6",IntegerPartitionChunk.make(10,20,1,61));
+  assertValues(ImmutableList.of(createExpected("2011-10-05/2011-10-06","5",5)),timeline.lookup(new Interval("2011-10-05/2011-10-07")));
+  Assert.assertTrue("Expected no overshadowed entries",timeline.findOvershadowed().isEmpty());
+  add("2011-10-06/2011-10-07","6",IntegerPartitionChunk.make(20,null,2,62));
+  assertValues(ImmutableList.of(createExpected("2011-10-05/2011-10-06","5",5),createExpected("2011-10-06/2011-10-07","6",Arrays.<PartitionChunk<Integer>>asList(IntegerPartitionChunk.make(null,10,0,60),IntegerPartitionChunk.make(10,20,1,61),IntegerPartitionChunk.make(20,null,2,62)))),timeline.lookup(new Interval("2011-10-05/2011-10-07")));
+  Assert.assertTrue("Expected no overshadowed entries",timeline.findOvershadowed().isEmpty());
+}

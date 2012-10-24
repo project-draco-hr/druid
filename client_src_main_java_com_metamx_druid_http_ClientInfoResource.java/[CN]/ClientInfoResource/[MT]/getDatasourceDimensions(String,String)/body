@@ -1,0 +1,31 @@
+{
+  DruidDataSource dataSource=updateDataSources().get(dataSourceName);
+  Set<String> retVal=Sets.newHashSet();
+  Interval dimInterval;
+  if (interval == null || interval.isEmpty()) {
+    Iterator<DataSegment> iter=Lists.reverse(Lists.newArrayList(dataSource.getSegments())).iterator();
+    DataSegment segment=iter.next();
+    retVal.addAll(segment.getDimensions());
+    dimInterval=new Interval(segment.getInterval().getEnd().minus(SEGMENT_HISTORY_MILLIS),segment.getInterval().getEnd());
+    while (iter.hasNext() && dimInterval.contains(segment.getInterval())) {
+      retVal.addAll(segment.getDimensions());
+      segment=iter.next();
+    }
+  }
+ else {
+    try {
+      dimInterval=new Interval(interval);
+    }
+ catch (    Exception e) {
+      throw new IAE("Interval is not in a parseable format!");
+    }
+    Iterator<DataSegment> iter=dataSource.getSegments().iterator();
+    while (iter.hasNext()) {
+      DataSegment segment=iter.next();
+      if (dimInterval.contains(segment.getInterval())) {
+        retVal.addAll(segment.getDimensions());
+      }
+    }
+  }
+  return retVal;
+}

@@ -1,0 +1,23 @@
+{
+  TimelineEntry existsInTimeline=timeline.get(interval);
+  if (existsInTimeline != null) {
+    int compare=versionComparator.compare(entry.getVersion(),existsInTimeline.getVersion());
+    if (compare > 0) {
+      addIntervalToTimeline(interval,entry,timeline);
+    }
+    return;
+  }
+  Interval lowerKey=timeline.lowerKey(interval);
+  if (lowerKey != null) {
+    if (addAtKey(timeline,lowerKey,entry)) {
+      return;
+    }
+  }
+  Interval higherKey=timeline.higherKey(interval);
+  if (higherKey != null) {
+    if (addAtKey(timeline,higherKey,entry)) {
+      return;
+    }
+  }
+  addIntervalToTimeline(interval,entry,timeline);
+}

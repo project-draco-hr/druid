@@ -1,0 +1,17 @@
+{
+  Preconditions.checkNotNull(columns);
+  Preconditions.checkArgument(!Joiner.on("_").join(columns).contains(","),"Columns must not have commas in them");
+  this.delimiter=(delimiter == null) ? DelimitedParser.DEFAULT_DELIMITER : delimiter;
+  this.columns=Lists.transform(columns,new Function<String,String>(){
+    @Override public String apply(    @Nullable String input){
+      return input.toLowerCase();
+    }
+  }
+);
+  this.dimensions=(dimensions == null) ? dimensions : Lists.transform(dimensions,new Function<String,String>(){
+    @Override public String apply(    @Nullable String input){
+      return input.toLowerCase();
+    }
+  }
+);
+}

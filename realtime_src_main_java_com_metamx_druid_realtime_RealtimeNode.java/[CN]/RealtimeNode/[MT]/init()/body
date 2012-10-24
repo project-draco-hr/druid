@@ -1,0 +1,28 @@
+{
+  if (phoneBook == null) {
+    final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
+    phoneBook=Initialization.createYellowPages(jsonMapper,zkClient,"Realtime-ZKYP--%s",lifecycle);
+  }
+  initializeEmitter();
+  initializeView();
+  initializeMetadataUpdater();
+  initializeQueryRunnerFactoryConglomerate();
+  initializeSegmentPusher();
+  initializeMonitors();
+  initializeServer();
+  initializeJacksonInjectables();
+  initializeFireDepartments();
+  monitors.add(new RealtimeMetricsMonitor(fireDepartments));
+  final RealtimeManager realtimeManager=new RealtimeManager(fireDepartments,conglomerate);
+  lifecycle.addManagedInstance(realtimeManager);
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  lifecycle.addManagedInstance(monitorScheduler);
+  final RequestLogger requestLogger=Initialization.makeRequestLogger(globalScheduledExec,props);
+  lifecycle.addManagedInstance(requestLogger);
+  final Context v2Druid=new Context(server,"/druid/v2",Context.SESSIONS);
+  v2Druid.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  v2Druid.addServlet(new ServletHolder(new QueryServlet(jsonMapper,smileMapper,realtimeManager,emitter,requestLogger)),"/*");
+  initialized=true;
+}

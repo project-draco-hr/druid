@@ -1,0 +1,10 @@
+{
+  final Interval mergedInterval=computeMergedInterval(segments);
+  final Set<String> mergedDimensions=Sets.newTreeSet(String.CASE_INSENSITIVE_ORDER);
+  final Set<String> mergedMetrics=Sets.newTreeSet(String.CASE_INSENSITIVE_ORDER);
+  for (  DataSegment segment : segments) {
+    mergedDimensions.addAll(segment.getDimensions());
+    mergedMetrics.addAll(segment.getMetrics());
+  }
+  return DataSegment.builder().dataSource(dataSource).interval(mergedInterval).version(version).shardSpec(new NoneShardSpec()).dimensions(Lists.newArrayList(mergedDimensions)).metrics(Lists.newArrayList(mergedMetrics)).build();
+}

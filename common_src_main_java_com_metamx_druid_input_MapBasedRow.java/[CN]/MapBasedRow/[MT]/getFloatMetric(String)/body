@@ -1,0 +1,20 @@
+{
+  Object metricValue=event.get(metric);
+  if (metricValue == null) {
+    return 0.0f;
+  }
+  if (metricValue instanceof Number) {
+    return ((Number)metricValue).floatValue();
+  }
+ else   if (metricValue instanceof String) {
+    try {
+      return Float.valueOf(((String)metricValue).replace(",",""));
+    }
+ catch (    Exception e) {
+      throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_METRIC).withDetails(ImmutableMap.<String,Object>of("metricName",metric,"metricValue",metricValue)).withMessage(e.getMessage()).build();
+    }
+  }
+ else {
+    throw new IAE("Unknown type[%s]",metricValue.getClass());
+  }
+}

@@ -1,0 +1,15 @@
+{
+  final byte[][] valuesBytes=new byte[values.size()][];
+  int valuesBytesSize=0;
+  int index=0;
+  for (  String value : values) {
+    valuesBytes[index]=value.getBytes();
+    valuesBytesSize+=valuesBytes[index].length;
+    ++index;
+  }
+  final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + valuesBytesSize).put(CACHE_TYPE_ID);
+  for (  byte[] bytes : valuesBytes) {
+    queryCacheKey.put(bytes);
+  }
+  return queryCacheKey.array();
+}

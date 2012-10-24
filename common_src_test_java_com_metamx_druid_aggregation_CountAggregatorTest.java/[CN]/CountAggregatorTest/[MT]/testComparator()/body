@@ -1,0 +1,10 @@
+{
+  CountAggregator agg=new CountAggregator("billy");
+  Object first=agg.get();
+  agg.aggregate();
+  Comparator comp=new CountAggregatorFactory("null").getComparator();
+  Assert.assertEquals(-1,comp.compare(first,agg.get()));
+  Assert.assertEquals(0,comp.compare(first,first));
+  Assert.assertEquals(0,comp.compare(agg.get(),agg.get()));
+  Assert.assertEquals(1,comp.compare(agg.get(),first));
+}

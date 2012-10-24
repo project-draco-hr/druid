@@ -1,0 +1,9 @@
+{
+  final ByteBuffer bytes=ByteBuffer.wrap(bytesWritable.getBytes());
+  bytes.position(4);
+  int shardNum=bytes.getInt();
+  if (shardNum >= numPartitions) {
+    throw new ISE("Not enough partitions, shard[%,d] >= numPartitions[%,d]",shardNum,numPartitions);
+  }
+  return shardNum;
+}

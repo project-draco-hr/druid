@@ -1,0 +1,45 @@
+{
+  if (!zkClient.exists(serviceName)) {
+    zkClient.createPersistent(serviceName,true);
+  }
+  try {
+synchronized (lock) {
+      zkClient.createEphemeral(getPath(serviceName,nodeName),jsonMapper.writeValueAsString(properties));
+      PhoneBookPeon peon=announcementListeners.get(serviceName);
+      if (peon == null) {
+        peon=new PhoneBookPeon<Object>(){
+          @Override public Class<Object> getObjectClazz(){
+            return Object.class;
+          }
+          @Override public void newEntry(          String name,          Object properties){
+          }
+          @Override public void entryRemoved(          String name){
+synchronized (lock) {
+              Object propertyMap=announcements.get(serviceName,name);
+              if (propertyMap != null) {
+                log.info("entry[%s/%s] was removed but I'm in charge of it, reinstating.",serviceName,name);
+                String path=getPath(serviceName,name);
+                try {
+                  zkClient.createEphemeral(path,jsonMapper.writeValueAsString(propertyMap));
+                }
+ catch (                ZkNodeExistsException e) {
+                  log.info("Thought that [%s] didn't exist, but it did?",path);
+                }
+catch (                IOException e) {
+                  log.error(e,"Exception thrown when recreating node[%s].",path);
+                }
+              }
+            }
+          }
+        }
+;
+        announcementListeners.put(serviceName,peon);
+        registerListener(serviceName,peon);
+      }
+      announcements.put(serviceName,nodeName,properties);
+    }
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+}

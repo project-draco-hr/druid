@@ -1,0 +1,10 @@
+{
+  DateTime overallStart=new DateTime().minus(Hours.TWO);
+  Assert.assertTrue("These timestamps have to be at the end AND include now for this test to work.",overallStart.isAfter(timeline.incompletePartitionsTimeline.lastEntry().getKey().getEnd()));
+  final Interval oneHourInterval1=new Interval(overallStart.plus(Hours.THREE),overallStart.plus(Hours.FOUR));
+  final Interval oneHourInterval2=new Interval(overallStart.plus(Hours.FOUR),overallStart.plus(Hours.FIVE));
+  add(oneHourInterval1,"1",1);
+  add(oneHourInterval2,"1",1);
+  add(new Interval(overallStart,overallStart.plus(Days.ONE)),"2",2);
+  assertValues(Arrays.asList(createExpected(oneHourInterval1.toString(),"2",2)),timeline.lookup(oneHourInterval1));
+}

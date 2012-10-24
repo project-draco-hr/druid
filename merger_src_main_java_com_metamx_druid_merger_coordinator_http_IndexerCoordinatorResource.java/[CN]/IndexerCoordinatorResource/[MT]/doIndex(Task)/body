@@ -1,0 +1,7 @@
+{
+  if (config.isWhitelistEnabled() && !config.getWhitelistDatasources().contains(task.getDataSource())) {
+    return Response.status(Response.Status.BAD_REQUEST).entity(ImmutableMap.of("error",String.format("dataSource[%s] is not whitelisted",task.getDataSource()))).build();
+  }
+  tasks.add(task);
+  return okResponse(task.getId());
+}

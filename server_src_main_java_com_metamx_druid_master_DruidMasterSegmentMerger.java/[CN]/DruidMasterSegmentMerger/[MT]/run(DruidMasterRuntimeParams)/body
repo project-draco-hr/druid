@@ -1,0 +1,35 @@
+{
+  Map<String,VersionedIntervalTimeline<String,DataSegment>> dataSources=Maps.newHashMap();
+  int count=0;
+  for (  DataSegment dataSegment : params.getAvailableSegments()) {
+    VersionedIntervalTimeline<String,DataSegment> timeline=dataSources.get(dataSegment.getDataSource());
+    if (timeline == null) {
+      timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural());
+      dataSources.put(dataSegment.getDataSource(),timeline);
+    }
+    timeline.add(dataSegment.getInterval(),dataSegment.getVersion(),dataSegment.getShardSpec().createChunk(dataSegment));
+  }
+  for (  final Map.Entry<String,VersionedIntervalTimeline<String,DataSegment>> entry : dataSources.entrySet()) {
+    VersionedIntervalTimeline<String,DataSegment> timeline=entry.getValue();
+    List<TimelineObjectHolder<String,DataSegment>> timelineObjects=timeline.lookup(new Interval(new DateTime(0),new DateTime("3000-01-01")));
+    SegmentsToMerge segmentsToMerge=new SegmentsToMerge();
+    for (int i=0; i < timelineObjects.size(); i++) {
+      segmentsToMerge.add(timelineObjects.get(i));
+      if (segmentsToMerge.getMergedSize() > params.getMergeThreshold()) {
+        i-=segmentsToMerge.backtrack(params.getMergeThreshold());
+        if (segmentsToMerge.size() > 1) {
+          count+=mergeSegments(segmentsToMerge,entry.getKey());
+        }
+        if (segmentsToMerge.size() == 0) {
+          i++;
+        }
+        segmentsToMerge=new SegmentsToMerge();
+      }
+    }
+    segmentsToMerge.backtrack(params.getMergeThreshold());
+    if (segmentsToMerge.size() > 1) {
+      count+=mergeSegments(segmentsToMerge,entry.getKey());
+    }
+  }
+  return params.buildFromExisting().withMergedSegmentCount(count).build();
+}

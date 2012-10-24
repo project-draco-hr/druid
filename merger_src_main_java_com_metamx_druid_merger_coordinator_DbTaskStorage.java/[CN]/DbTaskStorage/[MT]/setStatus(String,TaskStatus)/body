@@ -1,0 +1,15 @@
+{
+  Preconditions.checkNotNull(taskid,"task");
+  Preconditions.checkNotNull(status,"status");
+  Preconditions.checkArgument(taskid.equals(status.getId()),"Task/Status ID mismatch[%s/%s]",taskid,status.getId());
+  log.info("Updating task %s to status: %s",taskid,status);
+  int updated=dbi.withHandle(new HandleCallback<Integer>(){
+    @Override public Integer withHandle(    Handle handle) throws Exception {
+      return handle.createStatement(String.format("UPDATE %s SET status_code = :status_code, status_payload = :status_payload WHERE id = :id",dbConnectorConfig.getTaskTable())).bind("id",taskid).bind("status_code",status.getStatusCode().toString()).bind("status_payload",jsonMapper.writeValueAsString(status)).execute();
+    }
+  }
+);
+  if (updated != 1) {
+    throw new IllegalStateException(String.format("Task not found: %s",taskid));
+  }
+}

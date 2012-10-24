@@ -1,0 +1,11 @@
+{
+  final GranularitySpec spec=new UniformGranularitySpec(Granularity.DAY,Lists.newArrayList(new Interval("2012-01-08T00Z/2012-01-11T00Z"),new Interval("2012-01-07T00Z/2012-01-08T00Z"),new Interval("2012-01-03T00Z/2012-01-04T00Z"),new Interval("2012-01-01T00Z/2012-01-03T00Z")));
+  try {
+    final GranularitySpec rtSpec=jsonMapper.readValue(jsonMapper.writeValueAsString(spec),GranularitySpec.class);
+    Assert.assertEquals("Round-trip bucketIntervals",spec.bucketIntervals(),rtSpec.bucketIntervals());
+    Assert.assertEquals("Round-trip granularity",((UniformGranularitySpec)spec).getGranularity(),((UniformGranularitySpec)rtSpec).getGranularity());
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

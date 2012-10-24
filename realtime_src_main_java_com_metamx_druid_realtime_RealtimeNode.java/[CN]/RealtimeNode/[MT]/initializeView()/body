@@ -1,0 +1,9 @@
+{
+  if (view == null) {
+    final ClientConfig clientConfig=configFactory.build(ClientConfig.class);
+    final MutableServerView view=new OnlyNewSegmentWatcherServerView();
+    final ClientInventoryManager clientInventoryManager=new ClientInventoryManager(clientConfig.getClientInventoryManagerConfig(),phoneBook,view);
+    lifecycle.addManagedInstance(clientInventoryManager);
+    this.view=view;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  ByteBuffer buf=ByteBuffer.allocate(Ints.BYTES + Floats.BYTES * breaks.length + Longs.BYTES * bins.length + Floats.BYTES * 2);
+  buf.putInt(breaks.length);
+  for (  float b : breaks)   buf.putFloat(b);
+  for (  long c : bins)   buf.putLong(c);
+  buf.putFloat(min);
+  buf.putFloat(max);
+  return buf.array();
+}

@@ -1,0 +1,19 @@
+{
+  Class<?> clazz=keyObject.getClass();
+  AtomicReference<T> retVal=toolChestMap.get(clazz);
+  if (retVal == null) {
+    String interfaceName=interfaceClass.getSimpleName();
+    AtomicReference<T> retVal1;
+    try {
+      final Class<?> queryToolChestClass=Class.forName(String.format("%s%s",clazz.getName(),interfaceName));
+      retVal1=new AtomicReference<T>(interfaceClass.cast(queryToolChestClass.newInstance()));
+    }
+ catch (    Exception e) {
+      log.warn(e,"Unable to load interface[%s] for input class[%s]",interfaceClass,clazz);
+      retVal1=new AtomicReference<T>(null);
+    }
+    retVal=retVal1;
+    toolChestMap.put(clazz,retVal);
+  }
+  return retVal.get();
+}

@@ -1,0 +1,27 @@
+{
+  Integer dimIndexObject=index.getDimensionIndex(dimension);
+  if (dimIndexObject == null) {
+    return new BooleanValueMatcher(false);
+  }
+  String idObject=index.getDimension(dimension).get(value);
+  if (idObject == null) {
+    return new BooleanValueMatcher(false);
+  }
+  final int dimIndex=dimIndexObject;
+  final String id=idObject;
+  return new ValueMatcher(){
+    @Override public boolean matches(){
+      String[][] dims=holder.getKey().getDims();
+      if (dimIndex >= dims.length || dims[dimIndex] == null) {
+        return false;
+      }
+      for (      String dimVal : dims[dimIndex]) {
+        if (id == dimVal) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+;
+}

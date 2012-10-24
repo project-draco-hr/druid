@@ -1,0 +1,10 @@
+{
+  if (chronology.days().isPrecise() && chronology.hours().isPrecise()) {
+    final long millis=period.toStandardDuration().getMillis();
+    t-=t % millis + origin % millis;
+    return t;
+  }
+ else {
+    throw new UnsupportedOperationException("Period cannot be converted to milliseconds as some fields mays vary in length with chronology " + chronology.toString());
+  }
+}

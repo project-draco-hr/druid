@@ -1,0 +1,39 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkState(!active,"queue was already started!");
+    Preconditions.checkState(queue.isEmpty(),"queue must be empty!");
+    Preconditions.checkState(running.isEmpty(),"running list must be empty!");
+    final List<Pair<Task,String>> runningTasks=Lists.transform(taskStorage.getRunningTasks(),new Function<Task,Pair<Task,String>>(){
+      @Override public Pair<Task,String> apply(      Task task){
+        return Pair.of(task,taskStorage.getVersion(task.getId()).orNull());
+      }
+    }
+);
+    final Ordering<Pair<Task,String>> byVersionOrdering=new Ordering<Pair<Task,String>>(){
+      final private Ordering<String> baseOrdering=Ordering.natural().nullsLast();
+      @Override public int compare(      Pair<Task,String> left,      Pair<Task,String> right){
+        return baseOrdering.compare(left.rhs,right.rhs);
+      }
+    }
+;
+    for (    final Pair<Task,String> taskAndVersion : byVersionOrdering.sortedCopy(runningTasks)) {
+      final Task task=taskAndVersion.lhs;
+      final String preferredVersion=taskAndVersion.rhs;
+      queue.add(task);
+      if (preferredVersion != null) {
+        final Optional<String> version=tryLock(task,Optional.of(preferredVersion));
+        log.info("Bootstrapped task[%s] with preferred version[%s]: %s",task.getId(),preferredVersion,version.isPresent() ? String.format("locked with version[%s]",version.get()) : "not lockable");
+      }
+ else {
+        log.info("Bootstrapped task[%s] with no preferred version",task.getId());
+      }
+    }
+    log.info("Bootstrapped %,d tasks. Ready to go!",runningTasks.size());
+    active=true;
+    workMayBeAvailable.signalAll();
+  }
+  finally {
+    giant.unlock();
+  }
+}

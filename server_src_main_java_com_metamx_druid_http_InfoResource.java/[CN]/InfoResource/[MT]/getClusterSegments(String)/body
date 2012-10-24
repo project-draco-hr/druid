@@ -1,0 +1,22 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (full != null) {
+    return builder.entity(Iterables.concat(Iterables.transform(serverInventoryManager.getInventory(),new Function<DruidServer,Iterable<DataSegment>>(){
+      @Override public Iterable<DataSegment> apply(      @Nullable DruidServer druidServer){
+        return druidServer.getSegments().values();
+      }
+    }
+))).build();
+  }
+  return builder.entity(Iterables.concat(Iterables.transform(serverInventoryManager.getInventory(),new Function<DruidServer,Iterable<String>>(){
+    @Override public Iterable<String> apply(    @Nullable DruidServer druidServer){
+      return Collections2.transform(druidServer.getSegments().values(),new Function<DataSegment,String>(){
+        @Override public String apply(        @Nullable DataSegment segment){
+          return segment.getIdentifier();
+        }
+      }
+);
+    }
+  }
+))).build();
+}

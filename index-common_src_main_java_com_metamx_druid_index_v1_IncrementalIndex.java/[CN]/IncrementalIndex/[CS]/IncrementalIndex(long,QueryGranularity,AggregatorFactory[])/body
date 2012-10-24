@@ -1,0 +1,17 @@
+{
+  this.minTimestamp=minTimestamp;
+  this.gran=gran;
+  this.metrics=metrics;
+  final ImmutableMap.Builder<String,Integer> metricIndexesBuilder=ImmutableMap.builder();
+  final ImmutableMap.Builder<String,String> metricTypesBuilder=ImmutableMap.builder();
+  for (int i=0; i < metrics.length; i++) {
+    metricIndexesBuilder.put(metrics[i].getName().toLowerCase(),i);
+    metricTypesBuilder.put(metrics[i].getName().toLowerCase(),metrics[i].getTypeName());
+  }
+  metricIndexes=metricIndexesBuilder.build();
+  metricTypes=metricTypesBuilder.build();
+  this.dimensionOrder=Maps.newLinkedHashMap();
+  this.dimensions=new CopyOnWriteArrayList<String>();
+  this.dimValues=new DimensionHolder();
+  this.facts=new ConcurrentSkipListMap<TimeAndDims,Aggregator[]>();
+}

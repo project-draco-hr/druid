@@ -1,0 +1,47 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    boolean becameMaster=true;
+    try {
+      yp.announce(config.getBasePath(),MASTER_OWNER_NODE,ImmutableMap.of("host",config.getHost()));
+    }
+ catch (    ZkNodeExistsException e) {
+      log.info("Got ZkNodeExistsException, not becoming master.");
+      becameMaster=false;
+    }
+    if (becameMaster) {
+      log.info("I am the master, all must bow!");
+      master=true;
+      segmentInventoryManager.start();
+      databaseSegmentManager.start();
+      serverInventoryManager.start();
+      final List<Pair<? extends MasterRunnable,Duration>> masterRunnables=Lists.newArrayList();
+      masterRunnables.add(Pair.of(new MasterComputeManagerRunnable(),config.getMasterPeriod()));
+      if (config.isMergeSegments()) {
+        masterRunnables.add(Pair.of(new MasterSegmentMergerRunnable(),config.getMasterSegmentMergerPeriod()));
+      }
+      for (      final Pair<? extends MasterRunnable,Duration> masterRunnable : masterRunnables) {
+        ScheduledExecutors.scheduleWithFixedDelay(exec,config.getMasterStartDelay(),masterRunnable.rhs,new Callable<ScheduledExecutors.Signal>(){
+          private final MasterRunnable theRunnable=masterRunnable.lhs;
+          @Override public ScheduledExecutors.Signal call(){
+            if (master) {
+              theRunnable.run();
+            }
+            if (master) {
+              return ScheduledExecutors.Signal.REPEAT;
+            }
+ else {
+              return ScheduledExecutors.Signal.STOP;
+            }
+          }
+        }
+);
+      }
+    }
+ else {
+      log.info("FAILED to become master!!11!12  Wtfpwned by [%s]",clusterInfo.lookupCurrentLeader());
+    }
+  }
+}

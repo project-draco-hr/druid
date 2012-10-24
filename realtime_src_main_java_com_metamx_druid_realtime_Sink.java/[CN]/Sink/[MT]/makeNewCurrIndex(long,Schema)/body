@@ -1,0 +1,18 @@
+{
+  IncrementalIndex newIndex=new IncrementalIndex(minTimestamp,schema.getIndexGranularity(),schema.getAggregators());
+  FireHydrant old;
+  if (currIndex == null) {
+    old=currIndex;
+    currIndex=new FireHydrant(newIndex,swapCount);
+    hydrants.add(currIndex);
+  }
+ else {
+synchronized (currIndex) {
+      old=currIndex;
+      currIndex=new FireHydrant(newIndex,swapCount);
+      hydrants.add(currIndex);
+      ++swapCount;
+    }
+  }
+  return old;
+}

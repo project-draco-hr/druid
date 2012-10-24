@@ -1,0 +1,15 @@
+{
+  List<int[]> someInts=Arrays.asList(new int[]{1,2,3,4,5},new int[]{6,7,8,9,10},new int[]{11,12,13,14,15,16,17,18,19,20});
+  VSizeIndexed indexed=VSizeIndexed.fromIterable(Iterables.transform(someInts,new Function<int[],VSizeIndexedInts>(){
+    @Override public VSizeIndexedInts apply(    int[] input){
+      return VSizeIndexedInts.fromArray(input,20);
+    }
+  }
+));
+  assertSame(someInts,indexed);
+  final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  WritableByteChannel byteChannel=Channels.newChannel(baos);
+  indexed.writeToChannel(byteChannel);
+  VSizeIndexed deserializedIndexed=VSizeIndexed.readFromByteBuffer(ByteBuffer.wrap(baos.toByteArray()));
+  assertSame(someInts,deserializedIndexed);
+}

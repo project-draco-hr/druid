@@ -1,0 +1,20 @@
+{
+  this.comparator=comparator;
+  pQueue=new PriorityQueue<PeekingIterator<T>>(16,new Comparator<PeekingIterator<T>>(){
+    @Override public int compare(    PeekingIterator<T> lhs,    PeekingIterator<T> rhs){
+      return comparator.compare(lhs.peek(),rhs.peek());
+    }
+  }
+);
+  iterOfIterators=Iterators.peekingIterator(FunctionalIterator.create(iterators).filter(new Predicate<Iterator<T>>(){
+    @Override public boolean apply(    @Nullable Iterator<T> input){
+      return input.hasNext();
+    }
+  }
+).transform(new Function<Iterator<T>,PeekingIterator<T>>(){
+    @Override public PeekingIterator<T> apply(    @Nullable Iterator<T> input){
+      return Iterators.peekingIterator(input);
+    }
+  }
+));
+}

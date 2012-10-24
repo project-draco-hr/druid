@@ -1,0 +1,50 @@
+{
+  List<Jobby> jobs=Lists.newArrayList();
+  ensurePaths();
+  if (config.partitionByDimension()) {
+    jobs.add(new DeterminePartitionsJob(config));
+  }
+ else {
+    Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+    int shardCount=0;
+    for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
+      DateTime bucket=segmentGranularity.getStart();
+      final HadoopyShardSpec spec=new HadoopyShardSpec(new NoneShardSpec(),shardCount++);
+      shardSpecs.put(bucket,Lists.newArrayList(spec));
+      log.info("DateTime[%s], spec[%s]",bucket,spec);
+    }
+    config.setShardSpecs(shardSpecs);
+  }
+  indexJob=new IndexGeneratorJob(config);
+  jobs.add(indexJob);
+  if (dbUpdaterJob != null) {
+    jobs.add(dbUpdaterJob);
+  }
+ else {
+    log.info("No updaterJobSpec set, not uploading to database");
+  }
+  String failedMessage=null;
+  for (  Jobby job : jobs) {
+    if (failedMessage == null) {
+      if (!job.run()) {
+        failedMessage=String.format("Job[%s] failed!",job.getClass());
+      }
+    }
+  }
+  if (!config.isLeaveIntermediate()) {
+    if (failedMessage == null || config.isCleanupOnFailure()) {
+      Path workingPath=config.makeIntermediatePath();
+      log.info("Deleting path[%s]",workingPath);
+      try {
+        workingPath.getFileSystem(new Configuration()).delete(workingPath,true);
+      }
+ catch (      IOException e) {
+        log.error(e,"Failed to cleanup path[%s]",workingPath);
+      }
+    }
+  }
+  if (failedMessage != null) {
+    throw new ISE(failedMessage);
+  }
+  return true;
+}

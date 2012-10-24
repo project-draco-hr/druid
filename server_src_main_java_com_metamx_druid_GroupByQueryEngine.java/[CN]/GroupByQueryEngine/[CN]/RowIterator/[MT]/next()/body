@@ -1,0 +1,49 @@
+{
+  if (delegate.hasNext()) {
+    return delegate.next();
+  }
+  if (cursor.isDone()) {
+    throw new NoSuchElementException();
+  }
+  final PositionMaintainer positionMaintainer=new PositionMaintainer(0,sizesRequired,metricsBuffer.limit());
+  final RowUpdater rowUpdater=new RowUpdater(metricsBuffer,aggregators,positionMaintainer);
+  if (unprocessedKeys != null) {
+    for (    ByteBuffer key : unprocessedKeys) {
+      final List<ByteBuffer> unprocUnproc=rowUpdater.updateValues(key,ImmutableList.<DimensionSelector>of());
+      if (unprocUnproc != null) {
+        throw new ISE("Not enough memory to process the request.");
+      }
+    }
+    cursor.advance();
+  }
+  while (!cursor.isDone()) {
+    ByteBuffer key=ByteBuffer.allocate(dimensions.size() * Ints.BYTES);
+    unprocessedKeys=rowUpdater.updateValues(key,dimensions);
+    if (unprocessedKeys != null || rowUpdater.getNumRows() > config.getMaxIntermediateRows()) {
+      break;
+    }
+    cursor.advance();
+  }
+  delegate=FunctionalIterator.create(rowUpdater.getPositions().entrySet().iterator()).transform(new Function<Map.Entry<ByteBuffer,Integer>,Row>(){
+    private final long timestamp=cursor.getTime().getMillis();
+    private final int[] increments=positionMaintainer.getIncrements();
+    @Override public Row apply(    @Nullable Map.Entry<ByteBuffer,Integer> input){
+      Map<String,Object> theEvent=Maps.newLinkedHashMap();
+      ByteBuffer keyBuffer=input.getKey().duplicate();
+      for (int i=0; i < dimensions.size(); ++i) {
+        theEvent.put(dimNames[i],dimensions.get(i).lookupName(keyBuffer.getInt()));
+      }
+      int position=input.getValue();
+      for (int i=0; i < aggregators.length; ++i) {
+        theEvent.put(metricNames[i],aggregators[i].get(metricsBuffer,position));
+        position+=increments[i];
+      }
+      for (      PostAggregator postAggregator : query.getPostAggregatorSpecs()) {
+        postAggregator.compute(theEvent);
+      }
+      return new MapBasedRow(timestamp,theEvent);
+    }
+  }
+);
+  return delegate.next();
+}

@@ -1,0 +1,40 @@
+{
+  try {
+    lock.readLock().lock();
+    List<TimelineObjectHolder<VersionType,ObjectType>> retVal=new ArrayList<TimelineObjectHolder<VersionType,ObjectType>>();
+    Map<Interval,Map<VersionType,TimelineEntry>> overShadowed=Maps.newHashMap();
+    for (    Map.Entry<Interval,TreeMap<VersionType,TimelineEntry>> versionEntry : allTimelineEntries.entrySet()) {
+      Map<VersionType,TimelineEntry> versionCopy=Maps.newHashMap();
+      versionCopy.putAll(versionEntry.getValue());
+      overShadowed.put(versionEntry.getKey(),versionCopy);
+    }
+    for (    Map.Entry<Interval,TimelineEntry> entry : completePartitionsTimeline.entrySet()) {
+      Map<VersionType,TimelineEntry> versionEntry=overShadowed.get(entry.getValue().getTrueInterval());
+      if (versionEntry != null) {
+        versionEntry.remove(entry.getValue().getVersion());
+        if (versionEntry.isEmpty()) {
+          overShadowed.remove(entry.getValue().getTrueInterval());
+        }
+      }
+    }
+    for (    Map.Entry<Interval,TimelineEntry> entry : incompletePartitionsTimeline.entrySet()) {
+      Map<VersionType,TimelineEntry> versionEntry=overShadowed.get(entry.getValue().getTrueInterval());
+      if (versionEntry != null) {
+        versionEntry.remove(entry.getValue().getVersion());
+        if (versionEntry.isEmpty()) {
+          overShadowed.remove(entry.getValue().getTrueInterval());
+        }
+      }
+    }
+    for (    Map.Entry<Interval,Map<VersionType,TimelineEntry>> versionEntry : overShadowed.entrySet()) {
+      for (      Map.Entry<VersionType,TimelineEntry> entry : versionEntry.getValue().entrySet()) {
+        TimelineEntry object=entry.getValue();
+        retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(object.getTrueInterval(),object.getVersion(),object.getPartitionHolder()));
+      }
+    }
+    return retVal;
+  }
+  finally {
+    lock.readLock().unlock();
+  }
+}

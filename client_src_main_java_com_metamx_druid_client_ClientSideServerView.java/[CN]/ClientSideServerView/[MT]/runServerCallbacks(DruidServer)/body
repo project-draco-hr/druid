@@ -1,0 +1,12 @@
+{
+  for (  final Map.Entry<ServerCallback,Executor> entry : serverCallbacks.entrySet()) {
+    entry.getValue().execute(new Runnable(){
+      @Override public void run(){
+        if (CallbackAction.UNREGISTER == entry.getKey().serverRemoved(server)) {
+          serverCallbacks.remove(entry.getKey());
+        }
+      }
+    }
+);
+  }
+}

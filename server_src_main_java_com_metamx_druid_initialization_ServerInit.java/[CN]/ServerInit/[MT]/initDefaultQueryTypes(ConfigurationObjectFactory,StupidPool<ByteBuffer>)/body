@@ -1,0 +1,7 @@
+{
+  Map<Class<? extends Query>,QueryRunnerFactory> queryRunners=Maps.newLinkedHashMap();
+  queryRunners.put(GroupByQuery.class,new GroupByQueryRunnerFactory(new GroupByQueryEngine(configFactory.build(GroupByQueryEngineConfig.class),computationBufferPool)));
+  queryRunners.put(SearchQuery.class,new SearchQueryRunnerFactory());
+  queryRunners.put(TimeBoundaryQuery.class,new TimeBoundaryQueryRunnerFactory());
+  return queryRunners;
+}

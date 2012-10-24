@@ -1,0 +1,7 @@
+{
+  ByteBuffer buf=ByteBuffer.wrap(keyBytes);
+  Bucket bucket=new Bucket(buf.getInt(),new DateTime(buf.getLong()),buf.getInt());
+  byte[] bytesLeft=new byte[buf.remaining()];
+  buf.get(bytesLeft);
+  return Pair.of(bucket,bytesLeft);
+}

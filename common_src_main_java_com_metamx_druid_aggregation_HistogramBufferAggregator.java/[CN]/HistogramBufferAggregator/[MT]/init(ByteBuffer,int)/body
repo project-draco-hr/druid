@@ -1,0 +1,8 @@
+{
+  ByteBuffer mutationBuffer=buf.duplicate();
+  mutationBuffer.position(position);
+  final long[] bins=new long[breaks.length + 1];
+  mutationBuffer.asLongBuffer().put(bins);
+  mutationBuffer.putFloat(position + minOffset,Float.MAX_VALUE);
+  mutationBuffer.putFloat(position + maxOffset,Float.MIN_VALUE);
+}

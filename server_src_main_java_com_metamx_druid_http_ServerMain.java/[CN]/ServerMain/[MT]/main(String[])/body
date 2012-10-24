@@ -1,0 +1,52 @@
+{
+  LogLevelAdjuster.register();
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final ObjectMapper smileMapper=new DefaultObjectMapper(new SmileFactory());
+  smileMapper.getJsonFactory().setCodec(smileMapper);
+  final Properties props=Initialization.loadProperties();
+  final ConfigurationObjectFactory configFactory=Config.createFactory(props);
+  final Lifecycle lifecycle=new Lifecycle();
+  final HttpClient httpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),lifecycle);
+  final ServiceEmitter emitter=new ServiceEmitter(props.getProperty("druid.service"),props.getProperty("druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
+  final ExecutorService executorService=ExecutorServices.create(lifecycle,configFactory.buildWithReplacements(ExecutorServiceConfig.class,ImmutableMap.of("base_path","druid.processing")));
+  StupidPool<ByteBuffer> computationBufferPool=ServerInit.makeComputeScratchPool(Integer.parseInt(props.getProperty("druid.computation.buffer.size",String.valueOf(1024 * 1024 * 1024))));
+  Map<Class<? extends Query>,QueryRunnerFactory> queryRunners=ServerInit.initDefaultQueryTypes(configFactory,computationBufferPool);
+  final RestS3Service s3Client=new RestS3Service(new AWSCredentials(props.getProperty("com.metamx.aws.accessKey"),props.getProperty("com.metamx.aws.secretKey")));
+  QueryableLoaderConfig queryableLoaderConfig=configFactory.build(QueryableLoaderConfig.class);
+  final ServerManager serverManager=new ServerManager(ServerInit.makeDefaultQueryableLoader(s3Client,queryableLoaderConfig),new DefaultQueryRunnerFactoryConglomerate(queryRunners),emitter,executorService);
+  final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
+  final DruidServer druidServer=new DruidServer(configFactory.build(DruidServerConfig.class));
+  final PhoneBook coordinatorYp=Initialization.createYellowPages(jsonMapper,zkClient,"Coordinator-ZKYP--%s",lifecycle);
+  final ZkCoordinator coordinator=new ZkCoordinator(jsonMapper,configFactory.build(ZkCoordinatorConfig.class),druidServer,coordinatorYp,serverManager,emitter);
+  lifecycle.addManagedInstance(coordinator);
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final List<Monitor> monitors=Lists.<Monitor>newArrayList(new ServerMonitor(druidServer,serverManager),new JvmMonitor());
+  if (Boolean.parseBoolean(props.getProperty("druid.monitoring.monitorSystem","true"))) {
+    monitors.add(new SysMonitor());
+  }
+  final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  lifecycle.addManagedInstance(healthMonitor);
+  final RequestLogger requestLogger=Initialization.makeRequestLogger(scheduledExecutorFactory.create(1,"RequestLogger--%d"),props);
+  lifecycle.addManagedInstance(requestLogger);
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.error(t,"Error when starting up.  Failing.");
+    System.exit(1);
+  }
+  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+    @Override public void run(){
+      log.info("Running shutdown hook");
+      lifecycle.stop();
+    }
+  }
+));
+  final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new QueryServlet(jsonMapper,smileMapper,serverManager,emitter,requestLogger)),"/*");
+  server.start();
+  server.join();
+}

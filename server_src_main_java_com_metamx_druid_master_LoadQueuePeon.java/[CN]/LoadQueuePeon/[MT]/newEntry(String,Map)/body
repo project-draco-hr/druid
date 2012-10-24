@@ -1,0 +1,15 @@
+{
+synchronized (lock) {
+    if (currentlyLoading == null) {
+      log.warn("Server[%s] a new entry[%s] appeared, even though nothing is currently loading[%s]",basePath,name,currentlyLoading);
+    }
+ else {
+      if (!name.equals(currentlyLoading.getSegmentIdentifier())) {
+        log.warn("Server[%s] a new entry[%s] appeared that is not the currently loading entry[%s]",basePath,name,currentlyLoading);
+      }
+ else {
+        log.info("Server[%s]'s currently loading entry[%s] appeared.",basePath,name);
+      }
+    }
+  }
+}

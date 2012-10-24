@@ -1,0 +1,28 @@
+{
+  try {
+    while (!Thread.currentThread().isInterrupted()) {
+      final Task task;
+      final String version;
+      try {
+        final VersionedTaskWrapper taskWrapper=queue.take();
+        task=taskWrapper.getTask();
+        version=taskWrapper.getVersion();
+      }
+ catch (      InterruptedException e) {
+        log.info(e,"Interrupted while waiting for new work");
+        throw Throwables.propagate(e);
+      }
+      try {
+        handoff(task,version);
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType().toString().toLowerCase()).addData("dataSource",task.getDataSource()).addData("interval",task.getInterval()).emit();
+        queue.done(task,TaskStatus.failure(task.getId()));
+      }
+    }
+  }
+ catch (  Throwable t) {
+    log.error(t,"Uncaught Throwable while consuming tasks");
+    throw Throwables.propagate(t);
+  }
+}

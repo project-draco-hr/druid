@@ -1,0 +1,13 @@
+{
+  return IndexMerger.mergeMMapped(Lists.transform(ImmutableList.copyOf(segments.values()),new Function<File,MMappedIndex>(){
+    @Override public MMappedIndex apply(    @Nullable File input){
+      try {
+        return IndexIO.mapDir(input);
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+),aggregators.toArray(new AggregatorFactory[aggregators.size()]),outDir);
+}

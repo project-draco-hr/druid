@@ -1,0 +1,12 @@
+{
+  final File littleEndianFile=IndexIO.makeMetricFile(outDir,metricName,ByteOrder.LITTLE_ENDIAN);
+  littleEndianFile.delete();
+  MetricHolder.writeFloatMetric(Files.newOutputStreamSupplier(littleEndianFile,true),metricName,littleMetricsWriter);
+  IndexIO.checkFileSize(littleEndianFile);
+  final File bigEndianFile=IndexIO.makeMetricFile(outDir,metricName,ByteOrder.BIG_ENDIAN);
+  bigEndianFile.delete();
+  MetricHolder.writeFloatMetric(Files.newOutputStreamSupplier(bigEndianFile,true),metricName,bigEndianMetricsWriter);
+  IndexIO.checkFileSize(bigEndianFile);
+  littleMetricsWriter=null;
+  bigEndianMetricsWriter=null;
+}

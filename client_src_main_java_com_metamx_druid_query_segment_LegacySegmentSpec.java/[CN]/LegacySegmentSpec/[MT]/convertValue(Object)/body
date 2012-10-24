@@ -1,0 +1,21 @@
+{
+  final List<?> intervalStringList;
+  if (intervals instanceof String) {
+    intervalStringList=Arrays.asList((((String)intervals).split(",")));
+  }
+ else   if (intervals instanceof Map) {
+    intervalStringList=(List)((Map)intervals).get("intervals");
+  }
+ else   if (intervals instanceof List) {
+    intervalStringList=(List)intervals;
+  }
+ else {
+    throw new IAE("Unknown type[%s] for intervals[%s]",intervals.getClass(),intervals);
+  }
+  return Lists.transform(intervalStringList,new Function<Object,Interval>(){
+    @Override public Interval apply(    Object input){
+      return new Interval(input);
+    }
+  }
+);
+}

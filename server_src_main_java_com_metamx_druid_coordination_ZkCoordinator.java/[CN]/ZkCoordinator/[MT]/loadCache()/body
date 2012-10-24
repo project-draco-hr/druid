@@ -1,0 +1,16 @@
+{
+  File baseDir=config.getSegmentInfoCacheDirectory();
+  if (!baseDir.exists()) {
+    return;
+  }
+  for (  File file : baseDir.listFiles()) {
+    log.info("Loading segment cache file [%s]",file);
+    try {
+      addSegment(jsonMapper.readValue(file,DataSegment.class));
+    }
+ catch (    IOException e) {
+      log.error(e,"Exception occurred reading file [%s]",file);
+      emitter.emit(new AlertEvent.Builder().build("Failed to read segment info file",ImmutableMap.<String,Object>builder().put("file",file).put("exception",e.toString()).build()));
+    }
+  }
+}

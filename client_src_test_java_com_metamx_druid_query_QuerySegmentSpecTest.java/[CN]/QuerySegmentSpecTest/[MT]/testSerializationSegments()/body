@@ -1,0 +1,6 @@
+{
+  QuerySegmentSpec spec=jsonMapper.convertValue(ImmutableMap.<String,Object>of("type","segments","segments",ImmutableList.<Map<String,Object>>of(ImmutableMap.<String,Object>of("itvl","2011-07-01/2011-10-10","ver","1","part",0),ImmutableMap.<String,Object>of("itvl","2011-07-01/2011-10-10","ver","1","part",1),ImmutableMap.<String,Object>of("itvl","2011-11-01/2011-11-10","ver","2","part",10))),QuerySegmentSpec.class);
+  Assert.assertTrue(spec instanceof MultipleSpecificSegmentSpec);
+  Assert.assertEquals(ImmutableList.of(new Interval("2011-07-01/2011-10-10"),new Interval("2011-11-01/2011-11-10")),spec.getIntervals());
+  Assert.assertEquals(ImmutableList.of(new SegmentDescriptor(new Interval("2011-07-01/2011-10-10"),"1",0),new SegmentDescriptor(new Interval("2011-07-01/2011-10-10"),"1",1),new SegmentDescriptor(new Interval("2011-11-01/2011-11-10"),"2",10)),((MultipleSpecificSegmentSpec)spec).getDescriptors());
+}

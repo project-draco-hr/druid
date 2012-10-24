@@ -1,0 +1,16 @@
+{
+  if (maxValue < 0) {
+    throw new IAE("maxValue[%s] must be positive",maxValue);
+  }
+  byte numBytes=4;
+  if (maxValue <= 0xFF) {
+    numBytes=1;
+  }
+ else   if (maxValue <= 0xFFFF) {
+    numBytes=2;
+  }
+ else   if (maxValue <= 0xFFFFFF) {
+    numBytes=3;
+  }
+  return numBytes;
+}

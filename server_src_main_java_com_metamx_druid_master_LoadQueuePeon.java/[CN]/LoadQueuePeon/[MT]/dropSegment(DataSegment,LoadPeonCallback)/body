@@ -1,0 +1,22 @@
+{
+synchronized (lock) {
+    if ((currentlyLoading != null) && currentlyLoading.getSegmentIdentifier().equals(segment.getIdentifier())) {
+      if (callback != null) {
+        currentlyLoading.addCallback(callback);
+      }
+      return;
+    }
+  }
+  SegmentHolder holder=new SegmentHolder(segment,DROP,Arrays.asList(callback));
+synchronized (lock) {
+    if (segmentsToDrop.contains(holder)) {
+      if (callback != null) {
+        currentlyLoading.addCallback(callback);
+      }
+      return;
+    }
+  }
+  log.info("Asking server peon[%s] to drop segment[%s]",basePath,segment);
+  segmentsToDrop.add(holder);
+  doNext();
+}

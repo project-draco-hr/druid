@@ -1,0 +1,21 @@
+{
+  Iterator<? extends Result> resultsIter=actualResults.iterator();
+  Iterator<? extends Result> resultsIter2=actualResults.iterator();
+  Iterator<? extends Result> expectedResultsIter=expectedResults.iterator();
+  while (resultsIter.hasNext() && resultsIter2.hasNext() && expectedResultsIter.hasNext()) {
+    Result expectedNext=expectedResultsIter.next();
+    final Result next=resultsIter.next();
+    final Result next2=resultsIter2.next();
+    assertResult(failMsg,expectedNext,next);
+    assertResult(String.format("%sSecond iterator bad, multiple calls to iterator() should be safe",failMsg),expectedNext,next2);
+  }
+  if (resultsIter.hasNext()) {
+    Assert.fail(String.format("%sExpected resultsIter to be exhausted, next element was %s",failMsg,resultsIter.next()));
+  }
+  if (resultsIter2.hasNext()) {
+    Assert.fail(String.format("%sExpected resultsIter2 to be exhausted, next element was %s",failMsg,resultsIter.next()));
+  }
+  if (expectedResultsIter.hasNext()) {
+    Assert.fail(String.format("%sExpected expectedResultsIter to be exhausted, next element was %s",failMsg,expectedResultsIter.next()));
+  }
+}

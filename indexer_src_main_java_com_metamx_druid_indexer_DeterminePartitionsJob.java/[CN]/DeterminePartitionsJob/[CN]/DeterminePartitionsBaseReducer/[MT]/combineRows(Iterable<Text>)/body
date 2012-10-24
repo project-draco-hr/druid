@@ -1,0 +1,22 @@
+{
+  return new CombiningIterable<Pair<String,Long>>(Iterables.transform(input,new Function<Text,Pair<String,Long>>(){
+    @Override public Pair<String,Long> apply(    Text input){
+      Iterator<String> splits=tabSplitter.split(input.toString()).iterator();
+      return new Pair<String,Long>(splits.next(),Long.parseLong(splits.next()));
+    }
+  }
+),new Comparator<Pair<String,Long>>(){
+    @Override public int compare(    Pair<String,Long> o1,    Pair<String,Long> o2){
+      return o1.lhs.compareTo(o2.lhs);
+    }
+  }
+,new BinaryFn<Pair<String,Long>,Pair<String,Long>,Pair<String,Long>>(){
+    @Override public Pair<String,Long> apply(    Pair<String,Long> arg1,    Pair<String,Long> arg2){
+      if (arg2 == null) {
+        return arg1;
+      }
+      return new Pair<String,Long>(arg1.lhs,arg1.rhs + arg2.rhs);
+    }
+  }
+);
+}

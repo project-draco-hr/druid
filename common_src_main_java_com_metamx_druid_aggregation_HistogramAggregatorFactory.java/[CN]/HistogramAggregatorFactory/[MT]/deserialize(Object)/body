@@ -1,0 +1,13 @@
+{
+  if (object instanceof byte[]) {
+    return Histogram.fromBytes((byte[])object);
+  }
+ else   if (object instanceof ByteBuffer) {
+    return Histogram.fromBytes((ByteBuffer)object);
+  }
+ else   if (object instanceof String) {
+    byte[] bytes=Base64.decodeBase64(((String)object).getBytes(Charsets.UTF_8));
+    return Histogram.fromBytes(bytes);
+  }
+  return object;
+}

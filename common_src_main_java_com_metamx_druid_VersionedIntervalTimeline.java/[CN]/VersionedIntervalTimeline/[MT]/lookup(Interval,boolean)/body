@@ -1,0 +1,23 @@
+{
+  List<TimelineObjectHolder<VersionType,ObjectType>> retVal=new ArrayList<TimelineObjectHolder<VersionType,ObjectType>>();
+  NavigableMap<Interval,TimelineEntry> timeline=(incompleteOk) ? incompletePartitionsTimeline : completePartitionsTimeline;
+  for (  Map.Entry<Interval,TimelineEntry> entry : timeline.entrySet()) {
+    Interval timelineInterval=entry.getKey();
+    TimelineEntry val=entry.getValue();
+    if (timelineInterval.overlaps(interval)) {
+      retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(timelineInterval,val.getVersion(),val.getPartitionHolder()));
+    }
+  }
+  if (retVal.isEmpty()) {
+    return retVal;
+  }
+  TimelineObjectHolder<VersionType,ObjectType> firstEntry=retVal.get(0);
+  if (interval.overlaps(firstEntry.getInterval()) && interval.getStart().isAfter(firstEntry.getInterval().getStart())) {
+    retVal.set(0,new TimelineObjectHolder<VersionType,ObjectType>(new Interval(interval.getStart(),firstEntry.getInterval().getEnd()),firstEntry.getVersion(),firstEntry.getObject()));
+  }
+  TimelineObjectHolder<VersionType,ObjectType> lastEntry=retVal.get(retVal.size() - 1);
+  if (interval.overlaps(lastEntry.getInterval()) && interval.getEnd().isBefore(lastEntry.getInterval().getEnd())) {
+    retVal.set(retVal.size() - 1,new TimelineObjectHolder<VersionType,ObjectType>(new Interval(lastEntry.getInterval().getStart(),interval.getEnd()),lastEntry.getVersion(),lastEntry.getObject()));
+  }
+  return retVal;
+}

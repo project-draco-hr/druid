@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    log.info("Starting zkCoordinator for server[%s] with config[%s]",config.getServerName(),config);
+    if (yp.lookup(servedSegmentsLocation,Object.class) == null) {
+      yp.post(config.getServedSegmentsLocation(),config.getServerName(),ImmutableMap.of("created",new DateTime().toString()));
+    }
+    yp.announce(config.getAnnounceLocation(),config.getServerName(),getStringProps());
+    started=true;
+  }
+}

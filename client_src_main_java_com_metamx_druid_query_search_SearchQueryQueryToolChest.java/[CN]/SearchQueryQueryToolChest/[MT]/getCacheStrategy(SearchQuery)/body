@@ -1,0 +1,61 @@
+{
+  return new CacheStrategy<Result<SearchResultValue>,SearchQuery>(){
+    @Override public byte[] computeCacheKey(    SearchQuery query){
+      final DimFilter dimFilter=query.getDimensionsFilter();
+      final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
+      final byte[] querySpecBytes=query.getQuery().getCacheKey();
+      final byte[] granularityBytes=query.getGranularity().cacheKey();
+      final Set<String> dimensions=Sets.newTreeSet();
+      if (query.getDimensions() != null) {
+        dimensions.addAll(query.getDimensions());
+      }
+      final byte[][] dimensionsBytes=new byte[dimensions.size()][];
+      int dimensionsBytesSize=0;
+      int index=0;
+      for (      String dimension : dimensions) {
+        dimensionsBytes[index]=dimension.getBytes();
+        dimensionsBytesSize+=dimensionsBytes[index].length;
+        ++index;
+      }
+      final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ querySpecBytes.length+ dimensionsBytesSize).put(SEARCH_QUERY).put(granularityBytes).put(filterBytes).put(querySpecBytes);
+      for (      byte[] bytes : dimensionsBytes) {
+        queryCacheKey.put(bytes);
+      }
+      return queryCacheKey.array();
+    }
+    @Override public Function<Result<SearchResultValue>,Object> prepareForCache(){
+      return new Function<Result<SearchResultValue>,Object>(){
+        @Override public Object apply(        Result<SearchResultValue> input){
+          return Lists.newArrayList(input.getTimestamp().getMillis(),input.getValue());
+        }
+      }
+;
+    }
+    @Override public Function<Object,Result<SearchResultValue>> pullFromCache(){
+      return new Function<Object,Result<SearchResultValue>>(){
+        @Override @SuppressWarnings("unchecked") public Result<SearchResultValue> apply(        Object input){
+          List<Object> result=(List<Object>)input;
+          return new Result<SearchResultValue>(new DateTime(result.get(0)),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
+            @Override public SearchHit apply(            @Nullable Object input){
+              if (input instanceof Map) {
+                return new SearchHit((String)((Map)input).get("dimension"),(String)((Map)input).get("value"));
+              }
+ else               if (input instanceof SearchHit) {
+                return (SearchHit)input;
+              }
+ else {
+                throw new IAE("Unknown format [%s]",input.getClass());
+              }
+            }
+          }
+)));
+        }
+      }
+;
+    }
+    @Override public Sequence<Result<SearchResultValue>> mergeSequences(    Sequence<Sequence<Result<SearchResultValue>>> seqOfSequences){
+      return new MergeSequence<Result<SearchResultValue>>(getOrdering(),seqOfSequences);
+    }
+  }
+;
+}

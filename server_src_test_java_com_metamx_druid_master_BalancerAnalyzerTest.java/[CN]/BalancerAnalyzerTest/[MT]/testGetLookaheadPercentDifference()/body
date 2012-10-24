@@ -1,0 +1,13 @@
+{
+  EasyMock.expect(high.getSizeUsed()).andReturn(2L);
+  EasyMock.expect(high.getPercentUsed()).andReturn(20.0);
+  EasyMock.expect(high.getMaxSize()).andReturn(10L);
+  EasyMock.replay(high);
+  EasyMock.expect(low.getSizeUsed()).andReturn(1L);
+  EasyMock.expect(low.getPercentUsed()).andReturn(10.0);
+  EasyMock.expect(low.getMaxSize()).andReturn(10L);
+  EasyMock.replay(low);
+  BalancerAnalyzer analyzer=new BalancerAnalyzer();
+  analyzer.init(high,low);
+  Assert.assertEquals(100.0,analyzer.getLookaheadPercentDiff(2L,6L));
+}

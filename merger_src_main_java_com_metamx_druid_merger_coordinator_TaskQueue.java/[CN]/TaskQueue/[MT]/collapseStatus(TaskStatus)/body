@@ -1,0 +1,22 @@
+{
+  if (status.isContinued()) {
+    int nSubtasks=0;
+    int nSuccesses=0;
+    List<DataSegment> segments=Lists.newArrayList();
+    for (    final Task subtask : status.getNextTasks()) {
+      final TaskStatus subtaskStatus=collapseStatus(taskStorage.getStatus(subtask.getId()).get());
+      nSubtasks++;
+      if (subtaskStatus.isFailure()) {
+        return TaskStatus.failure(status.getId());
+      }
+ else       if (subtaskStatus.isSuccess()) {
+        nSuccesses++;
+        segments.addAll(subtaskStatus.getSegments());
+      }
+    }
+    if (nSubtasks == nSuccesses) {
+      return TaskStatus.success(status.getId(),segments);
+    }
+  }
+  return status;
+}

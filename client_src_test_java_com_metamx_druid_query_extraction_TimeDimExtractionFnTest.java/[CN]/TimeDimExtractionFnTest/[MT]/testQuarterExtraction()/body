@@ -1,0 +1,11 @@
+{
+  Set<String> quarters=Sets.newHashSet();
+  DimExtractionFn dimExtractionFn=new TimeDimExtractionFn("MM/dd/yyyy","QQQ/yyyy");
+  for (  String dim : dims) {
+    quarters.add(dimExtractionFn.apply(dim));
+  }
+  Assert.assertEquals(quarters.size(),3);
+  Assert.assertTrue(quarters.contains("Q1/2012"));
+  Assert.assertTrue(quarters.contains("Q2/2012"));
+  Assert.assertTrue(quarters.contains("Q4/2012"));
+}

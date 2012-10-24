@@ -1,0 +1,10 @@
+{
+  super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterSegmentMerger(jsonMapper,serviceProvider),new DruidMasterHelper(){
+    @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
+      log.info("Issued merge requests for %,d segments",params.getMergedSegmentCount());
+      params.getEmitter().emit(new ServiceMetricEvent.Builder().build("master/merge/count",params.getMergedSegmentCount()));
+      return params;
+    }
+  }
+));
+}

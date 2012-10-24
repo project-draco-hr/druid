@@ -1,0 +1,17 @@
+{
+  final Map<String,Object> injectables=Maps.newHashMap();
+  for (  Map.Entry<String,Object> entry : injectablesMap.entrySet()) {
+    injectables.put(entry.getKey(),entry.getValue());
+  }
+  injectables.put("queryRunnerFactoryConglomerate",conglomerate);
+  injectables.put("segmentPusher",segmentPusher);
+  injectables.put("metadataUpdater",metadataUpdater);
+  injectables.put("serverView",view);
+  injectables.put("serviceEmitter",emitter);
+  jsonMapper.setInjectableValues(new InjectableValues(){
+    @Override public Object findInjectableValue(    Object valueId,    DeserializationContext ctxt,    BeanProperty forProperty,    Object beanInstance){
+      return injectables.get(valueId);
+    }
+  }
+);
+}

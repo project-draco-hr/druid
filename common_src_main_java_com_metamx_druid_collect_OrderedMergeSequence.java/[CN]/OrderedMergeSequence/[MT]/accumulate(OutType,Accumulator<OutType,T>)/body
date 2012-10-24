@@ -1,0 +1,10 @@
+{
+  Yielder<OutType> yielder=null;
+  try {
+    yielder=toYielder(initValue,YieldingAccumulators.fromAccumulator(accumulator));
+    return yielder.get();
+  }
+  finally {
+    Closeables.closeQuietly(yielder);
+  }
+}

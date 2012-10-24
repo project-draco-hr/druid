@@ -1,0 +1,26 @@
+{
+  try {
+    lock.writeLock().lock();
+    Map<VersionType,TimelineEntry> versionEntries=allTimelineEntries.get(interval);
+    if (versionEntries == null) {
+      return null;
+    }
+    TimelineEntry entry=versionEntries.get(version);
+    if (entry == null) {
+      return null;
+    }
+    PartitionChunk<ObjectType> retVal=entry.getPartitionHolder().remove(chunk);
+    if (entry.getPartitionHolder().isEmpty()) {
+      versionEntries.remove(version);
+      if (versionEntries.isEmpty()) {
+        allTimelineEntries.remove(interval);
+      }
+      remove(incompletePartitionsTimeline,interval,entry,true);
+    }
+    remove(completePartitionsTimeline,interval,entry,false);
+    return retVal;
+  }
+  finally {
+    lock.writeLock().unlock();
+  }
+}

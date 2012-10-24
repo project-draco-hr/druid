@@ -1,0 +1,10 @@
+{
+  try {
+    final HadoopDruidIndexerConfig retVal=jsonMapper.readValue(conf.get(CONFIG_PROPERTY),HadoopDruidIndexerConfig.class);
+    retVal.verify();
+    return retVal;
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

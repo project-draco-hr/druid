@@ -1,0 +1,82 @@
+{
+  SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
+  Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
+  final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
+  final DataRollupSpec rollupSpec=config.getRollupSpec();
+  final AggregatorFactory[] aggs=rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]);
+  IncrementalIndex index=makeIncrementalIndex(bucket,aggs);
+  File baseFlushFile=File.createTempFile("base","flush");
+  baseFlushFile.delete();
+  baseFlushFile.mkdirs();
+  Set<File> toMerge=Sets.newTreeSet();
+  int indexCount=0;
+  int lineCount=0;
+  int runningTotalLineCount=0;
+  long startTime=System.currentTimeMillis();
+  Set<String> allDimensionNames=Sets.newHashSet();
+  for (  final Text value : values) {
+    context.progress();
+    Map<String,Object> event=parser.parse(value.toString());
+    final long timestamp=timestampConverter.apply((String)event.get(config.getTimestampColumnName())).getMillis();
+    List<String> dimensionNames=config.getDataSpec().hasCustomDimensions() ? config.getDataSpec().getDimensions() : Lists.newArrayList(FunctionalIterable.create(event.keySet()).filter(new Predicate<String>(){
+      @Override public boolean apply(      @Nullable String input){
+        return !(metricNames.contains(input.toLowerCase()) || config.getTimestampColumnName().equalsIgnoreCase(input));
+      }
+    }
+));
+    allDimensionNames.addAll(dimensionNames);
+    int numRows=index.add(new MapBasedInputRow(timestamp,dimensionNames,event));
+    ++lineCount;
+    if (numRows >= rollupSpec.rowFlushBoundary) {
+      log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
+      runningTotalLineCount=lineCount;
+      final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
+      toMerge.add(file);
+      context.progress();
+      IndexMerger.persist(index,interval,file,new IndexMerger.ProgressIndicator(){
+        @Override public void progress(){
+          context.progress();
+        }
+      }
+);
+      index=makeIncrementalIndex(bucket,aggs);
+      startTime=System.currentTimeMillis();
+      ++indexCount;
+    }
+  }
+  log.info("%,d lines completed.",lineCount);
+  List<MMappedIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
+  final File mergedBase;
+  if (toMerge.size() == 0) {
+    mergedBase=new File(baseFlushFile,"merged");
+    IndexMerger.persist(index,interval,mergedBase,new IndexMerger.ProgressIndicator(){
+      @Override public void progress(){
+        context.progress();
+      }
+    }
+);
+  }
+ else {
+    final File finalFile=new File(baseFlushFile,"final");
+    IndexMerger.persist(index,interval,finalFile,new IndexMerger.ProgressIndicator(){
+      @Override public void progress(){
+        context.progress();
+      }
+    }
+);
+    toMerge.add(finalFile);
+    for (    File file : toMerge) {
+      indexes.add(IndexIO.mapDir(file));
+    }
+    mergedBase=IndexMerger.mergeMMapped(indexes,aggs,new File(baseFlushFile,"merged"),new IndexMerger.ProgressIndicator(){
+      @Override public void progress(){
+        context.progress();
+      }
+    }
+);
+  }
+  serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
+  for (  File file : toMerge) {
+    FileUtils.deleteDirectory(file);
+  }
+}

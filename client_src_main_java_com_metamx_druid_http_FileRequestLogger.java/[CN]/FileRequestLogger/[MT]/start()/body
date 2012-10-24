@@ -1,0 +1,30 @@
+{
+  try {
+    baseDir.mkdirs();
+    MutableDateTime mutableDateTime=new DateTime().toMutableDateTime();
+    mutableDateTime.setMillisOfDay(0);
+    currentDay=mutableDateTime.toDateTime();
+    fileWriter=new FileWriter(new File(baseDir,currentDay.toString("yyyy-MM-dd'.log'")),true);
+    long nextDay=currentDay.plusDays(1).getMillis();
+    Duration delay=new Duration(nextDay - new DateTime().getMillis());
+    ScheduledExecutors.scheduleWithFixedDelay(exec,delay,Duration.standardDays(1),new Callable<ScheduledExecutors.Signal>(){
+      @Override public ScheduledExecutors.Signal call(){
+        currentDay=currentDay.plusDays(1);
+        try {
+synchronized (lock) {
+            Closeables.closeQuietly(fileWriter);
+            fileWriter=new FileWriter(new File(baseDir,currentDay.toString()),true);
+          }
+        }
+ catch (        Exception e) {
+          Throwables.propagate(e);
+        }
+        return ScheduledExecutors.Signal.REPEAT;
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    Throwables.propagate(e);
+  }
+}

@@ -1,0 +1,10 @@
+{
+  Map<String,Object> serviceAnnouncements=announcements.get(serviceName);
+  if (serviceAnnouncements == null) {
+    throw new IAE("Cannot unannounce[%s]: No announcements for service[%s]",nodeName,serviceName);
+  }
+  if (!serviceAnnouncements.containsKey(nodeName)) {
+    throw new IAE("Cannot unannounce node[%s] on service[%s]",nodeName,serviceName);
+  }
+  serviceAnnouncements.remove(nodeName);
+}

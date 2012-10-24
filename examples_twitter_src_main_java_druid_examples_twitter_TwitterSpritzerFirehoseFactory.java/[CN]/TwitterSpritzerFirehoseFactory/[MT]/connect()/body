@@ -1,0 +1,151 @@
+{
+  final ConnectionLifeCycleListener connectionLifeCycleListener=new ConnectionLifeCycleListener(){
+    @Override public void onConnect(){
+      log.info("Connected_to_Twitter");
+    }
+    @Override public void onDisconnect(){
+      log.info("Disconnect_from_Twitter");
+    }
+    /** 
+ * called before thread gets cleaned up
+ */
+    @Override public void onCleanUp(){
+      log.info("Cleanup_twitter_stream");
+    }
+  }
+;
+  final TwitterStream twitterStream;
+  final StatusListener statusListener;
+  final int QUEUE_SIZE=2000;
+  final BlockingQueue<Status> queue=new ArrayBlockingQueue<Status>(QUEUE_SIZE);
+  final LinkedList<String> dimensions=new LinkedList<String>();
+  final long startMsec=System.currentTimeMillis();
+  dimensions.add("htags");
+  dimensions.add("retweetCount");
+  dimensions.add("followerCount");
+  dimensions.add("friendsCount");
+  dimensions.add("lang");
+  dimensions.add("utcOffset");
+  dimensions.add("statusesCount");
+  twitterStream=new TwitterStreamFactory().getInstance();
+  twitterStream.addConnectionLifeCycleListener(connectionLifeCycleListener);
+  statusListener=new StatusListener(){
+    @Override public void onStatus(    Status status){
+      if (Thread.currentThread().isInterrupted()) {
+        throw new RuntimeException("Interrupted, time to stop");
+      }
+      try {
+        boolean success=queue.offer(status,15L,TimeUnit.SECONDS);
+        if (!success) {
+          log.warn("queue too slow!");
+        }
+      }
+ catch (      InterruptedException e) {
+        throw new RuntimeException("InterruptedException",e);
+      }
+    }
+    @Override public void onDeletionNotice(    StatusDeletionNotice statusDeletionNotice){
+    }
+    @Override public void onTrackLimitationNotice(    int numberOfLimitedStatuses){
+      log.warn("Got track limitation notice:" + numberOfLimitedStatuses);
+    }
+    @Override public void onScrubGeo(    long userId,    long upToStatusId){
+    }
+    @Override public void onException(    Exception ex){
+      ex.printStackTrace();
+    }
+  }
+;
+  twitterStream.addListener(statusListener);
+  twitterStream.sample();
+  log.info("returned from sample()");
+  return new Firehose(){
+    private final Runnable doNothingRunnable=new Runnable(){
+      public void run(){
+      }
+    }
+;
+    private long rowCount=0L;
+    private boolean waitIfmax=(maxEventCount < 0L);
+    private final Map<String,Object> theMap=new HashMap<String,Object>(2);
+    private boolean maxTimeReached(){
+      if (maxRunMinutes <= 0) {
+        return false;
+      }
+ else {
+        return (System.currentTimeMillis() - startMsec) / 10000L >= maxRunMinutes;
+      }
+    }
+    private boolean maxCountReached(){
+      return maxEventCount >= 0 && rowCount >= maxEventCount;
+    }
+    @Override public boolean hasMore(){
+      if (maxCountReached() || maxTimeReached()) {
+        return waitIfmax;
+      }
+ else {
+        return true;
+      }
+    }
+    @Override public InputRow nextRow(){
+      if (Thread.currentThread().isInterrupted()) {
+        throw new RuntimeException("Interrupted, time to stop");
+      }
+      if (maxCountReached() || maxTimeReached()) {
+        if (waitIfmax) {
+          try {
+            log.info("reached limit, sleeping a long time...");
+            sleep(2000000000L);
+          }
+ catch (          InterruptedException e) {
+            throw new RuntimeException("InterruptedException",e);
+          }
+        }
+ else {
+        }
+      }
+      rowCount++;
+      if (rowCount % 100 == 0)       log.info("nextRow() has returned " + rowCount + " InputRows");
+      Status status;
+      try {
+        status=queue.take();
+      }
+ catch (      InterruptedException e) {
+        throw new RuntimeException("InterruptedException",e);
+      }
+      HashtagEntity[] hts=status.getHashtagEntities();
+      if (hts != null && hts.length > 0) {
+        theMap.put("htags",hts[0].getText());
+        log.info("htags=" + hts[0].getText());
+      }
+ else {
+        theMap.put("htags",null);
+      }
+      long retweetCount=status.getRetweetCount();
+      theMap.put("retweetCount",retweetCount);
+      User u=status.getUser();
+      if (u != null) {
+        theMap.put("followerCount",u.getFollowersCount());
+        theMap.put("friendsCount",u.getFriendsCount());
+        theMap.put("lang",u.getLang());
+        theMap.put("utcOffset",u.getUtcOffset());
+        theMap.put("statusesCount",u.getStatusesCount());
+      }
+ else {
+        log.error("status.getUser() is null");
+      }
+      if (rowCount % 10 == 0) {
+        log.info("" + status.getCreatedAt() + " followerCount="+ u.getFollowersCount()+ " friendsCount="+ u.getFriendsCount()+ " statusesCount="+ u.getStatusesCount()+ " retweetCount="+ retweetCount);
+      }
+      return new MapBasedInputRow(status.getCreatedAt().getTime(),dimensions,theMap);
+    }
+    @Override public Runnable commit(){
+      return doNothingRunnable;
+    }
+    @Override public void close() throws IOException {
+      log.info("CLOSE twitterstream");
+      twitterStream.shutdown();
+    }
+  }
+;
+}

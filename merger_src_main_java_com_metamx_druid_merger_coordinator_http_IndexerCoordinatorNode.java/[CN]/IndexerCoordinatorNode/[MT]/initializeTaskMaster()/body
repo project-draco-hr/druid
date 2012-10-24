@@ -1,0 +1,7 @@
+{
+  if (taskMaster == null) {
+    final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
+    taskMaster=new TaskMaster(taskQueue,config,serviceDiscoveryConfig,mergerDBCoordinator,taskRunnerFactory,curatorFramework,emitter);
+    lifecycle.addManagedInstance(taskMaster);
+  }
+}

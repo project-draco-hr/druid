@@ -1,0 +1,9 @@
+{
+  long[] bins=new long[breaks.length + 1];
+  ByteBuffer mutationBuffer=buf.duplicate();
+  mutationBuffer.position(position);
+  mutationBuffer.asLongBuffer().get(bins);
+  float min=mutationBuffer.getFloat(position + minOffset);
+  float max=mutationBuffer.getFloat(position + maxOffset);
+  return new Histogram(breaks,bins,min,max);
+}

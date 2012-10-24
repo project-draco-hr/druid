@@ -1,0 +1,52 @@
+{
+  verifyState();
+  final Period intermediatePersistPeriod=config.getIntermediatePersistPeriod();
+  try {
+    long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+    while (firehose.hasMore()) {
+      final InputRow inputRow;
+      try {
+        inputRow=firehose.nextRow();
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if (sink == null) {
+          metrics.incrementThrownAway();
+          log.debug("Throwing away event[%s]",inputRow);
+          if (System.currentTimeMillis() > nextFlush) {
+            plumber.persist(firehose.commit());
+            nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+          }
+          continue;
+        }
+        int currCount=sink.add(inputRow);
+        metrics.incrementProcessed();
+        if (currCount >= config.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+          plumber.persist(firehose.commit());
+          nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+        }
+      }
+ catch (      FormattedException e) {
+        log.info(e,"unparseable line");
+        metrics.incrementUnparseable();
+        continue;
+      }
+    }
+  }
+ catch (  RuntimeException e) {
+    log.makeAlert(e,"RuntimeException aborted realtime processing[%s]",fireDepartment.getSchema().getDataSource()).emit();
+    normalExit=false;
+    throw e;
+  }
+catch (  Error e) {
+    log.makeAlert(e,"Exception aborted realtime processing[%s]",fireDepartment.getSchema().getDataSource()).emit();
+    normalExit=false;
+    throw e;
+  }
+ finally {
+    Closeables.closeQuietly(firehose);
+    if (normalExit) {
+      plumber.finishJob();
+      plumber=null;
+      firehose=null;
+    }
+  }
+}

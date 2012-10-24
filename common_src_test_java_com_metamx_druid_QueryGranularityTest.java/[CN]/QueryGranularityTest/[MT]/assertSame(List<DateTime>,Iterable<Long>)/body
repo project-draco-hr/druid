@@ -1,0 +1,11 @@
+{
+  Assert.assertEquals(expected.size(),Iterables.size(actual));
+  Iterator<Long> actualIter=actual.iterator();
+  Iterator<DateTime> expectedIter=expected.iterator();
+  while (actualIter.hasNext() && expectedIter.hasNext()) {
+    long a=actualIter.next().longValue();
+    Assert.assertEquals(expectedIter.next().getMillis(),a);
+  }
+  Assert.assertFalse("actualIter not exhausted!?",actualIter.hasNext());
+  Assert.assertFalse("expectedIter not exhausted!?",expectedIter.hasNext());
+}

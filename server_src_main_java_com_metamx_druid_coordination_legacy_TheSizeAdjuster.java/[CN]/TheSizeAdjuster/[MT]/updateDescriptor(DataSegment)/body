@@ -1,0 +1,22 @@
+{
+  Long size=lookupSize(dataSegment.getLoadSpec());
+  if (size == null || size < 0) {
+    log.warn("Unable to determine size[%s] of segment[%s], ignoring.",size,dataSegment);
+    return null;
+  }
+  final DataSegment segment=new DataSegment(dataSegment.getDataSource(),dataSegment.getInterval(),dataSegment.getVersion() + "_w_size",dataSegment.getLoadSpec(),dataSegment.getDimensions(),dataSegment.getMetrics(),dataSegment.getShardSpec(),size);
+  String oldSegmentPath=JOINER.join(config.getSegmentBasePath(),dataSegment.getDataSource(),dataSegment.getIdentifier());
+  String newSegmentPath=JOINER.join(config.getSegmentBasePath(),segment.getDataSource(),segment.getIdentifier());
+  try {
+    String data=jsonMapper.writeValueAsString(segment);
+    zkClient.createPersistent(newSegmentPath,data);
+    log.info("Created new segment node[%s] with content[%s]",newSegmentPath,data);
+    zkClient.delete(oldSegmentPath);
+    log.info("Deleted old segment node[%s]",oldSegmentPath);
+  }
+ catch (  IOException e) {
+    log.warn(e,"Exception thrown on segment[%s]",segment);
+    return null;
+  }
+  return segment;
+}

@@ -1,0 +1,19 @@
+{
+  Pattern pat=Pattern.compile(keyPattern);
+  S3Object[] s3Objs=s3Client.listObjects(new S3Bucket(bucketName),basePath,null);
+  S3Object maxObj=null;
+  for (  S3Object s3Obj : s3Objs) {
+    if (!pat.matcher(s3Obj.getKey()).matches()) {
+      continue;
+    }
+    if (maxObj == null) {
+      maxObj=s3Obj;
+    }
+ else {
+      if (maxObj.getKey().compareTo(s3Obj.getKey()) < 0) {
+        maxObj=s3Obj;
+      }
+    }
+  }
+  return maxObj;
+}

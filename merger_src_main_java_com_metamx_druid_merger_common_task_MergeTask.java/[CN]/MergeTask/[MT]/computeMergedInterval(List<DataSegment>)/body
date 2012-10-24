@@ -1,0 +1,14 @@
+{
+  Preconditions.checkArgument(segments.size() > 0,"segments.size() > 0");
+  DateTime start=null;
+  DateTime end=null;
+  for (  final DataSegment segment : segments) {
+    if (start == null || segment.getInterval().getStart().isBefore(start)) {
+      start=segment.getInterval().getStart();
+    }
+    if (end == null || segment.getInterval().getEnd().isAfter(end)) {
+      end=segment.getInterval().getEnd();
+    }
+  }
+  return new Interval(start,end);
+}

@@ -1,0 +1,20 @@
+{
+  Object dimValue=event.get(dimension);
+  if (dimValue == null) {
+    return Lists.newArrayList();
+  }
+ else   if (dimValue instanceof List) {
+    return Lists.transform((List)dimValue,new Function<Object,String>(){
+      @Override public String apply(      @Nullable Object input){
+        return String.valueOf(input);
+      }
+    }
+);
+  }
+ else   if (dimValue instanceof Object) {
+    return Arrays.asList(String.valueOf(event.get(dimension)));
+  }
+ else {
+    throw new IAE("Unknown dim type[%s]",dimValue.getClass());
+  }
+}

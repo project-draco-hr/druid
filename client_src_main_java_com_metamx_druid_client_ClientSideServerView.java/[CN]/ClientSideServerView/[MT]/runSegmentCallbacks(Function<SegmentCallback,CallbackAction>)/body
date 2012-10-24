@@ -1,0 +1,12 @@
+{
+  for (  final Map.Entry<SegmentCallback,Executor> entry : segmentCallbacks.entrySet()) {
+    entry.getValue().execute(new Runnable(){
+      @Override public void run(){
+        if (CallbackAction.UNREGISTER == fn.apply(entry.getKey())) {
+          segmentCallbacks.remove(entry.getKey());
+        }
+      }
+    }
+);
+  }
+}

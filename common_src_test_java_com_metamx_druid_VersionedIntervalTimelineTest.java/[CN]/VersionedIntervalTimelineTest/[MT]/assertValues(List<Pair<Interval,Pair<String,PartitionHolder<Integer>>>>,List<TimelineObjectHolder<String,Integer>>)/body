@@ -1,0 +1,12 @@
+{
+  Assert.assertEquals("Sizes did not match.",expected.size(),actual.size());
+  Iterator<Pair<Interval,Pair<String,PartitionHolder<Integer>>>> expectedIter=expected.iterator();
+  Iterator<TimelineObjectHolder<String,Integer>> actualIter=actual.iterator();
+  while (expectedIter.hasNext()) {
+    Pair<Interval,Pair<String,PartitionHolder<Integer>>> pair=expectedIter.next();
+    TimelineObjectHolder<String,Integer> holder=actualIter.next();
+    Assert.assertEquals(pair.lhs,holder.getInterval());
+    Assert.assertEquals(pair.rhs.lhs,holder.getVersion());
+    Assert.assertEquals(pair.rhs.rhs,holder.getObject());
+  }
+}

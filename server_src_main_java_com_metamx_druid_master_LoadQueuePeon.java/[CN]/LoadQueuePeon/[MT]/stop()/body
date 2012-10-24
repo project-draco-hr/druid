@@ -1,0 +1,21 @@
+{
+synchronized (lock) {
+    if (currentlyLoading != null) {
+      currentlyLoading.executeCallbacks();
+      currentlyLoading=null;
+    }
+    if (!segmentsToDrop.isEmpty()) {
+      for (      SegmentHolder holder : segmentsToDrop) {
+        holder.executeCallbacks();
+      }
+    }
+    segmentsToDrop.clear();
+    if (!segmentsToLoad.isEmpty()) {
+      for (      SegmentHolder holder : segmentsToLoad) {
+        holder.executeCallbacks();
+      }
+    }
+    segmentsToLoad.clear();
+    queuedSize.set(0L);
+  }
+}

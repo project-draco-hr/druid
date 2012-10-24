@@ -1,0 +1,18 @@
+{
+  try {
+    serverManager.loadSegment(segment);
+    File segmentInfoCacheFile=new File(config.getSegmentInfoCacheDirectory(),segment.getIdentifier());
+    try {
+      jsonMapper.writeValue(segmentInfoCacheFile,segment);
+    }
+ catch (    IOException e) {
+      removeSegment(segment);
+      throw new StorageAdapterLoadingException("Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+    }
+    yp.announce(servedSegmentsLocation,segment.getIdentifier(),segment);
+  }
+ catch (  StorageAdapterLoadingException e) {
+    log.error(e,"Failed to load segment[%s]",segment);
+    emitter.emit(new AlertEvent.Builder().build("Failed to load segment",ImmutableMap.<String,Object>builder().put("segment",segment.toString()).put("exception",e.toString()).build()));
+  }
+}

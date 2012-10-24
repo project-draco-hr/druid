@@ -1,0 +1,34 @@
+{
+  Sequence<Pair<Integer,Integer>> seq=new CombiningSequence<Pair<Integer,Integer>>(Sequences.simple(pairs),Ordering.natural().onResultOf(Pair.<Integer,Integer>lhsFn()),new BinaryFn<Pair<Integer,Integer>,Pair<Integer,Integer>,Pair<Integer,Integer>>(){
+    @Override public Pair<Integer,Integer> apply(    Pair<Integer,Integer> lhs,    Pair<Integer,Integer> rhs){
+      if (lhs == null) {
+        return rhs;
+      }
+      if (rhs == null) {
+        return lhs;
+      }
+      return Pair.of(lhs.lhs,lhs.rhs + rhs.rhs);
+    }
+  }
+);
+  List<Pair<Integer,Integer>> merged=Sequences.toList(seq,Lists.<Pair<Integer,Integer>>newArrayList());
+  Assert.assertEquals(expected,merged);
+  Yielder<Pair<Integer,Integer>> yielder=seq.toYielder(null,new YieldingAccumulator<Pair<Integer,Integer>,Pair<Integer,Integer>>(){
+    @Override public Pair<Integer,Integer> accumulate(    Pair<Integer,Integer> lhs,    Pair<Integer,Integer> rhs){
+      yield();
+      return rhs;
+    }
+  }
+);
+  Iterator<Pair<Integer,Integer>> expectedVals=expected.iterator();
+  if (expectedVals.hasNext()) {
+    while (!yielder.isDone()) {
+      final Pair<Integer,Integer> nextVal=expectedVals.next();
+      Assert.assertEquals(nextVal,yielder.get());
+      yielder=yielder.next(null);
+    }
+    Assert.assertEquals(expectedVals.next(),yielder.get());
+  }
+  Assert.assertTrue(yielder.isDone());
+  yielder.close();
+}

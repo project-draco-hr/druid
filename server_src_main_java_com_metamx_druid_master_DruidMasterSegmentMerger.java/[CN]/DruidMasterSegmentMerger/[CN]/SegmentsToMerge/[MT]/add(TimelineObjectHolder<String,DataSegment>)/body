@@ -1,0 +1,22 @@
+{
+  final Interval timelineObjectInterval=timelineObject.getInterval();
+  final Interval underlyingInterval=timelineObject.getObject().getChunk(0).getObject().getInterval();
+  if (timelineObjects.size() > 0) {
+    Preconditions.checkArgument(timelineObjectInterval.getStart().getMillis() >= timelineObjects.get(timelineObjects.size() - 1).lhs.getInterval().getEnd().getMillis(),"timeline objects must be provided in order");
+  }
+  for (  final PartitionChunk<DataSegment> segment : timelineObject.getObject()) {
+    segments.add(segment.getObject());
+    if (segments.count(segment.getObject()) == 1) {
+      mergedSize+=segment.getObject().getSize();
+    }
+  }
+  final Interval mergedUnderlyingInterval=getMergedUnderlyingInterval();
+  if (mergedUnderlyingInterval == null) {
+    timelineObjects.add(Pair.of(timelineObject,underlyingInterval));
+  }
+ else {
+    final DateTime start=underlyingInterval.getStart().isBefore(mergedUnderlyingInterval.getStart()) ? underlyingInterval.getStart() : mergedUnderlyingInterval.getStart();
+    final DateTime end=underlyingInterval.getEnd().isAfter(mergedUnderlyingInterval.getEnd()) ? underlyingInterval.getEnd() : mergedUnderlyingInterval.getEnd();
+    timelineObjects.add(Pair.of(timelineObject,new Interval(start,end)));
+  }
+}

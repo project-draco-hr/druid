@@ -1,0 +1,15 @@
+{
+  giant.lock();
+  try {
+    final Optional<TaskStatus> statusOptional=taskStorage.getStatus(taskid);
+    if (statusOptional.isPresent()) {
+      return Optional.of(collapseStatus(statusOptional.get()));
+    }
+ else {
+      return statusOptional;
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

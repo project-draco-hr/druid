@@ -1,0 +1,27 @@
+{
+  try {
+synchronized (lock) {
+      Map<String,String> currLeader=clusterInfo.lookupCurrentLeader();
+      if (currLeader == null || !config.getHost().equals(currLeader.get("host"))) {
+        log.info("I thought I was the master, but really [%s] is.  Phooey.",currLeader);
+        stopBeingMaster();
+        return;
+      }
+    }
+    List<Boolean> allStarted=Arrays.asList(databaseSegmentManager.isStarted(),serverInventoryManager.isStarted());
+    for (    Boolean aBoolean : allStarted) {
+      if (!aBoolean) {
+        log.error("InventoryManagers not started[%s]",allStarted);
+        stopBeingMaster();
+        return;
+      }
+    }
+    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withLoadManagementPeons(loadManagementPeons).withMillisToWaitBeforeDeleting(config.getMillisToWaitBeforeDeleting()).withEmitter(emitter).withMergeThreshold(config.getMergeThreshold()).build();
+    for (    DruidMasterHelper helper : helpers) {
+      params=helper.run(params);
+    }
+  }
+ catch (  Exception e) {
+    log.error(e,"Caught exception, ignoring so that schedule keeps going.");
+  }
+}

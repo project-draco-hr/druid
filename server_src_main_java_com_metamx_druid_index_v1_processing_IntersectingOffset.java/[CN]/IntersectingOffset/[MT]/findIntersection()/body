@@ -1,0 +1,23 @@
+{
+  if (!(lhs.withinBounds() && rhs.withinBounds())) {
+    return;
+  }
+  int lhsOffset=lhs.getOffset();
+  int rhsOffset=rhs.getOffset();
+  while (lhsOffset != rhsOffset) {
+    while (lhsOffset < rhsOffset) {
+      lhs.increment();
+      if (!lhs.withinBounds()) {
+        return;
+      }
+      lhsOffset=lhs.getOffset();
+    }
+    while (rhsOffset < lhsOffset) {
+      rhs.increment();
+      if (!rhs.withinBounds()) {
+        return;
+      }
+      rhsOffset=rhs.getOffset();
+    }
+  }
+}

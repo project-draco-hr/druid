@@ -1,0 +1,14 @@
+{
+  List<Result<TimeBoundaryResultValue>> results=Lists.newArrayList();
+  Map<String,Object> result=Maps.newHashMap();
+  if (min != null) {
+    result.put(TimeBoundaryQuery.MIN_TIME,min);
+  }
+  if (max != null) {
+    result.put(TimeBoundaryQuery.MAX_TIME,max);
+  }
+  if (!result.isEmpty()) {
+    results.add(new Result<TimeBoundaryResultValue>(timestamp,new TimeBoundaryResultValue(result)));
+  }
+  return results;
+}

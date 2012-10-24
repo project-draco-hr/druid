@@ -1,0 +1,24 @@
+{
+  try {
+    log.info("Running with config:%n%s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  Preconditions.checkNotNull(dataSource,"dataSource");
+  Preconditions.checkNotNull(dataSpec,"dataSpec");
+  Preconditions.checkNotNull(timestampColumnName,"timestampColumn");
+  Preconditions.checkNotNull(timestampFormat,"timestampFormat");
+  Preconditions.checkNotNull(granularitySpec,"granularitySpec");
+  Preconditions.checkNotNull(pathSpec,"pathSpec");
+  Preconditions.checkNotNull(jobOutputDir,"workingPath");
+  Preconditions.checkNotNull(segmentOutputDir,"segmentOutputPath");
+  Preconditions.checkNotNull(version,"version");
+  Preconditions.checkNotNull(rollupSpec,"rollupSpec");
+  final int nIntervals=getIntervals().size();
+  Preconditions.checkArgument(nIntervals > 0,"intervals.size()[%s] <= 0",nIntervals);
+  if (partitionByDimension()) {
+    Preconditions.checkNotNull(partitionDimension);
+    Preconditions.checkNotNull(targetPartitionSize);
+  }
+}

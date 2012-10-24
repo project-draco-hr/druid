@@ -1,0 +1,8 @@
+{
+  final ArrayList<Iterator<Integer>> iterators=Lists.newArrayList();
+  iterators.add(Arrays.asList(1,3,5,4,7,9).iterator());
+  iterators.add(Arrays.asList(2,8).iterator());
+  iterators.add(Arrays.asList(4,6).iterator());
+  OrderedMergeIterator<Integer> iter=new OrderedMergeIterator<Integer>(Ordering.<Integer>natural(),iterators.iterator());
+  Assert.assertEquals(Arrays.asList(1,2,3,4,5,4,6,7,8,9),Lists.newArrayList(iter));
+}

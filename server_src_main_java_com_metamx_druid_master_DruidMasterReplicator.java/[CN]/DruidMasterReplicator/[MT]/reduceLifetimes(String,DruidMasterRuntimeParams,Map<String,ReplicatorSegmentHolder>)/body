@@ -1,0 +1,8 @@
+{
+  for (  ReplicatorSegmentHolder holder : holders.values()) {
+    holder.reduceLifetime();
+    if (holder.getLifetime() <= 0) {
+      params.getEmitter().emit(new AlertEvent.Builder().build(String.format("Replicator %s queue has a segment stuck",type),ImmutableMap.<String,Object>builder().put("segment",holder.getSegment().getIdentifier()).build()));
+    }
+  }
+}

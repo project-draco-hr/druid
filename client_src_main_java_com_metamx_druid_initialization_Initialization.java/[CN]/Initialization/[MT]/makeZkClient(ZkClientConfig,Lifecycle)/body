@@ -1,0 +1,13 @@
+{
+  final ZkClient retVal=new ZkClient(new ZkConnection(config.getZkHosts()),config.getConnectionTimeout(),new StringZkSerializer());
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      retVal.waitUntilConnected();
+    }
+    @Override public void stop(){
+      retVal.close();
+    }
+  }
+);
+  return retVal;
+}

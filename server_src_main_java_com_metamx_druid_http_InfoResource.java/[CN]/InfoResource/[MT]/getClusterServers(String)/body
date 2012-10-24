@@ -1,0 +1,12 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (full != null) {
+    return builder.entity(serverInventoryManager.getInventory()).build();
+  }
+  return builder.entity(Iterables.transform(serverInventoryManager.getInventory(),new Function<DruidServer,String>(){
+    @Override public String apply(    @Nullable DruidServer druidServer){
+      return druidServer.getName();
+    }
+  }
+)).build();
+}

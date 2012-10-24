@@ -1,0 +1,41 @@
+{
+  this.dataInterval=dataInterval;
+  this.index=index;
+  this.dimensions=dimensions;
+  this.metrics=metrics;
+  this.invertedIndexes=Maps.newHashMap();
+  for (  String dimension : dimensions) {
+    invertedIndexes.put(dimension,Maps.<String,ConciseSet>newHashMap());
+  }
+  int rowNum=0;
+  for (  IncrementalIndex.TimeAndDims timeAndDims : index.facts.keySet()) {
+    final String[][] dims=timeAndDims.getDims();
+    for (    String dimension : dimensions) {
+      if (index.dimensionOrder == null || invertedIndexes == null) {
+        log.error("wtf, dimensionOrder and indvertedIndexes are null");
+      }
+      int dimIndex=index.dimensionOrder.get(dimension);
+      Map<String,ConciseSet> conciseSets=invertedIndexes.get(dimension);
+      if (conciseSets == null || dims == null) {
+        log.error("conciseSets and dims are null!");
+      }
+      if (dimIndex >= dims.length || dims[dimIndex] == null) {
+        continue;
+      }
+      for (      String dimValue : dims[dimIndex]) {
+        ConciseSet conciseSet=conciseSets.get(dimValue);
+        if (conciseSet == null) {
+          conciseSet=new ConciseSet();
+          conciseSets.put(dimValue,conciseSet);
+        }
+        try {
+          conciseSet.add(rowNum);
+        }
+ catch (        Exception e) {
+          log.info(e.toString());
+        }
+      }
+    }
+    ++rowNum;
+  }
+}

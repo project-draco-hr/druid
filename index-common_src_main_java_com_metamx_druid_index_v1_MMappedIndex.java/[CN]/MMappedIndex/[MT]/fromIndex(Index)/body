@@ -1,0 +1,52 @@
+{
+  log.info("Converting timestamps");
+  CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromLongBuffer(LongBuffer.wrap(index.timeOffsets),ByteOrder.nativeOrder());
+  log.info("Converting dimValueLookups");
+  Map<String,GenericIndexed<String>> dimValueLookups=Maps.newHashMap();
+  for (  Map.Entry<String,String[]> entry : index.reverseDimLookup.entrySet()) {
+    String[] theValues=Arrays.copyOf(entry.getValue(),entry.getValue().length);
+    Arrays.sort(theValues);
+    dimValueLookups.put(entry.getKey(),GenericIndexed.fromArray(theValues,GenericIndexed.stringStrategy));
+  }
+  Map<String,VSizeIndexed> dimColumns=Maps.newHashMap();
+  Map<String,GenericIndexed<ImmutableConciseSet>> invertedIndexes=Maps.newLinkedHashMap();
+  for (  String dimension : Arrays.asList(index.dimensions)) {
+    final String[] dimVals=index.reverseDimLookup.get(dimension);
+    final DimensionColumn dimColumn=index.dimensionValues.get(dimension);
+    log.info("Converting dim[%s] with valueCardinality[%,d] and expansionCardinality[%,d]",dimension,dimColumn.getDimensionExpansions().length,dimVals.length);
+    final Indexed<String> lookup=dimValueLookups.get(dimension);
+    final int[] expansionConversion=new int[dimVals.length];
+    final int[] reverseExpansionConversion=new int[dimVals.length];
+    for (int i=0; i < expansionConversion.length; i++) {
+      expansionConversion[i]=lookup.indexOf(dimVals[i]);
+      reverseExpansionConversion[expansionConversion[i]]=i;
+    }
+    int[][] originalDimExpansions=dimColumn.getDimensionExpansions();
+    final int[][] dimensionExpansions=new int[originalDimExpansions.length][];
+    for (int i=0; i < originalDimExpansions.length; i++) {
+      int[] originalDimExpansion=originalDimExpansions[i];
+      int[] mappedValues=new int[originalDimExpansion.length];
+      for (int j=0; j < originalDimExpansion.length; j++) {
+        mappedValues[j]=expansionConversion[originalDimExpansion[j]];
+      }
+      Arrays.sort(mappedValues);
+      dimensionExpansions[i]=mappedValues;
+    }
+    final int[] originalRows=dimColumn.getDimensionRowValues();
+    final ImmutableConciseSet[] origInvertedIndexes=index.indexes.get(dimension);
+    dimColumns.put(dimension,VSizeIndexed.fromIterable(Iterables.transform(Ints.asList(originalRows),new Function<Integer,VSizeIndexedInts>(){
+      @Override public VSizeIndexedInts apply(      Integer input){
+        return VSizeIndexedInts.fromArray(dimensionExpansions[input],dimVals.length - 1);
+      }
+    }
+)));
+    invertedIndexes.put(dimension,GenericIndexed.fromIterable(Iterables.transform(new IndexedList<String>(lookup),new Function<String,ImmutableConciseSet>(){
+      @Override public ImmutableConciseSet apply(      String input){
+        return origInvertedIndexes[reverseExpansionConversion[lookup.indexOf(input)]];
+      }
+    }
+),ConciseCompressedIndexedInts.objectStrategy));
+  }
+  log.info("Making MMappedIndex");
+  return new MMappedIndex(GenericIndexed.fromArray(index.dimensions,GenericIndexed.stringStrategy),GenericIndexed.fromArray(index.metrics,GenericIndexed.stringStrategy),index.dataInterval,timestamps,index.metricVals,dimValueLookups,dimColumns,invertedIndexes);
+}

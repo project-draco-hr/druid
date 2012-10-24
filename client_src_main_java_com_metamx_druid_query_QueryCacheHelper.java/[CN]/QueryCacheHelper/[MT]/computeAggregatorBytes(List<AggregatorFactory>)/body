@@ -1,0 +1,14 @@
+{
+  List<byte[]> cacheKeySet=Lists.newArrayListWithCapacity(aggregatorSpecs.size());
+  int totalSize=0;
+  for (  AggregatorFactory spec : aggregatorSpecs) {
+    final byte[] cacheKey=spec.getCacheKey();
+    cacheKeySet.add(cacheKey);
+    totalSize+=cacheKey.length;
+  }
+  ByteBuffer retVal=ByteBuffer.allocate(totalSize);
+  for (  byte[] bytes : cacheKeySet) {
+    retVal.put(bytes);
+  }
+  return retVal.array();
+}

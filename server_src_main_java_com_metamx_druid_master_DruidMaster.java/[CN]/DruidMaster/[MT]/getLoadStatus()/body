@@ -1,0 +1,36 @@
+{
+  Map<String,Integer> availableSegmentMap=Maps.newHashMap();
+  for (  DataSegment segment : getAvailableDataSegments()) {
+    Integer count=availableSegmentMap.get(segment.getDataSource());
+    int newCount=(count == null) ? 0 : count.intValue();
+    availableSegmentMap.put(segment.getDataSource(),++newCount);
+  }
+  Map<String,Set<DataSegment>> loadedDataSources=Maps.newHashMap();
+  for (  DruidServer server : serverInventoryManager.getInventory()) {
+    for (    DruidDataSource dataSource : server.getDataSources()) {
+      if (!loadedDataSources.containsKey(dataSource.getName())) {
+        TreeSet<DataSegment> setToAdd=Sets.newTreeSet(DataSegment.bucketMonthComparator());
+        setToAdd.addAll(dataSource.getSegments());
+        loadedDataSources.put(dataSource.getName(),setToAdd);
+      }
+ else {
+        loadedDataSources.get(dataSource.getName()).addAll(dataSource.getSegments());
+      }
+    }
+  }
+  Map<String,Integer> loadedSegmentMap=Maps.newHashMap();
+  for (  Map.Entry<String,Set<DataSegment>> entry : loadedDataSources.entrySet()) {
+    loadedSegmentMap.put(entry.getKey(),entry.getValue().size());
+  }
+  Map<String,Double> retVal=Maps.newHashMap();
+  for (  Map.Entry<String,Integer> entry : availableSegmentMap.entrySet()) {
+    String key=entry.getKey();
+    if (!loadedSegmentMap.containsKey(key) || entry.getValue().doubleValue() == 0.0) {
+      retVal.put(key,0.0);
+    }
+ else {
+      retVal.put(key,100 * loadedSegmentMap.get(key).doubleValue() / entry.getValue().doubleValue());
+    }
+  }
+  return retVal;
+}

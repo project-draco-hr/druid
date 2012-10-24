@@ -1,0 +1,13 @@
+{
+  LogLevelAdjuster.register();
+  Lifecycle lifecycle=new Lifecycle();
+  lifecycle.addManagedInstance(RealtimeNode.builder().build());
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    System.exit(2);
+  }
+  lifecycle.join();
+}

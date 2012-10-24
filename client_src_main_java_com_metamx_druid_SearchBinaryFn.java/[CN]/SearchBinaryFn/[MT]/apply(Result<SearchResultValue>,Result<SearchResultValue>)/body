@@ -1,0 +1,14 @@
+{
+  if (arg1 == null) {
+    return arg2;
+  }
+  if (arg2 == null) {
+    return arg1;
+  }
+  SearchResultValue arg1Vals=arg1.getValue();
+  SearchResultValue arg2Vals=arg2.getValue();
+  TreeSet<SearchHit> results=Sets.newTreeSet(searchSortSpec.getComparator());
+  results.addAll(Lists.newArrayList(arg1Vals));
+  results.addAll(Lists.newArrayList(arg2Vals));
+  return (gran instanceof AllGranularity) ? new Result<SearchResultValue>(arg1.getTimestamp(),new SearchResultValue(Lists.newArrayList(results))) : new Result<SearchResultValue>(gran.toDateTime(gran.truncate(arg1.getTimestamp().getMillis())),new SearchResultValue(Lists.newArrayList(results)));
+}

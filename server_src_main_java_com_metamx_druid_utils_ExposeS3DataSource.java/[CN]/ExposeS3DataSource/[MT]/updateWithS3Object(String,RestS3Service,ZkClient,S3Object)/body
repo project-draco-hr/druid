@@ -1,0 +1,31 @@
+{
+  log.info("Looking for object[%s]",partitionObject);
+  String descriptor;
+  try {
+    descriptor=S3Utils.getContentAsString(s3Client,partitionObject);
+  }
+ catch (  S3ServiceException e) {
+    log.info(e,"Problem loading descriptor for partitionObject[%s]: %s",partitionObject,e.getMessage());
+    return;
+  }
+  Map<String,Object> map=jsonMapper.readValue(descriptor,new TypeReference<Map<String,Object>>(){
+  }
+);
+  DataSegment segment;
+  if (map.containsKey("partitionNum") && "single".equals(MapUtils.getMap(map,"shardSpec").get("type"))) {
+    MapUtils.getMap(map,"shardSpec").put("partitionNum",map.get("partitionNum"));
+    segment=jsonMapper.convertValue(map,DataSegment.class);
+  }
+ else {
+    segment=jsonMapper.readValue(descriptor,DataSegment.class);
+  }
+  final String dataSourceBasePath=JOINER.join(zkBasePath,segment.getDataSource());
+  if (!zkClient.exists(dataSourceBasePath)) {
+    zkClient.createPersistent(dataSourceBasePath,jsonMapper.writeValueAsString(ImmutableMap.of("created",new DateTime().toString())));
+  }
+  String zkPath=JOINER.join(zkBasePath,segment.getDataSource(),segment.getIdentifier());
+  if (!zkClient.exists(zkPath)) {
+    log.info("Adding descriptor to zkPath[%s]: %s",zkPath,descriptor);
+    zkClient.createPersistent(zkPath,descriptor);
+  }
+}

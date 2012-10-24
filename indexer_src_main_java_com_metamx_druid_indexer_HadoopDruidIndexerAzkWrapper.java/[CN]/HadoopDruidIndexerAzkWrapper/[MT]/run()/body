@@ -1,0 +1,25 @@
+{
+  final DefaultObjectMapper jsonMapper=new DefaultObjectMapper();
+  final List<Interval> dataInterval;
+  final Map<String,Object> theMap=Maps.newTreeMap();
+  for (  String propertyName : properties.stringPropertyNames()) {
+    if (propertyName.startsWith(PROPERTY_PREFIX)) {
+      final String propValue=properties.getProperty(propertyName);
+      if (propValue.trim().startsWith("{") || propValue.trim().startsWith("[")) {
+        theMap.put(propertyName.substring(PROPERTY_PREFIX.length()),jsonMapper.readValue(propValue,Object.class));
+      }
+ else {
+        theMap.put(propertyName.substring(PROPERTY_PREFIX.length()),propValue);
+      }
+    }
+  }
+  log.info("Running with properties:");
+  for (  Map.Entry<String,Object> entry : theMap.entrySet()) {
+    log.info("%30s => %s",entry.getKey(),entry.getValue());
+  }
+  dataInterval=Lists.transform(Lists.newArrayList(MapUtils.getString(theMap,"timeInterval").split(",")),new StringIntervalFunction());
+  final HadoopDruidIndexerConfig config=jsonMapper.convertValue(theMap,HadoopDruidIndexerConfig.class);
+  config.setIntervals(dataInterval);
+  config.setVersion(new DateTime());
+  new HadoopDruidIndexerJob(config).run();
+}

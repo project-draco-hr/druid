@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    try {
+      curatorFramework.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(status.getId()),jsonMapper.writeValueAsBytes(status));
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

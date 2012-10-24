@@ -1,0 +1,18 @@
+{
+synchronized (lock) {
+    log.debug("I am %s the master",master ? "DEFINITELY" : "NOT");
+    if (master) {
+      log.info("I am no longer the master...");
+      for (      String server : loadManagementPeons.keySet()) {
+        LoadQueuePeon peon=loadManagementPeons.remove(server);
+        peon.stop();
+        yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server)),peon);
+      }
+      loadManagementPeons.clear();
+      yp.unannounce(config.getBasePath(),MASTER_OWNER_NODE);
+      databaseSegmentManager.stop();
+      serverInventoryManager.stop();
+      master=false;
+    }
+  }
+}

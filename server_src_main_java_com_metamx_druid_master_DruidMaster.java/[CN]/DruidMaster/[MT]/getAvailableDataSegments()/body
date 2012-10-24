@@ -1,0 +1,22 @@
+{
+  Set<DataSegment> availableSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
+  Iterable<DataSegment> dataSegments=Iterables.concat(Iterables.transform(databaseSegmentManager.getInventory(),new Function<DruidDataSource,Iterable<DataSegment>>(){
+    @Override public Iterable<DataSegment> apply(    DruidDataSource input){
+      return input.getSegments();
+    }
+  }
+));
+  for (  DataSegment dataSegment : dataSegments) {
+    if (dataSegment.getSize() < 0) {
+      log.info("No size on Segment[%s], setting.",dataSegment);
+      DataSegment newDataSegment=sizeAdjuster.updateDescriptor(dataSegment);
+      if (dataSegment == null) {
+        log.warn("newDataSegment was null with old dataSegment[%s].  Skipping.",dataSegment);
+        continue;
+      }
+      dataSegment=newDataSegment;
+    }
+    availableSegments.add(dataSegment);
+  }
+  return availableSegments;
+}

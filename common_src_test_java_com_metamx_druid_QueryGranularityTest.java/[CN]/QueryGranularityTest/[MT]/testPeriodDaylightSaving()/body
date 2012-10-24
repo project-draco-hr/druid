@@ -1,0 +1,8 @@
+{
+  final DateTimeZone tz=DateTimeZone.forID("America/Los_Angeles");
+  final DateTime baseTime=new DateTime("2012-11-04T00:00:00",tz);
+  assertSame(Lists.newArrayList(new DateTime("2012-11-04T00:00:00.000-07:00"),new DateTime("2012-11-05T00:00:00.000-08:00"),new DateTime("2012-11-06T00:00:00.000-08:00")),new PeriodGranularity(new Period("P1D"),null,tz).iterable(baseTime.getMillis(),baseTime.plus(Days.days(3)).getMillis()));
+  assertSame(Lists.newArrayList(new DateTime("2012-11-04T00:00:00.000-07:00"),new DateTime("2012-11-04T01:00:00.000-07:00"),new DateTime("2012-11-04T01:00:00.000-08:00"),new DateTime("2012-11-04T02:00:00.000-08:00"),new DateTime("2012-11-04T03:00:00.000-08:00")),new PeriodGranularity(new Period("PT1H"),null,tz).iterable(baseTime.getMillis(),baseTime.plus(Hours.hours(5)).getMillis()));
+  final QueryGranularity hour=new PeriodGranularity(new Period("PT1H"),null,tz);
+  assertSame(Lists.newArrayList(new DateTime("2012-11-04T00:00:00.000-07:00"),new DateTime("2012-11-04T01:00:00.000-07:00"),new DateTime("2012-11-04T01:00:00.000-08:00"),new DateTime("2012-11-04T02:00:00.000-08:00"),new DateTime("2012-11-04T03:00:00.000-08:00")),Lists.newArrayList(hour.truncate(new DateTime("2012-11-04T00:30:00-07:00").getMillis()),hour.truncate(new DateTime("2012-11-04T01:30:00-07:00").getMillis()),hour.truncate(new DateTime("2012-11-04T01:30:00-08:00").getMillis()),hour.truncate(new DateTime("2012-11-04T02:30:00-08:00").getMillis()),hour.truncate(new DateTime("2012-11-04T03:30:00-08:00").getMillis())));
+}

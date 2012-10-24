@@ -1,0 +1,34 @@
+{
+  PriorityQueue<Yielder<T>> pQueue=new PriorityQueue<Yielder<T>>(32,ordering.onResultOf(new Function<Yielder<T>,T>(){
+    @Override public T apply(    @Nullable Yielder<T> input){
+      return input.get();
+    }
+  }
+));
+  Yielder<Yielder<T>> oldDudeAtCrosswalk=sequences.toYielder(null,new YieldingAccumulator<Yielder<T>,Sequence<T>>(){
+    @Override public Yielder<T> accumulate(    Yielder<T> accumulated,    Sequence<T> in){
+      final Yielder<T> retVal=in.toYielder(null,new YieldingAccumulator<T,T>(){
+        @Override public T accumulate(        T accumulated,        T in){
+          yield();
+          return in;
+        }
+      }
+);
+      if (retVal.isDone()) {
+        try {
+          retVal.close();
+        }
+ catch (        IOException e) {
+          throw Throwables.propagate(e);
+        }
+        return null;
+      }
+ else {
+        yield();
+      }
+      return retVal;
+    }
+  }
+);
+  return makeYielder(pQueue,oldDudeAtCrosswalk,initValue,accumulator);
+}

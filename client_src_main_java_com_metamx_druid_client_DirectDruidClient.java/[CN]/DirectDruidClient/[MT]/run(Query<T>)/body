@@ -1,0 +1,66 @@
+{
+  QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
+  boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
+  Pair<JavaType,JavaType> types=typesMap.get(query.getClass());
+  if (types == null) {
+    final TypeFactory typeFactory=objectMapper.getTypeFactory();
+    JavaType baseType=typeFactory.constructType(toolChest.getResultTypeReference());
+    JavaType bySegmentType=typeFactory.constructParametricType(Result.class,typeFactory.constructParametricType(BySegmentResultValueClass.class,baseType));
+    types=Pair.of(baseType,bySegmentType);
+    typesMap.put(query.getClass(),types);
+  }
+  final JavaType typeRef;
+  if (isBySegment) {
+    typeRef=types.rhs;
+  }
+ else {
+    typeRef=types.lhs;
+  }
+  final Future<InputStream> future;
+  final String url=String.format("http://%s/druid/v2/",host);
+  try {
+    log.debug("Querying url[%s]",url);
+    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new InputStreamResponseHandler(){
+      long startTime;
+      long byteCount=0;
+      @Override public ClientResponse<AppendableByteArrayInputStream> handleResponse(      HttpResponse response){
+        log.debug("Initial response from url[%s]",url);
+        startTime=System.currentTimeMillis();
+        byteCount+=response.getContent().readableBytes();
+        return super.handleResponse(response);
+      }
+      @Override public ClientResponse<AppendableByteArrayInputStream> handleChunk(      ClientResponse<AppendableByteArrayInputStream> clientResponse,      HttpChunk chunk){
+        final int bytes=chunk.getContent().readableBytes();
+        byteCount+=bytes;
+        return super.handleChunk(clientResponse,chunk);
+      }
+      @Override public ClientResponse<InputStream> done(      ClientResponse<AppendableByteArrayInputStream> clientResponse){
+        long stopTime=System.currentTimeMillis();
+        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount,stopTime - startTime,byteCount / (0.0001 * (stopTime - startTime)));
+        return super.done(clientResponse);
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  Sequence<T> retVal=new BaseSequence<T,JsonParserIterator<T>>(new BaseSequence.IteratorMaker<T,JsonParserIterator<T>>(){
+    @Override public JsonParserIterator<T> make(){
+      return new JsonParserIterator<T>(typeRef,future);
+    }
+    @Override public void cleanup(    JsonParserIterator<T> iterFromMake){
+      Closeables.closeQuietly(iterFromMake);
+    }
+  }
+);
+  if (!isBySegment) {
+    retVal=Sequences.map(retVal,toolChest.makeMetricManipulatorFn(query,new MetricManipulationFn(){
+      @Override public Object manipulate(      AggregatorFactory factory,      Object object){
+        return factory.deserialize(object);
+      }
+    }
+));
+  }
+  return retVal;
+}

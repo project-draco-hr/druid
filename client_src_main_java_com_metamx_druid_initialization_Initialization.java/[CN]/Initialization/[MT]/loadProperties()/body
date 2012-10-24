@@ -1,0 +1,31 @@
+{
+  if (props != null) {
+    return props;
+  }
+  Properties loadedProps=null;
+  final InputStream stream=ClassLoader.getSystemResourceAsStream("runtime.properties");
+  if (stream == null) {
+    log.info("runtime.properties didn't exist as a resource, loading system properties instead.");
+    loadedProps=System.getProperties();
+  }
+ else {
+    log.info("Loading properties from runtime.properties.");
+    try {
+      loadedProps=new Properties();
+      try {
+        loadedProps.load(stream);
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  finally {
+      Closeables.closeQuietly(stream);
+    }
+  }
+  for (  String prop : loadedProps.stringPropertyNames()) {
+    log.info("Loaded Property[%s] as [%s]",prop,loadedProps.getProperty(prop));
+  }
+  props=loadedProps;
+  return loadedProps;
+}
