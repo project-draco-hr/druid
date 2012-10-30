@@ -100,12 +100,11 @@
               }
               mergedFile=IndexMerger.mergeMMapped(indexes,schema.getAggregators(),new File(persistDir,"merged"));
               MMappedIndex index=IndexIO.mapDir(mergedFile);
-              DataSegment segment=segmentPusher.push(mergedFile,new DataSegment(schema.getDataSource(),interval,interval.getStart().toString(),null,Lists.newArrayList(index.getAvailableDimensions()),Lists.newArrayList(index.getAvailableMetrics()),new NoneShardSpec(),0));
+              DataSegment segment=segmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
               metadataUpdater.publishSegment(segment);
             }
  catch (            IOException e) {
               log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
-              return;
             }
           }
         }
