@@ -1,0 +1,39 @@
+{
+synchronized (lock) {
+    if (!zkWorkers.containsKey(currentlyTerminating)) {
+      currentlyProvisioning=null;
+    }
+    if (currentlyTerminating != null) {
+      log.info("[%s] has not terminated. Wait for it to finish before terminating again.",currentlyTerminating);
+      return null;
+    }
+    MinMaxPriorityQueue<WorkerWrapper> currWorkers=MinMaxPriorityQueue.orderedBy(new Comparator<WorkerWrapper>(){
+      @Override public int compare(      WorkerWrapper w1,      WorkerWrapper w2){
+        return w1.getLastCompletedTaskTime().compareTo(w2.getLastCompletedTaskTime());
+      }
+    }
+).create(zkWorkers.values());
+    if (currWorkers.size() <= config.getMinNuMWorkers()) {
+      return null;
+    }
+    WorkerWrapper thatLazyWorker=currWorkers.poll();
+    if (System.currentTimeMillis() - thatLazyWorker.getLastCompletedTaskTime().getMillis() > config.getMillisToWaitBeforeTerminating()) {
+      DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",Arrays.asList(thatLazyWorker.getWorker().getIp()))));
+      if (result.getReservations().size() != 1 || result.getReservations().get(0).getInstances().size() != 1) {
+        throw new ISE("More than one node with the same private IP[%s], WTF?!",thatLazyWorker.getWorker().getIp());
+      }
+      Instance instance=result.getReservations().get(0).getInstances().get(0);
+      try {
+        log.info("Terminating instance[%s]",instance.getInstanceId());
+        amazonEC2Client.terminateInstances(new TerminateInstancesRequest(Arrays.asList(instance.getInstanceId())));
+        currentlyTerminating=String.format("%s:%s",instance.getPrivateIpAddress(),config.getWorkerPort());
+        return instance;
+      }
+ catch (      Exception e) {
+        log.error(e,"Unable to terminate instance");
+        currentlyTerminating=null;
+      }
+    }
+    return null;
+  }
+}

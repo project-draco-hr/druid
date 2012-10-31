@@ -1,0 +1,34 @@
+{
+synchronized (lock) {
+    if (zkWorkers.containsKey(currentlyProvisioning)) {
+      currentlyProvisioning=null;
+    }
+    if (currentlyProvisioning != null) {
+      log.info("[%s] is still provisioning. Wait for it to finish before requesting new worker.",currentlyProvisioning);
+      return;
+    }
+    Iterable<WorkerWrapper> availableWorkers=FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
+      @Override public boolean apply(      WorkerWrapper input){
+        return !input.isAtCapacity();
+      }
+    }
+);
+    if (Iterables.size(availableWorkers) == 0) {
+      try {
+        log.info("Creating a new instance");
+        RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(config.getAmiId(),1,1).withInstanceType(InstanceType.fromValue(config.getInstanceType())));
+        if (result.getReservation().getInstances().size() != 1) {
+          throw new ISE("Created more than one instance, WTF?!");
+        }
+        Instance instance=result.getReservation().getInstances().get(0);
+        log.info("Created instance: %s",instance.getInstanceId());
+        log.debug("%s",instance);
+        currentlyProvisioning=String.format("%s:%s",instance.getPrivateIpAddress(),config.getWorkerPort());
+      }
+ catch (      Exception e) {
+        log.error(e,"Unable to create instance");
+        currentlyProvisioning=null;
+      }
+    }
+  }
+}

@@ -17,6 +17,7 @@
               log.info("Running task [%s]",task.getId());
               TaskStatus taskStatus;
               try {
+                workerCuratorCoordinator.unannounceTask(task.getId());
                 workerCuratorCoordinator.announceStatus(TaskStatus.running(task.getId()));
                 taskStatus=task.run(taskContext,toolbox);
               }

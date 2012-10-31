@@ -1,0 +1,8 @@
+{
+  try {
+    curatorFramework.delete().guaranteed().forPath(getTaskPathForId(taskId));
+  }
+ catch (  Exception e) {
+    log.warn("Could not delete task path for task[%s], looks like it already went away",taskId);
+  }
+}

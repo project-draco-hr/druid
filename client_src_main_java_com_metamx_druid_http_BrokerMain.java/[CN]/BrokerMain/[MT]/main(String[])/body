@@ -24,7 +24,7 @@
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor(),new CacheMonitor(cacheBroker)));
   lifecycle.addManagedInstance(monitorScheduler);
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
-  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig.getZkHosts(),lifecycle);
+  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,configFactory.build(ServiceDiscoveryConfig.class),lifecycle);
   final RequestLogger requestLogger=Initialization.makeRequestLogger(scheduledExecutorFactory.create(1,"RequestLogger--%d"),props);
   lifecycle.addManagedInstance(requestLogger);

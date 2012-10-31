@@ -1,0 +1,56 @@
+{
+  try {
+    final String workerStatus=JOINER.join(config.getStatusPath(),worker.getHost());
+    final ConcurrentSkipListSet<String> runningTasks=new ConcurrentSkipListSet<String>(cf.getChildren().forPath(workerStatus));
+    final PathChildrenCache watcher=new PathChildrenCache(cf,workerStatus,false);
+    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,runningTasks,watcher);
+    watcher.getListenable().addListener(new PathChildrenCacheListener(){
+      @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
+synchronized (statusLock) {
+          String taskId=null;
+          try {
+            if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
+              String statusPath=event.getData().getPath();
+              TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(statusPath),TaskStatus.class);
+              taskId=taskStatus.getId();
+              log.info("New status[%s] appeared!",taskId);
+              runningTasks.add(taskId);
+              statusLock.notify();
+            }
+ else             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
+              String statusPath=event.getData().getPath();
+              TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(statusPath),TaskStatus.class);
+              taskId=taskStatus.getId();
+              log.info("Task[%s] updated status[%s]!",taskId,taskStatus.getStatusCode());
+              if (taskStatus.isComplete()) {
+                workerWrapper.setLastCompletedTaskTime(new DateTime());
+                TaskWrapper taskWrapper=tasks.get(taskId);
+                if (taskWrapper == null) {
+                  log.warn("A task completed that I didn't know about? WTF?!");
+                }
+ else {
+                  TaskCallback callback=taskWrapper.getCallback();
+                  if (callback != null) {
+                    callback.notify(taskStatus);
+                  }
+                  tasks.remove(taskId);
+                  runningTasks.remove(taskId);
+                  cf.delete().guaranteed().forPath(statusPath);
+                }
+              }
+            }
+          }
+ catch (          Exception e) {
+            retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
+          }
+        }
+      }
+    }
+);
+    zkWorkers.put(worker.getHost(),workerWrapper);
+    watcher.start();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
