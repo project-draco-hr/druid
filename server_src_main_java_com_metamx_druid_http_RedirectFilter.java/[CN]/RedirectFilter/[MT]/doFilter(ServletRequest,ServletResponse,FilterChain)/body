@@ -14,16 +14,7 @@
  else {
     URL url=redirectInfo.getRedirectURL(request.getQueryString(),request.getRequestURI());
     log.info("Forwarding request to [%s]",url);
-    if (request.getMethod().equals(HttpMethod.POST)) {
-      try {
-        forward(request,url);
-      }
- catch (      Exception e) {
-        throw Throwables.propagate(e);
-      }
-    }
- else {
-      response.sendRedirect(url.toString());
-    }
+    response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+    response.setHeader("Location",url.toString());
   }
 }

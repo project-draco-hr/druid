@@ -3,6 +3,7 @@
     WorkerWrapper workerWrapper;
     if ((workerWrapper=findWorkerRunningTask(taskWrapper)) != null) {
       final Worker worker=workerWrapper.getWorker();
+      log.info("Worker[%s] is already running task{%s].",worker.getHost(),taskWrapper.getTask().getId());
       TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId())),TaskStatus.class);
       if (taskStatus.isComplete()) {
         TaskCallback callback=taskWrapper.getCallback();

@@ -22,7 +22,7 @@
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(new FilterHolder(new RedirectFilter(HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),new Lifecycle()),new ToStringResponseHandler(Charsets.UTF_8),new RedirectInfo(){
+  root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),new RedirectInfo(){
     @Override public boolean doLocal(){
       return taskMaster.isLeading();
     }
