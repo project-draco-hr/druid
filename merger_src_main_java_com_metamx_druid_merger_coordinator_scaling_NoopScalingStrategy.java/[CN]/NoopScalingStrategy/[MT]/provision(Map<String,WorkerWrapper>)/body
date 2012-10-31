@@ -1,0 +1,18 @@
+{
+synchronized (lock) {
+    if (currentlyProvisioning != null) {
+      if (!zkWorkers.containsKey(currentlyProvisioning)) {
+        log.info("[%s] is still provisioning. Wait for it to finish before requesting new worker.",currentlyProvisioning);
+        return;
+      }
+    }
+    try {
+      log.info("If I were a real strategy I'd create something now");
+      currentlyProvisioning="willNeverBeTrue";
+    }
+ catch (    Exception e) {
+      log.error(e,"Unable to create instance");
+      currentlyProvisioning=null;
+    }
+  }
+}

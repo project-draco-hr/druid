@@ -9,7 +9,9 @@ synchronized (lock) {
     }
     MinMaxPriorityQueue<WorkerWrapper> currWorkers=MinMaxPriorityQueue.orderedBy(new Comparator<WorkerWrapper>(){
       @Override public int compare(      WorkerWrapper w1,      WorkerWrapper w2){
-        return w1.getLastCompletedTaskTime().compareTo(w2.getLastCompletedTaskTime());
+        DateTime w1Time=(w1 == null) ? new DateTime(0) : w1.getLastCompletedTaskTime();
+        DateTime w2Time=(w2 == null) ? new DateTime(0) : w2.getLastCompletedTaskTime();
+        return w1Time.compareTo(w2Time);
       }
     }
 ).create(zkWorkers.values());
