@@ -8,8 +8,6 @@
   EasyMock.replay(yp);
   databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
-  theSizeAdjuster=EasyMock.createNiceMock(TheSizeAdjuster.class);
-  EasyMock.replay(theSizeAdjuster);
   scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
   EasyMock.replay(scheduledExecutorFactory);
   master=new DruidMaster(new DruidMasterConfig(){
@@ -44,5 +42,5 @@
       return super.getMergeThreshold();
     }
   }
-,null,null,null,databaseSegmentManager,serverInventoryManager,theSizeAdjuster,yp,new NoopServiceEmitter(),scheduledExecutorFactory,loadManagementPeons,null);
+,null,null,null,databaseSegmentManager,serverInventoryManager,yp,new NoopServiceEmitter(),scheduledExecutorFactory,loadManagementPeons,null);
 }

@@ -1,0 +1,17 @@
+{
+  initializeDruidServer();
+  initializeAdapterLoader();
+  final Lifecycle lifecycle=getLifecycle();
+  final ServiceEmitter emitter=getEmitter();
+  final List<Monitor> monitors=getMonitors();
+  final QueryRunnerFactoryConglomerate conglomerate=getConglomerate();
+  final ExecutorService executorService=ExecutorServices.create(getLifecycle(),getConfigFactory().buildWithReplacements(ExecutorServiceConfig.class,ImmutableMap.of("base_path","druid.processing")));
+  ServerManager serverManager=new ServerManager(adapterLoader,conglomerate,emitter,executorService);
+  final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),getConfigFactory().build(ZkCoordinatorConfig.class),druidServer,getPhoneBook(),serverManager,emitter);
+  lifecycle.addManagedInstance(coordinator);
+  monitors.add(new ServerMonitor(getDruidServer(),serverManager));
+  startMonitoring(monitors);
+  final Context root=new Context(getServer(),"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),serverManager,emitter,getRequestLogger())),"/*");
+}

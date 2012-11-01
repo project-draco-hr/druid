@@ -4,7 +4,11 @@
     adapter=storageAdapterLoader.getAdapter(segment.getLoadSpec());
   }
  catch (  StorageAdapterLoadingException e) {
-    storageAdapterLoader.cleanupAdapter(segment.getLoadSpec());
+    try {
+      storageAdapterLoader.cleanupAdapter(segment.getLoadSpec());
+    }
+ catch (    StorageAdapterLoadingException e1) {
+    }
     throw e;
   }
   if (adapter == null) {
@@ -24,7 +28,11 @@ synchronized (lock) {
       throw new StorageAdapterLoadingException("Segment already exists[%s]",segment.getIdentifier());
     }
     loadedIntervals.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(adapter));
-    dataSourceSizes.add(dataSource,segment.getSize());
-    dataSourceCounts.add(dataSource,1L);
+synchronized (dataSourceSizes) {
+      dataSourceSizes.add(dataSource,segment.getSize());
+    }
+synchronized (dataSourceCounts) {
+      dataSourceCounts.add(dataSource,1L);
+    }
   }
 }

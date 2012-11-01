@@ -1,0 +1,6 @@
+{
+  final ScheduledExecutorService globalScheduledExec=getScheduledExecutorFactory().create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(getConfigFactory().build(MonitorSchedulerConfig.class),globalScheduledExec,getEmitter(),monitors);
+  getLifecycle().addManagedInstance(monitorScheduler);
+  return globalScheduledExec;
+}

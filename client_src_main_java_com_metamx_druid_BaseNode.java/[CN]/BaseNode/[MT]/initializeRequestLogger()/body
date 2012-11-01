@@ -1,0 +1,11 @@
+{
+  if (requestLogger == null) {
+    try {
+      setRequestLogger(Initialization.makeRequestLogger(getScheduledExecutorFactory(),getProps()));
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+    lifecycle.addManagedInstance(requestLogger);
+  }
+}

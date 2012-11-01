@@ -1,56 +1,13 @@
 {
   LogLevelAdjuster.register();
-  final ObjectMapper jsonMapper=new DefaultObjectMapper();
-  final ObjectMapper smileMapper=new DefaultObjectMapper(new SmileFactory());
-  smileMapper.getJsonFactory().setCodec(smileMapper);
-  final Properties props=Initialization.loadProperties();
-  final Lifecycle lifecycle=new Lifecycle();
-  final ConfigurationObjectFactory configFactory=Config.createFactory(props);
-  final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
-  final PhoneBook phoneBook=Initialization.createYellowPages(jsonMapper,zkClient,"Client-ZKYP--%s",lifecycle);
-  final HttpClient httpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(Integer.parseInt(props.getProperty("druid.client.http.connections"))).build(),lifecycle);
-  final HttpClient emitterHttpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),lifecycle);
-  final ServiceEmitter emitter=new ServiceEmitter(props.getProperty("druid.service"),props.getProperty("druid.host"),Emitters.create(props,emitterHttpClient,jsonMapper,lifecycle));
-  final QueryToolChestWarehouse warehouse=new ReflectionQueryToolChestWarehouse();
-  final ClientConfig clientConfig=configFactory.build(ClientConfig.class);
-  final ClientSideServerView view=new ClientSideServerView(warehouse,smileMapper,httpClient);
-  final ClientInventoryManager clientInventoryManager=new ClientInventoryManager(clientConfig.getClientInventoryManagerConfig(),phoneBook,view);
-  lifecycle.addManagedInstance(clientInventoryManager);
-  final CacheBroker cacheBroker=MapCacheBroker.create(configFactory.buildWithReplacements(MapCacheBrokerConfig.class,ImmutableMap.of("prefix","druid.bard.cache")));
-  final CachingClusteredClient baseClient=new CachingClusteredClient(warehouse,view,cacheBroker,smileMapper);
-  lifecycle.addManagedInstance(baseClient);
-  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
-  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
-  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor(),new CacheMonitor(cacheBroker)));
-  lifecycle.addManagedInstance(monitorScheduler);
-  final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
-  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig.getZkHosts(),lifecycle);
-  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,configFactory.build(ServiceDiscoveryConfig.class),lifecycle);
-  final RequestLogger requestLogger=Initialization.makeRequestLogger(scheduledExecutorFactory.create(1,"RequestLogger--%d"),props);
-  lifecycle.addManagedInstance(requestLogger);
-  final ClientQuerySegmentWalker texasRanger=new ClientQuerySegmentWalker(warehouse,emitter,baseClient);
-  final Injector injector=Guice.createInjector(new ClientServletModule(texasRanger,clientInventoryManager,jsonMapper));
-  final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
-  final Context root=new Context(server,"/druid/v2",Context.SESSIONS);
-  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
-  root.addServlet(new ServletHolder(new QueryServlet(jsonMapper,smileMapper,texasRanger,emitter,requestLogger)),"/*");
-  root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(GuiceFilter.class,"/heatmap/*",0);
-  root.addFilter(GuiceFilter.class,"/datasources/*",0);
+  Lifecycle lifecycle=new Lifecycle();
+  lifecycle.addManagedInstance(BrokerNode.builder().build());
   try {
     lifecycle.start();
   }
  catch (  Throwable t) {
-    log.error(t,"Error when starting up.  Failing.");
-    System.exit(1);
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    System.exit(2);
   }
-  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
-    @Override public void run(){
-      log.info("Running shutdown hook");
-      lifecycle.stop();
-    }
-  }
-));
-  server.start();
-  server.join();
+  lifecycle.join();
 }

@@ -1,7 +1,7 @@
 {
   if (taskInventoryManager == null) {
     final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
-    final PhoneBook masterYp=Initialization.createYellowPages(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
+    final PhoneBook masterYp=Initialization.createPhoneBook(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
     taskInventoryManager=new TaskInventoryManager(indexerZkConfig,masterYp);
     lifecycle.addManagedInstance(taskInventoryManager);
   }

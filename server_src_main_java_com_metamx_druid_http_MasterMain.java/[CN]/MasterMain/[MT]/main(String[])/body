@@ -5,10 +5,9 @@
   final ConfigurationObjectFactory configFactory=Config.createFactory(props);
   final Lifecycle lifecycle=new Lifecycle();
   final HttpClient httpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),lifecycle);
-  final ServiceEmitter emitter=new ServiceEmitter(props.getProperty("druid.service"),props.getProperty("druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
-  final RestS3Service s3Client=new RestS3Service(new AWSCredentials(props.getProperty("com.metamx.aws.accessKey"),props.getProperty("com.metamx.aws.secretKey")));
+  final ServiceEmitter emitter=new ServiceEmitter(PropUtils.getProperty(props,"druid.service"),PropUtils.getProperty(props,"druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
   final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
-  final PhoneBook masterYp=Initialization.createYellowPages(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
+  final PhoneBook masterYp=Initialization.createPhoneBook(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
   final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
   final SegmentInventoryManager segmentInventoryManager=new SegmentInventoryManager(configFactory.build(SegmentInventoryManagerConfig.class),masterYp);
   final ServerInventoryManager serverInventoryManager=new ServerInventoryManager(configFactory.build(ServerInventoryManagerConfig.class),masterYp);
@@ -25,7 +24,7 @@
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,configFactory.build(ServiceDiscoveryConfig.class),lifecycle);
   final ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,new TheSizeAdjuster(configFactory.build(TheSizeAdjusterConfig.class),jsonMapper,ImmutableMap.<String,SizeLookup>of("s3",new S3SizeLookup(s3Client)),zkClient),masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
