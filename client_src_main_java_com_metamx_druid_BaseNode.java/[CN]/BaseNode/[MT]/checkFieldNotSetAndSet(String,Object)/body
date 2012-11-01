@@ -1,0 +1,19 @@
+{
+  Class<?> theClazz=this.getClass();
+  while (theClazz != null && theClazz != Object.class) {
+    try {
+      final Field field=theClazz.getDeclaredField(fieldName);
+      field.setAccessible(true);
+      Preconditions.checkState(field.get(this) == null,"Cannot set %s once it has already been set.",fieldName);
+      field.set(this,value);
+      return;
+    }
+ catch (    NoSuchFieldException e) {
+      theClazz=theClazz.getSuperclass();
+    }
+catch (    IllegalAccessException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  throw new ISE("Unknown field[%s] on class[%s]",fieldName,this.getClass());
+}
