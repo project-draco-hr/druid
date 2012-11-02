@@ -1,4 +1,7 @@
 {
+  if (!"UTC".equals(DateTimeZone.getDefault().getID())) {
+    throw new ISE("Tests assume default timezone of UTC, please set -Duser.timezone=UTC");
+  }
   timeline=makeStringIntegerTimeline();
   add("2011-04-01/2011-04-03","1",2);
   add("2011-04-03/2011-04-06","1",3);

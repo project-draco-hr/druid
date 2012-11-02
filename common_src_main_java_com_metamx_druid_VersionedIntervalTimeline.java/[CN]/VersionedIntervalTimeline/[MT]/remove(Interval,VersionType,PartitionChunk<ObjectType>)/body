@@ -1,11 +1,11 @@
 {
   try {
     lock.writeLock().lock();
-    Map<VersionType,TimelineEntry> versionEntries=allTimelineEntries.get(interval);
+    Map<VersionType,TimelineEntry<VersionType,ObjectType>> versionEntries=allTimelineEntries.get(interval);
     if (versionEntries == null) {
       return null;
     }
-    TimelineEntry entry=versionEntries.get(version);
+    TimelineEntry<VersionType,ObjectType> entry=versionEntries.get(version);
     if (entry == null) {
       return null;
     }

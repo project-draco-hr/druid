@@ -1,9 +1,9 @@
 {
   List<TimelineObjectHolder<VersionType,ObjectType>> retVal=new ArrayList<TimelineObjectHolder<VersionType,ObjectType>>();
-  NavigableMap<Interval,TimelineEntry> timeline=(incompleteOk) ? incompletePartitionsTimeline : completePartitionsTimeline;
-  for (  Map.Entry<Interval,TimelineEntry> entry : timeline.entrySet()) {
+  NavigableMap<Interval,TimelineEntry<VersionType,ObjectType>> timeline=(incompleteOk) ? incompletePartitionsTimeline : completePartitionsTimeline;
+  for (  Map.Entry<Interval,TimelineEntry<VersionType,ObjectType>> entry : timeline.entrySet()) {
     Interval timelineInterval=entry.getKey();
-    TimelineEntry val=entry.getValue();
+    TimelineEntry<VersionType,ObjectType> val=entry.getValue();
     if (timelineInterval.overlaps(interval)) {
       retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(timelineInterval,val.getVersion(),val.getPartitionHolder()));
     }
