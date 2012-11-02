@@ -3,12 +3,12 @@
     lock.readLock().lock();
     List<TimelineObjectHolder<VersionType,ObjectType>> retVal=new ArrayList<TimelineObjectHolder<VersionType,ObjectType>>();
     Map<Interval,Map<VersionType,TimelineEntry>> overShadowed=Maps.newHashMap();
-    for (    Map.Entry<Interval,TreeMap<VersionType,TimelineEntry<VersionType,ObjectType>>> versionEntry : allTimelineEntries.entrySet()) {
+    for (    Map.Entry<Interval,TreeMap<VersionType,TimelineEntry>> versionEntry : allTimelineEntries.entrySet()) {
       Map<VersionType,TimelineEntry> versionCopy=Maps.newHashMap();
       versionCopy.putAll(versionEntry.getValue());
       overShadowed.put(versionEntry.getKey(),versionCopy);
     }
-    for (    Map.Entry<Interval,TimelineEntry<VersionType,ObjectType>> entry : completePartitionsTimeline.entrySet()) {
+    for (    Map.Entry<Interval,TimelineEntry> entry : completePartitionsTimeline.entrySet()) {
       Map<VersionType,TimelineEntry> versionEntry=overShadowed.get(entry.getValue().getTrueInterval());
       if (versionEntry != null) {
         versionEntry.remove(entry.getValue().getVersion());
@@ -17,7 +17,7 @@
         }
       }
     }
-    for (    Map.Entry<Interval,TimelineEntry<VersionType,ObjectType>> entry : incompletePartitionsTimeline.entrySet()) {
+    for (    Map.Entry<Interval,TimelineEntry> entry : incompletePartitionsTimeline.entrySet()) {
       Map<VersionType,TimelineEntry> versionEntry=overShadowed.get(entry.getValue().getTrueInterval());
       if (versionEntry != null) {
         versionEntry.remove(entry.getValue().getVersion());
@@ -28,7 +28,7 @@
     }
     for (    Map.Entry<Interval,Map<VersionType,TimelineEntry>> versionEntry : overShadowed.entrySet()) {
       for (      Map.Entry<VersionType,TimelineEntry> entry : versionEntry.getValue().entrySet()) {
-        TimelineEntry<VersionType,ObjectType> object=entry.getValue();
+        TimelineEntry object=entry.getValue();
         retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(object.getTrueInterval(),object.getVersion(),object.getPartitionHolder()));
       }
     }
