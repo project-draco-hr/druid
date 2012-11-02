@@ -2,7 +2,7 @@
   if (useDiscovery) {
     final Lifecycle lifecycle=getLifecycle();
     final ServiceDiscoveryConfig serviceDiscoveryConfig=getConfigFactory().build(ServiceDiscoveryConfig.class);
-    CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig.getZkHosts(),lifecycle);
+    CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
     final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
   }
 }
