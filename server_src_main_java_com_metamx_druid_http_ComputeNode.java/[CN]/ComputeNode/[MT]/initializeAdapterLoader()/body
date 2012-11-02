@@ -1,0 +1,12 @@
+{
+  if (adapterLoader == null) {
+    final Properties props=getProps();
+    try {
+      final RestS3Service s3Client=new RestS3Service(new AWSCredentials(PropUtils.getProperty(props,"com.metamx.aws.accessKey"),PropUtils.getProperty(props,"com.metamx.aws.secretKey")));
+      setAdapterLoader(ServerInit.makeDefaultQueryableLoader(s3Client,getConfigFactory().build(QueryableLoaderConfig.class)));
+    }
+ catch (    S3ServiceException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

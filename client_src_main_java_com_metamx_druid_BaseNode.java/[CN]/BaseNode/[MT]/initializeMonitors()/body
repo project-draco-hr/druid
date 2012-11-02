@@ -1,0 +1,10 @@
+{
+  if (monitors == null) {
+    List<Monitor> theMonitors=Lists.newArrayList();
+    theMonitors.add(new JvmMonitor());
+    if (Boolean.parseBoolean(props.getProperty("druid.monitoring.monitorSystem","false"))) {
+      theMonitors.add(new SysMonitor());
+    }
+    setMonitors(theMonitors);
+  }
+}

@@ -8,13 +8,7 @@
 ));
   for (  DataSegment dataSegment : dataSegments) {
     if (dataSegment.getSize() < 0) {
-      log.info("No size on Segment[%s], setting.",dataSegment);
-      DataSegment newDataSegment=sizeAdjuster.updateDescriptor(dataSegment);
-      if (dataSegment == null) {
-        log.warn("newDataSegment was null with old dataSegment[%s].  Skipping.",dataSegment);
-        continue;
-      }
-      dataSegment=newDataSegment;
+      log.warn("No size on Segment[%s], wtf?",dataSegment);
     }
     availableSegments.add(dataSegment);
   }
