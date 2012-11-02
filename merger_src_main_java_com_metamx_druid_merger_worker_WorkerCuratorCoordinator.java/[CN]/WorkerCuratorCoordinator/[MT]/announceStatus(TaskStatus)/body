@@ -4,7 +4,7 @@ synchronized (lock) {
       return;
     }
     try {
-      curatorFramework.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(status.getId()),jsonMapper.writeValueAsBytes(status));
+      curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(status.getId()),jsonMapper.writeValueAsBytes(status));
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);

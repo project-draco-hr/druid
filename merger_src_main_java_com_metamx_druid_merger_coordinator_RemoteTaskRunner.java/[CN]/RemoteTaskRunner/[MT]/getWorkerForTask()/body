@@ -12,8 +12,16 @@
     }
 ));
     if (workerQueue.isEmpty()) {
-      log.makeAlert("There are no worker nodes with capacity to run task!").emit();
-      strategy.provision(zkWorkers);
+      log.info("Worker nodes do not have capacity to run any more tasks!");
+      if (currentlyProvisioning.isEmpty()) {
+        AutoScalingData provisioned=strategy.provision();
+        if (provisioned != null) {
+          currentlyProvisioning.addAll(provisioned.getNodeIds());
+        }
+      }
+ else {
+        log.info("[%s] still provisioning. Wait for all provisioned nodes to complete before requesting new worker.",currentlyProvisioning);
+      }
       return null;
     }
     return workerQueue.peek();

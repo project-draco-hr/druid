@@ -1,17 +1,16 @@
 {
   try {
-    workerListener.start();
-    workerListener.getListenable().addListener(new PathChildrenCacheListener(){
+    workerPathCache.start();
+    workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
+        final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final Worker worker=jsonMapper.readValue(cf.getData().forPath(event.getData().getPath()),Worker.class);
           log.info("New worker[%s] found!",worker.getHost());
           addWorker(worker);
         }
  else         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
-          String workerHost=event.getData().getPath().substring(event.getData().getPath().lastIndexOf("/") + 1);
-          log.info("Worker[%s] removed!",workerHost);
-          removeWorker(workerHost);
+          log.info("Worker[%s] removed!",worker.getHost());
+          removeWorker(worker.getHost());
         }
       }
     }
@@ -21,7 +20,27 @@
     final long truncatedNow=granularity.truncate(new DateTime().getMillis());
     ScheduledExecutors.scheduleAtFixedRate(scheduledExec,new Duration(System.currentTimeMillis(),granularity.next(truncatedNow) - config.getTerminateResourcesWindowMs()),new Duration(config.getTerminateResourcesPeriodMs()),new Runnable(){
       @Override public void run(){
-        strategy.terminateIfNeeded(zkWorkers);
+        if (currentlyTerminating.isEmpty()) {
+          if (zkWorkers.size() <= config.getMinNumWorkers()) {
+            return;
+          }
+          List<WorkerWrapper> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
+            @Override public boolean apply(            @Nullable WorkerWrapper input){
+              return System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() > config.getmaxWorkerIdleTimeMillisBeforeDeletion();
+            }
+          }
+));
+          AutoScalingData terminated=strategy.terminate(Lists.transform(thoseLazyWorkers,new Function<WorkerWrapper,String>(){
+            @Override public String apply(            @Nullable WorkerWrapper input){
+              return input.getWorker().getHost();
+            }
+          }
+));
+          currentlyTerminating.addAll(terminated.getNodeIds());
+        }
+ else {
+          log.info("[%s] still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
+        }
       }
     }
 );

@@ -1,10 +1,10 @@
 {
   try {
-    WorkerWrapper workerWrapper;
-    if ((workerWrapper=findWorkerRunningTask(taskWrapper)) != null) {
+    WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
+    if (workerWrapper != null) {
       final Worker worker=workerWrapper.getWorker();
-      log.info("Worker[%s] is already running task{%s].",worker.getHost(),taskWrapper.getTask().getId());
-      TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId())),TaskStatus.class);
+      log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskWrapper.getTask().getId());
+      TaskStatus taskStatus=jsonMapper.readValue(workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId())).getData(),TaskStatus.class);
       if (taskStatus.isComplete()) {
         TaskCallback callback=taskWrapper.getCallback();
         if (callback != null) {
@@ -13,7 +13,7 @@
         new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()).run();
       }
  else {
-        tasks.put(taskWrapper.getTask().getId(),taskWrapper);
+        tasks.putIfAbsent(taskWrapper.getTask().getId(),taskWrapper);
       }
       return true;
     }
