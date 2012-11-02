@@ -15,10 +15,10 @@
       }
     }
 );
-    Period period=new Period(config.getTerminateResourcesPeriodMs());
-    PeriodGranularity granularity=new PeriodGranularity(period,null,null);
-    final long truncatedNow=granularity.truncate(new DateTime().getMillis());
-    ScheduledExecutors.scheduleAtFixedRate(scheduledExec,new Duration(System.currentTimeMillis(),granularity.next(truncatedNow) - config.getTerminateResourcesWindowMs()),new Duration(config.getTerminateResourcesPeriodMs()),new Runnable(){
+    Period period=new Period(config.getTerminateResourcesDuration());
+    PeriodGranularity granularity=new PeriodGranularity(period,config.getTerminateResourcesOriginDateTime(),null);
+    final long startTime=granularity.next(granularity.truncate(new DateTime().getMillis()));
+    ScheduledExecutors.scheduleAtFixedRate(scheduledExec,new Duration(System.currentTimeMillis(),startTime),config.getTerminateResourcesDuration(),new Runnable(){
       @Override public void run(){
         if (currentlyTerminating.isEmpty()) {
           if (zkWorkers.size() <= config.getMinNumWorkers()) {
