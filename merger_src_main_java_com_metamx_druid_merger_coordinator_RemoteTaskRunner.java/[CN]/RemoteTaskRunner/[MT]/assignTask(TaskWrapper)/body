@@ -1,8 +1,9 @@
 {
-  try {
-    WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
-    if (workerWrapper != null) {
-      final Worker worker=workerWrapper.getWorker();
+  tasks.putIfAbsent(taskWrapper.getTask().getId(),taskWrapper);
+  WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
+  if (workerWrapper != null) {
+    final Worker worker=workerWrapper.getWorker();
+    try {
       log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskWrapper.getTask().getId());
       TaskStatus taskStatus=jsonMapper.readValue(workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId())).getData(),TaskStatus.class);
       if (taskStatus.isComplete()) {
@@ -12,19 +13,19 @@
         }
         new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()).run();
       }
- else {
-        tasks.putIfAbsent(taskWrapper.getTask().getId(),taskWrapper);
-      }
-      return true;
+    }
+ catch (    Exception e) {
+      log.error(e,"Task exists, but hit exception!");
+      retryTask(new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()),taskWrapper);
     }
   }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
+ else {
+    workerWrapper=getWorkerForTask();
+    if (workerWrapper != null) {
+      announceTask(workerWrapper.getWorker(),taskWrapper);
+    }
+ else {
+      retryTask(null,taskWrapper);
+    }
   }
-  WorkerWrapper workerWrapper=getWorkerForTask();
-  if (workerWrapper != null) {
-    announceTask(workerWrapper.getWorker(),taskWrapper);
-    return true;
-  }
-  return false;
 }

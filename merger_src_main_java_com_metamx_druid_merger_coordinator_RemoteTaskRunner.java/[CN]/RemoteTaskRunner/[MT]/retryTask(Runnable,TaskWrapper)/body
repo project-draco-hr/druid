@@ -8,19 +8,12 @@
   }
   scheduledExec.schedule(new Runnable(){
     @Override public void run(){
-      try {
-        if (pre != null) {
-          pre.run();
-        }
-        if (tasks.containsKey(task.getId())) {
-          log.info("Retry[%d] for task[%s]",retryPolicy.getNumRetries(),task.getId());
-          if (!assignTask(taskWrapper)) {
-            throw new ISE("Unable to find worker to send retry request to for task[%s]",task.getId());
-          }
-        }
+      if (pre != null) {
+        pre.run();
       }
- catch (      Exception e) {
-        retryTask(null,taskWrapper);
+      if (tasks.containsKey(task.getId())) {
+        log.info("Retry[%d] for task[%s]",retryPolicy.getNumRetries(),task.getId());
+        assignTask(taskWrapper);
       }
     }
   }
