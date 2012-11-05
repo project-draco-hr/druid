@@ -1,0 +1,82 @@
+{
+  Indexed<String> dimsIndexed=mmappedIndex.getAvailableDimensions();
+  String[] dimensions=new String[dimsIndexed.size()];
+  for (int i=0; i < dimsIndexed.size(); ++i) {
+    dimensions[i]=dimsIndexed.get(i);
+  }
+  Indexed<String> metricsIndexed=mmappedIndex.getAvailableMetrics();
+  String[] metrics=new String[metricsIndexed.size()];
+  for (int i=0; i < metricsIndexed.size(); ++i) {
+    metrics[i]=metricsIndexed.get(i);
+  }
+  IndexedLongs timeBuf=mmappedIndex.getReadOnlyTimestamps();
+  long[] timestamps=new long[timeBuf.size()];
+  timeBuf.fill(0,timestamps);
+  Closeables.closeQuietly(timeBuf);
+  Map<String,MetricHolder> metricVals=Maps.newLinkedHashMap();
+  for (  String metric : metrics) {
+    MetricHolder holder=mmappedIndex.getMetricHolder(metric);
+switch (holder.getType()) {
+case FLOAT:
+      IndexedFloats mmappedFloats=holder.getFloatType();
+    float[] metricValsArray=new float[mmappedFloats.size()];
+  mmappedFloats.fill(0,metricValsArray);
+Closeables.closeQuietly(mmappedFloats);
+metricVals.put(metric,MetricHolder.floatMetric(metric,CompressedFloatsIndexedSupplier.fromFloatBuffer(FloatBuffer.wrap(metricValsArray),ByteOrder.nativeOrder())));
+break;
+case COMPLEX:
+Indexed complexObjects=holder.getComplexType();
+Object[] vals=new Object[complexObjects.size()];
+for (int i=0; i < complexObjects.size(); ++i) {
+vals[i]=complexObjects.get(i);
+}
+final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(holder.getTypeName());
+if (serde == null) {
+throw new ISE("Unknown type[%s]",holder.getTypeName());
+}
+metricVals.put(metric,MetricHolder.complexMetric(metric,holder.getTypeName(),new ArrayIndexed(vals,serde.getObjectStrategy().getClazz())));
+break;
+}
+}
+Map<String,Map<String,Integer>> dimIdLookup=Maps.newHashMap();
+Map<String,String[]> reverseDimLookup=Maps.newHashMap();
+Map<String,ImmutableConciseSet[]> invertedIndexesMap=Maps.newHashMap();
+Map<String,DimensionColumn> dimensionColumns=Maps.newHashMap();
+for (String dimension : dimensions) {
+final Indexed<String> dimValueLookup=mmappedIndex.getDimValueLookup(dimension);
+String[] values=new String[dimValueLookup.size()];
+for (int i=0; i < dimValueLookup.size(); ++i) {
+values[i]=dimValueLookup.get(i);
+}
+Map<String,Integer> lookupMap=Maps.newHashMapWithExpectedSize(dimValueLookup.size());
+for (int i=0; i < values.length; i++) {
+lookupMap.put(values[i],i);
+}
+ImmutableConciseSet[] invertedIndexes=new ImmutableConciseSet[values.length];
+final Indexed<String> dimValuesIndexed=mmappedIndex.getDimValueLookup(dimension);
+for (int i=0; i < dimValuesIndexed.size(); ++i) {
+invertedIndexes[i]=mmappedIndex.getInvertedIndex(dimension,dimValuesIndexed.get(i));
+}
+int[] dimValues=new int[timestamps.length];
+Map<List<Integer>,Integer> rowGroupings=Maps.newHashMap();
+final Indexed<? extends IndexedInts> dimColumn=mmappedIndex.getDimColumn(dimension);
+for (int i=0; i < dimColumn.size(); ++i) {
+int[] expansionValue=Indexedids.arrayFromIndexedInts(dimColumn.get(i));
+Integer value=rowGroupings.get(Ints.asList(expansionValue));
+if (value == null) {
+value=rowGroupings.size();
+rowGroupings.put(Ints.asList(expansionValue),value);
+}
+dimValues[i]=value;
+}
+int[][] expansionValues=new int[rowGroupings.size()][];
+for (Map.Entry<List<Integer>,Integer> entry : rowGroupings.entrySet()) {
+expansionValues[entry.getValue()]=Ints.toArray(entry.getKey());
+}
+dimIdLookup.put(dimension,lookupMap);
+reverseDimLookup.put(dimension,values);
+invertedIndexesMap.put(dimension,invertedIndexes);
+dimensionColumns.put(dimension,new DimensionColumn(expansionValues,dimValues));
+}
+return new Index(dimensions,metrics,mmappedIndex.getDataInterval(),timestamps,metricVals,dimIdLookup,reverseDimLookup,invertedIndexesMap,dimensionColumns);
+}

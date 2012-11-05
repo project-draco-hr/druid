@@ -1,0 +1,5 @@
+{
+  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
+  expectedResults.put(QueryRunnerTestHelper.providerDimension,new HashSet<String>(Arrays.asList("total_market")));
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.providerDimension,"total_market").intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.providerDimension).query("a").build(),expectedResults);
+}

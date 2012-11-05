@@ -1,0 +1,10 @@
+{
+synchronized (log) {
+    if (mmappedIndex != null) {
+      return mmappedIndex;
+    }
+  }
+  IncrementalIndex incrementalIndex=getIncrementalTestIndex();
+  mmappedIndex=persistRealtimeAndLoadMMapped(incrementalIndex);
+  return mmappedIndex;
+}

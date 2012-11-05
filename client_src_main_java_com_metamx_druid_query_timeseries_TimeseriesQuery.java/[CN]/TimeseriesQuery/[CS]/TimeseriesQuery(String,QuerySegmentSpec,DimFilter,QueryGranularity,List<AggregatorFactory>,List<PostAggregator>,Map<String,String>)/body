@@ -1,0 +1,9 @@
+{
+  super(dataSource,querySegmentSpec,context);
+  this.dimFilter=dimFilter;
+  this.granularity=granularity;
+  this.aggregatorSpecs=aggregatorSpecs;
+  this.postAggregatorSpecs=postAggregatorSpecs == null ? ImmutableList.<PostAggregator>of() : postAggregatorSpecs;
+  Preconditions.checkNotNull(aggregatorSpecs,"aggregations cannot be null");
+  Preconditions.checkArgument(aggregatorSpecs.size() > 0,"Must have at least one AggregatorFactory");
+}

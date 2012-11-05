@@ -1,0 +1,10 @@
+{
+  Preconditions.checkArgument(queryIntervals.size() == 1,"Can only handle a single interval, got[%s]",queryIntervals);
+  return FunctionalIterable.create(adapter.makeCursors(filter,queryIntervals.get(0),granularity)).transform(new Function<Cursor,Cursor>(){
+    @Override public Cursor apply(    @Nullable Cursor input){
+      log.debug("Running over cursor[%s]",adapter.getInterval(),input.getTime());
+      return input;
+    }
+  }
+).keep(mapFn);
+}
