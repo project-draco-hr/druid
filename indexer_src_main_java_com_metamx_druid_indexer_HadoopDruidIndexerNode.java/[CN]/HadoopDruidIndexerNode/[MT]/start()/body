@@ -1,10 +1,11 @@
 {
+  Preconditions.checkNotNull(argumentSpec,"argumentSpec");
   final HadoopDruidIndexerConfig config;
   if (argumentSpec.startsWith("{")) {
-    config=jsonMapper.readValue(argumentSpec,HadoopDruidIndexerConfig.class);
+    config=HadoopDruidIndexerConfig.fromString(argumentSpec);
   }
  else {
-    config=jsonMapper.readValue(new File(argumentSpec),HadoopDruidIndexerConfig.class);
+    config=HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
   }
   final List<Interval> dataInterval;
   if (intervalSpec != null) {
