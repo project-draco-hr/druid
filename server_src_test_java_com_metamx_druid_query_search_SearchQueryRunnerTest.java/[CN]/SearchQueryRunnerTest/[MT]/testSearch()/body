@@ -1,0 +1,8 @@
+{
+  SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build();
+  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
+  expectedResults.put(QueryRunnerTestHelper.qualityDimension,Sets.newHashSet("automotive","mezzanine","travel","health","entertainment"));
+  expectedResults.put(QueryRunnerTestHelper.providerDimension,Sets.newHashSet("total_market"));
+  expectedResults.put(QueryRunnerTestHelper.placementishDimension,Sets.newHashSet("a"));
+  checkSearchQuery(searchQuery,expectedResults);
+}

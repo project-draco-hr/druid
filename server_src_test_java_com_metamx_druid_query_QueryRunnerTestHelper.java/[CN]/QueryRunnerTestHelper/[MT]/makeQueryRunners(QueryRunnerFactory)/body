@@ -1,0 +1,7 @@
+{
+  final Index testIndex=TestIndex.getTestIndex();
+  final IncrementalIndex rtIndex=TestIndex.getIncrementalTestIndex();
+  final MMappedIndex persistedRTIndex=TestIndex.getMMappedTestIndex();
+  final MMappedIndex mergedRT=TestIndex.mergedRealtimeIndex();
+  return Arrays.asList(new Object[][]{{makeQueryRunner(factory,new IndexStorageAdapter(testIndex))},{makeQueryRunner(factory,new MMappedIndexStorageAdapter(MMappedIndex.fromIndex(testIndex)))},{makeQueryRunner(factory,new IncrementalIndexStorageAdapter(rtIndex))},{makeQueryRunner(factory,new MMappedIndexStorageAdapter(persistedRTIndex))},{makeQueryRunner(factory,new MMappedIndexStorageAdapter(mergedRT))}});
+}

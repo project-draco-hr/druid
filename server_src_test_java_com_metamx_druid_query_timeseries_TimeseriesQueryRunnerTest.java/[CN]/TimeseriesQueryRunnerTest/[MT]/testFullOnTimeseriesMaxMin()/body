@@ -1,0 +1,14 @@
+{
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))).build();
+  DateTime expectedEarliest=new DateTime("2011-01-12");
+  DateTime expectedLast=new DateTime("2011-04-15");
+  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  Result<TimeseriesResultValue> result=results.iterator().next();
+  Assert.assertEquals(expectedEarliest,result.getTimestamp());
+  Assert.assertFalse(String.format("Timestamp[%s] > expectedLast[%s]",result.getTimestamp(),expectedLast),result.getTimestamp().isAfter(expectedLast));
+  Map value=result.getValue().getBaseObject();
+  Assert.assertTrue(result.toString(),value.containsKey("maxIndex"));
+  Assert.assertTrue(result.toString(),value.containsKey("minIndex"));
+  Assert.assertEquals(result.toString(),1870.06103515625,value.get("maxIndex"));
+  Assert.assertEquals(result.toString(),59.02102279663086,value.get("minIndex"));
+}

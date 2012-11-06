@@ -1,0 +1,51 @@
+{
+  return new CacheStrategy<Result<TimeseriesResultValue>,TimeseriesQuery>(){
+    private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
+    private final List<PostAggregator> postAggs=query.getPostAggregatorSpecs();
+    @Override public byte[] computeCacheKey(    TimeseriesQuery query){
+      final DimFilter dimFilter=query.getDimensionsFilter();
+      final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
+      final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
+      final byte[] granularityBytes=query.getGranularity().cacheKey();
+      return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
+    }
+    @Override public Function<Result<TimeseriesResultValue>,Object> prepareForCache(){
+      return new Function<Result<TimeseriesResultValue>,Object>(){
+        @Override public Object apply(        @Nullable final Result<TimeseriesResultValue> input){
+          TimeseriesResultValue results=input.getValue();
+          final List<Object> retVal=Lists.newArrayListWithCapacity(1 + aggs.size());
+          retVal.add(input.getTimestamp().getMillis());
+          for (          AggregatorFactory agg : aggs) {
+            retVal.add(results.getMetric(agg.getName()));
+          }
+          return retVal;
+        }
+      }
+;
+    }
+    @Override public Function<Object,Result<TimeseriesResultValue>> pullFromCache(){
+      return new Function<Object,Result<TimeseriesResultValue>>(){
+        @Override public Result<TimeseriesResultValue> apply(        @Nullable Object input){
+          List<Object> results=(List<Object>)input;
+          Map<String,Object> retVal=Maps.newLinkedHashMap();
+          Iterator<AggregatorFactory> aggsIter=aggs.iterator();
+          Iterator<Object> resultIter=results.iterator();
+          DateTime timestamp=new DateTime(resultIter.next());
+          while (aggsIter.hasNext() && resultIter.hasNext()) {
+            final AggregatorFactory factory=aggsIter.next();
+            retVal.put(factory.getName(),factory.deserialize(resultIter.next()));
+          }
+          for (          PostAggregator postAgg : postAggs) {
+            retVal.put(postAgg.getName(),postAgg.compute(retVal));
+          }
+          return new Result<TimeseriesResultValue>(timestamp,new TimeseriesResultValue(retVal));
+        }
+      }
+;
+    }
+    @Override public Sequence<Result<TimeseriesResultValue>> mergeSequences(    Sequence<Sequence<Result<TimeseriesResultValue>>> seqOfSequences){
+      return new MergeSequence<Result<TimeseriesResultValue>>(getOrdering(),seqOfSequences);
+    }
+  }
+;
+}

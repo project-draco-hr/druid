@@ -1,0 +1,29 @@
+{
+synchronized (log) {
+    if (mergedRealtime != null) {
+      return mergedRealtime;
+    }
+    try {
+      IncrementalIndex top=makeRealtimeIndex("druid.sample.tsv.top");
+      IncrementalIndex bottom=makeRealtimeIndex("druid.sample.tsv.bottom");
+      File tmpFile=File.createTempFile("yay","who");
+      tmpFile.delete();
+      File topFile=new File(tmpFile,"top");
+      File bottomFile=new File(tmpFile,"bottom");
+      File mergedFile=new File(tmpFile,"merged");
+      topFile.mkdirs();
+      topFile.deleteOnExit();
+      bottomFile.mkdirs();
+      bottomFile.deleteOnExit();
+      mergedFile.mkdirs();
+      mergedFile.deleteOnExit();
+      IndexMerger.persist(top,DATA_INTERVAL,topFile);
+      IndexMerger.persist(bottom,DATA_INTERVAL,bottomFile);
+      mergedRealtime=com.metamx.druid.index.v1.IndexIO.mapDir(IndexMerger.mergeMMapped(Arrays.asList(com.metamx.druid.index.v1.IndexIO.mapDir(topFile),com.metamx.druid.index.v1.IndexIO.mapDir(bottomFile)),METRIC_AGGS,mergedFile));
+      return mergedRealtime;
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

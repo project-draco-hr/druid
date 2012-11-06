@@ -1,0 +1,10 @@
+{
+synchronized (log) {
+    if (unionIndexTop != null) {
+      return unionIndexTop;
+    }
+  }
+  IncrementalIndex incrementalIndex=makeRealtimeIndex("druid.sample.tsv.top");
+  MMappedIndex mmapped=persistRealtimeAndLoadMMapped(incrementalIndex);
+  return unionIndexTop=convertMMapToIndex(mmapped);
+}

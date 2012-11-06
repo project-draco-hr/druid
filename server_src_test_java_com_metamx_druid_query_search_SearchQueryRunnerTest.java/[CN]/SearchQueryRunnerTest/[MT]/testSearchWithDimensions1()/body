@@ -1,0 +1,5 @@
+{
+  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
+  expectedResults.putAll(ImmutableMap.<String,Set<String>>of(QueryRunnerTestHelper.qualityDimension,new HashSet<String>(Arrays.asList("automotive","mezzanine","travel","health","entertainment")),QueryRunnerTestHelper.providerDimension,new HashSet<String>(Arrays.asList("total_market"))));
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimensions(Arrays.asList(QueryRunnerTestHelper.qualityDimension,QueryRunnerTestHelper.providerDimension)).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build(),expectedResults);
+}

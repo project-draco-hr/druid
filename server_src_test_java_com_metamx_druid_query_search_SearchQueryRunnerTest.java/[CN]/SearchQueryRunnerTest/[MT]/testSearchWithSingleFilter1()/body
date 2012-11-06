@@ -1,0 +1,5 @@
+{
+  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
+  expectedResults.put(QueryRunnerTestHelper.qualityDimension,new HashSet<String>(Arrays.asList("automotive")));
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.qualityDimension,"automotive").intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.qualityDimension).query("a").build(),expectedResults);
+}
