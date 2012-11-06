@@ -1,0 +1,13 @@
+{
+  this.registererers=Lists.transform(registererers,new Function<String,Registererer>(){
+    @Override public Registererer apply(    @Nullable String input){
+      try {
+        return (Registererer)Class.forName(input).newInstance();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+}
