@@ -1,0 +1,16 @@
+{
+  final HadoopDruidIndexerConfig config;
+  if (argumentSpec.startsWith("{")) {
+    config=jsonMapper.readValue(argumentSpec,HadoopDruidIndexerConfig.class);
+  }
+ else {
+    config=jsonMapper.readValue(new File(argumentSpec),HadoopDruidIndexerConfig.class);
+  }
+  final List<Interval> dataInterval;
+  if (intervalSpec != null) {
+    dataInterval=Lists.transform(Arrays.asList(intervalSpec.split(",")),new StringIntervalFunction());
+    config.setIntervals(dataInterval);
+  }
+  config.setVersion(new DateTime());
+  new HadoopDruidIndexerJob(config).run();
+}

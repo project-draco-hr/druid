@@ -1,0 +1,20 @@
+{
+  if (args.length < 1 || args.length > 2) {
+    HadoopDruidIndexerNode.printHelp();
+    System.exit(2);
+  }
+  HadoopDruidIndexerNode node=HadoopDruidIndexerNode.builder().build();
+  node.setIntervalSpec(args.length == 1 ? null : args[0]);
+  node.setArgumentSpec(args[args.length == 1 ? 0 : 1]);
+  Lifecycle lifecycle=new Lifecycle();
+  lifecycle.addManagedInstance(node);
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    Thread.sleep(500);
+    HadoopDruidIndexerNode.printHelp();
+    System.exit(1);
+  }
+}
