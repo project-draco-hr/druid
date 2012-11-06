@@ -2,18 +2,18 @@
   if (props != null) {
     return props;
   }
-  Properties loadedProps=null;
+  Properties sp=System.getProperties();
+  Properties tmp_props=new Properties(fileProps);
+  tmp_props.putAll(sp);
   final InputStream stream=ClassLoader.getSystemResourceAsStream("runtime.properties");
   if (stream == null) {
-    log.info("runtime.properties didn't exist as a resource, loading system properties instead.");
-    loadedProps=System.getProperties();
+    log.info("runtime.properties not found as a resource in classpath, relying only on system properties, and zookeeper now.");
   }
  else {
-    log.info("Loading properties from runtime.properties.");
+    log.info("Loading properties from runtime.properties");
     try {
-      loadedProps=new Properties();
       try {
-        loadedProps.load(stream);
+        fileProps.load(stream);
       }
  catch (      IOException e) {
         throw Throwables.propagate(e);
@@ -23,9 +23,44 @@
       Closeables.closeQuietly(stream);
     }
   }
-  for (  String prop : loadedProps.stringPropertyNames()) {
-    log.info("Loaded Property[%s] as [%s]",prop,loadedProps.getProperty(prop));
+  for (  String prop : fileProps.stringPropertyNames()) {
+    log.info("Loaded(runtime.properties) Property[%s] as [%s]",prop,fileProps.getProperty(prop));
   }
-  props=loadedProps;
-  return loadedProps;
+  final String zk_hosts=tmp_props.getProperty("druid.zk.service.host");
+  if (zk_hosts != null) {
+    if (!zk_hosts.equals("none")) {
+      final ZkClient zkPropLoadingClient;
+      final ZkClientConfig clientConfig=new ZkClientConfig(){
+        @Override public String getZkHosts(){
+          return zk_hosts;
+        }
+      }
+;
+      zkPropLoadingClient=new ZkClient(new ZkConnection(clientConfig.getZkHosts()),clientConfig.getConnectionTimeout(),new PropertiesZkSerializer());
+      zkPropLoadingClient.waitUntilConnected();
+      String propertiesZNodePath=tmp_props.getProperty("druid.zk.paths.propertiesPath");
+      if (propertiesZNodePath == null) {
+        String zpathBase=tmp_props.getProperty("druid.zk.paths.base",DEFAULT_ZPATH);
+        propertiesZNodePath=makePropPath(zpathBase);
+      }
+      if (zkPropLoadingClient.exists(propertiesZNodePath)) {
+        Properties p=zkPropLoadingClient.readData(propertiesZNodePath,true);
+        if (p != null) {
+          zkProps.putAll(p);
+        }
+      }
+      for (      String prop : zkProps.stringPropertyNames()) {
+        log.info("Loaded(properties stored in zk) Property[%s] as [%s]",prop,zkProps.getProperty(prop));
+      }
+    }
+  }
+ else {
+    log.warn("property druid.zk.service.host is not set, so no way to contact zookeeper for coordination.");
+  }
+  if (!validateResolveProps(tmp_props)) {
+    log.error("Properties failed to validate, cannot continue");
+    throw new RuntimeException("Properties failed to validate");
+  }
+  props=tmp_props;
+  return props;
 }
