@@ -7,11 +7,5 @@
  else {
     config=HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
   }
-  final List<Interval> dataInterval;
-  if (intervalSpec != null) {
-    dataInterval=Lists.transform(Arrays.asList(intervalSpec.split(",")),new StringIntervalFunction());
-    config.setIntervals(dataInterval);
-  }
-  config.setVersion(new DateTime());
   new HadoopDruidIndexerJob(config).run();
 }

@@ -1,10 +1,10 @@
 {
-  if (args.length < 1 || args.length > 2) {
-    HadoopDruidIndexerNode.printHelp();
+  if (args.length != 1) {
+    printHelp();
     System.exit(2);
   }
   HadoopDruidIndexerNode node=HadoopDruidIndexerNode.builder().build();
-  node.setIntervalSpec(args.length == 1 ? null : args[0]).setArgumentSpec(args[args.length == 1 ? 0 : 1]);
+  node.setArgumentSpec(args[0]);
   Lifecycle lifecycle=new Lifecycle();
   lifecycle.addManagedInstance(node);
   try {
@@ -13,7 +13,7 @@
  catch (  Throwable t) {
     log.info(t,"Throwable caught at startup, committing seppuku");
     Thread.sleep(500);
-    HadoopDruidIndexerNode.printHelp();
+    printHelp();
     System.exit(1);
   }
 }
