@@ -5,9 +5,9 @@ synchronized (statusLock) {
     try {
       log.info("Coordinator asking Worker[%s] to add task[%s]",theWorker.getHost(),task.getId());
       tasks.put(task.getId(),taskWrapper);
-      cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(JOINER.join(config.getTaskPath(),theWorker.getHost(),task.getId()),jsonMapper.writeValueAsBytes(new TaskHolder(task,taskContext)));
+      cf.create().withMode(CreateMode.EPHEMERAL).forPath(JOINER.join(config.getTaskPath(),theWorker.getHost(),task.getId()),jsonMapper.writeValueAsBytes(new TaskHolder(task,taskContext)));
       while (findWorkerRunningTask(taskWrapper) == null) {
-        statusLock.wait();
+        statusLock.wait(config.getTaskAssignmentTimeoutDuration().getMillis());
       }
     }
  catch (    Exception e) {

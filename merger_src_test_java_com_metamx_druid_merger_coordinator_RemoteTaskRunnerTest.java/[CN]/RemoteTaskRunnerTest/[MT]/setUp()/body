@@ -1,0 +1,15 @@
+{
+  testingCluster=new TestingCluster(1);
+  testingCluster.start();
+  cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).build();
+  cf.start();
+  cf.create().creatingParentsIfNeeded().forPath(announcementsPath);
+  cf.create().forPath(tasksPath);
+  cf.create().forPath(String.format("%s/worker1",tasksPath));
+  cf.create().forPath(statusPath);
+  cf.create().forPath(String.format("%s/worker1",statusPath));
+  pathChildrenCache=new PathChildrenCache(cf,announcementsPath,true);
+  worker1=new Worker("worker1","localhost",3,"0");
+  makeRemoteTaskRunner();
+  makeTaskMonitor();
+}

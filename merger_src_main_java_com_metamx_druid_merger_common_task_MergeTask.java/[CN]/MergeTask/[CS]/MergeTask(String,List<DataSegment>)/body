@@ -3,7 +3,7 @@
   Preconditions.checkArgument(segments.size() > 0,"segments nonempty");
   Preconditions.checkArgument(Iterables.size(Iterables.filter(segments,new Predicate<DataSegment>(){
     @Override public boolean apply(    @Nullable DataSegment segment){
-      return segment == null || !segment.getDataSource().equals(dataSource);
+      return segment == null || !segment.getDataSource().equalsIgnoreCase(dataSource);
     }
   }
 )) == 0,"segments in the wrong datasource");

@@ -1,25 +1,22 @@
 {
   try {
-    final String workerStatus=JOINER.join(config.getStatusPath(),worker.getHost());
-    final ConcurrentSkipListSet<String> runningTasks=new ConcurrentSkipListSet<String>(cf.getChildren().forPath(workerStatus));
-    final PathChildrenCache watcher=new PathChildrenCache(cf,workerStatus,false);
-    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,runningTasks,watcher);
-    watcher.getListenable().addListener(new PathChildrenCacheListener(){
+    currentlyProvisioning.remove(worker.getHost());
+    final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
+    final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
+    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,statusCache,jsonMapper);
+    statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
 synchronized (statusLock) {
           String taskId=null;
           try {
             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-              String statusPath=event.getData().getPath();
-              TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(statusPath),TaskStatus.class);
-              taskId=taskStatus.getId();
-              log.info("New status[%s] appeared!",taskId);
-              runningTasks.add(taskId);
+              TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
+              log.info("New status[%s] appeared!",taskStatus.getId());
               statusLock.notify();
             }
  else             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
               String statusPath=event.getData().getPath();
-              TaskStatus taskStatus=jsonMapper.readValue(cf.getData().forPath(statusPath),TaskStatus.class);
+              TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
               taskId=taskStatus.getId();
               log.info("Task[%s] updated status[%s]!",taskId,taskStatus.getStatusCode());
               if (taskStatus.isComplete()) {
@@ -34,13 +31,13 @@ synchronized (statusLock) {
                     callback.notify(taskStatus);
                   }
                   tasks.remove(taskId);
-                  runningTasks.remove(taskId);
-                  cf.delete().guaranteed().forPath(statusPath);
+                  cf.delete().guaranteed().inBackground().forPath(statusPath);
                 }
               }
             }
           }
  catch (          Exception e) {
+            log.error(e,"Exception in status listener");
             retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
           }
         }
@@ -48,7 +45,7 @@ synchronized (statusLock) {
     }
 );
     zkWorkers.put(worker.getHost(),workerWrapper);
-    watcher.start();
+    statusCache.start();
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

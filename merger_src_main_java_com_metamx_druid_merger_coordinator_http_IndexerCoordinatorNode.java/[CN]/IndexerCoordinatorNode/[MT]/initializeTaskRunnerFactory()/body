@@ -4,9 +4,17 @@
       taskRunnerFactory=new TaskRunnerFactory(){
         @Override public TaskRunner build(){
           final ScheduledExecutorService retryScheduledExec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("RemoteRunnerRetryExec--%d").build());
-          ScalingStrategy strategy=new S3AutoScalingStrategy(new AmazonEC2Client(new BasicAWSCredentials(props.getProperty("com.metamx.aws.accessKey"),props.getProperty("com.metamx.aws.secretKey"))),configFactory.build(S3AutoScalingStrategyConfig.class));
-          strategy=new NoopScalingStrategy(configFactory.build(S3AutoScalingStrategyConfig.class));
-          return new RemoteTaskRunner(jsonMapper,configFactory.build(RemoteTaskRunnerConfig.class),curatorFramework,new PathChildrenCache(curatorFramework,indexerZkConfig.getAnnouncementPath(),false),retryScheduledExec,new RetryPolicyFactory(configFactory.build(RetryPolicyConfig.class)),new ConcurrentHashMap<String,WorkerWrapper>(),new ConcurrentHashMap<String,TaskWrapper>(),strategy);
+          ScalingStrategy strategy;
+          if (config.getStrategyImpl().equalsIgnoreCase("ec2")) {
+            strategy=new EC2AutoScalingStrategy(new AmazonEC2Client(new BasicAWSCredentials(PropUtils.getProperty(props,"com.metamx.aws.accessKey"),PropUtils.getProperty(props,"com.metamx.aws.secretKey"))),configFactory.build(EC2AutoScalingStrategyConfig.class));
+          }
+ else           if (config.getStorageImpl().equalsIgnoreCase("noop")) {
+            strategy=new NoopScalingStrategy();
+          }
+ else {
+            throw new ISE("Invalid strategy implementation: %s",config.getStrategyImpl());
+          }
+          return new RemoteTaskRunner(jsonMapper,configFactory.build(RemoteTaskRunnerConfig.class),curatorFramework,new PathChildrenCache(curatorFramework,indexerZkConfig.getAnnouncementPath(),true),retryScheduledExec,new RetryPolicyFactory(configFactory.build(RetryPolicyConfig.class)),strategy);
         }
       }
 ;
@@ -21,7 +29,7 @@
 ;
     }
  else {
-      throw new IllegalStateException(String.format("Invalid runner implementation: %s",config.getRunnerImpl()));
+      throw new ISE("Invalid runner implementation: %s",config.getRunnerImpl());
     }
   }
 }

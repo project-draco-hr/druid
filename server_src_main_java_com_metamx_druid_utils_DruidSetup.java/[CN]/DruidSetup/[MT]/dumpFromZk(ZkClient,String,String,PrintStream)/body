@@ -1,0 +1,17 @@
+{
+  final String propPath=Initialization.makePropPath(zpathBase);
+  if (zkClient.exists(propPath)) {
+    Properties currProps=zkClient.readData(propPath,true);
+    if (currProps != null) {
+      out.println("# Begin Properties Listing for zkConnect=" + zkConnect + " zpath="+ propPath);
+      try {
+        currProps.store(out,"Druid");
+      }
+ catch (      IOException ignored) {
+      }
+      out.println("# End Properties Listing for zkConnect=" + zkConnect + " zpath="+ propPath);
+      out.println("# NOTE:  properties like druid.zk.paths.*Path are always stored in zookeeper in absolute form.");
+      out.println();
+    }
+  }
+}

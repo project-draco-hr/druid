@@ -1,27 +1,54 @@
 {
   try {
-    workerListener.start();
-    workerListener.getListenable().addListener(new PathChildrenCacheListener(){
+    workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final Worker worker=jsonMapper.readValue(cf.getData().forPath(event.getData().getPath()),Worker.class);
+          final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
           log.info("New worker[%s] found!",worker.getHost());
           addWorker(worker);
         }
  else         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
-          String workerHost=event.getData().getPath().substring(event.getData().getPath().lastIndexOf("/") + 1);
-          log.info("Worker[%s] removed!",workerHost);
-          removeWorker(workerHost);
+          final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
+          log.info("Worker[%s] removed!",worker.getHost());
+          removeWorker(worker.getHost());
         }
       }
     }
 );
-    Period period=new Period(config.getTerminateResourcesPeriodMs());
-    PeriodGranularity granularity=new PeriodGranularity(period,null,null);
-    final long truncatedNow=granularity.truncate(new DateTime().getMillis());
-    ScheduledExecutors.scheduleAtFixedRate(scheduledExec,new Duration(System.currentTimeMillis(),granularity.next(truncatedNow) - config.getTerminateResourcesWindowMs()),new Duration(config.getTerminateResourcesPeriodMs()),new Runnable(){
+    workerPathCache.start();
+    Period period=new Period(config.getTerminateResourcesDuration());
+    PeriodGranularity granularity=new PeriodGranularity(period,config.getTerminateResourcesOriginDateTime(),null);
+    final long startTime=granularity.next(granularity.truncate(new DateTime().getMillis()));
+    ScheduledExecutors.scheduleAtFixedRate(scheduledExec,new Duration(System.currentTimeMillis(),startTime),config.getTerminateResourcesDuration(),new Runnable(){
       @Override public void run(){
-        strategy.terminateIfNeeded(zkWorkers);
+        if (currentlyTerminating.isEmpty()) {
+          if (zkWorkers.size() <= config.getMinNumWorkers()) {
+            return;
+          }
+          List<WorkerWrapper> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
+            @Override public boolean apply(            @Nullable WorkerWrapper input){
+              return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() > config.getMaxWorkerIdleTimeMillisBeforeDeletion();
+            }
+          }
+));
+          AutoScalingData terminated=strategy.terminate(Lists.transform(thoseLazyWorkers,new Function<WorkerWrapper,String>(){
+            @Override public String apply(            @Nullable WorkerWrapper input){
+              return input.getWorker().getHost();
+            }
+          }
+));
+          if (terminated != null) {
+            currentlyTerminating.addAll(terminated.getNodeIds());
+            lastTerminateTime=new DateTime();
+          }
+        }
+ else {
+          Duration durSinceLastTerminate=new Duration(new DateTime(),lastTerminateTime);
+          if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
+            log.makeAlert("It has been %d millis since last scheduled termination but nodes remain",durSinceLastTerminate.getMillis()).emit();
+          }
+          log.info("[%s] still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
+        }
       }
     }
 );
