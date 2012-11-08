@@ -1,3 +1,8 @@
 {
-  run(task,taskContext,callback,retryPolicyFactory.makeRetryPolicy());
+  if (tasks.contains(task.getId())) {
+    throw new ISE("Assigned a task[%s] that already exists, WTF is happening?!",task.getId());
+  }
+  TaskWrapper taskWrapper=new TaskWrapper(task,context,callback,retryPolicyFactory.makeRetryPolicy());
+  tasks.put(taskWrapper.getTask().getId(),taskWrapper);
+  assignTask(taskWrapper);
 }

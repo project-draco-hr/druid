@@ -20,8 +20,8 @@
   lifecycle.addManagedInstance(healthMonitor);
   final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
-  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig.getZkHosts(),lifecycle);
-  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,configFactory.build(ServiceDiscoveryConfig.class),lifecycle);
+  CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
+  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
   final ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
   final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
@@ -63,7 +63,7 @@
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(new FilterHolder(new RedirectFilter(HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),new Lifecycle()),new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
+  root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
   root.addFilter(GuiceFilter.class,"/info/*",0);
   root.addFilter(GuiceFilter.class,"/master/*",0);
   server.start();

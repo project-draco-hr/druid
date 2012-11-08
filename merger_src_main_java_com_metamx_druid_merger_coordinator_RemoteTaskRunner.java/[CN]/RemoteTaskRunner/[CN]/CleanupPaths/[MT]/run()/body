@@ -1,0 +1,16 @@
+{
+  try {
+    final String statusPath=JOINER.join(config.getStatusPath(),workerId,taskId);
+    cf.delete().guaranteed().forPath(statusPath);
+  }
+ catch (  Exception e) {
+    log.warn("Tried to delete a status path that didn't exist! Must've gone away already?");
+  }
+  try {
+    final String taskPath=JOINER.join(config.getTaskPath(),workerId,taskId);
+    cf.delete().guaranteed().forPath(taskPath);
+  }
+ catch (  Exception e) {
+    log.warn("Tried to delete a task path that didn't exist! Must've gone away already?");
+  }
+}

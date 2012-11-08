@@ -1,3 +1,13 @@
 {
-  scheduledExec.shutdownNow();
+  try {
+    for (    WorkerWrapper workerWrapper : zkWorkers.values()) {
+      workerWrapper.close();
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+ finally {
+    started=false;
+  }
 }

@@ -6,7 +6,20 @@ synchronized (lock) {
     }
     makePathIfNotExisting(getTaskPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
     makePathIfNotExisting(getStatusPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
-    makePathIfNotExisting(getAnnouncementsPathForWorker(),CreateMode.EPHEMERAL,worker.getStringProps());
+    makePathIfNotExisting(getAnnouncementsPathForWorker(),CreateMode.EPHEMERAL,worker);
+    curatorFramework.getConnectionStateListenable().addListener(new ConnectionStateListener(){
+      @Override public void stateChanged(      CuratorFramework client,      ConnectionState newState){
+        try {
+          if (newState.equals(ConnectionState.RECONNECTED)) {
+            makePathIfNotExisting(getAnnouncementsPathForWorker(),CreateMode.EPHEMERAL,worker);
+          }
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
     started=true;
   }
 }
