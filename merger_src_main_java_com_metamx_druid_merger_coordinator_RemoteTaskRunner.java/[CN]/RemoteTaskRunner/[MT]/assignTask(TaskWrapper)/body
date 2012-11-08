@@ -1,5 +1,4 @@
 {
-  tasks.putIfAbsent(taskWrapper.getTask().getId(),taskWrapper);
   WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
   if (workerWrapper != null) {
     final Worker worker=workerWrapper.getWorker();
@@ -20,7 +19,7 @@
     }
   }
  else {
-    workerWrapper=getWorkerForTask();
+    workerWrapper=findWorkerForTask();
     if (workerWrapper != null) {
       announceTask(workerWrapper.getWorker(),taskWrapper);
     }

@@ -3,18 +3,7 @@
     currentlyProvisioning.remove(worker.getHost());
     final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
-    final ConcurrentSkipListSet<String> runningTasks=new ConcurrentSkipListSet<String>(Lists.transform(statusCache.getCurrentData(),new Function<ChildData,String>(){
-      @Override public String apply(      @Nullable ChildData input){
-        try {
-          return jsonMapper.readValue(input.getData(),TaskStatus.class).getId();
-        }
- catch (        Exception e) {
-          throw Throwables.propagate(e);
-        }
-      }
-    }
-));
-    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,runningTasks,statusCache);
+    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,statusCache,jsonMapper);
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
 synchronized (statusLock) {
@@ -22,9 +11,7 @@ synchronized (statusLock) {
           try {
             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
               TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
-              taskId=taskStatus.getId();
-              log.info("New status[%s] appeared!",taskId);
-              runningTasks.add(taskId);
+              log.info("New status[%s] appeared!",taskStatus.getId());
               statusLock.notify();
             }
  else             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
@@ -44,13 +31,13 @@ synchronized (statusLock) {
                     callback.notify(taskStatus);
                   }
                   tasks.remove(taskId);
-                  runningTasks.remove(taskId);
-                  cf.delete().guaranteed().forPath(statusPath);
+                  cf.delete().guaranteed().inBackground().forPath(statusPath);
                 }
               }
             }
           }
  catch (          Exception e) {
+            log.error(e,"Exception in status listener");
             retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
           }
         }

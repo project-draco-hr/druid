@@ -1,0 +1,14 @@
+{
+  boolean zpathValidateFailed=false;
+  if (zpathBase != null) {
+    if (!zpathBase.startsWith("/")) {
+      zpathValidateFailed=true;
+      System.err.println(errorMsgPrefix + " must start with '/' (slash); found=" + zpathBase);
+    }
+    if (zpathBase.endsWith("/")) {
+      zpathValidateFailed=true;
+      System.err.println(errorMsgPrefix + " must NOT end with '/' (slash); found=" + zpathBase);
+    }
+  }
+  return zpathValidateFailed;
+}

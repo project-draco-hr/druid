@@ -1,0 +1,31 @@
+{
+  InputStream is=null;
+  try {
+    is=new FileInputStream(pfile);
+  }
+ catch (  FileNotFoundException e) {
+    System.err.println("File not found: " + pfile);
+    System.err.println("No changes made.");
+    System.exit(4);
+  }
+catch (  IOException ioe) {
+    reportErrorAndExit(pfile,ioe);
+  }
+  try {
+    props.load(is);
+  }
+ catch (  IOException e) {
+    reportErrorAndExit(pfile,e);
+  }
+ finally {
+    Closeables.closeQuietly(is);
+  }
+  if (!Initialization.validateResolveProps(props)) {
+    System.exit(9);
+  }
+  System.out.println("Effective zpath properties:");
+  for (  String pname : Initialization.SUB_PATH_PROPS) {
+    System.out.println("  " + pname + "="+ props.getProperty(pname));
+  }
+  System.out.println("  " + "druid.zk.paths.propertiesPath" + "="+ props.getProperty("druid.zk.paths.propertiesPath"));
+}
