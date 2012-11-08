@@ -1,0 +1,15 @@
+{
+  if (data instanceof Properties) {
+    final Properties props=(Properties)data;
+    ByteArrayOutputStream bos=new ByteArrayOutputStream(props.size() * 60 + 30);
+    try {
+      final String ts=df.format(new Date());
+      props.setProperty("__MODIFIED",ts);
+      props.store(bos,"Druid");
+    }
+ catch (    IOException ignored) {
+    }
+    return bos.toByteArray();
+  }
+  throw new IAE("Can only serialize Properties into ZK");
+}
