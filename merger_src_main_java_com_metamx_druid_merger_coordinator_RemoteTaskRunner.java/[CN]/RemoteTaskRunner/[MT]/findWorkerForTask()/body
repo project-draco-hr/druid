@@ -1,0 +1,37 @@
+{
+  try {
+    final MinMaxPriorityQueue<WorkerWrapper> workerQueue=MinMaxPriorityQueue.<WorkerWrapper>orderedBy(new Comparator<WorkerWrapper>(){
+      @Override public int compare(      WorkerWrapper w1,      WorkerWrapper w2){
+        return -Ints.compare(w1.getRunningTasks().size(),w2.getRunningTasks().size());
+      }
+    }
+).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
+      @Override public boolean apply(      WorkerWrapper input){
+        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(config.getMinWorkerVersion()) >= 0);
+      }
+    }
+));
+    if (workerQueue.isEmpty()) {
+      log.info("Worker nodes do not have capacity to run any more tasks!");
+      if (currentlyProvisioning.isEmpty()) {
+        AutoScalingData provisioned=strategy.provision(currentlyProvisioning.size());
+        if (provisioned != null) {
+          currentlyProvisioning.addAll(provisioned.getNodeIds());
+          lastProvisionTime=new DateTime();
+        }
+      }
+ else {
+        Duration durSinceLastProvision=new Duration(new DateTime(),lastProvisionTime);
+        if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
+          log.makeAlert("It has been %d millis since last scheduled provision but nodes remain",durSinceLastProvision.getMillis()).emit();
+        }
+        log.info("[%s] still provisioning. Wait for all provisioned nodes to complete before requesting new worker.",currentlyProvisioning);
+      }
+      return null;
+    }
+    return workerQueue.peek();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

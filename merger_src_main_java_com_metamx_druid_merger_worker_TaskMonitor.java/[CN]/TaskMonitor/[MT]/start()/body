@@ -4,7 +4,7 @@
     pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final TaskHolder taskHolder=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),TaskHolder.class);
+          final TaskHolder taskHolder=toolbox.getObjectMapper().readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),TaskHolder.class);
           final Task task=taskHolder.getTask();
           final TaskContext taskContext=taskHolder.getTaskContext();
           if (workerCuratorCoordinator.statusExists(task.getId())) {

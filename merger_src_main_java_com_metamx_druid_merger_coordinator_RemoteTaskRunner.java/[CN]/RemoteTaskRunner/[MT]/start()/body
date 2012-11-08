@@ -1,20 +1,21 @@
 {
   try {
-    workerPathCache.start();
     workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
-        final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
+          final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
           log.info("New worker[%s] found!",worker.getHost());
           addWorker(worker);
         }
  else         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
+          final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
           log.info("Worker[%s] removed!",worker.getHost());
           removeWorker(worker.getHost());
         }
       }
     }
 );
+    workerPathCache.start();
     Period period=new Period(config.getTerminateResourcesDuration());
     PeriodGranularity granularity=new PeriodGranularity(period,config.getTerminateResourcesOriginDateTime(),null);
     final long startTime=granularity.next(granularity.truncate(new DateTime().getMillis()));
@@ -26,7 +27,7 @@
           }
           List<WorkerWrapper> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
             @Override public boolean apply(            @Nullable WorkerWrapper input){
-              return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() > config.getmaxWorkerIdleTimeMillisBeforeDeletion();
+              return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() > config.getMaxWorkerIdleTimeMillisBeforeDeletion();
             }
           }
 ));
@@ -36,9 +37,16 @@
             }
           }
 ));
-          currentlyTerminating.addAll(terminated.getNodeIds());
+          if (terminated != null) {
+            currentlyTerminating.addAll(terminated.getNodeIds());
+            lastTerminateTime=new DateTime();
+          }
         }
  else {
+          Duration durSinceLastTerminate=new Duration(new DateTime(),lastTerminateTime);
+          if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
+            log.makeAlert("It has been %d millis since last scheduled termination but nodes remain",durSinceLastTerminate.getMillis()).emit();
+          }
           log.info("[%s] still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
         }
       }

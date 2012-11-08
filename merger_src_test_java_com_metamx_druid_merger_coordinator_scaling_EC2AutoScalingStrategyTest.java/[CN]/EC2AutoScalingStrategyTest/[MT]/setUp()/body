@@ -4,8 +4,6 @@
   describeInstancesResult=EasyMock.createMock(DescribeInstancesResult.class);
   reservation=EasyMock.createMock(Reservation.class);
   instance=new Instance().withInstanceId(INSTANCE_ID).withLaunchTime(new Date()).withImageId(AMI_ID).withPrivateIpAddress(IP);
-  worker=new WorkerWrapper(new Worker("dummyHost",IP,2,"0"),new ConcurrentSkipListSet<String>(),null);
-  worker.setLastCompletedTaskTime(new DateTime(0));
   strategy=new EC2AutoScalingStrategy(amazonEC2Client,new EC2AutoScalingStrategyConfig(){
     @Override public String getAmiId(){
       return AMI_ID;

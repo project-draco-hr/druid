@@ -9,16 +9,10 @@
   EasyMock.replay(describeInstancesResult);
   EasyMock.expect(reservation.getInstances()).andReturn(Arrays.asList(instance)).atLeastOnce();
   EasyMock.replay(reservation);
-  worker.getRunningTasks().add("task1");
-  Assert.assertFalse(worker.isAtCapacity());
-  worker.getRunningTasks().add("task2");
-  Assert.assertTrue(worker.isAtCapacity());
-  AutoScalingData created=strategy.provision();
+  AutoScalingData created=strategy.provision(0);
   Assert.assertEquals(created.getNodeIds().size(),1);
   Assert.assertEquals(created.getNodes().size(),1);
   Assert.assertEquals(String.format("%s:8080",IP),created.getNodeIds().get(0));
-  worker.getRunningTasks().remove("task1");
-  worker.getRunningTasks().remove("task2");
   AutoScalingData deleted=strategy.terminate(Arrays.asList("dummyHost"));
   Assert.assertEquals(deleted.getNodeIds().size(),1);
   Assert.assertEquals(deleted.getNodes().size(),1);

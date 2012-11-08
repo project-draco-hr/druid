@@ -1,8 +1,6 @@
 {
-  long retVal=currRetryDelay;
-  if (currRetryDelay < MAX_RETRY_DELAY_MILLIS) {
-    currRetryDelay*=2;
-  }
+  Duration retVal=new Duration(currRetryDelay);
+  currRetryDelay=new Duration(Math.min(currRetryDelay.getMillis() * 2,MAX_RETRY_DURATION.getMillis()));
   retryCount++;
   return retVal;
 }
