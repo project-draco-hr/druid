@@ -7,11 +7,11 @@
       final TimeseriesQuery query=(TimeseriesQuery)input;
       return new BaseSequence<Result<TimeseriesResultValue>,Iterator<Result<TimeseriesResultValue>>>(new BaseSequence.IteratorMaker<Result<TimeseriesResultValue>,Iterator<Result<TimeseriesResultValue>>>(){
         @Override public Iterator<Result<TimeseriesResultValue>> make(){
-          return QueryRunnerFactories.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
+          return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
             private final List<AggregatorFactory> aggregatorSpecs=query.getAggregatorSpecs();
             private final List<PostAggregator> postAggregatorSpecs=query.getPostAggregatorSpecs();
             @Override public Result<TimeseriesResultValue> apply(            Cursor cursor){
-              Aggregator[] aggregators=QueryRunnerFactories.makeAggregators(cursor,aggregatorSpecs);
+              Aggregator[] aggregators=QueryRunnerHelper.makeAggregators(cursor,aggregatorSpecs);
               while (!cursor.isDone()) {
                 for (                Aggregator aggregator : aggregators) {
                   aggregator.aggregate();
