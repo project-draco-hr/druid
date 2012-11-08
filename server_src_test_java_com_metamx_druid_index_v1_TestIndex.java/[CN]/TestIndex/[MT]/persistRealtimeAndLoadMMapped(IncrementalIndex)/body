@@ -1,0 +1,13 @@
+{
+  try {
+    File someTmpFile=File.createTempFile("billy","yay");
+    someTmpFile.delete();
+    someTmpFile.mkdirs();
+    someTmpFile.deleteOnExit();
+    IndexMerger.persist(index,someTmpFile);
+    return com.metamx.druid.index.v1.IndexIO.mapDir(someTmpFile);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

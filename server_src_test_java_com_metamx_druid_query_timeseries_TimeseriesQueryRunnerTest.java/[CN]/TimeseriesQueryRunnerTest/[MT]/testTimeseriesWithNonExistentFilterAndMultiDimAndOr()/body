@@ -1,0 +1,7 @@
+{
+  AndDimFilter andDimFilter=Druids.newAndDimFilterBuilder().fields(Arrays.<DimFilter>asList(Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.providerDimension).value("spot").build(),Druids.newOrDimFilterBuilder().fields(QueryRunnerTestHelper.qualityDimension,"automotive","business","billyblank").build())).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.gran).filters(andDimFilter).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
+  List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-04-01"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",2L,"index",254.4554443359375D,"addRowsIndexConstant",257.4554443359375D))),new Result<TimeseriesResultValue>(new DateTime("2011-04-02"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",2L,"index",260.4129638671875D,"addRowsIndexConstant",263.4129638671875D))));
+  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  TestHelper.assertExpectedResults(expectedResults,results);
+}
