@@ -14,7 +14,7 @@
     if (workerQueue.isEmpty()) {
       log.info("Worker nodes do not have capacity to run any more tasks!");
       if (currentlyProvisioning.isEmpty()) {
-        AutoScalingData provisioned=strategy.provision(currentlyProvisioning.size());
+        AutoScalingData provisioned=strategy.provision();
         if (provisioned != null) {
           currentlyProvisioning.addAll(provisioned.getNodeIds());
           lastProvisionTime=new DateTime();
