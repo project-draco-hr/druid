@@ -12,7 +12,7 @@
             strategy=new NoopScalingStrategy();
           }
  else {
-            throw new IllegalStateException(String.format("Invalid strategy implementation: %s",config.getStrategyImpl()));
+            throw new ISE("Invalid strategy implementation: %s",config.getStrategyImpl());
           }
           return new RemoteTaskRunner(jsonMapper,configFactory.build(RemoteTaskRunnerConfig.class),curatorFramework,new PathChildrenCache(curatorFramework,indexerZkConfig.getAnnouncementPath(),true),retryScheduledExec,new RetryPolicyFactory(configFactory.build(RetryPolicyConfig.class)),strategy);
         }
@@ -29,7 +29,7 @@
 ;
     }
  else {
-      throw new IllegalStateException(String.format("Invalid runner implementation: %s",config.getRunnerImpl()));
+      throw new ISE("Invalid runner implementation: %s",config.getRunnerImpl());
     }
   }
 }
