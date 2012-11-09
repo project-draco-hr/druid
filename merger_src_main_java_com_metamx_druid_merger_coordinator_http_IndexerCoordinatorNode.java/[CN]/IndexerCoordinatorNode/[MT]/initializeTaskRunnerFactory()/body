@@ -8,7 +8,7 @@
           if (config.getStrategyImpl().equalsIgnoreCase("ec2")) {
             strategy=new EC2AutoScalingStrategy(new AmazonEC2Client(new BasicAWSCredentials(PropUtils.getProperty(props,"com.metamx.aws.accessKey"),PropUtils.getProperty(props,"com.metamx.aws.secretKey"))),configFactory.build(EC2AutoScalingStrategyConfig.class));
           }
- else           if (config.getStorageImpl().equalsIgnoreCase("noop")) {
+ else           if (config.getStrategyImpl().equalsIgnoreCase("noop")) {
             strategy=new NoopScalingStrategy();
           }
  else {
