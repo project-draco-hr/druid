@@ -120,7 +120,7 @@
               final BySegmentResultValueClass<T> value=(BySegmentResultValueClass<T>)result.getValue();
               String segmentIdentifier=value.getSegmentId();
               final Iterable<T> segmentResults=value.getResults();
-              cachePopulatorMap.get(String.format("%s_%s",segmentIdentifier,value.getIntervalString())).populate(Iterables.transform(segmentResults,prepareForCache));
+              cachePopulatorMap.get(String.format("%s_%s",segmentIdentifier,value.getInterval())).populate(Iterables.transform(segmentResults,prepareForCache));
               return Sequences.simple(Iterables.transform(segmentResults,toolChest.makeMetricManipulatorFn(rewrittenQuery,new MetricManipulationFn(){
                 @Override public Object manipulate(                AggregatorFactory factory,                Object object){
                   return factory.deserialize(object);
