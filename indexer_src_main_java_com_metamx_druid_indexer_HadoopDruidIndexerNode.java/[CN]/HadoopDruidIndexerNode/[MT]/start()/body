@@ -1,0 +1,15 @@
+{
+  Preconditions.checkNotNull(argumentSpec,"argumentSpec");
+  final HadoopDruidIndexerConfig config;
+  if (argumentSpec.startsWith("{")) {
+    config=HadoopDruidIndexerConfig.fromString(argumentSpec);
+  }
+ else {
+    config=HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+  }
+  if (intervalSpec != null) {
+    final List<Interval> dataInterval=Lists.transform(Arrays.asList(intervalSpec.split(",")),new StringIntervalFunction());
+    config.setIntervals(dataInterval);
+  }
+  new HadoopDruidIndexerJob(config).run();
+}

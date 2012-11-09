@@ -1,0 +1,21 @@
+{
+  if (argSpec.containsKey("registererers")) {
+    List<Registererer> registererers=Lists.transform(MapUtils.getList(argSpec,"registererers"),new Function<Object,Registererer>(){
+      @Override public Registererer apply(      @Nullable Object input){
+        try {
+          return (Registererer)Class.forName((String)input).newInstance();
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
+    for (    Registererer registererer : registererers) {
+      registererer.register();
+    }
+  }
+  final HadoopDruidIndexerConfig retVal=jsonMapper.convertValue(argSpec,HadoopDruidIndexerConfig.class);
+  retVal.verify();
+  return retVal;
+}
