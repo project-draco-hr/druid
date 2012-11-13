@@ -11,10 +11,7 @@
       }
     }
 );
-    for (    Registererer registererer : registererers) {
-      registererer.register();
-      registererer.registerSubType(jsonMapper);
-    }
+    RegisteringNode.registerHandlers(registererers,Arrays.asList(jsonMapper));
   }
   final HadoopDruidIndexerConfig retVal=jsonMapper.convertValue(argSpec,HadoopDruidIndexerConfig.class);
   retVal.verify();
