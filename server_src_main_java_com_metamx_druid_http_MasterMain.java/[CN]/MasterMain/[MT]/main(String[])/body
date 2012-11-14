@@ -22,7 +22,10 @@
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
   CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
-  final ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
+  ServiceProvider serviceProvider=null;
+  if (druidMasterConfig.getMergerServiceName() != null) {
+    serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
+  }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
   final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
   lifecycle.addManagedInstance(master);
