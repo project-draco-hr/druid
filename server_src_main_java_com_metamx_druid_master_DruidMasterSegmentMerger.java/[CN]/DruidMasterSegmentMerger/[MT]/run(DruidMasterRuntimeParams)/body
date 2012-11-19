@@ -15,8 +15,8 @@
     SegmentsToMerge segmentsToMerge=new SegmentsToMerge();
     for (int i=0; i < timelineObjects.size(); i++) {
       segmentsToMerge.add(timelineObjects.get(i));
-      if (segmentsToMerge.getMergedSize() > params.getMergeThreshold()) {
-        i-=segmentsToMerge.backtrack(params.getMergeThreshold());
+      if (segmentsToMerge.getMergedSize() > params.getMergeBytesLimit() || segmentsToMerge.size() >= params.getMergeSegmentsLimit()) {
+        i-=segmentsToMerge.backtrack(params.getMergeBytesLimit());
         if (segmentsToMerge.size() > 1) {
           count+=mergeSegments(segmentsToMerge,entry.getKey());
         }
@@ -26,7 +26,7 @@
         segmentsToMerge=new SegmentsToMerge();
       }
     }
-    segmentsToMerge.backtrack(params.getMergeThreshold());
+    segmentsToMerge.backtrack(params.getMergeBytesLimit());
     if (segmentsToMerge.size() > 1) {
       count+=mergeSegments(segmentsToMerge,entry.getKey());
     }
