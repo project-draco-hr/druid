@@ -1,7 +1,7 @@
 {
   try {
     log.info("Creating new instance(s)...");
-    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(config.getAmiId(),config.getMinNumInstancesToProvision(),config.getMaxNumInstancesToProvision()).withInstanceType(InstanceType.fromValue(config.getInstanceType())));
+    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(config.getAmiId(),config.getMinNumInstancesToProvision(),config.getMaxNumInstancesToProvision()).withInstanceType(InstanceType.fromValue(config.getInstanceType())).withUserData(jsonMapper.writeValueAsString(new File(config.getUserDataFile()))));
     List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
       @Override public String apply(      @Nullable Instance input){
         return input.getInstanceId();

@@ -4,7 +4,7 @@
   describeInstancesResult=EasyMock.createMock(DescribeInstancesResult.class);
   reservation=EasyMock.createMock(Reservation.class);
   instance=new Instance().withInstanceId(INSTANCE_ID).withLaunchTime(new Date()).withImageId(AMI_ID).withPrivateIpAddress(IP);
-  strategy=new EC2AutoScalingStrategy(amazonEC2Client,new EC2AutoScalingStrategyConfig(){
+  strategy=new EC2AutoScalingStrategy(new DefaultObjectMapper(),amazonEC2Client,new EC2AutoScalingStrategyConfig(){
     @Override public String getAmiId(){
       return AMI_ID;
     }
@@ -19,6 +19,9 @@
     }
     @Override public int getMaxNumInstancesToProvision(){
       return 1;
+    }
+    @Override public String getUserDataFile(){
+      return "";
     }
   }
 );
