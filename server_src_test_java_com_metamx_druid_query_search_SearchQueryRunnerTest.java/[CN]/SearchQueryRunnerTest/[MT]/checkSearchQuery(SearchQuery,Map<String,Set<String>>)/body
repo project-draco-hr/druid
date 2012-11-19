@@ -7,7 +7,7 @@
     for (    SearchHit resultValue : resultValues) {
       String dimension=resultValue.getDimension();
       String theValue=resultValue.getValue();
-      Assert.assertTrue(expectedResults.containsKey(dimension));
+      Assert.assertTrue(String.format("Result had unknown dimension[%s]",dimension),expectedResults.containsKey(dimension));
       Set<String> expectedSet=expectedResults.get(dimension);
       Assert.assertTrue(String.format("Couldn't remove dim[%s], value[%s]",dimension,theValue),expectedSet.remove(theValue));
     }

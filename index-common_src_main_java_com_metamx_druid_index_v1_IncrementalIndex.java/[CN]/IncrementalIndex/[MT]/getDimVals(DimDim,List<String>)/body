@@ -1,0 +1,15 @@
+{
+  final String[] retVal=new String[dimValues.size()];
+  int count=0;
+  for (  String dimValue : dimValues) {
+    String canonicalDimValue=dimLookup.get(dimValue);
+    if (canonicalDimValue == null) {
+      canonicalDimValue=dimValue;
+      dimLookup.add(dimValue);
+    }
+    retVal[count]=canonicalDimValue;
+    count++;
+  }
+  Arrays.sort(retVal);
+  return retVal;
+}

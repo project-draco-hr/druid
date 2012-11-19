@@ -6,6 +6,7 @@
   String[][] dims=new String[dimensionOrder.size()][];
   List<String[]> overflow=null;
   for (  String dimension : rowDimensions) {
+    dimension=dimension.toLowerCase();
     final Integer index=dimensionOrder.get(dimension);
     if (index == null) {
       dimensionOrder.put(dimension,dimensionOrder.size());
@@ -13,10 +14,10 @@
       if (overflow == null) {
         overflow=Lists.newArrayList();
       }
-      overflow.add(getDimVals(row,dimension));
+      overflow.add(getDimVals(dimValues.add(dimension),row.getDimension(dimension)));
     }
  else {
-      dims[index]=getDimVals(row,dimension);
+      dims[index]=getDimVals(dimValues.get(dimension),row.getDimension(dimension));
     }
   }
   if (overflow != null) {
@@ -35,7 +36,8 @@
     for (int i=0; i < metrics.length; ++i) {
       final AggregatorFactory agg=metrics[i];
       aggs[i]=agg.factorize(new MetricSelectorFactory(){
-        @Override public FloatMetricSelector makeFloatMetricSelector(        final String metricName){
+        @Override public FloatMetricSelector makeFloatMetricSelector(        String metric){
+          final String metricName=metric.toLowerCase();
           return new FloatMetricSelector(){
             @Override public float get(){
               return in.getFloatMetric(metricName);
@@ -43,13 +45,14 @@
           }
 ;
         }
-        @Override public ComplexMetricSelector makeComplexMetricSelector(        final String metricName){
+        @Override public ComplexMetricSelector makeComplexMetricSelector(        final String metric){
           final String typeName=agg.getTypeName();
           final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(typeName);
           if (serde == null) {
             throw new ISE("Don't know how to handle type[%s]",typeName);
           }
           final ComplexMetricExtractor extractor=serde.getExtractor();
+          final String metricName=metric.toLowerCase();
           return new ComplexMetricSelector(){
             @Override public Class classOfObject(){
               return extractor.extractedClass();

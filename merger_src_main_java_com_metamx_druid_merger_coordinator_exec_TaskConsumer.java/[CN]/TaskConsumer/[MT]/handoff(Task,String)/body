@@ -1,6 +1,6 @@
 {
   final TaskContext context=new TaskContext(version,ImmutableSet.copyOf(mergerDBCoordinator.getSegmentsForInterval(task.getDataSource(),task.getInterval())));
-  final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType().toString().toLowerCase()).setUser5(task.getInterval().toString());
+  final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType().toString()).setUser5(task.getInterval().toString());
   TaskStatus preflightStatus;
   try {
     preflightStatus=task.preflight(context);
@@ -53,12 +53,12 @@
       for (      DataSegment segment : status.getSegments()) {
         bytes+=segment.getSize();
       }
-      builder.setUser3(status.getStatusCode().toString().toLowerCase());
+      builder.setUser3(status.getStatusCode().toString());
       emitter.emit(builder.build("indexer/time/run/millis",status.getDuration()));
       emitter.emit(builder.build("indexer/segment/count",status.getSegments().size()));
       emitter.emit(builder.build("indexer/segment/bytes",bytes));
       if (status.isFailure()) {
-        emitter.emit(new AlertEvent.Builder().build(String.format("Failed to index: %s",task.getDataSource()),ImmutableMap.<String,Object>builder().put("task",task.getId()).put("type",task.getType().toString().toLowerCase()).put("dataSource",task.getDataSource()).put("interval",task.getInterval()).build()));
+        emitter.emit(new AlertEvent.Builder().build(String.format("Failed to index: %s",task.getDataSource()),ImmutableMap.<String,Object>builder().put("task",task.getId()).put("type",task.getType().toString()).put("dataSource",task.getDataSource()).put("interval",task.getInterval()).build()));
       }
       log.info("Task %s: %s (%d segments) (%d run duration)",status.getStatusCode(),task,status.getSegments().size(),status.getDuration());
     }

@@ -24,7 +24,8 @@
         @Override public void reset(){
           currRow=initRow;
         }
-        @Override public DimensionSelector makeDimensionSelector(        final String dimensionName){
+        @Override public DimensionSelector makeDimensionSelector(        final String dimension){
+          final String dimensionName=dimension.toLowerCase();
           final Indexed<? extends IndexedInts> rowVals=index.getDimColumn(dimensionName);
           final Indexed<String> dimValueLookup=index.getDimValueLookup(dimensionName);
           if (rowVals == null) {
@@ -47,7 +48,8 @@
           }
 ;
         }
-        @Override public FloatMetricSelector makeFloatMetricSelector(        String metricName){
+        @Override public FloatMetricSelector makeFloatMetricSelector(        String metric){
+          final String metricName=metric.toLowerCase();
           IndexedFloats cachedMetricVals=(IndexedFloats)metricCacheMap.get(metricName);
           if (cachedMetricVals == null) {
             final MetricHolder metricHolder=index.getMetricHolder(metricName);
@@ -74,7 +76,8 @@
           }
 ;
         }
-        @Override public ComplexMetricSelector makeComplexMetricSelector(        String metricName){
+        @Override public ComplexMetricSelector makeComplexMetricSelector(        String metric){
+          final String metricName=metric.toLowerCase();
           Indexed cachedMetricVals=(Indexed)metricCacheMap.get(metricName);
           if (cachedMetricVals == null) {
             final MetricHolder metricHolder=index.getMetricHolder(metricName);

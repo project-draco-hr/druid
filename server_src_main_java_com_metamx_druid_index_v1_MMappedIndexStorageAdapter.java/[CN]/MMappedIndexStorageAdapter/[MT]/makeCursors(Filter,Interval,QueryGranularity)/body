@@ -14,7 +14,7 @@
     iterable=new NoFilterCursorIterable(index,actualInterval,gran);
   }
  else {
-    Offset offset=new ConciseOffset(filter.goConcise(new MMappedInvertedIndexSelector(index)));
+    Offset offset=new ConciseOffset(filter.goConcise(new MMappedBitmapIndexSelector(index)));
     iterable=new CursorIterable(index,actualInterval,gran,offset);
   }
   return FunctionalIterable.create(iterable).keep(Functions.<Cursor>identity());
