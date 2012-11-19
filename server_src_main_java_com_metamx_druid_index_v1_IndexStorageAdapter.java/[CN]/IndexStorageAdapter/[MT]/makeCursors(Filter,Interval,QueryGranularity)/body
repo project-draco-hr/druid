@@ -18,7 +18,7 @@
         baseOffset=new ArrayBasedOffset(ids,intervalStartAndEnd.lhs);
       }
  else {
-        baseOffset=new StartLimitedOffset(new ConciseOffset(filter.goConcise(new IndexBasedInvertedIndexSelector(index))),intervalStartAndEnd.lhs);
+        baseOffset=new StartLimitedOffset(new ConciseOffset(filter.goConcise(new IndexBasedBitmapIndexSelector(index))),intervalStartAndEnd.lhs);
       }
       final Map<String,Object> metricHolderCache=Maps.newHashMap();
       return MoreIterators.after(FunctionalIterator.create(gran.iterable(actualInterval.getStartMillis(),actualInterval.getEndMillis()).iterator()).keep(new Function<Long,Cursor>(){
@@ -40,7 +40,8 @@
             @Override public void reset(){
               cursorOffset=initOffset.clone();
             }
-            @Override public DimensionSelector makeDimensionSelector(            final String dimensionName){
+            @Override public DimensionSelector makeDimensionSelector(            String dimension){
+              final String dimensionName=dimension.toLowerCase();
               final String[] nameLookup=index.reverseDimLookup.get(dimensionName);
               if (nameLookup == null) {
                 return null;
@@ -66,8 +67,9 @@
               }
 ;
             }
-            @Override public FloatMetricSelector makeFloatMetricSelector(            String metricName){
-              IndexedFloats cachedFloats=(IndexedFloats)metricHolderCache.get(metricName);
+            @Override public FloatMetricSelector makeFloatMetricSelector(            String metric){
+              String metricName=metric.toLowerCase();
+              IndexedFloats cachedFloats=(IndexedFloats)metricHolderCache.get(metric);
               if (cachedFloats == null) {
                 MetricHolder holder=index.metricVals.get(metricName);
                 if (holder == null) {
@@ -89,7 +91,8 @@
               }
 ;
             }
-            @Override public ComplexMetricSelector makeComplexMetricSelector(            String metricName){
+            @Override public ComplexMetricSelector makeComplexMetricSelector(            String metric){
+              final String metricName=metric.toLowerCase();
               Indexed cachedComplex=(Indexed)metricHolderCache.get(metricName);
               if (cachedComplex == null) {
                 MetricHolder holder=index.metricVals.get(metricName);

@@ -73,7 +73,8 @@
               }
               done=cursorMap.size() == 0 || !baseIter.hasNext();
             }
-            @Override public DimensionSelector makeDimensionSelector(            String dimensionName){
+            @Override public DimensionSelector makeDimensionSelector(            String dimension){
+              final String dimensionName=dimension.toLowerCase();
               final IncrementalIndex.DimDim dimValLookup=index.getDimension(dimensionName);
               if (dimValLookup == null) {
                 return null;
@@ -119,7 +120,8 @@
               }
 ;
             }
-            @Override public FloatMetricSelector makeFloatMetricSelector(            String metricName){
+            @Override public FloatMetricSelector makeFloatMetricSelector(            String metric){
+              final String metricName=metric.toLowerCase();
               final Integer metricIndexInt=index.getMetricIndex(metricName);
               if (metricIndexInt == null) {
                 return new FloatMetricSelector(){
@@ -137,7 +139,8 @@
               }
 ;
             }
-            @Override public ComplexMetricSelector makeComplexMetricSelector(            String metricName){
+            @Override public ComplexMetricSelector makeComplexMetricSelector(            String metric){
+              final String metricName=metric.toLowerCase();
               final Integer metricIndexInt=index.getMetricIndex(metricName);
               if (metricIndexInt == null) {
                 return null;

@@ -1,14 +1,14 @@
 {
-  return FunctionalIterable.create(index.facts.entrySet()).transform(new Function<Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]>,Rowboat>(){
+  return FunctionalIterable.create(index.getFacts().entrySet()).transform(new Function<Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]>,Rowboat>(){
     int count=0;
     @Override public Rowboat apply(    @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]> input){
       final IncrementalIndex.TimeAndDims timeAndDims=input.getKey();
       final String[][] dimValues=timeAndDims.getDims();
       final Aggregator[] aggs=input.getValue();
       int[][] dims=new int[dimValues.length][];
-      for (      String dimension : dimensions) {
-        int dimIndex=index.dimensionOrder.get(dimension);
-        final IncrementalIndex.DimDim dimDim=index.dimValues.get(dimension);
+      for (      String dimension : index.getDimensions()) {
+        int dimIndex=index.getDimensionIndex(dimension);
+        final IncrementalIndex.DimDim dimDim=index.getDimension(dimension);
         dimDim.sort();
         if (dimIndex >= dimValues.length || dimValues[dimIndex] == null) {
           continue;

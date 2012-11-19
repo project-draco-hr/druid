@@ -1,0 +1,14 @@
+{
+  final long timestamp=System.currentTimeMillis();
+  IncrementalIndex toPersist=IncrementalIndexTest.createCaseInsensitiveIndex(timestamp);
+  final File tempDir=Files.createTempDir();
+  try {
+    MMappedIndex index=IndexIO.mapDir(IndexMerger.persist(toPersist,tempDir));
+    Assert.assertEquals(2,index.getTimestamps().size());
+    Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
+    Assert.assertEquals(0,index.getAvailableMetrics().size());
+  }
+  finally {
+    tempDir.delete();
+  }
+}

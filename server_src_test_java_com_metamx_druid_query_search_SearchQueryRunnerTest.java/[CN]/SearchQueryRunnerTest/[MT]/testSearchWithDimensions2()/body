@@ -1,5 +1,5 @@
 {
-  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
+  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
   expectedResults.put(QueryRunnerTestHelper.providerDimension,new HashSet<String>(Arrays.asList("total_market")));
   checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimensions(Arrays.asList(QueryRunnerTestHelper.placementishDimension,QueryRunnerTestHelper.providerDimension)).intervals(QueryRunnerTestHelper.fullOnInterval).query("mark").build(),expectedResults);
 }

@@ -1,12 +1,17 @@
 {
-  URL resource=TestIndex.class.getClassLoader().getResource(resourceFilename);
-  String filename=resource.getFile();
-  log.info("Realtime loading index file[%s]",filename);
+  final URL resource=TestIndex.class.getClassLoader().getResource(resourceFilename);
+  log.info("Realtime loading index file[%s]",resource);
   final IncrementalIndex retVal=new IncrementalIndex(new DateTime("2011-01-12T00:00:00.000Z").getMillis(),QueryGranularity.NONE,METRIC_AGGS);
   final AtomicLong startTime=new AtomicLong();
   int lineCount;
   try {
-    lineCount=CharStreams.readLines(GuavaUtils.joinFiles(new File(filename)),new LineProcessor<Integer>(){
+    lineCount=CharStreams.readLines(CharStreams.newReaderSupplier(new InputSupplier<InputStream>(){
+      @Override public InputStream getInput() throws IOException {
+        return resource.openStream();
+      }
+    }
+,Charsets.UTF_8),new LineProcessor<Integer>(){
+      StringInputRowParser parser=new StringInputRowParser(new TimestampSpec("ts","iso"),new DelimitedDataSpec("\t",Arrays.asList(COLUMNS),Arrays.asList(DIMENSIONS)),Arrays.<String>asList());
       boolean runOnce=false;
       int lineCount=0;
       @Override public boolean processLine(      String line) throws IOException {
@@ -15,22 +20,7 @@
           runOnce=true;
         }
         final String[] splits=line.split("\t");
-        retVal.add(new InputRow(){
-          @Override public long getTimestampFromEpoch(){
-            return new DateTime(splits[0]).getMillis();
-          }
-          @Override public List<String> getDimensions(){
-            return Arrays.asList(DIMENSIONS);
-          }
-          @Override public List<String> getDimension(          String dimension){
-            return Arrays.asList(splits[dimIds.get(dimension) + 1].split("\u0001"));
-          }
-          @Override public float getFloatMetric(          String metric){
-            Preconditions.checkArgument(METRICS[0].equals(metric),"WTF!?");
-            return Float.parseFloat(splits[5]);
-          }
-        }
-);
+        retVal.add(parser.parse(line));
         ++lineCount;
         return true;
       }

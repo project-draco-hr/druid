@@ -2,12 +2,16 @@
   this.minTimestamp=minTimestamp;
   this.gran=gran;
   this.metrics=metrics;
+  final ImmutableList.Builder<String> metricNamesBuilder=ImmutableList.builder();
   final ImmutableMap.Builder<String,Integer> metricIndexesBuilder=ImmutableMap.builder();
   final ImmutableMap.Builder<String,String> metricTypesBuilder=ImmutableMap.builder();
   for (int i=0; i < metrics.length; i++) {
-    metricIndexesBuilder.put(metrics[i].getName().toLowerCase(),i);
-    metricTypesBuilder.put(metrics[i].getName().toLowerCase(),metrics[i].getTypeName());
+    final String metricName=metrics[i].getName().toLowerCase();
+    metricNamesBuilder.add(metricName);
+    metricIndexesBuilder.put(metricName,i);
+    metricTypesBuilder.put(metricName,metrics[i].getTypeName());
   }
+  metricNames=metricNamesBuilder.build();
   metricIndexes=metricIndexesBuilder.build();
   metricTypes=metricTypesBuilder.build();
   this.dimensionOrder=Maps.newLinkedHashMap();
