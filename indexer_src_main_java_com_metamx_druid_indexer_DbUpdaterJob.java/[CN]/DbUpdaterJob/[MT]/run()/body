@@ -1,52 +1,30 @@
 {
   final Configuration conf=new Configuration();
-  List<DataSegment> newPublishedSegments=new LinkedList<DataSegment>();
+  ImmutableList.Builder<DataSegment> publishedSegmentsBuilder=ImmutableList.builder();
   for (  String propName : System.getProperties().stringPropertyNames()) {
     if (propName.startsWith("hadoop.")) {
       conf.set(propName.substring("hadoop.".length()),System.getProperty(propName));
     }
   }
-  final Iterator<Bucket> buckets=config.getAllBuckets().iterator();
-  Bucket bucket=buckets.next();
-  int numRetried=0;
-  while (true) {
-    try {
-      final Path path=new Path(config.makeSegmentOutputPath(bucket),"descriptor.json");
-      final DataSegment segment=jsonMapper.readValue(path.getFileSystem(conf).open(path),DataSegment.class);
+  final Path descriptorInfoDir=config.makeDescriptorInfoDir();
+  try {
+    FileSystem fs=descriptorInfoDir.getFileSystem(conf);
+    for (    FileStatus status : fs.listStatus(descriptorInfoDir)) {
+      final DataSegment segment=jsonMapper.readValue(fs.open(status.getPath()),DataSegment.class);
       dbi.withHandle(new HandleCallback<Void>(){
         @Override public Void withHandle(        Handle handle) throws Exception {
-          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",spec.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
+          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",spec.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
           return null;
         }
       }
 );
-      newPublishedSegments.add(segment);
+      publishedSegmentsBuilder.add(segment);
       log.info("Published %s",segment.getIdentifier());
     }
- catch (    Exception e) {
-      if (numRetried < 5) {
-        log.error(e,"Retrying[%d] after exception when loading segment metadata into db",numRetried);
-        try {
-          Thread.sleep(15 * 1000);
-        }
- catch (        InterruptedException e1) {
-          Thread.currentThread().interrupt();
-          return false;
-        }
-        ++numRetried;
-        continue;
-      }
-      log.error(e,"Failing, retried too many times.");
-      return false;
-    }
-    if (buckets.hasNext()) {
-      bucket=buckets.next();
-      numRetried=0;
-    }
- else {
-      break;
-    }
   }
-  publishedSegments=newPublishedSegments;
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  publishedSegments=publishedSegmentsBuilder.build();
   return true;
 }

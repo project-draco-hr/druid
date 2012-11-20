@@ -19,16 +19,10 @@
   if (needRename && !outputFS.rename(indexZipFilePath,finalIndexZipFilePath)) {
     return false;
   }
-  final Path descriptorPath=new Path(indexBasePath,"descriptor.json");
-  if (outputFS.exists(descriptorPath)) {
-    outputFS.delete(descriptorPath,false);
-  }
-  final FSDataOutputStream descriptorOut=outputFS.create(descriptorPath);
-  try {
-    HadoopDruidIndexerConfig.jsonMapper.writeValue(descriptorOut,segment);
-  }
-  finally {
-    descriptorOut.close();
-  }
+  writeSegmentDescriptor(outputFS,segment,new Path(indexBasePath,"descriptor.json"));
+  final Path descriptorPath=config.makeDescriptorInfoPath(segment);
+  log.info("Writing descriptor to path[%s]",descriptorPath);
+  intermediateFS.mkdirs(descriptorPath.getParent());
+  writeSegmentDescriptor(intermediateFS,segment,descriptorPath);
   return true;
 }
