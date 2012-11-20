@@ -4,7 +4,11 @@ synchronized (lock) {
       return;
     }
     try {
-      curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(status.getId()),jsonMapper.writeValueAsBytes(status));
+      byte[] rawBytes=jsonMapper.writeValueAsBytes(status);
+      if (rawBytes.length > config.getMaxNumBytes()) {
+        throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxNumBytes());
+      }
+      curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(status.getId()),rawBytes);
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);
