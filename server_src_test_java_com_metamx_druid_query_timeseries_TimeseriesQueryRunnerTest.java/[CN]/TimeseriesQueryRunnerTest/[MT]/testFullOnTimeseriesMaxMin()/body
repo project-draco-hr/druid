@@ -6,9 +6,7 @@
   Result<TimeseriesResultValue> result=results.iterator().next();
   Assert.assertEquals(expectedEarliest,result.getTimestamp());
   Assert.assertFalse(String.format("Timestamp[%s] > expectedLast[%s]",result.getTimestamp(),expectedLast),result.getTimestamp().isAfter(expectedLast));
-  Map value=result.getValue().getBaseObject();
-  Assert.assertTrue(result.toString(),value.containsKey("maxIndex"));
-  Assert.assertTrue(result.toString(),value.containsKey("minIndex"));
-  Assert.assertEquals(result.toString(),1870.06103515625,value.get("maxIndex"));
-  Assert.assertEquals(result.toString(),59.02102279663086,value.get("minIndex"));
+  final TimeseriesResultValue value=result.getValue();
+  Assert.assertEquals(result.toString(),1870.06103515625,value.getDoubleMetric("maxIndex"),0.0);
+  Assert.assertEquals(result.toString(),59.02102279663086,value.getDoubleMetric("minIndex"),0.0);
 }

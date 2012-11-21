@@ -1,6 +1,6 @@
 {
   QueryGranularity gran=QueryGranularity.DAY;
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.gran).filters(QueryRunnerTestHelper.providerDimension,"upfront").intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount)).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters(QueryRunnerTestHelper.providerDimension,"upfront").intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount)).build();
   Assert.assertEquals(Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.providerDimension).value("upfront").build(),query.getDimensionsFilter());
   DateTime expectedEarliest=new DateTime("2011-01-12");
   DateTime expectedLast=new DateTime("2011-04-15");
@@ -8,9 +8,8 @@
   for (  Result<TimeseriesResultValue> result : results) {
     Assert.assertEquals(result.toString(),expectedEarliest,result.getTimestamp());
     Assert.assertFalse(String.format("Timestamp[%s] > expectedLast[%s]",result.getTimestamp(),expectedLast),result.getTimestamp().isAfter(expectedLast));
-    Map value=result.getValue().getBaseObject();
-    Assert.assertTrue(result.toString(),value.containsKey("rows"));
-    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 2L,value.get("rows"));
+    final TimeseriesResultValue value=result.getValue();
+    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 2L,value.getLongMetric("rows").longValue());
     expectedEarliest=gran.toDateTime(gran.next(expectedEarliest.getMillis()));
   }
 }

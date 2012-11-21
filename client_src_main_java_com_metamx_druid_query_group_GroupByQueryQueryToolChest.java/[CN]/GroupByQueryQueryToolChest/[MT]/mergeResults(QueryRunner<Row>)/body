@@ -1,7 +1,7 @@
 {
   return new QueryRunner<Row>(){
     @Override public Sequence<Row> run(    Query<Row> input){
-      GroupByQuery query=(GroupByQuery)input;
+      final GroupByQuery query=(GroupByQuery)input;
       List<Interval> condensed=query.getIntervals();
       final List<AggregatorFactory> aggs=Lists.transform(query.getAggregatorSpecs(),new Function<AggregatorFactory,AggregatorFactory>(){
         @Override public AggregatorFactory apply(        @Nullable AggregatorFactory input){
@@ -24,7 +24,7 @@
         }
       }
 );
-      return Sequences.simple(index);
+      return Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs()));
     }
   }
 ;

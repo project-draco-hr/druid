@@ -1,6 +1,6 @@
 {
   QueryGranularity gran=QueryGranularity.DAY;
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.gran).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.indexDoubleSum)).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.indexDoubleSum)).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   DateTime expectedEarliest=new DateTime("2011-01-12");
   DateTime expectedLast=new DateTime("2011-04-15");
   Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
@@ -10,11 +10,10 @@
     lastResult=result;
     Assert.assertEquals(expectedEarliest,result.getTimestamp());
     Assert.assertFalse(String.format("Timestamp[%s] > expectedLast[%s]",result.getTimestamp(),expectedLast),result.getTimestamp().isAfter(expectedLast));
-    Map value=result.getValue().getBaseObject();
-    Assert.assertTrue(result.toString(),value.containsKey("rows"));
-    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 13L,value.get("rows"));
-    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.expectedFullOnIndexValues[count],String.valueOf(value.get("index")));
-    Assert.assertEquals(result.toString(),new Double(QueryRunnerTestHelper.expectedFullOnIndexValues[count]) + (QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 13L) + 1L,new Double(String.valueOf(value.get("addRowsIndexConstant"))),0.0);
+    final TimeseriesResultValue value=result.getValue();
+    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 13L,value.getLongMetric("rows").longValue());
+    Assert.assertEquals(result.toString(),QueryRunnerTestHelper.expectedFullOnIndexValues[count],String.valueOf(value.getDoubleMetric("index")));
+    Assert.assertEquals(result.toString(),new Double(QueryRunnerTestHelper.expectedFullOnIndexValues[count]) + (QueryRunnerTestHelper.skippedDay.equals(result.getTimestamp()) ? 0L : 13L) + 1L,value.getDoubleMetric("addRowsIndexConstant"),0.0);
     expectedEarliest=gran.toDateTime(gran.next(expectedEarliest.getMillis()));
     ++count;
   }
