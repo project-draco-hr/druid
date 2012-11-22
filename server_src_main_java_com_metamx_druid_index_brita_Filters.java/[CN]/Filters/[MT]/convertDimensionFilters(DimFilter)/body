@@ -24,5 +24,9 @@
     final RegexDimFilter regexDimFilter=(RegexDimFilter)dimFilter;
     filter=new RegexFilter(regexDimFilter.getDimension(),regexDimFilter.getPattern());
   }
+ else   if (dimFilter instanceof SearchQueryDimFilter) {
+    final SearchQueryDimFilter searchQueryFilter=(SearchQueryDimFilter)dimFilter;
+    filter=new SearchQueryFilter(searchQueryFilter.getDimension(),searchQueryFilter.getQuery());
+  }
   return filter;
 }

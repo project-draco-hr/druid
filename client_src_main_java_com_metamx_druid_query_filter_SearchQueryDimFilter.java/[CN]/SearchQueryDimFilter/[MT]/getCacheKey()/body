@@ -1,0 +1,5 @@
+{
+  final byte[] dimensionBytes=dimension.getBytes(Charsets.UTF_8);
+  final byte[] queryBytes=query.getCacheKey();
+  return ByteBuffer.allocate(1 + dimensionBytes.length + queryBytes.length).put(DimFilterCacheHelper.SEARCH_QUERY_TYPE_ID).put(dimensionBytes).put(queryBytes).array();
+}
