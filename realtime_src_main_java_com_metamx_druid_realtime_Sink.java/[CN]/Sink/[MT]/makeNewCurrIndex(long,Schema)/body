@@ -3,15 +3,14 @@
   FireHydrant old;
   if (currIndex == null) {
     old=currIndex;
-    currIndex=new FireHydrant(newIndex,swapCount);
+    currIndex=new FireHydrant(newIndex,hydrants.size());
     hydrants.add(currIndex);
   }
  else {
 synchronized (currIndex) {
       old=currIndex;
-      currIndex=new FireHydrant(newIndex,swapCount);
+      currIndex=new FireHydrant(newIndex,hydrants.size());
       hydrants.add(currIndex);
-      ++swapCount;
     }
   }
   return old;
