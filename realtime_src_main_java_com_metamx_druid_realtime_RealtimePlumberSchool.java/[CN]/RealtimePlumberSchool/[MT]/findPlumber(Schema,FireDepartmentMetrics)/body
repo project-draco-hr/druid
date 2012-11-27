@@ -65,6 +65,7 @@
   final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   final RejectionPolicy rejectionPolicy=rejectionPolicyFactory.create(windowPeriod);
+  log.info("Creating plumber using rejectionPolicy[%s]",rejectionPolicy);
   log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis)));
   ScheduledExecutors.scheduleAtFixedRate(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingRunnable(String.format("%s-overseer",schema.getDataSource())){
     @Override public void doRun(){
