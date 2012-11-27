@@ -1,0 +1,11 @@
+{
+  final long windowMillis=windowPeriod.toStandardDuration().getMillis();
+  return new RejectionPolicy(){
+    long maxTimestamp=Long.MIN_VALUE;
+    @Override public boolean accept(    long timestamp){
+      maxTimestamp=Math.max(maxTimestamp,timestamp);
+      return timestamp >= (maxTimestamp - windowMillis);
+    }
+  }
+;
+}

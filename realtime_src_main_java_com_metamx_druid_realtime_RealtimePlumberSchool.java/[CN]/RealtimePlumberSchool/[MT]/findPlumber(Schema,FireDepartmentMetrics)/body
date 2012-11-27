@@ -119,9 +119,10 @@
     }
   }
 );
+  final RejectionPolicy rejectionPolicy=rejectionPolicyFactory.create(windowPeriod);
   return new Plumber(){
     @Override public Sink getSink(    long timestamp){
-      if (timestamp < System.currentTimeMillis() - windowMillis) {
+      if (!rejectionPolicy.accept(timestamp)) {
         return null;
       }
       final long truncatedTime=segmentGranularity.truncate(timestamp);
