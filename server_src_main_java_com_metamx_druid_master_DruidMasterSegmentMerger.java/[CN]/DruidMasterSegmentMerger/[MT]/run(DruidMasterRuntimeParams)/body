@@ -15,19 +15,19 @@
     SegmentsToMerge segmentsToMerge=new SegmentsToMerge();
     for (int i=0; i < timelineObjects.size(); i++) {
       segmentsToMerge.add(timelineObjects.get(i));
-      if (segmentsToMerge.getMergedSize() > params.getMergeBytesLimit() || segmentsToMerge.size() >= params.getMergeSegmentsLimit()) {
+      if (segmentsToMerge.getByteCount() > params.getMergeBytesLimit() || segmentsToMerge.getSegmentCount() >= params.getMergeSegmentsLimit()) {
         i-=segmentsToMerge.backtrack(params.getMergeBytesLimit());
-        if (segmentsToMerge.size() > 1) {
+        if (segmentsToMerge.getSegmentCount() > 1) {
           count+=mergeSegments(segmentsToMerge,entry.getKey());
         }
-        if (segmentsToMerge.size() == 0) {
+        if (segmentsToMerge.getSegmentCount() == 0) {
           i++;
         }
         segmentsToMerge=new SegmentsToMerge();
       }
     }
     segmentsToMerge.backtrack(params.getMergeBytesLimit());
-    if (segmentsToMerge.size() > 1) {
+    if (segmentsToMerge.getSegmentCount() > 1) {
       count+=mergeSegments(segmentsToMerge,entry.getKey());
     }
   }

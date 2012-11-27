@@ -1,13 +1,13 @@
 {
   Preconditions.checkArgument(maxSize >= 0,"maxSize >= 0");
   int removed=0;
-  while (!isComplete() || mergedSize > maxSize) {
+  while (!isComplete() || byteCount > maxSize) {
     removed++;
     final TimelineObjectHolder<String,DataSegment> removedHolder=timelineObjects.remove(timelineObjects.size() - 1).lhs;
     for (    final PartitionChunk<DataSegment> segment : removedHolder.getObject()) {
       segments.remove(segment.getObject());
       if (segments.count(segment.getObject()) == 0) {
-        mergedSize-=segment.getObject().getSize();
+        byteCount-=segment.getObject().getSize();
       }
     }
   }
