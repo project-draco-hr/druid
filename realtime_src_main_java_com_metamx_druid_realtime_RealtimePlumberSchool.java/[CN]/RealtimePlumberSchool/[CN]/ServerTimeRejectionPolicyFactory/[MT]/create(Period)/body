@@ -1,6 +1,9 @@
 {
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   return new RejectionPolicy(){
+    @Override public DateTime getCurrMaxTime(){
+      return new DateTime();
+    }
     @Override public boolean accept(    long timestamp){
       return timestamp >= (System.currentTimeMillis() - windowMillis);
     }

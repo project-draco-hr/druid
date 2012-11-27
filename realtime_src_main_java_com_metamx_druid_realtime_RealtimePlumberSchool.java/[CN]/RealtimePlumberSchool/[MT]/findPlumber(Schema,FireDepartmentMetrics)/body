@@ -64,11 +64,12 @@
 );
   final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
+  final RejectionPolicy rejectionPolicy=rejectionPolicyFactory.create(windowPeriod);
   log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis)));
   ScheduledExecutors.scheduleAtFixedRate(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingRunnable(String.format("%s-overseer",schema.getDataSource())){
     @Override public void doRun(){
       log.info("Starting merge and push.");
-      long minTimestamp=segmentGranularity.truncate(new DateTime()).getMillis() - windowMillis;
+      long minTimestamp=segmentGranularity.truncate(rejectionPolicy.getCurrMaxTime()).getMillis() - windowMillis;
       List<Map.Entry<Long,Sink>> sinksToPush=Lists.newArrayList();
       for (      Map.Entry<Long,Sink> entry : sinks.entrySet()) {
         final Long intervalStart=entry.getKey();
@@ -119,7 +120,6 @@
     }
   }
 );
-  final RejectionPolicy rejectionPolicy=rejectionPolicyFactory.create(windowPeriod);
   return new Plumber(){
     @Override public Sink getSink(    long timestamp){
       if (!rejectionPolicy.accept(timestamp)) {
