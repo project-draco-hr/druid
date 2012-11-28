@@ -9,7 +9,6 @@
   final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
   final PhoneBook masterYp=Initialization.createPhoneBook(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
   final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
-  final SegmentInventoryManager segmentInventoryManager=new SegmentInventoryManager(configFactory.build(SegmentInventoryManagerConfig.class),masterYp);
   final ServerInventoryManager serverInventoryManager=new ServerInventoryManager(configFactory.build(ServerInventoryManagerConfig.class),masterYp);
   final DbConnectorConfig dbConnectorConfig=configFactory.build(DbConnectorConfig.class);
   final DBI dbi=new DbConnector(dbConnectorConfig).getDBI();
@@ -27,7 +26,7 @@
     serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,segmentInventoryManager,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
