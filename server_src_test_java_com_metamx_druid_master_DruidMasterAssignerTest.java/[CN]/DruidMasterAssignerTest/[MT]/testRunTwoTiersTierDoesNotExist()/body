@@ -1,0 +1,22 @@
+{
+  Map<String,MinMaxPriorityQueue<ServerHolder>> historicalServers=ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal"),mockPeon))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"hot"))),Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),1,"normal")));
+  Map<String,Rule> segmentRules=Maps.newHashMap();
+  for (  DataSegment segment : availableSegments) {
+    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
+      if (rule.appliesTo(segment.getInterval())) {
+        segmentRules.put(segment.getIdentifier(),rule);
+        break;
+      }
+    }
+  }
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(historicalServers).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(Maps.<String,Map<String,Integer>>newHashMap()).build();
+  boolean exceptionOccurred=false;
+  try {
+    DruidMasterRuntimeParams afterParams=assigner.run(params);
+  }
+ catch (  ISE e) {
+    exceptionOccurred=true;
+  }
+  Assert.assertTrue(exceptionOccurred);
+}

@@ -1,27 +1,33 @@
 {
-  if (!currentlyMovingSegments.isEmpty()) {
-    reduceLifetimes(params.getEmitter());
-    return params.buildFromExisting().withMessage(String.format("Still waiting on %,d segments to be moved",currentlyMovingSegments.size())).build();
-  }
-  TreeSet<ServerHolder> servers=Sets.newTreeSet(Comparators.inverse(new Comparator<ServerHolder>(){
-    @Override public int compare(    ServerHolder lhs,    ServerHolder rhs){
-      return lhs.getPercentUsed().compareTo(rhs.getPercentUsed());
+  Map<String,Integer> movedCounts=Maps.newHashMap();
+  for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getHistoricalServers().entrySet()) {
+    String nodeType=entry.getKey();
+    if (currentlyMovingSegments.get(nodeType) == null) {
+      currentlyMovingSegments.put(nodeType,new ConcurrentHashMap<String,BalancerSegmentHolder>());
     }
+    if (!currentlyMovingSegments.get(nodeType).isEmpty()) {
+      reduceLifetimes(nodeType);
+      log.info("[%s]: Still waiting on %,d segments to be moved",nodeType,currentlyMovingSegments.size());
+      continue;
+    }
+    TreeSet<ServerHolder> serversByPercentUsed=Sets.newTreeSet(percentUsedComparator);
+    serversByPercentUsed.addAll(entry.getValue());
+    if (serversByPercentUsed.size() <= 1) {
+      log.info("[%s]: No unique values found for highest and lowest percent used servers: nothing to balance",nodeType);
+      return params;
+    }
+    ServerHolder highestPercentUsedServer=serversByPercentUsed.first();
+    ServerHolder lowestPercentUsedServer=serversByPercentUsed.last();
+    analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
+    log.info("[%s]: Percent difference in percent size used between highest/lowest servers: %s%%",nodeType,analyzer.getPercentDiff());
+    log.info("[%s]: Highest percent used [%s]: size used[%s], percent used[%s%%]",nodeType,highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
+    log.info("[%s]: Lowest percent used [%s]: size used[%s], percent used[%s%%]",nodeType,lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
+    moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
   }
-));
-  for (  DruidServer server : params.getHistoricalServers()) {
-    servers.add(new ServerHolder(server,params.getLoadManagementPeons().get(server.getName())));
+  List<String> moveMsgs=Lists.newArrayList();
+  for (  Map.Entry<String,ConcurrentHashMap<String,BalancerSegmentHolder>> entry : currentlyMovingSegments.entrySet()) {
+    movedCounts.put(entry.getKey(),entry.getValue().size());
+    moveMsgs.add(String.format("[%s] : Moved %,d segment(s)",entry.getKey(),entry.getValue().size()));
   }
-  if (servers.size() <= 1) {
-    log.info("No unique values found for highest and lowest percent used servers: nothing to balance");
-    return params;
-  }
-  ServerHolder highestPercentUsedServer=servers.first();
-  ServerHolder lowestPercentUsedServer=servers.last();
-  analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
-  log.info("Percent difference in percent size used between highest/lowest servers: %s%%",analyzer.getPercentDiff());
-  log.info("Highest percent used [%s]: size used[%s], percent used[%s%%]",highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
-  log.info("Lowest percent used [%s]: size used[%s], percent used[%s%%]",lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
-  moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
-  return params.buildFromExisting().withMessage(String.format("Moved %,d segment(s)",currentlyMovingSegments.size())).withMovedCount(currentlyMovingSegments.size()).build();
+  return params.buildFromExisting().withMessages(moveMsgs).withMovedCount(movedCounts).build();
 }

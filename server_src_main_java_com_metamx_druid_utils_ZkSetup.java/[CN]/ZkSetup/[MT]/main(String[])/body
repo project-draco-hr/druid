@@ -1,6 +1,6 @@
 {
-  if (args.length != 5) {
-    System.out.println("Usage: <java invocation> zkConnect baseZkPath dbConnectionUrl dbUsername:password tableName");
+  if (args.length != 6) {
+    System.out.println("Usage: <java invocation> zkConnect baseZkPath dbConnectionUrl dbUsername:password tableName ruleTableName");
     System.out.println("This utility is deprecated, see DruidSetup instead.");
     System.exit(1);
   }
@@ -41,6 +41,9 @@
     }
     @Override public String getSegmentTable(){
       return args[4];
+    }
+    @Override public String getRuleTable(){
+      return args[5];
     }
   }
 ;

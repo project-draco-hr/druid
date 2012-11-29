@@ -1,0 +1,21 @@
+{
+  master.removeSegment(EasyMock.<DataSegment>anyObject());
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.replay(master);
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalDropRule(new Interval("2012-01-01T12:00:00.000Z/2012-01-02T00:00:00.000Z")))),Lists.<Rule>newArrayList());
+  Map<String,Map<String,Integer>> segmentsInCluster=Maps.newHashMap();
+  Map<String,Rule> segmentRules=Maps.newHashMap();
+  for (  DataSegment segment : availableSegments) {
+    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
+      if (rule.appliesTo(segment.getInterval())) {
+        segmentRules.put(segment.getIdentifier(),rule);
+        break;
+      }
+      segmentsInCluster.put(segment.getIdentifier(),ImmutableMap.of("normal",1));
+    }
+  }
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(Maps.<String,MinMaxPriorityQueue<ServerHolder>>newHashMap()).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(segmentsInCluster).build();
+  DruidMasterRuntimeParams afterParams=dropper.run(params);
+  Assert.assertTrue(afterParams.getDeletedCount() == 12);
+  EasyMock.verify(master);
+}

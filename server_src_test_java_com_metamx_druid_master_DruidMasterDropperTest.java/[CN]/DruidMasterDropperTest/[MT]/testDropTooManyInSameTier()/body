@@ -1,0 +1,29 @@
+{
+  mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
+  EasyMock.replay(mockPeon);
+  DruidServer server1=new DruidServer("serverNorm","hostNorm",1000,"historical","normal");
+  server1.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));
+  DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal");
+  server2.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));
+  Map<String,MinMaxPriorityQueue<ServerHolder>> historicalServers=ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(server1,mockPeon),new ServerHolder(server2,mockPeon))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"normal"))),Lists.<Rule>newArrayList(new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"))));
+  Map<String,Map<String,Integer>> segmentsInCluster=Maps.newHashMap();
+  Map<String,Rule> segmentRules=Maps.newHashMap();
+  for (  DataSegment segment : availableSegments) {
+    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
+      if (rule.appliesTo(segment.getInterval())) {
+        segmentRules.put(segment.getIdentifier(),rule);
+        break;
+      }
+      segmentsInCluster.put(segment.getIdentifier(),ImmutableMap.of("normal",1));
+    }
+  }
+  segmentsInCluster.put(availableSegments.get(0).getIdentifier(),ImmutableMap.of("normal",2));
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(historicalServers).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(segmentsInCluster).build();
+  DruidMasterRuntimeParams afterParams=dropper.run(params);
+  Assert.assertTrue(afterParams.getDroppedCount().get("normal") == 1);
+  Assert.assertTrue(afterParams.getDeletedCount() == 12);
+  EasyMock.verify(mockPeon);
+}

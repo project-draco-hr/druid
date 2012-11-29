@@ -1,21 +1,23 @@
 {
-  Set<DataSegment> availableSegments=params.getAvailableSegments();
-  Collection<DruidServer> servicedData=params.getHistoricalServers();
-  int droppedCount=0;
+  final Map<String,Integer> droppedCounts=Maps.newHashMap();
   int deletedCount=0;
-  for (  DruidServer server : servicedData) {
-    for (    DruidDataSource dataSource : server.getDataSources()) {
-      for (      DataSegment segment : dataSource.getSegments()) {
-        if (!availableSegments.contains(segment)) {
-          LoadQueuePeon queuePeon=params.getLoadManagementPeons().get(server.getName());
-          if (!queuePeon.getSegmentsToDrop().contains(segment)) {
-            queuePeon.dropSegment(segment,new LoadPeonCallback(){
-              @Override protected void execute(){
-                return;
+  Set<DataSegment> availableSegments=params.getAvailableSegments();
+  Map<String,MinMaxPriorityQueue<ServerHolder>> servicedData=params.getHistoricalServers();
+  for (  MinMaxPriorityQueue<ServerHolder> serverHolders : servicedData.values()) {
+    for (    ServerHolder serverHolder : serverHolders) {
+      DruidServer server=serverHolder.getServer();
+      for (      DruidDataSource dataSource : server.getDataSources()) {
+        for (        DataSegment segment : dataSource.getSegments()) {
+          if (!availableSegments.contains(segment)) {
+            LoadQueuePeon queuePeon=params.getLoadManagementPeons().get(server.getName());
+            if (!queuePeon.getSegmentsToDrop().contains(segment)) {
+              queuePeon.dropSegment(segment,new LoadPeonCallback(){
+                @Override protected void execute(){
+                }
               }
-            }
 );
-            ++droppedCount;
+              droppedCounts.put(server.getSubType(),droppedCounts.get(server.getSubType()) == null ? 1 : droppedCounts.get(server.getSubType()) + 1);
+            }
           }
         }
       }
@@ -23,15 +25,18 @@
   }
   if (System.currentTimeMillis() - params.getStartTime() > params.getMillisToWaitBeforeDeleting()) {
     Map<String,VersionedIntervalTimeline<String,DataSegment>> timelines=Maps.newHashMap();
-    for (    DruidServer server : servicedData) {
-      for (      DruidDataSource dataSource : server.getDataSources()) {
-        VersionedIntervalTimeline<String,DataSegment> timeline=timelines.get(dataSource.getName());
-        if (timeline == null) {
-          timeline=new VersionedIntervalTimeline<String,DataSegment>(Comparators.comparable());
-          timelines.put(dataSource.getName(),timeline);
-        }
-        for (        DataSegment segment : dataSource.getSegments()) {
-          timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+    for (    MinMaxPriorityQueue<ServerHolder> serverHolders : servicedData.values()) {
+      for (      ServerHolder serverHolder : serverHolders) {
+        DruidServer server=serverHolder.getServer();
+        for (        DruidDataSource dataSource : server.getDataSources()) {
+          VersionedIntervalTimeline<String,DataSegment> timeline=timelines.get(dataSource.getName());
+          if (timeline == null) {
+            timeline=new VersionedIntervalTimeline<String,DataSegment>(Comparators.comparable());
+            timelines.put(dataSource.getName(),timeline);
+          }
+          for (          DataSegment segment : dataSource.getSegments()) {
+            timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+          }
         }
       }
     }
@@ -44,6 +49,56 @@
         }
       }
     }
+    for (    DataSegment segment : params.getAvailableSegments()) {
+      Rule rule=params.getSegmentRules().get(segment.getIdentifier());
+      if (rule instanceof DropRule) {
+        removeSegment(segment);
+        ++deletedCount;
+      }
+ else       if (rule instanceof LoadRule) {
+        LoadRule loadRule=(LoadRule)rule;
+        Map<String,Integer> replicants=params.getSegmentsInCluster().get(segment.getIdentifier());
+        if (replicants == null) {
+          continue;
+        }
+        int totalExpectedReplicantCount=loadRule.getReplicationFactor();
+        int totalActualReplicantCount=0;
+        for (        Map.Entry<String,Integer> replicantEntry : replicants.entrySet()) {
+          totalActualReplicantCount+=replicantEntry.getValue();
+        }
+        for (        Map.Entry<String,Integer> replicantEntry : replicants.entrySet()) {
+          int actualReplicantCount=replicantEntry.getValue();
+          int expectedReplicantCount=replicantEntry.getKey().equalsIgnoreCase(loadRule.getNodeType()) ? totalExpectedReplicantCount : 0;
+          MinMaxPriorityQueue<ServerHolder> serverQueue=params.getHistoricalServers().get(replicantEntry.getKey());
+          if (serverQueue == null) {
+            log.warn("No holders found for nodeType[%s]",replicantEntry.getKey());
+            continue;
+          }
+          List<ServerHolder> droppedServers=Lists.newArrayList();
+          while (actualReplicantCount > expectedReplicantCount && totalActualReplicantCount > totalExpectedReplicantCount) {
+            ServerHolder holder=serverQueue.pollLast();
+            if (holder == null) {
+              log.warn("Wtf, holder was null?  Do I have no servers[%s]?",serverQueue);
+              continue;
+            }
+            holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
+              @Override protected void execute(){
+              }
+            }
+);
+            droppedServers.add(holder);
+            --actualReplicantCount;
+            --totalActualReplicantCount;
+            droppedCounts.put(holder.getServer().getSubType(),droppedCounts.get(holder.getServer().getSubType()) == null ? 1 : droppedCounts.get(holder.getServer().getSubType()) + 1);
+          }
+          serverQueue.addAll(droppedServers);
+        }
+      }
+    }
   }
-  return params.buildFromExisting().withMessage(String.format("Dropped %,d segments from %,d servers",droppedCount,servicedData.size())).withMessage(String.format("Deleted %,d segments",deletedCount)).withDroppedCount(droppedCount).withDeletedCount(deletedCount).build();
+  List<String> dropMsgs=Lists.newArrayList();
+  for (  Map.Entry<String,Integer> entry : droppedCounts.entrySet()) {
+    dropMsgs.add(String.format("[%s] : Dropped %,d segments among %,d servers",entry.getKey(),droppedCounts.get(entry.getKey()),servicedData.get(entry.getKey()).size()));
+  }
+  return params.buildFromExisting().withMessages(dropMsgs).withMessage(String.format("Deleted %,d segments",deletedCount)).withDroppedCount(droppedCounts).withDeletedCount(deletedCount).build();
 }

@@ -1,0 +1,9 @@
+{
+  dbi.withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, payload) VALUES (:id, :dataSource, :payload)",ruleTable)).bind("id",id).bind("dataSource",dataSource).bind("payload",rules).execute();
+      return null;
+    }
+  }
+);
+}

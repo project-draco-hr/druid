@@ -6,6 +6,7 @@
   final Lifecycle lifecycle=new Lifecycle();
   final HttpClient httpClient=HttpClientInit.createClient(HttpClientConfig.builder().withNumConnections(1).build(),lifecycle);
   final ServiceEmitter emitter=new ServiceEmitter(PropUtils.getProperty(props,"druid.service"),PropUtils.getProperty(props,"druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
+  EmittingLogger.registerEmitter(emitter);
   final ZkClient zkClient=Initialization.makeZkClient(configFactory.build(ZkClientConfig.class),lifecycle);
   final PhoneBook masterYp=Initialization.createPhoneBook(jsonMapper,zkClient,"Master-ZKYP--%s",lifecycle);
   final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
@@ -13,6 +14,7 @@
   final DbConnectorConfig dbConnectorConfig=configFactory.build(DbConnectorConfig.class);
   final DBI dbi=new DbConnector(dbConnectorConfig).getDBI();
   DbConnector.createSegmentTable(dbi,dbConnectorConfig);
+  DbConnector.createRuleTable(dbi,dbConnectorConfig);
   final DatabaseSegmentManager databaseSegmentManager=new DatabaseSegmentManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseSegmentManager-Exec--%d"),configFactory.build(DatabaseSegmentManagerConfig.class),dbi);
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor()));
@@ -26,7 +28,7 @@
     serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider,dbi,configFactory);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();

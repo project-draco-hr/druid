@@ -1,0 +1,22 @@
+{
+  DruidServer server1=new DruidServer("server1","host1",1000,"historical","hot");
+  DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal");
+  server2.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));
+  Map<String,MinMaxPriorityQueue<ServerHolder>> historicalServers=ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(server1,mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(server2,mockPeon))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"hot"))),Lists.<Rule>newArrayList(new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"))));
+  Map<String,Map<String,Integer>> segmentsInCluster=Maps.newHashMap();
+  Map<String,Rule> segmentRules=Maps.newHashMap();
+  for (  DataSegment segment : availableSegments) {
+    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
+      if (rule.appliesTo(segment.getInterval())) {
+        segmentRules.put(segment.getIdentifier(),rule);
+        break;
+      }
+      segmentsInCluster.put(segment.getIdentifier(),ImmutableMap.of("normal",1));
+    }
+  }
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(historicalServers).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(segmentsInCluster).build();
+  DruidMasterRuntimeParams afterParams=dropper.run(params);
+  Assert.assertTrue(afterParams.getDroppedCount().get("normal") == null);
+  Assert.assertTrue(afterParams.getDeletedCount() == 12);
+}
