@@ -1,18 +1,16 @@
 {
   this.startTime=0;
-  this.ruleMap=null;
-  this.availableServerMap=Maps.newHashMap();
-  this.historicalServers=Maps.newHashMap();
-  this.segmentRules=Maps.newHashMap();
-  this.segmentsInCluster=Maps.newHashMap();
+  this.druidCluster=null;
+  this.segmentRuleLookup=null;
+  this.segmentReplicantLookup=null;
   this.dataSources=Sets.newHashSet();
   this.availableSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
   this.loadManagementPeons=Maps.newHashMap();
   this.messages=Lists.newArrayList();
   this.emitter=null;
   this.millisToWaitBeforeDeleting=0;
-  this.assignedCount=Maps.newHashMap();
-  this.droppedCount=Maps.newHashMap();
+  this.assignedCount=new CountingMap<String>();
+  this.droppedCount=new CountingMap<String>();
   this.deletedCount=0;
   this.unassignedCount=0;
   this.unassignedSize=0;

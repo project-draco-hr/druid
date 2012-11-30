@@ -1,19 +1,11 @@
 {
-  Map<String,MinMaxPriorityQueue<ServerHolder>> historicalServers=ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot"),mockPeon),new ServerHolder(new DruidServer("serverHot2","hostHot2",1000,"historical","hot"),mockPeon))),"cold",MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create(Arrays.asList(new ServerHolder(new DruidServer("serverCold","hostCold",1000,"historical","cold"),mockPeon))));
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot"),mockPeon),new ServerHolder(new DruidServer("serverHot2","hostHot2",1000,"historical","hot"),mockPeon))),"cold",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverCold","hostCold",1000,"historical","cold"),mockPeon)))));
   RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T06:00:00.000Z"),2,"hot"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),1,"cold"))),Lists.<Rule>newArrayList());
-  Map<String,Rule> segmentRules=Maps.newHashMap();
-  for (  DataSegment segment : availableSegments) {
-    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
-      if (rule.appliesTo(segment.getInterval())) {
-        segmentRules.put(segment.getIdentifier(),rule);
-        break;
-      }
-    }
-  }
-  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(historicalServers).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(Maps.<String,Map<String,Integer>>newHashMap()).build();
+  SegmentRuleLookup segmentRuleLookup=SegmentRuleLookup.make(availableSegments,ruleMap);
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withSegmentRuleLookup(segmentRuleLookup).withSegmentReplicantLookup(new SegmentReplicantLookup()).build();
   DruidMasterRuntimeParams afterParams=assigner.run(params);
-  Assert.assertTrue(afterParams.getAssignedCount().get("hot") == 12);
-  Assert.assertTrue(afterParams.getAssignedCount().get("cold") == 18);
+  Assert.assertTrue(afterParams.getAssignedCount().get("hot").get() == 12);
+  Assert.assertTrue(afterParams.getAssignedCount().get("cold").get() == 18);
   Assert.assertTrue(afterParams.getUnassignedCount() == 0);
   Assert.assertTrue(afterParams.getUnassignedSize() == 0);
   EasyMock.verify(master);

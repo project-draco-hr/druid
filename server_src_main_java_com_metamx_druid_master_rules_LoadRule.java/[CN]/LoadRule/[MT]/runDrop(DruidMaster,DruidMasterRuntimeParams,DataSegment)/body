@@ -1,0 +1,37 @@
+{
+  CountingMap<String> droppedCounts=new CountingMap<String>();
+  int expectedNumReplicants=getReplicationFactor();
+  int actualNumReplicants=params.getSegmentReplicantLookup().lookup(segment.getIdentifier(),gettier());
+  if (actualNumReplicants < expectedNumReplicants) {
+    return new DropStat(droppedCounts,0);
+  }
+  Map<String,Integer> replicantsByType=params.getSegmentReplicantLookup().gettiers(segment.getIdentifier());
+  for (  Map.Entry<String,Integer> entry : replicantsByType.entrySet()) {
+    String tier=entry.getKey();
+    int actualNumReplicantsForType=entry.getValue();
+    int expectedNumReplicantsForType=getReplicationFactor(tier);
+    MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().get(tier);
+    if (serverQueue == null) {
+      log.makeAlert("No holders found for tier[%s]",entry.getKey()).emit();
+      return new DropStat(droppedCounts,0);
+    }
+    List<ServerHolder> droppedServers=Lists.newArrayList();
+    while (actualNumReplicantsForType > expectedNumReplicantsForType) {
+      ServerHolder holder=serverQueue.pollLast();
+      if (holder == null) {
+        log.warn("Wtf, holder was null?  Do I have no servers[%s]?",serverQueue);
+        continue;
+      }
+      holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
+        @Override protected void execute(){
+        }
+      }
+);
+      droppedServers.add(holder);
+      --actualNumReplicantsForType;
+      droppedCounts.add(tier,1);
+    }
+    serverQueue.addAll(droppedServers);
+  }
+  return new DropStat(droppedCounts,0);
+}

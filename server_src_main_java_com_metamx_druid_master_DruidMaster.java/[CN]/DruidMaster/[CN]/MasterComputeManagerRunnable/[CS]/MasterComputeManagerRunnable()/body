@@ -1,5 +1,5 @@
 {
-  super(ImmutableList.of(new DruidMasterRuleMaker(configFactory.build(DruidMasterRuleMakerConfig.class),jsonMapper,dbi),new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterHelper(){
+  super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterHelper(){
     @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
       Collection<DruidServer> servers=serverInventoryManager.getInventory();
       if (log.isDebugEnabled()) {
@@ -12,11 +12,11 @@
           }
         }
       }
-      final Map<String,MinMaxPriorityQueue<ServerHolder>> historicalServers=Maps.newHashMap();
-      final Map<String,DruidServer> availableServerMap=Maps.newHashMap();
+      final DruidCluster cluster=new DruidCluster();
+      final Set<String> historicalServers=Sets.newHashSet();
       for (      DruidServer server : servers) {
         if (server.getType().equalsIgnoreCase("historical")) {
-          availableServerMap.put(server.getName(),server);
+          historicalServers.add(server.getName());
           if (!loadManagementPeons.containsKey(server.getName())) {
             String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
             LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
@@ -24,61 +24,18 @@
             loadManagementPeons.put(server.getName(),loadQueuePeon);
             yp.registerListener(basePath,loadQueuePeon);
           }
-          MinMaxPriorityQueue<ServerHolder> tierServers=historicalServers.get(server.getSubType());
-          if (tierServers == null) {
-            tierServers=MinMaxPriorityQueue.orderedBy(Comparators.inverse(Ordering.natural())).create();
-            historicalServers.put(server.getSubType(),tierServers);
-          }
-          tierServers.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
+          cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
         }
       }
-      Map<String,Rule> segmentRules=Maps.newHashMap();
-      for (      DataSegment segment : params.getAvailableSegments()) {
-        for (        Rule rule : params.getRuleMap().getRules(segment.getDataSource())) {
-          if (rule.appliesTo(segment.getInterval())) {
-            segmentRules.put(segment.getIdentifier(),rule);
-            break;
-          }
-        }
-        if (!segmentRules.containsKey(segment.getIdentifier())) {
-          throw new ISE("Unable to find a rule for [%s]!!!",segment.getIdentifier());
-        }
+      SegmentRuleLookup segmentRuleLookup=SegmentRuleLookup.make(params.getAvailableSegments(),databaseRuleCoordinator.getRuleMap());
+      SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
+      for (      String name : Sets.difference(historicalServers,loadManagementPeons.keySet())) {
+        log.info("Removing listener for server[%s] which is no longer there.",name);
+        LoadQueuePeon peon=loadManagementPeons.remove(name);
+        peon.stop();
+        yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
-      final Map<String,Map<String,Integer>> segmentsInCluster=Maps.newHashMap();
-      for (      MinMaxPriorityQueue<ServerHolder> serversByType : historicalServers.values()) {
-        for (        ServerHolder serverHolder : serversByType) {
-          DruidServer server=serverHolder.getServer();
-          for (          DruidDataSource dataSource : server.getDataSources()) {
-            for (            DataSegment segment : dataSource.getSegments()) {
-              Map<String,Integer> segmentInCluster=segmentsInCluster.get(segment.getIdentifier());
-              if (segmentInCluster == null) {
-                segmentInCluster=Maps.newHashMap();
-                segmentInCluster.put(server.getSubType(),0);
-                segmentsInCluster.put(segment.getIdentifier(),segmentInCluster);
-              }
-              segmentInCluster.put(server.getSubType(),segmentInCluster.get(server.getSubType()) + 1);
-            }
-          }
-          for (          DataSegment peonSegment : serverHolder.getPeon().getSegmentsToLoad()) {
-            Map<String,Integer> segmentInCluster=segmentsInCluster.get(peonSegment.getIdentifier());
-            if (segmentInCluster == null) {
-              segmentInCluster=Maps.newHashMap();
-              segmentInCluster.put(server.getSubType(),0);
-              segmentsInCluster.put(peonSegment.getIdentifier(),segmentInCluster);
-            }
-            segmentInCluster.put(server.getSubType(),segmentInCluster.get(server.getSubType()) + 1);
-          }
-        }
-      }
-      for (      String name : loadManagementPeons.keySet()) {
-        if (!availableServerMap.containsKey(name)) {
-          log.info("Removing listener for server[%s] which is no longer there.",name);
-          LoadQueuePeon peon=loadManagementPeons.remove(name);
-          peon.stop();
-          yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
-        }
-      }
-      return params.buildFromExisting().withAvailableServerMap(availableServerMap).withHistoricalServers(historicalServers).withSegmentRules(segmentRules).withSegmentsInCluster(segmentsInCluster).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withSegmentRuleLookup(segmentRuleLookup).withSegmentReplicantLookup(segmentReplicantLookup).build();
     }
   }
 ,new DruidMasterAssigner(DruidMaster.this),new DruidMasterDropper(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));

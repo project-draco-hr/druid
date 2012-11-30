@@ -1,6 +1,10 @@
 {
   List<Rule> retVal=Lists.newArrayList();
-  retVal.addAll((rules.get(dataSource) == null) ? Lists.<Rule>newArrayList() : rules.get(dataSource));
-  retVal.addAll(defaultRules);
+  if (dataSource != null) {
+    retVal.addAll(rules.get(dataSource));
+  }
+  if (defaultRules != null) {
+    retVal.addAll(defaultRules);
+  }
   return retVal;
 }

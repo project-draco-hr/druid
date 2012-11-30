@@ -1,8 +1,8 @@
 {
-  for (  BalancerSegmentHolder holder : currentlyMovingSegments.get(nodeType).values()) {
+  for (  BalancerSegmentHolder holder : currentlyMovingSegments.get(tier).values()) {
     holder.reduceLifetime();
     if (holder.getLifetime() <= 0) {
-      log.makeAlert("[%s]: Balancer move segments queue has a segment stuck",nodeType,ImmutableMap.<String,Object>builder().put("segment",holder.getSegment().getIdentifier()).build()).emit();
+      log.makeAlert("[%s]: Balancer move segments queue has a segment stuck",tier,ImmutableMap.<String,Object>builder().put("segment",holder.getSegment().getIdentifier()).build()).emit();
     }
   }
 }

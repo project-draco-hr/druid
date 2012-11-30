@@ -1,0 +1,25 @@
+{
+synchronized (lock) {
+    return dbi.withHandle(new HandleCallback<Map<String,List<Rule>>>(){
+      @Override public Map<String,List<Rule>> withHandle(      Handle handle) throws Exception {
+        return handle.createQuery(String.format("SELECT dataSource, payload FROM %s",config.getRuleTable())).fold(Maps.<String,List<Rule>>newHashMap(),new Folder3<Map<String,List<Rule>>,Map<String,Object>>(){
+          @Override public Map<String,List<Rule>> fold(          Map<String,List<Rule>> retVal,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
+            try {
+              String dataSource=MapUtils.getString(stringObjectMap,"dataSource");
+              List<Rule> rules=jsonMapper.readValue(MapUtils.getString(stringObjectMap,"payload"),new TypeReference<List<Rule>>(){
+              }
+);
+              retVal.put(dataSource,rules);
+              return retVal;
+            }
+ catch (            Exception e) {
+              throw Throwables.propagate(e);
+            }
+          }
+        }
+);
+      }
+    }
+);
+  }
+}

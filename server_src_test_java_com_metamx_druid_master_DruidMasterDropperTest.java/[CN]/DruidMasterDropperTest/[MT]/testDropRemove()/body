@@ -2,19 +2,15 @@
   master.removeSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
   EasyMock.replay(master);
-  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalDropRule(new Interval("2012-01-01T12:00:00.000Z/2012-01-02T00:00:00.000Z")))),Lists.<Rule>newArrayList());
-  Map<String,Map<String,Integer>> segmentsInCluster=Maps.newHashMap();
-  Map<String,Rule> segmentRules=Maps.newHashMap();
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal"),mockPeon)))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"normal"),new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z")))),Lists.<Rule>newArrayList());
+  SegmentRuleLookup segmentRuleLookup=SegmentRuleLookup.make(availableSegments,ruleMap);
+  Table<String,String,Integer> segmentsInCluster=HashBasedTable.create();
   for (  DataSegment segment : availableSegments) {
-    for (    Rule rule : ruleMap.getRules(segment.getDataSource())) {
-      if (rule.appliesTo(segment.getInterval())) {
-        segmentRules.put(segment.getIdentifier(),rule);
-        break;
-      }
-      segmentsInCluster.put(segment.getIdentifier(),ImmutableMap.of("normal",1));
-    }
+    segmentsInCluster.put(segment.getIdentifier(),"normal",1);
   }
-  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withHistoricalServers(Maps.<String,MinMaxPriorityQueue<ServerHolder>>newHashMap()).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withSegmentRules(segmentRules).withSegmentsInCluster(segmentsInCluster).build();
+  SegmentReplicantLookup segmentReplicantLookup=new SegmentReplicantLookup(segmentsInCluster);
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withSegmentRuleLookup(segmentRuleLookup).withSegmentReplicantLookup(segmentReplicantLookup).build();
   DruidMasterRuntimeParams afterParams=dropper.run(params);
   Assert.assertTrue(afterParams.getDeletedCount() == 12);
   EasyMock.verify(master);

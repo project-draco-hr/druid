@@ -1,0 +1,9 @@
+{
+  DruidServer server=serverHolder.getServer();
+  MinMaxPriorityQueue<ServerHolder> tierServers=cluster.get(server.getTier());
+  if (tierServers == null) {
+    tierServers=MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create();
+    cluster.put(server.getTier(),tierServers);
+  }
+  tierServers.add(serverHolder);
+}
