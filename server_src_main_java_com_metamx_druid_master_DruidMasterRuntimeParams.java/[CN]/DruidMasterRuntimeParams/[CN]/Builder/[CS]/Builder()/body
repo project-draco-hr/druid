@@ -1,21 +1,14 @@
 {
   this.startTime=0;
   this.druidCluster=null;
-  this.segmentRuleLookup=null;
+  this.ruleMap=null;
   this.segmentReplicantLookup=null;
   this.dataSources=Sets.newHashSet();
   this.availableSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
   this.loadManagementPeons=Maps.newHashMap();
-  this.messages=Lists.newArrayList();
   this.emitter=null;
   this.millisToWaitBeforeDeleting=0;
-  this.assignedCount=new CountingMap<String>();
-  this.droppedCount=new CountingMap<String>();
-  this.deletedCount=0;
-  this.unassignedCount=0;
-  this.unassignedSize=0;
-  this.movedCount=Maps.newHashMap();
+  this.stats=new MasterStats();
   this.mergeBytesLimit=0;
   this.mergeSegmentsLimit=0;
-  this.mergedSegmentCount=0;
 }

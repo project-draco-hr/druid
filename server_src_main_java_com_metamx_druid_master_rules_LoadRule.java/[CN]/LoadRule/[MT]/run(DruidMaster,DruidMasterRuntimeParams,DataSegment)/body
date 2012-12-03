@@ -1,0 +1,13 @@
+{
+  MasterStats stats=new MasterStats();
+  int expectedReplicants=getReplicants();
+  int actualReplicants=params.getSegmentReplicantLookup().lookup(segment.getIdentifier(),getTier());
+  MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(getTier());
+  if (serverQueue == null) {
+    log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",getTier()).emit();
+    throw new ISE("Tier[%s] has no servers! Check your cluster configuration!",getTier());
+  }
+  stats.accumulate(assign(expectedReplicants,actualReplicants,serverQueue,segment));
+  stats.accumulate(drop(expectedReplicants,actualReplicants,segment,params));
+  return stats;
+}

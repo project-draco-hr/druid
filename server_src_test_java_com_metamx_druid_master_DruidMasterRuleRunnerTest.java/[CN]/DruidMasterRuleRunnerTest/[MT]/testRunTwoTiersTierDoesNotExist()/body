@@ -1,0 +1,18 @@
+{
+  emitter.emit(EasyMock.<ServiceEventBuilder>anyObject());
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.replay(emitter);
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal"),mockPeon)))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"hot"))),Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),1,"normal")));
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withEmitter(emitter).withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withRuleMap(ruleMap).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build();
+  boolean exceptionOccurred=false;
+  try {
+    ruleRunner.run(params);
+  }
+ catch (  Exception e) {
+    exceptionOccurred=true;
+  }
+  Assert.assertTrue(exceptionOccurred);
+  EasyMock.verify(emitter);
+  EasyMock.verify(mockPeon);
+}

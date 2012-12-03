@@ -1,0 +1,27 @@
+{
+  MasterStats stats=new MasterStats();
+  DruidCluster cluster=params.getDruidCluster();
+  if (cluster.isEmpty()) {
+    log.warn("Uh... I have no servers. Not assigning anything...");
+    return params;
+  }
+  RuleMap ruleMap=params.getRuleMap();
+  for (  DataSegment segment : params.getAvailableSegments()) {
+    List<Rule> rules=ruleMap.getRules(segment.getDataSource());
+    if (rules == null) {
+      throw new ISE("No rules found for segment[%s]",segment.getIdentifier());
+    }
+    boolean foundMatchingRule=false;
+    for (    Rule rule : rules) {
+      if (rule.appliesTo(segment)) {
+        stats.accumulate(rule.run(master,params,segment));
+        foundMatchingRule=true;
+        break;
+      }
+    }
+    if (!foundMatchingRule) {
+      throw new ISE("Unable to find a matching rule for segment[%s]",segment.getIdentifier());
+    }
+  }
+  return params.buildFromExisting().withMasterStats(stats).build();
+}

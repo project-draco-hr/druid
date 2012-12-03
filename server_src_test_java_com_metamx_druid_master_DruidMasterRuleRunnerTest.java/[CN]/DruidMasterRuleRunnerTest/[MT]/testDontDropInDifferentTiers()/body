@@ -1,0 +1,15 @@
+{
+  DruidServer server1=new DruidServer("server1","host1",1000,"historical","hot");
+  DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal");
+  for (  DataSegment segment : availableSegments) {
+    server2.addDataSegment(segment.getIdentifier(),segment);
+  }
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1,mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server2,mockPeon)))));
+  RuleMap ruleMap=new RuleMap(ImmutableMap.<String,List<Rule>>of("test",Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"hot"))),Lists.<Rule>newArrayList(new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"))));
+  SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(availableSegments).withRuleMap(ruleMap).withSegmentReplicantLookup(segmentReplicantLookup).build();
+  DruidMasterRuntimeParams afterParams=ruleRunner.run(params);
+  MasterStats stats=afterParams.getMasterStats();
+  Assert.assertTrue(stats.getPerTierStats().get("droppedCount") == null);
+  Assert.assertTrue(stats.getGlobalStats().get("deletedCount").get() == 12);
+}

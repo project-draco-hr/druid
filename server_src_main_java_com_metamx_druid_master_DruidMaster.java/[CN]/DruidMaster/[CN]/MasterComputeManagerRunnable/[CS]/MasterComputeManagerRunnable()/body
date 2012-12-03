@@ -13,10 +13,8 @@
         }
       }
       final DruidCluster cluster=new DruidCluster();
-      final Set<String> historicalServers=Sets.newHashSet();
       for (      DruidServer server : servers) {
         if (server.getType().equalsIgnoreCase("historical")) {
-          historicalServers.add(server.getName());
           if (!loadManagementPeons.containsKey(server.getName())) {
             String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
             LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
@@ -27,16 +25,21 @@
           cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
         }
       }
-      SegmentRuleLookup segmentRuleLookup=SegmentRuleLookup.make(params.getAvailableSegments(),databaseRuleCoordinator.getRuleMap());
       SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
-      for (      String name : Sets.difference(historicalServers,loadManagementPeons.keySet())) {
+      for (      String name : Sets.difference(Sets.newHashSet(Collections2.transform(servers,new Function<DruidServer,String>(){
+        @Override public String apply(        @Nullable DruidServer input){
+          return input.getName();
+        }
+      }
+)),loadManagementPeons.keySet())) {
         log.info("Removing listener for server[%s] which is no longer there.",name);
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();
         yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
-      return params.buildFromExisting().withDruidCluster(cluster).withSegmentRuleLookup(segmentRuleLookup).withSegmentReplicantLookup(segmentReplicantLookup).build();
+      decrementRemovedSegmentsLifetime();
+      return params.buildFromExisting().withDruidCluster(cluster).withRuleMap(databaseRuleCoordinator.getRuleMap()).withSegmentReplicantLookup(segmentReplicantLookup).build();
     }
   }
-,new DruidMasterAssigner(DruidMaster.this),new DruidMasterDropper(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
+,new DruidMasterRuleRunner(DruidMaster.this),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
 }

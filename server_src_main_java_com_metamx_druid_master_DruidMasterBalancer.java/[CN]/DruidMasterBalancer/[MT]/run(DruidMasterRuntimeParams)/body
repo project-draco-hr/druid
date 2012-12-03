@@ -1,5 +1,5 @@
 {
-  Map<String,Integer> movedCounts=Maps.newHashMap();
+  MasterStats stats=new MasterStats();
   for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getDruidCluster().getCluster().entrySet()) {
     String tier=entry.getKey();
     if (currentlyMovingSegments.get(tier) == null) {
@@ -23,11 +23,7 @@
     log.info("[%s]: Highest percent used [%s]: size used[%s], percent used[%s%%]",tier,highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
     log.info("[%s]: Lowest percent used [%s]: size used[%s], percent used[%s%%]",tier,lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
     moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
+    stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
   }
-  List<String> moveMsgs=Lists.newArrayList();
-  for (  Map.Entry<String,ConcurrentHashMap<String,BalancerSegmentHolder>> entry : currentlyMovingSegments.entrySet()) {
-    movedCounts.put(entry.getKey(),entry.getValue().size());
-    moveMsgs.add(String.format("[%s] : Moved %,d segment(s)",entry.getKey(),entry.getValue().size()));
-  }
-  return params.buildFromExisting().withMessages(moveMsgs).withMovedCount(movedCounts).build();
+  return params.buildFromExisting().withMasterStats(stats).build();
 }

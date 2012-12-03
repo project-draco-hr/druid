@@ -1,0 +1,32 @@
+{
+  MasterStats stats=new MasterStats();
+  List<ServerHolder> assignedServers=Lists.newArrayList();
+  while (actualReplicants < expectedReplicants) {
+    ServerHolder holder=serverQueue.pollFirst();
+    if (holder == null) {
+      log.warn("Not enough %s servers[%d] to assign segments!!!",getTier(),serverQueue.size());
+      break;
+    }
+    if (holder.containsSegment(segment)) {
+      continue;
+    }
+    if (holder.getAvailableSize() < segment.getSize()) {
+      log.warn("Not enough node capacity, closest is [%s] with %,d available, skipping segment[%s].",holder.getServer(),holder.getAvailableSize(),segment);
+      log.makeAlert("Not enough node capacity",ImmutableMap.<String,Object>builder().put("segmentSkipped",segment.toString()).put("closestNode",holder.getServer().toString()).put("availableSize",holder.getAvailableSize()).build()).emit();
+      serverQueue.add(holder);
+      stats.addToTieredStat("unassignedCount",getTier(),1);
+      stats.addToTieredStat("unassignedSize",getTier(),segment.getSize());
+      break;
+    }
+    holder.getPeon().loadSegment(segment,new LoadPeonCallback(){
+      @Override protected void execute(){
+      }
+    }
+);
+    assignedServers.add(holder);
+    stats.addToTieredStat("assignedCount",getTier(),1);
+    ++actualReplicants;
+  }
+  serverQueue.addAll(assignedServers);
+  return stats;
+}
