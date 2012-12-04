@@ -1,6 +1,6 @@
 {
   try {
-    return new MemcachedCacheBroker(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).build(),AddrUtil.getAddresses(config.getHosts())),config.getTimeout(),config.getExpiration());
+    return new MemcachedCacheBroker(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setShouldOptimize(true).build(),AddrUtil.getAddresses(config.getHosts())),config.getTimeout(),config.getExpiration());
   }
  catch (  IOException e) {
     throw new RuntimeException(e);
