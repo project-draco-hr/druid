@@ -20,10 +20,11 @@ synchronized (cacheCache) {
         }
         throw new ISE("Cache for identifier[%s] is closed.",identifier);
       }
-      @Override public byte[] put(      byte[] key,      byte[] value){
+      @Override public void put(      byte[] key,      byte[] value){
 synchronized (clearLock) {
           if (open) {
-            return baseMap.put(computeKey(key),value);
+            baseMap.put(computeKey(key),value);
+            return;
           }
         }
         throw new ISE("Cache for identifier[%s] is closed.",identifier);
