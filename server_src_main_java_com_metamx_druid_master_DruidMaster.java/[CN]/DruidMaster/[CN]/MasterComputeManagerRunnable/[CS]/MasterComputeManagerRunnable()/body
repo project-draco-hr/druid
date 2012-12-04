@@ -38,7 +38,7 @@
         yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
       decrementRemovedSegmentsLifetime();
-      return params.buildFromExisting().withDruidCluster(cluster).withRuleMap(databaseRuleCoordinator.getRuleMap()).withSegmentReplicantLookup(segmentReplicantLookup).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).build();
     }
   }
 ,new DruidMasterRuleRunner(DruidMaster.this),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
