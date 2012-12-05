@@ -3,7 +3,8 @@ synchronized (lock) {
     try {
       dbi.withHandle(new HandleCallback<Void>(){
         @Override public Void withHandle(        Handle handle) throws Exception {
-          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, ruleVersion, payload) VALUES (:id, :dataSource, :ruleVersion, :payload)",config.getRuleTable())).bind("id",String.format("%s_%s",dataSource,config.getRuleVersion())).bind("dataSource",dataSource).bind("ruleVersion",config.getRuleVersion()).bind("payload",jsonMapper.writeValueAsString(newRules)).execute();
+          final String version=new DateTime().toString();
+          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",config.getRuleTable())).bind("id",String.format("%s_%s",dataSource,version)).bind("dataSource",dataSource).bind("version",version).bind("payload",jsonMapper.writeValueAsString(newRules)).execute();
           return null;
         }
       }
