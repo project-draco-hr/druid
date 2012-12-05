@@ -1,0 +1,20 @@
+{
+  broker=MemcachedCacheBroker.create(new MemcachedCacheBrokerConfig(){
+    @Override public int getExpiration(){
+      return 3600 * 24 * 365;
+    }
+    @Override public int getTimeout(){
+      return 500;
+    }
+    @Override public String getHosts(){
+      return "localhost:11211";
+    }
+    @Override public int getMaxObjectSize(){
+      return 50 * 1024 * 1024;
+    }
+  }
+);
+  cache=broker.provideCache("default");
+  randBytes=new byte[objectSize * 1024];
+  new Random(0).nextBytes(randBytes);
+}

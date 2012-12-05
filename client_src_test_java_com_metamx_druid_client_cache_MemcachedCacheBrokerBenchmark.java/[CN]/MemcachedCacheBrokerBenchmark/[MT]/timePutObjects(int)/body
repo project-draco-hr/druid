@@ -1,0 +1,9 @@
+{
+  for (int i=0; i < reps; ++i) {
+    for (int k=0; k < objectCount; ++k) {
+      String key=BASE_KEY + i;
+      cache.put(key.getBytes(),randBytes);
+    }
+    broker.getClient().waitForQueues(1,TimeUnit.HOURS);
+  }
+}
