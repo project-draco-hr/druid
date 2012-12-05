@@ -5,6 +5,6 @@
     return new MemcachedCacheBroker(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(config.getHosts())),config.getTimeout(),config.getExpiration());
   }
  catch (  IOException e) {
-    throw new RuntimeException(e);
+    throw Throwables.propagate(e);
   }
 }
