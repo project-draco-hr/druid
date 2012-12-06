@@ -1,0 +1,14 @@
+{
+  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T06:00:00.000Z"),1,"hot"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"normal"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),1,"cold"))).atLeastOnce();
+  EasyMock.replay(databaseRuleManager);
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot"),mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal"),mockPeon))),"cold",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverCold","hostCold",1000,"historical","cold"),mockPeon)))));
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build();
+  DruidMasterRuntimeParams afterParams=ruleRunner.run(params);
+  MasterStats stats=afterParams.getMasterStats();
+  Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 6);
+  Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("normal").get() == 6);
+  Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("cold").get() == 12);
+  Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
+  Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
+  EasyMock.verify(mockPeon);
+}

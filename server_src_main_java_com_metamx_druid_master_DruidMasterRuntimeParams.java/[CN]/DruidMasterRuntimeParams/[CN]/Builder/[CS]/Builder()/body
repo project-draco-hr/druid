@@ -1,23 +1,14 @@
 {
   this.startTime=0;
-  this.availableServerMap=Maps.newHashMap();
-  this.historicalServers=Sets.newHashSet();
+  this.druidCluster=null;
+  this.databaseRuleManager=null;
+  this.segmentReplicantLookup=null;
   this.dataSources=Sets.newHashSet();
   this.availableSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
-  this.unservicedSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
   this.loadManagementPeons=Maps.newHashMap();
-  this.messages=Lists.newArrayList();
   this.emitter=null;
   this.millisToWaitBeforeDeleting=0;
-  this.assignedCount=0;
-  this.droppedCount=0;
-  this.deletedCount=0;
-  this.unassignedCount=0;
-  this.unassignedSize=0;
-  this.movedCount=0;
-  this.createdReplicantCount=0;
-  this.destroyedReplicantCount=0;
+  this.stats=new MasterStats();
   this.mergeBytesLimit=0;
   this.mergeSegmentsLimit=0;
-  this.mergedSegmentCount=0;
 }

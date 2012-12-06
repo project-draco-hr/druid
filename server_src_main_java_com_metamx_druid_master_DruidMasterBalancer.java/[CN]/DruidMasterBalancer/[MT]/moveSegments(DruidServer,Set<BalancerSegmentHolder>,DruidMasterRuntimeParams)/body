@@ -10,19 +10,21 @@
       try {
         master.moveSegment(fromServer,toServer,segmentToMove.getIdentifier(),new LoadPeonCallback(){
           @Override protected void execute(){
-            currentlyMovingSegments.remove(segmentName,segment);
+            Map<String,BalancerSegmentHolder> movingSegments=currentlyMovingSegments.get(server.getTier());
+            if (movingSegments != null) {
+              movingSegments.remove(segmentName);
+            }
           }
         }
 );
-        currentlyMovingSegments.put(segmentName,segment);
+        currentlyMovingSegments.get(server.getTier()).put(segmentName,segment);
       }
  catch (      Exception e) {
-        log.warn("Exception occurred [%s]",e.getMessage());
-        continue;
+        log.makeAlert(e,String.format("[%s] : Moving exception",segmentName)).emit();
       }
     }
  else {
-      currentlyMovingSegments.remove(segment);
+      currentlyMovingSegments.get(server.getTier()).remove(segment);
     }
   }
 }

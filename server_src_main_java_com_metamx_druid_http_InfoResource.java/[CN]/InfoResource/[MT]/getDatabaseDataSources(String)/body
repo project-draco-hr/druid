@@ -1,0 +1,12 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (full != null) {
+    return builder.entity(databaseSegmentManager.getInventory()).build();
+  }
+  return builder.entity(Iterables.transform(databaseSegmentManager.getInventory(),new Function<DruidDataSource,String>(){
+    @Override public String apply(    @Nullable DruidDataSource dataSource){
+      return dataSource.getName();
+    }
+  }
+)).build();
+}

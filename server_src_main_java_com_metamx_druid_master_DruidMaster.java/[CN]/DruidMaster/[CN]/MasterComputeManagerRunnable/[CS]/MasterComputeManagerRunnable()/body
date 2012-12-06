@@ -12,45 +12,34 @@
           }
         }
       }
-      final Set<DruidServer> historicalServers=Sets.newHashSet();
+      final DruidCluster cluster=new DruidCluster();
       for (      DruidServer server : servers) {
         if (server.getType().equalsIgnoreCase("historical")) {
-          historicalServers.add(server);
-        }
-      }
-      final Map<String,DruidServer> availableServerMap=Maps.newHashMap();
-      final Set<DataSegment> unservicedSegments=Sets.newTreeSet(Comparators.inverse(DataSegment.bucketMonthComparator()));
-      unservicedSegments.addAll(params.getAvailableSegments());
-      for (      DruidServer server : historicalServers) {
-        availableServerMap.put(server.getName(),server);
-        for (        DruidDataSource dataSource : server.getDataSources()) {
-          for (          DataSegment segment : dataSource.getSegments()) {
-            unservicedSegments.remove(segment);
+          if (!loadManagementPeons.containsKey(server.getName())) {
+            String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
+            LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
+            log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
+            loadManagementPeons.put(server.getName(),loadQueuePeon);
+            yp.registerListener(basePath,loadQueuePeon);
           }
-        }
-        if (!loadManagementPeons.containsKey(server.getName())) {
-          String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
-          LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
-          log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
-          loadManagementPeons.put(server.getName(),loadQueuePeon);
-          yp.registerListener(basePath,loadQueuePeon);
+          cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
         }
       }
-      for (      String name : loadManagementPeons.keySet()) {
-        if (!availableServerMap.containsKey(name)) {
-          log.info("Removing listener for server[%s] which is no longer there.",name);
-          LoadQueuePeon peon=loadManagementPeons.remove(name);
-          peon.stop();
-          yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
+      SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
+      for (      String name : Sets.difference(Sets.newHashSet(Collections2.transform(servers,new Function<DruidServer,String>(){
+        @Override public String apply(        @Nullable DruidServer input){
+          return input.getName();
         }
       }
-      for (      LoadQueuePeon peon : loadManagementPeons.values()) {
-        for (        DataSegment segment : peon.getSegmentsToLoad()) {
-          unservicedSegments.remove(segment);
-        }
+)),loadManagementPeons.keySet())) {
+        log.info("Removing listener for server[%s] which is no longer there.",name);
+        LoadQueuePeon peon=loadManagementPeons.remove(name);
+        peon.stop();
+        yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
-      return params.buildFromExisting().withAvailableServerMap(availableServerMap).withHistoricalServers(historicalServers).withUnservicedSegments(unservicedSegments).build();
+      decrementRemovedSegmentsLifetime();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).build();
     }
   }
-,new DruidMasterAssigner(DruidMaster.this),new DruidMasterDropper(DruidMaster.this),new DruidMasterReplicator(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
+,new DruidMasterRuleRunner(DruidMaster.this),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
 }

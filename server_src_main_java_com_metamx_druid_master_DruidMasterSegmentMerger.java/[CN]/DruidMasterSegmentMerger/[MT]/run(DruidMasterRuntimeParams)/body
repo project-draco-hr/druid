@@ -1,6 +1,6 @@
 {
+  MasterStats stats=new MasterStats();
   Map<String,VersionedIntervalTimeline<String,DataSegment>> dataSources=Maps.newHashMap();
-  int count=0;
   for (  DataSegment dataSegment : params.getAvailableSegments()) {
     VersionedIntervalTimeline<String,DataSegment> timeline=dataSources.get(dataSegment.getDataSource());
     if (timeline == null) {
@@ -18,7 +18,7 @@
       if (segmentsToMerge.getByteCount() > params.getMergeBytesLimit() || segmentsToMerge.getSegmentCount() >= params.getMergeSegmentsLimit()) {
         i-=segmentsToMerge.backtrack(params.getMergeBytesLimit());
         if (segmentsToMerge.getSegmentCount() > 1) {
-          count+=mergeSegments(segmentsToMerge,entry.getKey());
+          stats.addToGlobalStat("mergedCount",mergeSegments(segmentsToMerge,entry.getKey()));
         }
         if (segmentsToMerge.getSegmentCount() == 0) {
           i++;
@@ -28,8 +28,8 @@
     }
     segmentsToMerge.backtrack(params.getMergeBytesLimit());
     if (segmentsToMerge.getSegmentCount() > 1) {
-      count+=mergeSegments(segmentsToMerge,entry.getKey());
+      stats.addToGlobalStat("mergedCount",mergeSegments(segmentsToMerge,entry.getKey()));
     }
   }
-  return params.buildFromExisting().withMergedSegmentCount(count).build();
+  return params.buildFromExisting().withMasterStats(stats).build();
 }

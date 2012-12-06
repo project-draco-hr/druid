@@ -1,0 +1,7 @@
+{
+  DateTime now=new DateTime();
+  PeriodDropRule rule=new PeriodDropRule(new Period("P1M"));
+  Assert.assertTrue(rule.appliesTo(builder.interval(new Interval(now.minusWeeks(1),now.minusDays(1))).build()));
+  Assert.assertFalse(rule.appliesTo(builder.interval(new Interval(now.minusYears(1),now.minusDays(1))).build()));
+  Assert.assertFalse(rule.appliesTo(builder.interval(new Interval(now.minusMonths(2),now.minusDays(1))).build()));
+}
