@@ -6,6 +6,7 @@
   final String dbConnectionUrl=tmp_props.getProperty("druid.database.connectURI");
   final String username=tmp_props.getProperty("druid.database.user");
   final String password=tmp_props.getProperty("druid.database.password");
+  final String defaultDatasource=tmp_props.getProperty("druid.database.defaultDatasource","_default");
   if (tableName.length() == 0 || !Character.isLetter(tableName.charAt(0))) {
     throw new RuntimeException("poorly formed property druid.database.segmentTable=" + tableName);
   }
@@ -39,5 +40,5 @@
   DbConnector dbConnector=new DbConnector(config);
   DbConnector.createSegmentTable(dbConnector.getDBI(),tableName);
   DbConnector.createRuleTable(dbConnector.getDBI(),ruleTableName);
-  DatabaseRuleManager.createDefaultRule(dbConnector.getDBI(),ruleTableName,new DefaultObjectMapper());
+  DatabaseRuleManager.createDefaultRule(dbConnector.getDBI(),ruleTableName,defaultDatasource,new DefaultObjectMapper());
 }

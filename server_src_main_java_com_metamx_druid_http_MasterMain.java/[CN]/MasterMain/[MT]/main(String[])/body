@@ -18,7 +18,7 @@
   final DatabaseSegmentManager databaseSegmentManager=new DatabaseSegmentManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseSegmentManager-Exec--%d"),configFactory.build(DatabaseSegmentManagerConfig.class),dbi);
   final DatabaseRuleManagerConfig databaseRuleManagerConfig=configFactory.build(DatabaseRuleManagerConfig.class);
   final DatabaseRuleManager databaseRuleManager=new DatabaseRuleManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseRuleManager-Exec--%d"),databaseRuleManagerConfig,dbi);
-  DatabaseRuleManager.createDefaultRule(dbi,databaseRuleManagerConfig.getRuleTable(),jsonMapper);
+  DatabaseRuleManager.createDefaultRule(dbi,databaseRuleManagerConfig.getRuleTable(),databaseRuleManagerConfig.getDefaultDatasource(),jsonMapper);
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor()));
   lifecycle.addManagedInstance(healthMonitor);
