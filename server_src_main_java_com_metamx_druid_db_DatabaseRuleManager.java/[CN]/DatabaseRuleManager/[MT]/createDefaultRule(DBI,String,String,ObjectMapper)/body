@@ -2,7 +2,7 @@
   try {
     dbi.withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
-        List<Map<String,Object>> existing=handle.select(String.format("SELECT id from %s where datasource=%s;",ruleTable,defaultDatasource));
+        List<Map<String,Object>> existing=handle.select(String.format("SELECT id from %s where datasource='%s';",ruleTable,defaultDatasource));
         if (!existing.isEmpty()) {
           return null;
         }
