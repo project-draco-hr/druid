@@ -1,19 +1,8 @@
 {
-  broker=MemcachedCacheBroker.create(new MemcachedCacheBrokerConfig(){
-    @Override public int getExpiration(){
-      return 3600 * 24 * 365;
-    }
-    @Override public int getTimeout(){
-      return 500;
-    }
-    @Override public String getHosts(){
-      return "localhost:11211";
-    }
-    @Override public int getMaxObjectSize(){
-      return 50 * 1024 * 1024;
-    }
-  }
-);
+  SerializingTranscoder transcoder=new SerializingTranscoder(50 * 1024 * 1024);
+  transcoder.setCompressionThreshold(Integer.MAX_VALUE);
+  client=new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses("localhost:11211"));
+  broker=new MemcachedCacheBroker(client,500,3600 * 24 * 365);
   cache=broker.provideCache("default");
   randBytes=new byte[objectSize * 1024];
   new Random(0).nextBytes(randBytes);
