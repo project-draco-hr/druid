@@ -1,7 +1,12 @@
 {
   super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterHelper(){
     @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
-      Collection<DruidServer> servers=serverInventoryManager.getInventory();
+      Iterable<DruidServer> servers=FunctionalIterable.create(serverInventoryManager.getInventory()).filter(new Predicate<DruidServer>(){
+        @Override public boolean apply(        @Nullable DruidServer input){
+          return input.getType().equalsIgnoreCase("historical");
+        }
+      }
+);
       if (log.isDebugEnabled()) {
         log.debug("Servers");
         for (        DruidServer druidServer : servers) {
@@ -14,19 +19,17 @@
       }
       final DruidCluster cluster=new DruidCluster();
       for (      DruidServer server : servers) {
-        if (server.getType().equalsIgnoreCase("historical")) {
-          if (!loadManagementPeons.containsKey(server.getName())) {
-            String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
-            LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
-            log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
-            loadManagementPeons.put(server.getName(),loadQueuePeon);
-            yp.registerListener(basePath,loadQueuePeon);
-          }
-          cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
+        if (!loadManagementPeons.containsKey(server.getName())) {
+          String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
+          LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
+          log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
+          loadManagementPeons.put(server.getName(),loadQueuePeon);
+          yp.registerListener(basePath,loadQueuePeon);
         }
+        cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
       }
       SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
-      for (      String name : Sets.difference(Sets.newHashSet(Collections2.transform(servers,new Function<DruidServer,String>(){
+      for (      String name : Sets.difference(Sets.newHashSet(Iterables.transform(servers,new Function<DruidServer,String>(){
         @Override public String apply(        @Nullable DruidServer input){
           return input.getName();
         }
