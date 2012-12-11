@@ -1,5 +1,14 @@
 {
   if (cacheBroker == null) {
-    setCacheBroker(MapCacheBroker.create(getConfigFactory().buildWithReplacements(MapCacheBrokerConfig.class,ImmutableMap.of("prefix","druid.bard.cache"))));
+    String cacheType=getConfigFactory().build(CacheConfig.class).getType();
+    if (cacheType.equals(CACHE_TYPE_LOCAL)) {
+      setCacheBroker(MapCacheBroker.create(getConfigFactory().buildWithReplacements(MapCacheBrokerConfig.class,ImmutableMap.of("prefix",CACHE_PROPERTY_PREFIX))));
+    }
+ else     if (cacheType.equals(CACHE_TYPE_MEMCACHED)) {
+      setCacheBroker(MemcachedCacheBroker.create(getConfigFactory().buildWithReplacements(MemcachedCacheBrokerConfig.class,ImmutableMap.of("prefix",CACHE_PROPERTY_PREFIX))));
+    }
+ else {
+      throw new ISE("Unknown cache type [%s]",cacheType);
+    }
   }
 }
