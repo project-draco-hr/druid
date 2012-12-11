@@ -1,3 +1,7 @@
 {
-  return combinedAggregators.get(fieldName);
+  Object retVal=combinedAggregators.get(fieldName);
+  if (retVal == null) {
+    throw new ISE("Mismatch! Agg[%s] was not specified!",fieldName);
+  }
+  return retVal;
 }
