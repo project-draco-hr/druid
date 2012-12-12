@@ -1,0 +1,30 @@
+{
+  final List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
+  if (intervals.size() != 1) {
+    throw new IAE("Should only have one interval, got[%s]",intervals);
+  }
+  if (!(storageAdapter instanceof SegmentIdAttachedStorageAdapter) || !(((SegmentIdAttachedStorageAdapter)storageAdapter).getDelegate() instanceof BaseStorageAdapter)) {
+    return Sequences.empty();
+  }
+  final BaseStorageAdapter adapter=(BaseStorageAdapter)((SegmentIdAttachedStorageAdapter)storageAdapter).getDelegate();
+  Function<String,SegmentMetadataResultValue.Dimension> sizeDimension=new Function<String,SegmentMetadataResultValue.Dimension>(){
+    @Override public SegmentMetadataResultValue.Dimension apply(    @Nullable String input){
+      long size=0;
+      final Indexed<String> lookup=adapter.getDimValueLookup(input);
+      for (      String dimVal : lookup) {
+        ImmutableConciseSet index=adapter.getInvertedIndex(input,dimVal);
+        size+=index.size() * Charsets.UTF_8.encode(dimVal).capacity();
+      }
+      return new SegmentMetadataResultValue.Dimension(size,adapter.getDimensionCardinality(input));
+    }
+  }
+;
+  long totalSize=0;
+  HashMap<String,SegmentMetadataResultValue.Dimension> dimensions=Maps.newHashMap();
+  for (  String input : adapter.getAvailableDimensions()) {
+    SegmentMetadataResultValue.Dimension d=sizeDimension.apply(input);
+    dimensions.put(input,d);
+    totalSize+=d.size;
+  }
+  return new SimpleSequence<Result<SegmentMetadataResultValue>>(ImmutableList.of(new Result<SegmentMetadataResultValue>(adapter.getMinTime(),new SegmentMetadataResultValue(storageAdapter.getSegmentIdentifier(),dimensions,ImmutableMap.<String,SegmentMetadataResultValue.Metric>of(),totalSize))));
+}
