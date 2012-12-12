@@ -7,38 +7,42 @@
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
 synchronized (statusLock) {
-          String taskId=null;
           try {
-            if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-              TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
-              log.info("New status[%s] appeared!",taskStatus.getId());
+            if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED) || event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
+              final String taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
+              final TaskStatus taskStatus;
+              try {
+                taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
+                if (!taskStatus.getId().equals(taskId)) {
+                  throw new ISE("Worker[%s] status id does not match payload id: %s != %s",worker.getHost(),taskId,taskStatus.getId());
+                }
+              }
+ catch (              Exception e) {
+                log.warn(e,"Worker[%s] wrote bogus status for task: %s",worker.getHost(),taskId);
+                retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
+                throw Throwables.propagate(e);
+              }
+              log.info("Worker[%s] wrote %s status for task: %s",worker.getHost(),taskStatus.getStatusCode(),taskId);
               statusLock.notify();
-            }
- else             if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
-              String statusPath=event.getData().getPath();
-              TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
-              taskId=taskStatus.getId();
-              log.info("Task[%s] updated status[%s]!",taskId,taskStatus.getStatusCode());
               if (taskStatus.isComplete()) {
                 workerWrapper.setLastCompletedTaskTime(new DateTime());
-                TaskWrapper taskWrapper=tasks.get(taskId);
+                final TaskWrapper taskWrapper=tasks.get(taskId);
                 if (taskWrapper == null) {
-                  log.warn("A task completed that I didn't know about? WTF?!");
+                  log.warn("WTF?! Worker[%s] completed a task I didn't know about: %s",worker.getHost(),taskId);
                 }
  else {
-                  TaskCallback callback=taskWrapper.getCallback();
+                  final TaskCallback callback=taskWrapper.getCallback();
                   if (callback != null) {
                     callback.notify(taskStatus);
                   }
                   tasks.remove(taskId);
-                  cf.delete().guaranteed().inBackground().forPath(statusPath);
+                  cf.delete().guaranteed().inBackground().forPath(event.getData().getPath());
                 }
               }
             }
           }
  catch (          Exception e) {
-            log.error(e,"Exception in status listener");
-            retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
+            log.makeAlert(e,"Failed to handle new worker status").addData("worker",worker.getHost()).addData("znode",event.getData().getPath()).emit();
           }
         }
       }
