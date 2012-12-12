@@ -10,14 +10,13 @@
       log.info("[%s]: Still waiting on %,d segments to be moved",tier,currentlyMovingSegments.size());
       continue;
     }
-    TreeSet<ServerHolder> serversByPercentUsed=Sets.newTreeSet(percentUsedComparator);
-    serversByPercentUsed.addAll(entry.getValue());
+    MinMaxPriorityQueue<ServerHolder> serversByPercentUsed=MinMaxPriorityQueue.orderedBy(percentUsedComparator).create(entry.getValue());
     if (serversByPercentUsed.size() <= 1) {
       log.info("[%s]: No unique values found for highest and lowest percent used servers: nothing to balance",tier);
       continue;
     }
-    ServerHolder highestPercentUsedServer=serversByPercentUsed.first();
-    ServerHolder lowestPercentUsedServer=serversByPercentUsed.last();
+    ServerHolder highestPercentUsedServer=serversByPercentUsed.peekFirst();
+    ServerHolder lowestPercentUsedServer=serversByPercentUsed.peekLast();
     analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
     log.info("[%s]: Percent difference in percent size used between highest/lowest servers: %s%%",tier,analyzer.getPercentDiff());
     log.info("[%s]: Highest percent used [%s]: size used[%s], percent used[%s%%]",tier,highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
