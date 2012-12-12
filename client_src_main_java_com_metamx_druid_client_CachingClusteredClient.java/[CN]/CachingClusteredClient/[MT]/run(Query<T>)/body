@@ -85,6 +85,9 @@
         Sequence<Object> cachedSequence=new BaseSequence<Object,Iterator<Object>>(new BaseSequence.IteratorMaker<Object,Iterator<Object>>(){
           @Override public Iterator<Object> make(){
             try {
+              if (cachedResult.length == 0) {
+                return Iterators.emptyIterator();
+              }
               return objectMapper.readValues(objectMapper.getJsonFactory().createJsonParser(cachedResult),Object.class);
             }
  catch (            IOException e) {
