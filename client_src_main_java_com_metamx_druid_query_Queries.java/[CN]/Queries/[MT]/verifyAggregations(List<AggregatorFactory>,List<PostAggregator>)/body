@@ -1,0 +1,16 @@
+{
+  Preconditions.checkNotNull(aggFactories,"aggregations cannot be null");
+  Preconditions.checkArgument(aggFactories.size() > 0,"Must have at least one AggregatorFactory");
+  if (postAggs != null && !postAggs.isEmpty()) {
+    Set<String> combinedAggNames=Sets.newHashSet(Lists.transform(aggFactories,new Function<AggregatorFactory,String>(){
+      @Override public String apply(      @Nullable AggregatorFactory input){
+        return input.getName();
+      }
+    }
+));
+    for (    PostAggregator postAgg : postAggs) {
+      Preconditions.checkArgument(postAgg.verifyFields(combinedAggNames),String.format("Missing field[%s]",postAgg.getName()));
+      combinedAggNames.add(postAgg.getName());
+    }
+  }
+}

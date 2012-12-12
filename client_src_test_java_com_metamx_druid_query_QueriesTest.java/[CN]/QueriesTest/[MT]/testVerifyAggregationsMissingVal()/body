@@ -1,0 +1,12 @@
+{
+  List<AggregatorFactory> aggFactories=Arrays.<AggregatorFactory>asList(new CountAggregatorFactory("count"),new DoubleSumAggregatorFactory("idx","index"),new DoubleSumAggregatorFactory("rev","revenue"));
+  List<PostAggregator> postAggs=Arrays.<PostAggregator>asList(new ArithmeticPostAggregator("addStuff","+",Arrays.<PostAggregator>asList(new FieldAccessPostAggregator("idx","idx2"),new FieldAccessPostAggregator("count","count"))));
+  boolean exceptionOccured=false;
+  try {
+    Queries.verifyAggregations(aggFactories,postAggs);
+  }
+ catch (  Exception e) {
+    exceptionOccured=true;
+  }
+  Assert.assertTrue(exceptionOccured);
+}
