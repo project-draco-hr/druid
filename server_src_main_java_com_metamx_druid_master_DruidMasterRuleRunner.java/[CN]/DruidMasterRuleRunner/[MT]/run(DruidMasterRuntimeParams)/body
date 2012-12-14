@@ -17,7 +17,7 @@
       }
     }
     if (!foundMatchingRule) {
-      throw new ISE("Unable to find a matching rule for segment[%s]",segment.getIdentifier());
+      log.makeAlert("Unable to find a matching rule for dataSource[%s]",segment.getDataSource()).addData("segment",segment.getIdentifier()).emit();
     }
   }
   return params.buildFromExisting().withMasterStats(stats).build();
