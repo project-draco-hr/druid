@@ -1,6 +1,6 @@
 {
   emitter.emit(EasyMock.<ServiceEventBuilder>anyObject());
-  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.expectLastCall().times(availableSegments.size());
   EasyMock.replay(emitter);
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-02T00:00:00.000Z/2012-01-03T00:00:00.000Z"),1,"normal"))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
