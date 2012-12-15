@@ -1,4 +1,9 @@
 {
+  mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
+  EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
+  EasyMock.replay(mockPeon);
   master.removeSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
   EasyMock.replay(master);

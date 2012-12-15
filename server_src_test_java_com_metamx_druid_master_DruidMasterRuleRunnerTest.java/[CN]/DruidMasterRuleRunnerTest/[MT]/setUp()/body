@@ -11,11 +11,4 @@
     start=start.plusHours(1);
   }
   ruleRunner=new DruidMasterRuleRunner(master);
-  mockPeon.loadSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
-  EasyMock.expectLastCall().anyTimes();
-  mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
-  EasyMock.expectLastCall().anyTimes();
-  EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).anyTimes();
-  EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
-  EasyMock.replay(mockPeon);
 }
