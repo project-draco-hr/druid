@@ -10,11 +10,9 @@
   server3.addDataSegment(availableSegments.get(2).getIdentifier(),availableSegments.get(2));
   mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
-  EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
   EasyMock.replay(mockPeon);
   LoadQueuePeon anotherMockPeon=EasyMock.createMock(LoadQueuePeon.class);
-  EasyMock.expect(anotherMockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.expect(anotherMockPeon.getLoadQueueSize()).andReturn(10L).atLeastOnce();
   EasyMock.replay(anotherMockPeon);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1,mockPeon),new ServerHolder(server2,anotherMockPeon),new ServerHolder(server3,anotherMockPeon)))));

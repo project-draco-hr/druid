@@ -1,7 +1,6 @@
 {
   mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
-  EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
   EasyMock.replay(mockPeon);
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"normal"),new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z")))).atLeastOnce();
