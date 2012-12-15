@@ -1,5 +1,6 @@
 {
   final Table<String,String,Integer> segmentsInCluster=HashBasedTable.create();
+  final Table<String,String,Integer> loadingSegments=HashBasedTable.create();
   for (  MinMaxPriorityQueue<ServerHolder> serversByType : cluster.getSortedServersByTier()) {
     for (    ServerHolder serverHolder : serversByType) {
       DruidServer server=serverHolder.getServer();
@@ -10,7 +11,14 @@
         }
         segmentsInCluster.put(segment.getIdentifier(),server.getTier(),++numReplicants);
       }
+      for (      DataSegment segment : serverHolder.getPeon().getSegmentsToLoad()) {
+        Integer numReplicants=segmentsInCluster.get(segment.getIdentifier(),server.getTier());
+        if (numReplicants == null) {
+          numReplicants=0;
+        }
+        loadingSegments.put(segment.getIdentifier(),server.getTier(),++numReplicants);
+      }
     }
   }
-  return new SegmentReplicantLookup(segmentsInCluster);
+  return new SegmentReplicantLookup(segmentsInCluster,loadingSegments);
 }

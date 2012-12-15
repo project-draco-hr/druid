@@ -1,18 +1,13 @@
 {
   MasterStats stats=new MasterStats();
   List<ServerHolder> assignedServers=Lists.newArrayList();
-  while (actualReplicants < expectedReplicants) {
+  while (totalReplicants < expectedReplicants) {
     ServerHolder holder=serverQueue.pollFirst();
     if (holder == null) {
       log.warn("Not enough %s servers[%d] to assign segment[%s]! Expected Replicants[%d]",getTier(),assignedServers.size() + serverQueue.size() + 1,segment.getIdentifier(),expectedReplicants);
       break;
     }
-    if (holder.isServingSegment(segment)) {
-      assignedServers.add(holder);
-      continue;
-    }
-    if (holder.isLoadingSegment(segment)) {
-      ++actualReplicants;
+    if (holder.isServingSegment(segment) || holder.isLoadingSegment(segment)) {
       assignedServers.add(holder);
       continue;
     }
@@ -31,7 +26,7 @@
 );
     assignedServers.add(holder);
     stats.addToTieredStat("assignedCount",getTier(),1);
-    ++actualReplicants;
+    ++totalReplicants;
   }
   serverQueue.addAll(assignedServers);
   return stats;

@@ -3,10 +3,10 @@
   if (!params.hasDeletionWaitTimeElapsed()) {
     return stats;
   }
-  if (actualReplicants < expectedReplicants) {
+  if (clusterReplicants < expectedReplicants) {
     return stats;
   }
-  Map<String,Integer> replicantsByType=params.getSegmentReplicantLookup().getTiers(segment.getIdentifier());
+  Map<String,Integer> replicantsByType=params.getSegmentReplicantLookup().getClusterTiers(segment.getIdentifier());
   for (  Map.Entry<String,Integer> entry : replicantsByType.entrySet()) {
     String tier=entry.getKey();
     int actualNumReplicantsForType=entry.getValue();
