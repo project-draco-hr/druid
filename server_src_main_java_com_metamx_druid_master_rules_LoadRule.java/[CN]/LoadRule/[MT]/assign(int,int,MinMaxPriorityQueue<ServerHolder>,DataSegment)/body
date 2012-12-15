@@ -7,7 +7,12 @@
       log.warn("Not enough %s servers[%d] to assign segment[%s]! Expected Replicants[%d]",getTier(),assignedServers.size() + serverQueue.size() + 1,segment.getIdentifier(),expectedReplicants);
       break;
     }
-    if (holder.containsSegment(segment)) {
+    if (holder.isServingSegment(segment)) {
+      assignedServers.add(holder);
+      continue;
+    }
+    if (holder.isLoadingSegment(segment)) {
+      ++actualReplicants;
       assignedServers.add(holder);
       continue;
     }
