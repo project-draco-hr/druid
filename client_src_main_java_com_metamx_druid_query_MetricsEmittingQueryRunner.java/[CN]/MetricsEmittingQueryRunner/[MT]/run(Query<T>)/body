@@ -18,6 +18,9 @@ catch (      Error e) {
  finally {
         long timeTaken=System.currentTimeMillis() - startTime;
         emitter.emit(builder.build("query/time",timeTaken));
+        if (creationTime > 0) {
+          emitter.emit(builder.build("query/wait",startTime - creationTime));
+        }
       }
       return retVal;
     }
@@ -64,6 +67,9 @@ catch (          Error e) {
           }
           long timeTaken=System.currentTimeMillis() - startTime;
           emitter.emit(builder.build("query/time",timeTaken));
+          if (creationTime > 0) {
+            emitter.emit(builder.build("query/wait",startTime - creationTime));
+          }
           yielder.close();
         }
       }
