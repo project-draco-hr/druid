@@ -1,0 +1,31 @@
+{
+  for (  final BalancerSegmentHolder2 segment : Sets.newHashSet(segments)) {
+    final DruidServer toServer=segment.getToServer();
+    final String toServerName=segment.getToServer().getName();
+    LoadQueuePeon toPeon=params.getLoadManagementPeons().get(toServerName);
+    String fromServer=segment.getFromServer().getName();
+    DataSegment segmentToMove=segment.getSegment();
+    final String segmentName=segmentToMove.getIdentifier();
+    if (!toPeon.getSegmentsToLoad().contains(segmentToMove) && (toServer.getSegment(segmentName) == null) && new ServerHolder(toServer,toPeon).getAvailableSize() > segmentToMove.getSize()) {
+      log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServer,toServerName);
+      try {
+        master.moveSegment(fromServer,toServerName,segmentToMove.getIdentifier(),new LoadPeonCallback(){
+          @Override protected void execute(){
+            Map<String,BalancerSegmentHolder2> movingSegments=currentlyMovingSegments.get(toServer.getTier());
+            if (movingSegments != null) {
+              movingSegments.remove(segmentName);
+            }
+          }
+        }
+);
+        currentlyMovingSegments.get(toServer.getTier()).put(segmentName,segment);
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,String.format("[%s] : Moving exception",segmentName)).emit();
+      }
+    }
+ else {
+      currentlyMovingSegments.get(toServer.getTier()).remove(segment);
+    }
+  }
+}

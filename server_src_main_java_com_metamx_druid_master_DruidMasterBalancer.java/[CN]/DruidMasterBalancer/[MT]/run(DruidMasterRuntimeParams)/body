@@ -3,7 +3,7 @@
   for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getDruidCluster().getCluster().entrySet()) {
     String tier=entry.getKey();
     if (currentlyMovingSegments.get(tier) == null) {
-      currentlyMovingSegments.put(tier,new ConcurrentHashMap<String,BalancerSegmentHolder>());
+      currentlyMovingSegments.put(tier,new ConcurrentHashMap<String,BalancerSegmentHolder2>());
     }
     if (!currentlyMovingSegments.get(tier).isEmpty()) {
       reduceLifetimes(tier);
@@ -12,17 +12,18 @@
     }
     TreeSet<ServerHolder> serversByPercentUsed=Sets.newTreeSet(percentUsedComparator);
     serversByPercentUsed.addAll(entry.getValue());
+    List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
+    analyzer.init(serverHolderList);
+    log.info("Initial Total Cost: [%s]",analyzer.getInitialTotalCost());
+    moveSegments(analyzer.findSegmentsToMove(),params);
+    stats.addToTieredStat("costChange",tier,(long)analyzer.getTotalCostChange());
+    log.info("Cost Change: [%s]",analyzer.getTotalCostChange());
     if (serversByPercentUsed.size() <= 1) {
       log.info("[%s]: No unique values found for highest and lowest percent used servers: nothing to balance",tier);
       continue;
     }
     ServerHolder highestPercentUsedServer=serversByPercentUsed.first();
     ServerHolder lowestPercentUsedServer=serversByPercentUsed.last();
-    analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
-    log.info("[%s]: Percent difference in percent size used between highest/lowest servers: %s%%",tier,analyzer.getPercentDiff());
-    log.info("[%s]: Highest percent used [%s]: size used[%s], percent used[%s%%]",tier,highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
-    log.info("[%s]: Lowest percent used [%s]: size used[%s], percent used[%s%%]",tier,lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
-    moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
     stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
   }
   return params.buildFromExisting().withMasterStats(stats).build();

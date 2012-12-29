@@ -1,0 +1,44 @@
+{
+  Set<BalancerSegmentHolder2> segmentHoldersToMove=Sets.newHashSet();
+  Set<DataSegment> movingSegments=Sets.newHashSet();
+  int counter=0;
+  while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 2 * MAX_SEGMENTS_TO_MOVE) {
+    counter++;
+    ServerHolder fromServerHolder=serverHolderList.get(rand.nextInt(serverHolderList.size()));
+    List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
+    if (segments.size() == 0)     continue;
+    DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
+    if (movingSegments.contains(proposalSegment))     continue;
+    MinMaxPriorityQueue<Pair<Float,ServerHolder>> pQueue=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Float,ServerHolder>>(){
+      @Override public int compare(      Pair<Float,ServerHolder> o,      Pair<Float,ServerHolder> o1){
+        return Float.compare(o.lhs,o1.lhs);
+      }
+    }
+).create();
+    for (    ServerHolder server : serverHolderList) {
+      float cost=0f;
+      for (      DataSegment segment : server.getServer().getSegments().values()) {
+        cost+=computeJointSegmentCosts(proposalSegment,segment);
+      }
+      Iterator it=segmentHoldersToMove.iterator();
+      while (it.hasNext()) {
+        BalancerSegmentHolder2 segmentToMove=(BalancerSegmentHolder2)it.next();
+        if (server.getServer().equals(segmentToMove.getToServer())) {
+          cost+=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
+        }
+        if (server.getServer().equals(segmentToMove.getFromServer())) {
+          cost-=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
+        }
+      }
+      pQueue.add(Pair.of(cost,server));
+    }
+    Pair<Float,ServerHolder> minPair=pQueue.peekFirst();
+    if (!minPair.rhs.equals(fromServerHolder)) {
+      movingSegments.add(proposalSegment);
+      segmentHoldersToMove.add(new BalancerSegmentHolder2(fromServerHolder.getServer(),minPair.rhs.getServer(),proposalSegment));
+      totalCostChange+=minPair.lhs;
+    }
+  }
+  totalCostChange=calculateTotalCostChange(serverHolderList,segmentHoldersToMove);
+  return segmentHoldersToMove;
+}

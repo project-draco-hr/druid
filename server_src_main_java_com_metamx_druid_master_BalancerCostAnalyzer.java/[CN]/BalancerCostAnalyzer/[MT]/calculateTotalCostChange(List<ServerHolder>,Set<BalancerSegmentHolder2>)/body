@@ -1,0 +1,23 @@
+{
+  int cost=0;
+  Iterator it=segmentHoldersToMove.iterator();
+  while (it.hasNext()) {
+    BalancerSegmentHolder2 segmentHolder=(BalancerSegmentHolder2)it.next();
+    for (    DataSegment fromSegment : segmentHolder.getFromServer().getSegments().values()) {
+      cost-=computeJointSegmentCosts(segmentHolder.getSegment(),fromSegment);
+    }
+    for (    DataSegment toSegment : segmentHolder.getToServer().getSegments().values()) {
+      cost+=computeJointSegmentCosts(segmentHolder.getSegment(),toSegment);
+    }
+    return cost;
+  }
+  for (  ServerHolder server : serverHolderList) {
+    DataSegment[] segments=server.getServer().getSegments().values().toArray(new DataSegment[]{});
+    for (int i=0; i < segments.length; ++i) {
+      for (int j=i; j < segments.length; ++j) {
+        cost+=computeJointSegmentCosts(segments[i],segments[j]);
+      }
+    }
+  }
+  return cost;
+}

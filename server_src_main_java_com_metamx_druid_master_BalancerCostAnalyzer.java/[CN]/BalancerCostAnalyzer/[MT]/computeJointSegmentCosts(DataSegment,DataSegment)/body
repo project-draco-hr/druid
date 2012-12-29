@@ -1,0 +1,13 @@
+{
+  float cost=0f;
+  Interval gap=segment1.getInterval().gap(segment2.getInterval());
+  if (gap == null) {
+    cost+=1f;
+  }
+ else {
+    long gapMillis=gap.toDurationMillis();
+    if (gapMillis < DAY_IN_MILLIS)     cost+=1f;
+  }
+  if (segment1.getDataSource().equals(segment2.getDataSource()))   cost+=1f;
+  return cost;
+}
