@@ -1,47 +1,25 @@
 {
-  Set<BalancerSegmentHolder2> segmentHoldersToMove=Sets.newHashSet();
+  Set<BalancerSegmentHolder> segmentHoldersToMove=Sets.newHashSet();
   Set<DataSegment> movingSegments=Sets.newHashSet();
   int counter=0;
-  double currCost=0;
   while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 3 * MAX_SEGMENTS_TO_MOVE) {
     counter++;
     ServerHolder fromServerHolder=serverHolderList.get(rand.nextInt(serverHolderList.size()));
     List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
-    if (segments.size() == 0)     continue;
+    if (segments.size() == 0) {
+      continue;
+    }
     DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
-    if (movingSegments.contains(proposalSegment))     continue;
-    MinMaxPriorityQueue<Pair<Double,ServerHolder>> pQueue=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Double,ServerHolder>>(){
-      @Override public int compare(      Pair<Double,ServerHolder> o,      Pair<Double,ServerHolder> o1){
-        return Double.compare(o.lhs,o1.lhs);
-      }
+    if (movingSegments.contains(proposalSegment)) {
+      continue;
     }
-).create();
-    for (    ServerHolder server : serverHolderList) {
-      double cost=0f;
-      for (      DataSegment segment : server.getServer().getSegments().values()) {
-        cost+=computeJointSegmentCosts(proposalSegment,segment);
-      }
-      if (!server.getServer().equals(fromServerHolder.getServer()))       cost+=computeJointSegmentCosts(proposalSegment,proposalSegment);
-      Iterator it=segmentHoldersToMove.iterator();
-      while (it.hasNext()) {
-        BalancerSegmentHolder2 segmentToMove=(BalancerSegmentHolder2)it.next();
-        if (server.getServer().equals(segmentToMove.getToServer())) {
-          cost+=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
-        }
-        if (server.getServer().equals(segmentToMove.getFromServer())) {
-          cost-=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
-        }
-      }
-      if (server.getServer().equals(fromServerHolder.getServer())) {
-        currCost=cost;
-      }
-      pQueue.add(Pair.of(cost,server));
-    }
-    Pair<Double,ServerHolder> minPair=pQueue.peekFirst();
-    if (!minPair.rhs.equals(fromServerHolder)) {
+    BalancerCostAnalyzerHelper helper=new BalancerCostAnalyzerHelper(serverHolderList,proposalSegment,fromServerHolder,segmentHoldersToMove);
+    helper.computeAllCosts();
+    Pair<Double,ServerHolder> minPair=helper.getCostsServerHolderPairs().pollFirst();
+    if (minPair.rhs != null && !minPair.rhs.equals(fromServerHolder)) {
       movingSegments.add(proposalSegment);
-      segmentHoldersToMove.add(new BalancerSegmentHolder2(fromServerHolder.getServer(),minPair.rhs.getServer(),proposalSegment));
-      totalCostChange+=currCost - minPair.lhs;
+      segmentHoldersToMove.add(new BalancerSegmentHolder(fromServerHolder.getServer(),minPair.rhs.getServer(),proposalSegment));
+      totalCostChange+=helper.getCurrCost() - minPair.lhs;
     }
   }
   return segmentHoldersToMove;

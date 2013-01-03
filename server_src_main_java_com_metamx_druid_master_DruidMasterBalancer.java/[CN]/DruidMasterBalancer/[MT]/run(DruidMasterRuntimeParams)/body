@@ -3,7 +3,7 @@
   for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getDruidCluster().getCluster().entrySet()) {
     String tier=entry.getKey();
     if (currentlyMovingSegments.get(tier) == null) {
-      currentlyMovingSegments.put(tier,new ConcurrentHashMap<String,BalancerSegmentHolder2>());
+      currentlyMovingSegments.put(tier,new ConcurrentHashMap<String,BalancerSegmentHolder>());
     }
     if (!currentlyMovingSegments.get(tier).isEmpty()) {
       reduceLifetimes(tier);

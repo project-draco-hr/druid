@@ -1,0 +1,27 @@
+{
+  for (  ServerHolder server : serverHolderList) {
+    double cost=0f;
+    for (    DataSegment segment : server.getServer().getSegments().values()) {
+      cost+=computeJointSegmentCosts(proposalSegment,segment);
+    }
+    if (!server.getServer().equals(fromServerHolder.getServer())) {
+      cost+=computeJointSegmentCosts(proposalSegment,proposalSegment);
+    }
+    Iterator it=segmentHoldersToMove.iterator();
+    while (it.hasNext()) {
+      BalancerSegmentHolder segmentToMove=(BalancerSegmentHolder)it.next();
+      if (server.getServer().equals(segmentToMove.getToServer())) {
+        cost+=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
+      }
+      if (server.getServer().equals(segmentToMove.getFromServer())) {
+        cost-=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
+      }
+    }
+    if (server.getServer().equals(fromServerHolder.getServer())) {
+      currCost=cost;
+    }
+    if (proposalSegment.getSize() < server.getAvailableSize()) {
+      costsServerHolderPairs.add(Pair.of(cost,server));
+    }
+  }
+}
