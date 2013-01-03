@@ -3,7 +3,7 @@
   final RetryPolicy retryPolicy=taskWrapper.getRetryPolicy();
   log.info("Registering retry for failed task[%s]",task.getId());
   if (retryPolicy.hasExceededRetryThreshold()) {
-    log.makeAlert("Task [%s] has failed[%d] times, giving up!",task.getId(),retryPolicy.getNumRetries()).emit();
+    log.makeAlert("Task exceeded maximum retry count").addData("task",task.getId()).addData("retryCount",retryPolicy.getNumRetries()).emit();
     return;
   }
   scheduledExec.schedule(new Runnable(){
