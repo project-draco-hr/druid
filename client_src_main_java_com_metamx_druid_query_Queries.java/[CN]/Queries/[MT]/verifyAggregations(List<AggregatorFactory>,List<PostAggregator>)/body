@@ -11,7 +11,7 @@
     for (    PostAggregator postAgg : postAggs) {
       Set<String> dependencies=postAgg.getDependentFields();
       Set<String> missing=Sets.difference(dependencies,combinedAggNames);
-      Preconditions.checkArgument(missing.isEmpty(),String.format("Missing fields [%s] for postAggregator [%s]",Joiner.on(",").join(missing),postAgg.getName()));
+      Preconditions.checkArgument(missing.isEmpty(),"Missing fields [%s] for postAggregator [%s]",missing,postAgg.getName());
       combinedAggNames.add(postAgg.getName());
     }
   }
