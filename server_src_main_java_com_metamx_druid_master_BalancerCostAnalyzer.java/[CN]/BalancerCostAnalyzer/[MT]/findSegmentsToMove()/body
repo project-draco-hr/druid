@@ -2,7 +2,7 @@
   Set<BalancerSegmentHolder2> segmentHoldersToMove=Sets.newHashSet();
   Set<DataSegment> movingSegments=Sets.newHashSet();
   int counter=0;
-  float currCost=0f;
+  double currCost=0;
   while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 3 * MAX_SEGMENTS_TO_MOVE) {
     counter++;
     ServerHolder fromServerHolder=serverHolderList.get(rand.nextInt(serverHolderList.size()));
@@ -10,14 +10,14 @@
     if (segments.size() == 0)     continue;
     DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
     if (movingSegments.contains(proposalSegment))     continue;
-    MinMaxPriorityQueue<Pair<Float,ServerHolder>> pQueue=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Float,ServerHolder>>(){
-      @Override public int compare(      Pair<Float,ServerHolder> o,      Pair<Float,ServerHolder> o1){
-        return Float.compare(o.lhs,o1.lhs);
+    MinMaxPriorityQueue<Pair<Double,ServerHolder>> pQueue=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Double,ServerHolder>>(){
+      @Override public int compare(      Pair<Double,ServerHolder> o,      Pair<Double,ServerHolder> o1){
+        return Double.compare(o.lhs,o1.lhs);
       }
     }
 ).create();
     for (    ServerHolder server : serverHolderList) {
-      float cost=0f;
+      double cost=0f;
       for (      DataSegment segment : server.getServer().getSegments().values()) {
         cost+=computeJointSegmentCosts(proposalSegment,segment);
       }
@@ -37,7 +37,7 @@
       }
       pQueue.add(Pair.of(cost,server));
     }
-    Pair<Float,ServerHolder> minPair=pQueue.peekFirst();
+    Pair<Double,ServerHolder> minPair=pQueue.peekFirst();
     if (!minPair.rhs.equals(fromServerHolder)) {
       movingSegments.add(proposalSegment);
       segmentHoldersToMove.add(new BalancerSegmentHolder2(fromServerHolder.getServer(),minPair.rhs.getServer(),proposalSegment));

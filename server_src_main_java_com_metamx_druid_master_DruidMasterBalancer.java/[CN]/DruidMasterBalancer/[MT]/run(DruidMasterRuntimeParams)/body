@@ -10,20 +10,16 @@
       log.info("[%s]: Still waiting on %,d segments to be moved",tier,currentlyMovingSegments.size());
       continue;
     }
-    TreeSet<ServerHolder> serversByPercentUsed=Sets.newTreeSet(percentUsedComparator);
-    serversByPercentUsed.addAll(entry.getValue());
     List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
     analyzer.init(serverHolderList);
     log.info("Initial Total Cost: [%s]",analyzer.getInitialTotalCost());
     moveSegments(analyzer.findSegmentsToMove(),params);
     stats.addToTieredStat("costChange",tier,(long)analyzer.getTotalCostChange());
     log.info("Cost Change: [%s]",analyzer.getTotalCostChange());
-    if (serversByPercentUsed.size() <= 1) {
-      log.info("[%s]: No unique values found for highest and lowest percent used servers: nothing to balance",tier);
+    if (serverHolderList.size() <= 1) {
+      log.info("[%s]: One or fewer servers found.  Cannot balance.",tier);
       continue;
     }
-    ServerHolder highestPercentUsedServer=serversByPercentUsed.first();
-    ServerHolder lowestPercentUsedServer=serversByPercentUsed.last();
     stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
   }
   return params.buildFromExisting().withMasterStats(stats).build();
