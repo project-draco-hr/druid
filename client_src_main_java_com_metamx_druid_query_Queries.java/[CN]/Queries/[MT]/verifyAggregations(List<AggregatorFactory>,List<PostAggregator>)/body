@@ -9,7 +9,9 @@
     }
 ));
     for (    PostAggregator postAgg : postAggs) {
-      Preconditions.checkArgument(postAgg.verifyFields(combinedAggNames),String.format("Missing field[%s]",postAgg.getName()));
+      Set<String> dependencies=postAgg.getDependentFields();
+      Set<String> missing=Sets.difference(dependencies,combinedAggNames);
+      Preconditions.checkArgument(missing.isEmpty(),"Missing fields [%s] for postAggregator [%s]",missing,postAgg.getName());
       combinedAggNames.add(postAgg.getName());
     }
   }

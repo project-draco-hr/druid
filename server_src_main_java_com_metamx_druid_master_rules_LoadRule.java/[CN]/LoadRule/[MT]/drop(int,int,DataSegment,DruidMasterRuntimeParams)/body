@@ -3,10 +3,10 @@
   if (!params.hasDeletionWaitTimeElapsed()) {
     return stats;
   }
-  if (actualReplicants < expectedReplicants) {
+  if (clusterReplicants < expectedReplicants) {
     return stats;
   }
-  Map<String,Integer> replicantsByType=params.getSegmentReplicantLookup().getTiers(segment.getIdentifier());
+  Map<String,Integer> replicantsByType=params.getSegmentReplicantLookup().getClusterTiers(segment.getIdentifier());
   for (  Map.Entry<String,Integer> entry : replicantsByType.entrySet()) {
     String tier=entry.getKey();
     int actualNumReplicantsForType=entry.getValue();
@@ -20,17 +20,19 @@
     while (actualNumReplicantsForType > expectedNumReplicantsForType) {
       ServerHolder holder=serverQueue.pollLast();
       if (holder == null) {
-        log.warn("Wtf, holder was null?  Do I have no servers[%s]?",serverQueue);
-        continue;
+        log.warn("Wtf, holder was null?  I have no servers serving [%s]?",segment.getIdentifier());
+        break;
       }
-      holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
-        @Override protected void execute(){
+      if (holder.isServingSegment(segment)) {
+        holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
+          @Override protected void execute(){
+          }
         }
-      }
 );
+        --actualNumReplicantsForType;
+        stats.addToTieredStat("droppedCount",tier,1);
+      }
       droppedServers.add(holder);
-      --actualNumReplicantsForType;
-      stats.addToTieredStat("droppedCount",tier,1);
     }
     serverQueue.addAll(droppedServers);
   }
