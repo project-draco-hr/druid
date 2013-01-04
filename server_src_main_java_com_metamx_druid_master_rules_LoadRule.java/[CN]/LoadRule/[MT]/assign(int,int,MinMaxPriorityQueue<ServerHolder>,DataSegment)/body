@@ -3,7 +3,7 @@
   List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(serverQueue);
   List<ServerHolder> assignedServers=Lists.newArrayList();
   while (totalReplicants < expectedReplicants) {
-    BalancerCostAnalyzer analyzer=new BalancerCostAnalyzer();
+    BalancerCostAnalyzer analyzer=new BalancerCostAnalyzer(DateTime.now());
     BalancerCostAnalyzer.BalancerCostAnalyzerHelper helper=analyzer.new BalancerCostAnalyzerHelper(serverHolderList,segment);
     helper.computeAllCosts();
     Pair<Double,ServerHolder> minPair=helper.getCostsServerHolderPairs().pollFirst();

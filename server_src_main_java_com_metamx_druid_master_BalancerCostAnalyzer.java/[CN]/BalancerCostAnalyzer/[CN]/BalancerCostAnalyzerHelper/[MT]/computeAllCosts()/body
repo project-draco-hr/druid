@@ -4,7 +4,7 @@
     for (    DataSegment segment : server.getServer().getSegments().values()) {
       cost+=computeJointSegmentCosts(proposalSegment,segment);
     }
-    if (!server.getServer().equals(fromServerHolder.getServer())) {
+    if (!fromServerHolder.getServer().equals(server.getServer())) {
       cost+=computeJointSegmentCosts(proposalSegment,proposalSegment);
     }
     Iterator it=segmentHoldersToMove.iterator();
@@ -17,7 +17,7 @@
         cost-=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
       }
     }
-    if (server.getServer().equals(fromServerHolder.getServer())) {
+    if (fromServerHolder.getServer().equals(server.getServer())) {
       currCost=cost;
     }
     if (proposalSegment.getSize() < server.getAvailableSize()) {
