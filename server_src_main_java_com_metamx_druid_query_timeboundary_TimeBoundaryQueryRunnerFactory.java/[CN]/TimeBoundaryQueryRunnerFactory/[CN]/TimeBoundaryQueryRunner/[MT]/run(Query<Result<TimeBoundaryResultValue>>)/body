@@ -1,0 +1,14 @@
+{
+  if (!(input instanceof TimeBoundaryQuery)) {
+    throw new ISE("Got a [%s] which isn't a %s",input.getClass(),GroupByQuery.class);
+  }
+  final TimeBoundaryQuery legacyQuery=(TimeBoundaryQuery)input;
+  return new BaseSequence<Result<TimeBoundaryResultValue>,Iterator<Result<TimeBoundaryResultValue>>>(new BaseSequence.IteratorMaker<Result<TimeBoundaryResultValue>,Iterator<Result<TimeBoundaryResultValue>>>(){
+    @Override public Iterator<Result<TimeBoundaryResultValue>> make(){
+      return legacyQuery.buildResult(adapter.getInterval().getStart(),adapter.getMinTime(),adapter.getMaxTime()).iterator();
+    }
+    @Override public void cleanup(    Iterator<Result<TimeBoundaryResultValue>> toClean){
+    }
+  }
+);
+}

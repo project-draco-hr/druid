@@ -5,7 +5,7 @@
     someTmpFile.mkdirs();
     someTmpFile.deleteOnExit();
     IndexMerger.persist(index,someTmpFile);
-    return com.metamx.druid.index.v1.IndexIO.mapDir(someTmpFile);
+    return IndexIO.loadIndex(someTmpFile);
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);

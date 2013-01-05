@@ -19,7 +19,7 @@ synchronized (log) {
       mergedFile.deleteOnExit();
       IndexMerger.persist(top,DATA_INTERVAL,topFile);
       IndexMerger.persist(bottom,DATA_INTERVAL,bottomFile);
-      mergedRealtime=com.metamx.druid.index.v1.IndexIO.mapDir(IndexMerger.mergeMMapped(Arrays.asList(com.metamx.druid.index.v1.IndexIO.mapDir(topFile),com.metamx.druid.index.v1.IndexIO.mapDir(bottomFile)),METRIC_AGGS,mergedFile));
+      mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeMMapped(Arrays.asList(IndexIO.mapDir(topFile),IndexIO.mapDir(bottomFile)),METRIC_AGGS,mergedFile));
       return mergedRealtime;
     }
  catch (    IOException e) {

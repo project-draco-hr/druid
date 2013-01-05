@@ -1,0 +1,148 @@
+{
+  log.info("Converting v8[%s] to v9[%s]",v8Dir,v9Dir);
+  InputStream indexIn=null;
+  try {
+    indexIn=new FileInputStream(new File(v8Dir,"index.drd"));
+    byte theVersion=(byte)indexIn.read();
+    if (theVersion != V8_VERSION) {
+      throw new IAE("Unknown version[%s]",theVersion);
+    }
+  }
+  finally {
+    Closeables.close(indexIn,false);
+  }
+  SmooshedFileMapper v8SmooshedFiles=Smoosh.map(v8Dir);
+  v9Dir.mkdirs();
+  final FileSmoosher v9Smoosher=new FileSmoosher(v9Dir);
+  ByteStreams.write(Ints.toByteArray(9),Files.newOutputStreamSupplier(new File(v9Dir,"version.bin")));
+  Map<String,GenericIndexed<ImmutableConciseSet>> bitmapIndexes=Maps.newHashMap();
+  final ByteBuffer invertedBuffer=v8SmooshedFiles.mapFile("inverted.drd");
+  while (invertedBuffer.hasRemaining()) {
+    bitmapIndexes.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
+  }
+  LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
+  for (  String filename : v8SmooshedFiles.getInternalFilenames()) {
+    log.info("Processing file[%s]",filename);
+    if (filename.startsWith("dim_")) {
+      final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
+      builder.setValueType(ValueType.STRING);
+      final List<ByteBuffer> outParts=Lists.newArrayList();
+      ByteBuffer dimBuffer=v8SmooshedFiles.mapFile(filename);
+      String dimension=serializerUtils.readString(dimBuffer);
+      if (!filename.equals(String.format("dim_%s.drd",dimension))) {
+        throw new ISE("loaded dimension[%s] from file[%s]",dimension,filename);
+      }
+      ByteArrayOutputStream nameBAOS=new ByteArrayOutputStream();
+      serializerUtils.writeString(nameBAOS,dimension);
+      outParts.add(ByteBuffer.wrap(nameBAOS.toByteArray()));
+      final GenericIndexed<String> dictionary=GenericIndexed.read(dimBuffer,GenericIndexed.stringStrategy);
+      VSizeIndexedInts singleValCol=null;
+      VSizeIndexed multiValCol=VSizeIndexed.readFromByteBuffer(dimBuffer.asReadOnlyBuffer());
+      boolean onlyOneValue=true;
+      for (      VSizeIndexedInts rowValue : multiValCol) {
+        if (!onlyOneValue) {
+          break;
+        }
+        if (rowValue.size() > 1) {
+          onlyOneValue=false;
+        }
+      }
+      if (onlyOneValue) {
+        final VSizeIndexed finalMultiValCol=multiValCol;
+        singleValCol=VSizeIndexedInts.fromList(new AbstractList<Integer>(){
+          @Override public Integer get(          int index){
+            return finalMultiValCol.get(index).get(0);
+          }
+          @Override public int size(){
+            return finalMultiValCol.size();
+          }
+        }
+,dictionary.size());
+        multiValCol=null;
+      }
+ else {
+        builder.setHasMultipleValues(true);
+      }
+      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmapIndexes.get(dimension)));
+      final ColumnDescriptor serdeficator=builder.build();
+      ByteArrayOutputStream baos=new ByteArrayOutputStream();
+      serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
+      byte[] specBytes=baos.toByteArray();
+      final SmooshedWriter channel=v9Smoosher.addWithSmooshedWriter(dimension,serdeficator.numBytes() + specBytes.length);
+      channel.write(ByteBuffer.wrap(specBytes));
+      serdeficator.write(channel);
+      channel.close();
+    }
+ else     if (filename.startsWith("met_")) {
+      if (!filename.endsWith(String.format("%s.drd",BYTE_ORDER))) {
+        skippedFiles.add(filename);
+        continue;
+      }
+      MetricHolder holder=MetricHolder.fromByteBuffer(v8SmooshedFiles.mapFile(filename));
+      final String metric=holder.getName();
+      final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
+switch (holder.getType()) {
+case FLOAT:
+        builder.setValueType(ValueType.FLOAT);
+      builder.addSerde(new FloatGenericColumnPartSerde(holder.floatType,BYTE_ORDER));
+    break;
+case COMPLEX:
+  if (!(holder.complexType instanceof GenericIndexed)) {
+    throw new ISE("Serialized complex types must be GenericIndexed objects.");
+  }
+final GenericIndexed column=(GenericIndexed)holder.complexType;
+final String complexType=holder.getTypeName();
+builder.setValueType(ValueType.COMPLEX);
+builder.addSerde(new ComplexColumnPartSerde(column,complexType));
+break;
+default :
+throw new ISE("Unknown type[%s]",holder.getType());
+}
+final ColumnDescriptor serdeficator=builder.build();
+ByteArrayOutputStream baos=new ByteArrayOutputStream();
+serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
+byte[] specBytes=baos.toByteArray();
+final SmooshedWriter channel=v9Smoosher.addWithSmooshedWriter(metric,serdeficator.numBytes() + specBytes.length);
+channel.write(ByteBuffer.wrap(specBytes));
+serdeficator.write(channel);
+channel.close();
+}
+ else if (String.format("time_%s.drd",BYTE_ORDER).equals(filename)) {
+CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromByteBuffer(v8SmooshedFiles.mapFile(filename),BYTE_ORDER);
+final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
+builder.setValueType(ValueType.LONG);
+builder.addSerde(new LongGenericColumnPartSerde(timestamps,BYTE_ORDER));
+final ColumnDescriptor serdeficator=builder.build();
+ByteArrayOutputStream baos=new ByteArrayOutputStream();
+serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
+byte[] specBytes=baos.toByteArray();
+final SmooshedWriter channel=v9Smoosher.addWithSmooshedWriter("__time",serdeficator.numBytes() + specBytes.length);
+channel.write(ByteBuffer.wrap(specBytes));
+serdeficator.write(channel);
+channel.close();
+}
+ else if ("index.drd".equals(filename)) {
+final ByteBuffer indexBuffer=v8SmooshedFiles.mapFile(filename);
+indexBuffer.get();
+final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
+Set<String> columns=Sets.newTreeSet();
+columns.addAll(Lists.newArrayList(dims));
+columns.addAll(Lists.newArrayList(availableMetrics));
+GenericIndexed<String> cols=GenericIndexed.fromIterable(columns,GenericIndexed.stringStrategy);
+final int numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16;
+final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);
+cols.writeToChannel(writer);
+dims.writeToChannel(writer);
+serializerUtils.writeLong(writer,dataInterval.getStartMillis());
+serializerUtils.writeLong(writer,dataInterval.getEndMillis());
+writer.close();
+}
+ else {
+skippedFiles.add(filename);
+}
+}
+log.info("Skipped files[%s]",skippedFiles);
+v9Smoosher.close();
+}

@@ -1,0 +1,11 @@
+{
+  return new QueryRunner<Result<SegmentMetadataResultValue>>(){
+    @Override public Sequence<Result<SegmentMetadataResultValue>> run(    Query<Result<SegmentMetadataResultValue>> query){
+      if (!(query instanceof SegmentMetadataQuery)) {
+        throw new ISE("Got a [%s] which isn't a %s",query.getClass(),SegmentMetadataQuery.class);
+      }
+      return new SegmentMetadataQueryEngine().process((SegmentMetadataQuery)query,adapter.asStorageAdapter());
+    }
+  }
+;
+}

@@ -8,8 +8,9 @@
 ));
   assertSame(someInts,indexed);
   final ByteArrayOutputStream baos=new ByteArrayOutputStream();
-  WritableByteChannel byteChannel=Channels.newChannel(baos);
-  indexed.writeToChannel(byteChannel);
-  VSizeIndexed deserializedIndexed=VSizeIndexed.readFromByteBuffer(ByteBuffer.wrap(baos.toByteArray()));
+  indexed.writeToChannel(Channels.newChannel(baos));
+  final byte[] bytes=baos.toByteArray();
+  Assert.assertEquals(indexed.getSerializedSize(),bytes.length);
+  VSizeIndexed deserializedIndexed=VSizeIndexed.readFromByteBuffer(ByteBuffer.wrap(bytes));
   assertSame(someInts,deserializedIndexed);
 }

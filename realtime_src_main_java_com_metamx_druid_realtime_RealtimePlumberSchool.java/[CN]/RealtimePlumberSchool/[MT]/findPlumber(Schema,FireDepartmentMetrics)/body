@@ -22,7 +22,7 @@
       List<FireHydrant> hydrants=Lists.newArrayList();
       for (      File segmentDir : sinkFiles) {
         log.info("Loading previously persisted segment at [%s]",segmentDir);
-        hydrants.add(new FireHydrant(new MMappedIndexStorageAdapter(IndexIO.mapDir(segmentDir)),Integer.parseInt(segmentDir.getName())));
+        hydrants.add(new FireHydrant(new QueryableIndexSegment(null,IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
       }
       Sink currSink=new Sink(sinkInterval,schema,hydrants);
       sinks.put(sinkInterval.getStartMillis(),currSink);
@@ -96,13 +96,14 @@
             try {
               List<MMappedIndex> indexes=Lists.newArrayList();
               for (              FireHydrant fireHydrant : sink) {
-                StorageAdapter adapter=fireHydrant.getAdapter();
-                if (adapter instanceof MMappedIndexStorageAdapter) {
+                Segment segment=fireHydrant.getSegment();
+                final QueryableIndex queryableIndex=segment.asQueryableIndex();
+                if (queryableIndex instanceof MMappedIndexQueryableIndex) {
                   log.info("Adding hydrant[%s]",fireHydrant);
-                  indexes.add(((MMappedIndexStorageAdapter)adapter).getIndex());
+                  indexes.add(((MMappedIndexQueryableIndex)queryableIndex).getIndex());
                 }
  else {
-                  log.makeAlert("[%s] Failure to merge-n-push",schema.getDataSource()).addData("type","Unknown adapter type").addData("adapterClass",adapter.getClass().toString()).emit();
+                  log.makeAlert("[%s] Failure to merge-n-push",schema.getDataSource()).addData("type","Unknown segment type").addData("adapterClass",segment.getClass().toString()).emit();
                   return;
                 }
               }
@@ -153,7 +154,7 @@
         @Override public QueryRunner<T> apply(        @Nullable Sink input){
           return new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(input,new Function<FireHydrant,QueryRunner<T>>(){
             @Override public QueryRunner<T> apply(            @Nullable FireHydrant input){
-              return factory.createRunner(input.getAdapter());
+              return factory.createRunner(input.getSegment());
             }
           }
 )));
@@ -168,6 +169,7 @@
           indexesToPersist.add(Pair.of(sink.swap(),sink.getInterval()));
         }
       }
+      log.info("Submitting persist runnable for dataSource[%s]",schema.getDataSource());
       persistExecutor.execute(new ThreadRenamingRunnable(String.format("%s-incremental-persist",schema.getDataSource())){
         @Override public void doRun(){
           for (          Pair<FireHydrant,Interval> pair : indexesToPersist) {

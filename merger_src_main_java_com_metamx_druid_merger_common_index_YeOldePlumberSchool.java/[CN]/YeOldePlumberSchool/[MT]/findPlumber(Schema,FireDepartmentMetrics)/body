@@ -53,7 +53,7 @@
         log.info("Spilling index[%d] with rows[%d] to: %s",indexToPersist.getCount(),rowsToPersist,dirToPersist);
         try {
           IndexMerger.persist(indexToPersist.getIndex(),dirToPersist);
-          indexToPersist.swapAdapter(null);
+          indexToPersist.swapSegment(null);
           metrics.incrementRowOutputCount(rowsToPersist);
           spilled.add(dirToPersist);
         }

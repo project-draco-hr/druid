@@ -1,0 +1,36 @@
+{
+  File indexFile=new File(parentDir,"index.drd");
+  if (!indexFile.exists()) {
+    throw new StorageAdapterLoadingException("indexFile[%s] does not exist.",indexFile);
+  }
+  try {
+    if (!IndexIO.canBeMapped(parentDir)) {
+      File canBeMappedDir=new File(parentDir,"forTheMapping");
+      if (canBeMappedDir.exists()) {
+        FileUtils.deleteDirectory(canBeMappedDir);
+      }
+      canBeMappedDir.mkdirs();
+      IndexIO.storeLatest(IndexIO.readIndex(parentDir),canBeMappedDir);
+      if (!IndexIO.canBeMapped(canBeMappedDir)) {
+        throw new StorageAdapterLoadingException("WTF!? newly written file[%s] cannot be mapped!?",canBeMappedDir);
+      }
+      for (      File file : canBeMappedDir.listFiles()) {
+        if (!file.renameTo(new File(parentDir,file.getName()))) {
+          throw new StorageAdapterLoadingException("Couldn't rename[%s] to [%s]",canBeMappedDir,indexFile);
+        }
+      }
+      FileUtils.deleteDirectory(canBeMappedDir);
+    }
+    return IndexIO.loadIndex(parentDir);
+  }
+ catch (  IOException e) {
+    log.warn(e,"Got exception, deleting index[%s]",indexFile);
+    try {
+      FileUtils.deleteDirectory(parentDir);
+    }
+ catch (    IOException e2) {
+      log.error(e,"Problem deleting parentDir[%s]",parentDir);
+    }
+    throw new StorageAdapterLoadingException(e,e.getMessage());
+  }
+}

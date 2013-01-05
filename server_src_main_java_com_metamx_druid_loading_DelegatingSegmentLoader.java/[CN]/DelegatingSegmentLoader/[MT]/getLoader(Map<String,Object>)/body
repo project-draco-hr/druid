@@ -1,0 +1,8 @@
+{
+  String type=MapUtils.getString(loadSpec,"type");
+  SegmentLoader loader=loaderTypes.get(type);
+  if (loader == null) {
+    throw new StorageAdapterLoadingException("Unknown loader type[%s].  Known types are %s",type,loaderTypes.keySet());
+  }
+  return loader;
+}

@@ -1,13 +1,13 @@
 {
   String dataSource=segment.getDataSource();
 synchronized (lock) {
-    VersionedIntervalTimeline<String,StorageAdapter> loadedIntervals=dataSources.get(dataSource);
+    VersionedIntervalTimeline<String,Segment> loadedIntervals=dataSources.get(dataSource);
     if (loadedIntervals == null) {
       log.info("Told to delete a queryable for a dataSource[%s] that doesn't exist.",dataSource);
       return;
     }
-    PartitionChunk<StorageAdapter> removed=loadedIntervals.remove(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk((StorageAdapter)null));
-    StorageAdapter oldQueryable=(removed == null) ? null : removed.getObject();
+    PartitionChunk<Segment> removed=loadedIntervals.remove(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk((Segment)null));
+    Segment oldQueryable=(removed == null) ? null : removed.getObject();
     if (oldQueryable != null) {
 synchronized (dataSourceSizes) {
         dataSourceSizes.add(dataSource,-segment.getSize());
@@ -20,5 +20,5 @@ synchronized (dataSourceCounts) {
       log.info("Told to delete a queryable on dataSource[%s] for interval[%s] and version [%s] that I don't have.",dataSource,segment.getInterval(),segment.getVersion());
     }
   }
-  storageAdapterLoader.cleanupAdapter(segment.getLoadSpec());
+  segmentLoader.cleanup(segment);
 }

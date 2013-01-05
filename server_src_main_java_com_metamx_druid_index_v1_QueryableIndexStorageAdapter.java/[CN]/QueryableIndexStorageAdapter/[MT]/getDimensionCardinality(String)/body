@@ -1,0 +1,11 @@
+{
+  Column column=null;
+  column=index.getColumn(dimension);
+  if (column == null) {
+    return 0;
+  }
+  if (!column.getCapabilities().isDictionaryEncoded()) {
+    throw new UnsupportedOperationException("Only know cardinality of dictionary encoded columns.");
+  }
+  return column.getDictionaryEncoding().getCardinality();
+}
