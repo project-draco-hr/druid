@@ -4,11 +4,11 @@
   int counter=0;
   while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 3 * MAX_SEGMENTS_TO_MOVE) {
     counter++;
-    ServerHolder fromServerHolder=serverHolderList.get(rand.nextInt(serverHolderList.size()));
+    int numServers=serverHolderList.size();
+    if (numServers == 0)     break;
+    ServerHolder fromServerHolder=sampleServer();
     List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
-    if (segments.size() == 0) {
-      continue;
-    }
+    if (segments.size() == 0)     continue;
     DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
     if (movingSegments.contains(proposalSegment)) {
       continue;
