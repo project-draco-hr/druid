@@ -7,13 +7,13 @@
   try {
     log.info("Terminating instance[%s]",instances);
     amazonEC2Client.terminateInstances(new TerminateInstancesRequest(Lists.transform(instances,new Function<Instance,String>(){
-      @Override public String apply(      @Nullable Instance input){
+      @Override public String apply(      Instance input){
         return input.getInstanceId();
       }
     }
 )));
     return new AutoScalingData<Instance>(Lists.transform(instances,new Function<Instance,String>(){
-      @Override public String apply(      @Nullable Instance input){
+      @Override public String apply(      Instance input){
         return String.format("%s:%s",input.getPrivateIpAddress(),config.getWorkerPort());
       }
     }

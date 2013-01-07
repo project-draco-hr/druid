@@ -7,7 +7,7 @@
     }
 ).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
       @Override public boolean apply(      WorkerWrapper input){
-        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(config.getMinWorkerVersion()) >= 0);
+        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupManager.getWorkerSetupData().getMinVersion()) >= 0);
       }
     }
 ));

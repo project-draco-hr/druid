@@ -1,0 +1,23 @@
+{
+synchronized (lock) {
+    try {
+      if (!started) {
+        throw new ISE("Must start WorkerSetupManager first!");
+      }
+      dbi.withHandle(new HandleCallback<Void>(){
+        @Override public Void withHandle(        Handle handle) throws Exception {
+          handle.createStatement(String.format("DELETE FROM %s",config.getWorkerSetupTable())).execute();
+          handle.createStatement(String.format("INSERT INTO %s (minVersion, minNumWorkers, nodeData, userData) VALUES (:minVersion, :minNumWorkers, :nodeData, :userData)",config.getWorkerSetupTable())).bind("minVersion",value.getMinVersion()).bind("minNumWorkers",value.getMinNumWorkers()).bind("nodeData",jsonMapper.writeValueAsString(value.getNodeData())).bind("userData",jsonMapper.writeValueAsString(value.getUserData())).execute();
+          return null;
+        }
+      }
+);
+      workerSetupData.set(value);
+    }
+ catch (    Exception e) {
+      log.error(e,"Exception updating worker config");
+      return false;
+    }
+  }
+  return true;
+}

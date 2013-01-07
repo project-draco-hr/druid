@@ -1,16 +1,21 @@
 {
   try {
+    WorkerSetupData setupData=workerSetupManager.getWorkerSetupData();
+    if (!(setupData.getNodeData() instanceof EC2NodeData)) {
+      throw new ISE("DB misconfiguration! Node data is an instance of [%s]",setupData.getNodeData().getClass());
+    }
+    EC2NodeData workerConfig=(EC2NodeData)setupData.getNodeData();
     log.info("Creating new instance(s)...");
-    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(config.getAmiId(),config.getMinNumInstancesToProvision(),config.getMaxNumInstancesToProvision()).withInstanceType(InstanceType.fromValue(config.getInstanceType())).withUserData(jsonMapper.writeValueAsString(new File(config.getUserDataFile()))));
+    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withUserData(jsonMapper.writeValueAsString(setupData.getUserData())));
     List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
-      @Override public String apply(      @Nullable Instance input){
+      @Override public String apply(      Instance input){
         return input.getInstanceId();
       }
     }
 );
     log.info("Created instances: %s",instanceIds);
     return new AutoScalingData<Instance>(Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
-      @Override public String apply(      @Nullable Instance input){
+      @Override public String apply(      Instance input){
         return String.format("%s:%s",input.getPrivateIpAddress(),config.getWorkerPort());
       }
     }
