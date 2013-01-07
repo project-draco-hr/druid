@@ -5,7 +5,7 @@
   final SearchQuery query=(SearchQuery)input;
   return new BaseSequence<Result<SearchResultValue>,Iterator<Result<SearchResultValue>>>(new BaseSequence.IteratorMaker<Result<SearchResultValue>,Iterator<Result<SearchResultValue>>>(){
     @Override public Iterator<Result<SearchResultValue>> make(){
-      return Iterators.singleton(new SearchResultBuilder(adapter.getInterval().getStart(),adapter.searchDimensions(query,Filters.convertDimensionFilters(query.getDimensionsFilter()))).build());
+      return Iterators.singletonIterator(new SearchResultBuilder(adapter.getInterval().getStart(),adapter.searchDimensions(query,Filters.convertDimensionFilters(query.getDimensionsFilter()))).build());
     }
     @Override public void cleanup(    Iterator<Result<SearchResultValue>> toClean){
     }
