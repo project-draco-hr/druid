@@ -1,0 +1,29 @@
+{
+  Map<String,Pair<String,ByteBuffer>> keyLookup=Maps.uniqueIndex(identifierKeyPairs,new Function<Pair<String,ByteBuffer>,String>(){
+    @Override public String apply(    @Nullable Pair<String,ByteBuffer> input){
+      return computeKey(input.lhs,input.rhs.array());
+    }
+  }
+);
+  BulkFuture<Map<String,Object>> future=client.asyncGetBulk(keyLookup.keySet());
+  try {
+    Map<String,Object> some=future.getSome(timeout,TimeUnit.MILLISECONDS);
+    if (future.isTimeout()) {
+      future.cancel(false);
+      timeoutCount.incrementAndGet();
+    }
+    missCount.addAndGet(keyLookup.size() - some.size());
+    hitCount.addAndGet(some.size());
+    Map<Pair<String,ByteBuffer>,byte[]> results=Maps.newHashMap();
+    for (    Map.Entry<String,Object> entry : some.entrySet()) {
+      results.put(keyLookup.get(entry.getKey()),(byte[])entry.getValue());
+    }
+    return results;
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  ExecutionException e) {
+    throw Throwables.propagate(e);
+  }
+}

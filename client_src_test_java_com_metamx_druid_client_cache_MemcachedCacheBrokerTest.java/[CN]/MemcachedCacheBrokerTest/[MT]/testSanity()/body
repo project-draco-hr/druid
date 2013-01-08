@@ -1,20 +1,18 @@
 {
-  Cache aCache=broker.provideCache("a");
-  Cache theCache=broker.provideCache("the");
-  Assert.assertNull(aCache.get(HI));
-  put(aCache,HI,1);
-  Assert.assertEquals(1,get(aCache,HI));
-  Assert.assertNull(theCache.get(HI));
-  put(theCache,HI,2);
-  Assert.assertEquals(1,get(aCache,HI));
-  Assert.assertEquals(2,get(theCache,HI));
-  put(theCache,HO,10);
-  Assert.assertEquals(1,get(aCache,HI));
-  Assert.assertNull(aCache.get(HO));
-  Assert.assertEquals(2,get(theCache,HI));
-  Assert.assertEquals(10,get(theCache,HO));
-  theCache.close();
-  Assert.assertEquals(1,get(aCache,HI));
-  Assert.assertNull(aCache.get(HO));
-  aCache.close();
+  Assert.assertNull(cache.get("a",HI));
+  put(cache,"a",HI,1);
+  Assert.assertEquals(1,get(cache,"a",HI));
+  Assert.assertNull(cache.get("the",HI));
+  put(cache,"the",HI,2);
+  Assert.assertEquals(1,get(cache,"a",HI));
+  Assert.assertEquals(2,get(cache,"the",HI));
+  put(cache,"the",HO,10);
+  Assert.assertEquals(1,get(cache,"a",HI));
+  Assert.assertNull(cache.get("a",HO));
+  Assert.assertEquals(2,get(cache,"the",HI));
+  Assert.assertEquals(10,get(cache,"the",HO));
+  cache.close("the");
+  Assert.assertEquals(1,get(cache,"a",HI));
+  Assert.assertNull(cache.get("a",HO));
+  cache.close("a");
 }

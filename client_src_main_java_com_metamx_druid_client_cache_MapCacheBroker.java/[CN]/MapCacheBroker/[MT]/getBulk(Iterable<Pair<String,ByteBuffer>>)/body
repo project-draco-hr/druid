@@ -1,0 +1,7 @@
+{
+  Map<Pair<String,ByteBuffer>,byte[]> retVal=Maps.newHashMap();
+  for (  Pair<String,ByteBuffer> e : identifierKeyPairs) {
+    retVal.put(e,provideCache(e.lhs).get(e.rhs.array()));
+  }
+  return retVal;
+}
