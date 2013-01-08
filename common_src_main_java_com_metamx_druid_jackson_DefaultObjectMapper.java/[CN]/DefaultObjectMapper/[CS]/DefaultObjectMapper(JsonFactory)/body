@@ -45,6 +45,16 @@
     }
   }
 );
+  serializerModule.addSerializer(ByteOrder.class,ToStringSerializer.instance);
+  serializerModule.addDeserializer(ByteOrder.class,new JsonDeserializer<ByteOrder>(){
+    @Override public ByteOrder deserialize(    JsonParser jp,    DeserializationContext ctxt) throws IOException, JsonProcessingException {
+      if (ByteOrder.BIG_ENDIAN.toString().equals(jp.getText())) {
+        return ByteOrder.BIG_ENDIAN;
+      }
+      return ByteOrder.LITTLE_ENDIAN;
+    }
+  }
+);
   registerModule(serializerModule);
   configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES,false);
   configure(SerializationConfig.Feature.AUTO_DETECT_GETTERS,false);

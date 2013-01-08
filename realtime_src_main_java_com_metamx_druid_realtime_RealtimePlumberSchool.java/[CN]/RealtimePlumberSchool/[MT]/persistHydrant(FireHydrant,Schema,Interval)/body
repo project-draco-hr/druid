@@ -3,7 +3,7 @@
   try {
     int numRows=indexToPersist.getIndex().size();
     File persistedFile=IndexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())));
-    indexToPersist.swapAdapter(new MMappedIndexStorageAdapter(IndexIO.mapDir(persistedFile)));
+    indexToPersist.swapSegment(new QueryableIndexSegment(null,new MMappedIndexQueryableIndex(IndexIO.mapDir(persistedFile))));
     return numRows;
   }
  catch (  IOException e) {

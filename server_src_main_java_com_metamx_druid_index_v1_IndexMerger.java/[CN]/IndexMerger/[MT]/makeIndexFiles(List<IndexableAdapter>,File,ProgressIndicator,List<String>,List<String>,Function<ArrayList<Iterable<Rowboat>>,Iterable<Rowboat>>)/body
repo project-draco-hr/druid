@@ -227,7 +227,7 @@
     if (!dimension.equals(serializerUtils.readString(dimValsMapped))) {
       throw new ISE("dimensions[%s] didn't equate!?  This is a major WTF moment.",dimension);
     }
-    Indexed<String> dimVals=GenericIndexed.readFromByteBuffer(dimValsMapped,GenericIndexed.stringStrategy);
+    Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.stringStrategy);
     log.info("Starting dimension[%s] with cardinality[%,d]",dimension,dimVals.size());
     FlattenedArrayWriter<ImmutableConciseSet> writer=new FlattenedArrayWriter<ImmutableConciseSet>(ioPeon,dimension,ConciseCompressedIndexedInts.objectStrategy);
     writer.open();

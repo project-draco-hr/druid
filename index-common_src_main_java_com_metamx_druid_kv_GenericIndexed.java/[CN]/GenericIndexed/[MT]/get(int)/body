@@ -1,6 +1,9 @@
 {
+  if (index < 0) {
+    throw new IAE("Index[%s] < 0",index);
+  }
   if (index >= size) {
-    throw new IllegalArgumentException(String.format("Index[%s] >= size[%s]",index,size));
+    throw new IAE(String.format("Index[%s] >= size[%s]",index,size));
   }
   ByteBuffer myBuffer=theBuffer.asReadOnlyBuffer();
   int startOffset=4;

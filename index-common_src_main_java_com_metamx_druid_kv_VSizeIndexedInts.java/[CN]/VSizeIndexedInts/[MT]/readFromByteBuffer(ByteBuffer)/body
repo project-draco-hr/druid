@@ -1,0 +1,12 @@
+{
+  byte versionFromBuffer=buffer.get();
+  if (version == versionFromBuffer) {
+    int numBytes=buffer.get();
+    int size=buffer.getInt();
+    ByteBuffer bufferToUse=buffer.asReadOnlyBuffer();
+    bufferToUse.limit(bufferToUse.position() + size);
+    buffer.position(bufferToUse.limit());
+    return new VSizeIndexedInts(bufferToUse,numBytes);
+  }
+  throw new IAE("Unknown version[%s]",versionFromBuffer);
+}
