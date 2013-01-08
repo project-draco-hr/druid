@@ -1,5 +1,12 @@
 {
+  MinMaxPriorityQueue<Pair<Double,ServerHolder>> costsServerHolderPairs=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Double,ServerHolder>>(){
+    @Override public int compare(    Pair<Double,ServerHolder> o,    Pair<Double,ServerHolder> o1){
+      return Double.compare(o.lhs,o1.lhs);
+    }
+  }
+).create();
   for (  ServerHolder server : serverHolderList) {
+    if (proposalSegment.getSize() > server.getAvailableSize())     break;
     double cost=0f;
     for (    DataSegment segment : server.getServer().getSegments().values()) {
       cost+=computeJointSegmentCosts(proposalSegment,segment);
@@ -7,9 +14,7 @@
     if (!fromServerHolder.getServer().equals(server.getServer())) {
       cost+=computeJointSegmentCosts(proposalSegment,proposalSegment);
     }
-    Iterator it=segmentHoldersToMove.iterator();
-    while (it.hasNext()) {
-      BalancerSegmentHolder segmentToMove=(BalancerSegmentHolder)it.next();
+    for (    BalancerSegmentHolder segmentToMove : segmentHoldersToMove) {
       if (server.getServer().equals(segmentToMove.getToServer())) {
         cost+=computeJointSegmentCosts(proposalSegment,segmentToMove.getSegment());
       }
@@ -20,8 +25,7 @@
     if (fromServerHolder.getServer().equals(server.getServer())) {
       currCost=cost;
     }
-    if (proposalSegment.getSize() < server.getAvailableSize()) {
-      costsServerHolderPairs.add(Pair.of(cost,server));
-    }
+    costsServerHolderPairs.add(Pair.of(cost,server));
   }
+  minPair=costsServerHolderPairs.pollFirst();
 }
