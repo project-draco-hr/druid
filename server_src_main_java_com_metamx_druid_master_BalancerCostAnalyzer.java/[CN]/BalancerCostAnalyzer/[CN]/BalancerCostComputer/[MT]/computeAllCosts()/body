@@ -6,7 +6,9 @@
   }
 ).create();
   for (  ServerHolder server : serverHolderList) {
-    if (proposalSegment.getSize() > server.getAvailableSize())     break;
+    if (proposalSegment.getSize() > server.getAvailableSize()) {
+      break;
+    }
     double cost=0f;
     for (    DataSegment segment : server.getServer().getSegments().values()) {
       cost+=computeJointSegmentCosts(proposalSegment,segment);

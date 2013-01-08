@@ -1,19 +1,23 @@
 {
-  Set<BalancerSegmentHolder> segmentHoldersToMove=Sets.newHashSet();
-  Set<DataSegment> movingSegments=Sets.newHashSet();
+  final Set<BalancerSegmentHolder> segmentHoldersToMove=Sets.newHashSet();
+  final Set<DataSegment> movingSegments=Sets.newHashSet();
   int numServers=serverHolderList.size();
   int counter=0;
   while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 3 * MAX_SEGMENTS_TO_MOVE) {
     counter++;
-    if (numServers == 0)     break;
+    if (numServers == 0) {
+      break;
+    }
     ServerHolder fromServerHolder=sampleServer();
     List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
-    if (segments.isEmpty())     continue;
+    if (segments.isEmpty()) {
+      continue;
+    }
     DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
     if (movingSegments.contains(proposalSegment)) {
       continue;
     }
-    BalancerCostAnalyzerHelper helper=new BalancerCostAnalyzerHelper(serverHolderList,proposalSegment,fromServerHolder,segmentHoldersToMove);
+    BalancerCostComputer helper=new BalancerCostComputer(serverHolderList,proposalSegment,fromServerHolder,segmentHoldersToMove);
     Pair<Double,ServerHolder> minPair=helper.getMinPair();
     if (minPair.rhs != null && !minPair.rhs.equals(fromServerHolder)) {
       movingSegments.add(proposalSegment);

@@ -1,7 +1,6 @@
 {
-  double cost=0;
-  Interval gap=segment1.getInterval().gap(segment2.getInterval());
-  double baseCost=Math.min(segment1.getSize(),segment2.getSize());
+  final Interval gap=segment1.getInterval().gap(segment2.getInterval());
+  final double baseCost=Math.min(segment1.getSize(),segment2.getSize());
   double recencyPenalty=1;
   double dataSourcePenalty=1;
   double gapPenalty=1;
@@ -21,6 +20,6 @@
       gapPenalty=2 - gapMillis / THIRTY_DAYS_IN_MILLIS;
     }
   }
-  cost=baseCost * recencyPenalty * dataSourcePenalty* gapPenalty;
+  final double cost=baseCost * recencyPenalty * dataSourcePenalty* gapPenalty;
   return cost;
 }
