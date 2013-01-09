@@ -1,13 +1,12 @@
 {
   final Set<BalancerSegmentHolder> segmentHoldersToMove=Sets.newHashSet();
   final Set<DataSegment> movingSegments=Sets.newHashSet();
-  int numServers=serverHolderList.size();
+  if (serverHolderList.isEmpty()) {
+    return segmentHoldersToMove;
+  }
   int counter=0;
   while (segmentHoldersToMove.size() < MAX_SEGMENTS_TO_MOVE && counter < 3 * MAX_SEGMENTS_TO_MOVE) {
     counter++;
-    if (numServers == 0) {
-      break;
-    }
     ServerHolder fromServerHolder=sampleServer();
     List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
     if (segments.isEmpty()) {
