@@ -1,6 +1,6 @@
 {
   try {
-    currentlyProvisioning.remove(worker.getHost());
+    currentlyProvisioning.removeAll(strategy.ipLookup(Arrays.<String>asList(worker.getIp())));
     final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
     final WorkerWrapper workerWrapper=new WorkerWrapper(worker,statusCache,jsonMapper);

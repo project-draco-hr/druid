@@ -10,7 +10,7 @@
  else         if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
           final Worker worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
           log.info("Worker[%s] removed!",worker.getHost());
-          removeWorker(worker.getHost());
+          removeWorker(worker);
         }
       }
     }
@@ -47,7 +47,7 @@
           if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
             log.makeAlert("Worker node termination taking too long").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
           }
-          log.info("[%s] still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
+          log.info("%s still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
         }
       }
     }

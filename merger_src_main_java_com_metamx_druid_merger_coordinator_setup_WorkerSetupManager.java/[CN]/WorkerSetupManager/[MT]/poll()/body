@@ -2,10 +2,12 @@
   try {
     List<WorkerSetupData> setupDataList=dbi.withHandle(new HandleCallback<List<WorkerSetupData>>(){
       @Override public List<WorkerSetupData> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT minVersion, minNumWorkers, nodeData, userData FROM %s",config.getWorkerSetupTable())).fold(Lists.<WorkerSetupData>newArrayList(),new Folder3<ArrayList<WorkerSetupData>,Map<String,Object>>(){
+        return handle.createQuery(String.format("SELECT minVersion, minNumWorkers, nodeData, userData, securityGroupIds, keyName FROM %s",config.getWorkerSetupTable())).fold(Lists.<WorkerSetupData>newArrayList(),new Folder3<ArrayList<WorkerSetupData>,Map<String,Object>>(){
           @Override public ArrayList<WorkerSetupData> fold(          ArrayList<WorkerSetupData> workerNodeConfigurations,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
             try {
-              workerNodeConfigurations.add(new WorkerSetupData(MapUtils.getString(stringObjectMap,"minVersion"),MapUtils.getInteger(stringObjectMap,"minNumWorkers"),jsonMapper.readValue(MapUtils.getString(stringObjectMap,"nodeData"),WorkerNodeData.class),jsonMapper.readValue(MapUtils.getString(stringObjectMap,"userData"),WorkerUserData.class)));
+              workerNodeConfigurations.add(new WorkerSetupData(MapUtils.getString(stringObjectMap,"minVersion"),MapUtils.getInteger(stringObjectMap,"minNumWorkers"),jsonMapper.readValue(MapUtils.getString(stringObjectMap,"nodeData"),WorkerNodeData.class),jsonMapper.readValue(MapUtils.getString(stringObjectMap,"userData"),WorkerUserData.class),(List<String>)jsonMapper.readValue(MapUtils.getString(stringObjectMap,"securityGroupIds"),new TypeReference<List<String>>(){
+              }
+),MapUtils.getString(stringObjectMap,"keyName")));
               return workerNodeConfigurations;
             }
  catch (            Exception e) {

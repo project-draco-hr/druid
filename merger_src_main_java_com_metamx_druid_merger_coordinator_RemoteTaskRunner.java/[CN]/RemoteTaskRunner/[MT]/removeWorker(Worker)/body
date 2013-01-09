@@ -1,14 +1,14 @@
 {
-  currentlyTerminating.remove(workerId);
-  WorkerWrapper workerWrapper=zkWorkers.get(workerId);
+  currentlyTerminating.remove(worker.getHost());
+  WorkerWrapper workerWrapper=zkWorkers.get(worker.getHost());
   if (workerWrapper != null) {
     try {
       Set<String> tasksToRetry=Sets.newHashSet(workerWrapper.getRunningTasks());
-      tasksToRetry.addAll(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),workerId)));
+      tasksToRetry.addAll(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),worker.getHost())));
       for (      String taskId : tasksToRetry) {
         TaskWrapper taskWrapper=tasks.get(taskId);
         if (taskWrapper != null) {
-          retryTask(new CleanupPaths(workerId,taskId),tasks.get(taskId));
+          retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
         }
       }
       workerWrapper.getStatusCache().close();
@@ -17,5 +17,5 @@
       log.error(e,"Failed to cleanly remove worker[%s]");
     }
   }
-  zkWorkers.remove(workerId);
+  zkWorkers.remove(worker.getHost());
 }
