@@ -11,6 +11,7 @@
       continue;
     }
     List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
+    BalancerCostAnalyzer analyzer=params.getBalancerCostAnalyzer();
     analyzer.init(serverHolderList,params);
     moveSegments(analyzer.findSegmentsToMove(),params);
     double initialTotalCost=analyzer.getInitialTotalCost();

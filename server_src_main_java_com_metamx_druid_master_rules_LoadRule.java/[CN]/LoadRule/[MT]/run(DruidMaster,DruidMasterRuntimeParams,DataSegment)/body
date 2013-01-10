@@ -8,7 +8,7 @@
     log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",getTier()).emit();
     return stats;
   }
-  stats.accumulate(assign(expectedReplicants,totalReplicants,serverQueue,segment,params.getMaxSegmentsToMove()));
+  stats.accumulate(assign(expectedReplicants,totalReplicants,serverQueue,segment,params));
   stats.accumulate(drop(expectedReplicants,clusterReplicants,segment,params));
   return stats;
 }
