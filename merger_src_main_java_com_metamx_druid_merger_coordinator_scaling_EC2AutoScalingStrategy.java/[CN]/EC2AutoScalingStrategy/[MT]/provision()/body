@@ -1,10 +1,7 @@
 {
   try {
     WorkerSetupData setupData=workerSetupManager.getWorkerSetupData();
-    if (!(setupData.getNodeData() instanceof EC2NodeData)) {
-      throw new ISE("DB misconfiguration! Node data is an instance of [%s]",setupData.getNodeData().getClass());
-    }
-    EC2NodeData workerConfig=(EC2NodeData)setupData.getNodeData();
+    EC2NodeData workerConfig=setupData.getNodeData();
     log.info("Creating new instance(s)...");
     RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withKeyName(workerConfig.getKeyName()).withUserData(Base64.encodeBase64String(jsonMapper.writeValueAsBytes(setupData.getUserData()))));
     List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){

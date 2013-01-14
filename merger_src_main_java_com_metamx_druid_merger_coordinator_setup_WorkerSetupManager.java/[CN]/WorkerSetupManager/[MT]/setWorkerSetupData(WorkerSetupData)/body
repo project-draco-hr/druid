@@ -7,7 +7,7 @@ synchronized (lock) {
       dbi.withHandle(new HandleCallback<Void>(){
         @Override public Void withHandle(        Handle handle) throws Exception {
           handle.createStatement(String.format("DELETE FROM %s",config.getWorkerSetupTable())).execute();
-          handle.createStatement(String.format("INSERT INTO %s (minVersion, minNumWorkers, nodeData, userData, securityGroupIds, keyName) VALUES (:minVersion, :minNumWorkers, :nodeData, :userData, :securityGroupIds, :keyName)",config.getWorkerSetupTable())).bind("minVersion",value.getMinVersion()).bind("minNumWorkers",value.getMinNumWorkers()).bind("nodeData",jsonMapper.writeValueAsString(value.getNodeData())).bind("userData",jsonMapper.writeValueAsString(value.getUserData())).bind("securityGroupIds",jsonMapper.writeValueAsString(value.getSecurityGroupIds())).bind("keyName",jsonMapper.writeValueAsString(value.getKeyName())).execute();
+          handle.createStatement(String.format("INSERT INTO %s (config) VALUES (:config)",config.getWorkerSetupTable())).bind("config",jsonMapper.writeValueAsString(value)).execute();
           return null;
         }
       }

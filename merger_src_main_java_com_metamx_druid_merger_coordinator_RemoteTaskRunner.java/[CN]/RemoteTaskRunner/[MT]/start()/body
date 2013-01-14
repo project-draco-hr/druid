@@ -26,14 +26,14 @@
             return;
           }
           List<WorkerWrapper> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
-            @Override public boolean apply(            @Nullable WorkerWrapper input){
+            @Override public boolean apply(            WorkerWrapper input){
               return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() > config.getMaxWorkerIdleTimeMillisBeforeDeletion();
             }
           }
 ));
           AutoScalingData terminated=strategy.terminate(Lists.transform(thoseLazyWorkers,new Function<WorkerWrapper,String>(){
-            @Override public String apply(            @Nullable WorkerWrapper input){
-              return input.getWorker().getHost();
+            @Override public String apply(            WorkerWrapper input){
+              return input.getWorker().getIp();
             }
           }
 ));

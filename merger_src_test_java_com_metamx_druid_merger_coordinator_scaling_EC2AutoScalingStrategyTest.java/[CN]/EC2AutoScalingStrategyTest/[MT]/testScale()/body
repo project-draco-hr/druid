@@ -1,5 +1,5 @@
 {
-  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,new EC2NodeData(AMI_ID,INSTANCE_ID,1,1,Lists.<String>newArrayList(),"foo"),new GalaxyUserData("env","version","type"),Arrays.asList("foo"),"foo2"));
+  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,new EC2NodeData(AMI_ID,INSTANCE_ID,1,1,Lists.<String>newArrayList(),"foo"),new GalaxyUserData("env","version","type")));
   EasyMock.replay(workerSetupManager);
   EasyMock.expect(amazonEC2Client.runInstances(EasyMock.anyObject(RunInstancesRequest.class))).andReturn(runInstancesResult);
   EasyMock.expect(amazonEC2Client.describeInstances(EasyMock.anyObject(DescribeInstancesRequest.class))).andReturn(describeInstancesResult);
@@ -15,7 +15,7 @@
   Assert.assertEquals(created.getNodeIds().size(),1);
   Assert.assertEquals(created.getNodes().size(),1);
   Assert.assertEquals("theInstance",created.getNodeIds().get(0));
-  AutoScalingData deleted=strategy.terminate(Arrays.asList("dummyHost"));
+  AutoScalingData deleted=strategy.terminate(Arrays.asList("dummyIP"));
   Assert.assertEquals(deleted.getNodeIds().size(),1);
   Assert.assertEquals(deleted.getNodes().size(),1);
   Assert.assertEquals(String.format("%s:8080",IP),deleted.getNodeIds().get(0));
