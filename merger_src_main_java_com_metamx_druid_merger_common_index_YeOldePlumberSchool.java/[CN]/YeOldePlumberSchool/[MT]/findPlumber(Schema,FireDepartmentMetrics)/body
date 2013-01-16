@@ -36,7 +36,8 @@
           fileToUpload=new File(tmpSegmentDir,"merged");
           IndexMerger.mergeMMapped(indexes,schema.getAggregators(),fileToUpload);
         }
-        final DataSegment segmentToUpload=theSink.getSegment().withVersion(version);
+        final MMappedIndex mappedSegment=IndexIO.mapDir(fileToUpload);
+        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version);
         segmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
       }
