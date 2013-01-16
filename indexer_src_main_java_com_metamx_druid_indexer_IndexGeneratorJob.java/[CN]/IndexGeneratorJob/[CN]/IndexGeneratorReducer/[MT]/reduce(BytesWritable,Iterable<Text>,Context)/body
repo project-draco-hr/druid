@@ -16,16 +16,9 @@
   Set<String> allDimensionNames=Sets.newHashSet();
   for (  final Text value : values) {
     context.progress();
-    Map<String,Object> event=parser.parse(value.toString());
-    final long timestamp=timestampConverter.apply((String)event.get(config.getTimestampColumnName())).getMillis();
-    List<String> dimensionNames=config.getDataSpec().hasCustomDimensions() ? config.getDataSpec().getDimensions() : Lists.newArrayList(FunctionalIterable.create(event.keySet()).filter(new Predicate<String>(){
-      @Override public boolean apply(      @Nullable String input){
-        return !(metricNames.contains(input.toLowerCase()) || config.getTimestampColumnName().equalsIgnoreCase(input));
-      }
-    }
-));
-    allDimensionNames.addAll(dimensionNames);
-    int numRows=index.add(new MapBasedInputRow(timestamp,dimensionNames,event));
+    final InputRow inputRow=parser.parse(value.toString());
+    allDimensionNames.addAll(inputRow.getDimensions());
+    int numRows=index.add(inputRow);
     ++lineCount;
     if (numRows >= rollupSpec.rowFlushBoundary) {
       log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
