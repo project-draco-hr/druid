@@ -1,0 +1,12 @@
+{
+  final Column column=input.getColumn(metric);
+  final ValueType type=column.getCapabilities().getType();
+switch (type) {
+case FLOAT:
+    return "float";
+case COMPLEX:
+  return column.getComplexColumn().getTypeName();
+default :
+throw new ISE("Unknown type[%s]",type);
+}
+}

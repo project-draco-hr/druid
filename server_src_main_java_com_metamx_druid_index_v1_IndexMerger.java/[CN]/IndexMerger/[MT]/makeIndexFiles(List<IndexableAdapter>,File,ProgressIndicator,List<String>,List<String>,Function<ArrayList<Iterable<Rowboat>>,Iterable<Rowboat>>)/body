@@ -7,6 +7,7 @@
   }
   final Interval dataInterval;
   File v8OutDir=new File(outDir,"v8-tmp");
+  v8OutDir.mkdirs();
   progress.progress();
   long startTime=System.currentTimeMillis();
   File indexFile=new File(v8OutDir,"index.drd");
@@ -131,10 +132,8 @@
 ),mergedDimensions,dimConversions.get(i),i));
   }
   Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
-  CompressedLongsSupplierSerializer littleEndianTimeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",ByteOrder.LITTLE_ENDIAN);
-  CompressedLongsSupplierSerializer bigEndianTimeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"big_end_time",ByteOrder.BIG_ENDIAN);
-  littleEndianTimeWriter.open();
-  bigEndianTimeWriter.open();
+  CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER);
+  timeWriter.open();
   ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
   for (  String dimension : mergedDimensions) {
     VSizeIndexedWriter writer=new VSizeIndexedWriter(ioPeon,dimension,dimensionCardinalities.get(dimension));
@@ -169,8 +168,7 @@
   }
   for (  Rowboat theRow : theRows) {
     progress.progress();
-    littleEndianTimeWriter.add(theRow.getTimestamp());
-    bigEndianTimeWriter.add(theRow.getTimestamp());
+    timeWriter.add(theRow.getTimestamp());
     final Object[] metrics=theRow.getMetrics();
     for (int i=0; i < metrics.length; ++i) {
       metWriters.get(i).serialize(metrics[i]);
@@ -197,16 +195,11 @@
   for (  IntBuffer rowNumConversion : rowNumConversions) {
     rowNumConversion.rewind();
   }
-  final File littleEndianFile=IndexIO.makeTimeFile(v8OutDir,ByteOrder.LITTLE_ENDIAN);
-  littleEndianFile.delete();
-  OutputSupplier<FileOutputStream> out=Files.newOutputStreamSupplier(littleEndianFile,true);
-  littleEndianTimeWriter.closeAndConsolidate(out);
-  IndexIO.checkFileSize(littleEndianFile);
-  final File bigEndianFile=IndexIO.makeTimeFile(v8OutDir,ByteOrder.BIG_ENDIAN);
-  bigEndianFile.delete();
-  out=Files.newOutputStreamSupplier(bigEndianFile,true);
-  bigEndianTimeWriter.closeAndConsolidate(out);
-  IndexIO.checkFileSize(bigEndianFile);
+  final File timeFile=IndexIO.makeTimeFile(v8OutDir,IndexIO.BYTE_ORDER);
+  timeFile.delete();
+  OutputSupplier<FileOutputStream> out=Files.newOutputStreamSupplier(timeFile,true);
+  timeWriter.closeAndConsolidate(out);
+  IndexIO.checkFileSize(timeFile);
   for (int i=0; i < mergedDimensions.size(); ++i) {
     forwardDimWriters.get(i).close();
     ByteStreams.copy(forwardDimWriters.get(i).combineStreams(),dimOuts.get(i));
@@ -253,7 +246,7 @@
     log.info("Completed dimension[%s] in %,d millis.",dimension,System.currentTimeMillis() - dimStartTime);
   }
   log.info("outDir[%s] completed inverted.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
-  final ArrayList<String> expectedFiles=Lists.newArrayList(Iterables.concat(Arrays.asList("index.drd","inverted.drd","time_BIG_ENDIAN.drd","time_LITTLE_ENDIAN.drd"),Iterables.transform(mergedDimensions,GuavaUtils.formatFunction("dim_%s.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction("met_%s_LITTLE_ENDIAN.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction("met_%s_BIG_ENDIAN.drd"))));
+  final ArrayList<String> expectedFiles=Lists.newArrayList(Iterables.concat(Arrays.asList("index.drd","inverted.drd",String.format("time_%s.drd",IndexIO.BYTE_ORDER)),Iterables.transform(mergedDimensions,GuavaUtils.formatFunction("dim_%s.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction(String.format("met_%%s_%s.drd",IndexIO.BYTE_ORDER)))));
   Map<String,File> files=Maps.newLinkedHashMap();
   for (  String fileName : expectedFiles) {
     files.put(fileName,new File(v8OutDir,fileName));
