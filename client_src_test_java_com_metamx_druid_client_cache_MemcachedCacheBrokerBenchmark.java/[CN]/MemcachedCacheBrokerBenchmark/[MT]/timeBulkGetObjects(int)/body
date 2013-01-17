@@ -7,7 +7,10 @@
       keys.add(Pair.of(IDENTIFIER,ByteBuffer.wrap(key.getBytes())));
     }
     Map<Pair<String,ByteBuffer>,byte[]> results=cache.getBulk(keys);
-    for (    byte[] bytes : results.values())     count+=bytes.length;
+    for (    Pair<String,ByteBuffer> key : keys) {
+      byte[] bytes=results.get(key);
+      count+=bytes.length;
+    }
   }
   return count;
 }
