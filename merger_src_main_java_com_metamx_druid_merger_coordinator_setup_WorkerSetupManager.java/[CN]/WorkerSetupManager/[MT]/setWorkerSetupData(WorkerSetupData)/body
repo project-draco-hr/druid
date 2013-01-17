@@ -6,8 +6,7 @@ synchronized (lock) {
       }
       dbi.withHandle(new HandleCallback<Void>(){
         @Override public Void withHandle(        Handle handle) throws Exception {
-          handle.createStatement(String.format("DELETE FROM %s",config.getWorkerSetupTable())).execute();
-          handle.createStatement(String.format("INSERT INTO %s (config) VALUES (:config)",config.getWorkerSetupTable())).bind("config",jsonMapper.writeValueAsString(value)).execute();
+          handle.createStatement(String.format("INSERT INTO %s (name, payload) VALUES (:name, :payload) ON DUPLICATE KEY UPDATE payload = :payload",config.getConfigTable())).bind("name",config.getWorkerSetupConfigName()).bind("payload",jsonMapper.writeValueAsString(value)).execute();
           return null;
         }
       }

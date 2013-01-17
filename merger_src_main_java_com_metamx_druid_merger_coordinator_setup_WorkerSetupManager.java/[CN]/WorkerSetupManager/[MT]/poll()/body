@@ -2,10 +2,10 @@
   try {
     List<WorkerSetupData> setupDataList=dbi.withHandle(new HandleCallback<List<WorkerSetupData>>(){
       @Override public List<WorkerSetupData> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT config FROM %s",config.getWorkerSetupTable())).fold(Lists.<WorkerSetupData>newArrayList(),new Folder3<ArrayList<WorkerSetupData>,Map<String,Object>>(){
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE name = :name",config.getConfigTable())).bind("name",config.getWorkerSetupConfigName()).fold(Lists.<WorkerSetupData>newArrayList(),new Folder3<ArrayList<WorkerSetupData>,Map<String,Object>>(){
           @Override public ArrayList<WorkerSetupData> fold(          ArrayList<WorkerSetupData> workerNodeConfigurations,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
             try {
-              workerNodeConfigurations.add(jsonMapper.readValue(MapUtils.getString(stringObjectMap,"config"),WorkerSetupData.class));
+              workerNodeConfigurations.add(jsonMapper.readValue(MapUtils.getString(stringObjectMap,"payload"),WorkerSetupData.class));
               return workerNodeConfigurations;
             }
  catch (            Exception e) {
