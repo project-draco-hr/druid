@@ -1,5 +1,8 @@
 {
   Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (includeDisabled != null) {
+    return builder.entity(databaseSegmentManager.getAllDatasourceNames()).build();
+  }
   if (full != null) {
     return builder.entity(databaseSegmentManager.getInventory()).build();
   }

@@ -1,5 +1,5 @@
 {
-  super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterSegmentMerger(jsonMapper,serviceProvider),new DruidMasterHelper(){
+  super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterSegmentMerger(new HttpMergerClient(httpClient,responseHandler,jsonMapper,serviceProvider)),new DruidMasterHelper(){
     @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
       MasterStats stats=params.getMasterStats();
       log.info("Issued merge requests for %s segments",stats.getGlobalStats().get("mergedCount").get());
