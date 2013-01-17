@@ -1,10 +1,8 @@
 {
-  LinkedHashSet<T> retVal=Sets.newLinkedHashSet();
+  Set<T> retVal=Sets.newTreeSet(Ordering.<T>natural().nullsFirst());
   for (  Iterable<T> indexedList : indexedLists) {
     for (    T val : indexedList) {
-      if (val != null) {
-        retVal.add(val);
-      }
+      retVal.add(val);
     }
   }
   return Lists.newArrayList(retVal);

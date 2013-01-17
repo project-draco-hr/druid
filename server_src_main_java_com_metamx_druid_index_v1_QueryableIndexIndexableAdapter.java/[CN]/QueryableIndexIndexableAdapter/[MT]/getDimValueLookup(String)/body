@@ -1,5 +1,12 @@
 {
-  final DictionaryEncodedColumn dict=input.getColumn(dimension).getDictionaryEncoding();
+  final Column column=input.getColumn(dimension);
+  if (column == null) {
+    return null;
+  }
+  final DictionaryEncodedColumn dict=column.getDictionaryEncoding();
+  if (dict == null) {
+    return null;
+  }
   return new Indexed<String>(){
     @Override public Class<? extends String> getClazz(){
       return String.class;
