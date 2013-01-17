@@ -3,7 +3,7 @@
   transcoder.setCompressionThreshold(Integer.MAX_VALUE);
   System.out.println(String.format("Using memcached hosts [%s]",hosts));
   client=new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(hosts));
-  cache=new MemcachedCacheBroker(client,500,3600);
+  cache=new MemcachedCacheBroker(client,30000,3600);
   randBytes=new byte[objectSize * 1024];
   new Random(0).nextBytes(randBytes);
 }
