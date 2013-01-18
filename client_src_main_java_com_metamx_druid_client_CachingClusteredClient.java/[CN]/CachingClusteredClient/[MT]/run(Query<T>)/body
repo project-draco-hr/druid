@@ -18,42 +18,55 @@
   if (timeline == null) {
     return Sequences.empty();
   }
-  Map<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> segments=Maps.newLinkedHashMap();
-  final byte[] queryCacheKey=(strategy != null) ? strategy.computeCacheKey(query) : null;
+  Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   for (  Interval interval : rewrittenQuery.getIntervals()) {
     List<TimelineObjectHolder<String,ServerSelector>> serversLookup=timeline.lookup(interval);
     for (    TimelineObjectHolder<String,ServerSelector> holder : serversLookup) {
       for (      PartitionChunk<ServerSelector> chunk : holder.getObject()) {
         ServerSelector selector=chunk.getObject();
         final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),holder.getVersion(),chunk.getChunkNumber());
-        segments.put(Pair.of(selector,descriptor),queryCacheKey == null ? null : computeSegmentCacheKey(selector.getSegment().getIdentifier(),descriptor,queryCacheKey));
+        segments.add(Pair.of(selector,descriptor));
       }
     }
   }
-  Map<CacheBroker.NamedKey,byte[]> cachedValues=cacheBroker.getBulk(Iterables.filter(segments.values(),Predicates.notNull()));
-  for (  Map.Entry<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> entry : segments.entrySet()) {
-    Pair<ServerSelector,SegmentDescriptor> segment=entry.getKey();
-    CacheBroker.NamedKey segmentCacheKey=entry.getValue();
-    final ServerSelector selector=segment.lhs;
-    final SegmentDescriptor descriptor=segment.rhs;
-    final Interval segmentQueryInterval=descriptor.getInterval();
-    final byte[] cachedValue=segmentCacheKey == null ? null : cachedValues.get(segmentCacheKey);
-    if (useCache && cachedValue != null) {
-      cachedResults.add(Pair.of(segmentQueryInterval.getStart(),cachedValue));
-    }
+  final byte[] queryCacheKey;
+  if (strategy != null) {
+    queryCacheKey=strategy.computeCacheKey(query);
+  }
  else {
-      final DruidServer server=selector.pick();
-      List<SegmentDescriptor> descriptors=serverSegments.get(server);
-      if (descriptors == null) {
-        descriptors=Lists.newArrayList();
-        serverSegments.put(server,descriptors);
+    queryCacheKey=null;
+  }
+  if (useCache && queryCacheKey != null) {
+    Map<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> cacheKeys=Maps.newHashMap();
+    for (    Pair<ServerSelector,SegmentDescriptor> e : segments) {
+      cacheKeys.put(e,computeSegmentCacheKey(e.lhs.getSegment().getIdentifier(),e.rhs,queryCacheKey));
+    }
+    Map<CacheBroker.NamedKey,byte[]> cachedValues=cacheBroker.getBulk(cacheKeys.values());
+    for (    Map.Entry<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> entry : cacheKeys.entrySet()) {
+      Pair<ServerSelector,SegmentDescriptor> segment=entry.getKey();
+      CacheBroker.NamedKey segmentCacheKey=entry.getValue();
+      final ServerSelector selector=segment.lhs;
+      final SegmentDescriptor descriptor=segment.rhs;
+      final Interval segmentQueryInterval=descriptor.getInterval();
+      final byte[] cachedValue=cachedValues.get(segmentCacheKey);
+      if (cachedValue != null) {
+        cachedResults.add(Pair.of(segmentQueryInterval.getStart(),cachedValue));
+        segments.remove(segment);
       }
-      descriptors.add(descriptor);
-      if (segmentCacheKey != null) {
+ else {
         final String segmentIdentifier=selector.getSegment().getIdentifier();
         cachePopulatorMap.put(String.format("%s_%s",segmentIdentifier,segmentQueryInterval),new CachePopulator(cacheBroker,objectMapper,segmentCacheKey));
       }
     }
+  }
+  for (  Pair<ServerSelector,SegmentDescriptor> segment : segments) {
+    final DruidServer server=segment.lhs.pick();
+    List<SegmentDescriptor> descriptors=serverSegments.get(server);
+    if (descriptors == null) {
+      descriptors=Lists.newArrayList();
+      serverSegments.put(server,descriptors);
+    }
+    descriptors.add(segment.rhs);
   }
   return new LazySequence<T>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
