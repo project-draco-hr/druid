@@ -111,23 +111,21 @@
       }
       HashtagEntity[] hts=status.getHashtagEntities();
       if (hts != null && hts.length > 0) {
-        theMap.put("htags",hts[0].getText());
-      }
- else {
-        theMap.put("htags",null);
+        List<String> hashTags=Lists.newArrayListWithExpectedSize(hts.length);
+        for (        HashtagEntity ht : hts) {
+          hashTags.add(ht.getText());
+        }
+        theMap.put("htags",Arrays.asList(hashTags.get(0)));
       }
       long retweetCount=status.getRetweetCount();
       theMap.put("retweet_count",retweetCount);
-      User u=status.getUser();
-      if (u != null) {
-        theMap.put("follower_count",u.getFollowersCount());
-        theMap.put("friends_count",u.getFriendsCount());
-        theMap.put("lang",u.getLang());
-        theMap.put("utc_offset",u.getUtcOffset());
-        theMap.put("statuses_count",u.getStatusesCount());
-      }
- else {
-        log.error("status.getUser() is null");
+      User user=status.getUser();
+      if (user != null) {
+        theMap.put("follower_count",user.getFollowersCount());
+        theMap.put("friends_count",user.getFriendsCount());
+        theMap.put("lang",user.getLang());
+        theMap.put("utc_offset",user.getUtcOffset());
+        theMap.put("statuses_count",user.getStatusesCount());
       }
       return new MapBasedInputRow(status.getCreatedAt().getTime(),dimensions,theMap);
     }
