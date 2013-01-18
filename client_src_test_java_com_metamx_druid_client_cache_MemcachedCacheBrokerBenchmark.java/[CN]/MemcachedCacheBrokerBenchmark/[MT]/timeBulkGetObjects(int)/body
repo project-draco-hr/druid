@@ -1,13 +1,13 @@
 {
   long count=0;
   for (int i=0; i < reps; i++) {
-    List<CacheBroker.NamedKey> keys=Lists.newArrayList();
+    List<Cache.NamedKey> keys=Lists.newArrayList();
     for (int k=0; k < objectCount; ++k) {
       String key=BASE_KEY + k;
-      keys.add(new CacheBroker.NamedKey(NAMESPACE,key.getBytes()));
+      keys.add(new Cache.NamedKey(NAMESPACE,key.getBytes()));
     }
-    Map<CacheBroker.NamedKey,byte[]> results=cache.getBulk(keys);
-    for (    CacheBroker.NamedKey key : keys) {
+    Map<Cache.NamedKey,byte[]> results=cache.getBulk(keys);
+    for (    Cache.NamedKey key : keys) {
       byte[] bytes=results.get(key);
       count+=bytes.length;
     }

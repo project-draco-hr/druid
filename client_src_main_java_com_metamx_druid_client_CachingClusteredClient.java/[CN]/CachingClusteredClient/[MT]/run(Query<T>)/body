@@ -37,14 +37,14 @@
     queryCacheKey=null;
   }
   if (useCache && queryCacheKey != null) {
-    Map<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> cacheKeys=Maps.newHashMap();
+    Map<Pair<ServerSelector,SegmentDescriptor>,Cache.NamedKey> cacheKeys=Maps.newHashMap();
     for (    Pair<ServerSelector,SegmentDescriptor> e : segments) {
       cacheKeys.put(e,computeSegmentCacheKey(e.lhs.getSegment().getIdentifier(),e.rhs,queryCacheKey));
     }
-    Map<CacheBroker.NamedKey,byte[]> cachedValues=cacheBroker.getBulk(cacheKeys.values());
-    for (    Map.Entry<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> entry : cacheKeys.entrySet()) {
+    Map<Cache.NamedKey,byte[]> cachedValues=cache.getBulk(cacheKeys.values());
+    for (    Map.Entry<Pair<ServerSelector,SegmentDescriptor>,Cache.NamedKey> entry : cacheKeys.entrySet()) {
       Pair<ServerSelector,SegmentDescriptor> segment=entry.getKey();
-      CacheBroker.NamedKey segmentCacheKey=entry.getValue();
+      Cache.NamedKey segmentCacheKey=entry.getValue();
       final ServerSelector selector=segment.lhs;
       final SegmentDescriptor descriptor=segment.rhs;
       final Interval segmentQueryInterval=descriptor.getInterval();
@@ -55,7 +55,7 @@
       }
  else {
         final String segmentIdentifier=selector.getSegment().getIdentifier();
-        cachePopulatorMap.put(String.format("%s_%s",segmentIdentifier,segmentQueryInterval),new CachePopulator(cacheBroker,objectMapper,segmentCacheKey));
+        cachePopulatorMap.put(String.format("%s_%s",segmentIdentifier,segmentQueryInterval),new CachePopulator(cache,objectMapper,segmentCacheKey));
       }
     }
   }
