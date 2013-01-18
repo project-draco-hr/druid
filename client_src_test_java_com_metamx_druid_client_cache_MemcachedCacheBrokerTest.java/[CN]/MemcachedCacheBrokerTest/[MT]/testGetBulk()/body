@@ -1,10 +1,10 @@
 {
-  Assert.assertNull(cache.get("the",HI));
+  Assert.assertNull(cache.get(new CacheBroker.NamedKey("the",HI)));
   put(cache,"the",HI,2);
   put(cache,"the",HO,10);
-  Pair<String,ByteBuffer> key1=Pair.of("the",ByteBuffer.wrap(HI));
-  Pair<String,ByteBuffer> key2=Pair.of("the",ByteBuffer.wrap(HO));
-  Map<Pair<String,ByteBuffer>,byte[]> result=cache.getBulk(Lists.newArrayList(key1,key2));
+  CacheBroker.NamedKey key1=new CacheBroker.NamedKey("the",HI);
+  CacheBroker.NamedKey key2=new CacheBroker.NamedKey("the",HO);
+  Map<CacheBroker.NamedKey,byte[]> result=cache.getBulk(Lists.newArrayList(key1,key2));
   Assert.assertEquals(2,Ints.fromByteArray(result.get(key1)));
   Assert.assertEquals(10,Ints.fromByteArray(result.get(key2)));
 }

@@ -1,7 +1,7 @@
 {
-  Map<String,Pair<String,ByteBuffer>> keyLookup=Maps.uniqueIndex(identifierKeyPairs,new Function<Pair<String,ByteBuffer>,String>(){
-    @Override public String apply(    @Nullable Pair<String,ByteBuffer> input){
-      return computeKey(input.lhs,input.rhs.array());
+  Map<String,NamedKey> keyLookup=Maps.uniqueIndex(keys,new Function<NamedKey,String>(){
+    @Override public String apply(    @Nullable NamedKey input){
+      return computeKeyString(input);
     }
   }
 );
@@ -14,7 +14,7 @@
     }
     missCount.addAndGet(keyLookup.size() - some.size());
     hitCount.addAndGet(some.size());
-    Map<Pair<String,ByteBuffer>,byte[]> results=Maps.newHashMap();
+    Map<NamedKey,byte[]> results=Maps.newHashMap();
     for (    Map.Entry<String,Object> entry : some.entrySet()) {
       results.put(keyLookup.get(entry.getKey()),(byte[])entry.getValue());
     }

@@ -18,7 +18,7 @@
   if (timeline == null) {
     return Sequences.empty();
   }
-  Map<Pair<ServerSelector,SegmentDescriptor>,Pair<String,ByteBuffer>> segments=Maps.newLinkedHashMap();
+  Map<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> segments=Maps.newLinkedHashMap();
   final byte[] queryCacheKey=(strategy != null) ? strategy.computeCacheKey(query) : null;
   for (  Interval interval : rewrittenQuery.getIntervals()) {
     List<TimelineObjectHolder<String,ServerSelector>> serversLookup=timeline.lookup(interval);
@@ -30,14 +30,10 @@
       }
     }
   }
-  Map<Pair<String,ByteBuffer>,byte[]> cachedValues=cacheBroker.getBulk(Iterables.filter(segments.values(),new Predicate<Pair<String,ByteBuffer>>(){
-    @Override public boolean apply(    @Nullable Pair<String,ByteBuffer> input){
-      return input != null;
-    }
-  }
-));
-  for (  Pair<ServerSelector,SegmentDescriptor> segment : segments.keySet()) {
-    Pair<String,ByteBuffer> segmentCacheKey=segments.get(segment);
+  Map<CacheBroker.NamedKey,byte[]> cachedValues=cacheBroker.getBulk(Iterables.filter(segments.values(),Predicates.notNull()));
+  for (  Map.Entry<Pair<ServerSelector,SegmentDescriptor>,CacheBroker.NamedKey> entry : segments.entrySet()) {
+    Pair<ServerSelector,SegmentDescriptor> segment=entry.getKey();
+    CacheBroker.NamedKey segmentCacheKey=entry.getValue();
     final ServerSelector selector=segment.lhs;
     final SegmentDescriptor descriptor=segment.rhs;
     final Interval segmentQueryInterval=descriptor.getInterval();
