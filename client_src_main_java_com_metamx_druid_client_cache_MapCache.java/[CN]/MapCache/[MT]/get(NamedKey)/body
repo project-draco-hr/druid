@@ -1,3 +1,10 @@
 {
-  return provideCache(key.namespace).get(key.key);
+  final byte[] retVal=baseMap.get(computeKey(getNamespaceId(key.namespace),key.key));
+  if (retVal == null) {
+    missCount.incrementAndGet();
+  }
+ else {
+    hitCount.incrementAndGet();
+  }
+  return retVal;
 }

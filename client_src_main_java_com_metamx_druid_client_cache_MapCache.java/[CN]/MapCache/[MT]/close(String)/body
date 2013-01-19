@@ -1,3 +1,17 @@
 {
-  provideCache(namespace).close();
+  byte[] idBytes;
+synchronized (namespaceId) {
+    idBytes=getNamespaceId(namespace);
+    if (idBytes == null)     return;
+    namespaceId.remove(namespace);
+  }
+synchronized (clearLock) {
+    Iterator<ByteBuffer> iter=baseMap.keySet().iterator();
+    while (iter.hasNext()) {
+      ByteBuffer next=iter.next();
+      if (next.get(0) == idBytes[0] && next.get(1) == idBytes[1] && next.get(2) == idBytes[2] && next.get(3) == idBytes[3]) {
+        iter.remove();
+      }
+    }
+  }
 }

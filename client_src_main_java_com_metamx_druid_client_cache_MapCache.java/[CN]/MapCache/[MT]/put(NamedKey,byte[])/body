@@ -1,3 +1,5 @@
 {
-  provideCache(key.namespace).put(key.key,value);
+synchronized (clearLock) {
+    baseMap.put(computeKey(getNamespaceId(key.namespace),key.key),value);
+  }
 }
