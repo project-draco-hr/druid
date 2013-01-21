@@ -46,7 +46,7 @@
   EasyMock.expect(peon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
   EasyMock.expect(peon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.replay(peon);
-  DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancer.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,peon),new ServerHolder(druidServer2,peon),new ServerHolder(druidServer3,peon),new ServerHolder(druidServer4,peon)))))).withLoadManagementPeons(ImmutableMap.of("1",peon,"2",peon,"3",peon,"4",peon)).withAvailableSegments(segments.values()).withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).withBalancerCostAnalyzer(new BalancerCostAnalyzer(new DateTime("2013-01-01"))).build();
+  DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancer.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,peon),new ServerHolder(druidServer2,peon),new ServerHolder(druidServer3,peon),new ServerHolder(druidServer4,peon)))))).withLoadManagementPeons(ImmutableMap.of("1",peon,"2",peon,"3",peon,"4",peon)).withAvailableSegments(segments.values()).withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   params=new DruidMasterBalancer(master).run(params);
   Assert.assertTrue(params.getMasterStats().getPerTierStats().get("movedCount").get("normal").get() > 0);
 }
