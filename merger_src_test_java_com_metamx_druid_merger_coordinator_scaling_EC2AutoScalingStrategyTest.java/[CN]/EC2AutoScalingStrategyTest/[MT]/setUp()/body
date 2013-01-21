@@ -3,26 +3,12 @@
   runInstancesResult=EasyMock.createMock(RunInstancesResult.class);
   describeInstancesResult=EasyMock.createMock(DescribeInstancesResult.class);
   reservation=EasyMock.createMock(Reservation.class);
+  workerSetupManager=EasyMock.createMock(WorkerSetupManager.class);
   instance=new Instance().withInstanceId(INSTANCE_ID).withLaunchTime(new Date()).withImageId(AMI_ID).withPrivateIpAddress(IP);
   strategy=new EC2AutoScalingStrategy(new DefaultObjectMapper(),amazonEC2Client,new EC2AutoScalingStrategyConfig(){
-    @Override public String getAmiId(){
-      return AMI_ID;
-    }
     @Override public String getWorkerPort(){
       return "8080";
     }
-    @Override public String getInstanceType(){
-      return "t1.micro";
-    }
-    @Override public int getMinNumInstancesToProvision(){
-      return 1;
-    }
-    @Override public int getMaxNumInstancesToProvision(){
-      return 1;
-    }
-    @Override public String getUserDataFile(){
-      return "";
-    }
   }
-);
+,workerSetupManager);
 }

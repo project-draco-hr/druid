@@ -1,0 +1,28 @@
+{
+  final Column column=input.getColumn(dimension);
+  if (column == null) {
+    return null;
+  }
+  final DictionaryEncodedColumn dict=column.getDictionaryEncoding();
+  if (dict == null) {
+    return null;
+  }
+  return new Indexed<String>(){
+    @Override public Class<? extends String> getClazz(){
+      return String.class;
+    }
+    @Override public int size(){
+      return dict.getCardinality();
+    }
+    @Override public String get(    int index){
+      return dict.lookupName(index);
+    }
+    @Override public int indexOf(    String value){
+      return dict.lookupId(value);
+    }
+    @Override public Iterator<String> iterator(){
+      return IndexedIterable.create(this).iterator();
+    }
+  }
+;
+}

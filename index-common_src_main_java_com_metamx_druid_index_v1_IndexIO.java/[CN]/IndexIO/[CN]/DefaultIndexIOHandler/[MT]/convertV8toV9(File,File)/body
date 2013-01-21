@@ -35,23 +35,54 @@
       ByteArrayOutputStream nameBAOS=new ByteArrayOutputStream();
       serializerUtils.writeString(nameBAOS,dimension);
       outParts.add(ByteBuffer.wrap(nameBAOS.toByteArray()));
-      final GenericIndexed<String> dictionary=GenericIndexed.read(dimBuffer,GenericIndexed.stringStrategy);
+      GenericIndexed<String> dictionary=GenericIndexed.read(dimBuffer,GenericIndexed.stringStrategy);
       VSizeIndexedInts singleValCol=null;
       VSizeIndexed multiValCol=VSizeIndexed.readFromByteBuffer(dimBuffer.asReadOnlyBuffer());
+      GenericIndexed<ImmutableConciseSet> bitmaps=bitmapIndexes.get(dimension);
       boolean onlyOneValue=true;
-      for (      VSizeIndexedInts rowValue : multiValCol) {
+      ConciseSet nullsSet=null;
+      for (int i=0; i < multiValCol.size(); ++i) {
+        VSizeIndexedInts rowValue=multiValCol.get(i);
         if (!onlyOneValue) {
           break;
         }
         if (rowValue.size() > 1) {
           onlyOneValue=false;
         }
+        if (rowValue.size() == 0) {
+          if (nullsSet == null) {
+            nullsSet=new ConciseSet();
+          }
+          nullsSet.add(i);
+        }
       }
       if (onlyOneValue) {
+        log.info("Dimension[%s] is single value, converting...",dimension);
+        final boolean bumpedDictionary;
+        if (nullsSet != null) {
+          log.info("Dimension[%s] has null rows.",dimension);
+          final ImmutableConciseSet theNullSet=ImmutableConciseSet.newImmutableFromMutable(nullsSet);
+          if (dictionary.get(0) != null) {
+            log.info("Dimension[%s] has no null value in the dictionary, expanding...",dimension);
+            bumpedDictionary=true;
+            final List<String> nullList=Lists.newArrayList();
+            nullList.add(null);
+            dictionary=GenericIndexed.fromIterable(Iterables.concat(nullList,dictionary),GenericIndexed.stringStrategy);
+            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(theNullSet),bitmaps),ConciseCompressedIndexedInts.objectStrategy);
+          }
+ else {
+            bumpedDictionary=false;
+            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(ImmutableConciseSet.union(theNullSet,bitmaps.get(0))),Iterables.skip(bitmaps,1)),ConciseCompressedIndexedInts.objectStrategy);
+          }
+        }
+ else {
+          bumpedDictionary=false;
+        }
         final VSizeIndexed finalMultiValCol=multiValCol;
         singleValCol=VSizeIndexedInts.fromList(new AbstractList<Integer>(){
           @Override public Integer get(          int index){
-            return finalMultiValCol.get(index).get(0);
+            final VSizeIndexedInts ints=finalMultiValCol.get(index);
+            return ints.size() == 0 ? 0 : ints.get(0) + (bumpedDictionary ? 1 : 0);
           }
           @Override public int size(){
             return finalMultiValCol.size();
@@ -63,7 +94,7 @@
  else {
         builder.setHasMultipleValues(true);
       }
-      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmapIndexes.get(dimension)));
+      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmaps));
       final ColumnDescriptor serdeficator=builder.build();
       ByteArrayOutputStream baos=new ByteArrayOutputStream();
       serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
