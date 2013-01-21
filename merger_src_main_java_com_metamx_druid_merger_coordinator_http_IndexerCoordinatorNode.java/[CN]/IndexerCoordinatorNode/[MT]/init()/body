@@ -12,13 +12,14 @@
   initializeJacksonSubtypes();
   initializeCurator();
   initializeIndexerZkConfig();
+  initializeWorkerSetupManager();
   initializeTaskRunnerFactory();
   initializeTaskMaster();
   initializeServer();
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(monitorScheduler);
-  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskQueue));
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskQueue,workerSetupManager));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");

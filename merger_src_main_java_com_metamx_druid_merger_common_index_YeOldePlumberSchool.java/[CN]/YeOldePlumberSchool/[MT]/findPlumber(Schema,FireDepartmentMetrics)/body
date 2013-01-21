@@ -29,14 +29,15 @@
           fileToUpload=Iterables.getOnlyElement(spilled);
         }
  else {
-          List<MMappedIndex> indexes=Lists.newArrayList();
+          List<QueryableIndex> indexes=Lists.newArrayList();
           for (          final File oneSpill : spilled) {
-            indexes.add(IndexIO.mapDir(oneSpill));
+            indexes.add(IndexIO.loadIndex(oneSpill));
           }
           fileToUpload=new File(tmpSegmentDir,"merged");
-          IndexMerger.mergeMMapped(indexes,schema.getAggregators(),fileToUpload);
+          IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload);
         }
-        final DataSegment segmentToUpload=theSink.getSegment().withVersion(version);
+        final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
+        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version);
         segmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
       }

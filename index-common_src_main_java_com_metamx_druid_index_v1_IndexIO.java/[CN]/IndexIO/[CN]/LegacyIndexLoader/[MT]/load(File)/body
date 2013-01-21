@@ -10,7 +10,7 @@
       columns.put(metric.toLowerCase(),new ColumnBuilder().setType(ValueType.FLOAT).setGenericColumn(new FloatGenericColumnSupplier(metricHolder.floatType,BYTE_ORDER)).build());
     }
  else     if (metricHolder.getType() == MetricHolder.MetricType.COMPLEX) {
-      columns.put(metric.toLowerCase(),new ColumnBuilder().setType(ValueType.COMPLEX).setComplexColumn(new ComplexColumnPartSupplier((GenericIndexed)metricHolder.complexType,metricHolder.getTypeName())).build());
+      columns.put(metric.toLowerCase(),new ColumnBuilder().setType(ValueType.COMPLEX).setComplexColumn(new ComplexColumnPartSupplier(metricHolder.getTypeName(),(GenericIndexed)metricHolder.complexType)).build());
     }
   }
   Set<String> colSet=Sets.newTreeSet();
