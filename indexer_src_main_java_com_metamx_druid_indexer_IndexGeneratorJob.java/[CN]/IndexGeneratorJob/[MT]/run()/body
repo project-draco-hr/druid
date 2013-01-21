@@ -23,7 +23,7 @@
     config.intoConfiguration(job);
     job.setJarByClass(IndexGeneratorJob.class);
     job.submit();
-    log.info("Job submitted, status available at %s",job.getTrackingURL());
+    log.info("Job %s submitted, status available at %s",job.getJobName(),job.getTrackingURL());
     boolean success=job.waitForCompletion(true);
     Counter invalidRowCount=job.getCounters().findCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER);
     jobStats.setInvalidRowCount(invalidRowCount.getValue());

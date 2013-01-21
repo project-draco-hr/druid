@@ -6,6 +6,6 @@
       dims.put(dim,dimValues);
     }
   }
-  final List<Object> groupKey=ImmutableList.of(getConfig().getRollupSpec().getRollupGranularity().truncate(inputRow.getTimestampFromEpoch()),dims);
-  context.write(new Text(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)),NullWritable.get());
+  final List<Object> groupKey=ImmutableList.of(rollupGranularity.truncate(inputRow.getTimestampFromEpoch()),dims);
+  context.write(new BytesWritable(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)),NullWritable.get());
 }
