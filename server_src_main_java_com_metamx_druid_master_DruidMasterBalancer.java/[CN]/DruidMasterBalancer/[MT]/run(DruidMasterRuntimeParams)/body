@@ -1,5 +1,7 @@
 {
-  MasterStats stats=new MasterStats();
+  final MasterStats stats=new MasterStats();
+  final BalancerCostAnalyzer analyzer=params.getBalancerCostAnalyzer();
+  final int maxSegmentsToMove=params.getMaxSegmentsToMove();
   for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getDruidCluster().getCluster().entrySet()) {
     String tier=entry.getKey();
     if (currentlyMovingSegments.get(tier) == null) {
@@ -10,23 +12,36 @@
       log.info("[%s]: Still waiting on %,d segments to be moved",tier,currentlyMovingSegments.size());
       continue;
     }
-    List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
-    BalancerCostAnalyzer analyzer=params.getBalancerCostAnalyzer();
-    analyzer.init(serverHolderList,params);
-    moveSegments(analyzer.findSegmentsToMove(),params);
-    double initialTotalCost=analyzer.getInitialTotalCost();
-    double normalization=analyzer.getNormalization();
-    double normalizedInitialCost=analyzer.getNormalizedInitialCost();
-    double costChange=analyzer.getTotalCostChange();
+    final List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
+    int numSegments=0;
+    for (    ServerHolder server : serverHolderList) {
+      numSegments+=server.getServer().getSegments().size();
+    }
+    if (numSegments == 0) {
+      log.info("No segments found.  Cannot balance.");
+      continue;
+    }
+    final Set<DataSegment> segmentsBeingMoved=new HashSet<DataSegment>();
+    int iter=0;
+    while (iter < maxSegmentsToMove) {
+      BalancerSegmentHolder holder=analyzer.findNewSegmentHome(serverHolderList,numSegments);
+      if (!segmentsBeingMoved.contains(holder.getSegment())) {
+        moveSegment(holder,params);
+        segmentsBeingMoved.add(holder.getSegment());
+      }
+      iter++;
+    }
+    final double initialTotalCost=analyzer.calculateInitialTotalCost(serverHolderList);
+    final double normalization=analyzer.calculateNormalization(serverHolderList);
+    final double normalizedInitialCost=initialTotalCost / normalization;
     stats.addToTieredStat("initialCost",tier,(long)initialTotalCost);
     stats.addToTieredStat("normalization",tier,(long)normalization);
-    stats.addToTieredStat("costChange",tier,(long)costChange);
-    log.info("Initial Total Cost: [%f], Initial Normalized Cost: [%f], Cost Change: [%f], Normalized Cost Change: [%f], New Normalized Cost: [%f]",initialTotalCost,normalizedInitialCost,costChange,costChange / normalization,(initialTotalCost - costChange) / normalization);
+    stats.addToTieredStat("movedCount",tier,segmentsBeingMoved.size());
+    log.info("Initial Total Cost: [%f], Initial Normalized Cost: [%f], Segments Moved: [%d]",initialTotalCost,normalizedInitialCost,segmentsBeingMoved.size());
     if (serverHolderList.size() <= 1) {
       log.info("[%s]: One or fewer servers found.  Cannot balance.",tier);
       continue;
     }
-    stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
   }
   return params.buildFromExisting().withMasterStats(stats).build();
 }
