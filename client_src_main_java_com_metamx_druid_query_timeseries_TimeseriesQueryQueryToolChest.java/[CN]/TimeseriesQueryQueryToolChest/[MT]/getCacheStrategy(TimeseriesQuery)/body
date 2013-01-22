@@ -30,7 +30,7 @@
           Map<String,Object> retVal=Maps.newLinkedHashMap();
           Iterator<AggregatorFactory> aggsIter=aggs.iterator();
           Iterator<Object> resultIter=results.iterator();
-          DateTime timestamp=(DateTime)resultIter.next();
+          DateTime timestamp=ISODateTimeFormat.dateTimeParser().withOffsetParsed().parseDateTime(resultIter.next().toString());
           while (aggsIter.hasNext() && resultIter.hasNext()) {
             final AggregatorFactory factory=aggsIter.next();
             retVal.put(factory.getName(),factory.deserialize(resultIter.next()));
