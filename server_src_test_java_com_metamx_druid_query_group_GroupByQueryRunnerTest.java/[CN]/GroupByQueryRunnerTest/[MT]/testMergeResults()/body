@@ -1,0 +1,15 @@
+{
+  GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.newArrayList((DimensionSpec)new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null));
+  final GroupByQuery fullQuery=builder.build();
+  QueryRunner mergedRunner=new GroupByQueryQueryToolChest().mergeResults(new QueryRunner<Row>(){
+    @Override public Sequence run(    Query<Row> query){
+      final Query query1=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-02/2011-04-03"))));
+      final Query query2=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-03/2011-04-04"))));
+      return Sequences.<Row>concat(runner.run(query1),runner.run(query2));
+    }
+  }
+);
+  List<Row> expectedResults=Arrays.asList((Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","automotive","rows",1L,"idx",269L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","business","rows",1L,"idx",217L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","entertainment","rows",1L,"idx",319L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","health","rows",1L,"idx",216L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","mezzanine","rows",3L,"idx",4420L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","news","rows",1L,"idx",221L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","premium","rows",3L,"idx",4416L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","technology","rows",1L,"idx",177L)),(Row)new MapBasedRow(new DateTime("2011-04-01"),ImmutableMap.<String,Object>of("alias","travel","rows",1L,"idx",243L)));
+  Iterable<Row> results=Sequences.toList(mergedRunner.run(fullQuery),Lists.<Row>newArrayList());
+  TestHelper.assertExpectedObjects(expectedResults,results,"");
+}
