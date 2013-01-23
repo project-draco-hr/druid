@@ -24,44 +24,43 @@
         return;
       }
       try {
-        for (        DataSegment segment : status.getSegments()) {
-          if (!task.getDataSource().equals(segment.getDataSource())) {
-            throw new IllegalStateException(String.format("Segment for task[%s] has invalid dataSource: %s",task.getId(),segment.getIdentifier()));
-          }
-          if (!task.getInterval().contains(segment.getInterval())) {
-            throw new IllegalStateException(String.format("Segment for task[%s] has invalid interval: %s",task.getId(),segment.getIdentifier()));
-          }
-          if (!context.getVersion().equals(segment.getVersion())) {
-            throw new IllegalStateException(String.format("Segment for task[%s] has invalid version: %s",task.getId(),segment.getIdentifier()));
-          }
-          log.info("Publishing segment[%s] for task[%s]",segment.getIdentifier(),task.getId());
-          mergerDBCoordinator.announceHistoricalSegment(segment);
-        }
-      }
- catch (      Exception e) {
-        log.error(e,"Exception while publishing segments for task: %s",task);
-        status=TaskStatus.failure(task.getId()).withDuration(status.getDuration());
-      }
-      try {
-        queue.done(task,status);
-      }
- catch (      Exception e) {
-        log.error(e,"Exception while marking task done: %s",task);
-        throw Throwables.propagate(e);
-      }
-      int bytes=0;
-      for (      DataSegment segment : status.getSegments()) {
-        bytes+=segment.getSize();
-      }
-      builder.setUser3(status.getStatusCode().toString());
-      emitter.emit(builder.build("indexer/time/run/millis",status.getDuration()));
-      emitter.emit(builder.build("indexer/segment/count",status.getSegments().size()));
-      emitter.emit(builder.build("indexer/segment/bytes",bytes));
-      if (status.isFailure()) {
-        log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType().toString()).addData("dataSource",task.getDataSource()).addData("interval",task.getInterval()).emit();
-      }
-      log.info("Task %s: %s (%d segments) (%d run duration)",status.getStatusCode(),task,status.getSegments().size(),status.getDuration());
-    }
-  }
+switch (status.getAction()) {
+case ANNOUNCE_SEGMENTS:
+          publishSegments(task,context,status.getSegments());
+        break;
+case DELETE_SEGMENTS:
+      deleteSegments(task,context,status.getSegments());
+    break;
+case NONE:
+  break;
+default :
+throw new ISE("Unknown Action[%s]",status.getAction().getClass());
+}
+}
+ catch (Exception e) {
+log.error(e,"Exception while publishing segments for task: %s",task);
+status=TaskStatus.failure(task.getId()).withDuration(status.getDuration());
+}
+try {
+queue.done(task,status);
+}
+ catch (Exception e) {
+log.error(e,"Exception while marking task done: %s",task);
+throw Throwables.propagate(e);
+}
+int bytes=0;
+for (DataSegment segment : status.getSegments()) {
+bytes+=segment.getSize();
+}
+builder.setUser3(status.getStatusCode().toString());
+emitter.emit(builder.build("indexer/time/run/millis",status.getDuration()));
+emitter.emit(builder.build("indexer/segment/count",status.getSegments().size()));
+emitter.emit(builder.build("indexer/segment/bytes",bytes));
+if (status.isFailure()) {
+log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType().toString()).addData("dataSource",task.getDataSource()).addData("interval",task.getInterval()).emit();
+}
+log.info("Task %s: %s (%d segments) (%d run duration)",status.getStatusCode(),task,status.getSegments().size(),status.getDuration());
+}
+}
 );
 }

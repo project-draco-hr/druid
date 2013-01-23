@@ -1,0 +1,11 @@
+{
+  if (!task.getDataSource().equals(segment.getDataSource())) {
+    throw new IllegalStateException(String.format("Segment for task[%s] has invalid dataSource: %s",task.getId(),segment.getIdentifier()));
+  }
+  if (!task.getInterval().contains(segment.getInterval())) {
+    throw new IllegalStateException(String.format("Segment for task[%s] has invalid interval: %s",task.getId(),segment.getIdentifier()));
+  }
+  if (!context.getVersion().equals(segment.getVersion())) {
+    throw new IllegalStateException(String.format("Segment for task[%s] has invalid version: %s",task.getId(),segment.getIdentifier()));
+  }
+}

@@ -25,11 +25,11 @@
     }
   }
   Assert.assertEquals("Taken tasks (round 1)",Lists.newArrayList(tasks[0],tasks[2],tasks[4],tasks[5]),taken);
-  tq.done(tasks[2],tasks[2].run(null,null));
+  tq.done(tasks[2],tasks[2].run(null,null,null));
   Assert.assertEquals("T2 status (after finishing)",TaskStatus.Status.SUCCESS,tq.getStatus(tasks[2].getId()).get().getStatusCode());
   thrown=null;
   try {
-    tq.done(tasks[2],tasks[2].run(null,null));
+    tq.done(tasks[2],tasks[2].run(null,null,null));
   }
  catch (  IllegalStateException e) {
     thrown=e;

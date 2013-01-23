@@ -1,0 +1,7 @@
+{
+  for (  DataSegment segment : segments) {
+    verifySegment(task,context,segment);
+    log.info("Publishing segment[%s] for task[%s]",segment.getIdentifier(),task.getId());
+    mergerDBCoordinator.announceHistoricalSegment(segment);
+  }
+}
