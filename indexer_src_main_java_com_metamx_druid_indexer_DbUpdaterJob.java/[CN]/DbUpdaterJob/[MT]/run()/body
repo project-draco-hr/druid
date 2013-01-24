@@ -1,30 +1,14 @@
 {
-  final Configuration conf=new Configuration();
-  ImmutableList.Builder<DataSegment> publishedSegmentsBuilder=ImmutableList.builder();
-  for (  String propName : System.getProperties().stringPropertyNames()) {
-    if (propName.startsWith("hadoop.")) {
-      conf.set(propName.substring("hadoop.".length()),System.getProperty(propName));
-    }
-  }
-  final Path descriptorInfoDir=config.makeDescriptorInfoDir();
-  try {
-    FileSystem fs=descriptorInfoDir.getFileSystem(conf);
-    for (    FileStatus status : fs.listStatus(descriptorInfoDir)) {
-      final DataSegment segment=jsonMapper.readValue(fs.open(status.getPath()),DataSegment.class);
-      dbi.withHandle(new HandleCallback<Void>(){
-        @Override public Void withHandle(        Handle handle) throws Exception {
-          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",spec.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
-          return null;
-        }
+  final List<DataSegment> segments=IndexGeneratorJob.getPublishedSegments(config);
+  for (  final DataSegment segment : segments) {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",spec.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
+        return null;
       }
-);
-      publishedSegmentsBuilder.add(segment);
-      log.info("Published %s",segment.getIdentifier());
     }
+);
+    log.info("Published %s",segment.getIdentifier());
   }
- catch (  IOException e) {
-    throw Throwables.propagate(e);
-  }
-  publishedSegments=publishedSegmentsBuilder.build();
   return true;
 }
