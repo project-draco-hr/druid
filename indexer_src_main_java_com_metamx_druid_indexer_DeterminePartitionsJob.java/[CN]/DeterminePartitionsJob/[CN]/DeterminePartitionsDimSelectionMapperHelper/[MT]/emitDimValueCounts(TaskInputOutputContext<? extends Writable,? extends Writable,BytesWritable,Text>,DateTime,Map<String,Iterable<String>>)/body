@@ -1,0 +1,20 @@
+{
+  final Optional<Interval> maybeInterval=config.getGranularitySpec().bucketInterval(timestamp);
+  if (!maybeInterval.isPresent()) {
+    throw new ISE("WTF?! No bucket found for timestamp: %s",timestamp);
+  }
+  final Interval interval=maybeInterval.get();
+  final byte[] groupKey=interval.getStart().toString().getBytes(Charsets.UTF_8);
+  for (  final Map.Entry<String,Iterable<String>> dimAndValues : dims.entrySet()) {
+    final String dim=dimAndValues.getKey();
+    if (partitionDimension == null || partitionDimension.equals(dim)) {
+      final Iterable<String> dimValues=dimAndValues.getValue();
+      if (Iterables.size(dimValues) == 1) {
+        write(context,groupKey,new DimValueCount(dim,Iterables.getOnlyElement(dimValues),1));
+      }
+ else {
+        write(context,groupKey,new DimValueCount(dim,"",-1));
+      }
+    }
+  }
+}

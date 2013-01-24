@@ -1,0 +1,22 @@
+{
+  return new CombiningIterable<DimValueCount>(Iterables.transform(input,new Function<Text,DimValueCount>(){
+    @Override public DimValueCount apply(    Text input){
+      return DimValueCount.fromText(input);
+    }
+  }
+),new Comparator<DimValueCount>(){
+    @Override public int compare(    DimValueCount o1,    DimValueCount o2){
+      return ComparisonChain.start().compare(o1.dim,o2.dim).compare(o1.value,o2.value).result();
+    }
+  }
+,new BinaryFn<DimValueCount,DimValueCount,DimValueCount>(){
+    @Override public DimValueCount apply(    DimValueCount arg1,    DimValueCount arg2){
+      if (arg2 == null) {
+        return arg1;
+      }
+      final int newNumRows=(arg1.numRows >= 0 && arg2.numRows >= 0 ? arg1.numRows + arg2.numRows : -1);
+      return new DimValueCount(arg1.dim,arg1.value,newNumRows);
+    }
+  }
+);
+}

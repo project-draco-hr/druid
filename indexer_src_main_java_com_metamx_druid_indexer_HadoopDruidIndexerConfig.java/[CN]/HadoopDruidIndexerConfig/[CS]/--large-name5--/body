@@ -1,0 +1,36 @@
+{
+  this.dataSource=dataSource;
+  this.timestampColumnName=timestampColumnName;
+  this.timestampFormat=timestampFormat;
+  this.dataSpec=dataSpec;
+  this.granularitySpec=granularitySpec;
+  this.pathSpec=pathSpec;
+  this.jobOutputDir=jobOutputDir;
+  this.segmentOutputDir=segmentOutputDir;
+  this.version=version;
+  this.partitionsSpec=partitionsSpec;
+  this.leaveIntermediate=leaveIntermediate;
+  this.cleanupOnFailure=cleanupOnFailure;
+  this.shardSpecs=shardSpecs;
+  this.overwriteFiles=overwriteFiles;
+  this.rollupSpec=rollupSpec;
+  this.updaterJobSpec=updaterJobSpec;
+  this.ignoreInvalidRows=ignoreInvalidRows;
+  this.registererers=registererers;
+  if (partitionsSpec != null) {
+    Preconditions.checkArgument(partitionDimension == null && targetPartitionSize == null,"Cannot mix partitionsSpec with partitionDimension/targetPartitionSize");
+    this.partitionsSpec=partitionsSpec;
+  }
+ else {
+    this.partitionsSpec=new PartitionsSpec(partitionDimension,targetPartitionSize,false);
+  }
+  if (granularitySpec != null) {
+    Preconditions.checkArgument(segmentGranularity == null && intervals == null,"Cannot mix granularitySpec with segmentGranularity/intervals");
+  }
+ else {
+    this.segmentGranularity=segmentGranularity;
+    if (segmentGranularity != null && intervals != null) {
+      this.granularitySpec=new UniformGranularitySpec(segmentGranularity,intervals);
+    }
+  }
+}
