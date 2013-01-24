@@ -1,7 +1,7 @@
 {
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
   final CacheStrategy<T,Query<T>> strategy=toolChest.getCacheStrategy(query);
-  final Map<DruidServer,List<SegmentDescriptor>> segs=Maps.newTreeMap();
+  final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
   final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null;
@@ -18,48 +18,55 @@
   if (timeline == null) {
     return Sequences.empty();
   }
-  byte[] queryCacheKey=null;
-  if (strategy != null) {
-    queryCacheKey=strategy.computeCacheKey(query);
-  }
+  Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   for (  Interval interval : rewrittenQuery.getIntervals()) {
     List<TimelineObjectHolder<String,ServerSelector>> serversLookup=timeline.lookup(interval);
     for (    TimelineObjectHolder<String,ServerSelector> holder : serversLookup) {
       for (      PartitionChunk<ServerSelector> chunk : holder.getObject()) {
         ServerSelector selector=chunk.getObject();
         final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),holder.getVersion(),chunk.getChunkNumber());
-        if (queryCacheKey == null) {
-          final DruidServer server=selector.pick();
-          List<SegmentDescriptor> descriptors=segs.get(server);
-          if (descriptors == null) {
-            descriptors=Lists.newArrayList();
-            segs.put(server,descriptors);
-          }
-          descriptors.add(descriptor);
-        }
- else {
-          final Interval segmentQueryInterval=holder.getInterval();
-          final byte[] versionBytes=descriptor.getVersion().getBytes();
-          final byte[] cacheKey=ByteBuffer.allocate(16 + versionBytes.length + 4+ queryCacheKey.length).putLong(segmentQueryInterval.getStartMillis()).putLong(segmentQueryInterval.getEndMillis()).put(versionBytes).putInt(descriptor.getPartitionNumber()).put(queryCacheKey).array();
-          final String segmentIdentifier=selector.getSegment().getIdentifier();
-          final Cache cache=cacheBroker.provideCache(segmentIdentifier);
-          final byte[] cachedValue=cache.get(cacheKey);
-          if (useCache && cachedValue != null) {
-            cachedResults.add(Pair.of(segmentQueryInterval.getStart(),cachedValue));
-          }
- else {
-            final DruidServer server=selector.pick();
-            List<SegmentDescriptor> descriptors=segs.get(server);
-            if (descriptors == null) {
-              descriptors=Lists.newArrayList();
-              segs.put(server,descriptors);
-            }
-            descriptors.add(descriptor);
-            cachePopulatorMap.put(String.format("%s_%s",segmentIdentifier,segmentQueryInterval),new CachePopulator(cache,objectMapper,cacheKey));
-          }
-        }
+        segments.add(Pair.of(selector,descriptor));
       }
     }
+  }
+  final byte[] queryCacheKey;
+  if (strategy != null) {
+    queryCacheKey=strategy.computeCacheKey(query);
+  }
+ else {
+    queryCacheKey=null;
+  }
+  if (useCache && queryCacheKey != null) {
+    Map<Pair<ServerSelector,SegmentDescriptor>,Cache.NamedKey> cacheKeys=Maps.newHashMap();
+    for (    Pair<ServerSelector,SegmentDescriptor> e : segments) {
+      cacheKeys.put(e,computeSegmentCacheKey(e.lhs.getSegment().getIdentifier(),e.rhs,queryCacheKey));
+    }
+    Map<Cache.NamedKey,byte[]> cachedValues=cache.getBulk(cacheKeys.values());
+    for (    Map.Entry<Pair<ServerSelector,SegmentDescriptor>,Cache.NamedKey> entry : cacheKeys.entrySet()) {
+      Pair<ServerSelector,SegmentDescriptor> segment=entry.getKey();
+      Cache.NamedKey segmentCacheKey=entry.getValue();
+      final ServerSelector selector=segment.lhs;
+      final SegmentDescriptor descriptor=segment.rhs;
+      final Interval segmentQueryInterval=descriptor.getInterval();
+      final byte[] cachedValue=cachedValues.get(segmentCacheKey);
+      if (cachedValue != null) {
+        cachedResults.add(Pair.of(segmentQueryInterval.getStart(),cachedValue));
+        segments.remove(segment);
+      }
+ else {
+        final String segmentIdentifier=selector.getSegment().getIdentifier();
+        cachePopulatorMap.put(String.format("%s_%s",segmentIdentifier,segmentQueryInterval),new CachePopulator(cache,objectMapper,segmentCacheKey));
+      }
+    }
+  }
+  for (  Pair<ServerSelector,SegmentDescriptor> segment : segments) {
+    final DruidServer server=segment.lhs.pick();
+    List<SegmentDescriptor> descriptors=serverSegments.get(server);
+    if (descriptors == null) {
+      descriptors=Lists.newArrayList();
+      serverSegments.put(server,descriptors);
+    }
+    descriptors.add(segment.rhs);
   }
   return new LazySequence<T>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
@@ -102,7 +109,7 @@
       }
     }
     @SuppressWarnings("unchecked") private void addSequencesFromServer(    ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences){
-      for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : segs.entrySet()) {
+      for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
         final QueryRunner clientQueryable=serverView.getQueryRunner(server);
