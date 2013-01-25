@@ -1,0 +1,108 @@
+{
+  PeekingIterator<DimValueCount> iterator=Iterators.peekingIterator(combinedIterable.iterator());
+  DimPartitions currentDimPartitions=null;
+  DimPartition currentDimPartition=null;
+  String currentDimPartitionStart=null;
+  boolean currentDimSkip=false;
+  final Map<String,DimPartitions> dimPartitionss=Maps.newHashMap();
+  while (iterator.hasNext()) {
+    final DimValueCount dvc=iterator.next();
+    if (currentDimPartitions == null || !currentDimPartitions.dim.equals(dvc.dim)) {
+      currentDimPartitions=new DimPartitions(dvc.dim);
+      currentDimPartition=new DimPartition();
+      currentDimPartitionStart=null;
+      currentDimSkip=false;
+    }
+    if (!currentDimSkip && dvc.numRows < 0) {
+      log.info("Cannot partition on multi-valued dimension: %s",dvc.dim);
+      currentDimSkip=true;
+    }
+    if (currentDimSkip) {
+      continue;
+    }
+    if (currentDimPartition.rows > 0 && currentDimPartition.rows + dvc.numRows >= config.getTargetPartitionSize()) {
+      final ShardSpec shardSpec=new SingleDimensionShardSpec(currentDimPartitions.dim,currentDimPartitionStart,dvc.value,currentDimPartitions.partitions.size());
+      log.info("Adding possible shard with %,d rows and %,d unique values: %s",currentDimPartition.rows,currentDimPartition.cardinality,shardSpec);
+      currentDimPartition.shardSpec=shardSpec;
+      currentDimPartitions.partitions.add(currentDimPartition);
+      currentDimPartition=new DimPartition();
+      currentDimPartitionStart=dvc.value;
+    }
+    currentDimPartition.cardinality++;
+    currentDimPartition.rows+=dvc.numRows;
+    if (!iterator.hasNext() || !currentDimPartitions.dim.equals(iterator.peek().dim)) {
+      if (currentDimPartition.rows > 0) {
+        final ShardSpec shardSpec;
+        if (currentDimPartitions.partitions.isEmpty()) {
+          shardSpec=new NoneShardSpec();
+        }
+ else {
+          if (currentDimPartition.rows < config.getTargetPartitionSize() * SHARD_COMBINE_THRESHOLD) {
+            final DimPartition previousDimPartition=currentDimPartitions.partitions.remove(currentDimPartitions.partitions.size() - 1);
+            final SingleDimensionShardSpec previousShardSpec=(SingleDimensionShardSpec)previousDimPartition.shardSpec;
+            shardSpec=new SingleDimensionShardSpec(currentDimPartitions.dim,previousShardSpec.getStart(),null,previousShardSpec.getPartitionNum());
+            log.info("Removing possible shard: %s",previousShardSpec);
+            currentDimPartition.rows+=previousDimPartition.rows;
+            currentDimPartition.cardinality+=previousDimPartition.cardinality;
+          }
+ else {
+            shardSpec=new SingleDimensionShardSpec(currentDimPartitions.dim,currentDimPartitionStart,null,currentDimPartitions.partitions.size());
+          }
+        }
+        log.info("Adding possible shard with %,d rows and %,d unique values: %s",currentDimPartition.rows,currentDimPartition.cardinality,shardSpec);
+        currentDimPartition.shardSpec=shardSpec;
+        currentDimPartitions.partitions.add(currentDimPartition);
+      }
+      log.info("Completed dimension[%s]: %,d possible shards with %,d unique values",currentDimPartitions.dim,currentDimPartitions.partitions.size(),currentDimPartitions.getCardinality());
+      dimPartitionss.put(currentDimPartitions.dim,currentDimPartitions);
+    }
+  }
+  if (dimPartitionss.isEmpty()) {
+    throw new ISE("No suitable partitioning dimension found!");
+  }
+  final int totalRows=dimPartitionss.values().iterator().next().getRows();
+  int maxCardinality=-1;
+  DimPartitions maxCardinalityPartitions=null;
+  for (  final DimPartitions dimPartitions : dimPartitionss.values()) {
+    if (dimPartitions.getRows() != totalRows) {
+      throw new ISE("WTF?! Dimension[%s] row count %,d != expected row count %,d",dimPartitions.dim,dimPartitions.getRows(),totalRows);
+    }
+    boolean oversized=false;
+    for (    final DimPartition partition : dimPartitions.partitions) {
+      if (partition.rows > config.getTargetPartitionSize() * SHARD_OVERSIZE_THRESHOLD) {
+        log.info("Dimension[%s] has an oversized shard: %s",dimPartitions.dim,partition.shardSpec);
+        oversized=true;
+      }
+    }
+    if (oversized) {
+      continue;
+    }
+    if (dimPartitions.getCardinality() > maxCardinality) {
+      maxCardinality=dimPartitions.getCardinality();
+      maxCardinalityPartitions=dimPartitions;
+    }
+  }
+  if (maxCardinalityPartitions == null) {
+    throw new ISE("No suitable partitioning dimension found!");
+  }
+  final DateTime bucket=new DateTime(new String(keyBytes.getGroupKey(),Charsets.UTF_8));
+  final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0)),config.isOverwriteFiles());
+  final List<ShardSpec> chosenShardSpecs=Lists.transform(maxCardinalityPartitions.partitions,new Function<DimPartition,ShardSpec>(){
+    @Override public ShardSpec apply(    DimPartition dimPartition){
+      return dimPartition.shardSpec;
+    }
+  }
+);
+  log.info("Chosen partitions:");
+  for (  ShardSpec shardSpec : chosenShardSpecs) {
+    log.info("  %s",shardSpec);
+  }
+  try {
+    HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<List<ShardSpec>>(){
+    }
+).writeValue(out,chosenShardSpecs);
+  }
+  finally {
+    Closeables.close(out,false);
+  }
+}

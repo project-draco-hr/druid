@@ -1,0 +1,25 @@
+{
+  Future<Object> future=client.asyncGet(computeKeyString(key));
+  try {
+    byte[] bytes=(byte[])future.get(timeout,TimeUnit.MILLISECONDS);
+    if (bytes != null) {
+      hitCount.incrementAndGet();
+    }
+ else {
+      missCount.incrementAndGet();
+    }
+    return bytes;
+  }
+ catch (  TimeoutException e) {
+    timeoutCount.incrementAndGet();
+    future.cancel(false);
+    return null;
+  }
+catch (  InterruptedException e) {
+    Thread.currentThread().interrupt();
+    throw Throwables.propagate(e);
+  }
+catch (  ExecutionException e) {
+    throw Throwables.propagate(e);
+  }
+}
