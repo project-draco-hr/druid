@@ -1,6 +1,9 @@
 {
   for (  DataSegment segment : segments) {
-    verifySegment(task,context,segment);
+    verifyDataSourceAndInterval(task,context,segment);
+    if (segment.getVersion().compareTo(context.getVersion()) >= 0) {
+      throw new IllegalStateException(String.format("Segment-to-nuke for task[%s] has invalid version: %s",task.getId(),segment.getIdentifier()));
+    }
     log.info("Deleting segment[%s] for task[%s]",segment.getIdentifier(),task.getId());
     mergerDBCoordinator.deleteSegment(segment);
   }

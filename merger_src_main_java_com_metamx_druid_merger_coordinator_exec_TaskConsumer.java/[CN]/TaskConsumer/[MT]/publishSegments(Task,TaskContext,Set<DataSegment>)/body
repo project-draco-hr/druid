@@ -1,6 +1,9 @@
 {
   for (  DataSegment segment : segments) {
-    verifySegment(task,context,segment);
+    verifyDataSourceAndInterval(task,context,segment);
+    if (!context.getVersion().equals(segment.getVersion())) {
+      throw new IllegalStateException(String.format("Segment for task[%s] has invalid version: %s",task.getId(),segment.getIdentifier()));
+    }
     log.info("Publishing segment[%s] for task[%s]",segment.getIdentifier(),task.getId());
     mergerDBCoordinator.announceHistoricalSegment(segment);
   }
