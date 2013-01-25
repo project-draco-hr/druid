@@ -19,7 +19,12 @@
               try {
                 workerCuratorCoordinator.unannounceTask(task.getId());
                 workerCuratorCoordinator.announceStatus(TaskStatus.running(task.getId()));
-                taskStatus=task.run(taskContext,toolbox);
+                taskStatus=task.run(taskContext,toolbox,new TaskCallback(){
+                  @Override public void notify(                  TaskStatus status){
+                    workerCuratorCoordinator.announceStatus(status);
+                  }
+                }
+);
               }
  catch (              Exception e) {
                 log.makeAlert(e,"Failed to run task").addData("task",task.getId()).emit();

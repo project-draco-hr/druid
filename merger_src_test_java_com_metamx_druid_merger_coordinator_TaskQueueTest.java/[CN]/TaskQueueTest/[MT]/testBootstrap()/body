@@ -7,7 +7,7 @@
   final VersionedTaskWrapper vt1=tq.poll();
   Assert.assertEquals("vt1 id","T1",vt1.getTask().getId());
   Assert.assertEquals("vt1 version","1234",vt1.getVersion());
-  tq.done(vt1.getTask(),TaskStatus.success("T1",ImmutableList.<DataSegment>of()));
+  tq.notify(vt1.getTask(),TaskStatus.success("T1",ImmutableSet.<DataSegment>of()));
   tq.stop();
   storage.setStatus("T2",TaskStatus.failure("T2"));
   tq.start();

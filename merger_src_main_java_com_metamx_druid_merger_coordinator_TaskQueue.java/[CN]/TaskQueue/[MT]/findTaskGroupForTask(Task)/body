@@ -1,0 +1,23 @@
+{
+  giant.lock();
+  try {
+    final List<TaskGroup> maybeTaskGroup=Lists.newArrayList(FunctionalIterable.create(findTaskGroupsForInterval(task.getDataSource(),task.getInterval())).filter(new Predicate<TaskGroup>(){
+      @Override public boolean apply(      TaskGroup taskGroup){
+        return taskGroup.contains(task.getId());
+      }
+    }
+));
+    if (maybeTaskGroup.size() == 1) {
+      return Optional.of(maybeTaskGroup.get(0));
+    }
+ else     if (maybeTaskGroup.size() == 0) {
+      return Optional.absent();
+    }
+ else {
+      throw new IllegalStateException(String.format("WTF?! Task %s is in multiple task groups!",task.getId()));
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

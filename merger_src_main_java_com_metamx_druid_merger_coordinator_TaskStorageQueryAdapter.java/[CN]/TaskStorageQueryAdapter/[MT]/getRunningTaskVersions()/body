@@ -1,0 +1,8 @@
+{
+  return Lists.transform(storage.getRunningTasks(),new Function<Task,VersionedTaskWrapper>(){
+    @Override public VersionedTaskWrapper apply(    Task task){
+      return new VersionedTaskWrapper(task,storage.getVersion(task.getId()).orNull());
+    }
+  }
+);
+}

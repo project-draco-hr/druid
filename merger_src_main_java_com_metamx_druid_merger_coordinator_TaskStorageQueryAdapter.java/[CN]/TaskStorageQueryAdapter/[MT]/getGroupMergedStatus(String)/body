@@ -1,0 +1,38 @@
+{
+  final Map<String,Optional<TaskStatus>> statuses=getGroupRecursiveStatuses(taskid);
+  int nSuccesses=0;
+  int nFailures=0;
+  int nTotal=0;
+  final Set<DataSegment> segments=Sets.newHashSet();
+  final Set<DataSegment> segmentsNuked=Sets.newHashSet();
+  final List<Task> nextTasks=Lists.newArrayList();
+  for (  final Optional<TaskStatus> statusOption : statuses.values()) {
+    nTotal++;
+    if (statusOption.isPresent()) {
+      final TaskStatus status=statusOption.get();
+      segments.addAll(status.getSegments());
+      segmentsNuked.addAll(status.getSegmentsNuked());
+      nextTasks.addAll(status.getNextTasks());
+      if (status.isSuccess()) {
+        nSuccesses++;
+      }
+ else       if (status.isFailure()) {
+        nFailures++;
+      }
+    }
+  }
+  final Optional<TaskStatus> status;
+  if (nTotal == 0) {
+    status=Optional.absent();
+  }
+ else   if (nSuccesses == nTotal) {
+    status=Optional.of(TaskStatus.success(taskid).withSegments(segments).withSegmentsNuked(segmentsNuked).withNextTasks(nextTasks));
+  }
+ else   if (nFailures > 0) {
+    status=Optional.of(TaskStatus.failure(taskid));
+  }
+ else {
+    status=Optional.of(TaskStatus.running(taskid));
+  }
+  return status;
+}

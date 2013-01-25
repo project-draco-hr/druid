@@ -18,7 +18,7 @@
  catch (      Exception e) {
         log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType().toString()).addData("dataSource",task.getDataSource()).addData("interval",task.getInterval()).emit();
         if (!shutdown) {
-          queue.done(task,TaskStatus.failure(task.getId()));
+          queue.notify(task,TaskStatus.failure(task.getId()));
         }
       }
     }

@@ -3,7 +3,7 @@
   try {
     final String dataSource=task.getDataSource();
     final Interval interval=task.getInterval();
-    final List<TaskGroup> foundLocks=findLocks(dataSource,interval);
+    final List<TaskGroup> foundLocks=findTaskGroupsForInterval(dataSource,interval);
     final TaskGroup taskGroupToUse;
     if (foundLocks.size() > 1) {
       return Optional.absent();
@@ -32,7 +32,7 @@
       running.get(dataSource).put(interval,taskGroupToUse);
       log.info("Created new TaskGroup[%s]",taskGroupToUse);
     }
-    if (taskGroupToUse.getTaskSet().add(task)) {
+    if (taskGroupToUse.add(task)) {
       log.info("Added task[%s] to TaskGroup[%s]",task.getId(),taskGroupToUse.getGroupId());
     }
  else {

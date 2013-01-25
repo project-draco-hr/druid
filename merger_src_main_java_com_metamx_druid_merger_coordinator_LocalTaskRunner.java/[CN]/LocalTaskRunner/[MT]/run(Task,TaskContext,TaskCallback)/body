@@ -5,7 +5,7 @@
       final File taskDir=toolbox.getConfig().getTaskDir(task);
       TaskStatus status;
       try {
-        status=task.run(context,toolbox);
+        status=task.run(context,toolbox,callback);
       }
  catch (      InterruptedException e) {
         log.error(e,"Interrupted while running task[%s]",task);
@@ -31,9 +31,9 @@ catch (      Throwable t) {
       try {
         callback.notify(status.withDuration(System.currentTimeMillis() - startTime));
       }
- catch (      Throwable t) {
-        log.error(t,"Uncaught Throwable during callback for task[%s]",task);
-        throw Throwables.propagate(t);
+ catch (      Exception e) {
+        log.error(e,"Uncaught Exception during callback for task[%s]",task);
+        throw Throwables.propagate(e);
       }
     }
   }

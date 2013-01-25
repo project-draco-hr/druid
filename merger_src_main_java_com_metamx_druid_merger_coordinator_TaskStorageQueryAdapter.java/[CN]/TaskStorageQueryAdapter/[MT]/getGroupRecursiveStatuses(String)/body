@@ -1,0 +1,14 @@
+{
+  final Optional<Task> taskOptional=storage.getTask(taskid);
+  final Optional<TaskStatus> statusOptional=storage.getStatus(taskid);
+  final ImmutableMap.Builder<String,Optional<TaskStatus>> resultBuilder=ImmutableMap.builder();
+  resultBuilder.put(taskid,statusOptional);
+  if (taskOptional.isPresent() && statusOptional.isPresent()) {
+    for (    final Task nextTask : statusOptional.get().getNextTasks()) {
+      if (nextTask.getGroupId().equals(taskOptional.get().getGroupId())) {
+        resultBuilder.putAll(getGroupRecursiveStatuses(nextTask.getId()));
+      }
+    }
+  }
+  return resultBuilder.build();
+}

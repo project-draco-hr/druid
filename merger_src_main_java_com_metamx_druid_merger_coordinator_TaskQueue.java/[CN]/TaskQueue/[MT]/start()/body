@@ -4,22 +4,18 @@
     Preconditions.checkState(!active,"queue was already started!");
     Preconditions.checkState(queue.isEmpty(),"queue must be empty!");
     Preconditions.checkState(running.isEmpty(),"running list must be empty!");
-    final List<Pair<Task,String>> runningTasks=Lists.transform(taskStorage.getRunningTasks(),new Function<Task,Pair<Task,String>>(){
-      @Override public Pair<Task,String> apply(      Task task){
-        return Pair.of(task,taskStorage.getVersion(task.getId()).orNull());
-      }
-    }
-);
-    final Ordering<Pair<Task,String>> byVersionOrdering=new Ordering<Pair<Task,String>>(){
+    final TaskStorageQueryAdapter taskStorageQueryAdapter=new TaskStorageQueryAdapter(taskStorage);
+    final List<VersionedTaskWrapper> runningTasks=taskStorageQueryAdapter.getRunningTaskVersions();
+    final Ordering<VersionedTaskWrapper> byVersionOrdering=new Ordering<VersionedTaskWrapper>(){
       final private Ordering<String> baseOrdering=Ordering.natural().nullsLast();
-      @Override public int compare(      Pair<Task,String> left,      Pair<Task,String> right){
-        return baseOrdering.compare(left.rhs,right.rhs);
+      @Override public int compare(      VersionedTaskWrapper left,      VersionedTaskWrapper right){
+        return baseOrdering.compare(left.getVersion(),right.getVersion());
       }
     }
 ;
-    for (    final Pair<Task,String> taskAndVersion : byVersionOrdering.sortedCopy(runningTasks)) {
-      final Task task=taskAndVersion.lhs;
-      final String preferredVersion=taskAndVersion.rhs;
+    for (    final VersionedTaskWrapper taskAndVersion : byVersionOrdering.sortedCopy(runningTasks)) {
+      final Task task=taskAndVersion.getTask();
+      final String preferredVersion=taskAndVersion.getVersion();
       queue.add(task);
       if (preferredVersion != null) {
         final Optional<String> version=tryLock(task,Optional.of(preferredVersion));
