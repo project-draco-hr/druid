@@ -1,5 +1,5 @@
 {
-  cf.create().creatingParentsIfNeeded().forPath(String.format("%s/worker1/task1",statusPath),jsonMapper.writeValueAsBytes(TaskStatus.success("task1",ImmutableSet.<DataSegment>of())));
+  cf.create().creatingParentsIfNeeded().forPath(String.format("%s/worker1/task1",statusPath),jsonMapper.writeValueAsBytes(TaskStatus.success("task1")));
   while (remoteTaskRunner.getNumWorkers() == 0) {
     Thread.sleep(500);
   }

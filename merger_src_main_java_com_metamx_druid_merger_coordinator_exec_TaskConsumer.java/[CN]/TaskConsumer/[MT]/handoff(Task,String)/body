@@ -27,19 +27,10 @@
           @Override public void run(){
             try {
               if (statusFromRunner.getSegments().size() > 0) {
-                for (                DataSegment segment : statusFromRunner.getSegments()) {
-                  if (!task.getDataSource().equals(segment.getDataSource())) {
-                    throw new IllegalStateException(String.format("Segment for task[%s] has invalid dataSource: %s",task.getId(),segment.getIdentifier()));
-                  }
-                  if (!task.getInterval().contains(segment.getInterval())) {
-                    throw new IllegalStateException(String.format("Segment for task[%s] has invalid interval: %s",task.getId(),segment.getIdentifier()));
-                  }
-                  if (!context.getVersion().equals(segment.getVersion())) {
-                    throw new IllegalStateException(String.format("Segment for task[%s] has invalid version: %s",task.getId(),segment.getIdentifier()));
-                  }
-                  log.info("Publishing segment[%s] for task[%s]",segment.getIdentifier(),task.getId());
-                  mergerDBCoordinator.announceHistoricalSegment(segment);
-                }
+                publishSegments(task,context,statusFromRunner.getSegments());
+              }
+              if (statusFromRunner.getSegmentsNuked().size() > 0) {
+                deleteSegments(task,context,statusFromRunner.getSegmentsNuked());
               }
             }
  catch (            Exception e) {
