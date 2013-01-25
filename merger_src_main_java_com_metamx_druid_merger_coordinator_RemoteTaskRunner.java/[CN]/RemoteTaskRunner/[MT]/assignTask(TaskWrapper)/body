@@ -4,13 +4,17 @@
     final Worker worker=workerWrapper.getWorker();
     try {
       log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskWrapper.getTask().getId());
-      TaskStatus taskStatus=jsonMapper.readValue(workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId())).getData(),TaskStatus.class);
-      if (taskStatus.isComplete()) {
+      final ChildData workerData=workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId()));
+      if (workerData != null && workerData.getData() != null) {
+        final TaskStatus taskStatus=jsonMapper.readValue(workerData.getData(),TaskStatus.class);
         TaskCallback callback=taskWrapper.getCallback();
         if (callback != null) {
           callback.notify(taskStatus);
         }
         new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()).run();
+      }
+ else {
+        log.warn("Worker data was null for worker: %s",worker.getHost());
       }
     }
  catch (    Exception e) {
