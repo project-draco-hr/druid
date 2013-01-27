@@ -1,4 +1,4 @@
 {
-  Set<DataSegment> segmentsToKill=ImmutableSet.copyOf(toolbox.getSegmentKiller().kill(getDataSource(),getInterval()));
-  return TaskStatus.success(getId()).withSegmentsNuked(segmentsToKill);
+  toolbox.getSegmentKiller().kill(context.getUnusedSegments());
+  return TaskStatus.success(getId()).withSegmentsNuked(context.getUnusedSegments());
 }

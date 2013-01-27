@@ -1,5 +1,5 @@
 {
-  final TaskContext context=new TaskContext(version,ImmutableSet.copyOf(mergerDBCoordinator.getSegmentsForInterval(task.getDataSource(),task.getInterval())));
+  final TaskContext context=new TaskContext(version,ImmutableSet.copyOf(mergerDBCoordinator.getUsedSegmentsForInterval(task.getDataSource(),task.getInterval())),ImmutableSet.copyOf(mergerDBCoordinator.getUnusedSegmentsForInterval(task.getDataSource(),task.getInterval())));
   final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType().toString()).setUser5(task.getInterval().toString());
   TaskStatus preflightStatus;
   try {

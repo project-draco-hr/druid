@@ -33,11 +33,11 @@ synchronized (statusLock) {
                 if (callback != null) {
                   callback.notify(taskStatus);
                 }
-              }
-              if (taskStatus.isComplete()) {
-                workerWrapper.setLastCompletedTaskTime(new DateTime());
-                tasks.remove(taskId);
-                cf.delete().guaranteed().inBackground().forPath(event.getData().getPath());
+                if (taskStatus.isComplete()) {
+                  workerWrapper.setLastCompletedTaskTime(new DateTime());
+                  tasks.remove(taskId);
+                  cf.delete().guaranteed().inBackground().forPath(event.getData().getPath());
+                }
               }
             }
           }
