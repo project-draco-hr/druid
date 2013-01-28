@@ -24,7 +24,14 @@
         }
       }
 );
-      return Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs()));
+      return Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
+        private final QueryGranularity granularity=query.getGranularity();
+        @Override public Row apply(        Row input){
+          final MapBasedRow row=(MapBasedRow)input;
+          return new MapBasedRow(granularity.toDateTime(row.getTimestampFromEpoch()),row.getEvent());
+        }
+      }
+);
     }
   }
 ;

@@ -25,12 +25,13 @@
     }
     @Override public Function<Object,Result<TimeseriesResultValue>> pullFromCache(){
       return new Function<Object,Result<TimeseriesResultValue>>(){
+        private final QueryGranularity granularity=query.getGranularity();
         @Override public Result<TimeseriesResultValue> apply(        @Nullable Object input){
           List<Object> results=(List<Object>)input;
           Map<String,Object> retVal=Maps.newLinkedHashMap();
           Iterator<AggregatorFactory> aggsIter=aggs.iterator();
           Iterator<Object> resultIter=results.iterator();
-          DateTime timestamp=new DateTime(resultIter.next());
+          DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
           while (aggsIter.hasNext() && resultIter.hasNext()) {
             final AggregatorFactory factory=aggsIter.next();
             retVal.put(factory.getName(),factory.deserialize(resultIter.next()));
