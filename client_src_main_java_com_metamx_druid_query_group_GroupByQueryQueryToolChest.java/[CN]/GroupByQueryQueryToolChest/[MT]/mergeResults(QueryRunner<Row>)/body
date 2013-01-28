@@ -15,7 +15,8 @@
         }
       }
 );
-      final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(condensed.get(0).getStartMillis(),query.getGranularity(),aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
+      final QueryGranularity gran=query.getGranularity();
+      final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(gran.truncate(condensed.get(0).getStartMillis()),gran,aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
         @Override public IncrementalIndex accumulate(        IncrementalIndex accumulated,        Row in){
           if (accumulated.add(Rows.toInputRow(in,dimensions)) > maxRows) {
             throw new ISE("Computation exceeds maxRows limit[%s]",maxRows);
