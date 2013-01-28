@@ -2,6 +2,5 @@
   ServerHolder fromServerHolder=sampleServer(serverHolders,numSegments);
   List<DataSegment> segments=Lists.newArrayList(fromServerHolder.getServer().getSegments().values());
   DataSegment proposalSegment=segments.get(rand.nextInt(segments.size()));
-  ServerHolder toServer=findNewSegmentHome(proposalSegment,serverHolders);
-  return new BalancerSegmentHolder(fromServerHolder.getServer(),toServer.getServer(),proposalSegment);
+  return new BalancerSegmentHolder(fromServerHolder.getServer(),proposalSegment);
 }

@@ -25,10 +25,11 @@
     final Set<DataSegment> segmentsBeingMoved=new HashSet<DataSegment>();
     int iter=0;
     while (iter < maxSegmentsToMove) {
-      BalancerSegmentHolder holder=analyzer.findNewSegmentHome(serverHolderList,numSegments);
-      if (!segmentsBeingMoved.contains(holder.getSegment())) {
-        moveSegment(holder,params);
-        segmentsBeingMoved.add(holder.getSegment());
+      BalancerSegmentHolder segmentToMove=analyzer.pickSegmentToMove(serverHolderList,numSegments);
+      DruidServer toServer=analyzer.findNewSegmentHome(segmentToMove.getSegment(),serverHolderList).getServer();
+      if (!segmentsBeingMoved.contains(segmentToMove.getSegment())) {
+        moveSegment(segmentToMove,toServer,params);
+        segmentsBeingMoved.add(segmentToMove.getSegment());
       }
       iter++;
     }

@@ -1,14 +1,13 @@
 {
-  final DruidServer toServer=segment.getToServer();
-  final String toServerName=segment.getToServer().getName();
+  final String toServerName=toServer.getName();
   final LoadQueuePeon toPeon=params.getLoadManagementPeons().get(toServerName);
-  final String fromServer=segment.getFromServer().getName();
+  final String fromServerName=segment.getFromServer().getName();
   final DataSegment segmentToMove=segment.getSegment();
   final String segmentName=segmentToMove.getIdentifier();
   if (!toPeon.getSegmentsToLoad().contains(segmentToMove) && (toServer.getSegment(segmentName) == null) && new ServerHolder(toServer,toPeon).getAvailableSize() > segmentToMove.getSize()) {
-    log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServer,toServerName);
+    log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServerName,toServerName);
     try {
-      master.moveSegment(fromServer,toServerName,segmentToMove.getIdentifier(),new LoadPeonCallback(){
+      master.moveSegment(fromServerName,toServerName,segmentToMove.getIdentifier(),new LoadPeonCallback(){
         @Override protected void execute(){
           Map<String,BalancerSegmentHolder> movingSegments=currentlyMovingSegments.get(toServer.getTier());
           if (movingSegments != null) {
