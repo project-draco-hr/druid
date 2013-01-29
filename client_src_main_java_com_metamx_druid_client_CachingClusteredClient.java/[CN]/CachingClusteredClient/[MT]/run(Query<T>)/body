@@ -1,6 +1,6 @@
 {
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
-  final CacheStrategy<T,Query<T>> strategy=toolChest.getCacheStrategy(query);
+  final CacheStrategy<T,Object,Query<T>> strategy=toolChest.getCacheStrategy(query);
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
@@ -87,6 +87,7 @@
         return;
       }
       final Function<Object,T> pullFromCacheFunction=strategy.pullFromCache();
+      final TypeReference<Object> cacheObjectClazz=strategy.getCacheObjectClazz();
       for (      Pair<DateTime,byte[]> cachedResultPair : cachedResults) {
         final byte[] cachedResult=cachedResultPair.rhs;
         Sequence<Object> cachedSequence=new BaseSequence<Object,Iterator<Object>>(new BaseSequence.IteratorMaker<Object,Iterator<Object>>(){
@@ -95,7 +96,7 @@
               if (cachedResult.length == 0) {
                 return Iterators.emptyIterator();
               }
-              return objectMapper.readValues(objectMapper.getJsonFactory().createJsonParser(cachedResult),Object.class);
+              return objectMapper.readValues(objectMapper.getJsonFactory().createJsonParser(cachedResult),cacheObjectClazz);
             }
  catch (            IOException e) {
               throw Throwables.propagate(e);

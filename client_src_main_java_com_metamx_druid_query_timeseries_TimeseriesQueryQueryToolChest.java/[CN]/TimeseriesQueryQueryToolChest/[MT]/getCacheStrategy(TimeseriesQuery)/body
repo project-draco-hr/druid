@@ -1,5 +1,5 @@
 {
-  return new CacheStrategy<Result<TimeseriesResultValue>,TimeseriesQuery>(){
+  return new CacheStrategy<Result<TimeseriesResultValue>,Object,TimeseriesQuery>(){
     private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
     private final List<PostAggregator> postAggs=query.getPostAggregatorSpecs();
     @Override public byte[] computeCacheKey(    TimeseriesQuery query){
@@ -8,6 +8,9 @@
       final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
       final byte[] granularityBytes=query.getGranularity().cacheKey();
       return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
+    }
+    @Override public TypeReference<Object> getCacheObjectClazz(){
+      return OBJECT_TYPE_REFERENCE;
     }
     @Override public Function<Result<TimeseriesResultValue>,Object> prepareForCache(){
       return new Function<Result<TimeseriesResultValue>,Object>(){
