@@ -1,5 +1,11 @@
 {
   return new BitmapIndex(){
+    @Override public int getCardinality(){
+      return dictionary.size();
+    }
+    @Override public String getValue(    int index){
+      return dictionary.get(index);
+    }
     @Override public ImmutableConciseSet getConciseSet(    String value){
       final int index=dictionary.indexOf(value);
       if (index < 0) {

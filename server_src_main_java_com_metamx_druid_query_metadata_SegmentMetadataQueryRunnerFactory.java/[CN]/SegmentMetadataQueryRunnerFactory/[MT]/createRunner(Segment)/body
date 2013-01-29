@@ -1,10 +1,26 @@
 {
-  return new QueryRunner<Result<SegmentMetadataResultValue>>(){
-    @Override public Sequence<Result<SegmentMetadataResultValue>> run(    Query<Result<SegmentMetadataResultValue>> query){
-      if (!(query instanceof SegmentMetadataQuery)) {
-        throw new ISE("Got a [%s] which isn't a %s",query.getClass(),SegmentMetadataQuery.class);
+  return new QueryRunner<SegmentAnalysis>(){
+    @Override public Sequence<SegmentAnalysis> run(    Query<SegmentAnalysis> inQ){
+      SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
+      final QueryableIndex index=segment.asQueryableIndex();
+      if (index == null) {
+        return Sequences.empty();
       }
-      return new SegmentMetadataQueryEngine().process((SegmentMetadataQuery)query,adapter.asStorageAdapter());
+      final Map<String,ColumnAnalysis> analyzedColumns=analyzer.analyze(index);
+      long totalSize=analyzedColumns.size() * index.getNumRows();
+      Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
+      ColumnIncluderator includerator=query.getToInclude();
+      for (      Map.Entry<String,ColumnAnalysis> entry : analyzedColumns.entrySet()) {
+        final String columnName=entry.getKey();
+        final ColumnAnalysis column=entry.getValue();
+        if (!column.isError()) {
+          totalSize+=column.getSize();
+        }
+        if (includerator.include(columnName)) {
+          columns.put(columnName,column);
+        }
+      }
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),Arrays.asList(segment.getDataInterval()),columns,totalSize)));
     }
   }
 ;

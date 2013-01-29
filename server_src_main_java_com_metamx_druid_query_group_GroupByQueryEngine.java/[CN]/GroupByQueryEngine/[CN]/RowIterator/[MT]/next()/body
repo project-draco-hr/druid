@@ -28,7 +28,7 @@
     throw new ISE("Not enough memory to process even a single item.  Required [%,d] memory, but only have[%,d]",positionMaintainer.getIncrement(),metricsBuffer.remaining());
   }
   delegate=FunctionalIterator.create(rowUpdater.getPositions().entrySet().iterator()).transform(new Function<Map.Entry<ByteBuffer,Integer>,Row>(){
-    private final long timestamp=cursor.getTime().getMillis();
+    private final DateTime timestamp=cursor.getTime();
     private final int[] increments=positionMaintainer.getIncrements();
     @Override public Row apply(    @Nullable Map.Entry<ByteBuffer,Integer> input){
       Map<String,Object> theEvent=Maps.newLinkedHashMap();
