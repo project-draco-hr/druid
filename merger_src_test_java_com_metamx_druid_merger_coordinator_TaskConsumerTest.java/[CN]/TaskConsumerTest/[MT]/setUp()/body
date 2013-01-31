@@ -1,0 +1,10 @@
+{
+  EmittingLogger.registerEmitter(EasyMock.createMock(ServiceEmitter.class));
+  ts=new LocalTaskStorage();
+  tq=new TaskQueue(ts);
+  tr=new LocalTaskRunner(new TaskToolbox(null,null,null,null,null,null),Executors.newSingleThreadExecutor());
+  mdc=newMockMDC();
+  tc=new TaskConsumer(tq,tr,mdc,newMockEmitter());
+  tq.start();
+  tc.start();
+}

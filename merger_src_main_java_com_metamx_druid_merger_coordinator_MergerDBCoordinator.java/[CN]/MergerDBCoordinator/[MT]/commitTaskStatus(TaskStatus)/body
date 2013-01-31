@@ -1,0 +1,21 @@
+{
+  try {
+    dbi.inTransaction(new TransactionCallback<Void>(){
+      @Override public Void inTransaction(      Handle handle,      TransactionStatus transactionStatus) throws Exception {
+        for (        final DataSegment segment : taskStatus.getSegments()) {
+          log.info("Publishing segment[%s] for task[%s]",segment.getIdentifier(),taskStatus.getId());
+          announceHistoricalSegment(handle,segment);
+        }
+        for (        final DataSegment segment : taskStatus.getSegmentsNuked()) {
+          log.info("Deleting segment[%s] for task[%s]",segment.getIdentifier(),taskStatus.getId());
+          deleteSegment(handle,segment);
+        }
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    throw new RuntimeException(String.format("Exception commit task to DB: %s",taskStatus.getId()),e);
+  }
+}

@@ -4,7 +4,7 @@
       return Type.TEST;
     }
     @Override public TaskStatus run(    TaskContext context,    TaskToolbox toolbox,    TaskCallback callback) throws Exception {
-      return TaskStatus.success(getId()).withSegments(ImmutableSet.of(DataSegment.builder().dataSource("ds").interval(new Interval("2012-01-01/P1D")).version(context.getVersion()).build()));
+      return TaskStatus.success(getId()).withSegments(ImmutableSet.of(DataSegment.builder().dataSource("ds").interval(new Interval("2012-01-01/P1D")).version(context.getVersion() + "1!!!1!!").build()));
     }
   }
 );
@@ -12,9 +12,9 @@
     Thread.sleep(100);
   }
   final TaskStatus status=ts.getStatus("id1").get();
-  Assert.assertEquals("statusCode",TaskStatus.Status.SUCCESS,status.getStatusCode());
+  Assert.assertEquals("statusCode",TaskStatus.Status.FAILED,status.getStatusCode());
   Assert.assertEquals("nextTasks.size",0,status.getNextTasks().size());
-  Assert.assertEquals("segments.size",1,status.getSegments().size());
+  Assert.assertEquals("segments.size",0,status.getSegments().size());
   Assert.assertEquals("segmentsNuked.size",0,status.getSegmentsNuked().size());
   Assert.assertEquals("segments published",status.getSegments(),mdc.getPublished());
   Assert.assertEquals("segments nuked",status.getSegmentsNuked(),mdc.getNuked());
