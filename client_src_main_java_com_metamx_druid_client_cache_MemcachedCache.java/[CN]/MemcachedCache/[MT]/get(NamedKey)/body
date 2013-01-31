@@ -1,5 +1,5 @@
 {
-  Future<Object> future=client.asyncGet(computeKeyString(memcachedPrefix,key));
+  Future<Object> future=client.asyncGet(computeKeyHash(memcachedPrefix,key));
   try {
     byte[] bytes=(byte[])future.get(timeout,TimeUnit.MILLISECONDS);
     if (bytes != null) {
@@ -8,7 +8,7 @@
  else {
       missCount.incrementAndGet();
     }
-    return bytes;
+    return bytes == null ? null : deserializeValue(key,bytes);
   }
  catch (  TimeoutException e) {
     timeoutCount.incrementAndGet();
