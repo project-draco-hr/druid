@@ -15,22 +15,7 @@
   }
 ,cf,worker1);
   workerCuratorCoordinator.start();
-  taskMonitor=new TaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolbox(new IndexerCoordinatorConfig(){
-    @Override public String getServerName(){
-      return "worker1";
-    }
-    @Override public String getLeaderLatchPath(){
-      return null;
-    }
-    @Override public int getNumLocalThreads(){
-      return 1;
-    }
-    @Override public String getRunnerImpl(){
-      return null;
-    }
-    @Override public String getStorageImpl(){
-      return null;
-    }
+  taskMonitor=new TaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolbox(new TaskConfig(){
     @Override public File getBaseTaskDir(){
       try {
         return File.createTempFile("billy","yay");
@@ -39,17 +24,8 @@
         throw Throwables.propagate(e);
       }
     }
-    @Override public boolean isWhitelistEnabled(){
-      return false;
-    }
-    @Override public String getWhitelistDatasourcesString(){
-      return null;
-    }
     @Override public long getRowFlushBoundary(){
       return 0;
-    }
-    @Override public String getStrategyImpl(){
-      return null;
     }
   }
 ,null,null,null,null,jsonMapper),Executors.newSingleThreadExecutor());
