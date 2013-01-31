@@ -6,7 +6,7 @@
   if (taskOptional.isPresent() && statusOptional.isPresent()) {
     for (    final Task nextTask : statusOptional.get().getNextTasks()) {
       if (nextTask.getGroupId().equals(taskOptional.get().getGroupId())) {
-        resultBuilder.putAll(getGroupRecursiveStatuses(nextTask.getId()));
+        resultBuilder.putAll(getSameGroupChildStatuses(nextTask.getId()));
       }
     }
   }
