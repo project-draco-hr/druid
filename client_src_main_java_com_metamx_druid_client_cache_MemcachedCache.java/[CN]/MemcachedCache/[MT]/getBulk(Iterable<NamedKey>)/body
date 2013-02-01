@@ -1,7 +1,7 @@
 {
   Map<String,NamedKey> keyLookup=Maps.uniqueIndex(keys,new Function<NamedKey,String>(){
     @Override public String apply(    @Nullable NamedKey input){
-      return computeKeyString(input);
+      return computeKeyHash(memcachedPrefix,input);
     }
   }
 );
@@ -16,7 +16,9 @@
     hitCount.addAndGet(some.size());
     Map<NamedKey,byte[]> results=Maps.newHashMap();
     for (    Map.Entry<String,Object> entry : some.entrySet()) {
-      results.put(keyLookup.get(entry.getKey()),(byte[])entry.getValue());
+      final NamedKey key=keyLookup.get(entry.getKey());
+      final byte[] value=(byte[])entry.getValue();
+      results.put(key,value == null ? null : deserializeValue(key,value));
     }
     return results;
   }

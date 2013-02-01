@@ -2,7 +2,7 @@
   try {
     SerializingTranscoder transcoder=new SerializingTranscoder(config.getMaxObjectSize());
     transcoder.setCompressionThreshold(Integer.MAX_VALUE);
-    return new MemcachedCache(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(config.getHosts())),config.getTimeout(),config.getExpiration());
+    return new MemcachedCache(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(config.getHosts())),config.getMemcachedPrefix(),config.getTimeout(),config.getExpiration());
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
