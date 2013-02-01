@@ -1,8 +1,0 @@
-{
-  SerializingTranscoder transcoder=new SerializingTranscoder(50 * 1024 * 1024);
-  transcoder.setCompressionThreshold(Integer.MAX_VALUE);
-  client=new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(hosts));
-  cache=new MemcachedCache(client,30000,3600);
-  randBytes=new byte[objectSize * 1024];
-  new Random(0).nextBytes(randBytes);
-}
