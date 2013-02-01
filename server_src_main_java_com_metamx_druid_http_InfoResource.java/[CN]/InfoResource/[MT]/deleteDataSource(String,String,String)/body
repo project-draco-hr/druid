@@ -1,0 +1,11 @@
+{
+  if (kill != null && Boolean.valueOf(kill)) {
+    master.killSegments(new ClientKillQuery(dataSourceName,new Interval(interval)));
+  }
+ else {
+    if (!databaseSegmentManager.removeDatasource(dataSourceName)) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+  }
+  return Response.status(Response.Status.OK).build();
+}
