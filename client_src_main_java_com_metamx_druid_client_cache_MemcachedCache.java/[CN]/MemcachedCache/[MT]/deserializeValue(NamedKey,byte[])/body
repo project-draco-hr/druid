@@ -1,0 +1,10 @@
+{
+  ByteBuffer buf=ByteBuffer.wrap(bytes);
+  final int keyLength=buf.getInt();
+  byte[] keyBytes=new byte[keyLength];
+  buf.get(keyBytes);
+  byte[] value=new byte[buf.remaining()];
+  buf.get(value);
+  Preconditions.checkState(Arrays.equals(keyBytes,key.toByteArray()),"Keys do not match, possible hash collision?");
+  return value;
+}

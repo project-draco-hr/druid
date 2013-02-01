@@ -2,9 +2,9 @@
   giant.lock();
   try {
     Preconditions.checkNotNull(task,"task");
-    Preconditions.checkNotNull(status,"status");
+    Preconditions.checkNotNull(originalStatus,"status");
     Preconditions.checkState(active,"Queue is not active!");
-    Preconditions.checkArgument(task.getId().equals(status.getId()),"Mismatching task ids[%s/%s]",task.getId(),status.getId());
+    Preconditions.checkArgument(task.getId().equals(originalStatus.getId()),"Mismatching task ids[%s/%s]",task.getId(),originalStatus.getId());
     final TaskGroup taskGroup;
     final Optional<TaskGroup> maybeTaskGroup=findTaskGroupForTask(task);
     if (!maybeTaskGroup.isPresent()) {
@@ -14,36 +14,43 @@
  else {
       taskGroup=maybeTaskGroup.get();
     }
-    taskStorage.setStatus(task.getId(),status);
-    if (taskGroup.getCommitStyle().shouldCommit(task,status)) {
-      log.info("Committing %s status for task: %s",status.getStatusCode(),task.getId());
+    TaskStatus statusToSave=originalStatus;
+    if (taskGroup.getCommitStyle().shouldCommit(task,statusToSave)) {
+      log.info("Committing %s status for task: %s",statusToSave.getStatusCode(),task.getId());
       try {
         if (commitRunnable != null) {
           log.info("Running commitRunnable for task: %s",task.getId());
           commitRunnable.run();
         }
-        for (        final Task nextTask : status.getNextTasks()) {
-          if (!seenNextTasks.containsEntry(task.getId(),nextTask.getId())) {
+        for (        final Task nextTask : statusToSave.getNextTasks()) {
+          try {
             add(nextTask);
-            tryLock(nextTask);
-            seenNextTasks.put(task.getId(),nextTask.getId());
           }
- else {
+ catch (          TaskExistsException e) {
             log.info("Already added followup task %s to original task: %s",nextTask.getId(),task.getId());
           }
         }
       }
  catch (      Exception e) {
-        log.makeAlert(e,"Failed to commit task").addData("task",task.getId()).addData("statusCode",status.getStatusCode()).emit();
-        taskStorage.setStatus(task.getId(),TaskStatus.failure(task.getId()).withDuration(status.getDuration()));
+        log.makeAlert(e,"Failed to commit task").addData("task",task.getId()).addData("statusCode",statusToSave.getStatusCode()).emit();
+        statusToSave=TaskStatus.failure(task.getId()).withDuration(statusToSave.getDuration());
       }
     }
  else {
-      log.info("Not committing %s status for task: %s",status.getStatusCode(),task);
+      log.info("Not committing %s status for task: %s",statusToSave.getStatusCode(),task);
     }
-    if (status.isComplete()) {
+    boolean didSetStatus=false;
+    try {
+      taskStorage.setStatus(task.getId(),statusToSave);
+      didSetStatus=true;
+    }
+ catch (    Exception e) {
+      log.warn(e,"Status could not be persisted! Reinserting task: %s",task.getId());
+      log.makeAlert(e,"Failed to persist task status").addData("task",task.getId()).addData("statusCode",statusToSave.getStatusCode()).emit();
+      queue.add(task);
+    }
+    if (didSetStatus && statusToSave.isComplete()) {
       unlock(task);
-      seenNextTasks.removeAll(task.getId());
       log.info("Task done: %s",task);
     }
   }
