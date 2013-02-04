@@ -26,6 +26,7 @@
     final String outputBucket=config.getBucket();
     toPush.setBucketName(outputBucket);
     toPush.setKey(outputKey + "/index.zip");
+    toPush.setAcl(GSAccessControlList.REST_CANNED_BUCKET_OWNER_FULL_CONTROL);
     log.info("Pushing %s.",toPush);
     s3Client.putObject(outputBucket,toPush);
     DataSegment outputSegment=segment.withSize(indexSize).withLoadSpec(ImmutableMap.<String,Object>of("type","s3_zip","bucket",outputBucket,"key",toPush.getKey()));
@@ -34,6 +35,7 @@
     S3Object descriptorObject=new S3Object(descriptorFile);
     descriptorObject.setBucketName(outputBucket);
     descriptorObject.setKey(outputKey + "/descriptor.json");
+    descriptorObject.setAcl(GSAccessControlList.REST_CANNED_BUCKET_OWNER_FULL_CONTROL);
     log.info("Pushing %s",descriptorObject);
     s3Client.putObject(outputBucket,descriptorObject);
     log.info("Deleting Index File[%s]",indexFilesDir);
