@@ -18,7 +18,6 @@
         }
       }
       final DruidCluster cluster=new DruidCluster();
-      final Map<String,ConcurrentSkipListSet<String>> currentlyReplicatingSegments;
       for (      DruidServer server : servers) {
         if (!loadManagementPeons.containsKey(server.getName())) {
           String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
@@ -42,8 +41,8 @@
         yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
       decrementRemovedSegmentsLifetime();
-      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).build();
     }
   }
-,new DruidMasterRuleRunner(DruidMaster.this),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
+,new DruidMasterRuleRunner(DruidMaster.this,config.getReplicantLifetime(),config.getReplicantThrottleLimit()),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this,new BalancerAnalyzer()),new DruidMasterLogger()));
 }
