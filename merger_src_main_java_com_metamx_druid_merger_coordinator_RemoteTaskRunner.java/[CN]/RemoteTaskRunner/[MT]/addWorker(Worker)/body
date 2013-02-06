@@ -1,6 +1,5 @@
 {
   try {
-    currentlyProvisioning.removeAll(strategy.ipLookup(Arrays.<String>asList(worker.getIp())));
     final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
     final WorkerWrapper workerWrapper=new WorkerWrapper(worker,statusCache,jsonMapper);
@@ -30,10 +29,10 @@ synchronized (statusLock) {
               }
  else {
                 final TaskCallback callback=taskWrapper.getCallback();
-                if (callback != null) {
-                  callback.notify(taskStatus);
-                }
                 if (taskStatus.isComplete()) {
+                  if (callback != null) {
+                    callback.notify(taskStatus);
+                  }
                   workerWrapper.setLastCompletedTaskTime(new DateTime());
                   tasks.remove(taskId);
                   cf.delete().guaranteed().inBackground().forPath(event.getData().getPath());

@@ -1,0 +1,6 @@
+{
+  EasyMock.expect(autoScalingStrategy.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList(),Lists.newArrayList()));
+  EasyMock.replay(autoScalingStrategy);
+  simpleResourceManagementStrategy.doProvision(Arrays.<Task>asList(testTask),Arrays.<WorkerWrapper>asList(new TestWorkerWrapper(testTask)));
+  EasyMock.verify(autoScalingStrategy);
+}

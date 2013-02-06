@@ -1,0 +1,29 @@
+{
+  boolean nothingProvisioning=Sets.difference(currentlyProvisioning,Sets.newHashSet(autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(workerWrappers,new Function<WorkerWrapper,String>(){
+    @Override public String apply(    WorkerWrapper input){
+      return input.getWorker().getIp();
+    }
+  }
+))))).isEmpty();
+  boolean moreTasksThanWorkerCapacity=!Sets.difference(Sets.newHashSet(availableTasks),Sets.newHashSet(Iterables.concat(Iterables.transform(workerWrappers,new Function<WorkerWrapper,Set<String>>(){
+    @Override public Set<String> apply(    WorkerWrapper input){
+      return input.getRunningTasks();
+    }
+  }
+)))).isEmpty();
+  if (nothingProvisioning && moreTasksThanWorkerCapacity) {
+    AutoScalingData provisioned=autoScalingStrategy.provision();
+    if (provisioned != null) {
+      currentlyProvisioning.addAll(provisioned.getNodeIds());
+      lastProvisionTime=new DateTime();
+      scalingStats.addProvisionEvent(provisioned);
+    }
+  }
+ else {
+    Duration durSinceLastProvision=new Duration(new DateTime(),lastProvisionTime);
+    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
+      log.makeAlert("Worker node provisioning taking too long").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+    }
+    log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker.",currentlyProvisioning);
+  }
+}

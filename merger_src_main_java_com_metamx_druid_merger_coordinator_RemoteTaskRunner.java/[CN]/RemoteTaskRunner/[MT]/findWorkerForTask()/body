@@ -13,20 +13,6 @@
 ));
     if (workerQueue.isEmpty()) {
       log.info("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
-      if (currentlyProvisioning.isEmpty()) {
-        AutoScalingData provisioned=strategy.provision();
-        if (provisioned != null) {
-          currentlyProvisioning.addAll(provisioned.getNodeIds());
-          lastProvisionTime=new DateTime();
-        }
-      }
- else {
-        Duration durSinceLastProvision=new Duration(new DateTime(),lastProvisionTime);
-        if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
-          log.makeAlert("Worker node provisioning taking too long").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
-        }
-        log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker.",currentlyProvisioning);
-      }
       return null;
     }
     return workerQueue.peek();
