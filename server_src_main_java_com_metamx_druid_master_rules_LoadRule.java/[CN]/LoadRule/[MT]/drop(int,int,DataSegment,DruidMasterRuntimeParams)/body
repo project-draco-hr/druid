@@ -1,5 +1,6 @@
 {
   MasterStats stats=new MasterStats();
+  final DruidMasterReplicationManager replicationManager=params.getReplicationManager();
   if (!params.hasDeletionWaitTimeElapsed()) {
     return stats;
   }
@@ -23,9 +24,15 @@
         log.warn("Wtf, holder was null?  I have no servers serving [%s]?",segment.getIdentifier());
         break;
       }
+      if (actualNumReplicantsForType > 1) {
+        if (!replicationManager.canDestroyReplicant(getTier()) || !replicationManager.registerReplicantTermination(getTier(),segment.getIdentifier())) {
+          break;
+        }
+      }
       if (holder.isServingSegment(segment)) {
         holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
           @Override protected void execute(){
+            replicationManager.unregisterReplicantTermination(getTier(),segment.getIdentifier());
           }
         }
 );

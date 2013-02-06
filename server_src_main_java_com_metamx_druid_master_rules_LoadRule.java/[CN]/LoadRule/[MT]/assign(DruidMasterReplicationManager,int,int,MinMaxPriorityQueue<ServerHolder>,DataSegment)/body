@@ -19,8 +19,14 @@
       stats.addToTieredStat("unassignedSize",getTier(),segment.getSize());
       break;
     }
+    if (totalReplicants > 0) {
+      if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier())) {
+        break;
+      }
+    }
     holder.getPeon().loadSegment(segment,new LoadPeonCallback(){
       @Override protected void execute(){
+        replicationManager.unregisterReplicantCreation(getTier(),segment.getIdentifier());
       }
     }
 );

@@ -18,6 +18,7 @@
         }
       }
       final DruidCluster cluster=new DruidCluster();
+      final Map<String,ConcurrentSkipListSet<String>> currentlyReplicatingSegments;
       for (      DruidServer server : servers) {
         if (!loadManagementPeons.containsKey(server.getName())) {
           String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));

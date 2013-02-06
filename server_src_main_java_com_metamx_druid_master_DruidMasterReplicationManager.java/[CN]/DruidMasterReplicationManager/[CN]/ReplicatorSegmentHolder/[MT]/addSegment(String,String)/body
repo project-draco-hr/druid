@@ -1,0 +1,11 @@
+{
+  if (currentlyProcessingSegments.size() < maxReplicants) {
+    Set<String> segments=currentlyProcessingSegments.get(tier);
+    if (segments == null) {
+      segments=new ConcurrentSkipListSet<String>();
+    }
+    segments.add(segmentId);
+    return true;
+  }
+  return false;
+}
