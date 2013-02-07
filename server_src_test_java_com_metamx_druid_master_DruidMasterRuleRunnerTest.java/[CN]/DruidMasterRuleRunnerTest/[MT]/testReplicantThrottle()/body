@@ -13,7 +13,7 @@
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 48);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
-  DataSegment overFlowSegment=new DataSegment("test",new Interval("2012-02-01/2012-02-02"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),1);
+  DataSegment overFlowSegment=new DataSegment("test",new Interval("2012-02-01/2012-02-02"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),1,0);
   afterParams=ruleRunner.run(new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withEmitter(emitter).withAvailableSegments(Arrays.asList(overFlowSegment)).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build());
   stats=afterParams.getMasterStats();
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 1);
