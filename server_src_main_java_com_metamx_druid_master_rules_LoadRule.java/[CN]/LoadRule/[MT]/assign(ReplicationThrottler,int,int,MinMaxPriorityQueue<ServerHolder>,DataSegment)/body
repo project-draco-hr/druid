@@ -2,11 +2,6 @@
   MasterStats stats=new MasterStats();
   List<ServerHolder> assignedServers=Lists.newArrayList();
   while (totalReplicants < expectedReplicants) {
-    if (totalReplicants > 0) {
-      if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier())) {
-        break;
-      }
-    }
     ServerHolder holder=serverQueue.pollFirst();
     if (holder == null) {
       log.warn("Not enough %s servers[%d] to assign segment[%s]! Expected Replicants[%d]",getTier(),assignedServers.size() + serverQueue.size() + 1,segment.getIdentifier(),expectedReplicants);
@@ -23,6 +18,12 @@
       stats.addToTieredStat("unassignedCount",getTier(),1);
       stats.addToTieredStat("unassignedSize",getTier(),segment.getSize());
       break;
+    }
+    if (totalReplicants > 0) {
+      if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier())) {
+        serverQueue.add(holder);
+        break;
+      }
     }
     holder.getPeon().loadSegment(segment,new LoadPeonCallback(){
       @Override protected void execute(){

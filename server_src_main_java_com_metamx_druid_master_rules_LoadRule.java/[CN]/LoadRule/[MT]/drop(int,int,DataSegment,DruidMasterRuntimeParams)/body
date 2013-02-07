@@ -19,15 +19,16 @@
     }
     List<ServerHolder> droppedServers=Lists.newArrayList();
     while (actualNumReplicantsForType > expectedNumReplicantsForType) {
-      if (expectedNumReplicantsForType > 0) {
-        if (!replicationManager.canDestroyReplicant(getTier()) || !replicationManager.registerReplicantTermination(getTier(),segment.getIdentifier())) {
-          break;
-        }
-      }
       ServerHolder holder=serverQueue.pollLast();
       if (holder == null) {
         log.warn("Wtf, holder was null?  I have no servers serving [%s]?",segment.getIdentifier());
         break;
+      }
+      if (expectedNumReplicantsForType > 0) {
+        if (!replicationManager.canDestroyReplicant(getTier()) || !replicationManager.registerReplicantTermination(getTier(),segment.getIdentifier())) {
+          serverQueue.add(holder);
+          break;
+        }
       }
       if (holder.isServingSegment(segment)) {
         holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
