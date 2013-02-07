@@ -6,10 +6,10 @@
     return params;
   }
   for (  String tier : cluster.getTierNames()) {
-    replicationManager.updateReplicationState(tier);
-    replicationManager.updateTerminationState(tier);
+    replicatorThrottler.updateReplicationState(tier);
+    replicatorThrottler.updateTerminationState(tier);
   }
-  DruidMasterRuntimeParams paramsWithReplicationManager=params.buildFromExisting().withReplicationManager(replicationManager).build();
+  DruidMasterRuntimeParams paramsWithReplicationManager=params.buildFromExisting().withReplicationManager(replicatorThrottler).build();
   DateTime now=new DateTime();
   DatabaseRuleManager databaseRuleManager=paramsWithReplicationManager.getDatabaseRuleManager();
   for (  DataSegment segment : paramsWithReplicationManager.getAvailableSegments()) {
