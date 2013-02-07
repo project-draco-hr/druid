@@ -1,9 +1,18 @@
 {
-  remoteTaskRunner.run(task1,new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),null);
+  final CountDownLatch latch=new CountDownLatch(1);
+  remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),Lists.<DataSegment>newArrayList(),Lists.<AggregatorFactory>newArrayList()){
+    @Override public TaskStatus run(    TaskContext context,    TaskToolbox toolbox,    TaskCallback callback) throws Exception {
+      latch.await();
+      return super.run(context,toolbox,callback);
+    }
+  }
+,new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),null);
   try {
     remoteTaskRunner.run(task1,new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),null);
+    latch.countDown();
     fail("ISE expected");
   }
  catch (  ISE expected) {
+    latch.countDown();
   }
 }

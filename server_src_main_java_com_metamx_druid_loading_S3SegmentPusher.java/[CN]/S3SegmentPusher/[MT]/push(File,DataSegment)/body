@@ -1,7 +1,6 @@
 {
-  log.info("Uploading [%s] to S3",file);
+  log.info("Uploading [%s] to S3",indexFilesDir);
   String outputKey=JOINER.join(config.getBaseKey().isEmpty() ? null : config.getBaseKey(),segment.getDataSource(),String.format("%s_%s",segment.getInterval().getStart(),segment.getInterval().getEnd()),segment.getVersion(),segment.getShardSpec().getPartitionNum());
-  File indexFilesDir=file;
   long indexSize=0;
   final File zipOutFile=File.createTempFile("druid","index.zip");
   ZipOutputStream zipOut=null;
@@ -28,7 +27,7 @@
     toPush.setKey(outputKey + "/index.zip");
     log.info("Pushing %s.",toPush);
     s3Client.putObject(outputBucket,toPush);
-    DataSegment outputSegment=segment.withSize(indexSize).withLoadSpec(ImmutableMap.<String,Object>of("type","s3_zip","bucket",outputBucket,"key",toPush.getKey()));
+    segment=segment.withSize(indexSize).withLoadSpec(ImmutableMap.<String,Object>of("type","s3_zip","bucket",outputBucket,"key",toPush.getKey())).withBinaryVersion(IndexIO.getVersionFromDir(indexFilesDir));
     File descriptorFile=File.createTempFile("druid","descriptor.json");
     StreamUtils.copyToFileAndClose(new ByteArrayInputStream(jsonMapper.writeValueAsBytes(segment)),descriptorFile);
     S3Object descriptorObject=new S3Object(descriptorFile);
@@ -42,7 +41,7 @@
     zipOutFile.delete();
     log.info("Deleting descriptor file[%s]",descriptorFile);
     descriptorFile.delete();
-    return outputSegment;
+    return segment;
   }
  catch (  NoSuchAlgorithmException e) {
     throw new IOException(e);

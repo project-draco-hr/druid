@@ -1,0 +1,16 @@
+{
+  int size=holder.getNumProcessing(tier);
+  if (size != 0) {
+    log.info("[%s]: Replicant %s queue still has %d segments. Lifetime[%d]",tier,type,size,holder.getLifetime(tier));
+    holder.reduceLifetime(tier);
+    lookup.put(tier,false);
+    if (holder.getLifetime(tier) < 0) {
+      log.makeAlert("[%s]: Replicant %s queue stuck after %d+ runs!",tier,type,maxLifetime).emit();
+    }
+  }
+ else {
+    log.info("[%s]: Replicant %s queue is empty.",tier,type);
+    lookup.put(tier,true);
+    holder.resetLifetime(tier);
+  }
+}
