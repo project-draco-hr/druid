@@ -1,0 +1,30 @@
+{
+  long minMillis=Long.MAX_VALUE;
+  long maxMillis=Long.MIN_VALUE;
+  SegmentDescriptor min=null;
+  SegmentDescriptor max=null;
+  Map<String,Set<SegmentDescriptor>> segmentGroups=Maps.newHashMap();
+  Iterable<Interval> condensedIntervals=JodaUtils.condenseIntervals(query.getIntervals());
+  for (  SegmentDescriptor e : input) {
+    if (Iterables.isEmpty(condensedIntervals) || JodaUtils.overlaps(e.getInterval(),condensedIntervals)) {
+      final long start=e.getInterval().getStartMillis();
+      final long end=e.getInterval().getEndMillis();
+      final String version=e.getVersion();
+      if (segmentGroups.containsKey(version)) {
+        segmentGroups.get(version).add(e);
+      }
+ else {
+        segmentGroups.put(version,Sets.newHashSet(e));
+      }
+      if (min == null || start < minMillis) {
+        min=e;
+        minMillis=start;
+      }
+      if (max == null || end > maxMillis) {
+        max=e;
+        maxMillis=end;
+      }
+    }
+  }
+  return Sets.union(segmentGroups.get(min.getVersion()),segmentGroups.get(max.getVersion()));
+}

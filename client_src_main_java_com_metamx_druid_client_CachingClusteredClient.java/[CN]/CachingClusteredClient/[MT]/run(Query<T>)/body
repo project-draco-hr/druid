@@ -29,6 +29,18 @@
       }
     }
   }
+  final Set<SegmentDescriptor> filteredSegmentDescriptors=Sets.newLinkedHashSet(toolChest.filterSegments(query,Iterables.transform(segments,new Function<Pair<ServerSelector,SegmentDescriptor>,SegmentDescriptor>(){
+    @Override public SegmentDescriptor apply(    @Nullable Pair<ServerSelector,SegmentDescriptor> input){
+      return input.rhs;
+    }
+  }
+)));
+  segments=Sets.newLinkedHashSet(Iterables.filter(segments,new Predicate<Pair<ServerSelector,SegmentDescriptor>>(){
+    @Override public boolean apply(    @Nullable Pair<ServerSelector,SegmentDescriptor> input){
+      return filteredSegmentDescriptors.contains(input.rhs);
+    }
+  }
+));
   final byte[] queryCacheKey;
   if (strategy != null) {
     queryCacheKey=strategy.computeCacheKey(query);
