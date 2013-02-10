@@ -1,0 +1,8 @@
+{
+  try {
+    return s3Client.isObjectInBucket(coords.bucket,coords.path);
+  }
+ catch (  ServiceException e) {
+    throw new StorageAdapterLoadingException(e,"Problem communicating with S3 checking bucket/path[%s]",coords);
+  }
+}

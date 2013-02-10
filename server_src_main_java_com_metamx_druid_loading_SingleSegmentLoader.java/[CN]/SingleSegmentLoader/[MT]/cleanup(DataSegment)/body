@@ -1,3 +1,10 @@
 {
-  segmentPuller.cleanSegmentFiles(segment);
+  File cacheFile=getCacheFile(segment).getParentFile();
+  try {
+    log.info("Deleting directory[%s]",cacheFile);
+    FileUtils.deleteDirectory(cacheFile);
+  }
+ catch (  IOException e) {
+    throw new StorageAdapterLoadingException(e,e.getMessage());
+  }
 }
