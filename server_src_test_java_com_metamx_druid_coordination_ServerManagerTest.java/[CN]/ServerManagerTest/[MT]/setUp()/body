@@ -1,11 +1,11 @@
 {
   EmittingLogger.registerEmitter(new NoopServiceEmitter());
   factory=new MyQueryRunnerFactory();
-  serverManager=new ServerManager(new StorageAdapterLoader(){
-    @Override public StorageAdapter getAdapter(    final Map<String,Object> loadSpec){
-      return new StorageAdapterForTesting(MapUtils.getString(loadSpec,"version"),(Interval)loadSpec.get("interval"));
+  serverManager=new ServerManager(new SegmentLoader(){
+    @Override public Segment getSegment(    final DataSegment segment){
+      return new SegmentForTesting(MapUtils.getString(segment.getLoadSpec(),"version"),(Interval)segment.getLoadSpec().get("interval"));
     }
-    @Override public void cleanupAdapter(    Map<String,Object> loadSpec) throws StorageAdapterLoadingException {
+    @Override public void cleanup(    DataSegment segment) throws StorageAdapterLoadingException {
     }
   }
 ,new QueryRunnerFactoryConglomerate(){

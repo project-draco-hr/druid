@@ -22,7 +22,7 @@
       List<FireHydrant> hydrants=Lists.newArrayList();
       for (      File segmentDir : sinkFiles) {
         log.info("Loading previously persisted segment at [%s]",segmentDir);
-        hydrants.add(new FireHydrant(new MMappedIndexStorageAdapter(IndexIO.mapDir(segmentDir)),Integer.parseInt(segmentDir.getName())));
+        hydrants.add(new FireHydrant(new QueryableIndexSegment(null,IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
       }
       Sink currSink=new Sink(sinkInterval,schema,hydrants);
       sinks.put(sinkInterval.getStartMillis(),currSink);
@@ -94,20 +94,15 @@
             }
             final File mergedFile;
             try {
-              List<MMappedIndex> indexes=Lists.newArrayList();
+              List<QueryableIndex> indexes=Lists.newArrayList();
               for (              FireHydrant fireHydrant : sink) {
-                StorageAdapter adapter=fireHydrant.getAdapter();
-                if (adapter instanceof MMappedIndexStorageAdapter) {
-                  log.info("Adding hydrant[%s]",fireHydrant);
-                  indexes.add(((MMappedIndexStorageAdapter)adapter).getIndex());
-                }
- else {
-                  log.makeAlert("[%s] Failure to merge-n-push",schema.getDataSource()).addData("type","Unknown adapter type").addData("adapterClass",adapter.getClass().toString()).emit();
-                  return;
-                }
+                Segment segment=fireHydrant.getSegment();
+                final QueryableIndex queryableIndex=segment.asQueryableIndex();
+                log.info("Adding hydrant[%s]",fireHydrant);
+                indexes.add(queryableIndex);
               }
-              mergedFile=IndexMerger.mergeMMapped(indexes,schema.getAggregators(),new File(computePersistDir(schema,interval),"merged"));
-              MMappedIndex index=IndexIO.mapDir(mergedFile);
+              mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),new File(computePersistDir(schema,interval),"merged"));
+              QueryableIndex index=IndexIO.loadIndex(mergedFile);
               DataSegment segment=segmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
               metadataUpdater.publishSegment(segment);
             }
@@ -153,7 +148,7 @@
         @Override public QueryRunner<T> apply(        @Nullable Sink input){
           return new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(input,new Function<FireHydrant,QueryRunner<T>>(){
             @Override public QueryRunner<T> apply(            @Nullable FireHydrant input){
-              return factory.createRunner(input.getAdapter());
+              return factory.createRunner(input.getSegment());
             }
           }
 )));
@@ -168,6 +163,7 @@
           indexesToPersist.add(Pair.of(sink.swap(),sink.getInterval()));
         }
       }
+      log.info("Submitting persist runnable for dataSource[%s]",schema.getDataSource());
       persistExecutor.execute(new ThreadRenamingRunnable(String.format("%s-incremental-persist",schema.getDataSource())){
         @Override public void doRun(){
           for (          Pair<FireHydrant,Interval> pair : indexesToPersist) {

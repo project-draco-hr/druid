@@ -1,5 +1,5 @@
 {
-  return new CacheStrategy<Result<TimeseriesResultValue>,TimeseriesQuery>(){
+  return new CacheStrategy<Result<TimeseriesResultValue>,Object,TimeseriesQuery>(){
     private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
     private final List<PostAggregator> postAggs=query.getPostAggregatorSpecs();
     @Override public byte[] computeCacheKey(    TimeseriesQuery query){
@@ -8,6 +8,9 @@
       final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
       final byte[] granularityBytes=query.getGranularity().cacheKey();
       return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
+    }
+    @Override public TypeReference<Object> getCacheObjectClazz(){
+      return OBJECT_TYPE_REFERENCE;
     }
     @Override public Function<Result<TimeseriesResultValue>,Object> prepareForCache(){
       return new Function<Result<TimeseriesResultValue>,Object>(){
@@ -25,12 +28,13 @@
     }
     @Override public Function<Object,Result<TimeseriesResultValue>> pullFromCache(){
       return new Function<Object,Result<TimeseriesResultValue>>(){
+        private final QueryGranularity granularity=query.getGranularity();
         @Override public Result<TimeseriesResultValue> apply(        @Nullable Object input){
           List<Object> results=(List<Object>)input;
           Map<String,Object> retVal=Maps.newLinkedHashMap();
           Iterator<AggregatorFactory> aggsIter=aggs.iterator();
           Iterator<Object> resultIter=results.iterator();
-          DateTime timestamp=new DateTime(resultIter.next());
+          DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
           while (aggsIter.hasNext() && resultIter.hasNext()) {
             final AggregatorFactory factory=aggsIter.next();
             retVal.put(factory.getName(),factory.deserialize(resultIter.next()));

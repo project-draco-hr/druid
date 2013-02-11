@@ -1,0 +1,11 @@
+{
+  channel.write(ByteBuffer.wrap(new byte[]{(byte)(isSingleValued() ? 0x0 : 0x1)}));
+  dictionary.writeToChannel(channel);
+  if (isSingleValued()) {
+    singleValuedColumn.writeToChannel(channel);
+  }
+ else {
+    multiValuedColumn.writeToChannel(channel);
+  }
+  bitmaps.writeToChannel(channel);
+}

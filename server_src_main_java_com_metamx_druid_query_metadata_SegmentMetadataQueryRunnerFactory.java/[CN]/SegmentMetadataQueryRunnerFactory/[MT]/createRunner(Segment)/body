@@ -1,0 +1,27 @@
+{
+  return new QueryRunner<SegmentAnalysis>(){
+    @Override public Sequence<SegmentAnalysis> run(    Query<SegmentAnalysis> inQ){
+      SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
+      final QueryableIndex index=segment.asQueryableIndex();
+      if (index == null) {
+        return Sequences.empty();
+      }
+      final Map<String,ColumnAnalysis> analyzedColumns=analyzer.analyze(index);
+      long totalSize=analyzedColumns.size() * index.getNumRows();
+      Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
+      ColumnIncluderator includerator=query.getToInclude();
+      for (      Map.Entry<String,ColumnAnalysis> entry : analyzedColumns.entrySet()) {
+        final String columnName=entry.getKey();
+        final ColumnAnalysis column=entry.getValue();
+        if (!column.isError()) {
+          totalSize+=column.getSize();
+        }
+        if (includerator.include(columnName)) {
+          columns.put(columnName,column);
+        }
+      }
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),Arrays.asList(segment.getDataInterval()),columns,totalSize)));
+    }
+  }
+;
+}

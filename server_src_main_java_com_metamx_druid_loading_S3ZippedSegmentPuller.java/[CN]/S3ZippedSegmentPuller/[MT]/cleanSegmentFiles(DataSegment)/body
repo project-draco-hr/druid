@@ -1,0 +1,12 @@
+{
+  Map<String,Object> loadSpec=segment.getLoadSpec();
+  File cacheFile=new File(config.getCacheDirectory(),computeCacheFilePath(MapUtils.getString(loadSpec,BUCKET),MapUtils.getString(loadSpec,KEY)));
+  try {
+    log.info("Deleting directory[%s]",cacheFile);
+    FileUtils.deleteDirectory(cacheFile);
+  }
+ catch (  IOException e) {
+    throw new StorageAdapterLoadingException(e,e.getMessage());
+  }
+  return true;
+}

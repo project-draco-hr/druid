@@ -1,0 +1,70 @@
+{
+  Map<String,Object> loadSpec=segment.getLoadSpec();
+  String s3Bucket=MapUtils.getString(loadSpec,"bucket");
+  String s3Path=MapUtils.getString(loadSpec,"key");
+  if (s3Path.startsWith("/")) {
+    s3Path=s3Path.substring(1);
+  }
+  log.info("Loading index at path[s3://%s/%s]",s3Bucket,s3Path);
+  S3Object s3Obj=null;
+  File tmpFile=null;
+  try {
+    if (!s3Client.isObjectInBucket(s3Bucket,s3Path)) {
+      throw new StorageAdapterLoadingException("IndexFile[s3://%s/%s] does not exist.",s3Bucket,s3Path);
+    }
+    File cacheFile=new File(config.getCacheDirectory(),computeCacheFilePath(s3Bucket,s3Path));
+    if (cacheFile.exists()) {
+      S3Object objDetails=s3Client.getObjectDetails(new S3Bucket(s3Bucket),s3Path);
+      DateTime cacheFileLastModified=new DateTime(cacheFile.lastModified());
+      DateTime s3ObjLastModified=new DateTime(objDetails.getLastModifiedDate().getTime());
+      if (cacheFileLastModified.isAfter(s3ObjLastModified)) {
+        log.info("Found cacheFile[%s] with modified[%s], which is after s3Obj[%s].  Using.",cacheFile,cacheFileLastModified,s3ObjLastModified);
+        return cacheFile;
+      }
+      FileUtils.deleteDirectory(cacheFile);
+    }
+    long currTime=System.currentTimeMillis();
+    tmpFile=File.createTempFile(s3Bucket,new DateTime().toString());
+    log.info("Downloading file[s3://%s/%s] to local tmpFile[%s] for cacheFile[%s]",s3Bucket,s3Path,tmpFile,cacheFile);
+    s3Obj=s3Client.getObject(new S3Bucket(s3Bucket),s3Path);
+    StreamUtils.copyToFileAndClose(s3Obj.getDataInputStream(),tmpFile);
+    final long downloadEndTime=System.currentTimeMillis();
+    log.info("Download of file[%s] completed in %,d millis",cacheFile,downloadEndTime - currTime);
+    if (cacheFile.exists()) {
+      FileUtils.deleteDirectory(cacheFile);
+    }
+    cacheFile.mkdirs();
+    ZipInputStream zipIn=null;
+    OutputStream out=null;
+    ZipEntry entry=null;
+    try {
+      zipIn=new ZipInputStream(new BufferedInputStream(new FileInputStream(tmpFile)));
+      while ((entry=zipIn.getNextEntry()) != null) {
+        out=new FileOutputStream(new File(cacheFile,entry.getName()));
+        IOUtils.copy(zipIn,out);
+        zipIn.closeEntry();
+        Closeables.closeQuietly(out);
+        out=null;
+      }
+    }
+  finally {
+      Closeables.closeQuietly(out);
+      Closeables.closeQuietly(zipIn);
+    }
+    long endTime=System.currentTimeMillis();
+    log.info("Local processing of file[%s] done in %,d millis",cacheFile,endTime - downloadEndTime);
+    log.info("Deleting tmpFile[%s]",tmpFile);
+    tmpFile.delete();
+    return cacheFile;
+  }
+ catch (  Exception e) {
+    throw new StorageAdapterLoadingException(e,e.getMessage());
+  }
+ finally {
+    S3Utils.closeStreamsQuietly(s3Obj);
+    if (tmpFile != null && tmpFile.exists()) {
+      log.warn("Deleting tmpFile[%s] in finally block.  Why?",tmpFile);
+      tmpFile.delete();
+    }
+  }
+}

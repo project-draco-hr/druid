@@ -1,7 +1,7 @@
 {
   byte versionFromBuffer=buffer.get();
   if (versionFromBuffer == version) {
-    return new CompressedFloatsIndexedSupplier(buffer.getInt(),buffer.getInt(),GenericIndexed.readFromByteBuffer(buffer,CompressedFloatBufferObjectStrategy.getBufferForOrder(order)));
+    return new CompressedFloatsIndexedSupplier(buffer.getInt(),buffer.getInt(),GenericIndexed.read(buffer,CompressedFloatBufferObjectStrategy.getBufferForOrder(order)));
   }
   throw new IAE("Unknown version[%s]",versionFromBuffer);
 }

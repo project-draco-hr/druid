@@ -1,0 +1,23 @@
+{
+  try {
+    final InputRow inputRow;
+    try {
+      inputRow=parser.parse(value.toString());
+    }
+ catch (    IllegalArgumentException e) {
+      if (config.isIgnoreInvalidRows()) {
+        context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
+        return;
+      }
+ else {
+        throw e;
+      }
+    }
+    if (config.getGranularitySpec().bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
+      innerMap(inputRow,value,context);
+    }
+  }
+ catch (  RuntimeException e) {
+    throw new RE(e,"Failure on row[%s]",value);
+  }
+}

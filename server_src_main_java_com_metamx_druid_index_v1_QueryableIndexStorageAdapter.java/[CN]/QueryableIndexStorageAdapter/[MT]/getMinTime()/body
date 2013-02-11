@@ -1,0 +1,10 @@
+{
+  GenericColumn column=null;
+  try {
+    column=index.getTimeColumn().getGenericColumn();
+    return new DateTime(column.getLongSingleValueRow(0));
+  }
+  finally {
+    Closeables.closeQuietly(column);
+  }
+}

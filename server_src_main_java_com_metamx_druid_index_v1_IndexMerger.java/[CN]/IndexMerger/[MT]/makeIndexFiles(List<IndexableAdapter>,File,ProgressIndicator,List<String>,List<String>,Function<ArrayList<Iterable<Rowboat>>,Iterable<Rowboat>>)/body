@@ -6,15 +6,17 @@
     }
   }
   final Interval dataInterval;
+  File v8OutDir=new File(outDir,"v8-tmp");
+  v8OutDir.mkdirs();
   progress.progress();
   long startTime=System.currentTimeMillis();
-  File indexFile=new File(outDir,"index.drd");
+  File indexFile=new File(v8OutDir,"index.drd");
   FileOutputStream fileOutputStream=null;
   FileChannel channel=null;
   try {
     fileOutputStream=new FileOutputStream(indexFile);
     channel=fileOutputStream.getChannel();
-    channel.write(ByteBuffer.wrap(new byte[]{IndexIO.CURRENT_VERSION_ID}));
+    channel.write(ByteBuffer.wrap(new byte[]{IndexIO.V8_VERSION}));
     GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy).writeToChannel(channel);
     GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy).writeToChannel(channel);
     DateTime minTime=new DateTime(Long.MAX_VALUE);
@@ -33,7 +35,7 @@
     fileOutputStream=null;
   }
   IndexIO.checkFileSize(indexFile);
-  log.info("outDir[%s] completed index.drd in %,d millis.",outDir,System.currentTimeMillis() - startTime);
+  log.info("outDir[%s] completed index.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
   progress.progress();
   startTime=System.currentTimeMillis();
   IOPeon ioPeon=new TmpFileIOPeon();
@@ -79,7 +81,7 @@
       ++count;
     }
     dimensionCardinalities.put(dimension,count);
-    FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(outDir,dimension),true);
+    FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir,dimension),true);
     dimOuts.add(dimOut);
     writer.close();
     serializerUtils.writeString(dimOut,dimension);
@@ -92,7 +94,7 @@
     }
     ioPeon.cleanup();
   }
-  log.info("outDir[%s] completed dim conversions in %,d millis.",outDir,System.currentTimeMillis() - startTime);
+  log.info("outDir[%s] completed dim conversions in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
   progress.progress();
   startTime=System.currentTimeMillis();
   ArrayList<Iterable<Rowboat>> boats=Lists.newArrayListWithCapacity(indexes.size());
@@ -130,10 +132,8 @@
 ),mergedDimensions,dimConversions.get(i),i));
   }
   Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
-  CompressedLongsSupplierSerializer littleEndianTimeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",ByteOrder.LITTLE_ENDIAN);
-  CompressedLongsSupplierSerializer bigEndianTimeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"big_end_time",ByteOrder.BIG_ENDIAN);
-  littleEndianTimeWriter.open();
-  bigEndianTimeWriter.open();
+  CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER);
+  timeWriter.open();
   ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
   for (  String dimension : mergedDimensions) {
     VSizeIndexedWriter writer=new VSizeIndexedWriter(ioPeon,dimension,dimensionCardinalities.get(dimension));
@@ -145,14 +145,14 @@
     String metric=entry.getKey();
     String typeName=entry.getValue();
     if ("float".equals(typeName)) {
-      metWriters.add(new FloatMetricColumnSerializer(metric,outDir,ioPeon));
+      metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
     }
  else {
       ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(typeName);
       if (serde == null) {
         throw new ISE("Unknown type[%s]",typeName);
       }
-      metWriters.add(new ComplexMetricColumnSerializer(metric,outDir,ioPeon,serde));
+      metWriters.add(new ComplexMetricColumnSerializer(metric,v8OutDir,ioPeon,serde));
     }
   }
   for (  MetricColumnSerializer metWriter : metWriters) {
@@ -168,8 +168,7 @@
   }
   for (  Rowboat theRow : theRows) {
     progress.progress();
-    littleEndianTimeWriter.add(theRow.getTimestamp());
-    bigEndianTimeWriter.add(theRow.getTimestamp());
+    timeWriter.add(theRow.getTimestamp());
     final Object[] metrics=theRow.getMetrics();
     for (int i=0; i < metrics.length; ++i) {
       metWriters.get(i).serialize(metrics[i]);
@@ -189,23 +188,18 @@
       }
     }
     if ((++rowCount % 500000) == 0) {
-      log.info("outDir[%s] walked 500,000/%,d rows in %,d millis.",outDir,rowCount,System.currentTimeMillis() - time);
+      log.info("outDir[%s] walked 500,000/%,d rows in %,d millis.",v8OutDir,rowCount,System.currentTimeMillis() - time);
       time=System.currentTimeMillis();
     }
   }
   for (  IntBuffer rowNumConversion : rowNumConversions) {
     rowNumConversion.rewind();
   }
-  final File littleEndianFile=IndexIO.makeTimeFile(outDir,ByteOrder.LITTLE_ENDIAN);
-  littleEndianFile.delete();
-  OutputSupplier<FileOutputStream> out=Files.newOutputStreamSupplier(littleEndianFile,true);
-  littleEndianTimeWriter.closeAndConsolidate(out);
-  IndexIO.checkFileSize(littleEndianFile);
-  final File bigEndianFile=IndexIO.makeTimeFile(outDir,ByteOrder.BIG_ENDIAN);
-  bigEndianFile.delete();
-  out=Files.newOutputStreamSupplier(bigEndianFile,true);
-  bigEndianTimeWriter.closeAndConsolidate(out);
-  IndexIO.checkFileSize(bigEndianFile);
+  final File timeFile=IndexIO.makeTimeFile(v8OutDir,IndexIO.BYTE_ORDER);
+  timeFile.delete();
+  OutputSupplier<FileOutputStream> out=Files.newOutputStreamSupplier(timeFile,true);
+  timeWriter.closeAndConsolidate(out);
+  IndexIO.checkFileSize(timeFile);
   for (int i=0; i < mergedDimensions.size(); ++i) {
     forwardDimWriters.get(i).close();
     ByteStreams.copy(forwardDimWriters.get(i).combineStreams(),dimOuts.get(i));
@@ -214,9 +208,9 @@
     metWriter.close();
   }
   ioPeon.cleanup();
-  log.info("outDir[%s] completed walk through of %,d rows in %,d millis.",outDir,rowCount,System.currentTimeMillis() - startTime);
+  log.info("outDir[%s] completed walk through of %,d rows in %,d millis.",v8OutDir,rowCount,System.currentTimeMillis() - startTime);
   startTime=System.currentTimeMillis();
-  final File invertedFile=new File(outDir,"inverted.drd");
+  final File invertedFile=new File(v8OutDir,"inverted.drd");
   Files.touch(invertedFile);
   out=Files.newOutputStreamSupplier(invertedFile,true);
   for (int i=0; i < mergedDimensions.size(); ++i) {
@@ -227,7 +221,7 @@
     if (!dimension.equals(serializerUtils.readString(dimValsMapped))) {
       throw new ISE("dimensions[%s] didn't equate!?  This is a major WTF moment.",dimension);
     }
-    Indexed<String> dimVals=GenericIndexed.readFromByteBuffer(dimValsMapped,GenericIndexed.stringStrategy);
+    Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.stringStrategy);
     log.info("Starting dimension[%s] with cardinality[%,d]",dimension,dimVals.size());
     FlattenedArrayWriter<ImmutableConciseSet> writer=new FlattenedArrayWriter<ImmutableConciseSet>(ioPeon,dimension,ConciseCompressedIndexedInts.objectStrategy);
     writer.open();
@@ -251,24 +245,26 @@
     ioPeon.cleanup();
     log.info("Completed dimension[%s] in %,d millis.",dimension,System.currentTimeMillis() - dimStartTime);
   }
-  log.info("outDir[%s] completed inverted.drd in %,d millis.",outDir,System.currentTimeMillis() - startTime);
-  final ArrayList<String> expectedFiles=Lists.newArrayList(Iterables.concat(Arrays.asList("index.drd","inverted.drd","time_BIG_ENDIAN.drd","time_LITTLE_ENDIAN.drd"),Iterables.transform(mergedDimensions,GuavaUtils.formatFunction("dim_%s.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction("met_%s_LITTLE_ENDIAN.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction("met_%s_BIG_ENDIAN.drd"))));
+  log.info("outDir[%s] completed inverted.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
+  final ArrayList<String> expectedFiles=Lists.newArrayList(Iterables.concat(Arrays.asList("index.drd","inverted.drd",String.format("time_%s.drd",IndexIO.BYTE_ORDER)),Iterables.transform(mergedDimensions,GuavaUtils.formatFunction("dim_%s.drd")),Iterables.transform(mergedMetrics,GuavaUtils.formatFunction(String.format("met_%%s_%s.drd",IndexIO.BYTE_ORDER)))));
   Map<String,File> files=Maps.newLinkedHashMap();
   for (  String fileName : expectedFiles) {
-    files.put(fileName,new File(outDir,fileName));
+    files.put(fileName,new File(v8OutDir,fileName));
   }
-  File smooshDir=new File(outDir,"smoosher");
+  File smooshDir=new File(v8OutDir,"smoosher");
   smooshDir.mkdir();
-  for (  Map.Entry<String,File> entry : Smoosh.smoosh(outDir,smooshDir,files).entrySet()) {
+  for (  Map.Entry<String,File> entry : Smoosh.smoosh(v8OutDir,smooshDir,files).entrySet()) {
     entry.getValue().delete();
   }
   for (  File file : smooshDir.listFiles()) {
-    Files.move(file,new File(outDir,file.getName()));
+    Files.move(file,new File(v8OutDir,file.getName()));
   }
   if (!smooshDir.delete()) {
     log.info("Unable to delete temporary dir[%s], contains[%s]",smooshDir,Arrays.asList(smooshDir.listFiles()));
     throw new IOException(String.format("Unable to delete temporary dir[%s]",smooshDir));
   }
-  createIndexDrdFile(IndexIO.CURRENT_VERSION_ID,outDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy),dataInterval);
+  createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy),dataInterval);
+  IndexIO.DefaultIndexIOHandler.convertV8toV9(v8OutDir,outDir);
+  FileUtils.deleteDirectory(v8OutDir);
   return outDir;
 }

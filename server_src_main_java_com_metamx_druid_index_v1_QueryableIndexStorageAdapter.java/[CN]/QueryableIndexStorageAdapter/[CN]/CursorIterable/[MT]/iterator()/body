@@ -1,0 +1,151 @@
+{
+  final Offset baseOffset=offset.clone();
+  final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
+  final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
+  final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
+  final FunctionalIterator<Cursor> retVal=FunctionalIterator.create(gran.iterable(interval.getStartMillis(),interval.getEndMillis()).iterator()).transform(new Function<Long,Cursor>(){
+    @Override public Cursor apply(    final Long input){
+      final long timeStart=Math.max(interval.getStartMillis(),input);
+      while (baseOffset.withinBounds() && timestamps.getLongSingleValueRow(baseOffset.getOffset()) < timeStart) {
+        baseOffset.increment();
+      }
+      final Offset offset=new TimestampCheckingOffset(baseOffset,timestamps,Math.min(interval.getEndMillis(),gran.next(timeStart)));
+      return new Cursor(){
+        private final Offset initOffset=offset.clone();
+        private final DateTime myBucket=gran.toDateTime(input);
+        private Offset cursorOffset=offset;
+        @Override public DateTime getTime(){
+          return myBucket;
+        }
+        @Override public void advance(){
+          cursorOffset.increment();
+        }
+        @Override public boolean isDone(){
+          return !cursorOffset.withinBounds();
+        }
+        @Override public void reset(){
+          cursorOffset=initOffset.clone();
+        }
+        @Override public DimensionSelector makeDimensionSelector(        String dimension){
+          final String dimensionName=dimension.toLowerCase();
+          final Column columnDesc=index.getColumn(dimensionName);
+          if (columnDesc == null) {
+            return null;
+          }
+          final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
+          if (columnDesc.getCapabilities().hasMultipleValues()) {
+            return new DimensionSelector(){
+              @Override public IndexedInts getRow(){
+                return column.getMultiValueRow(cursorOffset.getOffset());
+              }
+              @Override public int getValueCardinality(){
+                return column.getCardinality();
+              }
+              @Override public String lookupName(              int id){
+                final String retVal=column.lookupName(id);
+                return retVal == null ? "" : retVal;
+              }
+              @Override public int lookupId(              String name){
+                return column.lookupId(name);
+              }
+            }
+;
+          }
+ else {
+            return new DimensionSelector(){
+              @Override public IndexedInts getRow(){
+                final int value=column.getSingleValueRow(cursorOffset.getOffset());
+                return new IndexedInts(){
+                  @Override public int size(){
+                    return 1;
+                  }
+                  @Override public int get(                  int index){
+                    return value;
+                  }
+                  @Override public Iterator<Integer> iterator(){
+                    return Iterators.singletonIterator(value);
+                  }
+                }
+;
+              }
+              @Override public int getValueCardinality(){
+                return column.getCardinality();
+              }
+              @Override public String lookupName(              int id){
+                return column.lookupName(id);
+              }
+              @Override public int lookupId(              String name){
+                return column.lookupId(name);
+              }
+            }
+;
+          }
+        }
+        @Override public FloatMetricSelector makeFloatMetricSelector(        String metric){
+          final String metricName=metric.toLowerCase();
+          GenericColumn cachedMetricVals=genericColumnCache.get(metricName);
+          if (cachedMetricVals == null) {
+            Column holder=index.getColumn(metricName);
+            if (holder != null && holder.getCapabilities().getType() == ValueType.FLOAT) {
+              cachedMetricVals=holder.getGenericColumn();
+              genericColumnCache.put(metricName,cachedMetricVals);
+            }
+          }
+          if (cachedMetricVals == null) {
+            return new FloatMetricSelector(){
+              @Override public float get(){
+                return 0.0f;
+              }
+            }
+;
+          }
+          final GenericColumn metricVals=cachedMetricVals;
+          return new FloatMetricSelector(){
+            @Override public float get(){
+              return metricVals.getFloatSingleValueRow(cursorOffset.getOffset());
+            }
+          }
+;
+        }
+        @Override public ComplexMetricSelector makeComplexMetricSelector(        String metric){
+          final String metricName=metric.toLowerCase();
+          ComplexColumn cachedMetricVals=complexColumnCache.get(metricName);
+          if (cachedMetricVals == null) {
+            Column holder=index.getColumn(metricName);
+            if (holder != null && holder.getCapabilities().getType() == ValueType.COMPLEX) {
+              cachedMetricVals=holder.getComplexColumn();
+              complexColumnCache.put(metricName,cachedMetricVals);
+            }
+          }
+          if (cachedMetricVals == null) {
+            return null;
+          }
+          final ComplexColumn metricVals=cachedMetricVals;
+          return new ComplexMetricSelector(){
+            @Override public Class classOfObject(){
+              return metricVals.getClazz();
+            }
+            @Override public Object get(){
+              return metricVals.getRowValue(cursorOffset.getOffset());
+            }
+          }
+;
+        }
+      }
+;
+    }
+  }
+);
+  return MoreIterators.after(retVal,new Runnable(){
+    @Override public void run(){
+      Closeables.closeQuietly(timestamps);
+      for (      GenericColumn column : genericColumnCache.values()) {
+        Closeables.closeQuietly(column);
+      }
+      for (      ComplexColumn complexColumn : complexColumnCache.values()) {
+        Closeables.closeQuietly(complexColumn);
+      }
+    }
+  }
+);
+}

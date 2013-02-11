@@ -25,7 +25,7 @@
           return Sequences.map(groupByRunner.run(GroupByQuery.builder().setDataSource(tsQuery.getDataSource()).setQuerySegmentSpec(tsQuery.getQuerySegmentSpec()).setGranularity(tsQuery.getGranularity()).setDimFilter(tsQuery.getDimensionsFilter()).setAggregatorSpecs(tsQuery.getAggregatorSpecs()).setPostAggregatorSpecs(tsQuery.getPostAggregatorSpecs()).build()),new Function<Row,Result<TimeseriesResultValue>>(){
             @Override public Result<TimeseriesResultValue> apply(            final Row input){
               MapBasedRow row=(MapBasedRow)input;
-              return new Result<TimeseriesResultValue>(new DateTime(input.getTimestampFromEpoch()),new TimeseriesResultValue(row.getEvent()));
+              return new Result<TimeseriesResultValue>(row.getTimestamp(),new TimeseriesResultValue(row.getEvent()));
             }
           }
 );

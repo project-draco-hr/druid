@@ -1,15 +1,14 @@
 {
-  DelegatingStorageAdapterLoader delegateLoader=new DelegatingStorageAdapterLoader();
-  final S3SegmentGetter segmentGetter=new S3SegmentGetter(s3Client,config);
-  final S3ZippedSegmentGetter zippedGetter=new S3ZippedSegmentGetter(s3Client,config);
-  final RealtimeSegmentGetter realtimeGetter=new RealtimeSegmentGetter(config);
-  final StorageAdapterFactory factory;
+  DelegatingSegmentLoader delegateLoader=new DelegatingSegmentLoader();
+  final S3SegmentPuller segmentGetter=new S3SegmentPuller(s3Client,config);
+  final S3ZippedSegmentPuller zippedGetter=new S3ZippedSegmentPuller(s3Client,config);
+  final QueryableIndexFactory factory;
   if ("mmap".equals(config.getQueryableFactoryType())) {
-    factory=new MMappedStorageAdapterFactory();
+    factory=new MMappedQueryableIndexFactory();
   }
  else {
     throw new ISE("Unknown queryableFactoryType[%s]",config.getQueryableFactoryType());
   }
-  delegateLoader.setLoaderTypes(ImmutableMap.<String,StorageAdapterLoader>builder().put("s3",new SingleStorageAdapterLoader(segmentGetter,factory)).put("s3_zip",new SingleStorageAdapterLoader(zippedGetter,factory)).put("realtime",new SingleStorageAdapterLoader(realtimeGetter,factory)).build());
+  delegateLoader.setLoaderTypes(ImmutableMap.<String,SegmentLoader>builder().put("s3",new SingleSegmentLoader(segmentGetter,factory)).put("s3_zip",new SingleSegmentLoader(zippedGetter,factory)).build());
   return delegateLoader;
 }

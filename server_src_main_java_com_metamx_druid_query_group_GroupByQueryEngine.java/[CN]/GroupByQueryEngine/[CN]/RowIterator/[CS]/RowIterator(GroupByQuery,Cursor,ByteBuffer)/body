@@ -1,0 +1,28 @@
+{
+  this.query=query;
+  this.cursor=cursor;
+  this.metricsBuffer=metricsBuffer;
+  unprocessedKeys=null;
+  delegate=Iterators.emptyIterator();
+  dimensionSpecs=query.getDimensions();
+  dimensions=Lists.newArrayListWithExpectedSize(dimensionSpecs.size());
+  dimNames=new String[dimensionSpecs.size()];
+  for (int i=0; i < dimensionSpecs.size(); ++i) {
+    final DimensionSpec dimSpec=dimensionSpecs.get(i);
+    final DimensionSelector selector=cursor.makeDimensionSelector(dimSpec.getDimension());
+    if (selector != null) {
+      dimensions.add(selector);
+    }
+    dimNames[i]=dimSpec.getOutputName();
+  }
+  aggregatorSpecs=query.getAggregatorSpecs();
+  aggregators=new BufferAggregator[aggregatorSpecs.size()];
+  metricNames=new String[aggregatorSpecs.size()];
+  sizesRequired=new int[aggregatorSpecs.size()];
+  for (int i=0; i < aggregatorSpecs.size(); ++i) {
+    AggregatorFactory aggregatorSpec=aggregatorSpecs.get(i);
+    aggregators[i]=aggregatorSpec.factorizeBuffered(cursor);
+    metricNames[i]=aggregatorSpec.getName();
+    sizesRequired[i]=aggregatorSpec.getMaxIntermediateSize();
+  }
+}

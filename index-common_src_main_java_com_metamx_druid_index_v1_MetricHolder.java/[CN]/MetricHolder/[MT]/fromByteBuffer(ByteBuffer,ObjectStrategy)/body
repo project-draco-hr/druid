@@ -12,14 +12,14 @@ case FLOAT:
   break;
 case COMPLEX:
 if (strategy != null) {
-  holder.complexType=GenericIndexed.readFromByteBuffer(buf,strategy);
+  holder.complexType=GenericIndexed.read(buf,strategy);
 }
  else {
   final ComplexMetricSerde serdeForType=ComplexMetrics.getSerdeForType(holder.getTypeName());
   if (serdeForType == null) {
     throw new ISE("Unknown type[%s], cannot load.",holder.getTypeName());
   }
-  holder.complexType=GenericIndexed.readFromByteBuffer(buf,serdeForType.getObjectStrategy());
+  holder.complexType=GenericIndexed.read(buf,serdeForType.getObjectStrategy());
 }
 break;
 }
