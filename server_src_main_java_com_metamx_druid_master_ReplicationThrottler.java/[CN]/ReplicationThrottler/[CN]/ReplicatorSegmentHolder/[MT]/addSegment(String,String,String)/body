@@ -1,0 +1,12 @@
+{
+  ConcurrentHashMap<String,String> segments=currentlyProcessingSegments.get(tier);
+  if (segments == null) {
+    segments=new ConcurrentHashMap<String,String>();
+    currentlyProcessingSegments.put(tier,segments);
+  }
+  if (segments.size() < maxReplicants) {
+    segments.put(segmentId,serverId);
+    return true;
+  }
+  return false;
+}
