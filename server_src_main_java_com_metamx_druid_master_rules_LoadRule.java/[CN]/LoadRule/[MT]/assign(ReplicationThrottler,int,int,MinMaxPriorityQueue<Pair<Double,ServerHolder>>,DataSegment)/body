@@ -1,22 +1,16 @@
 {
   MasterStats stats=new MasterStats();
-  List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(serverQueue);
-  List<ServerHolder> assignedServers=Lists.newArrayList();
   while (totalReplicants < expectedReplicants) {
-    final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
-    final BalancerCostAnalyzer analyzer=params.getBalancerCostAnalyzer(referenceTimestamp);
-    ServerHolder holder=analyzer.findNewSegmentHome(segment,serverHolderList);
+    ServerHolder holder=serverQueue.pollFirst().rhs;
     if (holder == null) {
-      log.warn("Not enough %s servers[%d] or node capacity to assign segment[%s]! Expected Replicants[%d]",getTier(),assignedServers.size() + serverQueue.size() + 1,segment.getIdentifier(),expectedReplicants);
+      log.warn("Not enough %s servers or node capacity to assign segment[%s]! Expected Replicants[%d]",getTier(),segment.getIdentifier(),expectedReplicants);
       break;
     }
     if (holder.isServingSegment(segment) || holder.isLoadingSegment(segment)) {
-      assignedServers.add(holder);
       continue;
     }
     if (totalReplicants > 0) {
       if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier())) {
-        serverQueue.add(holder);
         break;
       }
     }
@@ -26,10 +20,8 @@
       }
     }
 );
-    assignedServers.add(holder);
     stats.addToTieredStat("assignedCount",getTier(),1);
     ++totalReplicants;
   }
-  serverQueue.addAll(assignedServers);
   return stats;
 }
