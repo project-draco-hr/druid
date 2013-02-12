@@ -1,13 +1,9 @@
 {
-  final MinMaxPriorityQueue<Pair<Double,ServerHolder>> costServerPairs=MinMaxPriorityQueue.orderedBy(new Comparator<Pair<Double,ServerHolder>>(){
-    @Override public int compare(    Pair<Double,ServerHolder> o,    Pair<Double,ServerHolder> o1){
-      return Double.compare(o.lhs,o1.lhs);
-    }
-  }
-).create();
   final long proposalSegmentSize=proposalSegment.getSize();
+  double minCost=Double.MAX_VALUE;
+  ServerHolder toServer=null;
   for (  ServerHolder server : serverHolders) {
-    if (proposalSegmentSize > server.getAvailableSize()) {
+    if (proposalSegmentSize > server.getAvailableSize() || server.isServingSegment(proposalSegment) || server.isLoadingSegment(proposalSegment)) {
       break;
     }
     double cost=0f;
@@ -19,7 +15,10 @@
     for (    DataSegment segment : server.getPeon().getSegmentsToLoad()) {
       cost+=computeJointSegmentCosts(proposalSegment,segment);
     }
-    costServerPairs.add(Pair.of(cost,server));
+    if (cost < minCost) {
+      minCost=cost;
+      toServer=server;
+    }
   }
-  return costServerPairs;
+  return toServer;
 }

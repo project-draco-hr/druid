@@ -1,13 +1,10 @@
 {
-  MasterStats stats=new MasterStats();
+  final MasterStats stats=new MasterStats();
   while (totalReplicants < expectedReplicants) {
-    ServerHolder holder=serverQueue.pollFirst().rhs;
+    ServerHolder holder=analyzer.findNewSegmentHome(segment,serverHolderList);
     if (holder == null) {
       log.warn("Not enough %s servers or node capacity to assign segment[%s]! Expected Replicants[%d]",getTier(),segment.getIdentifier(),expectedReplicants);
       break;
-    }
-    if (holder.isServingSegment(segment) || holder.isLoadingSegment(segment)) {
-      continue;
     }
     if (totalReplicants > 0) {
       if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier())) {
