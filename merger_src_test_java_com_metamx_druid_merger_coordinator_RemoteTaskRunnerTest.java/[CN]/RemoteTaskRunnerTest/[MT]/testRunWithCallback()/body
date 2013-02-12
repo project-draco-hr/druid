@@ -1,0 +1,28 @@
+{
+  final MutableBoolean callbackCalled=new MutableBoolean(false);
+  remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),task1.getSegments(),Lists.<AggregatorFactory>newArrayList(),TaskStatus.running(task1.getId())),new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),new TaskCallback(){
+    @Override public void notify(    TaskStatus status){
+      callbackCalled.setValue(true);
+    }
+  }
+);
+  int count=0;
+  while (!remoteTaskRunner.isTaskRunning(task1.getId())) {
+    Thread.sleep(500);
+    if (count > 10) {
+      throw new ISE("WTF?! Task still not announced in ZK?");
+    }
+    count++;
+  }
+  Assert.assertTrue(remoteTaskRunner.getRunningTasks().size() == 1);
+  cf.setData().forPath(String.format("%s/worker1/task1",statusPath),jsonMapper.writeValueAsBytes(TaskStatus.success(task1.getId())));
+  count=0;
+  while (remoteTaskRunner.isTaskRunning(task1.getId())) {
+    Thread.sleep(500);
+    if (count > 10) {
+      throw new ISE("WTF?! Task still not announced in ZK?");
+    }
+    count++;
+  }
+  Assert.assertTrue("TaskCallback was not called!",callbackCalled.booleanValue());
+}

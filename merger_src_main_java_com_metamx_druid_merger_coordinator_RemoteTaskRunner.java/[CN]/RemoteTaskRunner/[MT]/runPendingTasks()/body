@@ -1,0 +1,21 @@
+{
+  Future future=runPendingTasksExec.submit(new Callable<Void>(){
+    @Override public Void call() throws Exception {
+      List<TaskWrapper> copy=Lists.newArrayList(pendingTasks.values());
+      for (      TaskWrapper taskWrapper : copy) {
+        assignTask(taskWrapper);
+      }
+      return null;
+    }
+  }
+);
+  try {
+    future.get();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  ExecutionException e) {
+    throw Throwables.propagate(e.getCause());
+  }
+}

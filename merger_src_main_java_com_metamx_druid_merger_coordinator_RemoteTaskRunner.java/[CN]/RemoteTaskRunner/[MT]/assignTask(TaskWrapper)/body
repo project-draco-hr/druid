@@ -1,36 +1,28 @@
 {
-  WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
-  if (workerWrapper != null) {
-    final Worker worker=workerWrapper.getWorker();
-    try {
+  try {
+    WorkerWrapper workerWrapper=findWorkerRunningTask(taskWrapper);
+    if (workerWrapper != null) {
+      final Worker worker=workerWrapper.getWorker();
       log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskWrapper.getTask().getId());
-      final ChildData workerData=workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId()));
-      if (workerData != null && workerData.getData() != null) {
-        final TaskStatus taskStatus=jsonMapper.readValue(workerData.getData(),TaskStatus.class);
-        TaskCallback callback=taskWrapper.getCallback();
-        if (callback != null) {
-          callback.notify(taskStatus);
-        }
-        if (taskStatus.isComplete()) {
-          new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()).run();
-        }
+      runningTasks.put(taskWrapper.getTask().getId(),pendingTasks.remove(taskWrapper.getTask().getId()));
+      final ChildData statusData=workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskWrapper.getTask().getId()));
+      final TaskStatus taskStatus=jsonMapper.readValue(statusData.getData(),TaskStatus.class);
+      TaskCallback callback=taskWrapper.getCallback();
+      if (callback != null) {
+        callback.notify(taskStatus);
       }
- else {
-        log.warn("Worker data was null for worker: %s",worker.getHost());
+      if (taskStatus.isComplete()) {
+        cleanup(worker.getHost(),taskWrapper.getTask().getId());
       }
     }
- catch (    Exception e) {
-      log.error(e,"Task exists, but hit exception!");
-      retryTask(new CleanupPaths(worker.getHost(),taskWrapper.getTask().getId()),taskWrapper);
+ else {
+      workerWrapper=findWorkerForTask();
+      if (workerWrapper != null) {
+        announceTask(workerWrapper.getWorker(),taskWrapper);
+      }
     }
   }
- else {
-    workerWrapper=findWorkerForTask();
-    if (workerWrapper != null) {
-      announceTask(workerWrapper.getWorker(),taskWrapper);
-    }
- else {
-      retryTask(null,taskWrapper);
-    }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
   }
 }

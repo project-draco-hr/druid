@@ -1,0 +1,10 @@
+{
+  scheduledExec.schedule(new Runnable(){
+    @Override public void run(){
+      runningTasks.remove(taskId);
+      cleanup(workerId,taskId);
+      addPendingTask(taskWrapper);
+    }
+  }
+,taskWrapper.getRetryPolicy().getAndIncrementRetryDelay().getMillis(),TimeUnit.MILLISECONDS);
+}

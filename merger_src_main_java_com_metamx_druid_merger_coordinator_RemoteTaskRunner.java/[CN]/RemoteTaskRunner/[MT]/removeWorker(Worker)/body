@@ -5,9 +5,9 @@
       Set<String> tasksToRetry=Sets.newHashSet(workerWrapper.getRunningTasks());
       tasksToRetry.addAll(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),worker.getHost())));
       for (      String taskId : tasksToRetry) {
-        TaskWrapper taskWrapper=tasks.get(taskId);
+        TaskWrapper taskWrapper=runningTasks.get(taskId);
         if (taskWrapper != null) {
-          retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
+          retryTask(runningTasks.get(taskId),worker.getHost(),taskId);
         }
       }
       workerWrapper.getStatusCache().close();

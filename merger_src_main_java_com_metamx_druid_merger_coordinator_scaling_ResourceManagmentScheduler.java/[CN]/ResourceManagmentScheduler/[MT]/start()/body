@@ -5,7 +5,7 @@ synchronized (lock) {
     }
     ScheduledExecutors.scheduleAtFixedRate(exec,config.getProvisionResourcesDuration(),new Runnable(){
       @Override public void run(){
-        resourceManagementStrategy.doProvision(taskQueue.getAvailableTasks(),remoteTaskRunner.getAvailableWorkers());
+        resourceManagementStrategy.doProvision(taskRunner.getPendingTasks(),taskRunner.getWorkers());
       }
     }
 );
@@ -14,7 +14,7 @@ synchronized (lock) {
     final long startTime=granularity.next(granularity.truncate(new DateTime().getMillis()));
     ScheduledExecutors.scheduleAtFixedRate(exec,new Duration(System.currentTimeMillis(),startTime),config.getTerminateResourcesDuration(),new Runnable(){
       @Override public void run(){
-        resourceManagementStrategy.doTerminate(taskQueue.getAvailableTasks(),remoteTaskRunner.getAvailableWorkers());
+        resourceManagementStrategy.doTerminate(taskRunner.getPendingTasks(),taskRunner.getWorkers());
       }
     }
 );
