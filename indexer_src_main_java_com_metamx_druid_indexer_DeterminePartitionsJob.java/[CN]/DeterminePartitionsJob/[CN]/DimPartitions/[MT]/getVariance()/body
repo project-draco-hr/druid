@@ -1,0 +1,9 @@
+{
+  final long meanRows=getRows() / partitions.size();
+  long variance=0;
+  for (  final DimPartition dimPartition : partitions) {
+    variance+=(dimPartition.rows - meanRows) * (dimPartition.rows - meanRows);
+  }
+  variance/=partitions.size();
+  return variance;
+}
