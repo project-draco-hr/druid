@@ -7,7 +7,7 @@
   }
 );
   int count=0;
-  while (!remoteTaskRunner.isTaskRunning(task1.getId())) {
+  while (remoteTaskRunner.findWorkerRunningTask(task1.getId()) == null) {
     Thread.sleep(500);
     if (count > 10) {
       throw new ISE("WTF?! Task still not announced in ZK?");
@@ -17,7 +17,7 @@
   Assert.assertTrue(remoteTaskRunner.getRunningTasks().size() == 1);
   cf.setData().forPath(String.format("%s/worker1/task1",statusPath),jsonMapper.writeValueAsBytes(TaskStatus.success(task1.getId())));
   count=0;
-  while (remoteTaskRunner.isTaskRunning(task1.getId())) {
+  while (remoteTaskRunner.findWorkerRunningTask(task1.getId()) != null) {
     Thread.sleep(500);
     if (count > 10) {
       throw new ISE("WTF?! Task still not announced in ZK?");
