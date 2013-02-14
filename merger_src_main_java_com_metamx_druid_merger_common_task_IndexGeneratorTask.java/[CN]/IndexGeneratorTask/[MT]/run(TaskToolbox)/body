@@ -1,0 +1,44 @@
+{
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction(this)));
+  final Interval interval=getFixedInterval().get();
+  final File tmpDir=new File(String.format("%s/%s",toolbox.getConfig().getTaskDir(this).toString(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum())));
+  final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
+  final SegmentPusher wrappedSegmentPusher=new SegmentPusher(){
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      final DataSegment pushedSegment=toolbox.getSegmentPusher().push(file,segment);
+      pushedSegments.add(pushedSegment);
+      return pushedSegment;
+    }
+  }
+;
+  final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
+  final Firehose firehose=firehoseFactory.connect();
+  final Plumber plumber=new YeOldePlumberSchool(interval,myLock.getVersion(),wrappedSegmentPusher,tmpDir).findPlumber(schema,metrics);
+  try {
+    while (firehose.hasMore()) {
+      final InputRow inputRow=firehose.nextRow();
+      if (shouldIndex(inputRow)) {
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if (sink == null) {
+          throw new NullPointerException(String.format("Was expecting non-null sink for timestamp[%s]",new DateTime(inputRow.getTimestampFromEpoch())));
+        }
+        int numRows=sink.add(inputRow);
+        metrics.incrementProcessed();
+        if (numRows >= toolbox.getConfig().getRowFlushBoundary()) {
+          plumber.persist(firehose.commit());
+        }
+      }
+ else {
+        metrics.incrementThrownAway();
+      }
+    }
+  }
+  finally {
+    firehose.close();
+  }
+  plumber.persist(firehose.commit());
+  plumber.finishJob();
+  log.info("Task[%s] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away) and output %,d rows",getId(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
+  toolbox.getTaskActionClient().submit(new SegmentInsertAction(this,ImmutableSet.copyOf(pushedSegments)));
+  return TaskStatus.success(getId());
+}

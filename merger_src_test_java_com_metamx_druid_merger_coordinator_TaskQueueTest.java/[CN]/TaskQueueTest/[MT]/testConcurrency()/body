@@ -1,44 +1,50 @@
 {
   final TaskStorage ts=new LocalTaskStorage();
-  final TaskQueue tq=newTaskQueueWithStorage(ts);
+  final TaskLockbox tl=new TaskLockbox(ts);
+  final TaskQueue tq=newTaskQueue(ts,tl);
+  final TaskToolbox tb=new TaskToolbox(null,new LocalTaskActionClient(ts,new TaskActionToolbox(tq,tl,null,null)),null,null,null,null,null);
   final Task t1=newTask("T1","G0","bar",new Interval("2011-01-01/P1D"));
   final Task t2=newTask("T2","G1","bar",new Interval("2011-01-02/P1D"));
   final Task t3=newTask("T3","G0","bar",new Interval("2011-01-03/P1D"));
   final Task t4=newTask("T4","G0","bar",new Interval("2011-01-02/P5D"));
   final Task t0=newContinuedTask("T0","G0","bar",new Interval("2011-01-01/P3D"),ImmutableList.of(t1,t2,t3,t4));
   tq.add(t0);
-  final VersionedTaskWrapper wt0=tq.poll();
-  Assert.assertEquals("wt0 task id","T0",wt0.getTask().getId());
+  final Task wt0=tq.poll();
+  final TaskLock wt0Lock=Iterables.getOnlyElement(tl.findLocksForTask(wt0));
+  Assert.assertEquals("wt0 task id","T0",wt0.getId());
   Assert.assertNull("null poll #1",tq.poll());
   Thread.sleep(5);
-  tq.notify(t0,t0.run(null,null,null));
+  tq.notify(t0,t0.run(tb));
   final Set<String> taken=Sets.newHashSet();
   while (true) {
     Thread.sleep(5);
-    final VersionedTaskWrapper taskWrapper=tq.poll();
-    if (taskWrapper != null) {
-      Assert.assertEquals(String.format("%s version",taskWrapper.getTask().getId()),wt0.getVersion(),taskWrapper.getVersion());
-      taken.add(taskWrapper.getTask().getId());
+    final Task task=tq.poll();
+    if (task != null) {
+      final TaskLock taskLock=Iterables.getOnlyElement(tl.findLocksForTask(task));
+      Assert.assertEquals(String.format("%s version",task.getId()),wt0Lock.getVersion(),taskLock.getVersion());
+      taken.add(task.getId());
     }
  else {
       break;
     }
   }
   Assert.assertEquals("taken",Sets.newHashSet("T1","T3"),taken);
-  tq.notify(t1,t1.run(null,null,null));
+  tq.notify(t1,t1.run(null));
   Assert.assertNull("null poll #2",tq.poll());
-  tq.notify(t3,t3.run(null,null,null));
-  final VersionedTaskWrapper wt2=tq.poll();
-  Assert.assertEquals("wt2 task id","T2",wt2.getTask().getId());
-  Assert.assertEquals("wt2 group id","G1",wt2.getTask().getGroupId());
-  Assert.assertNotSame("wt2 version",wt0.getVersion(),wt2.getVersion());
+  tq.notify(t3,t3.run(tb));
+  final Task wt2=tq.poll();
+  final TaskLock wt2Lock=Iterables.getOnlyElement(tl.findLocksForTask(wt2));
+  Assert.assertEquals("wt2 task id","T2",wt2.getId());
+  Assert.assertEquals("wt2 group id","G1",wt2.getGroupId());
+  Assert.assertNotSame("wt2 version",wt0Lock.getVersion(),wt2Lock.getVersion());
   Assert.assertNull("null poll #3",tq.poll());
-  tq.notify(t2,t2.run(null,null,null));
-  final VersionedTaskWrapper wt4=tq.poll();
-  Assert.assertEquals("wt4 task id","T4",wt4.getTask().getId());
-  Assert.assertEquals("wt4 group id","G0",wt4.getTask().getGroupId());
-  Assert.assertNotSame("wt4 version",wt0.getVersion(),wt4.getVersion());
-  Assert.assertNotSame("wt4 version",wt2.getVersion(),wt4.getVersion());
-  tq.notify(t4,t4.run(null,null,null));
+  tq.notify(t2,t2.run(tb));
+  final Task wt4=tq.poll();
+  final TaskLock wt4Lock=Iterables.getOnlyElement(tl.findLocksForTask(wt4));
+  Assert.assertEquals("wt4 task id","T4",wt4.getId());
+  Assert.assertEquals("wt4 group id","G0",wt4.getGroupId());
+  Assert.assertNotSame("wt4 version",wt0Lock.getVersion(),wt4Lock.getVersion());
+  Assert.assertNotSame("wt4 version",wt2Lock.getVersion(),wt4Lock.getVersion());
+  tq.notify(t4,t4.run(tb));
   Assert.assertNull("null poll #4",tq.poll());
 }

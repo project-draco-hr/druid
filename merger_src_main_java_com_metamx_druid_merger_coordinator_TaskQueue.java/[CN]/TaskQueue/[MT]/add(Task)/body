@@ -11,7 +11,9 @@
     }
     queue.add(task);
     workMayBeAvailable.signalAll();
-    tryLock(task);
+    if (task.getFixedInterval().isPresent()) {
+      taskLockbox.tryLock(task,task.getFixedInterval().get());
+    }
     return true;
   }
   finally {

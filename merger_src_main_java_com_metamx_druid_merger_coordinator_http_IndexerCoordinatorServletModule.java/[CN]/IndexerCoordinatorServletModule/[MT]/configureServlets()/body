@@ -4,9 +4,8 @@
   bind(ObjectMapper.class).toInstance(jsonMapper);
   bind(IndexerCoordinatorConfig.class).toInstance(indexerCoordinatorConfig);
   bind(ServiceEmitter.class).toInstance(emitter);
-  bind(TaskQueue.class).toInstance(tasks);
+  bind(TaskMasterLifecycle.class).toInstance(taskMasterLifecycle);
   bind(TaskStorageQueryAdapter.class).toInstance(taskStorageQueryAdapter);
   bind(WorkerSetupManager.class).toInstance(workerSetupManager);
-  bind(TaskMaster.class).toInstance(taskMaster);
   serve("/*").with(GuiceContainer.class);
 }

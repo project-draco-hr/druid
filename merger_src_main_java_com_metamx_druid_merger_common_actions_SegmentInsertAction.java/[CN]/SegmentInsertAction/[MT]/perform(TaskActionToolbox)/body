@@ -1,0 +1,26 @@
+{
+  final List<TaskLock> taskLocks=toolbox.getTaskLockbox().findLocksForTask(task);
+  for (  final DataSegment segment : segments) {
+    final boolean ok=Iterables.any(taskLocks,new Predicate<TaskLock>(){
+      @Override public boolean apply(      TaskLock taskLock){
+        return taskLock.getVersion().equals(segment.getVersion()) && taskLock.getDataSource().equals(segment.getDataSource()) && taskLock.getInterval().contains(segment.getInterval());
+      }
+    }
+);
+    if (!ok) {
+      throw new ISE("No currently-held lock covers segment: %s",segment);
+    }
+  }
+  try {
+    toolbox.getMergerDBCoordinator().announceHistoricalSegments(segments);
+    final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType());
+    for (    DataSegment segment : segments) {
+      metricBuilder.setUser5(segment.getInterval().toString());
+      toolbox.getEmitter().emit(metricBuilder.build("indexer/segment/bytes",segment.getSize()));
+    }
+    return null;
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

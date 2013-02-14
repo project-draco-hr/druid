@@ -1,0 +1,21 @@
+{
+  final Optional<Task> taskOptional=storage.getTask(taskid);
+  final Set<DataSegment> segments=Sets.newHashSet();
+  final List<Task> nextTasks=Lists.newArrayList();
+  for (  final TaskAction action : storage.getAuditLogs(taskid)) {
+    if (action instanceof SpawnTasksAction) {
+      nextTasks.addAll(((SpawnTasksAction)action).getNewTasks());
+    }
+    if (action instanceof SegmentInsertAction) {
+      segments.addAll(((SegmentInsertAction)action).getSegments());
+    }
+  }
+  if (taskOptional.isPresent()) {
+    for (    final Task nextTask : nextTasks) {
+      if (nextTask.getGroupId().equals(taskOptional.get().getGroupId())) {
+        segments.addAll(getSameGroupNewSegments(nextTask.getId()));
+      }
+    }
+  }
+  return segments;
+}

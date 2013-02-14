@@ -1,31 +1,7 @@
 {
   giant.lock();
   try {
-    Preconditions.checkState(!active,"queue was already started!");
-    Preconditions.checkState(queue.isEmpty(),"queue must be empty!");
-    Preconditions.checkState(running.isEmpty(),"running list must be empty!");
-    final TaskStorageQueryAdapter taskStorageQueryAdapter=new TaskStorageQueryAdapter(taskStorage);
-    final List<VersionedTaskWrapper> runningTasks=taskStorageQueryAdapter.getRunningTaskVersions();
-    final Ordering<VersionedTaskWrapper> byVersionOrdering=new Ordering<VersionedTaskWrapper>(){
-      final private Ordering<String> baseOrdering=Ordering.natural().nullsLast();
-      @Override public int compare(      VersionedTaskWrapper left,      VersionedTaskWrapper right){
-        return baseOrdering.compare(left.getVersion(),right.getVersion());
-      }
-    }
-;
-    for (    final VersionedTaskWrapper taskAndVersion : byVersionOrdering.sortedCopy(runningTasks)) {
-      final Task task=taskAndVersion.getTask();
-      final String preferredVersion=taskAndVersion.getVersion();
-      queue.add(task);
-      if (preferredVersion != null) {
-        final Optional<String> version=tryLock(task,Optional.of(preferredVersion));
-        log.info("Bootstrapped task[%s] with preferred version[%s]: %s",task.getId(),preferredVersion,version.isPresent() ? String.format("locked with version[%s]",version.get()) : "not lockable");
-      }
- else {
-        log.info("Bootstrapped task[%s] with no preferred version",task.getId());
-      }
-    }
-    log.info("Bootstrapped %,d tasks. Ready to go!",runningTasks.size());
+    Preconditions.checkState(!active,"queue must be stopped");
     active=true;
     workMayBeAvailable.signalAll();
   }

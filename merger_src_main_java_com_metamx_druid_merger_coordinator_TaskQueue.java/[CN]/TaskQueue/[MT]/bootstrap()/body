@@ -1,0 +1,43 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkState(!active,"queue must be stopped");
+    log.info("Bootstrapping queue (and associated lockbox)");
+    queue.clear();
+    taskLockbox.clear();
+    final List<Task> runningTasks=taskStorage.getRunningTasks();
+    for (    final Task task : runningTasks) {
+      queue.add(task);
+    }
+    final Multimap<TaskLock,Task> tasksByLock=ArrayListMultimap.create();
+    for (    final Task runningTask : runningTasks) {
+      for (      final TaskLock taskLock : taskStorage.getLocks(runningTask.getId())) {
+        tasksByLock.put(taskLock,runningTask);
+      }
+    }
+    final Ordering<TaskLock> byVersionOrdering=new Ordering<TaskLock>(){
+      @Override public int compare(      TaskLock left,      TaskLock right){
+        return left.getVersion().compareTo(right.getVersion());
+      }
+    }
+;
+    for (    final Map.Entry<TaskLock,Task> taskAndLock : tasksByLock.entries()) {
+      final Task task=taskAndLock.getValue();
+      final TaskLock savedTaskLock=taskAndLock.getKey();
+      final Optional<TaskLock> acquiredTaskLock=taskLockbox.tryLock(task,savedTaskLock.getInterval(),Optional.of(savedTaskLock.getVersion()));
+      if (acquiredTaskLock.isPresent() && savedTaskLock.getVersion().equals(acquiredTaskLock.get().getVersion())) {
+        log.info("Reacquired lock on interval[%s] version[%s] for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),task.getId());
+      }
+ else       if (acquiredTaskLock.isPresent()) {
+        log.info("Could not reacquire lock on interval[%s] version[%s] (got version[%s] instead) for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),acquiredTaskLock.get().getVersion(),task.getId());
+      }
+ else {
+        log.info("Could not reacquire lock on interval[%s] version[%s] for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),task.getId());
+      }
+    }
+    log.info("Bootstrapped %,d tasks. Ready to go!",runningTasks.size());
+  }
+  finally {
+    giant.unlock();
+  }
+}

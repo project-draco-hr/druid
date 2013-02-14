@@ -1,0 +1,41 @@
+{
+  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType()).setUser5(task.getFixedInterval().toString());
+  TaskStatus preflightStatus;
+  try {
+    preflightStatus=task.preflight(toolbox);
+    log.info("Preflight done for task: %s",task.getId());
+  }
+ catch (  Exception e) {
+    preflightStatus=TaskStatus.failure(task.getId());
+    log.error(e,"Exception thrown during preflight for task: %s",task.getId());
+  }
+  if (!preflightStatus.isRunnable()) {
+    log.info("Task finished during preflight: %s",task.getId());
+    queue.notify(task,preflightStatus);
+    return;
+  }
+  runner.run(task,new TaskCallback(){
+    @Override public void notify(    final TaskStatus statusFromRunner){
+      try {
+        log.info("Received %s status for task: %s",statusFromRunner.getStatusCode(),task);
+        if (shutdown) {
+          log.info("Abandoning task due to shutdown: %s",task.getId());
+          return;
+        }
+        queue.notify(task,statusFromRunner);
+        if (statusFromRunner.isComplete()) {
+          metricBuilder.setUser3(statusFromRunner.getStatusCode().toString());
+          emitter.emit(metricBuilder.build("indexer/time/run/millis",statusFromRunner.getDuration()));
+          if (statusFromRunner.isFailure()) {
+            log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getFixedInterval()).emit();
+          }
+          log.info("Task %s: %s (%d run duration)",statusFromRunner.getStatusCode(),task,statusFromRunner.getDuration());
+        }
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to handle task callback").addData("task",task.getId()).addData("statusCode",statusFromRunner.getStatusCode()).emit();
+      }
+    }
+  }
+);
+}

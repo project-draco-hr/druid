@@ -1,7 +1,7 @@
 {
-  remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),task1.getSegments(),Lists.<AggregatorFactory>newArrayList(),TaskStatus.running(task1.getId())),new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),null);
+  remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),task1.getSegments(),Lists.<AggregatorFactory>newArrayList(),TaskStatus.running(task1.getId())),null);
   try {
-    remoteTaskRunner.run(task1,new TaskContext(new DateTime().toString(),Sets.<DataSegment>newHashSet(),Sets.<DataSegment>newHashSet()),null);
+    remoteTaskRunner.run(task1,null);
     fail("ISE expected");
   }
  catch (  ISE expected) {
