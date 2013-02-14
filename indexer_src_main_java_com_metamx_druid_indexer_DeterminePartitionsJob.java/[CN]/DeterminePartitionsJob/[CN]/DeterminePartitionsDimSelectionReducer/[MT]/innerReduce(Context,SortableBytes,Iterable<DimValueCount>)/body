@@ -61,7 +61,9 @@
     throw new ISE("No suitable partitioning dimension found!");
   }
   final int totalRows=dimPartitionss.values().iterator().next().getRows();
-  int maxCardinality=-1;
+  int maxCardinality=Integer.MIN_VALUE;
+  long minVariance=Long.MAX_VALUE;
+  DimPartitions minVariancePartitions=null;
   DimPartitions maxCardinalityPartitions=null;
   for (  final DimPartitions dimPartitions : dimPartitionss.values()) {
     if (dimPartitions.getRows() != totalRows) {
@@ -77,9 +79,15 @@
     if (oversized) {
       continue;
     }
-    if (dimPartitions.getCardinality() > maxCardinality) {
-      maxCardinality=dimPartitions.getCardinality();
+    final int cardinality=dimPartitions.getCardinality();
+    final long variance=dimPartitions.getVariance();
+    if (cardinality > maxCardinality) {
+      maxCardinality=cardinality;
       maxCardinalityPartitions=dimPartitions;
+    }
+    if (variance < minVariance) {
+      minVariance=variance;
+      minVariancePartitions=dimPartitions;
     }
   }
   if (maxCardinalityPartitions == null) {
@@ -87,7 +95,8 @@
   }
   final DateTime bucket=new DateTime(new String(keyBytes.getGroupKey(),Charsets.UTF_8));
   final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0)),config.isOverwriteFiles());
-  final List<ShardSpec> chosenShardSpecs=Lists.transform(maxCardinalityPartitions.partitions,new Function<DimPartition,ShardSpec>(){
+  final DimPartitions chosenPartitions=maxCardinality > HIGH_CARDINALITY_THRESHOLD ? maxCardinalityPartitions : minVariancePartitions;
+  final List<ShardSpec> chosenShardSpecs=Lists.transform(chosenPartitions.partitions,new Function<DimPartition,ShardSpec>(){
     @Override public ShardSpec apply(    DimPartition dimPartition){
       return dimPartition.shardSpec;
     }

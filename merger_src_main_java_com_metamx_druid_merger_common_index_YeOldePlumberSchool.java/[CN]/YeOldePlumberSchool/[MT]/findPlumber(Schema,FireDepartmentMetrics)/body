@@ -37,7 +37,7 @@
           IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload);
         }
         final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
-        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version);
+        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version).withBinaryVersion(IndexIO.getVersionFromDir(fileToUpload));
         segmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
       }

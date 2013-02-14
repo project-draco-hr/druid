@@ -2,12 +2,12 @@
   ObjectMapper mapper=new DefaultObjectMapper();
   final Interval interval=new Interval("2011-10-01/2011-10-02");
   final ImmutableMap<String,Object> loadSpec=ImmutableMap.<String,Object>of("something","or_other");
-  DataSegment segment=new DataSegment("something",interval,"1",loadSpec,Arrays.asList("dim1","dim2"),Arrays.asList("met1","met2"),new NoneShardSpec(),1);
+  DataSegment segment=new DataSegment("something",interval,"1",loadSpec,Arrays.asList("dim1","dim2"),Arrays.asList("met1","met2"),new NoneShardSpec(),IndexIO.CURRENT_VERSION_ID,1);
   final SegmentChangeRequestDrop segmentDrop=new SegmentChangeRequestDrop(segment);
   Map<String,Object> objectMap=mapper.readValue(mapper.writeValueAsString(segmentDrop),new TypeReference<Map<String,Object>>(){
   }
 );
-  Assert.assertEquals(10,objectMap.size());
+  Assert.assertEquals(11,objectMap.size());
   Assert.assertEquals("drop",objectMap.get("action"));
   Assert.assertEquals("something",objectMap.get("dataSource"));
   Assert.assertEquals(interval.toString(),objectMap.get("interval"));
@@ -16,5 +16,6 @@
   Assert.assertEquals("dim1,dim2",objectMap.get("dimensions"));
   Assert.assertEquals("met1,met2",objectMap.get("metrics"));
   Assert.assertEquals(ImmutableMap.of("type","none"),objectMap.get("shardSpec"));
+  Assert.assertEquals(IndexIO.CURRENT_VERSION_ID,objectMap.get("binaryVersion"));
   Assert.assertEquals(1,objectMap.get("size"));
 }

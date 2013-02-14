@@ -1,8 +1,18 @@
 {
-  remoteTaskRunner.run(task1,null);
+  final CountDownLatch latch=new CountDownLatch(1);
+  remoteTaskRunner.run(new TestTask(task1){
+    @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
+      latch.await();
+      return super.run(toolbox);
+    }
+  }
+,null);
   try {
     remoteTaskRunner.run(task1,null);
+    latch.countDown();
+    fail("ISE expected");
   }
  catch (  ISE expected) {
+    latch.countDown();
   }
 }
