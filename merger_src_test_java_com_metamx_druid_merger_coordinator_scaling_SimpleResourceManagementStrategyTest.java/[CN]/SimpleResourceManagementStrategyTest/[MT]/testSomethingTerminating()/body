@@ -4,11 +4,11 @@
   EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList()).times(2);
   EasyMock.expect(autoScalingStrategy.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.<String>newArrayList("foobar"),Lists.newArrayList("foobrick")));
   EasyMock.replay(autoScalingStrategy);
-  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<TaskRunnerWorkItem>asList(new TaskRunnerWorkItem(testTask,null,null,null,null).withQueueInsertionTime(new DateTime())),Arrays.<WorkerWrapper>asList(new TestWorkerWrapper(null)));
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<TaskRunnerWorkItem>asList(new TaskRunnerWorkItem(testTask,null,null,null,null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
   Assert.assertTrue(terminatedSomething);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().size() == 1);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);
-  terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<TaskRunnerWorkItem>asList(new TaskRunnerWorkItem(testTask,null,null,null,null).withQueueInsertionTime(new DateTime())),Arrays.<WorkerWrapper>asList(new TestWorkerWrapper(null)));
+  terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<TaskRunnerWorkItem>asList(new TaskRunnerWorkItem(testTask,null,null,null,null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
   Assert.assertFalse(terminatedSomething);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().size() == 1);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);

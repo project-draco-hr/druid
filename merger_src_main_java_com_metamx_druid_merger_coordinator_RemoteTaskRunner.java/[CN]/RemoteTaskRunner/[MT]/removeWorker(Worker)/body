@@ -1,6 +1,6 @@
 {
-  WorkerWrapper workerWrapper=zkWorkers.get(worker.getHost());
-  if (workerWrapper != null) {
+  ZkWorker zkWorker=zkWorkers.get(worker.getHost());
+  if (zkWorker != null) {
     try {
       Set<String> tasksPending=Sets.newHashSet(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),worker.getHost())));
       log.info("%s had %d tasks pending",worker.getHost(),tasksPending.size());
@@ -11,10 +11,10 @@
           retryTask(taskRunnerWorkItem,worker.getHost());
         }
  else {
-          log.info("RemoteTaskRunner has no knowledge of pending task %s",taskId);
+          log.warn("RemoteTaskRunner has no knowledge of pending task %s",taskId);
         }
       }
-      workerWrapper.getStatusCache().close();
+      zkWorker.getStatusCache().close();
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);

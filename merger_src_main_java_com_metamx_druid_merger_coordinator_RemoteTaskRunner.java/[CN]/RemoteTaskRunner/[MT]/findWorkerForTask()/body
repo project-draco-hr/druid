@@ -1,12 +1,12 @@
 {
   try {
-    final MinMaxPriorityQueue<WorkerWrapper> workerQueue=MinMaxPriorityQueue.<WorkerWrapper>orderedBy(new Comparator<WorkerWrapper>(){
-      @Override public int compare(      WorkerWrapper w1,      WorkerWrapper w2){
+    final MinMaxPriorityQueue<ZkWorker> workerQueue=MinMaxPriorityQueue.<ZkWorker>orderedBy(new Comparator<ZkWorker>(){
+      @Override public int compare(      ZkWorker w1,      ZkWorker w2){
         return -Ints.compare(w1.getRunningTasks().size(),w2.getRunningTasks().size());
       }
     }
-).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<WorkerWrapper>(){
-      @Override public boolean apply(      WorkerWrapper input){
+).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<ZkWorker>(){
+      @Override public boolean apply(      ZkWorker input){
         return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupManager.getWorkerSetupData().getMinVersion()) >= 0);
       }
     }

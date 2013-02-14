@@ -2,7 +2,7 @@
   try {
     final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
-    final WorkerWrapper workerWrapper=new WorkerWrapper(worker,statusCache,jsonMapper);
+    final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
         try {
@@ -35,7 +35,7 @@ synchronized (statusLock) {
                   callback.notify(taskStatus);
                 }
               }
-              workerWrapper.setLastCompletedTaskTime(new DateTime());
+              zkWorker.setLastCompletedTaskTime(new DateTime());
               cleanup(worker.getHost(),taskId);
               runPendingTasks();
             }
@@ -54,7 +54,7 @@ synchronized (statusLock) {
       }
     }
 );
-    zkWorkers.put(worker.getHost(),workerWrapper);
+    zkWorkers.put(worker.getHost(),zkWorker);
     statusCache.start();
     runPendingTasks();
   }

@@ -1,6 +1,6 @@
 {
-  List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(workerWrappers,new Function<WorkerWrapper,String>(){
-    @Override public String apply(    WorkerWrapper input){
+  List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(zkWorkers,new Function<ZkWorker,String>(){
+    @Override public String apply(    ZkWorker input){
       return input.getWorker().getIp();
     }
   }
@@ -11,11 +11,11 @@
   boolean nothingTerminating=currentlyTerminating.isEmpty();
   if (nothingTerminating) {
     final int minNumWorkers=workerSetupManager.getWorkerSetupData().getMinNumWorkers();
-    if (workerWrappers.size() <= minNumWorkers) {
+    if (zkWorkers.size() <= minNumWorkers) {
       return false;
     }
-    List<WorkerWrapper> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(workerWrappers).filter(new Predicate<WorkerWrapper>(){
-      @Override public boolean apply(      WorkerWrapper input){
+    List<ZkWorker> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers).filter(new Predicate<ZkWorker>(){
+      @Override public boolean apply(      ZkWorker input){
         return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() >= config.getMaxWorkerIdleTimeMillisBeforeDeletion();
       }
     }
@@ -23,8 +23,8 @@
     if (thoseLazyWorkers.isEmpty()) {
       return false;
     }
-    AutoScalingData terminated=autoScalingStrategy.terminate(Lists.transform(thoseLazyWorkers.subList(minNumWorkers,thoseLazyWorkers.size() - 1),new Function<WorkerWrapper,String>(){
-      @Override public String apply(      WorkerWrapper input){
+    AutoScalingData terminated=autoScalingStrategy.terminate(Lists.transform(thoseLazyWorkers.subList(minNumWorkers,thoseLazyWorkers.size() - 1),new Function<ZkWorker,String>(){
+      @Override public String apply(      ZkWorker input){
         return input.getWorker().getIp();
       }
     }

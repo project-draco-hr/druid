@@ -1,25 +1,17 @@
 {
   try {
-    WorkerWrapper workerWrapper=findWorkerRunningTask(taskRunnerWorkItem.getTask().getId());
-    if (workerWrapper != null) {
-      final Worker worker=workerWrapper.getWorker();
-      log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskRunnerWorkItem.getTask().getId());
-      runningTasks.put(taskRunnerWorkItem.getTask().getId(),pendingTasks.remove(taskRunnerWorkItem.getTask().getId()));
-      log.info("Task %s switched from pending to running",taskRunnerWorkItem.getTask().getId());
-      final ChildData statusData=workerWrapper.getStatusCache().getCurrentData(JOINER.join(config.getStatusPath(),worker.getHost(),taskRunnerWorkItem.getTask().getId()));
-      final TaskStatus taskStatus=jsonMapper.readValue(statusData.getData(),TaskStatus.class);
-      if (taskStatus.isComplete()) {
-        TaskCallback callback=taskRunnerWorkItem.getCallback();
-        if (callback != null) {
-          callback.notify(taskStatus);
-        }
-        cleanup(worker.getHost(),taskRunnerWorkItem.getTask().getId());
-      }
+    final String taskId=taskRunnerWorkItem.getTask().getId();
+    ZkWorker zkWorker=findWorkerRunningTask(taskId);
+    if (zkWorker != null) {
+      final Worker worker=zkWorker.getWorker();
+      log.info("Worker[%s] is already running task[%s].",worker.getHost(),taskId);
+      runningTasks.put(taskId,pendingTasks.remove(taskId));
+      log.info("Task %s switched from pending to running",taskId);
     }
  else {
-      workerWrapper=findWorkerForTask();
-      if (workerWrapper != null) {
-        announceTask(workerWrapper.getWorker(),taskRunnerWorkItem);
+      zkWorker=findWorkerForTask();
+      if (zkWorker != null) {
+        announceTask(zkWorker.getWorker(),taskRunnerWorkItem);
       }
     }
   }
