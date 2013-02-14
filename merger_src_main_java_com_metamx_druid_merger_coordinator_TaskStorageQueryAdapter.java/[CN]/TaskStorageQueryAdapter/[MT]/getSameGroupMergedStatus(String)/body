@@ -3,16 +3,10 @@
   int nSuccesses=0;
   int nFailures=0;
   int nTotal=0;
-  final Set<DataSegment> segments=Sets.newHashSet();
-  final Set<DataSegment> segmentsNuked=Sets.newHashSet();
-  final List<Task> nextTasks=Lists.newArrayList();
   for (  final Optional<TaskStatus> statusOption : statuses.values()) {
     nTotal++;
     if (statusOption.isPresent()) {
       final TaskStatus status=statusOption.get();
-      segments.addAll(status.getSegments());
-      segmentsNuked.addAll(status.getSegmentsNuked());
-      nextTasks.addAll(status.getNextTasks());
       if (status.isSuccess()) {
         nSuccesses++;
       }
@@ -26,7 +20,7 @@
     status=Optional.absent();
   }
  else   if (nSuccesses == nTotal) {
-    status=Optional.of(TaskStatus.success(taskid).withSegments(segments).withSegmentsNuked(segmentsNuked).withNextTasks(nextTasks));
+    status=Optional.of(TaskStatus.success(taskid));
   }
  else   if (nFailures > 0) {
     status=Optional.of(TaskStatus.failure(taskid));

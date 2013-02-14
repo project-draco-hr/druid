@@ -1,3 +1,38 @@
 {
-  notify(task,status,null);
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(task,"task");
+    Preconditions.checkNotNull(taskStatus,"status");
+    Preconditions.checkState(active,"Queue is not active!");
+    Preconditions.checkArgument(task.getId().equals(taskStatus.getId()),"Mismatching task ids[%s/%s]",task.getId(),taskStatus.getId());
+    boolean didPersistStatus=false;
+    try {
+      final Optional<TaskStatus> previousStatus=taskStorage.getStatus(task.getId());
+      if (!previousStatus.isPresent() || !previousStatus.get().isRunnable()) {
+        log.makeAlert("Ignoring notification for dead task").addData("task",task.getId()).emit();
+        return;
+      }
+ else {
+        taskStorage.setStatus(taskStatus);
+        didPersistStatus=true;
+      }
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Failed to persist status for task").addData("task",task.getId()).addData("statusCode",taskStatus.getStatusCode()).emit();
+    }
+    if (taskStatus.isComplete()) {
+      if (didPersistStatus) {
+        log.info("Task done: %s",task);
+        taskLockbox.unlock(task);
+        workMayBeAvailable.signalAll();
+      }
+ else {
+        log.warn("Status could not be persisted! Reinserting task: %s",task.getId());
+        queue.add(task);
+      }
+    }
+  }
+  finally {
+    giant.unlock();
+  }
 }

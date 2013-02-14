@@ -4,9 +4,7 @@
     pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final TaskHolder taskHolder=toolbox.getObjectMapper().readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),TaskHolder.class);
-          final Task task=taskHolder.getTask();
-          final TaskContext taskContext=taskHolder.getTaskContext();
+          final Task task=toolbox.getObjectMapper().readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
           if (workerCuratorCoordinator.statusExists(task.getId())) {
             return;
           }
@@ -19,12 +17,7 @@
               try {
                 workerCuratorCoordinator.unannounceTask(task.getId());
                 workerCuratorCoordinator.announceStatus(TaskStatus.running(task.getId()));
-                taskStatus=task.run(taskContext,toolbox,new TaskCallback(){
-                  @Override public void notify(                  TaskStatus status){
-                    workerCuratorCoordinator.updateStatus(status);
-                  }
-                }
-);
+                taskStatus=task.run(toolbox);
               }
  catch (              Exception e) {
                 log.makeAlert(e,"Failed to run task").addData("task",task.getId()).emit();

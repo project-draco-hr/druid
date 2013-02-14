@@ -1,6 +1,7 @@
 {
   final TaskStorage ts=new LocalTaskStorage();
-  final TaskQueue tq=newTaskQueueWithStorage(ts);
+  final TaskLockbox tl=new TaskLockbox(ts);
+  final TaskQueue tq=newTaskQueue(ts,tl);
   Assert.assertFalse("getStatus",ts.getStatus("foo").isPresent());
   Assert.assertNull("poll",tq.poll());
 }

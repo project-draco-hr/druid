@@ -1,0 +1,7 @@
+{
+  if (taskMasterLifecycle == null) {
+    final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
+    taskMasterLifecycle=new TaskMasterLifecycle(taskQueue,taskToolbox,config,serviceDiscoveryConfig,taskRunnerFactory,curatorFramework,emitter);
+    lifecycle.addManagedInstance(taskMasterLifecycle);
+  }
+}

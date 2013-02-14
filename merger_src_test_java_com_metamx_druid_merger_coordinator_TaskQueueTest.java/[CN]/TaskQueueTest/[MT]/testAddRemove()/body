@@ -1,6 +1,7 @@
 {
   final TaskStorage ts=new LocalTaskStorage();
-  final TaskQueue tq=newTaskQueueWithStorage(ts);
+  final TaskLockbox tl=new TaskLockbox(ts);
+  final TaskQueue tq=newTaskQueue(ts,tl);
   final Task[] tasks={newTask("T0","G0","bar",new Interval("2011/P1Y")),newTask("T1","G1","bar",new Interval("2011-03-01/P1D")),newTask("T2","G2","foo",new Interval("2011-03-01/P1D")),newTask("T3","G3","foo",new Interval("2011/P1Y")),newTask("T4","G4","foo",new Interval("2012-01-02/P1D")),newTask("T5","G5","foo",new Interval("2012-02-01/PT1H"))};
   Throwable thrown;
   for (  Task task : tasks) {
@@ -17,27 +18,22 @@
   Assert.assertNotNull("Exception on duplicate task id",thrown);
   final List<Task> taken=Lists.newArrayList();
   while (true) {
-    final VersionedTaskWrapper taskWrapper=tq.poll();
-    if (taskWrapper != null) {
-      taken.add(taskWrapper.getTask());
+    final Task task=tq.poll();
+    if (task != null) {
+      taken.add(task);
     }
  else {
       break;
     }
   }
   Assert.assertEquals("Taken tasks (round 1)",Lists.newArrayList(tasks[0],tasks[2],tasks[4],tasks[5]),taken);
-  final TestCommitRunnable commit1=newCommitRunnable();
-  tq.notify(tasks[2],tasks[2].run(null,null,null),commit1);
+  tq.notify(tasks[2],tasks[2].run(null));
   Assert.assertEquals("T2 status (after finishing)",TaskStatus.Status.SUCCESS,ts.getStatus(tasks[2].getId()).get().getStatusCode());
-  Assert.assertEquals("Commit #1 wasRun",commit1.wasRun(),true);
-  final TestCommitRunnable commit2=newCommitRunnable();
-  tq.notify(tasks[2],tasks[2].run(null,null,null),commit2);
-  Assert.assertEquals("Commit #2 wasRun",commit2.wasRun(),false);
   taken.clear();
   while (true) {
-    final VersionedTaskWrapper taskWrapper=tq.poll();
-    if (taskWrapper != null) {
-      taken.add(taskWrapper.getTask());
+    final Task task=tq.poll();
+    if (task != null) {
+      taken.add(task);
     }
  else {
       break;

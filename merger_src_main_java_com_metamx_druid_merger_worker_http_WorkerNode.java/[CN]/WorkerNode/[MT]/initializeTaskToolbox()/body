@@ -1,8 +1,7 @@
 {
   if (taskToolbox == null) {
-    final RestS3Service s3Client=new RestS3Service(new AWSCredentials(PropUtils.getProperty(props,"com.metamx.aws.accessKey"),PropUtils.getProperty(props,"com.metamx.aws.secretKey")));
-    final SegmentPusher segmentPusher=new S3SegmentPusher(s3Client,configFactory.build(S3SegmentPusherConfig.class),jsonMapper);
-    final SegmentKiller segmentKiller=new S3SegmentKiller(s3Client);
-    taskToolbox=new TaskToolbox(taskConfig,emitter,s3Client,segmentPusher,segmentKiller,jsonMapper);
+    final SegmentPusher segmentPusher=new S3SegmentPusher(s3Service,configFactory.build(S3SegmentPusherConfig.class),jsonMapper);
+    final SegmentKiller segmentKiller=new S3SegmentKiller(s3Service);
+    taskToolbox=new TaskToolbox(taskConfig,new RemoteTaskActionClient(httpClient,jsonMapper),emitter,s3Service,segmentPusher,segmentKiller,jsonMapper);
   }
 }

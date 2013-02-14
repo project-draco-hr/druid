@@ -1,0 +1,36 @@
+{
+  EmittingLogger.registerEmitter(EasyMock.createMock(ServiceEmitter.class));
+  tmp=Files.createTempDir();
+  ts=new LocalTaskStorage();
+  tl=new TaskLockbox(ts);
+  tq=new TaskQueue(ts,tl);
+  mdc=newMockMDC();
+  tb=new TaskToolbox(new TaskConfig(){
+    @Override public File getBaseTaskDir(){
+      return tmp;
+    }
+    @Override public long getRowFlushBoundary(){
+      return 50000;
+    }
+  }
+,new LocalTaskActionClient(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new SegmentPusher(){
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      return segment;
+    }
+  }
+,new SegmentKiller(){
+    @Override public void kill(    Collection<DataSegment> segments) throws ServiceException {
+    }
+  }
+,new DefaultObjectMapper()){
+    @Override public Map<String,SegmentPuller> getSegmentGetters(    Task task){
+      return ImmutableMap.of();
+    }
+  }
+;
+  tr=new LocalTaskRunner(tb,Executors.newSingleThreadExecutor());
+  tc=new TaskConsumer(tq,tr,tb,newMockEmitter());
+  tsqa=new TaskStorageQueryAdapter(ts);
+  tq.start();
+  tc.start();
+}

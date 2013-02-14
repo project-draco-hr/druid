@@ -5,33 +5,35 @@
   initializeDB();
   initializeIndexerCoordinatorConfig();
   initializeTaskConfig();
+  initializeS3Service();
   initializeMergeDBCoordinator();
-  initializeTaskToolbox();
   initializeTaskStorage();
+  initializeTaskLockbox();
   initializeTaskQueue();
+  initializeTaskToolbox();
   initializeJacksonInjections();
   initializeJacksonSubtypes();
   initializeCurator();
   initializeIndexerZkConfig();
   initializeWorkerSetupManager();
   initializeTaskRunnerFactory();
-  initializeTaskMaster();
+  initializeTaskMasterLifecycle();
   initializeServer();
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(monitorScheduler);
-  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskQueue,new TaskStorageQueryAdapter(taskStorage),workerSetupManager));
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),workerSetupManager));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),new RedirectInfo(){
     @Override public boolean doLocal(){
-      return taskMaster.isLeading();
+      return taskMasterLifecycle.isLeading();
     }
     @Override public URL getRedirectURL(    String queryString,    String requestURI){
       try {
-        return new URL(String.format("http://%s%s",taskMaster.getLeader(),requestURI));
+        return new URL(String.format("http://%s%s",taskMasterLifecycle.getLeader(),requestURI));
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);

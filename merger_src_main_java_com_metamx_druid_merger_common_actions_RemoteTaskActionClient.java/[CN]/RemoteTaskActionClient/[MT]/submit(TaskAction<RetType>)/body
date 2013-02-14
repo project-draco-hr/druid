@@ -1,0 +1,15 @@
+{
+  try {
+    byte[] dataToSend=jsonMapper.writeValueAsBytes(taskAction);
+    final String response=httpClient.post(getServiceUri().toURL()).setContent("application/json",dataToSend).go(new ToStringResponseHandler(Charsets.UTF_8)).get();
+    if (response.equals("")) {
+      return null;
+    }
+ else {
+      return jsonMapper.readValue(response,taskAction.getReturnTypeReference());
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
