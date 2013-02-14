@@ -3,16 +3,16 @@
   try {
     adapter=segmentLoader.getSegment(segment);
   }
- catch (  StorageAdapterLoadingException e) {
+ catch (  SegmentLoadingException e) {
     try {
       segmentLoader.cleanup(segment);
     }
- catch (    StorageAdapterLoadingException e1) {
+ catch (    SegmentLoadingException e1) {
     }
     throw e;
   }
   if (adapter == null) {
-    throw new StorageAdapterLoadingException("Null adapter from loadSpec[%s]",segment.getLoadSpec());
+    throw new SegmentLoadingException("Null adapter from loadSpec[%s]",segment.getLoadSpec());
   }
 synchronized (lock) {
     String dataSource=segment.getDataSource();
@@ -24,7 +24,7 @@ synchronized (lock) {
     PartitionHolder<Segment> entry=loadedIntervals.findEntry(segment.getInterval(),segment.getVersion());
     if ((entry != null) && (entry.getChunk(segment.getShardSpec().getPartitionNum()) != null)) {
       log.info("Told to load a adapter for a segment[%s] that already exists",segment.getIdentifier());
-      throw new StorageAdapterLoadingException("Segment already exists[%s]",segment.getIdentifier());
+      throw new SegmentLoadingException("Segment already exists[%s]",segment.getIdentifier());
     }
     loadedIntervals.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(adapter));
 synchronized (dataSourceSizes) {

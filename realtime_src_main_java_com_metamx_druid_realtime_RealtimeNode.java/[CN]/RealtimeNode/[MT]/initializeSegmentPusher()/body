@@ -1,5 +1,5 @@
 {
-  if (segmentPusher == null) {
+  if (dataSegmentPusher == null) {
     final Properties props=getProps();
     final RestS3Service s3Client;
     try {
@@ -8,6 +8,6 @@
  catch (    S3ServiceException e) {
       throw Throwables.propagate(e);
     }
-    segmentPusher=new S3SegmentPusher(s3Client,getConfigFactory().build(S3SegmentPusherConfig.class),getJsonMapper());
+    dataSegmentPusher=new S3DataSegmentPusher(s3Client,getConfigFactory().build(S3SegmentPusherConfig.class),getJsonMapper());
   }
 }

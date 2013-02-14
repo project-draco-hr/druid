@@ -2,27 +2,18 @@
   File cacheFile=getCacheFile(segment);
   if (cacheFile.exists()) {
     long localLastModified=cacheFile.lastModified();
-    long remoteLastModified=segmentPuller.getLastModified(segment);
+    long remoteLastModified=dataSegmentPuller.getLastModified(segment);
     if (remoteLastModified > 0 && localLastModified >= remoteLastModified) {
       log.info("Found cacheFile[%s] with modified[%s], which is same or after remote[%s].  Using.",cacheFile,localLastModified,remoteLastModified);
-      return cacheFile.getParentFile();
+      return cacheFile;
     }
   }
-  File pulledFile=segmentPuller.getSegmentFiles(segment);
+  dataSegmentPuller.getSegmentFiles(segment,cacheFile);
   if (!cacheFile.getParentFile().mkdirs()) {
     log.info("Unable to make parent file[%s]",cacheFile.getParentFile());
   }
   if (cacheFile.exists()) {
     cacheFile.delete();
   }
-  if (pulledFile.getName().endsWith(".zip")) {
-    unzip(pulledFile,cacheFile.getParentFile());
-  }
- else   if (pulledFile.getName().endsWith(".gz")) {
-    gunzip(pulledFile,cacheFile);
-  }
- else {
-    moveToCache(pulledFile,cacheFile);
-  }
-  return cacheFile.getParentFile();
+  return cacheFile;
 }

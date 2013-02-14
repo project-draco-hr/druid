@@ -6,7 +6,7 @@
       StreamUtils.copyToFileAndClose(new FileInputStream(pulledFile),cacheFile);
     }
  catch (    IOException e) {
-      throw new StorageAdapterLoadingException(e,"Problem moving pulledFile[%s] to cache[%s]",pulledFile,cacheFile);
+      throw new SegmentLoadingException(e,"Problem moving pulledFile[%s] to cache[%s]",pulledFile,cacheFile);
     }
     if (!pulledFile.delete()) {
       log.error("Could not delete pulledFile[%s].",pulledFile);
