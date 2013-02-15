@@ -20,8 +20,8 @@
   while (invertedBuffer.hasRemaining()) {
     bitmapIndexes.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
   }
-  LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
-  Set<String> skippedDimensions=Sets.newLinkedHashSet();
+  final LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
+  final Set<String> skippedDimensions=Sets.newLinkedHashSet();
   for (  String filename : v8SmooshedFiles.getInternalFilenames()) {
     log.info("Processing file[%s]",filename);
     if (filename.startsWith("dim_")) {
@@ -164,18 +164,23 @@ skippedFiles.add(filename);
 }
 final ByteBuffer indexBuffer=v8SmooshedFiles.mapFile("index.drd");
 indexBuffer.get();
-final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+final GenericIndexed<String> dims8=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+final GenericIndexed<String> dims9=GenericIndexed.fromIterable(Iterables.filter(dims8,new Predicate<String>(){
+@Override public boolean apply(String s){
+return !skippedDimensions.contains(s);
+}
+}
+),GenericIndexed.stringStrategy);
 final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
 final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
 Set<String> columns=Sets.newTreeSet();
-columns.addAll(Lists.newArrayList(dims));
+columns.addAll(Lists.newArrayList(dims9));
 columns.addAll(Lists.newArrayList(availableMetrics));
-columns.removeAll(skippedDimensions);
 GenericIndexed<String> cols=GenericIndexed.fromIterable(columns,GenericIndexed.stringStrategy);
-final int numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16;
+final int numBytes=cols.getSerializedSize() + dims9.getSerializedSize() + 16;
 final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);
 cols.writeToChannel(writer);
-dims.writeToChannel(writer);
+dims9.writeToChannel(writer);
 serializerUtils.writeLong(writer,dataInterval.getStartMillis());
 serializerUtils.writeLong(writer,dataInterval.getEndMillis());
 writer.close();
