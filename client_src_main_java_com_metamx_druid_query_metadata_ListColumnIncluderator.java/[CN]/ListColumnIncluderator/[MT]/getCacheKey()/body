@@ -1,0 +1,14 @@
+{
+  int size=1;
+  List<byte[]> columns=Lists.newArrayListWithExpectedSize(this.columns.size());
+  for (  String column : this.columns) {
+    final byte[] bytes=column.getBytes(Charsets.UTF_8);
+    columns.add(bytes);
+    size+=bytes.length;
+  }
+  final ByteBuffer bytes=ByteBuffer.allocate(size).put(LIST_CACHE_PREFIX);
+  for (  byte[] column : columns) {
+    bytes.put(column);
+  }
+  return bytes.array();
+}

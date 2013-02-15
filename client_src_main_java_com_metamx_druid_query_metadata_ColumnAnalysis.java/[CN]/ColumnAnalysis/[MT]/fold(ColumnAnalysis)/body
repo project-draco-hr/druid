@@ -1,0 +1,19 @@
+{
+  if (rhs == null) {
+    return this;
+  }
+  if (!type.equals(rhs.getType())) {
+    return ColumnAnalysis.error("cannot_merge_diff_types");
+  }
+  Integer cardinality=getCardinality();
+  final Integer rhsCardinality=rhs.getCardinality();
+  if (cardinality == null) {
+    cardinality=rhsCardinality;
+  }
+ else {
+    if (rhsCardinality != null) {
+      cardinality=Math.max(cardinality,rhsCardinality);
+    }
+  }
+  return new ColumnAnalysis(type,size + rhs.getSize(),cardinality);
+}

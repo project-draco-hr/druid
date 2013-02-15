@@ -6,7 +6,7 @@
     private int currRow=0;
     @Override public Cursor apply(    final Long input){
       final long timeStart=Math.max(interval.getStartMillis(),input);
-      while (currRow < timestamps.size() && timestamps.getLongSingleValueRow(currRow) < timeStart) {
+      while (currRow < timestamps.length() && timestamps.getLongSingleValueRow(currRow) < timeStart) {
         ++currRow;
       }
       return new Cursor(){
@@ -20,7 +20,7 @@
           ++currRow;
         }
         @Override public boolean isDone(){
-          return currRow >= timestamps.size() || timestamps.getLongSingleValueRow(currRow) >= nextBucket;
+          return currRow >= timestamps.length() || timestamps.getLongSingleValueRow(currRow) >= nextBucket;
         }
         @Override public void reset(){
           currRow=initRow;

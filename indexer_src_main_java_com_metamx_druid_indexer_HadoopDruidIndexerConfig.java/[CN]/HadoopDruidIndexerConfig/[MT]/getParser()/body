@@ -1,0 +1,17 @@
+{
+  final List<String> dimensionExclusions;
+  if (getDataSpec().hasCustomDimensions()) {
+    dimensionExclusions=null;
+  }
+ else {
+    dimensionExclusions=Lists.newArrayList();
+    dimensionExclusions.add(getTimestampColumnName());
+    dimensionExclusions.addAll(Lists.transform(getRollupSpec().getAggs(),new Function<AggregatorFactory,String>(){
+      @Override public String apply(      AggregatorFactory aggregatorFactory){
+        return aggregatorFactory.getName();
+      }
+    }
+));
+  }
+  return new StringInputRowParser(getTimestampSpec(),getDataSpec(),dimensionExclusions);
+}

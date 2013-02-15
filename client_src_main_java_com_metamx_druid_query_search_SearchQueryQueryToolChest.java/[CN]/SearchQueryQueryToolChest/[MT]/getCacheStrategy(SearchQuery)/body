@@ -1,5 +1,5 @@
 {
-  return new CacheStrategy<Result<SearchResultValue>,SearchQuery>(){
+  return new CacheStrategy<Result<SearchResultValue>,Object,SearchQuery>(){
     @Override public byte[] computeCacheKey(    SearchQuery query){
       final DimFilter dimFilter=query.getDimensionsFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
@@ -22,6 +22,9 @@
         queryCacheKey.put(bytes);
       }
       return queryCacheKey.array();
+    }
+    @Override public TypeReference<Object> getCacheObjectClazz(){
+      return OBJECT_TYPE_REFERENCE;
     }
     @Override public Function<Result<SearchResultValue>,Object> prepareForCache(){
       return new Function<Result<SearchResultValue>,Object>(){

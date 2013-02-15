@@ -1,0 +1,11 @@
+{
+  final HadoopDruidIndexerConfig cfg;
+  try {
+    cfg=jsonMapper.readValue("{}",HadoopDruidIndexerConfig.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  final PartitionsSpec partitionsSpec=cfg.getPartitionsSpec();
+  Assert.assertEquals("isDeterminingPartitions",partitionsSpec.isDeterminingPartitions(),false);
+}

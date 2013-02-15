@@ -1,0 +1,11 @@
+{
+  final Map<String,Set<String>> dims=Maps.newTreeMap();
+  for (  final String dim : inputRow.getDimensions()) {
+    final Set<String> dimValues=ImmutableSortedSet.copyOf(inputRow.getDimension(dim));
+    if (dimValues.size() > 0) {
+      dims.put(dim,dimValues);
+    }
+  }
+  final List<Object> groupKey=ImmutableList.of(rollupGranularity.truncate(inputRow.getTimestampFromEpoch()),dims);
+  context.write(new BytesWritable(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)),NullWritable.get());
+}

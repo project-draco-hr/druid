@@ -11,7 +11,7 @@
     job.setInputFormatClass(TextInputFormat.class);
     job.setMapperClass(IndexGeneratorMapper.class);
     job.setMapOutputValueClass(Text.class);
-    SortableBytes.useSortableBytesAsKey(job);
+    SortableBytes.useSortableBytesAsMapOutputKey(job);
     job.setNumReduceTasks(Iterables.size(config.getAllBuckets()));
     job.setPartitionerClass(IndexGeneratorPartitioner.class);
     job.setReducerClass(IndexGeneratorReducer.class);
@@ -23,7 +23,7 @@
     config.intoConfiguration(job);
     job.setJarByClass(IndexGeneratorJob.class);
     job.submit();
-    log.info("Job submitted, status available at %s",job.getTrackingURL());
+    log.info("Job %s submitted, status available at %s",job.getJobName(),job.getTrackingURL());
     boolean success=job.waitForCompletion(true);
     Counter invalidRowCount=job.getCounters().findCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER);
     jobStats.setInvalidRowCount(invalidRowCount.getValue());

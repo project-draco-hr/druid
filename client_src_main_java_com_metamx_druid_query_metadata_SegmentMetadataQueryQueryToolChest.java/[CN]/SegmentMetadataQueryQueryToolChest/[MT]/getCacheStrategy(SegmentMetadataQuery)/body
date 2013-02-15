@@ -1,3 +1,31 @@
 {
-  return null;
+  return new CacheStrategy<SegmentAnalysis,SegmentAnalysis,SegmentMetadataQuery>(){
+    @Override public byte[] computeCacheKey(    SegmentMetadataQuery query){
+      byte[] includerBytes=query.getToInclude().getCacheKey();
+      return ByteBuffer.allocate(1 + includerBytes.length).put(SEGMENT_METADATA_CACHE_PREFIX).put(includerBytes).array();
+    }
+    @Override public TypeReference<SegmentAnalysis> getCacheObjectClazz(){
+      return getResultTypeReference();
+    }
+    @Override public Function<SegmentAnalysis,SegmentAnalysis> prepareForCache(){
+      return new Function<SegmentAnalysis,SegmentAnalysis>(){
+        @Override public SegmentAnalysis apply(        @Nullable SegmentAnalysis input){
+          return input;
+        }
+      }
+;
+    }
+    @Override public Function<SegmentAnalysis,SegmentAnalysis> pullFromCache(){
+      return new Function<SegmentAnalysis,SegmentAnalysis>(){
+        @Override public SegmentAnalysis apply(        @Nullable SegmentAnalysis input){
+          return input;
+        }
+      }
+;
+    }
+    @Override public Sequence<SegmentAnalysis> mergeSequences(    Sequence<Sequence<SegmentAnalysis>> seqOfSequences){
+      return new MergeSequence<SegmentAnalysis>(getOrdering(),seqOfSequences);
+    }
+  }
+;
 }

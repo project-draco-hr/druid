@@ -1,0 +1,11 @@
+{
+synchronized (namespaceId) {
+    byte[] idBytes=namespaceId.get(identifier);
+    if (idBytes != null) {
+      return idBytes;
+    }
+    idBytes=Ints.toByteArray(ids.getAndIncrement());
+    namespaceId.put(identifier,idBytes);
+    return idBytes;
+  }
+}
