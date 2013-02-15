@@ -3,7 +3,7 @@
   config.setVersion(context.getVersion());
   if (toolbox.getSegmentPusher() instanceof S3SegmentPusher) {
     S3SegmentPusher segmentPusher=(S3SegmentPusher)toolbox.getSegmentPusher();
-    String s3Path=String.format("s3://%s/%s/%s",segmentPusher.getConfig().getBucket(),segmentPusher.getConfig().getBaseKey(),getDataSource());
+    String s3Path=String.format("s3n%s/%s/%s",segmentPusher.getConfig().getBucket(),segmentPusher.getConfig().getBaseKey(),getDataSource());
     log.info("Setting segment output path to: %s",s3Path);
     config.setSegmentOutputDir(s3Path);
   }
