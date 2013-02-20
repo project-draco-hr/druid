@@ -1,25 +1,8 @@
 {
   log.info("Uploading [%s] to S3",indexFilesDir);
-  String outputKey=JOINER.join(config.getBaseKey().isEmpty() ? null : config.getBaseKey(),segment.getDataSource(),String.format("%s_%s",segment.getInterval().getStart(),segment.getInterval().getEnd()),segment.getVersion(),segment.getShardSpec().getPartitionNum());
-  long indexSize=0;
+  String outputKey=JOINER.join(config.getBaseKey().isEmpty() ? null : config.getBaseKey(),DataSegmentPusherUtil.getStorageDir(segment));
   final File zipOutFile=File.createTempFile("druid","index.zip");
-  ZipOutputStream zipOut=null;
-  try {
-    zipOut=new ZipOutputStream(new FileOutputStream(zipOutFile));
-    File[] indexFiles=indexFilesDir.listFiles();
-    for (    File indexFile : indexFiles) {
-      log.info("Adding indexFile[%s] with size[%,d].  Total size[%,d]",indexFile,indexFile.length(),indexSize);
-      if (indexFile.length() >= Integer.MAX_VALUE) {
-        throw new ISE("indexFile[%s] too large [%,d]",indexFile,indexFile.length());
-      }
-      zipOut.putNextEntry(new ZipEntry(indexFile.getName()));
-      IOUtils.copy(new FileInputStream(indexFile),zipOut);
-      indexSize+=indexFile.length();
-    }
-  }
-  finally {
-    Closeables.closeQuietly(zipOut);
-  }
+  long indexSize=CompressionUtils.zip(indexFilesDir,zipOutFile);
   try {
     S3Object toPush=new S3Object(zipOutFile);
     final String outputBucket=config.getBucket();
@@ -30,15 +13,13 @@
     s3Client.putObject(outputBucket,toPush);
     segment=segment.withSize(indexSize).withLoadSpec(ImmutableMap.<String,Object>of("type","s3_zip","bucket",outputBucket,"key",toPush.getKey())).withBinaryVersion(IndexIO.getVersionFromDir(indexFilesDir));
     File descriptorFile=File.createTempFile("druid","descriptor.json");
-    StreamUtils.copyToFileAndClose(new ByteArrayInputStream(jsonMapper.writeValueAsBytes(segment)),descriptorFile);
+    Files.copy(ByteStreams.newInputStreamSupplier(jsonMapper.writeValueAsBytes(segment)),descriptorFile);
     S3Object descriptorObject=new S3Object(descriptorFile);
     descriptorObject.setBucketName(outputBucket);
     descriptorObject.setKey(outputKey + "/descriptor.json");
     descriptorObject.setAcl(GSAccessControlList.REST_CANNED_BUCKET_OWNER_FULL_CONTROL);
     log.info("Pushing %s",descriptorObject);
     s3Client.putObject(outputBucket,descriptorObject);
-    log.info("Deleting Index File[%s]",indexFilesDir);
-    FileUtils.deleteDirectory(indexFilesDir);
     log.info("Deleting zipped index File[%s]",zipOutFile);
     zipOutFile.delete();
     log.info("Deleting descriptor file[%s]",descriptorFile);

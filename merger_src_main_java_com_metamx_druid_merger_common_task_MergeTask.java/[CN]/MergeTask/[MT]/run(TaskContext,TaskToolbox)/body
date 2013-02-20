@@ -20,6 +20,8 @@
     final DataSegment uploadedSegment=toolbox.getSegmentPusher().push(fileToUpload,mergedSegment);
     emitter.emit(builder.build("merger/uploadTime",System.currentTimeMillis() - uploadStart));
     emitter.emit(builder.build("merger/mergeSize",uploadedSegment.getSize()));
+    log.info("Deleting Uploaded Files[%s]",fileToUpload);
+    FileUtils.deleteDirectory(fileToUpload);
     return TaskStatus.success(getId(),Lists.newArrayList(uploadedSegment));
   }
  catch (  Exception e) {
