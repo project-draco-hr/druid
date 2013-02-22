@@ -24,6 +24,9 @@
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(monitorScheduler);
   final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),workerSetupManager));
+  final Context staticContext=new Context(server,"/static",Context.SESSIONS);
+  staticContext.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  staticContext.setResourceBase(IndexerCoordinatorNode.class.getClassLoader().getResource("static").toExternalForm());
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
