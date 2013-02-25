@@ -1,0 +1,6 @@
+{
+  File descriptorFile=new File(outDir,"descriptor.json");
+  log.info("Creating descriptor file at[%s]",descriptorFile);
+  Files.copy(ByteStreams.newInputStreamSupplier(jsonMapper.writeValueAsBytes(segment)),descriptorFile);
+  return segment;
+}
