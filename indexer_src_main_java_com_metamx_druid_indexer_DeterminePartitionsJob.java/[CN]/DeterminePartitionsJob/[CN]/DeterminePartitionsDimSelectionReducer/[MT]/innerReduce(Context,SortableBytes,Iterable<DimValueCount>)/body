@@ -1,5 +1,12 @@
 {
-  PeekingIterator<DimValueCount> iterator=Iterators.peekingIterator(combinedIterable.iterator());
+  final DateTime bucket=new DateTime(new String(keyBytes.getGroupKey(),Charsets.UTF_8));
+  final PeekingIterator<DimValueCount> iterator=Iterators.peekingIterator(combinedIterable.iterator());
+  log.info("Determining partitions for interval: %s",config.getGranularitySpec().bucketInterval(bucket).orNull());
+  final DimValueCount firstDvc=iterator.next();
+  final int totalRows=firstDvc.numRows;
+  if (!firstDvc.dim.equals("") || !firstDvc.value.equals("")) {
+    throw new IllegalStateException("WTF?! Expected total row indicator on first k/v pair!");
+  }
   DimPartitions currentDimPartitions=null;
   DimPartition currentDimPartition=null;
   String currentDimPartitionStart=null;
@@ -60,14 +67,14 @@
   if (dimPartitionss.isEmpty()) {
     throw new ISE("No suitable partitioning dimension found!");
   }
-  final int totalRows=dimPartitionss.values().iterator().next().getRows();
   int maxCardinality=Integer.MIN_VALUE;
   long minVariance=Long.MAX_VALUE;
   DimPartitions minVariancePartitions=null;
   DimPartitions maxCardinalityPartitions=null;
   for (  final DimPartitions dimPartitions : dimPartitionss.values()) {
     if (dimPartitions.getRows() != totalRows) {
-      throw new ISE("WTF?! Dimension[%s] row count %,d != expected row count %,d",dimPartitions.dim,dimPartitions.getRows(),totalRows);
+      log.info("Dimension[%s] is not present in all rows (row count %,d != expected row count %,d)",dimPartitions.dim,dimPartitions.getRows(),totalRows);
+      continue;
     }
     boolean oversized=false;
     for (    final DimPartition partition : dimPartitions.partitions) {
@@ -93,7 +100,6 @@
   if (maxCardinalityPartitions == null) {
     throw new ISE("No suitable partitioning dimension found!");
   }
-  final DateTime bucket=new DateTime(new String(keyBytes.getGroupKey(),Charsets.UTF_8));
   final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0)),config.isOverwriteFiles());
   final DimPartitions chosenPartitions=maxCardinality > HIGH_CARDINALITY_THRESHOLD ? maxCardinalityPartitions : minVariancePartitions;
   final List<ShardSpec> chosenShardSpecs=Lists.transform(chosenPartitions.partitions,new Function<DimPartition,ShardSpec>(){
