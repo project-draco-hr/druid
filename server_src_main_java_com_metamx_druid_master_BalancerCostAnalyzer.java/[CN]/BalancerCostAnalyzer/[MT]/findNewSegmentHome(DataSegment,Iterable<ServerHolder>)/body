@@ -1,0 +1,24 @@
+{
+  final long proposalSegmentSize=proposalSegment.getSize();
+  double minCost=Double.MAX_VALUE;
+  ServerHolder toServer=null;
+  for (  ServerHolder server : serverHolders) {
+    if (proposalSegmentSize > server.getAvailableSize() || server.isServingSegment(proposalSegment) || server.isLoadingSegment(proposalSegment)) {
+      continue;
+    }
+    double cost=0f;
+    for (    DataSegment segment : server.getServer().getSegments().values()) {
+      if (!proposalSegment.equals(segment)) {
+        cost+=computeJointSegmentCosts(proposalSegment,segment);
+      }
+    }
+    for (    DataSegment segment : server.getPeon().getSegmentsToLoad()) {
+      cost+=computeJointSegmentCosts(proposalSegment,segment);
+    }
+    if (cost < minCost) {
+      minCost=cost;
+      toServer=server;
+    }
+  }
+  return toServer;
+}

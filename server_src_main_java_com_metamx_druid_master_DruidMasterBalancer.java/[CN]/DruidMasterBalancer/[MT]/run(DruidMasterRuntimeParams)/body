@@ -1,5 +1,8 @@
 {
-  MasterStats stats=new MasterStats();
+  final MasterStats stats=new MasterStats();
+  final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
+  final BalancerCostAnalyzer analyzer=params.getBalancerCostAnalyzer(referenceTimestamp);
+  final int maxSegmentsToMove=params.getMaxSegmentsToMove();
   for (  Map.Entry<String,MinMaxPriorityQueue<ServerHolder>> entry : params.getDruidCluster().getCluster().entrySet()) {
     String tier=entry.getKey();
     if (currentlyMovingSegments.get(tier) == null) {
@@ -10,20 +13,39 @@
       log.info("[%s]: Still waiting on %,d segments to be moved",tier,currentlyMovingSegments.size());
       continue;
     }
-    TreeSet<ServerHolder> serversByPercentUsed=Sets.newTreeSet(percentUsedComparator);
-    serversByPercentUsed.addAll(entry.getValue());
-    if (serversByPercentUsed.size() <= 1) {
-      log.info("[%s]: No unique values found for highest and lowest percent used servers: nothing to balance",tier);
+    final List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
+    int numSegments=0;
+    for (    ServerHolder server : serverHolderList) {
+      numSegments+=server.getServer().getSegments().size();
+    }
+    if (numSegments == 0) {
+      log.info("No segments found.  Cannot balance.");
       continue;
     }
-    ServerHolder highestPercentUsedServer=serversByPercentUsed.first();
-    ServerHolder lowestPercentUsedServer=serversByPercentUsed.last();
-    analyzer.init(highestPercentUsedServer,lowestPercentUsedServer);
-    log.info("[%s]: Percent difference in percent size used between highest/lowest servers: %s%%",tier,analyzer.getPercentDiff());
-    log.info("[%s]: Highest percent used [%s]: size used[%s], percent used[%s%%]",tier,highestPercentUsedServer.getServer().getName(),highestPercentUsedServer.getSizeUsed(),highestPercentUsedServer.getPercentUsed());
-    log.info("[%s]: Lowest percent used [%s]: size used[%s], percent used[%s%%]",tier,lowestPercentUsedServer.getServer().getName(),lowestPercentUsedServer.getSizeUsed(),lowestPercentUsedServer.getPercentUsed());
-    moveSegments(lowestPercentUsedServer.getServer(),analyzer.findSegmentsToMove(highestPercentUsedServer.getServer()),params);
+    int iter=0;
+    while (iter < maxSegmentsToMove) {
+      iter++;
+      final BalancerSegmentHolder segmentToMove=analyzer.pickSegmentToMove(serverHolderList,numSegments);
+      final ServerHolder holder=analyzer.findNewSegmentHome(segmentToMove.getSegment(),serverHolderList);
+      if (holder == null) {
+        continue;
+      }
+      final DruidServer toServer=holder.getServer();
+      if (!currentlyMovingSegments.get(tier).containsKey(segmentToMove.getSegment())) {
+        moveSegment(segmentToMove,toServer,params);
+      }
+    }
+    final double initialTotalCost=analyzer.calculateInitialTotalCost(serverHolderList);
+    final double normalization=analyzer.calculateNormalization(serverHolderList);
+    final double normalizedInitialCost=initialTotalCost / normalization;
+    stats.addToTieredStat("initialCost",tier,(long)initialTotalCost);
+    stats.addToTieredStat("normalization",tier,(long)normalization);
     stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
+    log.info("Initial Total Cost: [%f], Initial Normalized Cost: [%f], Segments Moved: [%d]",initialTotalCost,normalizedInitialCost,currentlyMovingSegments.get(tier).size());
+    if (serverHolderList.size() <= 1) {
+      log.info("[%s]: One or fewer servers found.  Cannot balance.",tier);
+      continue;
+    }
   }
   return params.buildFromExisting().withMasterStats(stats).build();
 }
