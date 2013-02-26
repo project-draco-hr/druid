@@ -1,0 +1,25 @@
+{
+  final Optional<Task> taskOptional=storage.getTask(taskid);
+  final Optional<TaskStatus> statusOptional=storage.getStatus(taskid);
+  final ImmutableMap.Builder<String,Optional<TaskStatus>> resultBuilder=ImmutableMap.builder();
+  resultBuilder.put(taskid,statusOptional);
+  final Iterable<Task> nextTasks=FunctionalIterable.create(storage.getAuditLogs(taskid)).filter(new Predicate<TaskAction>(){
+    @Override public boolean apply(    TaskAction taskAction){
+      return taskAction instanceof SpawnTasksAction;
+    }
+  }
+).transformCat(new Function<TaskAction,Iterable<Task>>(){
+    @Override public Iterable<Task> apply(    TaskAction taskAction){
+      return ((SpawnTasksAction)taskAction).getNewTasks();
+    }
+  }
+);
+  if (taskOptional.isPresent() && statusOptional.isPresent()) {
+    for (    final Task nextTask : nextTasks) {
+      if (nextTask.getGroupId().equals(taskOptional.get().getGroupId())) {
+        resultBuilder.putAll(getSameGroupChildStatuses(nextTask.getId()));
+      }
+    }
+  }
+  return resultBuilder.build();
+}

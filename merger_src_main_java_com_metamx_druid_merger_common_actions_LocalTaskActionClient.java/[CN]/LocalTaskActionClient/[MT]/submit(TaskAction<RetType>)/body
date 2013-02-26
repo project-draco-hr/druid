@@ -1,0 +1,10 @@
+{
+  final RetType ret=taskAction.perform(toolbox);
+  try {
+    storage.addAuditLog(taskAction);
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Failed to record action in audit log").addData("task",taskAction.getTask().getId()).addData("actionClass",taskAction.getClass().getName()).emit();
+  }
+  return ret;
+}

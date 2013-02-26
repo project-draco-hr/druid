@@ -1,12 +1,17 @@
 {
   scheduledExec=EasyMock.createMock(ScheduledExecutorService.class);
   workerSetupManager=EasyMock.createMock(WorkerSetupManager.class);
-  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,null,null));
+  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,null,null)).atLeastOnce();
   EasyMock.replay(workerSetupManager);
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCache,scheduledExec,new RetryPolicyFactory(new TestRetryPolicyConfig()),new TestScalingStrategy(),workerSetupManager);
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCache,scheduledExec,new RetryPolicyFactory(new TestRetryPolicyConfig()),workerSetupManager);
   remoteTaskRunner.start();
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("%s/worker1",announcementsPath),jsonMapper.writeValueAsBytes(worker1));
-  while (remoteTaskRunner.getNumWorkers() == 0) {
-    Thread.sleep(50);
+  int count=0;
+  while (remoteTaskRunner.getWorkers().size() == 0) {
+    Thread.sleep(500);
+    if (count > 10) {
+      throw new ISE("WTF?! Still can't find worker!");
+    }
+    count++;
   }
 }

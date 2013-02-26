@@ -1,0 +1,35 @@
+{
+  giant.lock();
+  try {
+    final String dataSource=task.getDataSource();
+    final NavigableMap<Interval,TaskLockPosse> dsRunning=running.get(dataSource);
+    boolean removed=false;
+    if (dsRunning != null) {
+      final TaskLockPosse taskLockPosse=dsRunning.get(interval);
+      if (taskLockPosse != null) {
+        final TaskLock taskLock=taskLockPosse.getTaskLock();
+        log.info("Removing task[%s] from TaskLock[%s]",task.getId(),taskLock.getGroupId());
+        removed=taskLockPosse.getTaskIds().remove(task.getId());
+        if (taskLockPosse.getTaskIds().isEmpty()) {
+          log.info("TaskLock is now empty: %s",taskLock);
+          running.get(dataSource).remove(taskLock.getInterval());
+        }
+        if (running.get(dataSource).size() == 0) {
+          running.remove(dataSource);
+        }
+        try {
+          taskStorage.removeLock(task.getId(),taskLock);
+        }
+ catch (        Exception e) {
+          log.makeAlert(e,"Failed to clean up lock from storage").addData("task",task.getId()).addData("dataSource",taskLock.getDataSource()).addData("interval",taskLock.getInterval()).addData("version",taskLock.getVersion()).emit();
+        }
+      }
+    }
+    if (!removed) {
+      log.makeAlert("Lock release without acquire").addData("task",task.getId()).addData("interval",interval).emit();
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

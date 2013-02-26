@@ -1,0 +1,14 @@
+{
+  giant.lock();
+  try {
+    return Lists.transform(findLockPossesForTask(task),new Function<TaskLockPosse,TaskLock>(){
+      @Override public TaskLock apply(      TaskLockPosse taskLockPosse){
+        return taskLockPosse.getTaskLock();
+      }
+    }
+);
+  }
+  finally {
+    giant.unlock();
+  }
+}

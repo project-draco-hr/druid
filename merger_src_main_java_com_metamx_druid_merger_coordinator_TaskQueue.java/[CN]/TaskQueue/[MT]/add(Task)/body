@@ -2,9 +2,18 @@
   giant.lock();
   try {
     Preconditions.checkState(active,"Queue is not active!");
-    taskStorage.insert(task,TaskStatus.running(task.getId()));
+    try {
+      taskStorage.insert(task,TaskStatus.running(task.getId()));
+    }
+ catch (    TaskExistsException e) {
+      log.warn("Attempt to add task twice: %s",task.getId());
+      throw Throwables.propagate(e);
+    }
     queue.add(task);
     workMayBeAvailable.signalAll();
+    if (task.getFixedInterval().isPresent()) {
+      taskLockbox.tryLock(task,task.getFixedInterval().get());
+    }
     return true;
   }
   finally {

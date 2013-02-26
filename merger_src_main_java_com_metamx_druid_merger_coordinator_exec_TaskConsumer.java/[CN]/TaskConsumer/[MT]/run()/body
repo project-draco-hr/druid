@@ -2,29 +2,26 @@
   try {
     while (!Thread.currentThread().isInterrupted()) {
       final Task task;
-      final String version;
       try {
-        final VersionedTaskWrapper taskWrapper=queue.take();
-        task=taskWrapper.getTask();
-        version=taskWrapper.getVersion();
+        task=queue.take();
       }
  catch (      InterruptedException e) {
         log.info(e,"Interrupted while waiting for new work");
-        throw Throwables.propagate(e);
+        throw e;
       }
       try {
-        handoff(task,version);
+        handoff(task);
       }
  catch (      Exception e) {
-        log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType().toString()).addData("dataSource",task.getDataSource()).addData("interval",task.getInterval()).emit();
+        log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getFixedInterval()).emit();
         if (!shutdown) {
-          queue.done(task,TaskStatus.failure(task.getId()));
+          queue.notify(task,TaskStatus.failure(task.getId()));
         }
       }
     }
   }
- catch (  Throwable t) {
-    log.error(t,"Uncaught Throwable while consuming tasks");
-    throw Throwables.propagate(t);
+ catch (  Exception e) {
+    log.error(e,"Uncaught exception while consuming tasks");
+    throw Throwables.propagate(e);
   }
 }

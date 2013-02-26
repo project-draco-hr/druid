@@ -1,0 +1,54 @@
+{
+  giant.lock();
+  try {
+    if (task.getFixedInterval().isPresent() && !task.getFixedInterval().get().equals(interval)) {
+      throw new IAE("Task must lock its fixed interval: %s",task.getId());
+    }
+    final String dataSource=task.getDataSource();
+    final List<TaskLockPosse> foundPosses=findLockPossesForInterval(dataSource,interval);
+    final TaskLockPosse posseToUse;
+    if (foundPosses.size() > 1) {
+      return Optional.absent();
+    }
+ else     if (foundPosses.size() == 1) {
+      final TaskLockPosse foundPosse=Iterables.getOnlyElement(foundPosses);
+      if (foundPosse.getTaskLock().getInterval().contains(interval) && foundPosse.getTaskLock().getGroupId().equals(task.getGroupId())) {
+        posseToUse=foundPosse;
+      }
+ else {
+        return Optional.absent();
+      }
+    }
+ else {
+      if (!running.containsKey(dataSource)) {
+        running.put(dataSource,new TreeMap<Interval,TaskLockPosse>(Comparators.intervalsByStartThenEnd()));
+      }
+      final String version;
+      if (preferredVersion.isPresent()) {
+        version=preferredVersion.get();
+      }
+ else {
+        version=new DateTime().toString();
+      }
+      posseToUse=new TaskLockPosse(new TaskLock(task.getGroupId(),dataSource,interval,version));
+      running.get(dataSource).put(interval,posseToUse);
+      log.info("Created new TaskLockPosse: %s",posseToUse);
+    }
+    if (posseToUse.getTaskIds().add(task.getId())) {
+      log.info("Added task[%s] to TaskLock[%s]",task.getId(),posseToUse.getTaskLock().getGroupId());
+      try {
+        taskStorage.addLock(task.getId(),posseToUse.getTaskLock());
+      }
+ catch (      Exception e) {
+        log.makeAlert("Failed to persist lock in storage").addData("task",task.getId()).addData("dataSource",posseToUse.getTaskLock().getDataSource()).addData("interval",posseToUse.getTaskLock().getInterval()).addData("version",posseToUse.getTaskLock().getVersion()).emit();
+      }
+    }
+ else {
+      log.info("Task[%s] already present in TaskLock[%s]",task.getId(),posseToUse.getTaskLock().getGroupId());
+    }
+    return Optional.of(posseToUse.getTaskLock());
+  }
+  finally {
+    giant.unlock();
+  }
+}

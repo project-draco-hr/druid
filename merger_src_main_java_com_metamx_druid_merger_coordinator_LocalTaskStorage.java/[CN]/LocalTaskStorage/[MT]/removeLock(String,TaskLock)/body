@@ -1,0 +1,10 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(taskLock,"taskLock");
+    taskLocks.remove(taskid,taskLock);
+  }
+  finally {
+    giant.unlock();
+  }
+}

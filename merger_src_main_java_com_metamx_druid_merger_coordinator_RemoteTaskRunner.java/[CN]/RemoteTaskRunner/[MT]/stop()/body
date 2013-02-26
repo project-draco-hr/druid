@@ -1,7 +1,10 @@
 {
   try {
-    for (    WorkerWrapper workerWrapper : zkWorkers.values()) {
-      workerWrapper.close();
+    if (!started) {
+      return;
+    }
+    for (    ZkWorker zkWorker : zkWorkers.values()) {
+      zkWorker.close();
     }
   }
  catch (  Exception e) {
