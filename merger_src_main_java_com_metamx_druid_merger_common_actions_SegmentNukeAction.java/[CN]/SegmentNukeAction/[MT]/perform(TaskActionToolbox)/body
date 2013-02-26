@@ -1,15 +1,6 @@
 {
-  final List<TaskLock> taskLocks=toolbox.getTaskLockbox().findLocksForTask(task);
-  for (  final DataSegment segment : segments) {
-    final boolean ok=Iterables.any(taskLocks,new Predicate<TaskLock>(){
-      @Override public boolean apply(      TaskLock taskLock){
-        return taskLock.getVersion().compareTo(segment.getVersion()) >= 0 && taskLock.getDataSource().equals(segment.getDataSource()) && taskLock.getInterval().contains(segment.getInterval());
-      }
-    }
-);
-    if (!ok) {
-      throw new ISE("No currently-held lock covers segment: %s",segment);
-    }
+  if (!toolbox.taskLockCoversSegments(task,segments,true)) {
+    throw new ISE("Segments not covered by locks for task: %s",task.getId());
   }
   try {
     toolbox.getMergerDBCoordinator().deleteSegments(segments);

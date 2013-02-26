@@ -2,10 +2,10 @@
   final List<Task> retVal=Lists.newArrayList();
   for (  final Interval interval : granularitySpec.bucketIntervals()) {
     if (targetPartitionSize > 0) {
-      retVal.add(new IndexDeterminePartitionsTask(getGroupId(),interval,firehoseFactory,new Schema(getDataSource(),aggregators,indexGranularity,new NoneShardSpec()),targetPartitionSize));
+      retVal.add(new IndexDeterminePartitionsTask(getGroupId(),interval,firehoseFactory,new Schema(getDataSource(),aggregators,indexGranularity,new NoneShardSpec()),targetPartitionSize,rowFlushBoundary));
     }
  else {
-      retVal.add(new IndexGeneratorTask(getGroupId(),interval,firehoseFactory,new Schema(getDataSource(),aggregators,indexGranularity,new NoneShardSpec())));
+      retVal.add(new IndexGeneratorTask(getGroupId(),interval,firehoseFactory,new Schema(getDataSource(),aggregators,indexGranularity,new NoneShardSpec()),rowFlushBoundary));
     }
   }
   return retVal;
