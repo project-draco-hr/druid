@@ -3,7 +3,7 @@
   final Interval interval=getFixedInterval().get();
   final File tmpDir=new File(String.format("%s/%s",toolbox.getConfig().getTaskDir(this).toString(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum())));
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
-  final SegmentPusher wrappedSegmentPusher=new SegmentPusher(){
+  final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       final DataSegment pushedSegment=toolbox.getSegmentPusher().push(file,segment);
       pushedSegments.add(pushedSegment);
@@ -13,7 +13,8 @@
 ;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect();
-  final Plumber plumber=new YeOldePlumberSchool(interval,myLock.getVersion(),wrappedSegmentPusher,tmpDir).findPlumber(schema,metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,myLock.getVersion(),wrappedDataSegmentPusher,tmpDir).findPlumber(schema,metrics);
+  final int myRowFlushBoundary=this.rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
   try {
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
@@ -24,7 +25,7 @@
         }
         int numRows=sink.add(inputRow);
         metrics.incrementProcessed();
-        if (numRows >= toolbox.getConfig().getRowFlushBoundary()) {
+        if (numRows >= myRowFlushBoundary) {
           plumber.persist(firehose.commit());
         }
       }

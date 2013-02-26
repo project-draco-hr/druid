@@ -1,4 +1,6 @@
 {
   final T ret=taskMasterLifecycle.getTaskToolbox().getTaskActionClient().submit(action);
-  return Response.ok().entity(ret).build();
+  final Map<String,Object> retMap=Maps.newHashMap();
+  retMap.put("result",ret);
+  return Response.ok().entity(retMap).build();
 }

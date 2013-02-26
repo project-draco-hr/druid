@@ -1,0 +1,15 @@
+{
+  ZipInputStream zipIn=new ZipInputStream(in);
+  ZipEntry entry;
+  while ((entry=zipIn.getNextEntry()) != null) {
+    OutputStream out=null;
+    try {
+      out=new FileOutputStream(new File(outDir,entry.getName()));
+      ByteStreams.copy(zipIn,out);
+      zipIn.closeEntry();
+    }
+  finally {
+      Closeables.closeQuietly(out);
+    }
+  }
+}

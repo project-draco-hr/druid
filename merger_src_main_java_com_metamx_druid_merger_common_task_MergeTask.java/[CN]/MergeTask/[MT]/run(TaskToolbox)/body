@@ -12,13 +12,7 @@
       }
     }
 ));
-    final Map<String,SegmentPuller> segmentGetters=toolbox.getSegmentGetters(this);
-    final Map<DataSegment,File> gettedSegments=Maps.newHashMap();
-    for (    final DataSegment segment : segments) {
-      Map<String,Object> loadSpec=segment.getLoadSpec();
-      SegmentPuller segmentPuller=segmentGetters.get(loadSpec.get("type"));
-      gettedSegments.put(segment,segmentPuller.getSegmentFiles(segment));
-    }
+    final Map<DataSegment,File> gettedSegments=toolbox.getSegments(this,segments);
     final File fileToUpload=merge(gettedSegments,new File(taskDir,"merged"));
     emitter.emit(builder.build("merger/numMerged",segments.size()));
     emitter.emit(builder.build("merger/mergeTime",System.currentTimeMillis() - startTime));

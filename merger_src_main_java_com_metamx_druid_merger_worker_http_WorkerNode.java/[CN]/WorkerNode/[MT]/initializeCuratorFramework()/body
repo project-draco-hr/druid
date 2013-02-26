@@ -1,4 +1,6 @@
 {
-  final CuratorConfig curatorConfig=configFactory.build(CuratorConfig.class);
-  curatorFramework=Initialization.makeCuratorFrameworkClient(curatorConfig,lifecycle);
+  if (curatorFramework == null) {
+    final CuratorConfig curatorConfig=configFactory.build(CuratorConfig.class);
+    curatorFramework=Initialization.makeCuratorFrameworkClient(curatorConfig,lifecycle);
+  }
 }
