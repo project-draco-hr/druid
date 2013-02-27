@@ -1,0 +1,27 @@
+{
+  giant.lock();
+  try {
+    final Iterable<TaskLockPosse> searchSpace;
+    if (task.getFixedInterval().isPresent()) {
+      searchSpace=findLockPossesForInterval(task.getDataSource(),task.getFixedInterval().get());
+    }
+ else {
+      final NavigableMap<Interval,TaskLockPosse> dsRunning=running.get(task.getDataSource());
+      if (dsRunning == null) {
+        searchSpace=ImmutableList.of();
+      }
+ else {
+        searchSpace=dsRunning.values();
+      }
+    }
+    return ImmutableList.copyOf(Iterables.filter(searchSpace,new Predicate<TaskLockPosse>(){
+      @Override public boolean apply(      TaskLockPosse taskLock){
+        return taskLock.getTaskIds().contains(task.getId());
+      }
+    }
+));
+  }
+  finally {
+    giant.unlock();
+  }
+}

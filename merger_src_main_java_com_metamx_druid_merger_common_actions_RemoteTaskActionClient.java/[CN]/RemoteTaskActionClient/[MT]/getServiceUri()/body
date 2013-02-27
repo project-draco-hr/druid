@@ -1,0 +1,17 @@
+{
+  final ServiceInstance instance=serviceProvider.getInstance();
+  final String scheme;
+  final String host;
+  final int port;
+  final String path="/mmx/merger/v1/action";
+  host=instance.getAddress();
+  if (instance.getSslPort() != null && instance.getSslPort() > 0) {
+    scheme="https";
+    port=instance.getSslPort();
+  }
+ else {
+    scheme="http";
+    port=instance.getPort();
+  }
+  return new URI(scheme,null,host,port,path,null,null);
+}

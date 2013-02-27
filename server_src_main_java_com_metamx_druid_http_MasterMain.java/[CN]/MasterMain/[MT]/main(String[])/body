@@ -31,7 +31,7 @@
     serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,databaseRuleManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,databaseRuleManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider,httpClient,new ToStringResponseHandler(Charsets.UTF_8));
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();

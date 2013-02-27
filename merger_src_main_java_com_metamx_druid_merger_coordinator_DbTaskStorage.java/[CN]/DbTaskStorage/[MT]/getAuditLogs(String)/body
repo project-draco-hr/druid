@@ -1,0 +1,19 @@
+{
+  return dbi.withHandle(new HandleCallback<List<TaskAction>>(){
+    @Override public List<TaskAction> withHandle(    Handle handle) throws Exception {
+      final List<Map<String,Object>> dbTaskLogs=handle.createQuery(String.format("SELECT log_payload FROM %s WHERE task_id = :task_id",dbConnectorConfig.getTaskLogTable())).bind("task_id",taskid).list();
+      return Lists.transform(dbTaskLogs,new Function<Map<String,Object>,TaskAction>(){
+        @Override public TaskAction apply(        Map<String,Object> row){
+          try {
+            return jsonMapper.readValue(row.get("payload").toString(),TaskAction.class);
+          }
+ catch (          Exception e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+  }
+);
+}

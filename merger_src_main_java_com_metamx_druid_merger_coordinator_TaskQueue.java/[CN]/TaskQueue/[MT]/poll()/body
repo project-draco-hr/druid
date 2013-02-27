@@ -1,18 +1,21 @@
 {
   giant.lock();
   try {
-    log.info("Checking for doable work");
     for (    final Task task : queue) {
-      final Optional<String> maybeVersion=tryLock(task);
-      if (maybeVersion.isPresent()) {
-        Preconditions.checkState(active,"wtf? Found task when inactive");
-        taskStorage.setVersion(task.getId(),maybeVersion.get());
+      if (task.getFixedInterval().isPresent()) {
+        final Optional<TaskLock> maybeLock=taskLockbox.tryLock(task,task.getFixedInterval().get());
+        if (maybeLock.isPresent()) {
+          log.info("Task claimed with fixed interval lock: %s",task.getId());
+          queue.remove(task);
+          return task;
+        }
+      }
+ else {
+        log.info("Task claimed with no fixed interval lock: %s",task.getId());
         queue.remove(task);
-        log.info("Task claimed: %s",task);
-        return new VersionedTaskWrapper(task,maybeVersion.get());
+        return task;
       }
     }
-    log.info("No doable work found.");
     return null;
   }
   finally {

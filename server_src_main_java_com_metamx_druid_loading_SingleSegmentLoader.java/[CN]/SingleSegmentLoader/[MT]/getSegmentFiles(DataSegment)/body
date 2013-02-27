@@ -1,0 +1,24 @@
+{
+  File localStorageDir=new File(config.getCacheDirectory(),DataSegmentPusherUtil.getStorageDir(segment));
+  if (localStorageDir.exists()) {
+    long localLastModified=localStorageDir.lastModified();
+    long remoteLastModified=dataSegmentPuller.getLastModified(segment);
+    if (remoteLastModified > 0 && localLastModified >= remoteLastModified) {
+      log.info("Found localStorageDir[%s] with modified[%s], which is same or after remote[%s].  Using.",localStorageDir,localLastModified,remoteLastModified);
+      return localStorageDir;
+    }
+  }
+  if (localStorageDir.exists()) {
+    try {
+      FileUtils.deleteDirectory(localStorageDir);
+    }
+ catch (    IOException e) {
+      log.warn(e,"Exception deleting previously existing local dir[%s]",localStorageDir);
+    }
+  }
+  if (!localStorageDir.mkdirs()) {
+    log.info("Unable to make parent file[%s]",localStorageDir);
+  }
+  dataSegmentPuller.getSegmentFiles(segment,localStorageDir);
+  return localStorageDir;
+}

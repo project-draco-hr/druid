@@ -1,0 +1,14 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(status,"status");
+    final String taskid=status.getId();
+    Preconditions.checkState(tasks.containsKey(taskid),"Task ID must already be present: %s",taskid);
+    Preconditions.checkState(tasks.get(taskid).getStatus().isRunnable(),"Task status must be runnable: %s",taskid);
+    log.info("Updating task %s to status: %s",taskid,status);
+    tasks.put(taskid,tasks.get(taskid).withStatus(status));
+  }
+  finally {
+    giant.unlock();
+  }
+}

@@ -35,7 +35,7 @@
     loadSpec=ImmutableMap.<String,Object>of("type","s3_zip","bucket",indexOutURI.getHost(),"key",indexOutURI.getPath().substring(1));
   }
  else   if (outputFS instanceof LocalFileSystem) {
-    loadSpec=ImmutableMap.<String,Object>of("type","test");
+    loadSpec=ImmutableMap.<String,Object>of("type","local","path",indexOutURI.getPath());
   }
  else {
     throw new ISE("Unknown file system[%s]",outputFS.getClass());

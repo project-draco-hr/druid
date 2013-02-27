@@ -1,8 +1,16 @@
 {
-  Preconditions.checkNotNull(task,"task");
-  Preconditions.checkNotNull(status,"status");
-  Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
-  Preconditions.checkState(!tasks.containsKey(task.getId()),"Task ID must not already be present: %s",task.getId());
-  log.info("Inserting task %s with status: %s",task.getId(),status);
-  tasks.put(task.getId(),new TaskStuff(task,status));
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(task,"task");
+    Preconditions.checkNotNull(status,"status");
+    Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
+    if (tasks.containsKey(task.getId())) {
+      throw new TaskExistsException(task.getId());
+    }
+    log.info("Inserting task %s with status: %s",task.getId(),status);
+    tasks.put(task.getId(),new TaskStuff(task,status));
+  }
+  finally {
+    giant.unlock();
+  }
 }

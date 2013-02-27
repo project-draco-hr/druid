@@ -1,21 +1,26 @@
 {
-  currentlyTerminating.remove(worker.getHost());
-  WorkerWrapper workerWrapper=zkWorkers.get(worker.getHost());
-  if (workerWrapper != null) {
+  ZkWorker zkWorker=zkWorkers.get(worker.getHost());
+  if (zkWorker != null) {
     try {
-      Set<String> tasksToRetry=Sets.newHashSet(workerWrapper.getRunningTasks());
-      tasksToRetry.addAll(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),worker.getHost())));
-      for (      String taskId : tasksToRetry) {
-        TaskWrapper taskWrapper=tasks.get(taskId);
-        if (taskWrapper != null) {
-          retryTask(new CleanupPaths(worker.getHost(),taskId),tasks.get(taskId));
+      Set<String> tasksPending=Sets.newHashSet(cf.getChildren().forPath(JOINER.join(config.getTaskPath(),worker.getHost())));
+      log.info("%s had %d tasks pending",worker.getHost(),tasksPending.size());
+      for (      String taskId : tasksPending) {
+        TaskRunnerWorkItem taskRunnerWorkItem=pendingTasks.get(taskId);
+        if (taskRunnerWorkItem != null) {
+          cf.delete().guaranteed().forPath(JOINER.join(config.getTaskPath(),worker.getHost(),taskId));
+          retryTask(taskRunnerWorkItem,worker.getHost());
+        }
+ else {
+          log.warn("RemoteTaskRunner has no knowledge of pending task %s",taskId);
         }
       }
-      workerWrapper.getStatusCache().close();
+      zkWorker.getStatusCache().close();
     }
  catch (    Exception e) {
-      log.error(e,"Failed to cleanly remove worker[%s]");
+      throw Throwables.propagate(e);
+    }
+ finally {
+      zkWorkers.remove(worker.getHost());
     }
   }
-  zkWorkers.remove(worker.getHost());
 }

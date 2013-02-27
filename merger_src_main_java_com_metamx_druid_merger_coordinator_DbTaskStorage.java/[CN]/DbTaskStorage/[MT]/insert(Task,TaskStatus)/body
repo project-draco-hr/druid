@@ -3,11 +3,21 @@
   Preconditions.checkNotNull(status,"status");
   Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
   log.info("Inserting task %s with status: %s",task.getId(),status);
-  dbi.withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      handle.createStatement(String.format("INSERT INTO %s (id, created_date, payload, status_code, status_payload) VALUES (:id, :created_date, :payload, :status_code, :status_payload)",dbConnectorConfig.getTaskTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("payload",jsonMapper.writeValueAsString(task)).bind("status_code",status.getStatusCode().toString()).bind("status_payload",jsonMapper.writeValueAsString(status)).execute();
-      return null;
+  try {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(String.format("INSERT INTO %s (id, created_date, payload, status_code, status_payload) VALUES (:id, :created_date, :payload, :status_code, :status_payload)",dbConnectorConfig.getTaskTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("payload",jsonMapper.writeValueAsString(task)).bind("status_code",status.getStatusCode().toString()).bind("status_payload",jsonMapper.writeValueAsString(status)).execute();
+        return null;
+      }
+    }
+);
+  }
+ catch (  StatementException e) {
+    if (getTask(task.getId()).isPresent()) {
+      throw new TaskExistsException(task.getId(),e);
+    }
+ else {
+      throw e;
     }
   }
-);
 }

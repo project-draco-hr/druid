@@ -1,0 +1,10 @@
+{
+  runningTasks.remove(taskId);
+  final String statusPath=JOINER.join(config.getStatusPath(),workerId,taskId);
+  try {
+    cf.delete().guaranteed().forPath(statusPath);
+  }
+ catch (  Exception e) {
+    log.info("Tried to delete status path[%s] that didn't exist! Must've gone away already?",statusPath);
+  }
+}

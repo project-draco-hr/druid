@@ -1,15 +1,18 @@
 {
   final TaskStorage storage=new LocalTaskStorage();
+  final TaskLockbox lockbox=new TaskLockbox(storage);
   storage.insert(newTask("T1","G1","bar",new Interval("2011-01-01/P1D")),TaskStatus.running("T1"));
   storage.insert(newTask("T2","G2","bar",new Interval("2011-02-01/P1D")),TaskStatus.running("T2"));
-  storage.setVersion("T1","1234");
-  final TaskQueue tq=newTaskQueueWithStorage(storage);
-  final VersionedTaskWrapper vt1=tq.poll();
-  Assert.assertEquals("vt1 id","T1",vt1.getTask().getId());
-  Assert.assertEquals("vt1 version","1234",vt1.getVersion());
-  tq.done(vt1.getTask(),TaskStatus.success("T1",ImmutableList.<DataSegment>of()));
+  storage.addLock("T1",new TaskLock("G1","bar",new Interval("2011-01-01/P1D"),"1234"));
+  final TaskQueue tq=newTaskQueue(storage,lockbox);
+  final Task vt1=tq.poll();
+  final TaskLock vt1Lock=Iterables.getOnlyElement(lockbox.findLocksForTask(vt1));
+  Assert.assertEquals("vt1 id","T1",vt1.getId());
+  Assert.assertEquals("vt1 version","1234",vt1Lock.getVersion());
+  tq.notify(vt1,TaskStatus.success("T1"));
   tq.stop();
-  storage.setStatus("T2",TaskStatus.failure("T2"));
+  storage.setStatus(TaskStatus.failure("T2"));
+  tq.bootstrap();
   tq.start();
   Assert.assertNull("null poll",tq.poll());
 }

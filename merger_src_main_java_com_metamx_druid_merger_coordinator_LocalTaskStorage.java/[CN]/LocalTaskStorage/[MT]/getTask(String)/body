@@ -1,0 +1,15 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(taskid,"taskid");
+    if (tasks.containsKey(taskid)) {
+      return Optional.of(tasks.get(taskid).getTask());
+    }
+ else {
+      return Optional.absent();
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

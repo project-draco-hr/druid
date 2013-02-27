@@ -1,4 +1,7 @@
 {
+  if (ids.isEmpty()) {
+    return new AutoScalingData<Instance>(Lists.<String>newArrayList(),Lists.<Instance>newArrayList());
+  }
   DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",ids)));
   List<Instance> instances=Lists.newArrayList();
   for (  Reservation reservation : result.getReservations()) {
