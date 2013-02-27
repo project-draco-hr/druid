@@ -1,7 +1,7 @@
 {
   final MasterStats stats=new MasterStats();
   while (totalReplicants < expectedReplicants) {
-    final ServerHolder holder=analyzer.findNewSegmentHome(segment,serverHolderList);
+    final ServerHolder holder=analyzer.findNewSegmentHome(segment,serverHolderList,true);
     if (holder == null) {
       log.warn("Not enough %s servers or node capacity to assign segment[%s]! Expected Replicants[%d]",getTier(),segment.getIdentifier(),expectedReplicants);
       break;

@@ -3,7 +3,7 @@
   double minCost=Double.MAX_VALUE;
   ServerHolder toServer=null;
   for (  ServerHolder server : serverHolders) {
-    if (proposalSegmentSize > server.getAvailableSize() || server.isServingSegment(proposalSegment) || server.isLoadingSegment(proposalSegment)) {
+    if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment) || (assign && server.isServingSegment(proposalSegment))) {
       continue;
     }
     double cost=0f;
