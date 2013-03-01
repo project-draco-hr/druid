@@ -1,0 +1,14 @@
+{
+  List<DataSegment> segments=getSegmentsForDatasources().get(dataSourceName);
+  if (interval == null) {
+    DateTime now=new DateTime();
+    interval=new Interval(now.minusMillis(SEGMENT_HISTORY_MILLIS),now);
+  }
+  Set<String> dims=Sets.newHashSet();
+  for (  DataSegment segment : segments) {
+    if (interval.overlaps(segment.getInterval())) {
+      dims.addAll(segment.getDimensions());
+    }
+  }
+  return dims;
+}

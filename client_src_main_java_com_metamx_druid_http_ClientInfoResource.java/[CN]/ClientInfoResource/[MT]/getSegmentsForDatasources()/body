@@ -1,0 +1,13 @@
+{
+  final Map<String,List<DataSegment>> dataSourceMap=Maps.newHashMap();
+  for (  DruidServer server : clientInventoryManager.getInventory()) {
+    for (    DruidDataSource dataSource : server.getDataSources()) {
+      if (!dataSourceMap.containsKey(dataSource.getName())) {
+        dataSourceMap.put(dataSource.getName(),Lists.<DataSegment>newArrayList());
+      }
+      List<DataSegment> segments=dataSourceMap.get(dataSource.getName());
+      segments.addAll(dataSource.getSegments());
+    }
+  }
+  return dataSourceMap;
+}
