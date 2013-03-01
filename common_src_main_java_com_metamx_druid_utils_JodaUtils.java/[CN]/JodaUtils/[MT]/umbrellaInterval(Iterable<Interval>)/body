@@ -1,0 +1,14 @@
+{
+  ArrayList<DateTime> startDates=Lists.newArrayList();
+  ArrayList<DateTime> endDates=Lists.newArrayList();
+  for (  Interval interval : intervals) {
+    startDates.add(interval.getStart());
+    endDates.add(interval.getEnd());
+  }
+  DateTime minStart=minDateTime(startDates.toArray(new DateTime[]{}));
+  DateTime maxEnd=maxDateTime(endDates.toArray(new DateTime[]{}));
+  if (minStart == null || maxEnd == null) {
+    throw new IllegalArgumentException("Empty list of intervals");
+  }
+  return new Interval(minStart,maxEnd);
+}
