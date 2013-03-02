@@ -3,8 +3,10 @@ synchronized (lock) {
     if (started) {
       return;
     }
+    log.info("Started Resource Management Scheduler");
     ScheduledExecutors.scheduleAtFixedRate(exec,config.getProvisionResourcesDuration(),new Runnable(){
       @Override public void run(){
+        log.info("Running resource management strategy");
         resourceManagementStrategy.doProvision(taskRunner.getPendingTasks(),taskRunner.getWorkers());
       }
     }
