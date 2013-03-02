@@ -5,24 +5,13 @@
     final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
-        log.info("Event: %s",event.getType());
-        if (event.getData() != null) {
-          log.info("Data: %s",event.getData().getPath());
-        }
         try {
           if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED) || event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
             final String taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
-            final TaskStatus taskStatus;
-            try {
-              taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
-              if (!taskStatus.getId().equals(taskId)) {
-                throw new ISE("Worker[%s] status id does not match payload id: %s != %s",worker.getHost(),taskId,taskStatus.getId());
-              }
-            }
- catch (            Exception e) {
-              log.warn(e,"Worker[%s] wrote bogus status for task: %s",worker.getHost(),taskId);
+            final TaskStatus taskStatus=jsonMapper.readValue(event.getData().getData(),TaskStatus.class);
+            if (!taskStatus.getId().equals(taskId)) {
               retryTask(runningTasks.get(taskId),worker.getHost());
-              throw Throwables.propagate(e);
+              return;
             }
             log.info("Worker[%s] wrote %s status for task: %s",worker.getHost(),taskStatus.getStatusCode(),taskId);
 synchronized (statusLock) {
