@@ -5,10 +5,11 @@
     final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
+        log.info("Event: %s",event.getType());
+        if (event.getData() != null) {
+          log.info("Data: %s",event.getData().getPath());
+        }
         try {
-          if (event.getData() != null) {
-            log.info("Event[%s]: %s",event.getType(),event.getData().getPath());
-          }
           if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED) || event.getType().equals(PathChildrenCacheEvent.Type.CHILD_UPDATED)) {
             final String taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
             final TaskStatus taskStatus;
@@ -43,11 +44,14 @@ synchronized (statusLock) {
               runPendingTasks();
             }
           }
- else           if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED) || event.getType().equals(PathChildrenCacheEvent.Type.CONNECTION_LOST)) {
+ else           if (event.getType().equals(PathChildrenCacheEvent.Type.CHILD_REMOVED)) {
             final String taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
             if (runningTasks.containsKey(taskId)) {
               log.info("Task %s just disappeared!",taskId);
               retryTask(runningTasks.get(taskId),worker.getHost());
+            }
+ else {
+              log.info("Lost a task I didn't know about: %s",taskId);
             }
           }
         }
