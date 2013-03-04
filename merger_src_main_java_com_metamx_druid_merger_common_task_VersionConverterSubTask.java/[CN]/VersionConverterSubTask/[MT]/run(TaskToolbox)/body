@@ -1,0 +1,10 @@
+{
+  final Map<DataSegment,File> localSegments=toolbox.getSegments(this,Arrays.asList(segment));
+  final File location=localSegments.get(segment);
+  final File outLocation=new File(location,"v9_out");
+  if (IndexIO.convertSegment(location,outLocation)) {
+    final DataSegment updatedSegment=toolbox.getSegmentPusher().push(outLocation,segment);
+    toolbox.getTaskActionClient().submit(new SegmentInsertAction(this,Sets.newHashSet(updatedSegment)));
+  }
+  return success();
+}
