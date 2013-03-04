@@ -20,7 +20,7 @@
       }
     }
 ));
-    if (thoseLazyWorkers.isEmpty()) {
+    if (thoseLazyWorkers.size() <= minNumWorkers) {
       return false;
     }
     AutoScalingData terminated=autoScalingStrategy.terminate(Lists.transform(thoseLazyWorkers.subList(minNumWorkers,thoseLazyWorkers.size() - 1),new Function<ZkWorker,String>(){
