@@ -6,9 +6,8 @@
   DruidSQLLexer lexer=new DruidSQLLexer(stream);
   TokenStream tokenStream=new CommonTokenStream(lexer);
   DruidSQLParser parser=new DruidSQLParser(tokenStream);
-  DruidSQLParser.QueryContext q=parser.query();
-  parser.setBuildParseTree(true);
-  System.err.println(q.toStringTree(parser));
+  parser.setErrorHandler(new BailErrorStrategy());
+  DruidSQLParser.QueryContext queryContext=parser.query();
   Query query;
   if (parser.groupByDimensions.isEmpty()) {
     query=Druids.newTimeseriesQueryBuilder().dataSource(parser.getDataSource()).aggregators(new ArrayList<AggregatorFactory>(parser.aggregators.values())).postAggregators(parser.postAggregators).intervals(parser.intervals).granularity(parser.granularity).filters(parser.filter).build();
