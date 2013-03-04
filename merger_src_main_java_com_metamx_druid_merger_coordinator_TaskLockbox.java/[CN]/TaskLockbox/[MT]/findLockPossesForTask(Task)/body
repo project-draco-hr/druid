@@ -2,8 +2,8 @@
   giant.lock();
   try {
     final Iterable<TaskLockPosse> searchSpace;
-    if (task.getFixedInterval().isPresent()) {
-      searchSpace=findLockPossesForInterval(task.getDataSource(),task.getFixedInterval().get());
+    if (task.getImplicitLockInterval().isPresent()) {
+      searchSpace=findLockPossesForInterval(task.getDataSource(),task.getImplicitLockInterval().get());
     }
  else {
       final NavigableMap<Interval,TaskLockPosse> dsRunning=running.get(task.getDataSource());

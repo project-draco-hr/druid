@@ -1,4 +1,6 @@
 {
-  Preconditions.checkState(dbUpdaterJob != null,"No updaterJobSpec set, cannot get published segments");
-  return dbUpdaterJob.getPublishedSegments();
+  if (publishedSegments == null) {
+    throw new IllegalStateException("Job hasn't run yet. No segments have been published yet.");
+  }
+  return publishedSegments;
 }

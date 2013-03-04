@@ -1,6 +1,6 @@
 {
   log.info("Running with targetPartitionSize[%d]",targetPartitionSize);
-  final Interval interval=getFixedInterval().get();
+  final Interval interval=getImplicitLockInterval().get();
   final Set<String> unusableDimensions=Sets.newHashSet();
   final Map<String,TreeMultiset<String>> dimensionValueMultisets=Maps.newHashMap();
   final Firehose firehose=firehoseFactory.connect();
@@ -73,7 +73,7 @@
   }
   List<Task> nextTasks=Lists.transform(shardSpecs,new Function<ShardSpec,Task>(){
     @Override public Task apply(    ShardSpec shardSpec){
-      return new IndexGeneratorTask(getGroupId(),getFixedInterval().get(),firehoseFactory,new Schema(schema.getDataSource(),schema.getAggregators(),schema.getIndexGranularity(),shardSpec));
+      return new IndexGeneratorTask(getGroupId(),getImplicitLockInterval().get(),firehoseFactory,new Schema(schema.getDataSource(),schema.getAggregators(),schema.getIndexGranularity(),shardSpec),rowFlushBoundary);
     }
   }
 );

@@ -16,7 +16,7 @@ synchronized (lock) {
         return;
       }
     }
-    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withMillisToWaitBeforeDeleting(config.getMillisToWaitBeforeDeleting()).withEmitter(emitter).withMergeBytesLimit(config.getMergeBytesLimit()).withMergeSegmentsLimit(config.getMergeSegmentsLimit()).build();
+    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withMillisToWaitBeforeDeleting(config.getMillisToWaitBeforeDeleting()).withEmitter(emitter).withMergeBytesLimit(config.getMergeBytesLimit()).withMergeSegmentsLimit(config.getMergeSegmentsLimit()).withMaxSegmentsToMove(config.getMaxSegmentsToMove()).build();
     for (    DruidMasterHelper helper : helpers) {
       params=helper.run(params);
     }

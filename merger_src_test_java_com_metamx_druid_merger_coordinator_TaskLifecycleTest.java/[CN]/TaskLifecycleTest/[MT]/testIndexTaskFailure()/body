@@ -1,5 +1,5 @@
 {
-  final Task indexTask=new IndexTask("foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P1D"))),new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,newMockExceptionalFirehoseFactory());
+  final Task indexTask=new IndexTask("foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P1D"))),new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,newMockExceptionalFirehoseFactory(),-1);
   final TaskStatus mergedStatus=runTask(indexTask);
   final TaskStatus status=ts.getStatus(indexTask.getId()).get();
   Assert.assertEquals("statusCode",TaskStatus.Status.SUCCESS,status.getStatusCode());

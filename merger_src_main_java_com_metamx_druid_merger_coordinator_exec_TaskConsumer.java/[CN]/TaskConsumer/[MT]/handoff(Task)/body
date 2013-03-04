@@ -1,5 +1,5 @@
 {
-  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType()).setUser5(task.getFixedInterval().toString());
+  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType()).setUser5(task.getImplicitLockInterval().toString());
   TaskStatus preflightStatus;
   try {
     preflightStatus=task.preflight(toolbox);
@@ -27,7 +27,7 @@
           metricBuilder.setUser3(statusFromRunner.getStatusCode().toString());
           emitter.emit(metricBuilder.build("indexer/time/run/millis",statusFromRunner.getDuration()));
           if (statusFromRunner.isFailure()) {
-            log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getFixedInterval()).emit();
+            log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getImplicitLockInterval()).emit();
           }
           log.info("Task %s: %s (%d run duration)",statusFromRunner.getStatusCode(),task,statusFromRunner.getDuration());
         }

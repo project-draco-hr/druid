@@ -1,23 +1,17 @@
 {
-  Future future=runPendingTasksExec.submit(new Callable<Void>(){
+  runPendingTasksExec.submit(new Callable<Void>(){
     @Override public Void call() throws Exception {
-      List<TaskRunnerWorkItem> copy=Lists.newArrayList(pendingTasks.values());
-      for (      TaskRunnerWorkItem taskWrapper : copy) {
-        assignTask(taskWrapper);
+      try {
+        List<TaskRunnerWorkItem> copy=Lists.newArrayList(pendingTasks.values());
+        for (        TaskRunnerWorkItem taskWrapper : copy) {
+          assignTask(taskWrapper);
+        }
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Exception in running pending tasks").emit();
       }
       return null;
     }
   }
 );
-  try {
-    future.get();
-  }
- catch (  InterruptedException e) {
-    log.error(e,"InterruptedException in runPendingTasks()");
-    throw Throwables.propagate(e);
-  }
-catch (  ExecutionException e) {
-    log.error(e,"ExecutionException in runPendingTasks()");
-    throw Throwables.propagate(e.getCause());
-  }
 }

@@ -1,0 +1,10 @@
+{
+  S3Coords coords=new S3Coords(segment);
+  try {
+    S3Object objDetails=s3Client.getObjectDetails(new S3Bucket(coords.bucket),coords.path);
+    return objDetails.getLastModifiedDate().getTime();
+  }
+ catch (  S3ServiceException e) {
+    throw new SegmentLoadingException(e,e.getMessage());
+  }
+}

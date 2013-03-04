@@ -1,0 +1,14 @@
+{
+  if (!(outDir.exists() && outDir.isDirectory())) {
+    throw new ISE("outDir[%s] must exist and be a directory",outDir);
+  }
+  log.info("Unzipping file[%s] to [%s]",pulledFile,outDir);
+  InputStream in=null;
+  try {
+    in=new BufferedInputStream(new FileInputStream(pulledFile));
+    unzip(in,outDir);
+  }
+  finally {
+    Closeables.closeQuietly(in);
+  }
+}

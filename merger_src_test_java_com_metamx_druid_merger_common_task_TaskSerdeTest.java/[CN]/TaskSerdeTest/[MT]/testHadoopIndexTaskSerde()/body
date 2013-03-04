@@ -1,0 +1,12 @@
+{
+  final HadoopIndexTask task=new HadoopIndexTask(new HadoopDruidIndexerConfig(null,"foo","timestamp","auto",new JSONDataSpec(ImmutableList.of("foo")),null,new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P1D"))),new StaticPathSpec("bar"),null,null,null,null,null,null,false,true,null,false,new DataRollupSpec(ImmutableList.<AggregatorFactory>of(),QueryGranularity.NONE),null,false,ImmutableList.<String>of()));
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final String json=jsonMapper.writeValueAsString(task);
+  final Task task2=jsonMapper.readValue(json,Task.class);
+  Assert.assertEquals("foo",task.getDataSource());
+  Assert.assertEquals(Optional.of(new Interval("2010-01-01/P1D")),task.getImplicitLockInterval());
+  Assert.assertEquals(task.getId(),task2.getId());
+  Assert.assertEquals(task.getGroupId(),task2.getGroupId());
+  Assert.assertEquals(task.getDataSource(),task2.getDataSource());
+  Assert.assertEquals(task.getImplicitLockInterval(),task2.getImplicitLockInterval());
+}

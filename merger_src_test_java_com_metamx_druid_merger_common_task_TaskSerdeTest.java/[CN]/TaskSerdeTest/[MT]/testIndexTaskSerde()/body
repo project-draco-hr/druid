@@ -1,11 +1,13 @@
 {
-  final Task task=new IndexTask("foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P2D"))),new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,null);
+  final Task task=new IndexTask("foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P2D"))),new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,null,-1);
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
+  Thread.sleep(100);
   final Task task2=jsonMapper.readValue(json,Task.class);
+  Assert.assertEquals("foo",task.getDataSource());
+  Assert.assertEquals(Optional.of(new Interval("2010-01-01/P2D")),task.getImplicitLockInterval());
   Assert.assertEquals(task.getId(),task2.getId());
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
-  Assert.assertEquals(task.getFixedInterval(),task2.getFixedInterval());
-  Assert.assertEquals(task.getFixedInterval().get(),task2.getFixedInterval().get());
+  Assert.assertEquals(task.getImplicitLockInterval(),task2.getImplicitLockInterval());
 }

@@ -2,8 +2,8 @@
   giant.lock();
   try {
     for (    final Task task : queue) {
-      if (task.getFixedInterval().isPresent()) {
-        final Optional<TaskLock> maybeLock=taskLockbox.tryLock(task,task.getFixedInterval().get());
+      if (task.getImplicitLockInterval().isPresent()) {
+        final Optional<TaskLock> maybeLock=taskLockbox.tryLock(task,task.getImplicitLockInterval().get());
         if (maybeLock.isPresent()) {
           log.info("Task claimed with fixed interval lock: %s",task.getId());
           queue.remove(task);

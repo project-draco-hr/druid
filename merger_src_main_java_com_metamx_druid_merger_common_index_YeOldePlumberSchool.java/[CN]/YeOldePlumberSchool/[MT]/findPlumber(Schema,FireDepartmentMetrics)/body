@@ -19,9 +19,9 @@
       commitRunnable.run();
     }
     @Override public void finishJob(){
+      File fileToUpload=null;
       try {
         Preconditions.checkState(!theSink.swappable(),"All data must be persisted before fininshing the job!");
-        final File fileToUpload;
         if (spilled.size() == 0) {
           throw new IllegalStateException("Nothing indexed?");
         }
@@ -38,12 +38,23 @@
         }
         final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
         final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version).withBinaryVersion(IndexIO.getVersionFromDir(fileToUpload));
-        segmentPusher.push(fileToUpload,segmentToUpload);
+        dataSegmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
       }
  catch (      Exception e) {
         log.warn(e,"Failed to merge and upload");
         throw Throwables.propagate(e);
+      }
+ finally {
+        try {
+          if (fileToUpload != null) {
+            log.info("Deleting Index File[%s]",fileToUpload);
+            FileUtils.deleteDirectory(fileToUpload);
+          }
+        }
+ catch (        IOException e) {
+          log.warn(e,"Error deleting directory[%s]",fileToUpload);
+        }
       }
     }
     private void spillIfSwappable(){

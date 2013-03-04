@@ -13,7 +13,7 @@
         handoff(task);
       }
  catch (      Exception e) {
-        log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getFixedInterval()).emit();
+        log.makeAlert(e,"Failed to hand off task").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getImplicitLockInterval()).emit();
         if (!shutdown) {
           queue.notify(task,TaskStatus.failure(task.getId()));
         }

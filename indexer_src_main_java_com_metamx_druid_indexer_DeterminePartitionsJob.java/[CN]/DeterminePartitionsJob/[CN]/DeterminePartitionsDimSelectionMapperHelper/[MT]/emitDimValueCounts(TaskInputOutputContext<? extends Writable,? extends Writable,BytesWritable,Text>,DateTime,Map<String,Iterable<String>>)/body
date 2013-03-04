@@ -5,6 +5,7 @@
   }
   final Interval interval=maybeInterval.get();
   final byte[] groupKey=interval.getStart().toString().getBytes(Charsets.UTF_8);
+  write(context,groupKey,new DimValueCount("","",1));
   for (  final Map.Entry<String,Iterable<String>> dimAndValues : dims.entrySet()) {
     final String dim=dimAndValues.getKey();
     if (partitionDimension == null || partitionDimension.equals(dim)) {

@@ -9,11 +9,14 @@
     @Override public File getBaseTaskDir(){
       return tmp;
     }
-    @Override public long getRowFlushBoundary(){
+    @Override public int getDefaultRowFlushBoundary(){
       return 50000;
     }
+    @Override public String getHadoopWorkingPath(){
+      return null;
+    }
   }
-,new LocalTaskActionClient(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new SegmentPusher(){
+,new LocalTaskActionClient(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
     }
@@ -23,7 +26,7 @@
     }
   }
 ,new DefaultObjectMapper()){
-    @Override public Map<String,SegmentPuller> getSegmentGetters(    Task task){
+    @Override public Map<DataSegment,File> getSegments(    Task task,    List<DataSegment> segments) throws SegmentLoadingException {
       return ImmutableMap.of();
     }
   }
