@@ -13,7 +13,11 @@
       log.info("[%s]: Still waiting on %,d segments to be moved",tier,currentlyMovingSegments.size());
       continue;
     }
-    final List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(entry.getValue());
+    final List<ServerHolder> serverHolderList=Lists.newArrayList(entry.getValue());
+    if (serverHolderList.size() <= 1) {
+      log.info("[%s]: One or fewer servers found.  Cannot balance.",tier);
+      continue;
+    }
     int numSegments=0;
     for (    ServerHolder server : serverHolderList) {
       numSegments+=server.getServer().getSegments().size();
@@ -26,14 +30,11 @@
     while (iter < maxSegmentsToMove) {
       iter++;
       final BalancerSegmentHolder segmentToMove=analyzer.pickSegmentToMove(serverHolderList,numSegments);
-      final ServerHolder holder=analyzer.findNewSegmentHome(segmentToMove.getSegment(),serverHolderList,false);
+      final ServerHolder holder=analyzer.findNewSegmentHome(segmentToMove.getSegment(),serverHolderList);
       if (holder == null) {
         continue;
       }
-      final DruidServer toServer=holder.getServer();
-      if (!currentlyMovingSegments.get(tier).containsKey(segmentToMove.getSegment())) {
-        moveSegment(segmentToMove,toServer,params);
-      }
+      moveSegment(segmentToMove,holder.getServer(),params);
     }
     final double initialTotalCost=analyzer.calculateInitialTotalCost(serverHolderList);
     final double normalization=analyzer.calculateNormalization(serverHolderList);
@@ -42,11 +43,7 @@
     stats.addToTieredStat("normalization",tier,(long)normalization);
     stats.addToTieredStat("normalizedInitialCostTimesOneThousand",tier,(long)(normalizedInitialCost * 1000));
     stats.addToTieredStat("movedCount",tier,currentlyMovingSegments.get(tier).size());
-    log.info("Initial Total Cost: [%f], Normalization: [%f], Initial Normalized Cost: [%f], Segments Moved: [%d]",initialTotalCost,normalization,normalizedInitialCost,currentlyMovingSegments.get(tier).size());
-    if (serverHolderList.size() <= 1) {
-      log.info("[%s]: One or fewer servers found.  Cannot balance.",tier);
-      continue;
-    }
+    log.info("[%s]: Initial Total Cost: [%f], Normalization: [%f], Initial Normalized Cost: [%f], Segments Moved: [%d]",tier,initialTotalCost,normalization,normalizedInitialCost,currentlyMovingSegments.get(tier).size());
   }
   return params.buildFromExisting().withMasterStats(stats).build();
 }
