@@ -1,0 +1,11 @@
+{
+  final TaskActionClient taskClient=toolbox.getTaskActionClient();
+  List<DataSegment> segments=taskClient.submit(makeListUsedAction());
+  taskClient.submit(new SpawnTasksAction(this,Lists.transform(segments,new Function<DataSegment,Task>(){
+    @Override public Task apply(    @Nullable DataSegment input){
+      return new VersionConverterSubTask(getGroupId(),input);
+    }
+  }
+)));
+  return TaskStatus.success(getId());
+}
