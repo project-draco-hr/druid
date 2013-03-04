@@ -1,7 +1,7 @@
 {
   giant.lock();
   try {
-    if (task.getFixedInterval().isPresent() && !task.getFixedInterval().get().equals(interval)) {
+    if (task.getImplicitLockInterval().isPresent() && !task.getImplicitLockInterval().get().equals(interval)) {
       throw new IAE("Task must lock its fixed interval: %s",task.getId());
     }
     final String dataSource=task.getDataSource();
