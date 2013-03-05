@@ -1,9 +1,9 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
   final ServiceEmitter emitter=toolbox.getEmitter();
   final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder();
   final DataSegment mergedSegment=computeMergedSegment(getDataSource(),myLock.getVersion(),segments);
-  final File taskDir=toolbox.getConfig().getTaskDir(this);
+  final File taskDir=toolbox.getTaskDir();
   try {
     final long startTime=System.currentTimeMillis();
     log.info("Starting merge of id[%s], segments: %s",getId(),Lists.transform(segments,new Function<DataSegment,String>(){
@@ -12,7 +12,7 @@
       }
     }
 ));
-    final Map<DataSegment,File> gettedSegments=toolbox.getSegments(this,segments);
+    final Map<DataSegment,File> gettedSegments=toolbox.getSegments(segments);
     final File fileToUpload=merge(gettedSegments,new File(taskDir,"merged"));
     emitter.emit(builder.build("merger/numMerged",segments.size()));
     emitter.emit(builder.build("merger/mergeTime",System.currentTimeMillis() - startTime));
@@ -21,12 +21,11 @@
     final DataSegment uploadedSegment=toolbox.getSegmentPusher().push(fileToUpload,mergedSegment);
     emitter.emit(builder.build("merger/uploadTime",System.currentTimeMillis() - uploadStart));
     emitter.emit(builder.build("merger/mergeSize",uploadedSegment.getSize()));
-    toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(uploadedSegment)));
+    toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(uploadedSegment)));
     return TaskStatus.success(getId());
   }
  catch (  Exception e) {
-    log.error(e,String.format("Exception merging %s[%s] segments",mergedSegment.getDataSource(),mergedSegment.getInterval()));
-    emitter.emit(new AlertEvent.Builder().build("Exception merging",ImmutableMap.<String,Object>builder().put("exception",e.toString()).build()));
+    log.makeAlert(e,"Exception merging[%s]",mergedSegment.getDataSource()).addData("interval",mergedSegment.getInterval()).emit();
     return TaskStatus.failure(getId());
   }
 }

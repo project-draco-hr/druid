@@ -4,9 +4,9 @@
       return "test";
     }
     @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
-      final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+      final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
       final DataSegment segment=DataSegment.builder().dataSource("ds").interval(new Interval("2012-01-01/P1D")).version(myLock.getVersion()).build();
-      toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(segment)));
+      toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(segment)));
       return TaskStatus.success(getId());
     }
   }
