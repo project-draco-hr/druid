@@ -17,12 +17,17 @@
   DruidSQLLexer lexer=new DruidSQLLexer(stream);
   TokenStream tokenStream=new CommonTokenStream(lexer);
   DruidSQLParser parser=new DruidSQLParser(tokenStream);
-  parser.setErrorHandler(new BailErrorStrategy());
+  lexer.removeErrorListeners();
+  parser.removeErrorListeners();
+  lexer.addErrorListener(ConsoleErrorListener.INSTANCE);
+  parser.addErrorListener(ConsoleErrorListener.INSTANCE);
   try {
     DruidSQLParser.QueryContext queryContext=parser.query();
+    if (parser.getNumberOfSyntaxErrors() > 0)     throw new IllegalStateException();
   }
- catch (  ParseCancellationException e) {
-    System.out.println(e.getCause().getMessage());
+ catch (  Exception e) {
+    String msg=e.getMessage();
+    if (msg != null)     System.err.println(e);
     System.exit(1);
   }
   final Query query;
