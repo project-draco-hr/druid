@@ -1,10 +1,16 @@
 {
-  final Map<DataSegment,File> localSegments=toolbox.getSegments(this,Arrays.asList(segment));
+  log.info("Converting segment[%s]",segment);
+  final Map<DataSegment,File> localSegments=toolbox.getSegments(Arrays.asList(segment));
   final File location=localSegments.get(segment);
   final File outLocation=new File(location,"v9_out");
   if (IndexIO.convertSegment(location,outLocation)) {
-    final DataSegment updatedSegment=toolbox.getSegmentPusher().push(outLocation,segment);
-    toolbox.getTaskActionClient().submit(new SegmentInsertAction(Sets.newHashSet(updatedSegment)));
+    final int outVersion=IndexIO.getVersionFromDir(outLocation);
+    DataSegment updatedSegment=segment.withVersion(String.format("%s_v%s",segment.getVersion(),outVersion));
+    updatedSegment=toolbox.getSegmentPusher().push(outLocation,updatedSegment);
+    toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(Sets.newHashSet(updatedSegment)));
+  }
+ else {
+    log.info("Conversion failed.");
   }
   return success();
 }

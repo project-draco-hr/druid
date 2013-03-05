@@ -9,23 +9,23 @@ class RealtimeishTask extends AbstractTask {
     @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
       final Interval interval1=new Interval("2010-01-01T00/PT1H");
       final Interval interval2=new Interval("2010-01-01T01/PT1H");
-      final Optional<TaskLock> lock1=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval1));
-      final List<TaskLock> locks1=toolbox.getTaskActionClient().submit(new LockListAction());
+      final Optional<TaskLock> lock1=toolbox.getTaskActionClientFactory().submit(new LockAcquireAction(interval1));
+      final List<TaskLock> locks1=toolbox.getTaskActionClientFactory().submit(new LockListAction());
       Assert.assertTrue("lock1 present",lock1.isPresent());
       Assert.assertEquals("lock1 interval",interval1,lock1.get().getInterval());
       Assert.assertEquals("locks1",ImmutableList.of(lock1.get()),locks1);
-      final Optional<TaskLock> lock2=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval2));
-      final List<TaskLock> locks2=toolbox.getTaskActionClient().submit(new LockListAction());
+      final Optional<TaskLock> lock2=toolbox.getTaskActionClientFactory().submit(new LockAcquireAction(interval2));
+      final List<TaskLock> locks2=toolbox.getTaskActionClientFactory().submit(new LockListAction());
       Assert.assertTrue("lock2 present",lock2.isPresent());
       Assert.assertEquals("lock2 interval",interval2,lock2.get().getInterval());
       Assert.assertEquals("locks2",ImmutableList.of(lock1.get(),lock2.get()),locks2);
-      toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(DataSegment.builder().dataSource("foo").interval(interval1).version(lock1.get().getVersion()).build())));
-      toolbox.getTaskActionClient().submit(new LockReleaseAction(interval1));
-      final List<TaskLock> locks3=toolbox.getTaskActionClient().submit(new LockListAction());
+      toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(DataSegment.builder().dataSource("foo").interval(interval1).version(lock1.get().getVersion()).build())));
+      toolbox.getTaskActionClientFactory().submit(new LockReleaseAction(interval1));
+      final List<TaskLock> locks3=toolbox.getTaskActionClientFactory().submit(new LockListAction());
       Assert.assertEquals("locks3",ImmutableList.of(lock2.get()),locks3);
-      toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(DataSegment.builder().dataSource("foo").interval(interval2).version(lock2.get().getVersion()).build())));
-      toolbox.getTaskActionClient().submit(new LockReleaseAction(interval2));
-      final List<TaskLock> locks4=toolbox.getTaskActionClient().submit(new LockListAction());
+      toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(DataSegment.builder().dataSource("foo").interval(interval2).version(lock2.get().getVersion()).build())));
+      toolbox.getTaskActionClientFactory().submit(new LockReleaseAction(interval2));
+      final List<TaskLock> locks4=toolbox.getTaskActionClientFactory().submit(new LockListAction());
       Assert.assertEquals("locks4",ImmutableList.<TaskLock>of(),locks4);
       return TaskStatus.success(getId());
     }
