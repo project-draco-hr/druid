@@ -1,7 +1,6 @@
 {
-  if (taskToolbox == null) {
-    final DataSegmentPusher dataSegmentPusher=new S3DataSegmentPusher(s3Service,configFactory.build(S3DataSegmentPusherConfig.class),jsonMapper);
+  if (taskToolboxFactory == null) {
     final SegmentKiller segmentKiller=new S3SegmentKiller(s3Service);
-    taskToolbox=new TaskToolbox(taskConfig,new RemoteTaskActionClient(httpClient,coordinatorServiceProvider,jsonMapper),emitter,s3Service,dataSegmentPusher,segmentKiller,jsonMapper);
+    taskToolboxFactory=new TaskToolboxFactory(taskConfig,new RemoteTaskActionClientFactory(httpClient,coordinatorServiceProvider,jsonMapper),emitter,s3Service,segmentPusher,segmentKiller,jsonMapper);
   }
 }

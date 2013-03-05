@@ -15,7 +15,7 @@
   }
 ,cf,worker1);
   workerCuratorCoordinator.start();
-  taskMonitor=new TaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolbox(new TaskConfig(){
+  taskMonitor=new TaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolboxFactory(new TaskConfig(){
     @Override public File getBaseTaskDir(){
       try {
         return File.createTempFile("billy","yay");

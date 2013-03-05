@@ -5,7 +5,7 @@
     }
   }
 ;
-  final Set<String> current=ImmutableSet.copyOf(Iterables.transform(toolbox.getTaskActionClient().submit(new SegmentListUsedAction(this,getDataSource(),getImplicitLockInterval().get())),toIdentifier));
+  final Set<String> current=ImmutableSet.copyOf(Iterables.transform(toolbox.getTaskActionClient().submit(new SegmentListUsedAction(getDataSource(),getImplicitLockInterval().get())),toIdentifier));
   final Set<String> requested=ImmutableSet.copyOf(Iterables.transform(segments,toIdentifier));
   final Set<String> missingFromRequested=Sets.difference(current,requested);
   if (!missingFromRequested.isEmpty()) {

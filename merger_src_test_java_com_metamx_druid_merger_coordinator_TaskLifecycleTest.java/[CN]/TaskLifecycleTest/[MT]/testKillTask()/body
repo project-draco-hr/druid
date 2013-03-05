@@ -1,7 +1,7 @@
 {
   final Task killTask=new KillTask("foo",new Interval("2010-01-02/P2D"));
-  final TaskStatus mergedStatus=runTask(killTask);
-  Assert.assertEquals("merged statusCode",TaskStatus.Status.SUCCESS,mergedStatus.getStatusCode());
+  final TaskStatus status=runTask(killTask);
+  Assert.assertEquals("merged statusCode",TaskStatus.Status.SUCCESS,status.getStatusCode());
   Assert.assertEquals("num segments published",0,mdc.getPublished().size());
   Assert.assertEquals("num segments nuked",0,mdc.getNuked().size());
 }
