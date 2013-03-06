@@ -1,5 +1,7 @@
 {
-  List<ScalingEvent> retVal=Lists.newArrayList(recentNodes);
-  Collections.sort(retVal,comparator);
-  return retVal;
+synchronized (lock) {
+    List<ScalingEvent> retVal=Lists.newArrayList(recentEvents);
+    Collections.sort(retVal,comparator);
+    return retVal;
+  }
 }
