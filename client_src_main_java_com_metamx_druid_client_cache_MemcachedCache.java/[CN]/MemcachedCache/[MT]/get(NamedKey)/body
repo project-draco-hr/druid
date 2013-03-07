@@ -1,5 +1,12 @@
 {
-  Future<Object> future=client.asyncGet(computeKeyHash(memcachedPrefix,key));
+  Future<Object> future;
+  try {
+    future=client.asyncGet(computeKeyHash(memcachedPrefix,key));
+  }
+ catch (  IllegalStateException e) {
+    log.warn(e,"Unable to queue cache operation");
+    return null;
+  }
   try {
     byte[] bytes=(byte[])future.get(timeout,TimeUnit.MILLISECONDS);
     if (bytes != null) {

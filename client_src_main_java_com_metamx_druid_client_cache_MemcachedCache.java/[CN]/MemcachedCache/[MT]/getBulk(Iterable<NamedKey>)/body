@@ -5,7 +5,16 @@
     }
   }
 );
-  BulkFuture<Map<String,Object>> future=client.asyncGetBulk(keyLookup.keySet());
+  Map<NamedKey,byte[]> results=Maps.newHashMap();
+  BulkFuture<Map<String,Object>> future;
+  try {
+    future=client.asyncGetBulk(keyLookup.keySet());
+  }
+ catch (  IllegalStateException e) {
+    timeoutCount.incrementAndGet();
+    log.warn(e,"Unable to queue cache operation");
+    return results;
+  }
   try {
     Map<String,Object> some=future.getSome(timeout,TimeUnit.MILLISECONDS);
     if (future.isTimeout()) {
@@ -14,7 +23,6 @@
     }
     missCount.addAndGet(keyLookup.size() - some.size());
     hitCount.addAndGet(some.size());
-    Map<NamedKey,byte[]> results=Maps.newHashMap();
     for (    Map.Entry<String,Object> entry : some.entrySet()) {
       final NamedKey key=keyLookup.get(entry.getKey());
       final byte[] value=(byte[])entry.getValue();
