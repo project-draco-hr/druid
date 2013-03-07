@@ -1,5 +1,8 @@
 {
   scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ConfigManagerConfig managerConfig=configFactory.build(ConfigManagerConfig.class);
+  DbConnector.createConfigTable(dbi,managerConfig.getConfigTable());
+  JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,managerConfig),jsonMapper);
   initializeEmitter();
   initializeMonitors();
   initializeDB();
@@ -16,15 +19,14 @@
   initializeJacksonSubtypes();
   initializeCurator();
   initializeIndexerZkConfig();
-  initializeWorkerSetupManager();
-  initializeTaskRunnerFactory();
-  initializeResourceManagement();
+  initializeTaskRunnerFactory(configManager);
+  initializeResourceManagement(configManager);
   initializeTaskMasterLifecycle();
   initializeServer();
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(monitorScheduler);
-  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),workerSetupManager));
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(jsonMapper,config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),configManager));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");

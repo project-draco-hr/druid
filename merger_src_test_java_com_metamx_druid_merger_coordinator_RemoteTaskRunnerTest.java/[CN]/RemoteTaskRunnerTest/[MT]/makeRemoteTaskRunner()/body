@@ -1,9 +1,6 @@
 {
   scheduledExec=EasyMock.createMock(ScheduledExecutorService.class);
-  workerSetupManager=EasyMock.createMock(WorkerSetupManager.class);
-  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,null,null)).atLeastOnce();
-  EasyMock.replay(workerSetupManager);
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCache,scheduledExec,new RetryPolicyFactory(new TestRetryPolicyConfig()),workerSetupManager);
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCache,scheduledExec,new RetryPolicyFactory(new TestRetryPolicyConfig()),new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,null,null)));
   remoteTaskRunner.start();
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("%s/worker1",announcementsPath),jsonMapper.writeValueAsBytes(worker1));
   int count=0;
