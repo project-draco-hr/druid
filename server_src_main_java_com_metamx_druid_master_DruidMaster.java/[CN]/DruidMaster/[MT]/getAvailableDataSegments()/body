@@ -8,7 +8,7 @@
 ));
   for (  DataSegment dataSegment : dataSegments) {
     if (dataSegment.getSize() < 0) {
-      log.warn("No size on Segment[%s], wtf?",dataSegment);
+      log.makeAlert("No size on Segment, wtf?").addData("segment",dataSegment).emit();
     }
     availableSegments.add(dataSegment);
   }

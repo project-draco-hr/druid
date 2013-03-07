@@ -1,11 +1,14 @@
 {
+  if (segment != null) {
+    return super.preflight(toolbox);
+  }
   final TaskActionClient taskClient=toolbox.getTaskActionClientFactory();
   List<DataSegment> segments=taskClient.submit(defaultListUsedAction());
   final FunctionalIterable<Task> tasks=FunctionalIterable.create(segments).keep(new Function<DataSegment,Task>(){
     @Override public Task apply(    DataSegment segment){
       final Integer segmentVersion=segment.getBinaryVersion();
       if (!CURR_VERSION_INTEGER.equals(segmentVersion)) {
-        return new VersionConverterSubTask(getGroupId(),segment);
+        return new SubTask(getGroupId(),segment);
       }
       log.info("Skipping[%s], already version[%s]",segment.getIdentifier(),segmentVersion);
       return null;

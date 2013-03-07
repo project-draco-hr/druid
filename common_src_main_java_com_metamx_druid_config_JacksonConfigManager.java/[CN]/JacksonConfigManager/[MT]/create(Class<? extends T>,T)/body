@@ -1,0 +1,24 @@
+{
+  return new ConfigSerde<T>(){
+    @Override public byte[] serialize(    T obj){
+      try {
+        return jsonMapper.writeValueAsBytes(obj);
+      }
+ catch (      JsonProcessingException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public T deserialize(    byte[] bytes){
+      if (bytes == null) {
+        return defaultVal;
+      }
+      try {
+        return jsonMapper.readValue(bytes,clazz);
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+;
+}

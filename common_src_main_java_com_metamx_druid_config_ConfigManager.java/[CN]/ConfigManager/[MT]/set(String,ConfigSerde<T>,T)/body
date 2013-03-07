@@ -1,0 +1,29 @@
+{
+  if (obj == null) {
+    return false;
+  }
+  final byte[] newBytes=serde.serialize(obj);
+  try {
+    return exec.submit(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        dbi.withHandle(new HandleCallback<Void>(){
+          @Override public Void withHandle(          Handle handle) throws Exception {
+            handle.createStatement("INSERT INTO %s (name, payload) VALUES (:name, :payload) ON DUPLICATE KEY UPDATE payload = :payload").bind("name",key).bind("payload",newBytes).execute();
+            return null;
+          }
+        }
+);
+        final ConfigHolder configHolder=watchedConfigs.get(key);
+        if (configHolder != null) {
+          configHolder.swapIfNew(newBytes);
+        }
+        return true;
+      }
+    }
+).get();
+  }
+ catch (  Exception e) {
+    log.warn(e,"Failed to set[%s]",key);
+    return false;
+  }
+}

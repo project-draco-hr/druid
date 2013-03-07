@@ -1,0 +1,14 @@
+{
+  final Iterator<DataSegment> segmentsIter=segments.iterator();
+  if (!segmentsIter.hasNext()) {
+    return;
+  }
+  final String dataSource=segmentsIter.next().getDataSource();
+  while (segmentsIter.hasNext()) {
+    DataSegment next=segmentsIter.next();
+    if (!dataSource.equals(next.getDataSource())) {
+      throw new IAE("Cannot merge segments of different dataSources[%s] and [%s]",dataSource,next.getDataSource());
+    }
+  }
+  runQuery("merge",new ClientAppendQuery(dataSource,segments));
+}

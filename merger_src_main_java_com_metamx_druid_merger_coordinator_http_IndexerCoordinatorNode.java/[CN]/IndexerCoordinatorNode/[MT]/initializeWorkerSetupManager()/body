@@ -1,8 +1,10 @@
 {
   if (workerSetupManager == null) {
-    final WorkerSetupManagerConfig workerSetupManagerConfig=configFactory.build(WorkerSetupManagerConfig.class);
-    DbConnector.createConfigTable(dbi,workerSetupManagerConfig.getConfigTable());
-    workerSetupManager=new WorkerSetupManager(dbi,Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("WorkerSetupManagerExec--%d").build()),jsonMapper,workerSetupManagerConfig);
+    final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
+    final ConfigManager configManager=new ConfigManager(dbi,configManagerConfig);
+    lifecycle.addManagedInstance(configManager);
+    DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
+    workerSetupManager=new WorkerSetupManager(new JacksonConfigManager(configManager,jsonMapper));
   }
   lifecycle.addManagedInstance(workerSetupManager);
 }
