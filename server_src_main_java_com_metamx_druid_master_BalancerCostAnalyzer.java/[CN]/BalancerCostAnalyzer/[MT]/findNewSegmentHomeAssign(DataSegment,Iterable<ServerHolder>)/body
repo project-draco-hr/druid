@@ -1,0 +1,10 @@
+{
+  MinMaxPriorityQueue<Pair<Double,ServerHolder>> costsAndServers=computeCosts(proposalSegment,serverHolders);
+  while (!costsAndServers.isEmpty()) {
+    ServerHolder toServer=costsAndServers.pollFirst().rhs;
+    if (!toServer.isServingSegment(proposalSegment)) {
+      return toServer;
+    }
+  }
+  return null;
+}
