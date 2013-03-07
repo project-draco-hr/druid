@@ -1,6 +1,5 @@
 {
-  EasyMock.expect(workerSetupManager.getWorkerSetupData()).andReturn(new WorkerSetupData("0",0,null,null));
-  EasyMock.replay(workerSetupManager);
+  workerSetupData.set(new WorkerSetupData("0",0,null,null));
   EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip")).times(2);
   EasyMock.expect(autoScalingStrategy.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.<String>newArrayList("ip"),Lists.newArrayList("ip")));
   EasyMock.replay(autoScalingStrategy);
@@ -12,6 +11,5 @@
   Assert.assertFalse(terminatedSomething);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().size() == 1);
   Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);
-  EasyMock.verify(workerSetupManager);
   EasyMock.verify(autoScalingStrategy);
 }

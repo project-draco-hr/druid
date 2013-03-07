@@ -3,12 +3,8 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getPollDuration(),new Runnable(){
-      @Override public void run(){
-        poll();
-      }
-    }
-);
+    poller=new PollingCallable();
+    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getPollDuration(),poller);
     started=true;
   }
 }

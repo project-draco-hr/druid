@@ -3,12 +3,12 @@
   runInstancesResult=EasyMock.createMock(RunInstancesResult.class);
   describeInstancesResult=EasyMock.createMock(DescribeInstancesResult.class);
   reservation=EasyMock.createMock(Reservation.class);
-  workerSetupManager=EasyMock.createMock(WorkerSetupManager.class);
+  workerSetupData=new AtomicReference<WorkerSetupData>(null);
   instance=new Instance().withInstanceId(INSTANCE_ID).withLaunchTime(new Date()).withImageId(AMI_ID).withPrivateIpAddress(IP);
   strategy=new EC2AutoScalingStrategy(new DefaultObjectMapper(),amazonEC2Client,new EC2AutoScalingStrategyConfig(){
     @Override public String getWorkerPort(){
       return "8080";
     }
   }
-,workerSetupManager);
+,workerSetupData);
 }
