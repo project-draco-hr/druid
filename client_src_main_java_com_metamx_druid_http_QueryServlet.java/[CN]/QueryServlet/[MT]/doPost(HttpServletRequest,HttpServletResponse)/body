@@ -8,7 +8,7 @@
   try {
     requestQuery=ByteStreams.toByteArray(req.getInputStream());
     query=objectMapper.readValue(requestQuery,Query.class);
-    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),jsonMapper.writer().writeValueAsString(query)));
+    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query));
     Sequence<?> results=query.run(texasRanger);
     if (results == null) {
       results=Sequences.empty();
