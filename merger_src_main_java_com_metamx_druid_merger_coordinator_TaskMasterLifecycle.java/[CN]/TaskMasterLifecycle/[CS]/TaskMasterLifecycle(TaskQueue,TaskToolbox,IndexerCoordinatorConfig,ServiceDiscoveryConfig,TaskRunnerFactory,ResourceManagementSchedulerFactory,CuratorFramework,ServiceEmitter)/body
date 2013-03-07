@@ -6,9 +6,8 @@
       giant.lock();
       try {
         log.info("By the power of Grayskull, I have the power!");
-        final TaskRunner taskRunner=runnerFactory.build();
-        theRunner=taskRunner;
-        final ResourceManagementScheduler scheduler=managementSchedulerFactory.build(theRunner);
+        taskRunner=runnerFactory.build();
+        resourceManagementScheduler=managementSchedulerFactory.build(taskRunner);
         final TaskConsumer taskConsumer=new TaskConsumer(taskQueue,taskRunner,taskToolbox,emitter);
         taskQueue.bootstrap();
         final Lifecycle leaderLifecycle=new Lifecycle();
@@ -16,7 +15,7 @@
         leaderLifecycle.addManagedInstance(taskRunner);
         Initialization.makeServiceDiscoveryClient(curator,serviceDiscoveryConfig,leaderLifecycle);
         leaderLifecycle.addManagedInstance(taskConsumer);
-        leaderLifecycle.addManagedInstance(scheduler);
+        leaderLifecycle.addManagedInstance(resourceManagementScheduler);
         leading=true;
         try {
           leaderLifecycle.start();
