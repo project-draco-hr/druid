@@ -1,0 +1,12 @@
+{
+  MergerWhitelist whitelist=whitelistRef.get();
+  for (  DataSegment dataSegment : params.getAvailableSegments()) {
+    if (whitelist == null || whitelist.contains(dataSegment.getDataSource())) {
+      final Integer binaryVersion=dataSegment.getBinaryVersion();
+      if (binaryVersion == null || binaryVersion < IndexIO.CURRENT_VERSION_ID) {
+        indexingServiceClient.upgradeSegment(dataSegment);
+      }
+    }
+  }
+  return params;
+}

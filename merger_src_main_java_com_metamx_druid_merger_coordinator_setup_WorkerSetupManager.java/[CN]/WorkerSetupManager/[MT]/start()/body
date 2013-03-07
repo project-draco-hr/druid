@@ -1,14 +1,3 @@
 {
-synchronized (lock) {
-    if (started) {
-      return;
-    }
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getPollDuration(),new Runnable(){
-      @Override public void run(){
-        poll();
-      }
-    }
-);
-    started=true;
-  }
+  workerSetupData=configManager.watch(WORKER_SETUP_KEY,WorkerSetupData.class);
 }

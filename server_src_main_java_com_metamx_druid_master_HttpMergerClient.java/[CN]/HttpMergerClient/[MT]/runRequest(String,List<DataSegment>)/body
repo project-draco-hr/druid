@@ -1,9 +1,0 @@
-{
-  try {
-    byte[] dataToSend=jsonMapper.writeValueAsBytes(new ClientAppendQuery(dataSource,segments));
-    client.post(new URL(String.format("http://%s:%s/mmx/merger/v1/merge",serviceProvider.getInstance().getAddress(),serviceProvider.getInstance().getPort()))).setContent("application/json",dataToSend).go(responseHandler).get();
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
-}

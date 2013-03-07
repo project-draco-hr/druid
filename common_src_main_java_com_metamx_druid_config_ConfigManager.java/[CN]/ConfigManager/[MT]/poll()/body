@@ -1,0 +1,12 @@
+{
+  for (  Map.Entry<String,ConfigHolder> entry : watchedConfigs.entrySet()) {
+    try {
+      if (entry.getValue().swapIfNew(lookup(entry.getKey()))) {
+        log.info("New value for key[%s] seen.",entry.getKey());
+      }
+    }
+ catch (    Exception e) {
+      log.warn(e,"Exception when checking property[%s]",entry.getKey());
+    }
+  }
+}

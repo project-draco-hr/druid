@@ -8,7 +8,7 @@
 );
   log.info("[%s] Found %d segments to merge %s",dataSource,segments.size(),segmentNames);
   try {
-    mergerClient.runRequest(dataSource,segments);
+    indexingServiceClient.mergeSegments(segments);
   }
  catch (  Exception e) {
     log.error(e,"[%s] Merging error for segments [%s]",dataSource,segmentNames);
