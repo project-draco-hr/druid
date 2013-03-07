@@ -4,6 +4,7 @@
     future=client.asyncGet(computeKeyHash(memcachedPrefix,key));
   }
  catch (  IllegalStateException e) {
+    errorCount.incrementAndGet();
     log.warn(e,"Unable to queue cache operation");
     return null;
   }
@@ -27,6 +28,7 @@ catch (  InterruptedException e) {
     throw Throwables.propagate(e);
   }
 catch (  ExecutionException e) {
+    errorCount.incrementAndGet();
     log.warn(e,"Exception pulling item from cache");
     return null;
   }

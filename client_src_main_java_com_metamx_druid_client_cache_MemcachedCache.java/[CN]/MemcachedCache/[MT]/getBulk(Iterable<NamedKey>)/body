@@ -11,7 +11,7 @@
     future=client.asyncGetBulk(keyLookup.keySet());
   }
  catch (  IllegalStateException e) {
-    timeoutCount.incrementAndGet();
+    errorCount.incrementAndGet();
     log.warn(e,"Unable to queue cache operation");
     return results;
   }
@@ -35,6 +35,7 @@
     throw Throwables.propagate(e);
   }
 catch (  ExecutionException e) {
+    errorCount.incrementAndGet();
     log.warn(e,"Exception pulling item from cache");
     return results;
   }
