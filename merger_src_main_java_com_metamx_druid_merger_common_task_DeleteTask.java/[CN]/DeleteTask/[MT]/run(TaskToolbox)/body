@@ -1,5 +1,5 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
   final Interval interval=this.getImplicitLockInterval().get();
   final IncrementalIndex empty=new IncrementalIndex(0,QueryGranularity.NONE,new AggregatorFactory[0]);
   final IndexableAdapter emptyAdapter=new IncrementalIndexAdapter(interval,empty);
@@ -8,6 +8,6 @@
   final File fileToUpload=IndexMerger.merge(Lists.newArrayList(emptyAdapter),new AggregatorFactory[0],outDir);
   final DataSegment uploadedSegment=toolbox.getSegmentPusher().push(fileToUpload,segment);
   log.info("Uploaded tombstone segment for[%s] interval[%s] with version[%s]",segment.getDataSource(),segment.getInterval(),segment.getVersion());
-  toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(uploadedSegment)));
+  toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(uploadedSegment)));
   return TaskStatus.success(getId());
 }
