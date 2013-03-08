@@ -15,7 +15,7 @@
   currentlyTerminating.addAll(stillExisting);
   boolean nothingTerminating=currentlyTerminating.isEmpty();
   if (nothingTerminating) {
-    final int minNumWorkers=workerSetupManager.getWorkerSetupData().getMinNumWorkers();
+    final int minNumWorkers=workerSetupdDataRef.get().getMinNumWorkers();
     if (zkWorkers.size() <= minNumWorkers) {
       log.info("Only [%d <= %d] nodes in the cluster, not terminating anything.",zkWorkers.size(),minNumWorkers);
       return false;

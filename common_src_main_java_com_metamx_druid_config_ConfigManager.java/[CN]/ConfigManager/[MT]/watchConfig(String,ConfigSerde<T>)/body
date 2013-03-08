@@ -1,0 +1,38 @@
+{
+  ConfigHolder<T> holder=watchedConfigs.get(key);
+  if (holder == null) {
+    try {
+      log.info("Creating watch for key[%s]",key);
+      holder=exec.submit(new Callable<ConfigHolder<T>>(){
+        @Override @SuppressWarnings("unchecked") public ConfigHolder<T> call() throws Exception {
+          if (!started) {
+            watchedConfigs.put(key,new ConfigHolder<T>(null,serde));
+          }
+ else {
+            try {
+              if (!watchedConfigs.containsKey(key)) {
+                byte[] value=lookup(key);
+                ConfigHolder<T> holder=new ConfigHolder<T>(value,serde);
+                watchedConfigs.put(key,holder);
+              }
+            }
+ catch (            Exception e) {
+              log.warn(e,"Failed loading config for key[%s]",key);
+              watchedConfigs.put(key,new ConfigHolder<T>(null,serde));
+            }
+          }
+          return watchedConfigs.get(key);
+        }
+      }
+).get();
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw Throwables.propagate(e);
+    }
+catch (    ExecutionException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  return holder.getReference();
+}

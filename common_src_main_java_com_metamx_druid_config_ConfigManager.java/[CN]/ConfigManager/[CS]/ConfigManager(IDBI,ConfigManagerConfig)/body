@@ -1,0 +1,7 @@
+{
+  this.dbi=dbi;
+  this.config=config;
+  this.exec=ScheduledExecutors.fixed(1,"config-manager-%s");
+  this.watchedConfigs=Maps.newConcurrentMap();
+  this.selectStatement=String.format("SELECT payload FROM %s WHERE name = :name",config.getConfigTable());
+}

@@ -1,0 +1,31 @@
+{
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
+  final ServiceEmitter emitter=toolbox.getEmitter();
+  final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder();
+  final DataSegment mergedSegment=computeMergedSegment(getDataSource(),myLock.getVersion(),segments);
+  final File taskDir=toolbox.getTaskDir();
+  try {
+    final long startTime=System.currentTimeMillis();
+    log.info("Starting merge of id[%s], segments: %s",getId(),Lists.transform(segments,new Function<DataSegment,String>(){
+      @Override public String apply(      @Nullable DataSegment input){
+        return input.getIdentifier();
+      }
+    }
+));
+    final Map<DataSegment,File> gettedSegments=toolbox.getSegments(segments);
+    final File fileToUpload=merge(gettedSegments,new File(taskDir,"merged"));
+    emitter.emit(builder.build("merger/numMerged",segments.size()));
+    emitter.emit(builder.build("merger/mergeTime",System.currentTimeMillis() - startTime));
+    log.info("[%s] : Merged %d segments in %,d millis",mergedSegment.getDataSource(),segments.size(),System.currentTimeMillis() - startTime);
+    long uploadStart=System.currentTimeMillis();
+    final DataSegment uploadedSegment=toolbox.getSegmentPusher().push(fileToUpload,mergedSegment);
+    emitter.emit(builder.build("merger/uploadTime",System.currentTimeMillis() - uploadStart));
+    emitter.emit(builder.build("merger/mergeSize",uploadedSegment.getSize()));
+    toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.of(uploadedSegment)));
+    return TaskStatus.success(getId());
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception merging[%s]",mergedSegment.getDataSource()).addData("interval",mergedSegment.getInterval()).emit();
+    return TaskStatus.failure(getId());
+  }
+}

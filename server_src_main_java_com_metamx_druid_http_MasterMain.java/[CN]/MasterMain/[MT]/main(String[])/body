@@ -26,12 +26,14 @@
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
   CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
-  ServiceProvider serviceProvider=null;
+  IndexingServiceClient indexingServiceClient=null;
   if (druidMasterConfig.getMergerServiceName() != null) {
-    serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
+    ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
+    indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,jsonMapper,databaseSegmentManager,serverInventoryManager,databaseRuleManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),serviceProvider,httpClient,new ToStringResponseHandler(Charsets.UTF_8));
+  JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configFactory.build(ConfigManagerConfig.class)),jsonMapper);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,configManager,databaseSegmentManager,serverInventoryManager,databaseRuleManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),indexingServiceClient);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
@@ -47,7 +49,7 @@
     }
   }
 ));
-  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryManager,databaseSegmentManager,databaseRuleManager,druidClusterInfo,master,jsonMapper));
+  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryManager,databaseSegmentManager,databaseRuleManager,druidClusterInfo,master,jsonMapper,indexingServiceClient));
   final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
   final RedirectInfo redirectInfo=new RedirectInfo(){
     @Override public boolean doLocal(){

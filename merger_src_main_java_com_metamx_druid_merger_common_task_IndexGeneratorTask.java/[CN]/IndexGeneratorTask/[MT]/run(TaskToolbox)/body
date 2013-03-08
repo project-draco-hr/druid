@@ -1,7 +1,7 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction(this)));
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
   final Interval interval=getImplicitLockInterval().get();
-  final File tmpDir=new File(String.format("%s/%s",toolbox.getConfig().getTaskDir(this).toString(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum())));
+  final File tmpDir=new File(toolbox.getTaskDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum()));
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
@@ -40,6 +40,6 @@
   plumber.persist(firehose.commit());
   plumber.finishJob();
   log.info("Task[%s] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away) and output %,d rows",getId(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
-  toolbox.getTaskActionClient().submit(new SegmentInsertAction(this,ImmutableSet.copyOf(pushedSegments)));
+  toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.copyOf(pushedSegments)));
   return TaskStatus.success(getId());
 }

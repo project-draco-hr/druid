@@ -1,6 +1,6 @@
 {
   final HadoopDruidIndexerConfig configCopy=toolbox.getObjectMapper().readValue(toolbox.getObjectMapper().writeValueAsBytes(config),HadoopDruidIndexerConfig.class);
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction(this)));
+  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClientFactory().submit(new LockListAction()));
   log.info("Setting version to: %s",myLock.getVersion());
   configCopy.setVersion(myLock.getVersion());
   configCopy.setJobOutputDir(toolbox.getConfig().getHadoopWorkingPath());
@@ -18,7 +18,7 @@
   log.info("Starting a hadoop index generator job...");
   if (job.run()) {
     List<DataSegment> publishedSegments=job.getPublishedSegments();
-    toolbox.getTaskActionClient().submit(new SegmentInsertAction(this,ImmutableSet.copyOf(publishedSegments)));
+    toolbox.getTaskActionClientFactory().submit(new SegmentInsertAction(ImmutableSet.copyOf(publishedSegments)));
     return TaskStatus.success(getId());
   }
  else {

@@ -1,12 +1,13 @@
 {
   final List<List<DataSegment>> retVal=Lists.newArrayList();
-  final MergerClient mergerClient=new MergerClient(){
-    @Override public void runRequest(    String dataSource,    List<DataSegment> segmentsToMerge){
+  final IndexingServiceClient indexingServiceClient=new IndexingServiceClient(null,null,null){
+    @Override public void mergeSegments(    List<DataSegment> segmentsToMerge){
       retVal.add(segmentsToMerge);
     }
   }
 ;
-  final DruidMasterSegmentMerger merger=new DruidMasterSegmentMerger(mergerClient);
+  final AtomicReference<MergerWhitelist> whitelistRef=new AtomicReference<MergerWhitelist>(null);
+  final DruidMasterSegmentMerger merger=new DruidMasterSegmentMerger(indexingServiceClient,whitelistRef);
   final DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withAvailableSegments(ImmutableSet.copyOf(segments)).withMergeBytesLimit(mergeBytesLimit).withMergeSegmentsLimit(mergeSegmentsLimit).build();
   merger.run(params);
   return retVal;

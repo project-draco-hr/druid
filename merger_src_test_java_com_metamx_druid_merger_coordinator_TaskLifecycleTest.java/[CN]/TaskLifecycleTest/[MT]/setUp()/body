@@ -1,11 +1,11 @@
 {
   EmittingLogger.registerEmitter(EasyMock.createMock(ServiceEmitter.class));
   tmp=Files.createTempDir();
-  ts=new LocalTaskStorage();
+  ts=new HeapMemoryTaskStorage();
   tl=new TaskLockbox(ts);
   tq=new TaskQueue(ts,tl);
   mdc=newMockMDC();
-  tb=new TaskToolbox(new TaskConfig(){
+  tb=new TaskToolboxFactory(new TaskConfig(){
     @Override public File getBaseTaskDir(){
       return tmp;
     }
@@ -16,21 +16,16 @@
       return null;
     }
   }
-,new LocalTaskActionClient(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new DataSegmentPusher(){
+,new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
     }
   }
-,new SegmentKiller(){
-    @Override public void kill(    Collection<DataSegment> segments) throws ServiceException {
+,new DataSegmentKiller(){
+    @Override public void kill(    DataSegment segments) throws SegmentLoadingException {
     }
   }
-,new DefaultObjectMapper()){
-    @Override public Map<DataSegment,File> getSegments(    Task task,    List<DataSegment> segments) throws SegmentLoadingException {
-      return ImmutableMap.of();
-    }
-  }
-;
+,new DefaultObjectMapper());
   tr=new LocalTaskRunner(tb,Executors.newSingleThreadExecutor());
   tc=new TaskConsumer(tq,tr,tb,newMockEmitter());
   tsqa=new TaskStorageQueryAdapter(ts);

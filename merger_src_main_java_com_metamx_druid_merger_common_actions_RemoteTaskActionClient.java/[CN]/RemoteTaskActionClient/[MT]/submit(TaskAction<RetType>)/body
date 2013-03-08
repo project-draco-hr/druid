@@ -1,6 +1,6 @@
 {
   try {
-    byte[] dataToSend=jsonMapper.writeValueAsBytes(taskAction);
+    byte[] dataToSend=jsonMapper.writeValueAsBytes(new TaskActionHolder(task,taskAction));
     final String response=httpClient.post(getServiceUri().toURL()).setContent("application/json",dataToSend).go(new ToStringResponseHandler(Charsets.UTF_8)).get();
     final Map<String,Object> responseDict=jsonMapper.readValue(response,new TypeReference<Map<String,Object>>(){
     }
