@@ -2,7 +2,7 @@
   if (segment != null) {
     return super.preflight(toolbox);
   }
-  final TaskActionClient taskClient=toolbox.getTaskActionClientFactory();
+  final TaskActionClient taskClient=toolbox.getTaskActionClient();
   List<DataSegment> segments=taskClient.submit(defaultListUsedAction());
   final FunctionalIterable<Task> tasks=FunctionalIterable.create(segments).keep(new Function<DataSegment,Task>(){
     @Override public Task apply(    DataSegment segment){
