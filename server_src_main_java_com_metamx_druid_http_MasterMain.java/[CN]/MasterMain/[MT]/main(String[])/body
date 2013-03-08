@@ -32,7 +32,9 @@
     indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   }
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
-  JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configFactory.build(ConfigManagerConfig.class)),jsonMapper);
+  final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
+  DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
+  JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
   final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,configManager,databaseSegmentManager,serverInventoryManager,databaseRuleManager,masterYp,emitter,scheduledExecutorFactory,new ConcurrentHashMap<String,LoadQueuePeon>(),indexingServiceClient);
   lifecycle.addManagedInstance(master);
   try {
