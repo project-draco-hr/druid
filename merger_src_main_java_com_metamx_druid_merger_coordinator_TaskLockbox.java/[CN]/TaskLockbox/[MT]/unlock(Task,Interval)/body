@@ -17,6 +17,7 @@
         if (running.get(dataSource).size() == 0) {
           running.remove(dataSource);
         }
+        lockReleaseCondition.signalAll();
         try {
           taskStorage.removeLock(task.getId(),taskLock);
         }

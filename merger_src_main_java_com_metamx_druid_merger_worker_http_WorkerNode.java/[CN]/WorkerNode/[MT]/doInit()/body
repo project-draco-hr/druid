@@ -1,0 +1,27 @@
+{
+  initializeHttpClient();
+  initializeEmitter();
+  initializeS3Service();
+  initializeMonitors();
+  initializeMergerConfig();
+  initializeCuratorFramework();
+  initializeServiceDiscovery();
+  initializeCoordinatorServiceProvider();
+  initializeNewSegmentServerView();
+  initializeDataSegmentPusher();
+  initializeTaskToolbox();
+  initializeJacksonInjections();
+  initializeJacksonSubtypes();
+  initializeCuratorCoordinator();
+  initializeWorkerTaskMonitor();
+  initializeServer();
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  lifecycle.addManagedInstance(monitorScheduler);
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
+  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),workerTaskMonitor,emitter,getRequestLogger())),"/druid/v2/*");
+  root.addFilter(GuiceFilter.class,"/mmx/indexer/worker/v1/*",0);
+}

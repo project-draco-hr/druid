@@ -1,6 +1,7 @@
 {
   if (taskToolboxFactory == null) {
+    final SegmentAnnouncer segmentAnnouncer=new ZkSegmentAnnouncer(configFactory.build(MetadataUpdaterConfig.class),getPhoneBook());
     final DataSegmentKiller dataSegmentKiller=new S3DataSegmentKiller(s3Service);
-    taskToolboxFactory=new TaskToolboxFactory(taskConfig,new LocalTaskActionClientFactory(taskStorage,new TaskActionToolbox(taskQueue,taskLockbox,mergerDBCoordinator,emitter)),emitter,s3Service,segmentPusher,dataSegmentKiller,jsonMapper);
+    taskToolboxFactory=new TaskToolboxFactory(taskConfig,new LocalTaskActionClientFactory(taskStorage,new TaskActionToolbox(taskQueue,taskLockbox,mergerDBCoordinator,emitter)),emitter,s3Service,segmentPusher,dataSegmentKiller,segmentAnnouncer,newSegmentServerView,getConglomerate(),getJsonMapper());
   }
 }
