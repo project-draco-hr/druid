@@ -15,13 +15,13 @@
         tasksByLock.put(taskLock,runningTask);
       }
     }
-    final Ordering<TaskLock> byVersionOrdering=new Ordering<TaskLock>(){
-      @Override public int compare(      TaskLock left,      TaskLock right){
-        return left.getVersion().compareTo(right.getVersion());
+    final Ordering<Map.Entry<TaskLock,Task>> byVersionOrdering=new Ordering<Map.Entry<TaskLock,Task>>(){
+      @Override public int compare(      Map.Entry<TaskLock,Task> left,      Map.Entry<TaskLock,Task> right){
+        return left.getKey().getVersion().compareTo(right.getKey().getVersion());
       }
     }
 ;
-    for (    final Map.Entry<TaskLock,Task> taskAndLock : tasksByLock.entries()) {
+    for (    final Map.Entry<TaskLock,Task> taskAndLock : byVersionOrdering.sortedCopy(tasksByLock.entries())) {
       final Task task=taskAndLock.getValue();
       final TaskLock savedTaskLock=taskAndLock.getKey();
       final Optional<TaskLock> acquiredTaskLock=taskLockbox.tryLock(task,savedTaskLock.getInterval(),Optional.of(savedTaskLock.getVersion()));
