@@ -4,7 +4,7 @@
       taskRunnerFactory=new TaskRunnerFactory(){
         @Override public TaskRunner build(){
           final ScheduledExecutorService retryScheduledExec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("RemoteRunnerRetryExec--%d").build());
-          RemoteTaskRunner remoteTaskRunner=new RemoteTaskRunner(getJsonMapper(),configFactory.build(RemoteTaskRunnerConfig.class),curatorFramework,new PathChildrenCache(curatorFramework,indexerZkConfig.getAnnouncementPath(),true),retryScheduledExec,new RetryPolicyFactory(configFactory.build(RetryPolicyConfig.class)),configManager.watch(WorkerSetupData.CONFIG_KEY,WorkerSetupData.class));
+          RemoteTaskRunner remoteTaskRunner=new RemoteTaskRunner(getJsonMapper(),configFactory.build(RemoteTaskRunnerConfig.class),curatorFramework,new PathChildrenCache(curatorFramework,indexerZkConfig.getAnnouncementPath(),true),retryScheduledExec,new RetryPolicyFactory(configFactory.buildWithReplacements(RetryPolicyConfig.class,ImmutableMap.of("base_path","druid.indexing"))),configManager.watch(WorkerSetupData.CONFIG_KEY,WorkerSetupData.class));
           return remoteTaskRunner;
         }
       }

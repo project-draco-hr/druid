@@ -2,6 +2,9 @@
   if (this.plumber != null) {
     throw new IllegalStateException("WTF?!? run with non-null plumber??!");
   }
+  for (  final TaskLock taskLock : toolbox.getTaskActionClient().submit(new LockListAction())) {
+    toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
+  }
   boolean normalExit=true;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
@@ -10,6 +13,7 @@
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {
+      toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
       toolbox.getSegmentAnnouncer().announceSegment(segment);
     }
     @Override public void unannounceSegment(    final DataSegment segment) throws IOException {
