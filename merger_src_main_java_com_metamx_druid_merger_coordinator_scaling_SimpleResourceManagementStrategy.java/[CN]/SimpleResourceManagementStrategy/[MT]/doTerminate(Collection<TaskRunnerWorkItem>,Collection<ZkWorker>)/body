@@ -47,10 +47,11 @@
   }
  else {
     Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
-    if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
-      log.makeAlert("Worker node termination taking too long").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
-    }
     log.info("%s still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
+    if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
+      log.makeAlert("Worker node termination taking too long!").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
+      currentlyTerminating.clear();
+    }
   }
   return false;
 }

@@ -20,10 +20,11 @@
   }
  else {
     Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
-    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
-      log.makeAlert("Worker node provisioning taking too long").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
-    }
     log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
+    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
+      log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+      currentlyProvisioning.clear();
+    }
   }
   return false;
 }
