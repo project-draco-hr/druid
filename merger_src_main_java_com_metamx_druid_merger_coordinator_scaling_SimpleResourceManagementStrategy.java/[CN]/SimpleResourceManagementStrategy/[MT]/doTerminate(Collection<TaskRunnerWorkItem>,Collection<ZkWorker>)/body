@@ -46,7 +46,7 @@
     }
   }
  else {
-    Duration durSinceLastTerminate=new Duration(new DateTime(),lastTerminateTime);
+    Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
     if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
       log.makeAlert("Worker node termination taking too long").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
     }
