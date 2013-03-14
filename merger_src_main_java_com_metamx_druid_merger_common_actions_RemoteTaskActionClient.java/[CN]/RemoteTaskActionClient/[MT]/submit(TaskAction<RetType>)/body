@@ -31,7 +31,9 @@
       }
  else {
         try {
-          Thread.sleep(retryPolicy.getAndIncrementRetryDelay().getMillis());
+          final long sleepTime=retryPolicy.getAndIncrementRetryDelay().getMillis();
+          log.info("Will try again in %s.",new Duration(sleepTime).toString());
+          Thread.sleep(sleepTime);
         }
  catch (        InterruptedException e2) {
           throw Throwables.propagate(e2);
