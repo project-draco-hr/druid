@@ -1,7 +1,8 @@
 {
-  final Task task=new AppendTask("foo",ImmutableList.<DataSegment>of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()));
+  final Task task=new AppendTask(null,"foo",ImmutableList.of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()));
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
+  Thread.sleep(100);
   final Task task2=jsonMapper.readValue(json,Task.class);
   Assert.assertEquals("foo",task.getDataSource());
   Assert.assertEquals(Optional.of(new Interval("2010-01-01/P1D")),task.getImplicitLockInterval());
@@ -9,4 +10,6 @@
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
   Assert.assertEquals(task.getImplicitLockInterval(),task2.getImplicitLockInterval());
+  Assert.assertEquals(task.getImplicitLockInterval().get(),task2.getImplicitLockInterval().get());
+  Assert.assertEquals(((AppendTask)task).getSegments(),((AppendTask)task2).getSegments());
 }

@@ -1,7 +1,8 @@
 {
-  final Task task=new IndexGeneratorTask("foo",new Interval("2010-01-01/P1D"),null,new Schema("foo",new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,new NoneShardSpec()),-1);
+  final Task task=new IndexGeneratorTask(null,"foo",new Interval("2010-01-01/P1D"),null,new Schema("foo",new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,new NoneShardSpec()),-1);
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
+  Thread.sleep(100);
   final Task task2=jsonMapper.readValue(json,Task.class);
   Assert.assertEquals("foo",task.getDataSource());
   Assert.assertEquals(Optional.of(new Interval("2010-01-01/P1D")),task.getImplicitLockInterval());

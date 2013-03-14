@@ -1,10 +1,13 @@
 {
-  dbi.inTransaction(new TransactionCallback<Void>(){
-    @Override public Void inTransaction(    Handle handle,    TransactionStatus transactionStatus) throws Exception {
+  return dbi.inTransaction(new TransactionCallback<Set<DataSegment>>(){
+    @Override public Set<DataSegment> inTransaction(    Handle handle,    TransactionStatus transactionStatus) throws IOException {
+      final Set<DataSegment> inserted=Sets.newHashSet();
       for (      final DataSegment segment : segments) {
-        announceHistoricalSegment(handle,segment);
+        if (announceHistoricalSegment(handle,segment)) {
+          inserted.add(segment);
+        }
       }
-      return null;
+      return ImmutableSet.copyOf(inserted);
     }
   }
 );

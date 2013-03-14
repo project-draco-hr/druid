@@ -15,7 +15,7 @@
   }
 ,cf,worker1);
   workerCuratorCoordinator.start();
-  taskMonitor=new TaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolboxFactory(new TaskConfig(){
+  workerTaskMonitor=new WorkerTaskMonitor(new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new TaskToolboxFactory(new TaskConfig(){
     @Override public File getBaseTaskDir(){
       try {
         return File.createTempFile("billy","yay");
@@ -31,7 +31,7 @@
       return null;
     }
   }
-,null,null,null,null,null,jsonMapper),Executors.newSingleThreadExecutor());
+,null,null,null,null,null,null,null,null,jsonMapper),Executors.newSingleThreadExecutor());
   jsonMapper.registerSubtypes(new NamedType(TestTask.class,"test"));
-  taskMonitor.start();
+  workerTaskMonitor.start();
 }
