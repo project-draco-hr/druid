@@ -1,5 +1,5 @@
 {
-  final Task task=new DeleteTask(null,"foo",new Interval("2010-01-01/P1D"));
+  final Task task=new MergeTask(null,"foo",ImmutableList.<DataSegment>of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()),ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("cnt")));
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
@@ -10,5 +10,6 @@
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
   Assert.assertEquals(task.getImplicitLockInterval(),task2.getImplicitLockInterval());
-  Assert.assertEquals(task.getImplicitLockInterval().get(),task2.getImplicitLockInterval().get());
+  Assert.assertEquals(((MergeTask)task).getSegments(),((MergeTask)task2).getSegments());
+  Assert.assertEquals(((MergeTask)task).getAggregators().get(0).getName(),((MergeTask)task2).getAggregators().get(0).getName());
 }
