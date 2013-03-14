@@ -1,0 +1,15 @@
+{
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final Task task=jsonMapper.readValue("{\"type\":\"delete\",\"dataSource\":\"foo\",\"interval\":\"2010-01-01/P1D\"}",Task.class);
+  final String json=jsonMapper.writeValueAsString(task);
+  Thread.sleep(100);
+  final Task task2=jsonMapper.readValue(json,Task.class);
+  Assert.assertNotNull(task.getId());
+  Assert.assertEquals("foo",task.getDataSource());
+  Assert.assertEquals(Optional.of(new Interval("2010-01-01/P1D")),task.getImplicitLockInterval());
+  Assert.assertEquals(task.getId(),task2.getId());
+  Assert.assertEquals(task.getGroupId(),task2.getGroupId());
+  Assert.assertEquals(task.getDataSource(),task2.getDataSource());
+  Assert.assertEquals(task.getImplicitLockInterval(),task2.getImplicitLockInterval());
+  Assert.assertEquals(task.getImplicitLockInterval().get(),task2.getImplicitLockInterval().get());
+}
