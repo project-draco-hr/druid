@@ -24,7 +24,7 @@
         final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
         retVal=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval));
         try {
-          metadataUpdater.announceSegment(retVal.getSegment());
+          segmentAnnouncer.announceSegment(retVal.getSegment());
           sinks.put(truncatedTime,retVal);
         }
  catch (        IOException e) {
@@ -76,7 +76,7 @@
       stopped=true;
       for (      final Sink sink : sinks.values()) {
         try {
-          metadataUpdater.unannounceSegment(sink.getSegment());
+          segmentAnnouncer.unannounceSegment(sink.getSegment());
         }
  catch (        Exception e) {
           log.makeAlert("Failed to unannounce segment on shutdown").addData("segment",sink.getSegment()).emit();
@@ -118,7 +118,7 @@
           }
           Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
           sinks.put(sinkInterval.getStartMillis(),currSink);
-          metadataUpdater.announceSegment(currSink.getSegment());
+          segmentAnnouncer.announceSegment(currSink.getSegment());
         }
  catch (        IOException e) {
           log.makeAlert(e,"Problem loading sink[%s] from disk.",schema.getDataSource()).addData("interval",sinkInterval).emit();
@@ -146,7 +146,7 @@
                 log.info("Segment matches sink[%s]",sink);
                 if (segment.getVersion().compareTo(sink.getSegment().getVersion()) >= 0) {
                   try {
-                    metadataUpdater.unannounceSegment(sink.getSegment());
+                    segmentAnnouncer.unannounceSegment(sink.getSegment());
                     FileUtils.deleteDirectory(computePersistDir(schema,sink.getInterval()));
                     sinks.remove(sinkKey);
                   }
@@ -207,7 +207,7 @@
                   mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),new File(computePersistDir(schema,interval),"merged"));
                   QueryableIndex index=IndexIO.loadIndex(mergedFile);
                   DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
-                  metadataUpdater.publishSegment(segment);
+                  segmentPublisher.publishSegment(segment);
                 }
  catch (                IOException e) {
                   log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();

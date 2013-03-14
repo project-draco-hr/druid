@@ -11,16 +11,20 @@
   }
 ;
   rn.setPhoneBook(dummyPhoneBook);
-  final MetadataUpdater dummyMetadataUpdater=new MetadataUpdater(null,null){
-    @Override public void publishSegment(    DataSegment segment) throws IOException {
+  final SegmentAnnouncer dummySegmentAnnouncer=new SegmentAnnouncer(){
+    @Override public void announceSegment(    DataSegment segment) throws IOException {
     }
     @Override public void unannounceSegment(    DataSegment segment) throws IOException {
     }
-    @Override public void announceSegment(    DataSegment segment) throws IOException {
+  }
+;
+  SegmentPublisher dummySegmentPublisher=new SegmentPublisher(){
+    @Override public void publishSegment(    DataSegment segment) throws IOException {
     }
   }
 ;
-  rn.setMetadataUpdater(dummyMetadataUpdater);
+  rn.setSegmentAnnouncer(dummySegmentAnnouncer);
+  rn.setSegmentPublisher(dummySegmentPublisher);
   rn.setDataSegmentPusher(new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
