@@ -4,6 +4,9 @@
   final String host;
   final int port;
   final String path="/mmx/merger/v1/action";
+  if (instance == null) {
+    throw new ISE("Cannot find instance of indexer to talk to!");
+  }
   host=instance.getAddress();
   if (instance.getSslPort() != null && instance.getSslPort() > 0) {
     scheme="https";
