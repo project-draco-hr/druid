@@ -1,0 +1,88 @@
+{
+  return new Iterable<Rowboat>(){
+    @Override public Iterator<Rowboat> iterator(){
+      return new Iterator<Rowboat>(){
+        final GenericColumn timestamps=input.getTimeColumn().getGenericColumn();
+        final Object[] metrics;
+        final Map<String,DictionaryEncodedColumn> dimensions;
+        final int numMetrics=getAvailableMetrics().size();
+        int currRow=0;
+        boolean done=false;
+{
+          dimensions=Maps.newLinkedHashMap();
+          for (          String dim : getAvailableDimensions()) {
+            dimensions.put(dim,input.getColumn(dim).getDictionaryEncoding());
+          }
+          final Indexed<String> availableMetrics=getAvailableMetrics();
+          metrics=new Object[availableMetrics.size()];
+          for (int i=0; i < metrics.length; ++i) {
+            final Column column=input.getColumn(availableMetrics.get(i));
+            final ValueType type=column.getCapabilities().getType();
+switch (type) {
+case FLOAT:
+              metrics[i]=column.getGenericColumn();
+            break;
+case COMPLEX:
+          metrics[i]=column.getComplexColumn();
+        break;
+default :
+      throw new ISE("Cannot handle type[%s]",type);
+  }
+}
+}
+@Override public boolean hasNext(){
+final boolean hasNext=currRow < numRows;
+if (!hasNext && !done) {
+  Closeables.closeQuietly(timestamps);
+  for (  Object metric : metrics) {
+    if (metric instanceof Closeable) {
+      Closeables.closeQuietly((Closeable)metric);
+    }
+  }
+  done=true;
+}
+return hasNext;
+}
+@Override public Rowboat next(){
+if (!hasNext()) {
+  throw new NoSuchElementException();
+}
+int[][] dims=new int[dimensions.size()][];
+int dimIndex=0;
+for (String dim : dimensions.keySet()) {
+  final DictionaryEncodedColumn dict=dimensions.get(dim);
+  final IndexedInts dimVals;
+  if (dict.hasMultipleValues()) {
+    dimVals=dict.getMultiValueRow(currRow);
+  }
+ else {
+    dimVals=new ArrayBasedIndexedInts(new int[]{dict.getSingleValueRow(currRow)});
+  }
+  int[] theVals=new int[dimVals.size()];
+  for (int j=0; j < theVals.length; ++j) {
+    theVals[j]=dimVals.get(j);
+  }
+  dims[dimIndex++]=theVals;
+}
+Object[] metricArray=new Object[numMetrics];
+for (int i=0; i < metricArray.length; ++i) {
+  if (metrics[i] instanceof GenericColumn) {
+    metricArray[i]=((GenericColumn)metrics[i]).getFloatSingleValueRow(currRow);
+  }
+ else   if (metrics[i] instanceof ComplexColumn) {
+    metricArray[i]=((ComplexColumn)metrics[i]).getRowValue(currRow);
+  }
+}
+final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow);
+++currRow;
+return retVal;
+}
+@Override public void remove(){
+throw new UnsupportedOperationException();
+}
+}
+;
+}
+}
+;
+}

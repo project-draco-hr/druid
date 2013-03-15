@@ -1,8 +1,10 @@
 {
-  final Sink theSink=new Sink(interval,schema);
-  final File persistDir=new File(tmpSegmentDir,theSink.getSegment().withVersion(version).getIdentifier());
+  final Sink theSink=new Sink(interval,schema,version);
+  final File persistDir=new File(tmpSegmentDir,theSink.getSegment().getIdentifier());
   final Set<File> spilled=Sets.newHashSet();
   return new Plumber(){
+    @Override public void startJob(){
+    }
     @Override public Sink getSink(    long timestamp){
       if (theSink.getInterval().contains(timestamp)) {
         return theSink;
@@ -37,7 +39,7 @@
           IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload);
         }
         final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
-        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withVersion(version).withBinaryVersion(IndexIO.getVersionFromDir(fileToUpload));
+        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withBinaryVersion(IndexIO.getVersionFromDir(fileToUpload));
         dataSegmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
       }

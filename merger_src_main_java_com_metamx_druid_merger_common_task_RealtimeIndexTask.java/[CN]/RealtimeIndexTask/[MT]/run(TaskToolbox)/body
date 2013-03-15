@@ -1,0 +1,100 @@
+{
+  if (this.plumber != null) {
+    throw new IllegalStateException("WTF?!? run with non-null plumber??!");
+  }
+  for (  final TaskLock taskLock : toolbox.getTaskActionClient().submit(new LockListAction())) {
+    toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
+  }
+  boolean normalExit=true;
+  final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
+  final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
+  final Firehose firehose=firehoseFactory.connect();
+  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskDir(),"persist"),segmentGranularity);
+  final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
+  final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
+    @Override public void announceSegment(    final DataSegment segment) throws IOException {
+      toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
+      toolbox.getSegmentAnnouncer().announceSegment(segment);
+    }
+    @Override public void unannounceSegment(    final DataSegment segment) throws IOException {
+      try {
+        toolbox.getSegmentAnnouncer().unannounceSegment(segment);
+      }
+  finally {
+        toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+      }
+    }
+  }
+;
+  final VersioningPolicy versioningPolicy=new VersioningPolicy(){
+    @Override public String getVersion(    final Interval interval){
+      try {
+        final TaskLock myLock=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval));
+        return myLock.getVersion();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+;
+  realtimePlumberSchool.setDataSegmentPusher(toolbox.getSegmentPusher());
+  realtimePlumberSchool.setConglomerate(toolbox.getQueryRunnerFactoryConglomerate());
+  realtimePlumberSchool.setVersioningPolicy(versioningPolicy);
+  realtimePlumberSchool.setSegmentAnnouncer(lockingSegmentAnnouncer);
+  realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
+  realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
+  realtimePlumberSchool.setServiceEmitter(toolbox.getEmitter());
+  this.plumber=realtimePlumberSchool.findPlumber(schema,metrics);
+  try {
+    plumber.startJob();
+    long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+    while (firehose.hasMore()) {
+      final InputRow inputRow;
+      try {
+        inputRow=firehose.nextRow();
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if (sink == null) {
+          metrics.incrementThrownAway();
+          log.debug("Throwing away event[%s]",inputRow);
+          if (System.currentTimeMillis() > nextFlush) {
+            plumber.persist(firehose.commit());
+            nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+          }
+          continue;
+        }
+        if (sink.isEmpty()) {
+          log.info("Task %s: New sink: %s",getId(),sink);
+        }
+        int currCount=sink.add(inputRow);
+        metrics.incrementProcessed();
+        if (currCount >= fireDepartmentConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+          plumber.persist(firehose.commit());
+          nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+        }
+      }
+ catch (      FormattedException e) {
+        log.warn(e,"unparseable line");
+        metrics.incrementUnparseable();
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception aborted realtime processing[%s]",schema.getDataSource()).emit();
+    normalExit=false;
+    throw Throwables.propagate(e);
+  }
+ finally {
+    Closeables.closeQuietly(firehose);
+    if (normalExit) {
+      try {
+        plumber.persist(firehose.commit());
+        plumber.finishJob();
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to finish realtime task").emit();
+      }
+    }
+  }
+  return TaskStatus.success(getId());
+}

@@ -1,0 +1,17 @@
+{
+  this.input=input;
+  numRows=input.getNumRows();
+  this.availableDimensions=Lists.newArrayList();
+  for (  String dim : input.getAvailableDimensions()) {
+    final Column col=input.getColumn(dim);
+    if (col == null) {
+      log.warn("Wtf!? column[%s] didn't exist!?!?!?",dim);
+    }
+ else     if (col.getDictionaryEncoding() != null) {
+      availableDimensions.add(dim);
+    }
+ else {
+      log.info("No dictionary on dimension[%s]",dim);
+    }
+  }
+}

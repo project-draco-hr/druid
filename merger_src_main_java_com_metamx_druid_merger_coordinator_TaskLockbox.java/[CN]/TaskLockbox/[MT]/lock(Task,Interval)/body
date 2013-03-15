@@ -1,0 +1,13 @@
+{
+  giant.lock();
+  try {
+    Optional<TaskLock> taskLock;
+    while (!(taskLock=tryLock(task,interval)).isPresent()) {
+      lockReleaseCondition.await();
+    }
+    return taskLock.get();
+  }
+  finally {
+    giant.unlock();
+  }
+}
