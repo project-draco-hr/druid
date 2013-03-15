@@ -1,3 +1,15 @@
 {
+  if (exec instanceof ThreadPoolExecutor) {
+    ThreadPoolExecutor tpe=(ThreadPoolExecutor)exec;
+    return Lists.newArrayList(FunctionalIterable.create(tpe.getQueue()).keep(new Function<Runnable,TaskRunnerWorkItem>(){
+      @Override public TaskRunnerWorkItem apply(      Runnable input){
+        if (input instanceof LocalTaskRunnerRunnable) {
+          return ((LocalTaskRunnerRunnable)input).getTaskRunnerWorkItem();
+        }
+        return null;
+      }
+    }
+));
+  }
   return Lists.newArrayList();
 }
