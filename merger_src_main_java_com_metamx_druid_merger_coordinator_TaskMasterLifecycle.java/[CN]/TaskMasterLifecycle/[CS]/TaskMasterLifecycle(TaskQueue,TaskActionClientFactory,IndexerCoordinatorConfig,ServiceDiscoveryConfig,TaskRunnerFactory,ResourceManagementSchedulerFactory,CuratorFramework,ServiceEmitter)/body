@@ -19,12 +19,15 @@
         leading=true;
         try {
           leaderLifecycle.start();
-          while (leading) {
+          while (leading && !Thread.currentThread().isInterrupted()) {
             mayBeStopped.await();
           }
         }
-  finally {
+ catch (        InterruptedException e) {
+        }
+ finally {
           log.info("Bowing out!");
+          stopLeading();
           leaderLifecycle.stop();
         }
       }
