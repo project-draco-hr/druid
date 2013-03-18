@@ -13,7 +13,14 @@
           throw new SegmentLoadingException(e,"Error deleting localDir[%s]",localStorageDir);
         }
       }
-      legacyStorageDir.renameTo(localStorageDir);
+      final File parentDir=localStorageDir.getParentFile();
+      if (!parentDir.exists()) {
+        log.info("Parent[%s] didn't exist, creating.");
+        parentDir.mkdirs();
+      }
+      if (!legacyStorageDir.renameTo(localStorageDir)) {
+        log.info("Failed moving [%s] to [%s]",legacyStorageDir,localStorageDir);
+      }
     }
   }
   if (localStorageDir.exists()) {
