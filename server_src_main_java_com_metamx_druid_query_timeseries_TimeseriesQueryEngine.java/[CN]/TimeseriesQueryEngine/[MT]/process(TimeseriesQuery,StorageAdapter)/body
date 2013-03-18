@@ -19,7 +19,9 @@
           for (          PostAggregator postAgg : postAggregatorSpecs) {
             bob.addMetric(postAgg);
           }
-          return bob.build();
+          Result<TimeseriesResultValue> retVal=bob.build();
+          for (          Aggregator agg : aggregators)           agg.close();
+          return retVal;
         }
       }
 ).iterator();
