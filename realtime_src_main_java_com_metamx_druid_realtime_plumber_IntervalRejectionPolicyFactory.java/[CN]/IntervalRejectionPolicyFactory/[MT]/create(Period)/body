@@ -1,0 +1,14 @@
+{
+  return new RejectionPolicy(){
+    @Override public DateTime getCurrMaxTime(){
+      return new DateTime();
+    }
+    @Override public boolean accept(    long timestamp){
+      return interval.contains(timestamp);
+    }
+    @Override public String toString(){
+      return String.format("interval-%s",interval);
+    }
+  }
+;
+}

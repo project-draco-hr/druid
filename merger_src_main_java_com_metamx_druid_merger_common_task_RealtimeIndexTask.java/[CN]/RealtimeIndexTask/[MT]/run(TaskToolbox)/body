@@ -8,7 +8,7 @@
   boolean normalExit=true;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-  final Firehose firehose=firehoseFactory.connect();
+  firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
@@ -53,6 +53,9 @@
       final InputRow inputRow;
       try {
         inputRow=firehose.nextRow();
+        if (inputRow == null) {
+          continue;
+        }
         final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
         if (sink == null) {
           metrics.incrementThrownAway();

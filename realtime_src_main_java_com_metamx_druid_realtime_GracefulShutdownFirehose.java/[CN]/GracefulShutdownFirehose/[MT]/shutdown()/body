@@ -1,0 +1,16 @@
+{
+  final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
+  ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis),new Callable<ScheduledExecutors.Signal>(){
+    @Override public ScheduledExecutors.Signal call() throws Exception {
+      try {
+        firehose.close();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+      return ScheduledExecutors.Signal.STOP;
+    }
+  }
+);
+  shutdown=true;
+}

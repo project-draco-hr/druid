@@ -73,7 +73,21 @@
 );
     }
     @Override public void finishJob(){
-      stopped=true;
+      log.info("Shutting down....");
+      while (!sinks.isEmpty()) {
+        try {
+          log.info("Cannot shut down yet! Sinks for %s remain!",Joiner.on(", ").join(Iterables.transform(sinks.values(),new Function<Sink,DataSegment>(){
+            @Override public DataSegment apply(            Sink input){
+              return input.getSegment();
+            }
+          }
+)));
+          Thread.sleep(60000);
+        }
+ catch (        InterruptedException e) {
+          throw Throwables.propagate(e);
+        }
+      }
       for (      final Sink sink : sinks.values()) {
         try {
           segmentAnnouncer.unannounceSegment(sink.getSegment());
@@ -85,6 +99,7 @@
       if (scheduledExecutor != null) {
         scheduledExecutor.shutdown();
       }
+      stopped=true;
     }
     private void initializeExecutors(){
       if (persistExecutor == null) {

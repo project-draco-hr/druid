@@ -1,0 +1,38 @@
+{
+  final ZkWorker zkWorker=findWorkerRunningTask(taskId);
+  if (zkWorker == null) {
+    log.info("Can't shutdown! No worker running task %s",taskId);
+    return;
+  }
+  final RetryPolicy retryPolicy=retryPolicyFactory.makeRetryPolicy();
+  URL url;
+  try {
+    url=new URL(String.format("http://%s/mmx/v1/worker/shutdown",zkWorker.getWorker().getHost()));
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  while (!retryPolicy.hasExceededRetryThreshold()) {
+    try {
+      final String response=httpClient.post(url).setContent("application/json",jsonMapper.writeValueAsBytes(taskId)).go(new ToStringResponseHandler(Charsets.UTF_8)).get();
+      log.info("Sent shutdown message to worker: %s, response: %s",zkWorker.getWorker().getHost(),response);
+      return;
+    }
+ catch (    Exception e) {
+      log.error(e,"Exception shutting down taskId: %s",taskId);
+      if (retryPolicy.hasExceededRetryThreshold()) {
+        throw Throwables.propagate(e);
+      }
+ else {
+        try {
+          final long sleepTime=retryPolicy.getAndIncrementRetryDelay().getMillis();
+          log.info("Will try again in %s.",new Duration(sleepTime).toString());
+          Thread.sleep(sleepTime);
+        }
+ catch (        InterruptedException e2) {
+          throw Throwables.propagate(e2);
+        }
+      }
+    }
+  }
+}
