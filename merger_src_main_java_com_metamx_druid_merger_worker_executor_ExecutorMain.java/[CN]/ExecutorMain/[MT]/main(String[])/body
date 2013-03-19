@@ -1,0 +1,28 @@
+{
+  LogLevelAdjuster.register();
+  if (args.length != 2) {
+    log.info("Usage: ExecutorMain <task.json> <status.json>");
+    System.exit(2);
+  }
+  final ExecutorNode node=ExecutorNode.builder().build();
+  final Lifecycle lifecycle=new Lifecycle();
+  lifecycle.addManagedInstance(node);
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    System.exit(2);
+  }
+  try {
+    final Task task=node.getJsonMapper().readValue(new File(args[0]),Task.class);
+    log.info("Running with task: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(task));
+    final TaskStatus status=node.run(task).get();
+    log.info("Task completed with status: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(status));
+    node.getJsonMapper().writeValue(new File(args[1]),status);
+  }
+  finally {
+    lifecycle.stop();
+  }
+  System.exit(0);
+}

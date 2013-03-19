@@ -4,8 +4,7 @@
     pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final Task task=toolboxFactory.getObjectMapper().readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
-          final TaskToolbox toolbox=toolboxFactory.build(task);
+          final Task task=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
           if (isTaskRunning(task)) {
             log.warn("Got task %s that I am already running...",task.getId());
             workerCuratorCoordinator.unannounceTask(task.getId());
@@ -14,14 +13,13 @@
           exec.submit(new Runnable(){
             @Override public void run(){
               final long startTime=System.currentTimeMillis();
-              final File taskDir=toolbox.getTaskDir();
               log.info("Running task [%s]",task.getId());
               running.add(task);
               TaskStatus taskStatus;
               try {
                 workerCuratorCoordinator.unannounceTask(task.getId());
                 workerCuratorCoordinator.announceStatus(TaskStatus.running(task.getId()));
-                taskStatus=task.run(toolbox);
+                taskStatus=taskRunner.run(task).get();
               }
  catch (              Exception e) {
                 log.makeAlert(e,"Failed to run task").addData("task",task.getId()).emit();
@@ -37,15 +35,6 @@
               }
  catch (              Exception e) {
                 log.makeAlert(e,"Failed to update task status").addData("task",task.getId()).emit();
-              }
-              try {
-                if (taskDir.exists()) {
-                  log.info("Removing task directory: %s",taskDir);
-                  FileUtils.deleteDirectory(taskDir);
-                }
-              }
- catch (              Exception e) {
-                log.makeAlert(e,"Failed to delete task directory").addData("taskDir",taskDir.toString()).addData("task",task.getId()).emit();
               }
             }
           }

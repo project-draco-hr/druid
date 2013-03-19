@@ -1,0 +1,21 @@
+{
+  if (server == null) {
+    server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
+    lifecycle.addHandler(new Lifecycle.Handler(){
+      @Override public void start() throws Exception {
+        log.info("Starting Jetty");
+        server.start();
+      }
+      @Override public void stop(){
+        log.info("Stopping Jetty");
+        try {
+          server.stop();
+        }
+ catch (        Exception e) {
+          log.error(e,"Exception thrown while stopping Jetty");
+        }
+      }
+    }
+);
+  }
+}
