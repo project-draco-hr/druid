@@ -4,6 +4,7 @@
   final ConfigManagerConfig managerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,managerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(lifecycle.addManagedInstance(new ConfigManager(dbi,managerConfig)),getJsonMapper());
+  initializeHttpClient();
   initializeEmitter();
   initializeMonitors();
   initializeIndexerCoordinatorConfig();
