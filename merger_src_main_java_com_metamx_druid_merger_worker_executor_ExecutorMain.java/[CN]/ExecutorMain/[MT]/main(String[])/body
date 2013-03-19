@@ -14,6 +14,20 @@
     log.info(t,"Throwable caught at startup, committing seppuku");
     System.exit(2);
   }
+  final ExecutorService parentMonitorExec=Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("parent-monitor-%d").setDaemon(true).build());
+  parentMonitorExec.submit(new Runnable(){
+    @Override public void run(){
+      int b=-1;
+      try {
+        b=System.in.read();
+      }
+ catch (      Exception e) {
+        log.error(e,"Failed to read from stdin");
+      }
+      System.exit(2);
+    }
+  }
+);
   try {
     final Task task=node.getJsonMapper().readValue(new File(args[0]),Task.class);
     log.info("Running with task: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(task));
