@@ -1,9 +1,8 @@
 {
   if (segment != null) {
-    return super.preflight(toolbox);
+    return super.preflight(taskActionClient);
   }
-  final TaskActionClient taskClient=toolbox.getTaskActionClient();
-  List<DataSegment> segments=taskClient.submit(defaultListUsedAction());
+  List<DataSegment> segments=taskActionClient.submit(defaultListUsedAction());
   final FunctionalIterable<Task> tasks=FunctionalIterable.create(segments).keep(new Function<DataSegment,Task>(){
     @Override public Task apply(    DataSegment segment){
       final Integer segmentVersion=segment.getBinaryVersion();
@@ -15,6 +14,6 @@
     }
   }
 );
-  taskClient.submit(new SpawnTasksAction(Lists.newArrayList(tasks)));
+  taskActionClient.submit(new SpawnTasksAction(Lists.newArrayList(tasks)));
   return TaskStatus.success(getId());
 }

@@ -1,6 +1,6 @@
 {
   this.taskQueue=taskQueue;
-  this.taskToolboxFactory=taskToolboxFactory;
+  this.taskActionClientFactory=taskActionClientFactory;
   this.leaderSelector=new LeaderSelector(curator,indexerCoordinatorConfig.getLeaderLatchPath(),new LeaderSelectorListener(){
     @Override public void takeLeadership(    CuratorFramework client) throws Exception {
       giant.lock();
@@ -8,7 +8,7 @@
         log.info("By the power of Grayskull, I have the power!");
         taskRunner=runnerFactory.build();
         resourceManagementScheduler=managementSchedulerFactory.build(taskRunner);
-        final TaskConsumer taskConsumer=new TaskConsumer(taskQueue,taskRunner,taskToolboxFactory,emitter);
+        final TaskConsumer taskConsumer=new TaskConsumer(taskQueue,taskRunner,taskActionClientFactory,emitter);
         taskQueue.bootstrap();
         final Lifecycle leaderLifecycle=new Lifecycle();
         leaderLifecycle.addManagedInstance(taskQueue);

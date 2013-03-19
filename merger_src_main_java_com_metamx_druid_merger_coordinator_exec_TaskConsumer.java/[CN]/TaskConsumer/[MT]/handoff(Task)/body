@@ -2,7 +2,7 @@
   final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType()).setUser5(task.getImplicitLockInterval().toString());
   TaskStatus preflightStatus;
   try {
-    preflightStatus=task.preflight(toolboxFactory.build(task));
+    preflightStatus=task.preflight(taskActionClientFactory.create(task));
     log.info("Preflight done for task: %s",task.getId());
   }
  catch (  Exception e) {
