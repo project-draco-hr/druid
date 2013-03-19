@@ -1,0 +1,68 @@
+{
+  return exec.submit(new Callable<TaskStatus>(){
+    @Override public TaskStatus call(){
+      final File tempDir=Files.createTempDir();
+      ProcessHolder processHolder=null;
+      try {
+        final File taskFile=new File(tempDir,"task.json");
+        final File statusFile=new File(tempDir,"status.json");
+        final File logFile=new File(tempDir,"log");
+synchronized (lock) {
+          if (getProcessHolder(task.getId()).isPresent()) {
+            throw new ISE("Task already running: %s",task.getId());
+          }
+          final List<String> command=Lists.newArrayList();
+          final int childPort=config.getStartPort() + processes.size();
+          final String childHost=String.format(config.getHostPattern(),childPort);
+          Iterables.addAll(command,ImmutableList.of(config.getJavaCommand(),"-cp",config.getJavaClasspath()));
+          Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
+          for (          String propName : System.getProperties().stringPropertyNames()) {
+            if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
+              command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),System.getProperty(propName)));
+            }
+          }
+          command.add(String.format("-Ddruid.host=%s",childHost));
+          command.add(String.format("-Ddruid.port=%d",childPort));
+          command.add(ExecutorMain.class.getName());
+          command.add(taskFile.toString());
+          command.add(statusFile.toString());
+          Files.write(jsonMapper.writeValueAsBytes(task),taskFile);
+          log.info("Running command: %s",Joiner.on(" ").join(command));
+          processHolder=new ProcessHolder(task,new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile);
+          processes.add(processHolder);
+        }
+        log.info("Logging task %s output to: %s",task.getId(),logFile);
+        final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput();
+        final InputStream fromProc=processHolder.process.getInputStream();
+        ByteStreams.copy(fromProc,toLogfile);
+        fromProc.close();
+        toLogfile.close();
+        final int statusCode=processHolder.process.waitFor();
+        if (statusCode == 0) {
+          return jsonMapper.readValue(statusFile,TaskStatus.class);
+        }
+ else {
+          return TaskStatus.failure(task.getId());
+        }
+      }
+ catch (      InterruptedException e) {
+        log.info(e,"Interrupted while waiting for process!");
+        return TaskStatus.failure(task.getId());
+      }
+catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+ finally {
+        if (processHolder != null) {
+synchronized (lock) {
+            processes.remove(processHolder);
+          }
+        }
+        if (tempDir.exists()) {
+          log.info("Removing temporary directory: %s",tempDir);
+        }
+      }
+    }
+  }
+);
+}

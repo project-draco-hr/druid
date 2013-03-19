@@ -1,11 +1,6 @@
 {
-  if (jsonMapper == null && smileMapper == null) {
+  if (jsonMapper == null) {
     jsonMapper=new DefaultObjectMapper();
-    smileMapper=new DefaultObjectMapper(new SmileFactory());
-    smileMapper.getJsonFactory().setCodec(smileMapper);
-  }
- else   if (jsonMapper == null || smileMapper == null) {
-    throw new ISE("Only jsonMapper[%s] or smileMapper[%s] was set, must set neither or both.",jsonMapper,smileMapper);
   }
   if (lifecycle == null) {
     lifecycle=new Lifecycle();
@@ -16,5 +11,5 @@
   if (configFactory == null) {
     configFactory=Config.createFactory(props);
   }
-  return new IndexerCoordinatorNode(props,lifecycle,jsonMapper,smileMapper,configFactory);
+  return new IndexerCoordinatorNode(props,lifecycle,jsonMapper,configFactory);
 }

@@ -1,0 +1,7 @@
+{
+  final Optional<ProcessHolder> processHolder=getProcessHolder(taskid);
+  if (processHolder.isPresent()) {
+    processHolder.get().shutdowns.incrementAndGet();
+    processHolder.get().process.destroy();
+  }
+}

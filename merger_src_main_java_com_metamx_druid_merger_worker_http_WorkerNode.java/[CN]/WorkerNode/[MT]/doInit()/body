@@ -1,16 +1,11 @@
 {
   initializeHttpClient();
   initializeEmitter();
-  initializeS3Service();
   initializeMonitors();
   initializeMergerConfig();
   initializeCuratorFramework();
   initializeServiceDiscovery();
   initializeCoordinatorServiceProvider();
-  initializeNewSegmentServerView();
-  initializeDataSegmentPusher();
-  initializeTaskToolbox();
-  initializeJacksonInjections();
   initializeJacksonSubtypes();
   initializeCuratorCoordinator();
   initializeWorkerTaskMonitor();
@@ -21,7 +16,4 @@
   lifecycle.addManagedInstance(monitorScheduler);
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
-  root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
-  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),workerTaskMonitor,emitter,getRequestLogger())),"/druid/v2/*");
-  root.addFilter(GuiceFilter.class,"/mmx/indexer/worker/v1/*",0);
 }

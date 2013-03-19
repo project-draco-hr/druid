@@ -1,0 +1,22 @@
+{
+  final Optional<ProcessHolder> processHolder=getProcessHolder(taskid);
+  if (processHolder.isPresent()) {
+    return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
+      @Override public InputStream getInput() throws IOException {
+        final RandomAccessFile raf=new RandomAccessFile(processHolder.get().logFile,"r");
+        final long rafLength=raf.length();
+        if (offset > 0) {
+          raf.seek(offset);
+        }
+ else         if (offset < 0 && offset < rafLength) {
+          raf.seek(rafLength + offset);
+        }
+        return Channels.newInputStream(raf.getChannel());
+      }
+    }
+);
+  }
+ else {
+    return Optional.absent();
+  }
+}
