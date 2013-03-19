@@ -14,26 +14,31 @@
     queue.notify(task,preflightStatus);
     return;
   }
-  runner.run(task,new TaskCallback(){
-    @Override public void notify(    final TaskStatus statusFromRunner){
+  final ListenableFuture<TaskStatus> status=runner.run(task);
+  Futures.addCallback(status,new FutureCallback<TaskStatus>(){
+    @Override public void onSuccess(    final TaskStatus status){
+      log.info("Received %s status for task: %s",status.getStatusCode(),task);
+      handleStatus(status);
+    }
+    @Override public void onFailure(    Throwable t){
+      log.makeAlert(t,"Failed to run task").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getImplicitLockInterval()).emit();
+      handleStatus(TaskStatus.failure(task.getId()));
+    }
+    private void handleStatus(    TaskStatus status){
       try {
-        log.info("Received %s status for task: %s",statusFromRunner.getStatusCode(),task);
         if (shutdown) {
           log.info("Abandoning task due to shutdown: %s",task.getId());
           return;
         }
-        queue.notify(task,statusFromRunner);
-        if (statusFromRunner.isComplete()) {
-          metricBuilder.setUser3(statusFromRunner.getStatusCode().toString());
-          emitter.emit(metricBuilder.build("indexer/time/run/millis",statusFromRunner.getDuration()));
-          if (statusFromRunner.isFailure()) {
-            log.makeAlert("Failed to index").addData("task",task.getId()).addData("type",task.getType()).addData("dataSource",task.getDataSource()).addData("interval",task.getImplicitLockInterval()).emit();
-          }
-          log.info("Task %s: %s (%d run duration)",statusFromRunner.getStatusCode(),task,statusFromRunner.getDuration());
+        queue.notify(task,status);
+        if (status.isComplete()) {
+          metricBuilder.setUser3(status.getStatusCode().toString());
+          emitter.emit(metricBuilder.build("indexer/time/run/millis",status.getDuration()));
+          log.info("Task %s: %s (%d run duration)",status.getStatusCode(),task,status.getDuration());
         }
       }
  catch (      Exception e) {
-        log.makeAlert(e,"Failed to handle task callback").addData("task",task.getId()).addData("statusCode",statusFromRunner.getStatusCode()).emit();
+        log.makeAlert(e,"Failed to handle task status").addData("task",task.getId()).addData("statusCode",status.getStatusCode()).emit();
       }
     }
   }

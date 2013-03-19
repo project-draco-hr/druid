@@ -3,8 +3,8 @@
     ThreadPoolExecutor tpe=(ThreadPoolExecutor)exec;
     return Lists.newArrayList(FunctionalIterable.create(tpe.getQueue()).keep(new Function<Runnable,TaskRunnerWorkItem>(){
       @Override public TaskRunnerWorkItem apply(      Runnable input){
-        if (input instanceof LocalTaskRunnerRunnable) {
-          return ((LocalTaskRunnerRunnable)input).getTaskRunnerWorkItem();
+        if (input instanceof LocalTaskRunnerCallable) {
+          return ((LocalTaskRunnerCallable)input).getTaskRunnerWorkItem();
         }
         return null;
       }
