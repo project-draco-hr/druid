@@ -2,7 +2,7 @@
   try {
     MessageDigest md=MessageDigest.getInstance("SHA-1");
     byte[] fieldNameBytes=Joiner.on(",").join(fieldNames).getBytes();
-    byte[] sha1=md.digest(script.getBytes());
+    byte[] sha1=md.digest((fnAggregate + fnReset + fnCombine).getBytes());
     return ByteBuffer.allocate(1 + fieldNameBytes.length + sha1.length).put(CACHE_TYPE_ID).put(fieldNameBytes).put(sha1).array();
   }
  catch (  NoSuchAlgorithmException e) {

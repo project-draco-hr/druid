@@ -3,11 +3,9 @@
   Context context=contextFactory.enterContext();
   context.setOptimizationLevel(9);
   final ScriptableObject scope=context.initStandardObjects();
-  Script compiledScript=context.compileString(script,"script",1,null);
-  compiledScript.exec(context,scope);
-  final Function fnAggregate=getScriptFunction("aggregate",scope);
-  final Function fnReset=getScriptFunction("reset",scope);
-  final Function fnCombine=getScriptFunction("combine",scope);
+  final Function fnAggregate=context.compileFunction(scope,aggregate,"aggregate",1,null);
+  final Function fnReset=context.compileFunction(scope,reset,"reset",1,null);
+  final Function fnCombine=context.compileFunction(scope,combine,"combine",1,null);
   Context.exit();
   return new JavaScriptAggregator.ScriptAggregator(){
     @Override public double aggregate(    final double current,    final FloatMetricSelector[] selectorList){
