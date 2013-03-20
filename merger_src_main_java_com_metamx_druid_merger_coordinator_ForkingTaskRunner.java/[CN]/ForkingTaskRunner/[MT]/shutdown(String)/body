@@ -1,7 +1,22 @@
 {
   final Optional<ProcessHolder> processHolder=getProcessHolder(taskid);
   if (processHolder.isPresent()) {
-    processHolder.get().shutdowns.incrementAndGet();
-    processHolder.get().process.destroy();
+    final int shutdowns=processHolder.get().shutdowns.getAndIncrement();
+    if (shutdowns == 0) {
+      log.info("Attempting to gracefully shutdown task: %s",taskid);
+      try {
+        final OutputStream out=processHolder.get().process.getOutputStream();
+        out.write(jsonMapper.writeValueAsBytes(ImmutableMap.of("shutdown","now")));
+        out.write('\n');
+        out.flush();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+ else {
+      log.info("Killing process for task: %s",taskid);
+      processHolder.get().process.destroy();
+    }
   }
 }

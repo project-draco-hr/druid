@@ -14,12 +14,29 @@
     log.info(t,"Throwable caught at startup, committing seppuku");
     System.exit(2);
   }
+  final Task task=node.getJsonMapper().readValue(new File(args[0]),Task.class);
+  log.info("Running with task: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(task));
   final ExecutorService parentMonitorExec=Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("parent-monitor-%d").setDaemon(true).build());
   parentMonitorExec.submit(new Runnable(){
     @Override public void run(){
-      int b=-1;
       try {
-        b=System.in.read();
+        final BufferedReader stdinReader=new BufferedReader(new InputStreamReader(System.in));
+        String messageString;
+        while ((messageString=stdinReader.readLine()) != null) {
+          final Map<String,Object> message=node.getJsonMapper().readValue(messageString,new TypeReference<Map<String,Object>>(){
+          }
+);
+          if (message == null) {
+            break;
+          }
+ else           if (message.get("shutdown") != null && message.get("shutdown").equals("now")) {
+            log.info("Shutting down!");
+            task.shutdown();
+          }
+ else {
+            throw new ISE("Unrecognized message from parent: %s",message);
+          }
+        }
       }
  catch (      Exception e) {
         log.error(e,"Failed to read from stdin");
@@ -29,8 +46,6 @@
   }
 );
   try {
-    final Task task=node.getJsonMapper().readValue(new File(args[0]),Task.class);
-    log.info("Running with task: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(task));
     final TaskStatus status=node.run(task).get();
     log.info("Task completed with status: %s",node.getJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(status));
     node.getJsonMapper().writeValue(new File(args[1]),status);
