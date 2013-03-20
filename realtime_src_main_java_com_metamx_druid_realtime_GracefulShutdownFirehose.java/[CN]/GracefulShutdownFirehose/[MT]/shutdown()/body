@@ -1,6 +1,9 @@
 {
   final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
-  ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis),new Callable<ScheduledExecutors.Signal>(){
+  final long end=segmentGranularity.increment(truncatedNow) + windowMillis;
+  final Duration timeUntilShutdown=new Duration(System.currentTimeMillis(),end);
+  log.info("Shutting down in %s",timeUntilShutdown);
+  ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutor,timeUntilShutdown,new Callable<ScheduledExecutors.Signal>(){
     @Override public ScheduledExecutors.Signal call() throws Exception {
       try {
         firehose.close();
