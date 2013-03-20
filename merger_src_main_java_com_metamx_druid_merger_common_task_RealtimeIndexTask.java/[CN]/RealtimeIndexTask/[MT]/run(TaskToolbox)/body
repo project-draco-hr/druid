@@ -8,7 +8,12 @@
   boolean normalExit=true;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-  firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+synchronized (lock) {
+    firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+    if (shutdown) {
+      firehose.shutdown();
+    }
+  }
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){

@@ -1,6 +1,11 @@
 {
   try {
-    firehose.shutdown();
+synchronized (lock) {
+      shutdown=true;
+      if (firehose != null) {
+        firehose.shutdown();
+      }
+    }
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
