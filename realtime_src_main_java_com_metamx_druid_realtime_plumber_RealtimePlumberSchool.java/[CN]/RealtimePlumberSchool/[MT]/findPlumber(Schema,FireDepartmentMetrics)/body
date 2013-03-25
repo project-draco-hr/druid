@@ -83,7 +83,9 @@
           }
 )));
 synchronized (handoffCondition) {
-            handoffCondition.wait();
+            while (!sinks.isEmpty()) {
+              handoffCondition.wait();
+            }
           }
         }
  catch (        InterruptedException e) {
