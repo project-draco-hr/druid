@@ -1,0 +1,9 @@
+{
+  if (statMap != null) {
+    for (    Map.Entry<String,T> entry : statMap.entrySet()) {
+      String tier=entry.getKey();
+      Number value=entry.getValue();
+      emitter.emit(new ServiceMetricEvent.Builder().build(String.format(formatString,tier),value.doubleValue()));
+    }
+  }
+}
