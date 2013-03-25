@@ -5,18 +5,26 @@
   }
   final Iterable<Cursor> cursors=storageAdapter.makeCursors(Filters.convertDimensionFilters(query.getDimFilter()),intervals.get(0),query.getGranularity());
   final ResourceHolder<ByteBuffer> bufferHolder=intermediateResultsBufferPool.take();
-  return new BaseSequence<Row,Iterator<Row>>(new BaseSequence.IteratorMaker<Row,Iterator<Row>>(){
-    @Override public Iterator<Row> make(){
-      return FunctionalIterator.create(cursors.iterator()).transformCat(new Function<Cursor,Iterator<Row>>(){
-        @Override public Iterator<Row> apply(        @Nullable final Cursor cursor){
-          return new RowIterator(query,cursor,bufferHolder.get());
+  return Sequences.concat(new BaseSequence<Sequence<Row>,Iterator<Sequence<Row>>>(new BaseSequence.IteratorMaker<Sequence<Row>,Iterator<Sequence<Row>>>(){
+    @Override public Iterator<Sequence<Row>> make(){
+      return FunctionalIterator.create(cursors.iterator()).transform(new Function<Cursor,Sequence<Row>>(){
+        @Override public Sequence<Row> apply(        @Nullable final Cursor cursor){
+          return new BaseSequence<Row,CloseableIterator<Row>>(new BaseSequence.IteratorMaker<Row,CloseableIterator<Row>>(){
+            @Override public CloseableIterator<Row> make(){
+              return new RowIterator(query,cursor,bufferHolder.get());
+            }
+            @Override public void cleanup(            CloseableIterator iterFromMake){
+              Closeables.closeQuietly(iterFromMake);
+            }
+          }
+);
         }
       }
 );
     }
-    @Override public void cleanup(    Iterator<Row> iterFromMake){
+    @Override public void cleanup(    Iterator<Sequence<Row>> iterFromMake){
       Closeables.closeQuietly(bufferHolder);
     }
   }
-);
+));
 }
