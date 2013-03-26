@@ -18,12 +18,15 @@
   emitTieredStats(emitter,"master/%s/cost/normalization",stats.getPerTierStats().get("normalization"));
   emitTieredStats(emitter,"master/%s/moved/count",stats.getPerTierStats().get("movedCount"));
   emitTieredStats(emitter,"master/%s/deleted/count",stats.getPerTierStats().get("deletedCount"));
-  emitTieredStats(emitter,"master/%s/cost/normalized",Maps.transformEntries(stats.getPerTierStats().get("normalizedInitialCostTimesOneThousand"),new Maps.EntryTransformer<String,AtomicLong,Number>(){
-    @Override public Number transformEntry(    @Nullable String key,    @Nullable AtomicLong value){
-      return value.doubleValue() / 1000d;
+  Map<String,AtomicLong> normalized=stats.getPerTierStats().get("normalizedInitialCostTimesOneThousand");
+  if (normalized != null) {
+    emitTieredStats(emitter,"master/%s/cost/normalized",Maps.transformEntries(normalized,new Maps.EntryTransformer<String,AtomicLong,Number>(){
+      @Override public Number transformEntry(      String key,      AtomicLong value){
+        return value.doubleValue() / 1000d;
+      }
     }
-  }
 ));
+  }
   Map<String,AtomicLong> unneeded=stats.getPerTierStats().get("unneededCount");
   if (unneeded != null) {
     for (    Map.Entry<String,AtomicLong> entry : unneeded.entrySet()) {
