@@ -1,6 +1,6 @@
 {
   autoScalingStrategy=EasyMock.createMock(AutoScalingStrategy.class);
-  workerSetupData=new AtomicReference<WorkerSetupData>(null);
+  workerSetupData=new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,2,null,null));
   testTask=new TestTask("task1","dummyDs",Lists.<DataSegment>newArrayList(new DataSegment("dummyDs",new Interval("2012-01-01/2012-01-02"),new DateTime().toString(),null,null,null,null,0,0)),Lists.<AggregatorFactory>newArrayList(),TaskStatus.success("task1"));
   simpleResourceManagementStrategy=new SimpleResourceManagementStrategy(autoScalingStrategy,new SimpleResourceManagmentConfig(){
     @Override public int getMaxWorkerIdleTimeMillisBeforeDeletion(){

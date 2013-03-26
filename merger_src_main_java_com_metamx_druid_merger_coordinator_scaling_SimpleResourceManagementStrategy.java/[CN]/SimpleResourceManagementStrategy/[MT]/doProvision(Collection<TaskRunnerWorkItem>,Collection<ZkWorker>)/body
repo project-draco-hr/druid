@@ -1,4 +1,8 @@
 {
+  if (zkWorkers.size() >= workerSetupdDataRef.get().getMaxNumWorkers()) {
+    log.info("Cannot scale anymore. Num workers = %d, Max num workers = %d",zkWorkers.size(),workerSetupdDataRef.get().getMaxNumWorkers());
+    return false;
+  }
   List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(zkWorkers,new Function<ZkWorker,String>(){
     @Override public String apply(    ZkWorker input){
       return input.getWorker().getIp();
