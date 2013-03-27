@@ -17,9 +17,9 @@
   theModules.add(new ClientServletModule(texasRanger,clientInventoryManager,getJsonMapper()));
   theModules.addAll(extraModules);
   final Injector injector=Guice.createInjector(theModules);
-  final Context root=new Context(getServer(),"/druid/v2",Context.SESSIONS);
+  final Context root=new Context(getServer(),"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
-  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),texasRanger,getEmitter(),getRequestLogger())),"/*");
+  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),texasRanger,getEmitter(),getRequestLogger())),"/druid/v2/*");
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(GuiceFilter.class,"/datasources/*",0);
   for (  String path : pathsForGuiceFilter) {
