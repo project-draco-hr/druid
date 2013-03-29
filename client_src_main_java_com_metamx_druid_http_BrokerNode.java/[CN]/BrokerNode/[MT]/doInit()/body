@@ -21,7 +21,7 @@
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),texasRanger,getEmitter(),getRequestLogger())),"/druid/v2/*");
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(GuiceFilter.class,"/datasources/*",0);
+  root.addFilter(GuiceFilter.class,"/*",0);
   for (  String path : pathsForGuiceFilter) {
     root.addFilter(GuiceFilter.class,path,0);
   }
