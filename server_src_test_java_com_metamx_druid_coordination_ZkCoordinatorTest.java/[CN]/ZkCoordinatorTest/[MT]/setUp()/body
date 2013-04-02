@@ -10,7 +10,7 @@
  catch (  IOException e) {
     throw new RuntimeException(e);
   }
-  serverManager=new ServerManager(new NoopSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
+  serverManager=new ServerManager(new CacheTestSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
   yp=EasyMock.createNiceMock(ZKPhoneBook.class);
   EasyMock.replay(yp);
   zkCoordinator=new ZkCoordinator(jsonMapper,new ZkCoordinatorConfig(){
