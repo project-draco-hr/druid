@@ -1,0 +1,52 @@
+{
+  final Task task;
+  try {
+    task=jsonMapper.readValue(taskFile,Task.class);
+    log.info("Running with task: %s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  parentMonitorExec.submit(new Runnable(){
+    @Override public void run(){
+      try {
+        final BufferedReader parentReader=new BufferedReader(new InputStreamReader(parentStream));
+        String messageString;
+        while ((messageString=parentReader.readLine()) != null) {
+          final Map<String,Object> message=jsonMapper.readValue(messageString,new TypeReference<Map<String,Object>>(){
+          }
+);
+          if (message == null) {
+            break;
+          }
+ else           if (message.get("shutdown") != null && message.get("shutdown").equals("now")) {
+            log.info("Shutting down!");
+            task.shutdown();
+          }
+ else {
+            throw new ISE("Unrecognized message from parent: %s",message);
+          }
+        }
+      }
+ catch (      Exception e) {
+        log.error(e,"Failed to read from stdin");
+      }
+      log.info("Triggering JVM shutdown.");
+      System.exit(2);
+    }
+  }
+);
+  statusFuture=Futures.transform(taskRunner.run(task),new Function<TaskStatus,TaskStatus>(){
+    @Override public TaskStatus apply(    TaskStatus taskStatus){
+      try {
+        log.info("Task completed with status: %s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(taskStatus));
+        jsonMapper.writeValue(statusFile,taskStatus);
+        return taskStatus;
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+}

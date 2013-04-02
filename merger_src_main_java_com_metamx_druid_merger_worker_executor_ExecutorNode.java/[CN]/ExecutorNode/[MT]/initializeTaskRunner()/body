@@ -1,6 +1,6 @@
 {
   if (taskRunner == null) {
-    final ExecutorServiceTaskRunner taskRunner=new ExecutorServiceTaskRunner(taskToolboxFactory,Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("task-runner-%d").build()));
-    this.taskRunner=taskRunner;
+    this.taskRunner=lifecycle.addManagedInstance(new ExecutorServiceTaskRunner(taskToolboxFactory,Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("task-runner-%d").build())));
+    ;
   }
 }
