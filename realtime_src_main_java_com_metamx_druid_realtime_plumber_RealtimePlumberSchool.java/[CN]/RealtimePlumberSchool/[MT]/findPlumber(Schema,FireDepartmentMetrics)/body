@@ -143,8 +143,11 @@
               final Long sinkKey=entry.getKey();
               if (interval.contains(sinkKey)) {
                 final Sink sink=entry.getValue();
-                log.info("Segment matches sink[%s]",sink);
-                if (segment.getVersion().compareTo(sink.getSegment().getVersion()) >= 0) {
+                log.info("Segment[%s] matches sink[%s] on server[%s]",segment,sink,server);
+                final String segmentVersion=segment.getVersion();
+                final String sinkVersion=sink.getSegment().getVersion();
+                if (segmentVersion.compareTo(sinkVersion) >= 0) {
+                  log.info("Segment version[%s] >= sink version[%s]",segmentVersion,sinkVersion);
                   try {
                     segmentAnnouncer.unannounceSegment(sink.getSegment());
                     FileUtils.deleteDirectory(computePersistDir(schema,sink.getInterval()));
