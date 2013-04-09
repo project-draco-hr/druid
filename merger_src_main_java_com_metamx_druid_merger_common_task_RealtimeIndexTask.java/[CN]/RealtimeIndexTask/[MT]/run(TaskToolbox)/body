@@ -14,7 +14,7 @@ synchronized (lock) {
       firehose.shutdown();
     }
   }
-  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskDir(),"persist"),segmentGranularity);
+  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {

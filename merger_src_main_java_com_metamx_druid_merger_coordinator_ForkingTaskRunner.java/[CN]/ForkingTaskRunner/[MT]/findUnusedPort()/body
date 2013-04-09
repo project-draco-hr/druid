@@ -1,0 +1,15 @@
+{
+synchronized (processLock) {
+    int port=config.getStartPort();
+    int maxPortSoFar=-1;
+    for (    ProcessHolder processHolder : processes) {
+      if (processHolder.port > maxPortSoFar) {
+        maxPortSoFar=processHolder.port;
+      }
+      if (processHolder.port == port) {
+        port=maxPortSoFar + 1;
+      }
+    }
+    return port;
+  }
+}

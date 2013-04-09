@@ -1,12 +1,17 @@
 {
-  final Map<String,Object> retMap;
-  try {
-    final T ret=taskMasterLifecycle.getTaskActionClient(holder.getTask()).submit(holder.getAction());
-    retMap=Maps.newHashMap();
-    retMap.put("result",ret);
+  return asLeaderWith(taskMasterLifecycle.getTaskActionClient(holder.getTask()),new Function<TaskActionClient,Response>(){
+    @Override public Response apply(    TaskActionClient taskActionClient){
+      final Map<String,Object> retMap;
+      try {
+        final T ret=taskActionClient.submit(holder.getAction());
+        retMap=Maps.newHashMap();
+        retMap.put("result",ret);
+      }
+ catch (      IOException e) {
+        return Response.serverError().build();
+      }
+      return Response.ok().entity(retMap).build();
+    }
   }
- catch (  IOException e) {
-    return Response.serverError().build();
-  }
-  return Response.ok().entity(retMap).build();
+);
 }

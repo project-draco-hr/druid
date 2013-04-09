@@ -19,11 +19,13 @@
   initializeTaskRunnerFactory(configManager);
   initializeResourceManagement(configManager);
   initializeTaskMasterLifecycle();
+  initializePersistentTaskLogs();
+  initializeTaskLogProvider();
   initializeServer();
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(monitorScheduler);
-  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),configManager));
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),taskLogProvider,configManager));
   final Context staticContext=new Context(server,"/static",Context.SESSIONS);
   staticContext.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   ResourceCollection resourceCollection=new ResourceCollection(new String[]{IndexerCoordinatorNode.class.getClassLoader().getResource("static").toExternalForm(),IndexerCoordinatorNode.class.getClassLoader().getResource("indexer_static").toExternalForm()});

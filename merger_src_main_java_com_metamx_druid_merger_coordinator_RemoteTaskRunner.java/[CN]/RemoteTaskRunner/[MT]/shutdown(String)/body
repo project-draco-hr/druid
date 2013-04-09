@@ -5,16 +5,10 @@
     return;
   }
   final RetryPolicy shutdownRetryPolicy=retryPolicyFactory.makeRetryPolicy();
-  URL url;
-  try {
-    url=new URL(String.format("http://%s/mmx/v1/worker/task/%s/shutdown",zkWorker.getWorker().getHost(),taskId));
-  }
- catch (  MalformedURLException e) {
-    throw Throwables.propagate(e);
-  }
+  final URL url=workerURL(zkWorker.getWorker(),String.format("/task/%s/shutdown",taskId));
   while (!shutdownRetryPolicy.hasExceededRetryThreshold()) {
     try {
-      final String response=httpClient.post(url).go(responseHandler).get();
+      final String response=httpClient.post(url).go(STRING_RESPONSE_HANDLER).get();
       log.info("Sent shutdown message to worker: %s, response: %s",zkWorker.getWorker().getHost(),response);
       return;
     }

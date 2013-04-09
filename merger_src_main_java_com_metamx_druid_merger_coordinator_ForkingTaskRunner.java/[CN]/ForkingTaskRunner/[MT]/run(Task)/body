@@ -1,18 +1,23 @@
 {
   return exec.submit(new Callable<TaskStatus>(){
     @Override public TaskStatus call(){
-      final File tempDir=Files.createTempDir();
+      final String attemptUUID=UUID.randomUUID().toString();
+      final File taskDir=new File(config.getBaseTaskDir(),task.getId());
+      final File attemptDir=new File(taskDir,attemptUUID);
       ProcessHolder processHolder=null;
       try {
-        final File taskFile=new File(tempDir,"task.json");
-        final File statusFile=new File(tempDir,"status.json");
-        final File logFile=new File(tempDir,"log");
-synchronized (lock) {
+        if (!attemptDir.mkdirs()) {
+          throw new IOException(String.format("Could not create directories: %s",attemptDir));
+        }
+        final File taskFile=new File(attemptDir,"task.json");
+        final File statusFile=new File(attemptDir,"status.json");
+        final File logFile=new File(attemptDir,"log");
+synchronized (processLock) {
           if (getProcessHolder(task.getId()).isPresent()) {
             throw new ISE("Task already running: %s",task.getId());
           }
           final List<String> command=Lists.newArrayList();
-          final int childPort=config.getStartPort() + processes.size();
+          final int childPort=findUnusedPort();
           final String childHost=String.format(config.getHostPattern(),childPort);
           Iterables.addAll(command,ImmutableList.of(config.getJavaCommand(),"-cp",config.getJavaClasspath()));
           Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
@@ -23,22 +28,33 @@ synchronized (lock) {
           }
           command.add(String.format("-Ddruid.host=%s",childHost));
           command.add(String.format("-Ddruid.port=%d",childPort));
-          command.add(ExecutorMain.class.getName());
+          command.add(config.getMainClass());
           command.add(taskFile.toString());
           command.add(statusFile.toString());
-          Files.write(jsonMapper.writeValueAsBytes(task),taskFile);
+          jsonMapper.writeValue(taskFile,task);
           log.info("Running command: %s",Joiner.on(" ").join(command));
-          processHolder=new ProcessHolder(task,new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile);
+          processHolder=new ProcessHolder(task,new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,childPort);
           processes.add(processHolder);
         }
         log.info("Logging task %s output to: %s",task.getId(),logFile);
         final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput();
         final InputStream fromProc=processHolder.process.getInputStream();
-        ByteStreams.copy(fromProc,toLogfile);
-        fromProc.close();
-        toLogfile.close();
+        boolean copyFailed=false;
+        try {
+          ByteStreams.copy(fromProc,toLogfile);
+        }
+ catch (        Exception e) {
+          log.warn(e,"Failed to read from process for task: %s",task.getId());
+          copyFailed=true;
+        }
+ finally {
+          Closeables.closeQuietly(fromProc);
+          Closeables.closeQuietly(toLogfile);
+        }
         final int statusCode=processHolder.process.waitFor();
-        if (statusCode == 0) {
+        log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
+        taskLogPusher.pushTaskLog(task.getId(),logFile);
+        if (!copyFailed && statusCode == 0) {
           return jsonMapper.readValue(statusFile,TaskStatus.class);
         }
  else {
@@ -53,13 +69,17 @@ catch (      IOException e) {
         throw Throwables.propagate(e);
       }
  finally {
-        if (processHolder != null) {
-synchronized (lock) {
-            processes.remove(processHolder);
+        try {
+          if (processHolder != null) {
+synchronized (processLock) {
+              processes.remove(processHolder);
+            }
           }
+          log.info("Removing temporary directory: %s",attemptDir);
+          FileUtils.deleteDirectory(attemptDir);
         }
-        if (tempDir.exists()) {
-          log.info("Removing temporary directory: %s",tempDir);
+ catch (        Exception e) {
+          log.error(e,"Failed to delete temporary directory");
         }
       }
     }

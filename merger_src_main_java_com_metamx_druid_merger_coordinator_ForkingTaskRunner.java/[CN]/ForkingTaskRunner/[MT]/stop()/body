@@ -1,6 +1,6 @@
 {
-synchronized (lock) {
-    exec.shutdownNow();
+synchronized (processLock) {
+    exec.shutdown();
     for (    ProcessHolder processHolder : processes) {
       log.info("Destroying process: %s",processHolder.process);
       processHolder.process.destroy();

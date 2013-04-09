@@ -16,9 +16,9 @@
         Initialization.makeServiceDiscoveryClient(curator,serviceDiscoveryConfig,leaderLifecycle);
         leaderLifecycle.addManagedInstance(taskConsumer);
         leaderLifecycle.addManagedInstance(resourceManagementScheduler);
-        leading=true;
         try {
           leaderLifecycle.start();
+          leading=true;
           while (leading && !Thread.currentThread().isInterrupted()) {
             mayBeStopped.await();
           }

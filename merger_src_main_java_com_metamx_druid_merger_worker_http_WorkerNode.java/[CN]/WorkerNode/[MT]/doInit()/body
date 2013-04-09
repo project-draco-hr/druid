@@ -8,6 +8,7 @@
   initializeCoordinatorServiceProvider();
   initializeJacksonSubtypes();
   initializeCuratorCoordinator();
+  initializePersistentTaskLogs();
   initializeTaskRunner();
   initializeWorkerTaskMonitor();
   initializeServer();
@@ -18,6 +19,7 @@
   final Injector injector=Guice.createInjector(new WorkerServletModule(getJsonMapper(),emitter,forkingTaskRunner));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(GuiceFilter.class,"/mmx/worker/v1/*",0);
 }

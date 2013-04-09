@@ -1,9 +1,9 @@
 {
-  try {
-    taskMasterLifecycle.getTaskRunner().shutdown(taskid);
+  return asLeaderWith(taskMasterLifecycle.getTaskRunner(),new Function<TaskRunner,Response>(){
+    @Override public Response apply(    TaskRunner taskRunner){
+      taskRunner.shutdown(taskid);
+      return Response.ok(ImmutableMap.of("task",taskid)).build();
+    }
   }
- catch (  Exception e) {
-    return Response.serverError().build();
-  }
-  return Response.ok(ImmutableMap.of("task",taskid)).build();
+);
 }
