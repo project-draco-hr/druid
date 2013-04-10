@@ -1,13 +1,15 @@
 {
-synchronized (processLock) {
+synchronized (tasks) {
     int port=config.getStartPort();
     int maxPortSoFar=-1;
-    for (    ProcessHolder processHolder : processes) {
-      if (processHolder.port > maxPortSoFar) {
-        maxPortSoFar=processHolder.port;
-      }
-      if (processHolder.port == port) {
-        port=maxPortSoFar + 1;
+    for (    TaskInfo taskInfo : tasks.values()) {
+      if (taskInfo.processHolder != null) {
+        if (taskInfo.processHolder.port > maxPortSoFar) {
+          maxPortSoFar=taskInfo.processHolder.port;
+        }
+        if (taskInfo.processHolder.port == port) {
+          port=maxPortSoFar + 1;
+        }
       }
     }
     return port;
