@@ -1,38 +1,12 @@
 {
   return new QueryRunner<Row>(){
     @Override public Sequence<Row> run(    Query<Row> input){
-      final GroupByQuery query=(GroupByQuery)input;
-      final QueryGranularity gran=query.getGranularity();
-      final long timeStart=query.getIntervals().get(0).getStartMillis();
-      final long granTimeStart=gran.iterable(timeStart,timeStart + 1).iterator().next();
-      final List<AggregatorFactory> aggs=Lists.transform(query.getAggregatorSpecs(),new Function<AggregatorFactory,AggregatorFactory>(){
-        @Override public AggregatorFactory apply(        @Nullable AggregatorFactory input){
-          return input.getCombiningFactory();
-        }
+      if (Boolean.valueOf(input.getContextValue(GROUP_BY_MERGE_KEY,"true"))) {
+        return mergeGroupByResults(((GroupByQuery)input).withOverriddenContext(NO_MERGE_CONTEXT),runner);
       }
-);
-      final List<String> dimensions=Lists.transform(query.getDimensions(),new Function<DimensionSpec,String>(){
-        @Override public String apply(        @Nullable DimensionSpec input){
-          return input.getOutputName();
-        }
+ else {
+        return runner.run(input);
       }
-);
-      final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
-        @Override public IncrementalIndex accumulate(        IncrementalIndex accumulated,        Row in){
-          if (accumulated.add(Rows.toInputRow(in,dimensions)) > maxRows) {
-            throw new ISE("Computation exceeds maxRows limit[%s]",maxRows);
-          }
-          return accumulated;
-        }
-      }
-);
-      return Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
-        @Override public Row apply(        Row input){
-          final MapBasedRow row=(MapBasedRow)input;
-          return new MapBasedRow(gran.toDateTime(row.getTimestampFromEpoch()),row.getEvent());
-        }
-      }
-);
     }
   }
 ;
