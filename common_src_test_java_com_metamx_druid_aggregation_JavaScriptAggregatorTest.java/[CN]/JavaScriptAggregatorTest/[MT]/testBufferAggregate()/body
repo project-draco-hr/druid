@@ -2,7 +2,7 @@
   final TestFloatMetricSelector selector1=new TestFloatMetricSelector(new float[]{42.12f,9f});
   final TestFloatMetricSelector selector2=new TestFloatMetricSelector(new float[]{2f,3f});
   Map<String,String> script=sumLogATimesBPlusTen;
-  JavaScriptBufferAggregator agg=new JavaScriptBufferAggregator(Arrays.<FloatMetricSelector>asList(selector1,selector2),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
+  JavaScriptBufferAggregator agg=new JavaScriptBufferAggregator(Arrays.<ObjectColumnSelector>asList(MetricSelectorUtils.wrap(selector1),MetricSelectorUtils.wrap(selector2)),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
   ByteBuffer buf=ByteBuffer.allocateDirect(32);
   final int position=4;
   agg.init(buf,position);
