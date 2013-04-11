@@ -1,4 +1,8 @@
 {
+  if (pendingTasks.containsKey(taskId)) {
+    pendingTasks.remove(taskId);
+    return;
+  }
   final ZkWorker zkWorker=findWorkerRunningTask(taskId);
   if (zkWorker == null) {
     log.info("Can't shutdown! No worker running task %s",taskId);
