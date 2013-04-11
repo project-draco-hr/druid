@@ -1,6 +1,7 @@
 {
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
+  final Map<String,Object> objectColumnCache=Maps.newHashMap();
   final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
   final FunctionalIterator<Cursor> retVal=FunctionalIterator.create(gran.iterable(interval.getStartMillis(),interval.getEndMillis()).iterator()).transform(new Function<Long,Cursor>(){
     private int currRow=0;
@@ -130,6 +131,91 @@
           }
 ;
         }
+        @Override public ObjectColumnSelector makeObjectColumnSelector(        String column){
+          final String columnName=column.toLowerCase();
+          Object cachedColumnVals=objectColumnCache.get(columnName);
+          if (cachedColumnVals == null) {
+            Column holder=index.getColumn(columnName);
+            if (holder != null) {
+              if (holder.getCapabilities().hasMultipleValues()) {
+                throw new UnsupportedOperationException("makeObjectColumnSelector does not support multivalued columns");
+              }
+              final ValueType type=holder.getCapabilities().getType();
+              if (holder.getCapabilities().isDictionaryEncoded()) {
+                cachedColumnVals=holder.getDictionaryEncoding();
+              }
+ else               if (type == ValueType.COMPLEX) {
+                cachedColumnVals=holder.getComplexColumn();
+              }
+ else {
+                cachedColumnVals=holder.getGenericColumn();
+              }
+            }
+            if (cachedColumnVals != null)             objectColumnCache.put(columnName,cachedColumnVals);
+          }
+          if (cachedColumnVals == null) {
+            return null;
+          }
+          if (cachedColumnVals instanceof GenericColumn) {
+            final GenericColumn columnVals=(GenericColumn)cachedColumnVals;
+            final ValueType type=columnVals.getType();
+            if (type == ValueType.FLOAT) {
+              return new ObjectColumnSelector<Float>(){
+                @Override public Class classOfObject(){
+                  return Float.TYPE;
+                }
+                @Override public Float get(){
+                  return columnVals.getFloatSingleValueRow(currRow);
+                }
+              }
+;
+            }
+            if (type == ValueType.LONG) {
+              return new ObjectColumnSelector<Long>(){
+                @Override public Class classOfObject(){
+                  return Long.TYPE;
+                }
+                @Override public Long get(){
+                  return columnVals.getLongSingleValueRow(currRow);
+                }
+              }
+;
+            }
+            if (type == ValueType.STRING) {
+              return new ObjectColumnSelector<String>(){
+                @Override public Class classOfObject(){
+                  return String.class;
+                }
+                @Override public String get(){
+                  return columnVals.getStringSingleValueRow(currRow);
+                }
+              }
+;
+            }
+          }
+          if (cachedColumnVals instanceof DictionaryEncodedColumn) {
+            final DictionaryEncodedColumn columnVals=(DictionaryEncodedColumn)cachedColumnVals;
+            return new ObjectColumnSelector<String>(){
+              @Override public Class classOfObject(){
+                return String.class;
+              }
+              @Override public String get(){
+                return columnVals.lookupName(columnVals.getSingleValueRow(currRow));
+              }
+            }
+;
+          }
+          final ComplexColumn columnVals=(ComplexColumn)cachedColumnVals;
+          return new ObjectColumnSelector(){
+            @Override public Class classOfObject(){
+              return columnVals.getClazz();
+            }
+            @Override public Object get(){
+              return columnVals.getRowValue(currRow);
+            }
+          }
+;
+        }
       }
 ;
     }
@@ -143,6 +229,9 @@
       }
       for (      ComplexColumn complexColumn : complexColumnCache.values()) {
         Closeables.closeQuietly(complexColumn);
+      }
+      for (      Object column : objectColumnCache.values()) {
+        if (column instanceof Closeable)         Closeables.closeQuietly((Closeable)column);
       }
     }
   }
