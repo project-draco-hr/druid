@@ -1,5 +1,9 @@
 {
-  return ImmutableConciseSet.union(FunctionalIterable.create(selector.getDimensionValues(dimension)).filter(predicate).transform(new Function<String,ImmutableConciseSet>(){
+  Indexed<String> dimValues=selector.getDimensionValues(dimension);
+  if (dimValues == null || dimValues.size() == 0 || predicate == null) {
+    return new ImmutableConciseSet();
+  }
+  return ImmutableConciseSet.union(FunctionalIterable.create(dimValues).filter(predicate).transform(new Function<String,ImmutableConciseSet>(){
     @Override public ImmutableConciseSet apply(    @Nullable String input){
       return selector.getConciseInvertedIndex(dimension,input);
     }
