@@ -28,7 +28,9 @@ synchronized (tasks) {
               final List<String> command=Lists.newArrayList();
               final int childPort=findUnusedPort();
               final String childHost=String.format(config.getHostPattern(),childPort);
-              Iterables.addAll(command,ImmutableList.of(config.getJavaCommand(),"-cp",config.getJavaClasspath()));
+              command.add(config.getJavaCommand());
+              command.add("-cp");
+              command.add(config.getJavaClasspath());
               Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
               for (              String propName : props.stringPropertyNames()) {
                 if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
@@ -49,23 +51,26 @@ synchronized (tasks) {
             final OutputStream toProc=processHolder.process.getOutputStream();
             final InputStream fromProc=processHolder.process.getInputStream();
             final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput();
-            boolean copyFailed=false;
+            boolean runFailed=false;
             try {
               ByteStreams.copy(fromProc,toLogfile);
+              final int statusCode=processHolder.process.waitFor();
+              log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
+              if (statusCode != 0) {
+                runFailed=true;
+              }
             }
  catch (            Exception e) {
               log.warn(e,"Failed to read from process for task: %s",task.getId());
-              copyFailed=true;
+              runFailed=true;
             }
  finally {
               Closeables.closeQuietly(fromProc);
               Closeables.closeQuietly(toLogfile);
+              Closeables.closeQuietly(toProc);
             }
-            final int statusCode=processHolder.process.waitFor();
-            log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
-            Closeables.closeQuietly(toProc);
             taskLogPusher.pushTaskLog(task.getId(),logFile);
-            if (!copyFailed && statusCode == 0) {
+            if (!runFailed) {
               return jsonMapper.readValue(statusFile,TaskStatus.class);
             }
  else {
