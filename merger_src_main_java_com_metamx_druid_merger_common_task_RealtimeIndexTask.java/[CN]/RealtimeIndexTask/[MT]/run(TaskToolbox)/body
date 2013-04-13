@@ -1,9 +1,4 @@
 {
-synchronized (lock) {
-    if (shutdown) {
-      return TaskStatus.success(getId());
-    }
-  }
   if (this.plumber != null) {
     throw new IllegalStateException("WTF?!? run with non-null plumber??!");
   }
@@ -13,7 +8,12 @@ synchronized (lock) {
   boolean normalExit=true;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-  firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+synchronized (lock) {
+    if (shutdown) {
+      return TaskStatus.success(getId());
+    }
+    firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+  }
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
