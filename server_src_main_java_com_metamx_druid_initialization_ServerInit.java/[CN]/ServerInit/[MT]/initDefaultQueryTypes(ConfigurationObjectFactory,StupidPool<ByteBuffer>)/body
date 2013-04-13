@@ -1,7 +1,7 @@
 {
   Map<Class<? extends Query>,QueryRunnerFactory> queryRunners=Maps.newLinkedHashMap();
   queryRunners.put(TimeseriesQuery.class,new TimeseriesQueryRunnerFactory());
-  queryRunners.put(GroupByQuery.class,new GroupByQueryRunnerFactory(new GroupByQueryEngine(configFactory.build(GroupByQueryEngineConfig.class),computationBufferPool)));
+  queryRunners.put(GroupByQuery.class,new GroupByQueryRunnerFactory(new GroupByQueryEngine(configFactory.build(GroupByQueryEngineConfig.class),computationBufferPool),configFactory.build(GroupByQueryRunnerFactoryConfig.class)));
   queryRunners.put(SearchQuery.class,new SearchQueryRunnerFactory());
   queryRunners.put(TimeBoundaryQuery.class,new TimeBoundaryQueryRunnerFactory());
   queryRunners.put(SegmentMetadataQuery.class,new SegmentMetadataQueryRunnerFactory());
