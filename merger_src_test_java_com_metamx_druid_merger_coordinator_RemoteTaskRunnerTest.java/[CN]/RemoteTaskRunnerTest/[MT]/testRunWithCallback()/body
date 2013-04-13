@@ -1,8 +1,10 @@
 {
   final MutableBoolean callbackCalled=new MutableBoolean(false);
-  remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),task1.getSegments(),Lists.<AggregatorFactory>newArrayList(),TaskStatus.running(task1.getId())),new TaskCallback(){
-    @Override public void notify(    TaskStatus status){
+  Futures.addCallback(remoteTaskRunner.run(new TestTask(task1.getId(),task1.getDataSource(),task1.getSegments(),Lists.<AggregatorFactory>newArrayList(),TaskStatus.running(task1.getId()))),new FutureCallback<TaskStatus>(){
+    @Override public void onSuccess(    TaskStatus taskStatus){
       callbackCalled.setValue(true);
+    }
+    @Override public void onFailure(    Throwable throwable){
     }
   }
 );

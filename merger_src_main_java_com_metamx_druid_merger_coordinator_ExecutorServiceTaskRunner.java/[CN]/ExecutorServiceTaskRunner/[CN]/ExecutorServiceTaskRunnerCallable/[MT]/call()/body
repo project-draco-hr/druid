@@ -1,0 +1,37 @@
+{
+  final long startTime=System.currentTimeMillis();
+  final File taskDir=toolbox.getTaskWorkDir();
+  TaskStatus status;
+  try {
+    log.info("Running task: %s",task.getId());
+    status=task.run(toolbox);
+  }
+ catch (  InterruptedException e) {
+    log.error(e,"Interrupted while running task[%s]",task);
+    throw Throwables.propagate(e);
+  }
+catch (  Exception e) {
+    log.error(e,"Exception while running task[%s]",task);
+    status=TaskStatus.failure(task.getId());
+  }
+catch (  Throwable t) {
+    log.error(t,"Uncaught Throwable while running task[%s]",task);
+    throw Throwables.propagate(t);
+  }
+  try {
+    if (taskDir.exists()) {
+      log.info("Removing task directory: %s",taskDir);
+      FileUtils.deleteDirectory(taskDir);
+    }
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Failed to delete task directory").addData("taskDir",taskDir.toString()).addData("task",task.getId()).emit();
+  }
+  try {
+    return status.withDuration(System.currentTimeMillis() - startTime);
+  }
+ catch (  Exception e) {
+    log.error(e,"Uncaught Exception during callback for task[%s]",task);
+    throw Throwables.propagate(e);
+  }
+}

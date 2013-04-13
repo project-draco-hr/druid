@@ -1,0 +1,9 @@
+{
+  for (  TaskLogProvider provider : providers) {
+    final Optional<InputSupplier<InputStream>> stream=provider.streamTaskLog(taskid,offset);
+    if (stream.isPresent()) {
+      return stream;
+    }
+  }
+  return Optional.absent();
+}

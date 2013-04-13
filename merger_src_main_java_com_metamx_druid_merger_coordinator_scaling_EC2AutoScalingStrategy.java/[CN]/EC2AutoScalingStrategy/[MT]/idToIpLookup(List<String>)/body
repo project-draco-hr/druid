@@ -1,0 +1,15 @@
+{
+  DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("instance-id",nodeIds)));
+  List<Instance> instances=Lists.newArrayList();
+  for (  Reservation reservation : result.getReservations()) {
+    instances.addAll(reservation.getInstances());
+  }
+  List<String> retVal=Lists.transform(instances,new Function<Instance,String>(){
+    @Override public String apply(    Instance input){
+      return input.getPrivateIpAddress();
+    }
+  }
+);
+  log.info("Performing lookup: %s --> %s",nodeIds,retVal);
+  return retVal;
+}

@@ -1,0 +1,12 @@
+{
+  if (persistentTaskLogs == null) {
+    final TaskLogConfig taskLogConfig=configFactory.build(TaskLogConfig.class);
+    if (taskLogConfig.getLogStorageBucket() != null) {
+      initializeS3Service();
+      persistentTaskLogs=new S3TaskLogs(taskLogConfig.getLogStorageBucket(),taskLogConfig.getLogStoragePrefix(),s3Service);
+    }
+ else {
+      persistentTaskLogs=new NoopTaskLogs();
+    }
+  }
+}

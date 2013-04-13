@@ -1,0 +1,7 @@
+{
+  InputRow next=firehose.nextRow();
+  if (!beginRejectionPolicy || rejectionPolicy.accept(next.getTimestampFromEpoch())) {
+    return next;
+  }
+  return null;
+}

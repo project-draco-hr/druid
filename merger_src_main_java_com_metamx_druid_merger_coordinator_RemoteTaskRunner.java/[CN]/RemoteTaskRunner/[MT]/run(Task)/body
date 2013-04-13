@@ -1,0 +1,8 @@
+{
+  if (runningTasks.containsKey(task.getId()) || pendingTasks.containsKey(task.getId())) {
+    throw new ISE("Assigned a task[%s] that is already running or pending, WTF is happening?!",task.getId());
+  }
+  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),retryPolicyFactory.makeRetryPolicy(),new DateTime());
+  addPendingTask(taskRunnerWorkItem);
+  return taskRunnerWorkItem.getResult();
+}

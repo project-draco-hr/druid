@@ -1,0 +1,26 @@
+{
+  final ProcessHolder processHolder;
+synchronized (tasks) {
+    final TaskInfo taskInfo=tasks.get(taskid);
+    if (taskInfo != null && taskInfo.processHolder != null) {
+      processHolder=taskInfo.processHolder;
+    }
+ else {
+      return Optional.absent();
+    }
+  }
+  return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
+    @Override public InputStream getInput() throws IOException {
+      final RandomAccessFile raf=new RandomAccessFile(processHolder.logFile,"r");
+      final long rafLength=raf.length();
+      if (offset > 0) {
+        raf.seek(offset);
+      }
+ else       if (offset < 0 && offset < rafLength) {
+        raf.seek(rafLength + offset);
+      }
+      return Channels.newInputStream(raf.getChannel());
+    }
+  }
+);
+}

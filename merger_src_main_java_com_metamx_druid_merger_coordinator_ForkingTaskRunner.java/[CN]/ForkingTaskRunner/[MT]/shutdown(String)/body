@@ -1,0 +1,30 @@
+{
+  final TaskInfo taskInfo;
+synchronized (tasks) {
+    taskInfo=tasks.get(taskid);
+    if (taskInfo == null) {
+      log.info("Ignoring request to cancel unknown task: %s",taskid);
+      return;
+    }
+  }
+  taskInfo.statusFuture.cancel(true);
+  if (taskInfo.processHolder != null) {
+    final int shutdowns=taskInfo.processHolder.shutdowns.getAndIncrement();
+    if (shutdowns == 0) {
+      log.info("Attempting to gracefully shutdown task: %s",taskid);
+      try {
+        final OutputStream out=taskInfo.processHolder.process.getOutputStream();
+        out.write(jsonMapper.writeValueAsBytes(ImmutableMap.of("shutdown","now")));
+        out.write('\n');
+        out.flush();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+ else {
+      log.info("Killing process for task: %s",taskid);
+      taskInfo.processHolder.process.destroy();
+    }
+  }
+}
