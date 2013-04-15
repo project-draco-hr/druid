@@ -138,21 +138,23 @@
           if (cachedColumnVals == null) {
             Column holder=index.getColumn(columnName);
             if (holder != null) {
-              if (holder.getCapabilities().hasMultipleValues()) {
+              final ColumnCapabilities capabilities=holder.getCapabilities();
+              if (capabilities.hasMultipleValues()) {
                 throw new UnsupportedOperationException("makeObjectColumnSelector does not support multivalued columns");
               }
-              final ValueType type=holder.getCapabilities().getType();
-              if (holder.getCapabilities().isDictionaryEncoded()) {
+              if (capabilities.isDictionaryEncoded()) {
                 cachedColumnVals=holder.getDictionaryEncoding();
               }
- else               if (type == ValueType.COMPLEX) {
+ else               if (capabilities.getType() == ValueType.COMPLEX) {
                 cachedColumnVals=holder.getComplexColumn();
               }
  else {
                 cachedColumnVals=holder.getGenericColumn();
               }
             }
-            if (cachedColumnVals != null)             objectColumnCache.put(columnName,cachedColumnVals);
+            if (cachedColumnVals != null) {
+              objectColumnCache.put(columnName,cachedColumnVals);
+            }
           }
           if (cachedColumnVals == null) {
             return null;
@@ -232,7 +234,9 @@
         Closeables.closeQuietly(complexColumn);
       }
       for (      Object column : complexColumnCache.values()) {
-        if (column instanceof Closeable)         Closeables.closeQuietly((Closeable)column);
+        if (column instanceof Closeable) {
+          Closeables.closeQuietly((Closeable)column);
+        }
       }
     }
   }
