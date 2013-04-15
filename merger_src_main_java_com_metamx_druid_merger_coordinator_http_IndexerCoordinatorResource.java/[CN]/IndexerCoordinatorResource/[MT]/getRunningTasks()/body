@@ -1,6 +1,8 @@
 {
-  if (taskMasterLifecycle.getTaskRunner() == null) {
-    return Response.noContent().build();
+  return asLeaderWith(taskMasterLifecycle.getTaskRunner(),new Function<TaskRunner,Response>(){
+    @Override public Response apply(    TaskRunner taskRunner){
+      return Response.ok(taskRunner.getRunningTasks()).build();
+    }
   }
-  return Response.ok(taskMasterLifecycle.getTaskRunner().getRunningTasks()).build();
+);
 }

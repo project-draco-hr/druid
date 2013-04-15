@@ -73,18 +73,29 @@
 );
     }
     @Override public void finishJob(){
-      stopped=true;
-      for (      final Sink sink : sinks.values()) {
+      log.info("Shutting down...");
+      while (!sinks.isEmpty()) {
         try {
-          segmentAnnouncer.unannounceSegment(sink.getSegment());
+          log.info("Cannot shut down yet! Sinks remaining: %s",Joiner.on(", ").join(Iterables.transform(sinks.values(),new Function<Sink,String>(){
+            @Override public String apply(            Sink input){
+              return input.getSegment().getIdentifier();
+            }
+          }
+)));
+synchronized (handoffCondition) {
+            while (!sinks.isEmpty()) {
+              handoffCondition.wait();
+            }
+          }
         }
- catch (        Exception e) {
-          log.makeAlert("Failed to unannounce segment on shutdown").addData("segment",sink.getSegment()).emit();
+ catch (        InterruptedException e) {
+          throw Throwables.propagate(e);
         }
       }
       if (scheduledExecutor != null) {
         scheduledExecutor.shutdown();
       }
+      stopped=true;
     }
     private void initializeExecutors(){
       if (persistExecutor == null) {
@@ -151,7 +162,11 @@
                   try {
                     segmentAnnouncer.unannounceSegment(sink.getSegment());
                     FileUtils.deleteDirectory(computePersistDir(schema,sink.getInterval()));
+                    log.info("Removing sinkKey %d for segment %s",sinkKey,sink.getSegment().getIdentifier());
                     sinks.remove(sinkKey);
+synchronized (handoffCondition) {
+                      handoffCondition.notifyAll();
+                    }
                   }
  catch (                  IOException e) {
                     log.makeAlert(e,"Unable to delete old segment for dataSource[%s].",schema.getDataSource()).addData("interval",sink.getInterval()).emit();

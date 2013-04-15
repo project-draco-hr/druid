@@ -5,6 +5,7 @@
   tl=new TaskLockbox(ts);
   tq=new TaskQueue(ts,tl);
   mdc=newMockMDC();
+  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter()));
   tb=new TaskToolboxFactory(new TaskConfig(){
     @Override public File getBaseTaskDir(){
       return tmp;
@@ -16,7 +17,7 @@
       return null;
     }
   }
-,new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter())),newMockEmitter(),null,new DataSegmentPusher(){
+,tac,newMockEmitter(),null,new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
     }
@@ -26,8 +27,8 @@
     }
   }
 ,null,null,null,new DefaultObjectMapper());
-  tr=new LocalTaskRunner(tb,Executors.newSingleThreadExecutor());
-  tc=new TaskConsumer(tq,tr,tb,newMockEmitter());
+  tr=new ExecutorServiceTaskRunner(tb,Executors.newSingleThreadExecutor());
+  tc=new TaskConsumer(tq,tr,tac,newMockEmitter());
   tsqa=new TaskStorageQueryAdapter(ts);
   tq.start();
   tc.start();

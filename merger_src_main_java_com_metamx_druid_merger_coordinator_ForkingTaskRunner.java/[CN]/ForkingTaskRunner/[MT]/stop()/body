@@ -1,0 +1,11 @@
+{
+synchronized (tasks) {
+    exec.shutdown();
+    for (    TaskInfo taskInfo : tasks.values()) {
+      if (taskInfo.processHolder != null) {
+        log.info("Destroying process: %s",taskInfo.processHolder.process);
+        taskInfo.processHolder.process.destroy();
+      }
+    }
+  }
+}

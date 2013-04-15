@@ -1,0 +1,9 @@
+{
+  return asLeaderWith(taskMasterLifecycle.getTaskRunner(),new Function<TaskRunner,Response>(){
+    @Override public Response apply(    TaskRunner taskRunner){
+      taskRunner.shutdown(taskid);
+      return Response.ok(ImmutableMap.of("task",taskid)).build();
+    }
+  }
+);
+}

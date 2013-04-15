@@ -3,7 +3,7 @@
   final ServiceEmitter emitter=toolbox.getEmitter();
   final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder();
   final DataSegment mergedSegment=computeMergedSegment(getDataSource(),myLock.getVersion(),segments);
-  final File taskDir=toolbox.getTaskDir();
+  final File taskDir=toolbox.getTaskWorkDir();
   try {
     final long startTime=System.currentTimeMillis();
     log.info("Starting merge of id[%s], segments: %s",getId(),Lists.transform(segments,new Function<DataSegment,String>(){

@@ -1,7 +1,7 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
   final Interval interval=getImplicitLockInterval().get();
-  final File tmpDir=new File(toolbox.getTaskDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum()));
+  final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum()));
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {

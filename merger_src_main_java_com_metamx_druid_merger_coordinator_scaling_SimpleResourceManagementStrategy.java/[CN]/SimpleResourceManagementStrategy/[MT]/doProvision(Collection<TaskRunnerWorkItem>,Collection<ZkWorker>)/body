@@ -27,6 +27,8 @@
     log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
     if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
       log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+      List<String> nodeIps=autoScalingStrategy.idToIpLookup(Lists.newArrayList(currentlyProvisioning));
+      autoScalingStrategy.terminate(nodeIps);
       currentlyProvisioning.clear();
     }
   }

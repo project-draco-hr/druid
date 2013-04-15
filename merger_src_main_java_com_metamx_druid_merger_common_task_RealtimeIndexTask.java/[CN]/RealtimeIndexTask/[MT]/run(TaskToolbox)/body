@@ -8,8 +8,13 @@
   boolean normalExit=true;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-  final Firehose firehose=firehoseFactory.connect();
-  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskDir(),"persist"),segmentGranularity);
+synchronized (lock) {
+    if (shutdown) {
+      return TaskStatus.success(getId());
+    }
+    firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+  }
+  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {
@@ -53,6 +58,9 @@
       final InputRow inputRow;
       try {
         inputRow=firehose.nextRow();
+        if (inputRow == null) {
+          continue;
+        }
         final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
         if (sink == null) {
           metrics.incrementThrownAway();
@@ -85,7 +93,6 @@
     throw Throwables.propagate(e);
   }
  finally {
-    Closeables.closeQuietly(firehose);
     if (normalExit) {
       try {
         plumber.persist(firehose.commit());
@@ -93,6 +100,9 @@
       }
  catch (      Exception e) {
         log.makeAlert(e,"Failed to finish realtime task").emit();
+      }
+ finally {
+        Closeables.closeQuietly(firehose);
       }
     }
   }

@@ -1,0 +1,23 @@
+{
+  QueryRunner<T> queryRunner=null;
+  final List<Task> runningTasks=Lists.transform(ImmutableList.copyOf(getRunningTasks()),new Function<TaskRunnerWorkItem,Task>(){
+    @Override public Task apply(    TaskRunnerWorkItem o){
+      return o.getTask();
+    }
+  }
+);
+  for (  final Task task : runningTasks) {
+    if (task.getDataSource().equals(query.getDataSource())) {
+      final QueryRunner<T> taskQueryRunner=task.getQueryRunner(query);
+      if (taskQueryRunner != null) {
+        if (queryRunner == null) {
+          queryRunner=taskQueryRunner;
+        }
+ else {
+          log.makeAlert("Found too many query runners for datasource").addData("dataSource",query.getDataSource()).emit();
+        }
+      }
+    }
+  }
+  return queryRunner == null ? new NoopQueryRunner<T>() : queryRunner;
+}

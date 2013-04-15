@@ -1,0 +1,19 @@
+{
+  final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
+  final long end=segmentGranularity.increment(truncatedNow) + windowMillis;
+  final Duration timeUntilShutdown=new Duration(System.currentTimeMillis(),end);
+  log.info("Shutdown at approx. %s (in %s)",new DateTime(end),timeUntilShutdown);
+  ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutor,timeUntilShutdown,new Callable<ScheduledExecutors.Signal>(){
+    @Override public ScheduledExecutors.Signal call() throws Exception {
+      try {
+        valveOn.set(false);
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+      return ScheduledExecutors.Signal.STOP;
+    }
+  }
+);
+  beginRejectionPolicy=true;
+}

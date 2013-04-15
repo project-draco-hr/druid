@@ -1,8 +1,8 @@
 {
-  if (ids.isEmpty()) {
+  if (ips.isEmpty()) {
     return new AutoScalingData<Instance>(Lists.<String>newArrayList(),Lists.<Instance>newArrayList());
   }
-  DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",ids)));
+  DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",ips)));
   List<Instance> instances=Lists.newArrayList();
   for (  Reservation reservation : result.getReservations()) {
     instances.addAll(reservation.getInstances());
@@ -15,7 +15,7 @@
       }
     }
 )));
-    return new AutoScalingData<Instance>(Lists.transform(ids,new Function<String,String>(){
+    return new AutoScalingData<Instance>(Lists.transform(ips,new Function<String,String>(){
       @Override public String apply(      @Nullable String input){
         return String.format("%s:%s",input,config.getWorkerPort());
       }
