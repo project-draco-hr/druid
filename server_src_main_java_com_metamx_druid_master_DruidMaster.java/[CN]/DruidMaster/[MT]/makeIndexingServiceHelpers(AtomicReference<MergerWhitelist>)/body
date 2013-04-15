@@ -1,0 +1,20 @@
+{
+  List<DruidMasterHelper> helpers=Lists.newArrayList();
+  helpers.add(new DruidMasterSegmentInfoLoader(DruidMaster.this));
+  if (config.isConvertSegments()) {
+    helpers.add(new DruidMasterVersionConverter(indexingServiceClient,whitelistRef));
+  }
+  if (config.isMergeSegments()) {
+    helpers.add(new DruidMasterSegmentMerger(indexingServiceClient,whitelistRef));
+    helpers.add(new DruidMasterHelper(){
+      @Override public DruidMasterRuntimeParams run(      DruidMasterRuntimeParams params){
+        MasterStats stats=params.getMasterStats();
+        log.info("Issued merge requests for %s segments",stats.getGlobalStats().get("mergedCount").get());
+        params.getEmitter().emit(new ServiceMetricEvent.Builder().build("master/merge/count",stats.getGlobalStats().get("mergedCount")));
+        return params;
+      }
+    }
+);
+  }
+  return ImmutableList.copyOf(helpers);
+}
