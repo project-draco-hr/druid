@@ -34,7 +34,7 @@ synchronized (tasks) {
               Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
               for (              String propName : props.stringPropertyNames()) {
                 if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
-                  command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),System.getProperty(propName)));
+                  command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
                 }
               }
               command.add(String.format("-Ddruid.host=%s",childHost));
