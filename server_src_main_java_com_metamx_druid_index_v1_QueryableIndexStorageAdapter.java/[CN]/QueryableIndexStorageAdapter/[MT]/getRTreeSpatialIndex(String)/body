@@ -1,0 +1,7 @@
+{
+  final Column column=index.getColumn(dimension.toLowerCase());
+  if (column == null || !column.getCapabilities().hasSpatialIndexes()) {
+    return new ImmutableRTree();
+  }
+  return column.getSpatialIndex().getRTree(dimension);
+}

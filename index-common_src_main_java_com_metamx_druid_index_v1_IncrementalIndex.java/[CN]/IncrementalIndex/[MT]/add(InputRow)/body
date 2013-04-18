@@ -7,6 +7,10 @@
   List<String[]> overflow=null;
   for (  String dimension : rowDimensions) {
     dimension=dimension.toLowerCase();
+    List<String> dimensionValues=row.getDimension(dimension);
+    if (dimension.endsWith(".geo")) {
+      dimensionValues=Arrays.asList(JOINER.join(dimensionValues));
+    }
     final Integer index=dimensionOrder.get(dimension);
     if (index == null) {
       dimensionOrder.put(dimension,dimensionOrder.size());
@@ -14,10 +18,10 @@
       if (overflow == null) {
         overflow=Lists.newArrayList();
       }
-      overflow.add(getDimVals(dimValues.add(dimension),row.getDimension(dimension)));
+      overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
     }
  else {
-      dims[index]=getDimVals(dimValues.get(dimension),row.getDimension(dimension));
+      dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
     }
   }
   if (overflow != null) {

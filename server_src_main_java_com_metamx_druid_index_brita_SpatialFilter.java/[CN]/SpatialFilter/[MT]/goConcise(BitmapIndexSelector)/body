@@ -1,0 +1,9 @@
+{
+  Iterable<Integer> indexes=selector.getSpatialIndex(dimension).search(bound);
+  return ImmutableConciseSet.union(Iterables.transform(indexes,new Function<Integer,ImmutableConciseSet>(){
+    @Override public ImmutableConciseSet apply(    Integer input){
+      return selector.getConciseInvertedIndex(dimension,input);
+    }
+  }
+));
+}
