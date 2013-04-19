@@ -1,3 +1,13 @@
 {
-  return firehose.hasMore();
+  if (savedInputRow != null) {
+    return true;
+  }
+  while (firehose.hasMore()) {
+    final InputRow row=firehose.nextRow();
+    if (acceptable(row)) {
+      savedInputRow=row;
+      return true;
+    }
+  }
+  return false;
 }
