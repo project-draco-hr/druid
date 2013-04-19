@@ -5,7 +5,7 @@
       return Lists.transform(dbTaskLogs,new Function<Map<String,Object>,TaskAction>(){
         @Override public TaskAction apply(        Map<String,Object> row){
           try {
-            return jsonMapper.readValue(row.get("log_payload").toString(),TaskAction.class);
+            return jsonMapper.readValue((byte[])row.get("log_payload"),TaskAction.class);
           }
  catch (          Exception e) {
             throw Throwables.propagate(e);

@@ -6,8 +6,8 @@
       for (      final Map<String,Object> row : dbTasks) {
         final String id=row.get("id").toString();
         try {
-          final Task task=jsonMapper.readValue(row.get("payload").toString(),Task.class);
-          final TaskStatus status=jsonMapper.readValue(row.get("status_payload").toString(),TaskStatus.class);
+          final Task task=jsonMapper.readValue((byte[])row.get("payload"),Task.class);
+          final TaskStatus status=jsonMapper.readValue((byte[])row.get("status_payload"),TaskStatus.class);
           if (status.isRunnable()) {
             tasks.add(task);
           }
