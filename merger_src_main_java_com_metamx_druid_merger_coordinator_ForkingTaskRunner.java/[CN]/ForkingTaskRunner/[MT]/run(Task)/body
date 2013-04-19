@@ -15,10 +15,10 @@ synchronized (tasks) {
             final File statusFile=new File(attemptDir,"status.json");
             final File logFile=new File(attemptDir,"log");
 synchronized (tasks) {
-              if (Thread.interrupted()) {
-                throw new InterruptedException();
-              }
               final TaskInfo taskInfo=tasks.get(task.getId());
+              if (taskInfo.shutdown) {
+                throw new IllegalStateException("Task has been shut down!");
+              }
               if (taskInfo == null) {
                 throw new ISE("WTF?! TaskInfo disappeared for task: %s",task.getId());
               }
@@ -34,7 +34,7 @@ synchronized (tasks) {
               Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
               for (              String propName : props.stringPropertyNames()) {
                 if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
-                  command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),System.getProperty(propName)));
+                  command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
                 }
               }
               command.add(String.format("-Ddruid.host=%s",childHost));
@@ -77,11 +77,8 @@ synchronized (tasks) {
               return TaskStatus.failure(task.getId());
             }
           }
- catch (          InterruptedException e) {
-            log.info(e,"Interrupted during execution");
-            return TaskStatus.failure(task.getId());
-          }
-catch (          IOException e) {
+ catch (          Exception e) {
+            log.info(e,"Exception caught during execution");
             throw Throwables.propagate(e);
           }
  finally {
