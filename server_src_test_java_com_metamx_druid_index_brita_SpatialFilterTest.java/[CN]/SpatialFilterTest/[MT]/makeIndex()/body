@@ -1,0 +1,14 @@
+{
+  final List<String> dims=Lists.newArrayList("dim","dim.geo");
+  IncrementalIndex theIndex=new IncrementalIndex(new DateTime("2013-01-01").getMillis(),QueryGranularity.DAY,new AggregatorFactory[]{new CountAggregatorFactory("rows"),new LongSumAggregatorFactory("val","val")});
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),dims,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","foo","dim.geo",Arrays.asList(0.0f,0.0f),"val",17l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-02").getMillis(),dims,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-02").toString(),"dim","foo","dim.geo",Arrays.asList(1.0f,3.0f),"val",29l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-03").getMillis(),dims,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-03").toString(),"dim","foo","dim.geo",Arrays.asList(4.0f,2.0f),"val",13l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-03").getMillis(),dims,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-03").toString(),"dim","foo","dim.geo",Arrays.asList(7.0f,3.0f),"val",91l)));
+  File tmpFile=File.createTempFile("billy","yay");
+  tmpFile.delete();
+  tmpFile.mkdirs();
+  tmpFile.deleteOnExit();
+  IndexMerger.persist(theIndex,tmpFile);
+  return IndexIO.loadIndex(tmpFile);
+}

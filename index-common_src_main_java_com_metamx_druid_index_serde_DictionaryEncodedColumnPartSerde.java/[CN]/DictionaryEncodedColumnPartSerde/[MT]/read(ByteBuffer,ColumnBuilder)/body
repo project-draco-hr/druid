@@ -17,6 +17,6 @@
   GenericIndexed<ImmutableConciseSet> bitmaps=GenericIndexed.read(buffer,ConciseCompressedIndexedInts.objectStrategy);
   GenericIndexed<ImmutableRTree> spatialIndex=GenericIndexed.read(buffer,IndexedRTree.objectStrategy);
   builder.setBitmapIndex(new BitmapIndexColumnPartSupplier(bitmaps,dictionary));
-  builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(spatialIndex,dictionary));
+  builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(spatialIndex));
   return new DictionaryEncodedColumnPartSerde(dictionary,singleValuedColumn,multiValuedColumn,bitmaps,spatialIndex);
 }
