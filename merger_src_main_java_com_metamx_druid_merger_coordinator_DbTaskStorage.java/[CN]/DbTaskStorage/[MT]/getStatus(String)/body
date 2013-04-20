@@ -7,7 +7,7 @@
       }
  else {
         final Map<String,Object> dbStatus=Iterables.getOnlyElement(dbStatuses);
-        return Optional.of(jsonMapper.readValue(dbStatus.get("status_payload").toString(),TaskStatus.class));
+        return Optional.of(jsonMapper.readValue((byte[])dbStatus.get("status_payload"),TaskStatus.class));
       }
     }
   }

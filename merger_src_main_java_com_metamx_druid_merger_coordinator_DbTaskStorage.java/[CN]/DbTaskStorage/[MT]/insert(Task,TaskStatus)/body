@@ -6,7 +6,7 @@
   try {
     dbi.withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
-        handle.createStatement(String.format("INSERT INTO %s (id, created_date, payload, status_code, status_payload) VALUES (:id, :created_date, :payload, :status_code, :status_payload)",dbConnectorConfig.getTaskTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("payload",jsonMapper.writeValueAsString(task)).bind("status_code",status.getStatusCode().toString()).bind("status_payload",jsonMapper.writeValueAsString(status)).execute();
+        handle.createStatement(String.format("INSERT INTO %s (id, created_date, datasource, payload, active, status_payload) VALUES (:id, :created_date, :datasource, :payload, :active, :status_payload)",dbConnectorConfig.getTaskTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("datasource",task.getDataSource()).bind("payload",jsonMapper.writeValueAsBytes(task)).bind("active",status.isRunnable() ? 1 : 0).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute();
         return null;
       }
     }

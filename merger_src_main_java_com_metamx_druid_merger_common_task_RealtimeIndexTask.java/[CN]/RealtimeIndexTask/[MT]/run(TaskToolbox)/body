@@ -12,7 +12,13 @@ synchronized (lock) {
     if (shutdown) {
       return TaskStatus.success(getId());
     }
-    firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
+    Firehose wrappedFirehose=firehoseFactory.connect();
+    if (minTime != null) {
+      log.info("Wrapping firehose in MinTimeFirehose with minTime[%s]",minTime);
+      wrappedFirehose=new MinTimeFirehose(wrappedFirehose,minTime);
+    }
+    log.info("Wrapping firehose in GracefulShutdownFirehose with segmentGranularity[%s] and windowPeriod[%s]",segmentGranularity,windowPeriod);
+    firehose=new GracefulShutdownFirehose(wrappedFirehose,segmentGranularity,windowPeriod);
   }
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
