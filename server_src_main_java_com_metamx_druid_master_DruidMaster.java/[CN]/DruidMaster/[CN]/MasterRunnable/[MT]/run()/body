@@ -1,9 +1,9 @@
 {
   try {
 synchronized (lock) {
-      Map<String,String> currLeader=clusterInfo.lookupCurrentLeader();
-      if (currLeader == null || !config.getHost().equals(currLeader.get("host"))) {
-        log.info("I thought I was the master, but really [%s] is.  Phooey.",currLeader);
+      final LeaderLatch latch=leaderLatch.get();
+      if (latch == null || !latch.hasLeadership()) {
+        log.info("[%s] is master, not me.  Phooey.",latch == null ? null : latch.getLeader().getId());
         stopBeingMaster();
         return;
       }

@@ -31,12 +31,11 @@
     ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
     indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   }
-  final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),null);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
   final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,Execs.singleThreaded("Master-PeonExec--%d"));
-  final DruidMaster master=new DruidMaster(druidMasterConfig,druidClusterInfo,configManager,databaseSegmentManager,serverInventoryThingie,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,indexingServiceClient,taskMaster);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,configManager,databaseSegmentManager,serverInventoryThingie,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,indexingServiceClient,taskMaster);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
@@ -52,7 +51,7 @@
     }
   }
 ));
-  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryThingie,databaseSegmentManager,databaseRuleManager,druidClusterInfo,master,jsonMapper,indexingServiceClient));
+  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryThingie,databaseSegmentManager,databaseRuleManager,master,jsonMapper,indexingServiceClient));
   final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
   final RedirectInfo redirectInfo=new RedirectInfo(){
     @Override public boolean doLocal(){
@@ -60,7 +59,15 @@
     }
     @Override public URL getRedirectURL(    String queryString,    String requestURI){
       try {
-        return (queryString == null) ? new URL(String.format("http://%s%s",druidClusterInfo.getMasterHost(),requestURI)) : new URL(String.format("http://%s%s?%s",druidClusterInfo.getMasterHost(),requestURI,queryString));
+        final String currentMaster=master.getCurrentMaster();
+        if (currentMaster == null) {
+          return null;
+        }
+        String location=String.format("http://%s%s",currentMaster,requestURI);
+        if (queryString != null) {
+          location=String.format("%s?%s",location,queryString);
+        }
+        return new URL(location);
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);
