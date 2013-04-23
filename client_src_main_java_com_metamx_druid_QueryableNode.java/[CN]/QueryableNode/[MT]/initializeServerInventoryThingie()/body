@@ -1,0 +1,7 @@
+{
+  if (serverInventoryThingie == null) {
+    final ExecutorService exec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ServerInventoryThingie-%s").build());
+    setServerInventoryThingie(new ServerInventoryThingie(getConfigFactory().build(ServerInventoryThingieConfig.class),getCuratorFramework(),exec,getJsonMapper()));
+    lifecycle.addManagedInstance(serverInventoryThingie);
+  }
+}

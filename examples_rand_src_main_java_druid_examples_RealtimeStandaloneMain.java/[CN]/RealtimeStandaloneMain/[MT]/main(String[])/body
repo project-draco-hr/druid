@@ -3,13 +3,6 @@
   Lifecycle lifecycle=new Lifecycle();
   RealtimeNode rn=RealtimeNode.builder().build();
   lifecycle.addManagedInstance(rn);
-  PhoneBook dummyPhoneBook=new ZKPhoneBook(new DefaultObjectMapper(),null,null){
-    @Override public boolean isStarted(){
-      return true;
-    }
-  }
-;
-  rn.setPhoneBook(dummyPhoneBook);
   SegmentAnnouncer dummySegmentAnnouncer=new SegmentAnnouncer(){
     @Override public void announceSegment(    DataSegment segment) throws IOException {
     }

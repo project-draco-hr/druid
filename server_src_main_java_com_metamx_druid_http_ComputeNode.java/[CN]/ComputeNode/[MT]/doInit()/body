@@ -1,13 +1,11 @@
 {
-  initializeDruidServer();
-  initializeAdapterLoader();
   final Lifecycle lifecycle=getLifecycle();
   final ServiceEmitter emitter=getEmitter();
   final List<Monitor> monitors=getMonitors();
   final QueryRunnerFactoryConglomerate conglomerate=getConglomerate();
   final ExecutorService executorService=new MetricsEmittingExecutorService(ExecutorServices.create(getLifecycle(),getConfigFactory().buildWithReplacements(ExecutorServiceConfig.class,ImmutableMap.of("base_path","druid.processing"))),emitter,new ServiceMetricEvent.Builder());
-  final ServerManager serverManager=new ServerManager(segmentLoader,conglomerate,emitter,executorService);
-  final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),getConfigFactory().build(ZkCoordinatorConfig.class),druidServer,getPhoneBook(),serverManager,emitter);
+  final ServerManager serverManager=new ServerManager(getSegmentLoader(),conglomerate,emitter,executorService);
+  final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),getConfigFactory().build(ZkCoordinatorConfig.class),getDruidServer(),getAnnouncer(),getCuratorFramework(),serverManager,emitter);
   lifecycle.addManagedInstance(coordinator);
   monitors.add(new ServerMonitor(getDruidServer(),serverManager));
   startMonitoring(monitors);

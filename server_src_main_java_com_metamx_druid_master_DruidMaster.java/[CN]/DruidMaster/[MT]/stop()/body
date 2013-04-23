@@ -3,10 +3,9 @@ synchronized (lock) {
     if (!started) {
       return;
     }
+    Closeables.closeQuietly(leaderLatch.get());
     stopBeingMaster();
-    yp.unregisterListener(config.getBasePath(),masterPeon);
     started=false;
     exec.shutdownNow();
-    peonExec.shutdownNow();
   }
 }

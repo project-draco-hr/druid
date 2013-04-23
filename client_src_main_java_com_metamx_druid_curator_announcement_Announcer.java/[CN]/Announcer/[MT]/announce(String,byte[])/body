@@ -1,0 +1,65 @@
+{
+synchronized (toAnnounce) {
+    if (!started) {
+      toAnnounce.add(Pair.of(path,bytes));
+      return;
+    }
+  }
+  final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
+  final String parentPath=pathAndNode.getPath();
+  ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);
+  if (subPaths == null) {
+    announcements.putIfAbsent(parentPath,new MapMaker().<String,byte[]>makeMap());
+    final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);
+synchronized (finalSubPaths) {
+      if (!listeners.containsKey(parentPath)) {
+        PathChildrenCache cache=new PathChildrenCache(curator,parentPath,true,false,exec);
+        cache.getListenable().addListener(new PathChildrenCacheListener(){
+          @Override public void childEvent(          CuratorFramework client,          PathChildrenCacheEvent event) throws Exception {
+switch (event.getType()) {
+case CHILD_REMOVED:
+              final ChildData child=event.getData();
+            final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());
+          final byte[] value=finalSubPaths.get(childPath.getNode());
+        if (value != null) {
+          log.info("Node[%s] dropped, reinstating.",child.getPath());
+          createAnnouncement(child.getPath(),value);
+        }
+    }
+  }
+}
+);
+try {
+synchronized (toAnnounce) {
+    if (started) {
+      cache.start();
+      listeners.put(parentPath,cache);
+    }
+  }
+}
+ catch (Exception e) {
+  throw Throwables.propagate(e);
+}
+}
+}
+subPaths=finalSubPaths;
+}
+boolean created=false;
+synchronized (toAnnounce) {
+if (started) {
+byte[] oldBytes=subPaths.putIfAbsent(pathAndNode.getNode(),bytes);
+if (oldBytes != null) {
+throw new IAE("Already announcing[%s], cannot announce it twice.",path);
+}
+created=true;
+}
+}
+if (created) {
+try {
+createAnnouncement(path,bytes);
+}
+ catch (Exception e) {
+throw Throwables.propagate(e);
+}
+}
+}

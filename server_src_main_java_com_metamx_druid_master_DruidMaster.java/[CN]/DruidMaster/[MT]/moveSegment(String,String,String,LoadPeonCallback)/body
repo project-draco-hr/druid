@@ -1,9 +1,9 @@
 {
-  final DruidServer fromServer=serverInventoryManager.getInventoryValue(from);
+  final DruidServer fromServer=serverInventoryThingie.getInventoryValue(from);
   if (fromServer == null) {
     throw new IllegalArgumentException(String.format("Unable to find server [%s]",from));
   }
-  final DruidServer toServer=serverInventoryManager.getInventoryValue(to);
+  final DruidServer toServer=serverInventoryThingie.getInventoryValue(to);
   if (toServer == null) {
     throw new IllegalArgumentException(String.format("Unable to find server [%s]",to));
   }
@@ -26,15 +26,20 @@
   if (toHolder.getAvailableSize() < segment.getSize()) {
     throw new IllegalArgumentException(String.format("Not enough capacity on server [%s] for segment [%s]. Required: %,d, available: %,d.",to,segment,segment.getSize(),toHolder.getAvailableSize()));
   }
-  final String toLoadQueueSegPath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),to,segmentName));
-  final String toServedSegPath=yp.combineParts(Arrays.asList(config.getServedSegmentsLocation(),to,segmentName));
+  final String toLoadQueueSegPath=ZKPaths.makePath(ZKPaths.makePath(config.getLoadQueuePath(),to),segmentName);
+  final String toServedSegPath=ZKPaths.makePath(ZKPaths.makePath(config.getServedSegmentsLocation(),to),segmentName);
   loadPeon.loadSegment(segment,new LoadPeonCallback(){
     @Override protected void execute(){
-      if ((yp.lookup(toServedSegPath,Object.class) != null) && yp.lookup(toLoadQueueSegPath,Object.class) == null && !dropPeon.getSegmentsToDrop().contains(segment)) {
-        dropPeon.dropSegment(segment,callback);
+      try {
+        if (curator.checkExists().forPath(toServedSegPath) != null && curator.checkExists().forPath(toLoadQueueSegPath) == null && !dropPeon.getSegmentsToDrop().contains(segment)) {
+          dropPeon.dropSegment(segment,callback);
+        }
+ else         if (callback != null) {
+          callback.execute();
+        }
       }
- else       if (callback != null) {
-        callback.execute();
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
       }
     }
   }

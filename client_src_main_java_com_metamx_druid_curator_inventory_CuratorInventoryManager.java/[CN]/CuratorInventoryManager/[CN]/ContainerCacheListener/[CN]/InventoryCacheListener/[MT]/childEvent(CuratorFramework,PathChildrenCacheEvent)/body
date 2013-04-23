@@ -1,0 +1,25 @@
+{
+  final ChildData inventoryChild=event.getData();
+  final ContainerHolder holder=containers.get(containerKey);
+  if (holder == null) {
+    log.error("Inventory[%s] change for non-existent container[%s]!?",inventoryChild.getPath());
+    return;
+  }
+  final String inventoryKey=inventoryChild.getPath().substring(inventoryPath.length());
+switch (event.getType()) {
+case CHILD_ADDED:
+case CHILD_UPDATED:
+    final InventoryClass inventory=strategy.deserializeInventory(inventoryChild.getData());
+synchronized (holder) {
+    holder.setContainer(strategy.addInventory(holder.getContainer(),inventoryKey,inventory));
+  }
+break;
+case CHILD_REMOVED:
+synchronized (holder) {
+holder.setContainer(strategy.removeInventory(holder.getContainer(),inventoryKey));
+}
+break;
+default :
+log.info("Got event[%s] at inventoryPath[%s], ignoring.",event.getType(),inventoryPath);
+}
+}

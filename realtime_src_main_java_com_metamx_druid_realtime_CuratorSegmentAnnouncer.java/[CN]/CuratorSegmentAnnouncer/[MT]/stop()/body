@@ -1,0 +1,10 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    log.info("Stopping CuratorSegmentAnnouncer with config[%s]",config);
+    announcer.unannounce(makeAnnouncementPath());
+    started=false;
+  }
+}

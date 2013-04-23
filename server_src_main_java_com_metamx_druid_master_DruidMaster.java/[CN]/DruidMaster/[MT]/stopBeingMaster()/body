@@ -1,18 +1,19 @@
 {
 synchronized (lock) {
-    log.debug("I am %s the master",master ? "DEFINITELY" : "NOT");
-    if (master) {
+    try {
       log.info("I am no longer the master...");
+      leaderLatch.get().close();
       for (      String server : loadManagementPeons.keySet()) {
         LoadQueuePeon peon=loadManagementPeons.remove(server);
         peon.stop();
-        yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server)),peon);
       }
       loadManagementPeons.clear();
-      yp.unannounce(config.getBasePath(),MASTER_OWNER_NODE);
       databaseSegmentManager.stop();
-      serverInventoryManager.stop();
+      serverInventoryThingie.stop();
       master=false;
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Unable to stopBeingMaster").emit();
     }
   }
 }

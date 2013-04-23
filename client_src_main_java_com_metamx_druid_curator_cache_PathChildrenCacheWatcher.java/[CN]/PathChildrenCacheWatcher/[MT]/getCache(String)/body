@@ -1,0 +1,19 @@
+{
+  PathChildrenCache cache=caches.get(path);
+  if (cache == null) {
+    cache=factory.make(curator,path);
+    final PathChildrenCache storedCache=caches.put(path,cache);
+    if (storedCache != null) {
+      cache=storedCache;
+    }
+ else {
+      try {
+        cache.start();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+  return cache;
+}

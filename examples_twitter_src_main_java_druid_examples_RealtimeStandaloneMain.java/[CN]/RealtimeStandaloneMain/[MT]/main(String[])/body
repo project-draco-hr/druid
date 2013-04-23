@@ -4,13 +4,6 @@
   RealtimeNode rn=RealtimeNode.builder().build();
   lifecycle.addManagedInstance(rn);
   rn.registerJacksonSubtype(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"));
-  PhoneBook dummyPhoneBook=new ZKPhoneBook(new DefaultObjectMapper(),null,null){
-    @Override public boolean isStarted(){
-      return true;
-    }
-  }
-;
-  rn.setPhoneBook(dummyPhoneBook);
   final SegmentAnnouncer dummySegmentAnnouncer=new SegmentAnnouncer(){
     @Override public void announceSegment(    DataSegment segment) throws IOException {
     }

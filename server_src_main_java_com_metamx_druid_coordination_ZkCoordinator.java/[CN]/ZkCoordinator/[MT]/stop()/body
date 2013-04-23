@@ -4,11 +4,16 @@ synchronized (lock) {
     if (!started) {
       return;
     }
-    for (    Pair<String,PhoneBookPeon<?>> peon : peons) {
-      yp.unregisterListener(peon.lhs,peon.rhs);
+    try {
+      loadQueueCache.close();
+      curator.delete().guaranteed().forPath(ZKPaths.makePath(config.getAnnounceLocation(),me.getName()));
     }
-    peons.clear();
-    yp.unannounce(config.getAnnounceLocation(),me.getName());
-    started=false;
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+ finally {
+      loadQueueCache=null;
+      started=false;
+    }
   }
 }

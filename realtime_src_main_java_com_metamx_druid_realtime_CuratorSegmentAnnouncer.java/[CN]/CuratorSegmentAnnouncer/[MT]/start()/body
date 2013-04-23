@@ -1,0 +1,15 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    log.info("Starting CuratorSegmentAnnouncer for server[%s] with config[%s]",config.getServerName(),config);
+    try {
+      announcer.announce(makeAnnouncementPath(),jsonMapper.writeValueAsBytes(getStringProps()));
+    }
+ catch (    JsonProcessingException e) {
+      throw Throwables.propagate(e);
+    }
+    started=true;
+  }
+}

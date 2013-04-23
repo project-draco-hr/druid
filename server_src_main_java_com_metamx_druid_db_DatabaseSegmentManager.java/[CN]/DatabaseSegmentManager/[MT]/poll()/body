@@ -1,5 +1,8 @@
 {
   try {
+    if (!started) {
+      return;
+    }
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
     List<Map<String,Object>> segmentRows=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
       @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
@@ -27,9 +30,13 @@
         dataSource.addSegment(segment.getIdentifier(),segment);
       }
     }
-    dataSources.set(newDataSources);
+synchronized (lock) {
+      if (started) {
+        dataSources.set(newDataSources);
+      }
+    }
   }
  catch (  Exception e) {
-    log.error(e,e.toString());
+    log.error(e,"Problem polling DB.");
   }
 }

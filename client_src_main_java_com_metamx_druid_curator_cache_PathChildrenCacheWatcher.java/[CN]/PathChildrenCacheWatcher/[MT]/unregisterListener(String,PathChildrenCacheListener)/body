@@ -1,0 +1,11 @@
+{
+synchronized (this) {
+    if (caches.containsKey(path)) {
+      final PathChildrenCache cache=getCache(path);
+      cache.getListenable().removeListener(listener);
+      if (cache.getListenable().size() == 0) {
+        caches.remove(path);
+      }
+    }
+  }
+}

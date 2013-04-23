@@ -9,10 +9,12 @@
       removeSegment(segment);
       throw new SegmentLoadingException("Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
     }
-    yp.announce(servedSegmentsLocation,segment.getIdentifier(),segment);
+    announcer.announce(makeSegmentPath(segment),jsonMapper.writeValueAsBytes(segment));
   }
  catch (  SegmentLoadingException e) {
-    log.error(e,"Failed to load segment[%s]",segment);
-    emitter.emit(new AlertEvent.Builder().build("Failed to load segment",ImmutableMap.<String,Object>builder().put("segment",segment.toString()).put("exception",e.toString()).build()));
+    log.makeAlert(e,"Failed to load segment for dataSource").addData("segment",segment).emit();
+  }
+catch (  JsonProcessingException e) {
+    log.makeAlert(e,"WTF, exception writing into byte[]???").addData("segment",segment).emit();
   }
 }

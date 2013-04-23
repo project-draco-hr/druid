@@ -1,7 +1,7 @@
 {
   super(ImmutableList.of(new DruidMasterSegmentInfoLoader(DruidMaster.this),new DruidMasterHelper(){
     @Override public DruidMasterRuntimeParams run(    DruidMasterRuntimeParams params){
-      Iterable<DruidServer> servers=FunctionalIterable.create(serverInventoryManager.getInventory()).filter(new Predicate<DruidServer>(){
+      Iterable<DruidServer> servers=FunctionalIterable.create(serverInventoryThingie.getInventory()).filter(new Predicate<DruidServer>(){
         @Override public boolean apply(        @Nullable DruidServer input){
           return input.getType().equalsIgnoreCase("historical");
         }
@@ -20,11 +20,10 @@
       final DruidCluster cluster=new DruidCluster();
       for (      DruidServer server : servers) {
         if (!loadManagementPeons.containsKey(server.getName())) {
-          String basePath=yp.combineParts(Arrays.asList(config.getLoadQueuePath(),server.getName()));
-          LoadQueuePeon loadQueuePeon=new LoadQueuePeon(yp,basePath,peonExec);
+          String basePath=ZKPaths.makePath(config.getLoadQueuePath(),server.getName());
+          LoadQueuePeon loadQueuePeon=taskMaster.giveMePeon(basePath);
           log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
           loadManagementPeons.put(server.getName(),loadQueuePeon);
-          yp.registerListener(basePath,loadQueuePeon);
         }
         cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
       }
@@ -38,7 +37,6 @@
         log.info("Removing listener for server[%s] which is no longer there.",name);
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();
-        yp.unregisterListener(yp.combineParts(Arrays.asList(config.getLoadQueuePath(),name)),peon);
       }
       decrementRemovedSegmentsLifetime();
       return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).build();

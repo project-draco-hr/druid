@@ -1,0 +1,17 @@
+{
+synchronized (toAnnounce) {
+    if (!started) {
+      return;
+    }
+    started=false;
+    for (    Map.Entry<String,PathChildrenCache> entry : listeners.entrySet()) {
+      Closeables.closeQuietly(entry.getValue());
+    }
+    for (    Map.Entry<String,ConcurrentMap<String,byte[]>> entry : announcements.entrySet()) {
+      String basePath=entry.getKey();
+      for (      String announcementPath : entry.getValue().keySet()) {
+        unannounce(ZKPaths.makePath(basePath,announcementPath));
+      }
+    }
+  }
+}
