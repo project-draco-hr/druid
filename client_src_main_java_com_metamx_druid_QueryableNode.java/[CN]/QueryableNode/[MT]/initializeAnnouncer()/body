@@ -1,5 +1,6 @@
 {
   if (announcer == null) {
-    setAnnouncer(new Announcer(getCuratorFramework(),Execs.singleThreaded("Announcer-%s")));
+    setAnnouncer(new CuratorDataSegmentAnnouncer(getDruidServer(),getZkPaths(),new Announcer(getCuratorFramework(),Execs.singleThreaded("Announcer-%s")),getJsonMapper()));
+    lifecycle.addManagedInstance(getAnnouncer());
   }
 }

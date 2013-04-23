@@ -10,7 +10,6 @@ synchronized (lock) {
       curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
       loadCache();
-      announcer.announce(ZKPaths.makePath(config.getAnnounceLocation(),me.getName()),jsonMapper.writeValueAsBytes(me.getStringProps()));
       loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
         @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {
           final ChildData child=event.getData();

@@ -3,7 +3,7 @@
   Lifecycle lifecycle=new Lifecycle();
   RealtimeNode rn=RealtimeNode.builder().build();
   lifecycle.addManagedInstance(rn);
-  SegmentAnnouncer dummySegmentAnnouncer=new SegmentAnnouncer(){
+  DataSegmentAnnouncer dummySegmentAnnouncer=new DataSegmentAnnouncer(){
     @Override public void announceSegment(    DataSegment segment) throws IOException {
     }
     @Override public void unannounceSegment(    DataSegment segment) throws IOException {
@@ -15,7 +15,7 @@
     }
   }
 ;
-  rn.setSegmentAnnouncer(dummySegmentAnnouncer);
+  rn.setAnnouncer(dummySegmentAnnouncer);
   rn.setSegmentPublisher(dummySegmentPublisher);
   rn.setDataSegmentPusher(new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {

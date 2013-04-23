@@ -7,14 +7,17 @@
     }
  catch (    IOException e) {
       removeSegment(segment);
-      throw new SegmentLoadingException("Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+      throw new SegmentLoadingException(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
     }
-    announcer.announce(makeSegmentPath(segment),jsonMapper.writeValueAsBytes(segment));
+    try {
+      announcer.announceSegment(segment);
+    }
+ catch (    IOException e) {
+      removeSegment(segment);
+      throw new SegmentLoadingException(e,"Failed to announce segment[%s]",segment.getIdentifier());
+    }
   }
  catch (  SegmentLoadingException e) {
     log.makeAlert(e,"Failed to load segment for dataSource").addData("segment",segment).emit();
-  }
-catch (  JsonProcessingException e) {
-    log.makeAlert(e,"WTF, exception writing into byte[]???").addData("segment",segment).emit();
   }
 }
