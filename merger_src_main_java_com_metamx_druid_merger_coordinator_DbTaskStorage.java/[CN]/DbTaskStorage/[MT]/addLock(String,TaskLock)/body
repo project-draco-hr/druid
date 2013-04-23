@@ -4,7 +4,7 @@
   log.info("Adding lock on interval[%s] version[%s] for task: %s",taskLock.getInterval(),taskLock.getVersion(),taskid);
   dbi.withHandle(new HandleCallback<Integer>(){
     @Override public Integer withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("INSERT INTO %s (task_id, lock_payload) VALUES (:task_id, :lock_payload)",dbConnectorConfig.getTaskLockTable())).bind("task_id",taskid).bind("lock_payload",jsonMapper.writeValueAsString(taskLock)).execute();
+      return handle.createStatement(String.format("INSERT INTO %s (task_id, lock_payload) VALUES (:task_id, :lock_payload)",dbConnectorConfig.getTaskLockTable())).bind("task_id",taskid).bind("lock_payload",jsonMapper.writeValueAsBytes(taskLock)).execute();
     }
   }
 );

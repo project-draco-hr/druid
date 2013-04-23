@@ -6,8 +6,8 @@ synchronized (tasks) {
       log.info("Ignoring request to cancel unknown task: %s",taskid);
       return;
     }
+    taskInfo.shutdown=true;
   }
-  taskInfo.statusFuture.cancel(true);
   if (taskInfo.processHolder != null) {
     final int shutdowns=taskInfo.processHolder.shutdowns.getAndIncrement();
     if (shutdowns == 0) {

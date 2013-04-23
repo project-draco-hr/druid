@@ -6,9 +6,8 @@
     queue.clear();
     taskLockbox.clear();
     final Multimap<TaskLock,Task> tasksByLock=ArrayListMultimap.create();
-    for (    final String taskId : taskStorage.getRunningTaskIds()) {
+    for (    final Task task : taskStorage.getRunningTasks()) {
       try {
-        final Task task=taskStorage.getTask(taskId).get();
         final List<TaskLock> taskLocks=taskStorage.getLocks(task.getId());
         queue.add(task);
         for (        final TaskLock taskLock : taskLocks) {
@@ -16,13 +15,8 @@
         }
       }
  catch (      Exception e) {
-        log.makeAlert("Failed to bootstrap task").addData("task",taskId).emit();
-        if (e instanceof JsonProcessingException || e.getCause() instanceof JsonProcessingException) {
-          taskStorage.setStatus(TaskStatus.failure(taskId));
-        }
- else {
-          throw Throwables.propagate(e);
-        }
+        log.makeAlert("Failed to bootstrap task").addData("task",task.getId()).emit();
+        throw Throwables.propagate(e);
       }
     }
     final Ordering<Map.Entry<TaskLock,Task>> byVersionOrdering=new Ordering<Map.Entry<TaskLock,Task>>(){
