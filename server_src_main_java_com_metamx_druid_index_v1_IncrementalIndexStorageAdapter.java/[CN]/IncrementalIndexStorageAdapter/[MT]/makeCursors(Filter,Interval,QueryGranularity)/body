@@ -1,9 +1,10 @@
 {
   Interval actualIntervalTmp=interval;
-  Interval dataInterval=getInterval();
-  if (!actualIntervalTmp.overlaps(dataInterval)) {
+  final Interval indexInterval=getInterval();
+  if (!actualIntervalTmp.overlaps(indexInterval)) {
     return ImmutableList.of();
   }
+  final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(getMaxTime().getMillis()));
   if (actualIntervalTmp.getStart().isBefore(dataInterval.getStart())) {
     actualIntervalTmp=actualIntervalTmp.withStart(dataInterval.getStart());
   }
@@ -182,8 +183,12 @@
                   }
                   @Override public String get(){
                     final String[] dimVals=currEntry.getKey().getDims()[dimensionIndex];
-                    if (dimVals.length == 1)                     return dimVals[0];
-                    if (dimVals.length == 0)                     return null;
+                    if (dimVals.length == 1) {
+                      return dimVals[0];
+                    }
+                    if (dimVals.length == 0) {
+                      return null;
+                    }
                     throw new UnsupportedOperationException("makeObjectColumnSelector does not support multivalued columns");
                   }
                 }
