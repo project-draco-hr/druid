@@ -26,11 +26,11 @@
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
   CuratorFramework curatorFramework=Initialization.makeCuratorFrameworkClient(serviceDiscoveryConfig,lifecycle);
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
-  IndexingServiceClient indexingServiceClient=null;
+  ServiceProvider serviceProvider=null;
   if (druidMasterConfig.getMergerServiceName() != null) {
-    ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
-    indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
+    serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
+  IndexingServiceClient indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   final DruidClusterInfo druidClusterInfo=new DruidClusterInfo(configFactory.build(DruidClusterInfoConfig.class),masterYp);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
