@@ -9,7 +9,7 @@ case CHILD_ADDED:
     log.error("New node[%s] but there was already one.  That's not good, ignoring new one.",containerChild.getPath());
   }
 final String inventoryPath=String.format("%s/%s",config.getContainerPath(),containerKey);
-PathChildrenCache containerCache=new PathChildrenCache(curatorFramework,inventoryPath,true,true,new ShutdownNowIgnoringExecutorService(exec));
+PathChildrenCache containerCache=cacheFactory.make(curatorFramework,inventoryPath);
 containerCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
 containers.put(containerKey,new ContainerHolder(container,containerCache));
 containerCache.start();

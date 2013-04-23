@@ -3,7 +3,7 @@ synchronized (lock) {
     if (childrenCache != null) {
       return;
     }
-    childrenCache=new PathChildrenCache(curatorFramework,config.getContainerPath(),true,true,new ShutdownNowIgnoringExecutorService(exec));
+    childrenCache=cacheFactory.make(curatorFramework,config.getContainerPath());
   }
   childrenCache.getListenable().addListener(new ContainerCacheListener());
   try {
