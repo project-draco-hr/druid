@@ -1,3 +1,3 @@
 {
-  return new ZkClient(new ZkConnection(zkConnect),Integer.MAX_VALUE,new PropertiesZkSerializer());
+  return CuratorFrameworkFactory.builder().connectString(zkConnect).retryPolicy(new RetryOneTime(5000)).build();
 }

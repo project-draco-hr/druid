@@ -1,5 +1,5 @@
 {
-  final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(curatorConfig.getZkHosts()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(false)).build();
+  final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(curatorConfig.getZkHosts()).sessionTimeoutMs(curatorConfig.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(false)).build();
   lifecycle.addHandler(new Lifecycle.Handler(){
     @Override public void start() throws Exception {
       framework.start();
