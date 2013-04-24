@@ -3,6 +3,6 @@
     final Announcer announcer=new Announcer(getCuratorFramework(),Execs.singleThreaded("Announcer-%s"));
     lifecycle.addManagedInstance(announcer);
     setAnnouncer(new CuratorDataSegmentAnnouncer(getDruidServerMetadata(),getZkPaths(),announcer,getJsonMapper()));
-    lifecycle.addManagedInstance(getAnnouncer());
+    lifecycle.addManagedInstance(getAnnouncer(),Lifecycle.Stage.LAST);
   }
 }

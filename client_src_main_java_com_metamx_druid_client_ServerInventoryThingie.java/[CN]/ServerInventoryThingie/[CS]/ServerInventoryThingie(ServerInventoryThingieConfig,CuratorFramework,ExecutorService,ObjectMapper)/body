@@ -32,25 +32,31 @@
         throw Throwables.propagate(e);
       }
     }
-    @Override public void newContainer(    DruidServer newContainer){
+    @Override public void newContainer(    DruidServer container){
+      log.info("New Server[%s]",container);
     }
     @Override public void deadContainer(    DruidServer deadContainer){
+      log.info("Server Disdappeared[%s]",deadContainer);
       runServerCallbacks(deadContainer);
     }
     @Override public DruidServer updateContainer(    DruidServer oldContainer,    DruidServer newContainer){
       return newContainer.addDataSegments(oldContainer);
     }
     @Override public DruidServer addInventory(    final DruidServer container,    String inventoryKey,    final DataSegment inventory){
+      log.info("Server[%s] added segment[%s]",container.getName(),inventory);
+      final DruidServer retVal=container.addDataSegment(inventoryKey,inventory);
       runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
         @Override public CallbackAction apply(        SegmentCallback input){
           return input.segmentAdded(container,inventory);
         }
       }
 );
-      return container.addDataSegment(inventoryKey,inventory);
+      return retVal;
     }
     @Override public DruidServer removeInventory(    final DruidServer container,    String inventoryKey){
+      log.info("Server[%s] removed segment[%s]",container.getName(),inventoryKey);
       final DataSegment segment=container.getSegment(inventoryKey);
+      final DruidServer retVal=container.removeDataSegment(inventoryKey);
       runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
         @Override public CallbackAction apply(        SegmentCallback input){
           return input.segmentRemoved(container,segment);
@@ -58,7 +64,7 @@
       }
 );
       removedSegments.put(inventoryKey,config.getRemovedSegmentLifetime());
-      return container.removeDataSegment(inventoryKey);
+      return retVal;
     }
   }
 );
