@@ -22,7 +22,7 @@
   }
   Map<String,GenericIndexed<ImmutableRTree>> spatialIndexes=Maps.newHashMap();
   final ByteBuffer spatialBuffer=v8SmooshedFiles.mapFile("spatial.drd");
-  while (spatialBuffer.hasRemaining()) {
+  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
     spatialIndexes.put(serializerUtils.readString(spatialBuffer),GenericIndexed.read(spatialBuffer,IndexedRTree.objectStrategy));
   }
   final LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
