@@ -5,6 +5,11 @@
   bind(DatabaseSegmentManager.class).toInstance(segmentInventoryManager);
   bind(DatabaseRuleManager.class).toInstance(databaseRuleManager);
   bind(DruidMaster.class).toInstance(master);
-  bind(IndexingServiceClient.class).toInstance(indexingServiceClient);
+  if (indexingServiceClient == null) {
+    bind(IndexingServiceClient.class).toProvider(Providers.<IndexingServiceClient>of(null));
+  }
+ else {
+    bind(IndexingServiceClient.class).toInstance(indexingServiceClient);
+  }
   serve("/*").with(GuiceContainer.class);
 }
