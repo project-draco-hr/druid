@@ -1,15 +1,15 @@
 {
-  final ChildData inventoryChild=event.getData();
+  final ChildData child=event.getData();
   final ContainerHolder holder=containers.get(containerKey);
   if (holder == null) {
-    log.error("Inventory[%s] change for non-existent container[%s]!?",inventoryChild.getPath());
+    log.error("Inventory[%s] change for non-existent container[%s]!?",child.getPath());
     return;
   }
-  final String inventoryKey=inventoryChild.getPath().substring(inventoryPath.length());
+  final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
 switch (event.getType()) {
 case CHILD_ADDED:
 case CHILD_UPDATED:
-    final InventoryClass inventory=strategy.deserializeInventory(inventoryChild.getData());
+    final InventoryClass inventory=strategy.deserializeInventory(child.getData());
 synchronized (holder) {
     holder.setContainer(strategy.addInventory(holder.getContainer(),inventoryKey,inventory));
   }
