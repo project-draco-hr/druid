@@ -2,7 +2,6 @@
   final ChildData child=event.getData();
   final ContainerHolder holder=containers.get(containerKey);
   if (holder == null) {
-    log.error("Inventory[%s] change for non-existent container[%s]!?",child.getPath());
     return;
   }
   final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
@@ -19,7 +18,5 @@ synchronized (holder) {
 holder.setContainer(strategy.removeInventory(holder.getContainer(),inventoryKey));
 }
 break;
-default :
-log.info("Got event[%s] at inventoryPath[%s], ignoring.",event.getType(),inventoryPath);
 }
 }

@@ -3,7 +3,6 @@ synchronized (lock) {
     if (!started) {
       return;
     }
-    Closeables.closeQuietly(leaderLatch.get());
     stopBeingMaster();
     started=false;
     exec.shutdownNow();
