@@ -1,6 +1,16 @@
 {
-  log.info("Registering event receiver for %s",key);
-  if (receivers.putIfAbsent(key,receiver) != null) {
+  log.info("Registering event receiver: %s",key);
+  final EventReceiverHolder holder=new EventReceiverHolder(receiver,isDiscoverable() ? Initialization.serviceInstance(String.format(config.getServiceFormat(),key),config.getHost(),config.getPort()) : null);
+  if (receivers.putIfAbsent(key,holder) != null) {
     throw new ISE("Receiver already registered for key: %s",key);
+  }
+  if (isDiscoverable()) {
+    try {
+      discovery.registerService(holder.service);
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to register service: %s",holder.service.getName());
+      receivers.remove(key,holder);
+    }
   }
 }

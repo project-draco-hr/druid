@@ -1,3 +1,9 @@
 {
-  return Optional.fromNullable(receivers.get(key));
+  final EventReceiverHolder holder=receivers.get(key);
+  if (holder != null) {
+    return Optional.of(holder.receiver);
+  }
+ else {
+    return Optional.absent();
+  }
 }

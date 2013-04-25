@@ -1,0 +1,16 @@
+{
+  log.info("Unregistering event receiver: %s",key);
+  final EventReceiverHolder holder=receivers.get(key);
+  if (holder == null) {
+    log.warn("Receiver not currently registered, ignoring: %s",key);
+  }
+  if (isDiscoverable()) {
+    try {
+      discovery.unregisterService(holder.service);
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to unregister service: %s",holder.service.getName());
+    }
+  }
+  receivers.remove(key);
+}

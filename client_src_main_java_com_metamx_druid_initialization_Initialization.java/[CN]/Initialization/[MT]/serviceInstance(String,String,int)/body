@@ -1,0 +1,16 @@
+{
+  final String address;
+  final int colon=host.indexOf(':');
+  if (colon < 0) {
+    address=host;
+  }
+ else {
+    address=host.substring(0,colon);
+  }
+  try {
+    return ServiceInstance.builder().name(service.replace('/',':')).address(address).port(port).build();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
