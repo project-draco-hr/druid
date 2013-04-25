@@ -1,0 +1,18 @@
+{
+  firehose=delegateFactory.connect();
+  exec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("timed-shutoff-firehose-%d").build());
+  exec.schedule(new Runnable(){
+    @Override public void run(){
+      log.info("Closing delegate firehose.");
+      shutdown=true;
+      try {
+        firehose.close();
+      }
+ catch (      IOException e) {
+        log.warn(e,"Failed to close delegate firehose, ignoring.");
+      }
+    }
+  }
+,shutoffTime.getMillis() - System.currentTimeMillis(),TimeUnit.MILLISECONDS);
+  log.info("Firehose created, will shut down at: %s",shutoffTime);
+}

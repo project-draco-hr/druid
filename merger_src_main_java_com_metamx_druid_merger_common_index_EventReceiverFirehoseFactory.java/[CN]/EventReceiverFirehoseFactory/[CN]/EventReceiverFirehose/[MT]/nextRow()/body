@@ -1,0 +1,12 @@
+{
+synchronized (readLock) {
+    final Map<String,Object> event=nextEvent;
+    if (event == null) {
+      throw new NoSuchElementException();
+    }
+ else {
+      nextEvent=null;
+      return parser.parse(event);
+    }
+  }
+}

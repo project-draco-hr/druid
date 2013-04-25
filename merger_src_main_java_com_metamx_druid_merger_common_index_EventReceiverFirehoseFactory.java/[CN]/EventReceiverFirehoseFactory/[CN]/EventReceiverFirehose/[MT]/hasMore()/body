@@ -1,0 +1,14 @@
+{
+synchronized (readLock) {
+    try {
+      while (!closed && nextEvent == null) {
+        nextEvent=buffer.poll(500,TimeUnit.MILLISECONDS);
+      }
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw Throwables.propagate(e);
+    }
+    return nextEvent != null;
+  }
+}

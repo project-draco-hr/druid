@@ -1,0 +1,8 @@
+{
+  log.info("Connecting firehose: %s",firehoseId);
+  final EventReceiverFirehose firehose=new EventReceiverFirehose();
+  if (eventReceiverProvider.isPresent()) {
+    eventReceiverProvider.get().register(firehoseId,firehose);
+  }
+  return firehose;
+}

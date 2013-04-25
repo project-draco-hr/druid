@@ -1,0 +1,6 @@
+{
+  log.info("Registering event receiver for %s",key);
+  if (receivers.putIfAbsent(key,receiver) != null) {
+    throw new ISE("Receiver already registered for key: %s",key);
+  }
+}

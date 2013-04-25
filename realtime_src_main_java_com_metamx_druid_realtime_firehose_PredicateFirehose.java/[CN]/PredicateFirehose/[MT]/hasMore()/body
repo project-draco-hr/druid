@@ -1,0 +1,13 @@
+{
+  if (savedInputRow != null) {
+    return true;
+  }
+  while (firehose.hasMore()) {
+    final InputRow row=firehose.nextRow();
+    if (predicate.apply(row)) {
+      savedInputRow=row;
+      return true;
+    }
+  }
+  return false;
+}
