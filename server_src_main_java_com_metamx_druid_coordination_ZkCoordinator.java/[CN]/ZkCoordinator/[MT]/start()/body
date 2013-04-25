@@ -1,12 +1,12 @@
 {
-  log.info("Starting zkCoordinator for server[%s] with config[%s]",me,config);
+  log.info("Starting zkCoordinator for server[%s]",me);
 synchronized (lock) {
     if (started) {
       return;
     }
     loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ZkCoordinator-%s").build());
     try {
-      this.config.getSegmentInfoCacheDirectory().mkdirs();
+      config.getSegmentInfoCacheDirectory().mkdirs();
       curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
       loadCache();
@@ -42,6 +42,7 @@ log.info("Ignoring event[%s]",event);
 }
 }
 );
+loadQueueCache.start();
 }
  catch (Exception e) {
 Throwables.propagateIfPossible(e,IOException.class);

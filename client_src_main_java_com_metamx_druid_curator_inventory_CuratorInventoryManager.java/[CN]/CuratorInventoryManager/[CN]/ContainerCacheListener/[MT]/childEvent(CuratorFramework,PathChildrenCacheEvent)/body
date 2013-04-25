@@ -13,6 +13,7 @@ PathChildrenCache inventoryCache=cacheFactory.make(curatorFramework,inventoryPat
 inventoryCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
 containers.put(containerKey,new ContainerHolder(container,inventoryCache));
 inventoryCache.start();
+strategy.newContainer(container);
 break;
 case CHILD_REMOVED:
 final ContainerHolder removed=containers.remove(containerKey);

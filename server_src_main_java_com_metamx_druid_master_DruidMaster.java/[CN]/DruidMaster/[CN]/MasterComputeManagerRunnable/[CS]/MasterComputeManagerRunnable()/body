@@ -20,7 +20,7 @@
       final DruidCluster cluster=new DruidCluster();
       for (      DruidServer server : servers) {
         if (!loadManagementPeons.containsKey(server.getName())) {
-          String basePath=ZKPaths.makePath(config.getLoadQueuePath(),server.getName());
+          String basePath=ZKPaths.makePath(zkPaths.getLoadQueuePath(),server.getName());
           LoadQueuePeon loadQueuePeon=taskMaster.giveMePeon(basePath);
           log.info("Creating LoadQueuePeon for server[%s] at path[%s]",server.getName(),basePath);
           loadManagementPeons.put(server.getName(),loadQueuePeon);

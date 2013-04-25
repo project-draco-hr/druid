@@ -1,5 +1,5 @@
 {
-  final LeaderLatch newLeaderLatch=new LeaderLatch(curator,ZKPaths.makePath(config.getBasePath(),MASTER_OWNER_NODE),config.getHost());
+  final LeaderLatch newLeaderLatch=new LeaderLatch(curator,ZKPaths.makePath(zkPaths.getMasterPath(),MASTER_OWNER_NODE),config.getHost());
   newLeaderLatch.attachListener(new LeaderLatchListener(){
     @Override public void becomeMaster(){
       DruidMaster.this.becomeMaster();

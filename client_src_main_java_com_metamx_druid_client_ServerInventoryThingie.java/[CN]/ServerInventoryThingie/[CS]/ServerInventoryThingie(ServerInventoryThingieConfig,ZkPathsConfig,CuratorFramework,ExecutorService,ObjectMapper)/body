@@ -1,5 +1,13 @@
 {
-  inventoryManager=new CuratorInventoryManager<DruidServer,DataSegment>(curator,config,exec,new CuratorInventoryManagerStrategy<DruidServer,DataSegment>(){
+  inventoryManager=new CuratorInventoryManager<DruidServer,DataSegment>(curator,new InventoryManagerConfig(){
+    @Override public String getContainerPath(){
+      return zkPaths.getAnnouncementsPath();
+    }
+    @Override public String getInventoryPath(){
+      return zkPaths.getServedSegmentsPath();
+    }
+  }
+,exec,new CuratorInventoryManagerStrategy<DruidServer,DataSegment>(){
     @Override public DruidServer deserializeContainer(    byte[] bytes){
       try {
         return jsonMapper.readValue(bytes,DruidServer.class);
