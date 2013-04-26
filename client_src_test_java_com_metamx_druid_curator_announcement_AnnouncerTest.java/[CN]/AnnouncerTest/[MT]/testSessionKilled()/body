@@ -11,8 +11,8 @@
     final Set<String> paths=Sets.newHashSet(testPath1,testPath2);
     announcer.announce(testPath1,billy);
     announcer.announce(testPath2,billy);
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
+    Assert.assertArrayEquals(billy,curator.getData().decompressed().forPath(testPath1));
+    Assert.assertArrayEquals(billy,curator.getData().decompressed().forPath(testPath2));
     final CountDownLatch latch=new CountDownLatch(1);
     curator.getCuratorListenable().addListener(new CuratorListener(){
       @Override public void eventReceived(      CuratorFramework client,      CuratorEvent event) throws Exception {
@@ -26,9 +26,9 @@
     }
 );
     KillSession.kill(curator.getZookeeperClient().getZooKeeper(),server.getConnectString());
-    timing.awaitLatch(latch);
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
+    Assert.assertTrue(timing.awaitLatch(latch));
+    Assert.assertArrayEquals(billy,curator.getData().decompressed().forPath(testPath1));
+    Assert.assertArrayEquals(billy,curator.getData().decompressed().forPath(testPath2));
     announcer.stop();
     Assert.assertNull(curator.checkExists().forPath(testPath1));
     Assert.assertNull(curator.checkExists().forPath(testPath2));

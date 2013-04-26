@@ -9,7 +9,7 @@
   CountDownLatch containerLatch=new CountDownLatch(1);
   strategy.setNewContainerLatch(containerLatch);
   curator.create().withMode(CreateMode.EPHEMERAL).forPath("/container/billy",new byte[]{});
-  timing.awaitLatch(containerLatch);
+  Assert.assertTrue(timing.awaitLatch(containerLatch));
   strategy.setNewContainerLatch(null);
   final Iterable<Map<String,Integer>> inventory=manager.getInventory();
   Assert.assertTrue(Iterables.getOnlyElement(inventory).isEmpty());
@@ -17,20 +17,20 @@
   strategy.setNewInventoryLatch(inventoryLatch);
   curator.create().withMode(CreateMode.EPHEMERAL).forPath("/inventory/billy/1",Ints.toByteArray(100));
   curator.create().withMode(CreateMode.EPHEMERAL).forPath("/inventory/billy/bob",Ints.toByteArray(2287));
-  timing.awaitLatch(inventoryLatch);
+  Assert.assertTrue(timing.awaitLatch(inventoryLatch));
   strategy.setNewInventoryLatch(null);
   verifyInventory(manager);
   CountDownLatch deleteLatch=new CountDownLatch(1);
   strategy.setDeadInventoryLatch(deleteLatch);
   curator.delete().forPath("/inventory/billy/1");
-  timing.awaitLatch(deleteLatch);
+  Assert.assertTrue(timing.awaitLatch(deleteLatch));
   strategy.setDeadInventoryLatch(null);
   Assert.assertEquals(1,manager.getInventoryValue("billy").size());
   Assert.assertEquals(2287,manager.getInventoryValue("billy").get("bob").intValue());
   inventoryLatch=new CountDownLatch(1);
   strategy.setNewInventoryLatch(inventoryLatch);
   curator.create().withMode(CreateMode.EPHEMERAL).forPath("/inventory/billy/1",Ints.toByteArray(100));
-  timing.awaitLatch(inventoryLatch);
+  Assert.assertTrue(timing.awaitLatch(inventoryLatch));
   strategy.setNewInventoryLatch(null);
   verifyInventory(manager);
   final CountDownLatch latch=new CountDownLatch(1);
@@ -43,7 +43,7 @@
   }
 );
   server.stop();
-  timing.awaitLatch(latch);
+  Assert.assertTrue(timing.awaitLatch(latch));
   verifyInventory(manager);
   Thread.sleep(50);
   verifyInventory(manager);
