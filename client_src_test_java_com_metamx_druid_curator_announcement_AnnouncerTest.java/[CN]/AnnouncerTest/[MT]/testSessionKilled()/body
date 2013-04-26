@@ -1,6 +1,4 @@
 {
-  Timing timing=new Timing();
-  CuratorFramework curator=CuratorFrameworkFactory.builder().connectString(server.getConnectString()).sessionTimeoutMs(timing.session()).connectionTimeoutMs(timing.connection()).retryPolicy(new RetryOneTime(1)).build();
   final ExecutorService exec=Execs.singleThreaded("test-announcer-sanity-%s");
   curator.start();
   Announcer announcer=new Announcer(curator,exec);
@@ -37,6 +35,5 @@
   }
   finally {
     announcer.stop();
-    Closeables.closeQuietly(curator);
   }
 }

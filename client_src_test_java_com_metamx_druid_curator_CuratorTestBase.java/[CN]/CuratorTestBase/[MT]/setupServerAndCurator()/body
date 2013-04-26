@@ -1,0 +1,5 @@
+{
+  server=new TestingServer();
+  timing=new Timing();
+  curator=CuratorFrameworkFactory.builder().connectString(server.getConnectString()).sessionTimeoutMs(timing.session()).connectionTimeoutMs(timing.connection()).retryPolicy(new RetryOneTime(1)).compressionProvider(new PotentiallyGzippedCompressionProvider(true)).build();
+}

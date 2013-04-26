@@ -1,35 +1,36 @@
 {
-  Timing timing=new Timing();
-  CuratorFramework curator=CuratorFrameworkFactory.newClient(server.getConnectString(),timing.session(),timing.connection(),new RetryOneTime(1));
-  final ExecutorService exec=Execs.singleThreaded("test-announcer-sanity-%s");
   curator.start();
-  try {
-    curator.create().forPath("/somewhere");
-    Announcer announcer=new Announcer(curator,exec);
-    final byte[] billy="billy".getBytes();
-    final String testPath1="/test1";
-    final String testPath2="/somewhere/test2";
-    announcer.announce(testPath1,billy);
-    Assert.assertNull(curator.checkExists().forPath(testPath1));
-    Assert.assertNull(curator.checkExists().forPath(testPath2));
-    announcer.start();
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
-    Assert.assertNull(curator.checkExists().forPath(testPath2));
-    announcer.announce(testPath2,billy);
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
-    curator.delete().forPath(testPath1);
-    Thread.sleep(20);
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
-    announcer.unannounce(testPath1);
-    Assert.assertNull(curator.checkExists().forPath(testPath1));
-    Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
-    announcer.stop();
-    Assert.assertNull(curator.checkExists().forPath(testPath1));
-    Assert.assertNull(curator.checkExists().forPath(testPath2));
+  curator.create().forPath("/somewhere");
+  Announcer announcer=new Announcer(curator,exec);
+  final byte[] billy="billy".getBytes();
+  final String testPath1="/test1";
+  final String testPath2="/somewhere/test2";
+  announcer.announce(testPath1,billy);
+  Assert.assertNull(curator.checkExists().forPath(testPath1));
+  Assert.assertNull(curator.checkExists().forPath(testPath2));
+  announcer.start();
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
+  Assert.assertNull(curator.checkExists().forPath(testPath2));
+  announcer.announce(testPath2,billy);
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
+  final CountDownLatch latch=new CountDownLatch(1);
+  curator.getCuratorListenable().addListener(new CuratorListener(){
+    @Override public void eventReceived(    CuratorFramework client,    CuratorEvent event) throws Exception {
+      if (event.getType() == CuratorEventType.DELETE && event.getPath().equals(testPath1)) {
+        latch.countDown();
+      }
+    }
   }
-  finally {
-    Closeables.closeQuietly(curator);
-  }
+);
+  curator.delete().forPath(testPath1);
+  timing.awaitLatch(latch);
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath1));
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
+  announcer.unannounce(testPath1);
+  Assert.assertNull(curator.checkExists().forPath(testPath1));
+  Assert.assertArrayEquals(billy,curator.getData().forPath(testPath2));
+  announcer.stop();
+  Assert.assertNull(curator.checkExists().forPath(testPath1));
+  Assert.assertNull(curator.checkExists().forPath(testPath2));
 }
