@@ -12,7 +12,10 @@
   try {
     curator.delete().guaranteed().forPath(path);
   }
- catch (  Exception e) {
+ catch (  KeeperException.NoNodeException e) {
+    log.info("node[%s] didn't exist anyway...",path);
+  }
+catch (  Exception e) {
     throw Throwables.propagate(e);
   }
 }

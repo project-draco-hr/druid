@@ -13,9 +13,11 @@ synchronized (toAnnounce) {
     final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);
 synchronized (finalSubPaths) {
       if (!listeners.containsKey(parentPath)) {
-        PathChildrenCache cache=new PathChildrenCache(curator,parentPath,true,false,exec);
+        final PathChildrenCache cache=factory.make(curator,parentPath);
         cache.getListenable().addListener(new PathChildrenCacheListener(){
+          private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);
           @Override public void childEvent(          CuratorFramework client,          PathChildrenCacheEvent event) throws Exception {
+            log.info("Path[%s] got event[%s]",parentPath,event);
 switch (event.getType()) {
 case CHILD_REMOVED:
               final ChildData child=event.getData();
@@ -25,20 +27,43 @@ case CHILD_REMOVED:
           log.info("Node[%s] dropped, reinstating.",child.getPath());
           createAnnouncement(child.getPath(),value);
         }
-    }
+      break;
+case CONNECTION_LOST:
+    Set<String> pathsToReinstate=Sets.newHashSet();
+  for (  String node : finalSubPaths.keySet()) {
+    pathsToReinstate.add(ZKPaths.makePath(parentPath,node));
   }
+for (ChildData data : cache.getCurrentData()) {
+  pathsToReinstate.remove(data.getPath());
+}
+if (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {
+log.info("Already had a pathsLost set!?[%s]",parentPath);
+}
+break;
+case CONNECTION_RECONNECTED:
+final Set<String> thePathsLost=pathsLost.getAndSet(null);
+if (thePathsLost != null) {
+for (String path : thePathsLost) {
+log.info("Reinstating [%s]",path);
+final ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);
+createAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));
+}
+}
+break;
+}
+}
 }
 );
 try {
 synchronized (toAnnounce) {
-    if (started) {
-      cache.start();
-      listeners.put(parentPath,cache);
-    }
-  }
+if (started) {
+cache.start();
+listeners.put(parentPath,cache);
+}
+}
 }
  catch (Exception e) {
-  throw Throwables.propagate(e);
+throw Throwables.propagate(e);
 }
 }
 }
