@@ -1,0 +1,13 @@
+{
+  IncrementalIndex theIndex=new IncrementalIndex(DATA_INTERVAL.getStartMillis(),QueryGranularity.DAY,METRIC_AGGS);
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","foo","dim.geo",Arrays.asList(0.0f,0.0f),"val",17l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-02").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-02").toString(),"dim","foo","dim.geo",Arrays.asList(1.0f,3.0f),"val",29l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-03").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-03").toString(),"dim","foo","dim.geo",Arrays.asList(4.0f,2.0f),"val",13l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-04").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-04").toString(),"dim","foo","dim.geo",Arrays.asList(7.0f,3.0f),"val",91l)));
+  theIndex.add(new MapBasedInputRow(new DateTime("2013-01-05").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-05").toString(),"dim","foo","dim.geo",Arrays.asList(8.0f,6.0f),"val",47l)));
+  Random rand=new Random();
+  for (int i=5; i < 5000; i++) {
+    theIndex.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","boo","dim.geo",Arrays.asList((float)(rand.nextFloat() * 10 + 10.0),(float)(rand.nextFloat() * 10 + 10.0)),"val",i)));
+  }
+  return theIndex;
+}
