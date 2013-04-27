@@ -2,7 +2,7 @@
   druidServer=EasyMock.createMock(DruidServer.class);
   segment=EasyMock.createNiceMock(DataSegment.class);
   loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
-  loadManagementPeons=EasyMock.createMock(Map.class);
+  loadManagementPeons=new MapMaker().makeMap();
   serverInventoryThingie=EasyMock.createMock(ServerInventoryThingie.class);
   databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
@@ -38,6 +38,9 @@
     }
   }
 ,new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return "";
+    }
   }
-,null,databaseSegmentManager,serverInventoryThingie,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster);
+,null,databaseSegmentManager,serverInventoryThingie,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,loadManagementPeons);
 }
