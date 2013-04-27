@@ -15,6 +15,8 @@
     throw new IAE("Either singleValCol[%s] or multiValCol[%s] must be set",singleValCol,multiValCol);
   }
   size+=bitmaps.getSerializedSize();
-  size+=spatialIndex.getSerializedSize();
+  if (spatialIndex != null) {
+    size+=spatialIndex.getSerializedSize();
+  }
   this.size=size;
 }

@@ -15,7 +15,10 @@
     builder.setHasMultipleValues(true).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(dictionary,null,multiValuedColumn));
   }
   GenericIndexed<ImmutableConciseSet> bitmaps=GenericIndexed.read(buffer,ConciseCompressedIndexedInts.objectStrategy);
-  GenericIndexed<ImmutableRTree> spatialIndex=GenericIndexed.read(buffer,IndexedRTree.objectStrategy);
+  GenericIndexed<ImmutableRTree> spatialIndex=null;
+  if (buffer.hasRemaining()) {
+    spatialIndex=GenericIndexed.read(buffer,IndexedRTree.objectStrategy);
+  }
   builder.setBitmapIndex(new BitmapIndexColumnPartSupplier(bitmaps,dictionary));
   builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(spatialIndex));
   return new DictionaryEncodedColumnPartSerde(dictionary,singleValuedColumn,multiValuedColumn,bitmaps,spatialIndex);
