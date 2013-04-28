@@ -23,22 +23,11 @@
     }
   }
 );
-  return Sequences.filter(Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
+  return Sequences.limit(Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
     @Override public Row apply(    Row input){
       final MapBasedRow row=(MapBasedRow)input;
       return new MapBasedRow(gran.toDateTime(row.getTimestampFromEpoch()),row.getEvent());
     }
   }
-),new Predicate<Row>(){
-    private volatile int numRows=0;
-    @Override public boolean apply(    @Nullable Row input){
-      if (query.getThreshold() > 0) {
-        return (numRows++ < query.getThreshold());
-      }
- else {
-        return true;
-      }
-    }
-  }
-);
+),(query.getThreshold() > 0) ? query.getThreshold() : maxRows);
 }
