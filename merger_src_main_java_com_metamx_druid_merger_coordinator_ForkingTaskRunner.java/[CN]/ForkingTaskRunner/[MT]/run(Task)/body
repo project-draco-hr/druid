@@ -37,10 +37,13 @@ synchronized (tasks) {
                   command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
                 }
               }
+              String nodeType=task.getNodeType();
+              if (nodeType != null) {
+                command.add(String.format("-Ddruid.executor.nodeType=%s",nodeType));
+              }
               command.add(String.format("-Ddruid.host=%s",childHost));
               command.add(String.format("-Ddruid.port=%d",childPort));
               command.add(config.getMainClass());
-              command.add(defaultNodeType(task));
               command.add(taskFile.toString());
               command.add(statusFile.toString());
               jsonMapper.writeValue(taskFile,task);
