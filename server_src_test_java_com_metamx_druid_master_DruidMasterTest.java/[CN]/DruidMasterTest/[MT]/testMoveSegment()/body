@@ -8,8 +8,8 @@
   loadManagementPeons.put("from",loadQueuePeon);
   EasyMock.expect(loadQueuePeon.getLoadQueueSize()).andReturn(new Long(1));
   EasyMock.replay(loadQueuePeon);
-  EasyMock.expect(serverInventoryThingie.getInventoryValue("from")).andReturn(druidServer);
-  EasyMock.expect(serverInventoryThingie.getInventoryValue("to")).andReturn(druidServer);
-  EasyMock.replay(serverInventoryThingie);
+  EasyMock.expect(serverInventoryView.getInventoryValue("from")).andReturn(druidServer);
+  EasyMock.expect(serverInventoryView.getInventoryValue("to")).andReturn(druidServer);
+  EasyMock.replay(serverInventoryView);
   master.moveSegment("from","to","dummySegment",null);
 }

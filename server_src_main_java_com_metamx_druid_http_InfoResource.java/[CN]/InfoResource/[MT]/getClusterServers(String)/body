@@ -1,9 +1,9 @@
 {
   Response.ResponseBuilder builder=Response.status(Response.Status.OK);
   if (full != null) {
-    return builder.entity(serverInventoryThingie.getInventory()).build();
+    return builder.entity(serverInventoryView.getInventory()).build();
   }
-  return builder.entity(Iterables.transform(serverInventoryThingie.getInventory(),new Function<DruidServer,String>(){
+  return builder.entity(Iterables.transform(serverInventoryView.getInventory(),new Function<DruidServer,String>(){
     @Override public String apply(    @Nullable DruidServer druidServer){
       return druidServer.getName();
     }
