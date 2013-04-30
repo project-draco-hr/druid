@@ -1,10 +1,14 @@
 {
   log.debug("Adding %,d events to firehose: %s",events.size(),firehoseId);
+  final List<InputRow> rows=Lists.newArrayList();
+  for (  final Map<String,Object> event : events) {
+    rows.add(parser.parse(event));
+  }
   try {
-    for (    final Map<String,Object> event : events) {
+    for (    final InputRow row : rows) {
       boolean added=false;
       while (!closed && !added) {
-        added=buffer.offer(event,500,TimeUnit.MILLISECONDS);
+        added=buffer.offer(row,500,TimeUnit.MILLISECONDS);
       }
       if (!added) {
         throw new IllegalStateException("Cannot add events to closed firehose!");
