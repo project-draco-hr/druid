@@ -1,0 +1,71 @@
+{
+  Properties currProps=new Properties();
+  try {
+    if (curator.checkExists().forPath(zkPaths.getPropertiesPath()) != null) {
+      final byte[] data=curator.getData().forPath(zkPaths.getPropertiesPath());
+      currProps.load(new InputStreamReader(new ByteArrayInputStream(data),Charsets.UTF_8));
+    }
+    boolean propsDiffer=false;
+    if (currProps.isEmpty()) {
+      out.println("No properties currently stored in zk");
+      propsDiffer=true;
+    }
+ else {
+      int countNew=0;
+      int countDiffer=0;
+      int countRemoved=0;
+      int countNoChange=0;
+      StringBuilder changes=new StringBuilder(1024);
+      for (      String pname : props.stringPropertyNames()) {
+        if (IGNORED_PROPS.contains(pname)) {
+          continue;
+        }
+        final String pvalue=props.getProperty(pname);
+        final String pvalueCurr=currProps.getProperty(pname);
+        if (pvalueCurr == null) {
+          countNew++;
+        }
+ else {
+          if (pvalueCurr.equals(pvalue)) {
+            countNoChange++;
+          }
+ else {
+            countDiffer++;
+            changes.append(String.format("CHANGED[%s]: PREV=%s --- NOW=%s%n",pname,pvalueCurr,pvalue));
+          }
+        }
+      }
+      for (      String pname : currProps.stringPropertyNames()) {
+        if (IGNORED_PROPS.contains(pname)) {
+          continue;
+        }
+        if (props.getProperty(pname) == null) {
+          countRemoved++;
+          changes.append(String.format("REMOVED: %s=%s%n",pname,currProps.getProperty(pname)));
+        }
+      }
+      if (countNew + countRemoved + countDiffer > 0) {
+        out.printf("Properties differ: %,d new,  %,d changed, %,d removed, %,d unchanged, previously updated %s%n",countNew,countDiffer,countRemoved,countNoChange,currProps.getProperty(MODIFIED_PROP));
+        out.println(changes);
+        propsDiffer=true;
+      }
+ else {
+        out.printf("Current properties identical to file given, %,d total properties set.%n",countNoChange);
+      }
+    }
+    if (propsDiffer) {
+      ByteArrayOutputStream propsBytes=new ByteArrayOutputStream();
+      props.store(new OutputStreamWriter(propsBytes,Charsets.UTF_8),"Common Druid properties");
+      if (currProps.isEmpty()) {
+        curator.setData().forPath(zkPaths.getPropertiesPath(),propsBytes.toByteArray());
+      }
+ else {
+        curator.create().forPath(zkPaths.getPropertiesPath(),propsBytes.toByteArray());
+      }
+      out.printf("Properties updated, %,d total properties set.%n",props.size());
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

@@ -1,0 +1,18 @@
+{
+synchronized (lock) {
+    if (childrenCache == null) {
+      return;
+    }
+    childrenCache.close();
+    childrenCache=null;
+  }
+  for (  String containerKey : Lists.newArrayList(containers.keySet())) {
+    final ContainerHolder containerHolder=containers.remove(containerKey);
+    if (containerHolder == null) {
+      log.wtf("!?  Got key[%s] from keySet() but it didn't have a value!?",containerKey);
+    }
+ else {
+      containerHolder.getCache().close();
+    }
+  }
+}

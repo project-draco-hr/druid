@@ -1,0 +1,12 @@
+{
+synchronized (toAnnounce) {
+    if (started) {
+      return;
+    }
+    started=true;
+    for (    Pair<String,byte[]> pair : toAnnounce) {
+      announce(pair.lhs,pair.rhs);
+    }
+    toAnnounce.clear();
+  }
+}

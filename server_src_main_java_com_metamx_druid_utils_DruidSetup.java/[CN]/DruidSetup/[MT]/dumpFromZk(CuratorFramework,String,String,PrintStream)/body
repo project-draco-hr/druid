@@ -1,0 +1,30 @@
+{
+  ZkPathsConfig config=new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return zPathBase;
+    }
+  }
+;
+  try {
+    if (curator.checkExists().forPath(config.getPropertiesPath()) != null) {
+      byte[] data=curator.getData().forPath(config.getPropertiesPath());
+      Properties currProps=new Properties();
+      currProps.load(new InputStreamReader(new ByteArrayInputStream(data),Charsets.UTF_8));
+      if (!currProps.isEmpty()) {
+        out.printf("# Begin Properties Listing for zpath[%s]%n",config.getPropertiesPath());
+        try {
+          currProps.store(new OutputStreamWriter(out,Charsets.UTF_8),"Druid");
+        }
+ catch (        IOException ignored) {
+        }
+        out.printf("# End Properties for zkConnect[%s] zpath[%s]%n",zkConnect,config.getPropertiesPath());
+      }
+ else {
+        out.printf("# Properties at zpath[%s] empty.%n",config.getPropertiesPath());
+      }
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

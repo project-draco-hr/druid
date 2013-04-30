@@ -7,12 +7,17 @@
     }
  catch (    IOException e) {
       removeSegment(segment);
-      throw new SegmentLoadingException("Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+      throw new SegmentLoadingException(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
     }
-    yp.announce(servedSegmentsLocation,segment.getIdentifier(),segment);
+    try {
+      announcer.announceSegment(segment);
+    }
+ catch (    IOException e) {
+      removeSegment(segment);
+      throw new SegmentLoadingException(e,"Failed to announce segment[%s]",segment.getIdentifier());
+    }
   }
  catch (  SegmentLoadingException e) {
-    log.error(e,"Failed to load segment[%s]",segment);
-    emitter.emit(new AlertEvent.Builder().build("Failed to load segment",ImmutableMap.<String,Object>builder().put("segment",segment.toString()).put("exception",e.toString()).build()));
+    log.makeAlert(e,"Failed to load segment for dataSource").addData("segment",segment).emit();
   }
 }

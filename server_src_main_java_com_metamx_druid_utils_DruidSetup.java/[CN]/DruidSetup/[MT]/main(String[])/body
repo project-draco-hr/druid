@@ -1,31 +1,29 @@
 {
-  ZkClient zkClient=null;
-  if (args.length < 2 || args.length > 3) {
-    printUsage();
-    System.exit(1);
-  }
-  String cmd=args[0];
-  if ("dump".equals(cmd) && args.length == 3) {
-    final String zkConnect=args[1];
-    zkClient=connectToZK(zkConnect);
-    String zpathBase=args[2];
-    dumpFromZk(zkClient,zpathBase,zkConnect,System.out);
-  }
- else   if ("put".equals(cmd) && args.length == 3) {
-    final String zkConnect=args[1];
-    zkClient=connectToZK(zkConnect);
-    final String pfile=args[2];
-    putToZk(zkClient,pfile);
-  }
- else   if ("dbprep".equals(cmd) && args.length == 2) {
-    final String pfile=args[1];
-    prepDB(pfile);
-  }
+  CuratorFramework curator=null;
+  try {
+    if (args.length < 2 || args.length > 3) {
+      printUsage();
+      System.exit(1);
+    }
+    String cmd=args[0];
+    if ("dump".equals(cmd) && args.length == 3) {
+      final String zkConnect=args[1];
+      curator=connectToZK(zkConnect);
+      String zpathBase=args[2];
+      dumpFromZk(curator,zkConnect,zpathBase,System.out);
+    }
+ else     if ("put".equals(cmd) && args.length == 3) {
+      final String zkConnect=args[1];
+      curator=connectToZK(zkConnect);
+      final String pfile=args[2];
+      putToZk(curator,pfile);
+    }
  else {
-    printUsage();
-    System.exit(1);
+      printUsage();
+      System.exit(1);
+    }
   }
-  if (zkClient != null) {
-    zkClient.close();
+  finally {
+    Closeables.closeQuietly(curator);
   }
 }

@@ -1,19 +1,18 @@
 {
-  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(getLifecycle());
   initializeDB();
-  final ConfigManagerConfig managerConfig=configFactory.build(ConfigManagerConfig.class);
+  final ConfigManagerConfig managerConfig=getConfigFactory().build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,managerConfig.getConfigTable());
-  JacksonConfigManager configManager=new JacksonConfigManager(lifecycle.addManagedInstance(new ConfigManager(dbi,managerConfig)),getJsonMapper());
+  JacksonConfigManager configManager=new JacksonConfigManager(getLifecycle().addManagedInstance(new ConfigManager(dbi,managerConfig)),getJsonMapper());
   initializeHttpClient();
   initializeEmitter();
   initializeMonitors();
   initializeIndexerCoordinatorConfig();
   initializeMergeDBCoordinator();
+  initializeJacksonSubtypes();
   initializeTaskStorage();
   initializeTaskLockbox();
   initializeTaskQueue();
-  initializeJacksonSubtypes();
-  initializeCurator();
   initializeIndexerZkConfig();
   initializeTaskActionClientFactory();
   initializeTaskRunnerFactory(configManager);
@@ -23,8 +22,8 @@
   initializeTaskLogProvider();
   initializeServer();
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
-  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
-  lifecycle.addManagedInstance(monitorScheduler);
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(getConfigFactory().build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  getLifecycle().addManagedInstance(monitorScheduler);
   final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),taskLogProvider,configManager));
   final Context staticContext=new Context(server,"/static",Context.SESSIONS);
   staticContext.addServlet(new ServletHolder(new DefaultServlet()),"/*");

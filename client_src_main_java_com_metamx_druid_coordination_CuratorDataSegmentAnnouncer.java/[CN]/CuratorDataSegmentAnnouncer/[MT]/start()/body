@@ -1,0 +1,16 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    try {
+      final String path=makeAnnouncementPath();
+      log.info("Announcing self[%s] at [%s]",server,path);
+      announcer.announce(path,jsonMapper.writeValueAsBytes(server));
+    }
+ catch (    JsonProcessingException e) {
+      throw Throwables.propagate(e);
+    }
+    started=true;
+  }
+}

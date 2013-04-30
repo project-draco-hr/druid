@@ -5,10 +5,9 @@
     if (!segmentInfoCacheFile.delete()) {
       log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
     }
-    yp.unannounce(servedSegmentsLocation,segment.getIdentifier());
+    announcer.unannounceSegment(segment);
   }
  catch (  Exception e) {
-    log.error(e,"Exception thrown when dropping segment[%s]",segment);
-    emitter.emit(new AlertEvent.Builder().build("Failed to remove segment",ImmutableMap.<String,Object>builder().put("segment",segment.toString()).put("exception",e.toString()).build()));
+    log.makeAlert("Failed to remove segment").addData("segment",segment).emit();
   }
 }

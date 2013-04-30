@@ -12,10 +12,47 @@ synchronized (lock) {
  else {
         return;
       }
-      submitExecutable();
+      zkWritingExecutor.execute(new Runnable(){
+        @Override public void run(){
+synchronized (lock) {
+            try {
+              if (currentlyLoading == null) {
+                log.makeAlert("Crazy race condition! server[%s]",basePath).emit();
+                actionCompleted();
+                doNext();
+                return;
+              }
+              log.info("Server[%s] adding segment[%s]",basePath,currentlyLoading.getSegmentIdentifier());
+              final String path=ZKPaths.makePath(basePath,currentlyLoading.getSegmentIdentifier());
+              final byte[] payload=jsonMapper.writeValueAsBytes(currentlyLoading.getChangeRequest());
+              curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,payload);
+              final Stat stat=curator.checkExists().usingWatcher(new CuratorWatcher(){
+                @Override public void process(                WatchedEvent watchedEvent) throws Exception {
+switch (watchedEvent.getType()) {
+case NodeDeleted:
+                    entryRemoved(watchedEvent.getPath());
+                }
+              }
+            }
+).forPath(path);
+            if (stat == null) {
+              final byte[] noopPayload=jsonMapper.writeValueAsBytes(new SegmentChangeRequestNoop());
+              curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,noopPayload);
+              entryRemoved(path);
+            }
+          }
+ catch (          Exception e) {
+            log.error(e,"Server[%s], throwable caught when submitting [%s].",basePath,currentlyLoading);
+            actionCompleted();
+            doNext();
+          }
+        }
+      }
     }
- else {
-      log.info("Server[%s] skipping doNext() because something is currently loading[%s].",basePath,currentlyLoading);
-    }
+);
   }
+ else {
+    log.info("Server[%s] skipping doNext() because something is currently loading[%s].",basePath,currentlyLoading);
+  }
+}
 }
