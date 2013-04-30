@@ -3,12 +3,9 @@
   this.dataSpec=dataSpec;
   this.dimensionExclusions=Sets.newHashSet();
   if (dimensionExclusions != null) {
-    this.dimensionExclusions.addAll(Lists.transform(dimensionExclusions,new Function<String,String>(){
-      @Override public String apply(      String s){
-        return s.toLowerCase();
-      }
+    for (    String dimensionExclusion : dimensionExclusions) {
+      this.dimensionExclusions.add(dimensionExclusion.toLowerCase());
     }
-));
   }
   this.dimensionExclusions.add(timestampSpec.getTimestampColumn());
   this.parser=new ToLowerCaseParser(dataSpec.getParser());
