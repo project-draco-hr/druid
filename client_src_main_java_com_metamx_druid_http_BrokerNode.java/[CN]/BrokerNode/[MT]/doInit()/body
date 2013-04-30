@@ -8,12 +8,12 @@
   monitors.add(new CacheMonitor(cache));
   startMonitoring(monitors);
   final ExecutorService viewExec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("BrokerServerView-%s").build());
-  final BrokerServerView view=new BrokerServerView(warehouse,getSmileMapper(),brokerHttpClient,getServerInventoryView(),viewExec);
+  final BrokerServerView view=new BrokerServerView(warehouse,getSmileMapper(),brokerHttpClient,getServerView(),viewExec);
   final CachingClusteredClient baseClient=new CachingClusteredClient(warehouse,view,cache,getSmileMapper());
   lifecycle.addManagedInstance(baseClient);
   final ClientQuerySegmentWalker texasRanger=new ClientQuerySegmentWalker(warehouse,getEmitter(),baseClient);
   List<Module> theModules=Lists.newArrayList();
-  theModules.add(new ClientServletModule(texasRanger,getServerInventoryView(),getJsonMapper()));
+  theModules.add(new ClientServletModule(texasRanger,getInventoryView(),getJsonMapper()));
   theModules.addAll(extraModules);
   final Injector injector=Guice.createInjector(theModules);
   final Context root=new Context(getServer(),"/",Context.SESSIONS);
