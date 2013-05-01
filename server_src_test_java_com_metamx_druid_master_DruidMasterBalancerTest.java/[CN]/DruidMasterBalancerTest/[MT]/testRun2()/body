@@ -29,10 +29,10 @@
   master.moveSegment(EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(master);
-  LoadQueuePeonTester peon1=new LoadQueuePeonTester(EasyMock.createMock(PhoneBook.class),"1",EasyMock.createMock(ScheduledExecutorService.class));
-  LoadQueuePeonTester peon2=new LoadQueuePeonTester(EasyMock.createMock(PhoneBook.class),"2",EasyMock.createMock(ScheduledExecutorService.class));
-  LoadQueuePeonTester peon3=new LoadQueuePeonTester(EasyMock.createMock(PhoneBook.class),"3",EasyMock.createMock(ScheduledExecutorService.class));
-  LoadQueuePeonTester peon4=new LoadQueuePeonTester(EasyMock.createMock(PhoneBook.class),"4",EasyMock.createMock(ScheduledExecutorService.class));
+  LoadQueuePeonTester peon1=new LoadQueuePeonTester();
+  LoadQueuePeonTester peon2=new LoadQueuePeonTester();
+  LoadQueuePeonTester peon3=new LoadQueuePeonTester();
+  LoadQueuePeonTester peon4=new LoadQueuePeonTester();
   DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancerTester.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,peon1),new ServerHolder(druidServer2,peon2),new ServerHolder(druidServer3,peon3),new ServerHolder(druidServer4,peon4)))))).withLoadManagementPeons(ImmutableMap.<String,LoadQueuePeon>of("1",peon1,"2",peon2,"3",peon3,"4",peon4)).withAvailableSegments(segments.values()).withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   params=new DruidMasterBalancerTester(master).run(params);
   Assert.assertTrue(params.getMasterStats().getPerTierStats().get("movedCount").get("normal").get() > 0);

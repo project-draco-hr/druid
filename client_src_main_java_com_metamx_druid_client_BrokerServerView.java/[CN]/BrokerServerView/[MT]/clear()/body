@@ -2,9 +2,7 @@
 synchronized (lock) {
     final Iterator<DruidServer> clientsIter=clients.keySet().iterator();
     while (clientsIter.hasNext()) {
-      DruidServer server=clientsIter.next();
       clientsIter.remove();
-      runServerCallbacks(server);
     }
     timelines.clear();
     final Iterator<ServerSelector> selectorsIter=selectors.values().iterator();
@@ -13,12 +11,6 @@ synchronized (lock) {
       selectorsIter.remove();
       while (!selector.isEmpty()) {
         final DruidServer pick=selector.pick();
-        runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
-          @Override public CallbackAction apply(          @Nullable SegmentCallback input){
-            return input.segmentRemoved(pick,selector.getSegment());
-          }
-        }
-);
         selector.removeServer(pick);
       }
     }

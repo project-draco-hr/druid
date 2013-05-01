@@ -1,0 +1,21 @@
+{
+  final Path path=getPath(segment);
+  final FileSystem fs=checkPathAndGetFilesystem(path);
+  FSDataInputStream in=null;
+  try {
+    if (path.getName().endsWith(".zip")) {
+      in=fs.open(path);
+      CompressionUtils.unzip(in,dir);
+      in.close();
+    }
+ else {
+      throw new SegmentLoadingException("Unknown file type[%s]",path);
+    }
+  }
+ catch (  IOException e) {
+    throw new SegmentLoadingException(e,"Some IOException");
+  }
+ finally {
+    Closeables.closeQuietly(in);
+  }
+}

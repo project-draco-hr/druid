@@ -1,0 +1,9 @@
+{
+  try {
+    final LeaderLatch latch=leaderLatch.get();
+    return latch == null ? null : latch.getLeader().getId();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

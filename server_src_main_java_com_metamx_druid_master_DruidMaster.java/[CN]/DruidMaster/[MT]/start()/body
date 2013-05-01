@@ -4,10 +4,12 @@ synchronized (lock) {
       return;
     }
     started=true;
-    if (!yp.isStarted()) {
-      throw new ISE("Master cannot perform without his yellow pages.");
+    createNewLeaderLatch();
+    try {
+      leaderLatch.get().start();
     }
-    becomeMaster();
-    yp.registerListener(config.getBasePath(),masterPeon);
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
   }
 }

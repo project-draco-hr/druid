@@ -4,14 +4,7 @@
   RealtimeNode rn=RealtimeNode.builder().build();
   lifecycle.addManagedInstance(rn);
   rn.registerJacksonSubtype(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"));
-  PhoneBook dummyPhoneBook=new ZKPhoneBook(new DefaultObjectMapper(),null,null){
-    @Override public boolean isStarted(){
-      return true;
-    }
-  }
-;
-  rn.setPhoneBook(dummyPhoneBook);
-  final SegmentAnnouncer dummySegmentAnnouncer=new SegmentAnnouncer(){
+  final DataSegmentAnnouncer dummySegmentAnnouncer=new DataSegmentAnnouncer(){
     @Override public void announceSegment(    DataSegment segment) throws IOException {
     }
     @Override public void unannounceSegment(    DataSegment segment) throws IOException {
@@ -23,8 +16,8 @@
     }
   }
 ;
-  rn.setSegmentAnnouncer(dummySegmentAnnouncer);
   rn.setSegmentPublisher(dummySegmentPublisher);
+  rn.setAnnouncer(dummySegmentAnnouncer);
   rn.setDataSegmentPusher(new DataSegmentPusher(){
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
