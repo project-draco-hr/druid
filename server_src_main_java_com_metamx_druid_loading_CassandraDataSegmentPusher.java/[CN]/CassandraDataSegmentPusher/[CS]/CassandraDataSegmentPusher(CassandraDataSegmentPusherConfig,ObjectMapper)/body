@@ -1,0 +1,9 @@
+{
+  this.config=config;
+  this.jsonMapper=jsonMapper;
+  this.keyspace=this.config.getKeyspace();
+  this.table=this.config.getTable();
+  cluster=Cluster.builder().addContactPoints(this.config.getHost()).build();
+  session=cluster.connect();
+  session.execute("USE " + keyspace);
+}
