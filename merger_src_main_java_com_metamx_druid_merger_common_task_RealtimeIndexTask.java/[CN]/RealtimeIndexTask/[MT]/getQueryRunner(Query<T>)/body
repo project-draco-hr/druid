@@ -1,6 +1,8 @@
 {
   if (plumber != null) {
-    return plumber.getQueryRunner(query);
+    QueryRunnerFactory<T,Query<T>> factory=toolbox.getQueryRunnerFactoryConglomerate().findFactory(query);
+    QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
+    return new FinalizeResultsQueryRunner<T>(plumber.getQueryRunner(query),toolChest);
   }
  else {
     return null;
