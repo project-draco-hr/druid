@@ -2,25 +2,14 @@
   druidServer=EasyMock.createMock(DruidServer.class);
   segment=EasyMock.createNiceMock(DataSegment.class);
   loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
-  loadManagementPeons=EasyMock.createMock(Map.class);
-  serverInventoryManager=EasyMock.createMock(ServerInventoryManager.class);
-  yp=EasyMock.createNiceMock(ZKPhoneBook.class);
-  EasyMock.replay(yp);
+  loadManagementPeons=new MapMaker().makeMap();
+  serverInventoryView=EasyMock.createMock(ServerInventoryView.class);
   databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
   scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
   EasyMock.replay(scheduledExecutorFactory);
   master=new DruidMaster(new DruidMasterConfig(){
     @Override public String getHost(){
-      return null;
-    }
-    @Override public String getBasePath(){
-      return null;
-    }
-    @Override public String getLoadQueuePath(){
-      return null;
-    }
-    @Override public String getServedSegmentsLocation(){
       return null;
     }
     @Override public Duration getMasterStartDelay(){
@@ -48,5 +37,10 @@
       return 0;
     }
   }
-,null,null,databaseSegmentManager,serverInventoryManager,null,yp,new NoopServiceEmitter(),scheduledExecutorFactory,loadManagementPeons,null);
+,new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return "";
+    }
+  }
+,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,loadManagementPeons);
 }

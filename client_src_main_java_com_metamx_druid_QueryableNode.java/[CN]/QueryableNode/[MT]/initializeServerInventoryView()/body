@@ -1,0 +1,7 @@
+{
+  if (serverInventoryView == null) {
+    final ExecutorService exec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ServerInventoryView-%s").build());
+    serverInventoryView=new ServerInventoryView(getConfigFactory().build(ServerInventoryViewConfig.class),getZkPaths(),getCuratorFramework(),exec,getJsonMapper());
+    lifecycle.addManagedInstance(serverInventoryView);
+  }
+}

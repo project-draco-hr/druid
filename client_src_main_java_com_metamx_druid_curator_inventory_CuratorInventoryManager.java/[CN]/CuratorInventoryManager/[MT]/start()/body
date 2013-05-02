@@ -1,0 +1,23 @@
+{
+synchronized (lock) {
+    if (childrenCache != null) {
+      return;
+    }
+    childrenCache=cacheFactory.make(curatorFramework,config.getContainerPath());
+  }
+  childrenCache.getListenable().addListener(new ContainerCacheListener());
+  try {
+    childrenCache.start();
+  }
+ catch (  Exception e) {
+synchronized (lock) {
+      try {
+        stop();
+      }
+ catch (      IOException e1) {
+        log.error(e1,"Exception when stopping InventoryManager that couldn't start.");
+      }
+    }
+    throw e;
+  }
+}

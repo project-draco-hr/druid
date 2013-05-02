@@ -1,0 +1,28 @@
+{
+  LogLevelAdjuster.register();
+  final Lifecycle lifecycle=new Lifecycle();
+  RealtimeNode rn=RealtimeNode.builder().build();
+  lifecycle.addManagedInstance(rn);
+  rn.registerJacksonSubtype(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"),new NamedType(FlightsFirehoseFactory.class,"flights"),new NamedType(RandomFirehoseFactory.class,"rand"));
+  rn.setSegmentPublisher(new NoopSegmentPublisher());
+  rn.setAnnouncer(new NoopDataSegmentAnnouncer());
+  rn.setDataSegmentPusher(new NoopDataSegmentPusher());
+  rn.setServerView(new NoopServerView());
+  rn.setInventoryView(new NoopInventoryView());
+  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+    @Override public void run(){
+      log.info("Running shutdown hook");
+      lifecycle.stop();
+    }
+  }
+));
+  try {
+    lifecycle.start();
+  }
+ catch (  Throwable t) {
+    log.info(t,"Throwable caught at startup, committing seppuku");
+    t.printStackTrace();
+    System.exit(2);
+  }
+  lifecycle.join();
+}

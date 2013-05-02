@@ -17,7 +17,7 @@ synchronized (lock) {
   }
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
-  final SegmentAnnouncer lockingSegmentAnnouncer=new SegmentAnnouncer(){
+  final DataSegmentAnnouncer lockingSegmentAnnouncer=new DataSegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {
       toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
       toolbox.getSegmentAnnouncer().announceSegment(segment);
@@ -51,6 +51,7 @@ synchronized (lock) {
   realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
   realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
   realtimePlumberSchool.setServiceEmitter(toolbox.getEmitter());
+  this.toolbox=toolbox;
   this.plumber=realtimePlumberSchool.findPlumber(schema,metrics);
   try {
     plumber.startJob();

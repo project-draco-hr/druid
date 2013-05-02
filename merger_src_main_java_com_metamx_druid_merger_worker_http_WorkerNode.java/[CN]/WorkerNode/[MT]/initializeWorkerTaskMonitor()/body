@@ -1,8 +1,9 @@
 {
   if (workerTaskMonitor == null) {
     final ExecutorService workerExec=Executors.newFixedThreadPool(workerConfig.getNumThreads());
+    final CuratorFramework curatorFramework=getCuratorFramework();
     final PathChildrenCache pathChildrenCache=new PathChildrenCache(curatorFramework,workerCuratorCoordinator.getTaskPathForWorker(),false);
     workerTaskMonitor=new WorkerTaskMonitor(getJsonMapper(),pathChildrenCache,curatorFramework,workerCuratorCoordinator,forkingTaskRunner,workerExec);
-    lifecycle.addManagedInstance(workerTaskMonitor);
+    getLifecycle().addManagedInstance(workerTaskMonitor);
   }
 }

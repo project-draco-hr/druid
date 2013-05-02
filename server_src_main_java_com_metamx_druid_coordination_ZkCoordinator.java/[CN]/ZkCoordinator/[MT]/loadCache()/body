@@ -19,8 +19,7 @@
       }
     }
  catch (    Exception e) {
-      log.error(e,"Exception occurred reading file [%s]",file);
-      emitter.emit(new AlertEvent.Builder().build("Failed to read segment info file",ImmutableMap.<String,Object>builder().put("file",file).put("exception",e.toString()).build()));
+      log.makeAlert(e,"Failed to load segment from segmentInfo file").addData("file",file).emit();
     }
   }
 }

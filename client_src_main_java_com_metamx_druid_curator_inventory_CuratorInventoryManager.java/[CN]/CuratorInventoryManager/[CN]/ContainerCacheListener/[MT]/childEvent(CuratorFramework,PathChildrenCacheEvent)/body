@@ -1,0 +1,43 @@
+{
+  final ChildData child=event.getData();
+  if (child == null) {
+    return;
+  }
+  final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
+  final ContainerClass container;
+switch (event.getType()) {
+case CHILD_ADDED:
+    container=strategy.deserializeContainer(child.getData());
+  if (containers.containsKey(containerKey)) {
+    log.error("New node[%s] but there was already one.  That's not good, ignoring new one.",child.getPath());
+  }
+final String inventoryPath=String.format("%s/%s",config.getInventoryPath(),containerKey);
+PathChildrenCache inventoryCache=cacheFactory.make(curatorFramework,inventoryPath);
+inventoryCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
+containers.put(containerKey,new ContainerHolder(container,inventoryCache));
+inventoryCache.start();
+strategy.newContainer(container);
+break;
+case CHILD_REMOVED:
+final ContainerHolder removed=containers.remove(containerKey);
+if (removed == null) {
+log.warn("Container[%s] removed that wasn't a container!?",child.getPath());
+break;
+}
+removed.getCache().close();
+strategy.deadContainer(removed.getContainer());
+break;
+case CHILD_UPDATED:
+container=strategy.deserializeContainer(child.getData());
+ContainerHolder oldContainer=containers.get(containerKey);
+if (oldContainer == null) {
+log.warn("Container update[%s], but the old container didn't exist!?  Ignoring.",child.getPath());
+}
+ else {
+synchronized (oldContainer) {
+oldContainer.setContainer(strategy.updateContainer(oldContainer.getContainer(),container));
+}
+}
+break;
+}
+}

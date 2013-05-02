@@ -6,7 +6,7 @@
         final AtomicReference<WorkerSetupData> workerSetupData=configManager.watch(WorkerSetupData.CONFIG_KEY,WorkerSetupData.class);
         AutoScalingStrategy strategy;
         if (config.getStrategyImpl().equalsIgnoreCase("ec2")) {
-          strategy=new EC2AutoScalingStrategy(getJsonMapper(),new AmazonEC2Client(new BasicAWSCredentials(PropUtils.getProperty(props,"com.metamx.aws.accessKey"),PropUtils.getProperty(props,"com.metamx.aws.secretKey"))),configFactory.build(EC2AutoScalingStrategyConfig.class),workerSetupData);
+          strategy=new EC2AutoScalingStrategy(getJsonMapper(),new AmazonEC2Client(new BasicAWSCredentials(PropUtils.getProperty(getProps(),"com.metamx.aws.accessKey"),PropUtils.getProperty(getProps(),"com.metamx.aws.secretKey"))),getConfigFactory().build(EC2AutoScalingStrategyConfig.class),workerSetupData);
         }
  else         if (config.getStrategyImpl().equalsIgnoreCase("noop")) {
           strategy=new NoopAutoScalingStrategy();
@@ -14,7 +14,7 @@
  else {
           throw new ISE("Invalid strategy implementation: %s",config.getStrategyImpl());
         }
-        return new ResourceManagementScheduler(runner,new SimpleResourceManagementStrategy(strategy,configFactory.build(SimpleResourceManagmentConfig.class),workerSetupData),configFactory.build(ResourceManagementSchedulerConfig.class),scalingScheduledExec);
+        return new ResourceManagementScheduler(runner,new SimpleResourceManagementStrategy(strategy,getConfigFactory().build(SimpleResourceManagmentConfig.class),workerSetupData),getConfigFactory().build(ResourceManagementSchedulerConfig.class),scalingScheduledExec);
       }
     }
 ;

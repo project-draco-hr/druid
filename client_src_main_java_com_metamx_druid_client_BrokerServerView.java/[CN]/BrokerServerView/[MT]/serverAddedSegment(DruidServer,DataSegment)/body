@@ -1,7 +1,7 @@
 {
   String segmentId=segment.getIdentifier();
 synchronized (lock) {
-    log.info("Adding segment[%s] for server[%s]",segment,server);
+    log.debug("Adding segment[%s] for server[%s]",segment,server);
     ServerSelector selector=selectors.get(segmentId);
     if (selector == null) {
       selector=new ServerSelector(segment);
@@ -13,12 +13,9 @@ synchronized (lock) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(selector));
       selectors.put(segmentId,selector);
     }
-    selector.addServer(server);
-    runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
-      @Override public CallbackAction apply(      @Nullable SegmentCallback input){
-        return input.segmentAdded(server,segment);
-      }
+    if (!clients.containsKey(server)) {
+      addServer(server);
     }
-);
+    selector.addServer(server);
   }
 }

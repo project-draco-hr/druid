@@ -2,11 +2,10 @@
   this.timestampSpec=timestampSpec;
   this.dataSpec=dataSpec;
   this.dimensionExclusions=Sets.newHashSet();
-  Iterables.addAll(this.dimensionExclusions,Iterables.transform(dimensionExclusions == null ? Sets.<String>newHashSet() : Sets.newHashSet(dimensionExclusions),new Function<String,String>(){
-    @Override public String apply(    String s){
-      return s.toLowerCase();
+  if (dimensionExclusions != null) {
+    for (    String dimensionExclusion : dimensionExclusions) {
+      this.dimensionExclusions.add(dimensionExclusion.toLowerCase());
     }
   }
-));
   this.dimensionExclusions.add(timestampSpec.getTimestampColumn().toLowerCase());
 }

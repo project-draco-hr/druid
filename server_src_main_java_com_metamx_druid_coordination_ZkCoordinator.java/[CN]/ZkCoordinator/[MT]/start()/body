@@ -1,48 +1,53 @@
 {
-  log.info("Starting zkCoordinator for server[%s] with config[%s]",me,config);
+  log.info("Starting zkCoordinator for server[%s]",me);
 synchronized (lock) {
     if (started) {
       return;
     }
-    if (yp.lookup(loadQueueLocation,Object.class) == null) {
-      yp.post(config.getLoadQueueLocation(),me.getName(),ImmutableMap.of("created",new DateTime().toString()));
-    }
-    if (yp.lookup(servedSegmentsLocation,Object.class) == null) {
-      yp.post(config.getServedSegmentsLocation(),me.getName(),ImmutableMap.of("created",new DateTime().toString()));
-    }
-    loadCache();
-    yp.announce(config.getAnnounceLocation(),me.getName(),me.getStringProps());
-    peons.add(new Pair<String,PhoneBookPeon<?>>(loadQueueLocation,new PhoneBookPeon<DataSegmentChangeRequest>(){
-      @Override public Class<DataSegmentChangeRequest> getObjectClazz(){
-        return DataSegmentChangeRequest.class;
+    loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ZkCoordinator-%s").build());
+    try {
+      config.getSegmentInfoCacheDirectory().mkdirs();
+      curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
+      curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
+      loadCache();
+      loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
+        @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {
+          final ChildData child=event.getData();
+switch (event.getType()) {
+case CHILD_ADDED:
+            final String path=child.getPath();
+          final DataSegmentChangeRequest segment=jsonMapper.readValue(child.getData(),DataSegmentChangeRequest.class);
+        log.info("New node[%s] with segmentClass[%s]",path,segment.getClass());
+      try {
+        segment.go(ZkCoordinator.this);
+        curator.delete().guaranteed().forPath(path);
+        log.info("Completed processing for node[%s]",path);
       }
-      @Override public void newEntry(      String nodeName,      DataSegmentChangeRequest segment){
-        log.info("New node[%s] with segmentClass[%s]",nodeName,segment.getClass());
+ catch (      Exception e) {
         try {
-          segment.go(ZkCoordinator.this);
-          yp.unpost(loadQueueLocation,nodeName);
-          log.info("Completed processing for node[%s]",nodeName);
+          curator.delete().guaranteed().forPath(path);
         }
- catch (        Throwable t) {
-          yp.unpost(loadQueueLocation,nodeName);
-          log.error(t,"Uncaught throwable made it through loading.  Node[%s/%s]",loadQueueLocation,nodeName);
-          Map<String,Object> exceptionMap=Maps.newHashMap();
-          exceptionMap.put("node",loadQueueLocation);
-          exceptionMap.put("nodeName",nodeName);
-          exceptionMap.put("nodeProperties",segment.toString());
-          exceptionMap.put("exception",t.getMessage());
-          emitter.emit(new AlertEvent.Builder().build("Uncaught exception related to segment load/unload",exceptionMap));
-          throw Throwables.propagate(t);
+ catch (        Exception e1) {
+          log.info(e1,"Failed to delete node[%s], but ignoring exception.",path);
         }
+        log.makeAlert(e,"Segment load/unload: uncaught exception.").addData("node",path).addData("nodeProperties",segment).emit();
       }
-      @Override public void entryRemoved(      String name){
-        log.info("%s was removed",name);
-      }
-    }
-));
-    for (    Pair<String,PhoneBookPeon<?>> peon : peons) {
-      yp.registerListener(peon.lhs,peon.rhs);
-    }
-    started=true;
-  }
+    break;
+case CHILD_REMOVED:
+  log.info("%s was removed",event.getData().getPath());
+break;
+default :
+log.info("Ignoring event[%s]",event);
+}
+}
+}
+);
+loadQueueCache.start();
+}
+ catch (Exception e) {
+Throwables.propagateIfPossible(e,IOException.class);
+throw Throwables.propagate(e);
+}
+started=true;
+}
 }

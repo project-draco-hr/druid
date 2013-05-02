@@ -3,7 +3,6 @@
   initializeEmitter();
   initializeMonitors();
   initializeMergerConfig();
-  initializeCuratorFramework();
   initializeServiceDiscovery();
   initializeCoordinatorServiceProvider();
   initializeJacksonInjections();
@@ -13,10 +12,10 @@
   initializeTaskRunner();
   initializeWorkerTaskMonitor();
   initializeServer();
-  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(getLifecycle());
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
-  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
-  lifecycle.addManagedInstance(monitorScheduler);
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(getConfigFactory().build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  getLifecycle().addManagedInstance(monitorScheduler);
   final Injector injector=Guice.createInjector(new WorkerServletModule(getJsonMapper(),emitter,forkingTaskRunner));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");

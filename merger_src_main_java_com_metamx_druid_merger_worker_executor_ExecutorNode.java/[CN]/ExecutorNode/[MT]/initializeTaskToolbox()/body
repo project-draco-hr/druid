@@ -1,8 +1,6 @@
 {
   if (taskToolboxFactory == null) {
     final DataSegmentKiller dataSegmentKiller=new S3DataSegmentKiller(s3Service);
-    final SegmentAnnouncer segmentAnnouncer=new ZkSegmentAnnouncer(configFactory.build(ZkSegmentAnnouncerConfig.class),getPhoneBook());
-    lifecycle.addManagedInstance(segmentAnnouncer);
-    taskToolboxFactory=new TaskToolboxFactory(taskConfig,new RemoteTaskActionClientFactory(httpClient,coordinatorServiceProvider,new RetryPolicyFactory(configFactory.buildWithReplacements(RetryPolicyConfig.class,ImmutableMap.of("base_path","druid.worker.taskActionClient"))),getJsonMapper()),emitter,s3Service,segmentPusher,dataSegmentKiller,segmentAnnouncer,newSegmentServerView,getConglomerate(),getJsonMapper());
+    taskToolboxFactory=new TaskToolboxFactory(taskConfig,new RemoteTaskActionClientFactory(httpClient,coordinatorServiceProvider,new RetryPolicyFactory(configFactory.buildWithReplacements(RetryPolicyConfig.class,ImmutableMap.of("base_path","druid.worker.taskActionClient"))),getJsonMapper()),emitter,s3Service,segmentPusher,dataSegmentKiller,getAnnouncer(),getServerView(),getConglomerate(),getJsonMapper());
   }
 }
