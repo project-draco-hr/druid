@@ -1,5 +1,14 @@
 {
   if (eventReceiverProvider == null) {
-    this.eventReceiverProvider=new EventReceiverProvider(configFactory.build(EventReceiverProviderConfig.class),serviceDiscovery);
+    final EventReceiverProviderConfig config=configFactory.build(EventReceiverProviderConfig.class);
+    final ServiceAnnouncer myServiceAnnouncer;
+    if (config.getServiceFormat() == null) {
+      log.info("EventReceiverProvider: Using NoopServiceAnnouncer. Good luck finding your firehoses!");
+      myServiceAnnouncer=new NoopServiceAnnouncer();
+    }
+ else {
+      myServiceAnnouncer=serviceAnnouncer;
+    }
+    this.eventReceiverProvider=new EventReceiverProvider(config,myServiceAnnouncer);
   }
 }

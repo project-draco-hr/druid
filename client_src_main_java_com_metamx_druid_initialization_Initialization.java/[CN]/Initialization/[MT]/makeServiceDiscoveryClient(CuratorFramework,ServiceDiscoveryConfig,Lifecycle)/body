@@ -1,6 +1,5 @@
 {
-  final ServiceInstance serviceInstance=serviceInstance(config.getServiceName(),config.getHost(),config.getPort());
-  final ServiceDiscovery serviceDiscovery=ServiceDiscoveryBuilder.builder(Void.class).basePath(config.getDiscoveryPath()).client(discoveryClient).thisInstance(serviceInstance).build();
+  final ServiceDiscovery serviceDiscovery=ServiceDiscoveryBuilder.builder(Void.class).basePath(config.getDiscoveryPath()).client(discoveryClient).build();
   lifecycle.addHandler(new Lifecycle.Handler(){
     @Override public void start() throws Exception {
       serviceDiscovery.start();
