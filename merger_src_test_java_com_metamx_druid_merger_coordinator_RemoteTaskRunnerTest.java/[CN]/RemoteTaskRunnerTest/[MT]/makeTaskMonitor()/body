@@ -1,13 +1,16 @@
 {
   WorkerCuratorCoordinator workerCuratorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig(){
-    @Override public String getAnnouncementPath(){
+    @Override public String getIndexerAnnouncementPath(){
       return announcementsPath;
     }
-    @Override public String getTaskPath(){
+    @Override public String getIndexerTaskPath(){
       return tasksPath;
     }
-    @Override public String getStatusPath(){
+    @Override public String getIndexerStatusPath(){
       return statusPath;
+    }
+    @Override public String getZkBasePath(){
+      throw new UnsupportedOperationException();
     }
     @Override public long getMaxNumBytes(){
       return 1000;

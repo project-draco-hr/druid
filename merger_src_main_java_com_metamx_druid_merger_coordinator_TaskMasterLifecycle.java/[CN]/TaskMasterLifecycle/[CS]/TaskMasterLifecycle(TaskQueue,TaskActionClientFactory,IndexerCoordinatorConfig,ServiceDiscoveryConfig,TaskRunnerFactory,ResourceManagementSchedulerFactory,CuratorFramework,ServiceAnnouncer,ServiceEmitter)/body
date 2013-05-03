@@ -1,7 +1,7 @@
 {
   this.taskQueue=taskQueue;
   this.taskActionClientFactory=taskActionClientFactory;
-  this.leaderSelector=new LeaderSelector(curator,indexerCoordinatorConfig.getLeaderLatchPath(),new LeaderSelectorListener(){
+  this.leaderSelector=new LeaderSelector(curator,indexerCoordinatorConfig.getIndexerLeaderLatchPath(),new LeaderSelectorListener(){
     @Override public void takeLeadership(    CuratorFramework client) throws Exception {
       giant.lock();
       try {
