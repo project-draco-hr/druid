@@ -10,7 +10,7 @@
   }
   Map<String,VSizeIndexed> dimColumns=Maps.newHashMap();
   Map<String,GenericIndexed<ImmutableConciseSet>> invertedIndexes=Maps.newLinkedHashMap();
-  Map<String,GenericIndexed<ImmutableRTree>> spatialIndexes=Maps.newLinkedHashMap();
+  Map<String,ImmutableRTree> spatialIndexes=Maps.newLinkedHashMap();
   for (  String dimension : Arrays.asList(index.dimensions)) {
     final String[] dimVals=index.reverseDimLookup.get(dimension);
     final DimensionColumn dimColumn=index.dimensionValues.get(dimension);
@@ -47,7 +47,7 @@
       }
     }
 ),ConciseCompressedIndexedInts.objectStrategy));
-    spatialIndexes.put(dimension,GenericIndexed.fromIterable(Arrays.asList(index.getSpatialIndex(dimension)),IndexedRTree.objectStrategy));
+    spatialIndexes.put(dimension,index.getSpatialIndex(dimension));
   }
   log.info("Making MMappedIndex");
   return new MMappedIndex(GenericIndexed.fromArray(index.dimensions,GenericIndexed.stringStrategy),GenericIndexed.fromArray(index.metrics,GenericIndexed.stringStrategy),index.dataInterval,timestamps,index.metricVals,dimValueLookups,dimColumns,invertedIndexes,spatialIndexes);

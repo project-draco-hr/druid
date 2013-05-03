@@ -31,7 +31,7 @@
   Map<String,GenericIndexed<String>> dimValueLookups=Maps.newHashMap();
   Map<String,VSizeIndexed> dimColumns=Maps.newHashMap();
   Map<String,GenericIndexed<ImmutableConciseSet>> invertedIndexed=Maps.newHashMap();
-  Map<String,GenericIndexed<ImmutableRTree>> spatialIndexed=Maps.newHashMap();
+  Map<String,ImmutableRTree> spatialIndexed=Maps.newHashMap();
   for (  String dimension : IndexedIterable.create(availableDimensions)) {
     ByteBuffer dimBuffer=smooshedFiles.mapFile(makeDimFile(inDir,dimension).getName());
     String fileDimensionName=serializerUtils.readString(dimBuffer);
@@ -44,10 +44,8 @@
     invertedIndexed.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
   }
   ByteBuffer spatialBuffer=smooshedFiles.mapFile("spatial.drd");
-  if (spatialBuffer != null) {
-    for (    String dimension : IndexedIterable.create(availableDimensions)) {
-      spatialIndexed.put(serializerUtils.readString(spatialBuffer),GenericIndexed.read(spatialBuffer,IndexedRTree.objectStrategy));
-    }
+  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
+    spatialIndexed.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,IndexedRTree.objectStrategy));
   }
   final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimColumns,invertedIndexed,spatialIndexed);
   log.debug("Mapped v8 index[%s] in %,d millis",inDir,System.currentTimeMillis() - startTime);

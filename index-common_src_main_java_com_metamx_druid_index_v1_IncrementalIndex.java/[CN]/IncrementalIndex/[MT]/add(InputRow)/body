@@ -1,4 +1,5 @@
 {
+  row=spatialDimensionRowFormatter.formatRow(row);
   if (row.getTimestampFromEpoch() < minTimestamp) {
     throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
   }
@@ -8,9 +9,6 @@
   for (  String dimension : rowDimensions) {
     dimension=dimension.toLowerCase();
     List<String> dimensionValues=row.getDimension(dimension);
-    if (dimension.endsWith(".geo")) {
-      dimensionValues=Arrays.asList(JOINER.join(dimensionValues));
-    }
     final Integer index=dimensionOrder.get(dimension);
     if (index == null) {
       dimensionOrder.put(dimension,dimensionOrder.size());

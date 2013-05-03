@@ -8,5 +8,7 @@
     multiValuedColumn.writeToChannel(channel);
   }
   bitmaps.writeToChannel(channel);
-  spatialIndex.writeToChannel(channel);
+  if (spatialIndex != null) {
+    ByteBufferSerializer.writeToChannel(spatialIndex,IndexedRTree.objectStrategy,channel);
+  }
 }

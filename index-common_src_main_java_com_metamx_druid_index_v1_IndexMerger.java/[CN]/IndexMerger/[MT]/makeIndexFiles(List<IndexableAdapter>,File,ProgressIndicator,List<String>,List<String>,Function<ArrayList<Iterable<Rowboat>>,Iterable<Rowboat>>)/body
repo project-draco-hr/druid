@@ -46,7 +46,7 @@
     dimConversions.add(Maps.<String,IntBuffer>newHashMap());
   }
   for (  String dimension : mergedDimensions) {
-    final FlattenedArrayWriter<String> writer=new FlattenedArrayWriter<String>(ioPeon,dimension,GenericIndexed.stringStrategy);
+    final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.stringStrategy);
     writer.open();
     List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size());
     DimValueConverter[] converters=new DimValueConverter[indexes.size()];
@@ -223,7 +223,7 @@
     }
     Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.stringStrategy);
     log.info("Starting dimension[%s] with cardinality[%,d]",dimension,dimVals.size());
-    FlattenedArrayWriter<ImmutableConciseSet> writer=new FlattenedArrayWriter<ImmutableConciseSet>(ioPeon,dimension,ConciseCompressedIndexedInts.objectStrategy);
+    GenericIndexedWriter<ImmutableConciseSet> writer=new GenericIndexedWriter<ImmutableConciseSet>(ioPeon,dimension,ConciseCompressedIndexedInts.objectStrategy);
     writer.open();
     for (    String dimVal : IndexedIterable.create(dimVals)) {
       progress.progress();
@@ -252,6 +252,9 @@
   out=Files.newOutputStreamSupplier(geoFile,true);
   for (int i=0; i < mergedDimensions.size(); ++i) {
     String dimension=mergedDimensions.get(i);
+    if (!dimension.endsWith(".geo")) {
+      continue;
+    }
     File dimOutFile=dimOuts.get(i).getFile();
     final MappedByteBuffer dimValsMapped=Files.map(dimOutFile);
     if (!dimension.equals(serializerUtils.readString(dimValsMapped))) {
@@ -259,21 +262,19 @@
     }
     Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.stringStrategy);
     log.info("Indexing geo dimension[%s] with cardinality[%,d]",dimension,dimVals.size());
-    FlattenedArrayWriter<ImmutableRTree> writer=new FlattenedArrayWriter<ImmutableRTree>(ioPeon,dimension,IndexedRTree.objectStrategy);
+    ByteBufferWriter<ImmutableRTree> writer=new ByteBufferWriter<ImmutableRTree>(ioPeon,dimension,IndexedRTree.objectStrategy);
     writer.open();
     RTree tree=new RTree(2,new LinearGutmanSplitStrategy(0,50));
-    if (dimension.endsWith(".geo")) {
-      int count=0;
-      for (      String dimVal : IndexedIterable.create(dimVals)) {
-        progress.progress();
-        List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
-        float[] coords=new float[stringCoords.size()];
-        for (int j=0; j < coords.length; j++) {
-          coords[j]=Float.valueOf(stringCoords.get(j));
-        }
-        tree.insert(coords,count);
-        count++;
+    int count=0;
+    for (    String dimVal : IndexedIterable.create(dimVals)) {
+      progress.progress();
+      List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
+      float[] coords=new float[stringCoords.size()];
+      for (int j=0; j < coords.length; j++) {
+        coords[j]=Float.valueOf(stringCoords.get(j));
       }
+      tree.insert(coords,count);
+      count++;
     }
     writer.write(ImmutableRTree.newImmutableFromMutable(tree));
     writer.close();
