@@ -1,0 +1,15 @@
+{
+  Preconditions.checkNotNull(obj,"Cannot build an OrderByColumnSpec from a null object.");
+  if (obj instanceof String) {
+    return new OrderByColumnSpec(obj.toString(),null);
+  }
+ else   if (obj instanceof Map) {
+    final Map map=(Map)obj;
+    final String dimension=map.get("dimension").toString();
+    final Direction direction=determineDirection(map.get("direction"));
+    return new OrderByColumnSpec(dimension,direction);
+  }
+ else {
+    throw new ISE("Cannot build an OrderByColumnSpec from a %s",obj.getClass());
+  }
+}

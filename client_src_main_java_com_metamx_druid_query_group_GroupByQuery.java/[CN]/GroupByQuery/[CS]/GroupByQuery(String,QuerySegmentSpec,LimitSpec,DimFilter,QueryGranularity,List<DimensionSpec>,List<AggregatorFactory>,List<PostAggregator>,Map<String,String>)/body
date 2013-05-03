@@ -9,4 +9,5 @@
   Preconditions.checkNotNull(this.granularity,"Must specify a granularity");
   Preconditions.checkNotNull(this.aggregatorSpecs,"Must specify at least one aggregator");
   Queries.verifyAggregations(this.aggregatorSpecs,this.postAggregatorSpecs);
+  orderByLimitFn=this.limitSpec.build(this.dimensions,this.aggregatorSpecs,this.postAggregatorSpecs);
 }
