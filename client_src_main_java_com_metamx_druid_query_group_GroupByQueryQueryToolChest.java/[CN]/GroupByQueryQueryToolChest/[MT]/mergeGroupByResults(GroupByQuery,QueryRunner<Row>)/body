@@ -31,7 +31,7 @@
   }
 );
   if (!query.getLimitSpec().getOrderBy().isEmpty()) {
-    retVal=Sequences.sort(retVal,makeComparator(query));
+    retVal=Sequences.sort(retVal,query.getLimitSpec().getComparator());
   }
   return Sequences.limit(retVal,(query.getLimitSpec().getLimit() > 0) ? query.getLimitSpec().getLimit() : maxRows);
 }
