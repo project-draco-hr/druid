@@ -1,0 +1,30 @@
+{
+  Ordering<Row> ordering=new Ordering<Row>(){
+    @Override public int compare(    Row left,    Row right){
+      return Longs.compare(left.getTimestampFromEpoch(),right.getTimestampFromEpoch());
+    }
+  }
+;
+  for (  final String dimension : orderBy) {
+    ordering=ordering.compound(new Comparator<Row>(){
+      @Override public int compare(      Row left,      Row right){
+        if (left instanceof MapBasedRow && right instanceof MapBasedRow) {
+          String leftDimVal=left.getDimension(dimension).get(0);
+          String rightDimVal=right.getDimension(dimension).get(0);
+          return leftDimVal.compareTo(rightDimVal);
+        }
+ else {
+          throw new ISE("Unknown type for rows[%s, %s]",left.getClass(),right.getClass());
+        }
+      }
+    }
+);
+  }
+  final Ordering<Row> theOrdering=ordering;
+  return new Comparator<Row>(){
+    @Override public int compare(    Row row,    Row row2){
+      return theOrdering.compare(row,row2);
+    }
+  }
+;
+}
