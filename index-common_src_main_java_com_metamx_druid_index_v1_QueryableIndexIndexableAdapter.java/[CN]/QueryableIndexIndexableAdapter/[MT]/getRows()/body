@@ -73,7 +73,13 @@ for (int i=0; i < metricArray.length; ++i) {
     metricArray[i]=((ComplexColumn)metrics[i]).getRowValue(currRow);
   }
 }
-final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow);
+Map<String,String> descriptions=Maps.newHashMap();
+for (String columnName : input.getColumnNames()) {
+  if (input.getColumn(columnName).getSpatialIndex() != null) {
+    descriptions.put(columnName,"spatial");
+  }
+}
+final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow,descriptions);
 ++currRow;
 return retVal;
 }

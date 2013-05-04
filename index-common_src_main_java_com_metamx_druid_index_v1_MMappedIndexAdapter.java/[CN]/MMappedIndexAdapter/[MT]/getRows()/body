@@ -59,7 +59,11 @@ case COMPLEX:
           metricArray[i]=metrics[i].getComplexType().get(currRow);
       }
     }
-    final Rowboat retVal=new Rowboat(timestamps.get(currRow),dims,metricArray,currRow);
+    Map<String,String> descriptions=Maps.newHashMap();
+    for (    String spatialDim : index.getSpatialIndexes().keySet()) {
+      descriptions.put(spatialDim,"spatial");
+    }
+    final Rowboat retVal=new Rowboat(timestamps.get(currRow),dims,metricArray,currRow,descriptions);
     ++currRow;
     return retVal;
   }

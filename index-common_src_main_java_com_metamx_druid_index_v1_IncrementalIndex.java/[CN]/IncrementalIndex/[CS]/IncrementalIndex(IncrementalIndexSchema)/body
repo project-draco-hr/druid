@@ -21,7 +21,8 @@
     dimensionOrder.put(dim,index++);
     dimensions.add(dim);
   }
-  this.spatialDimensionRowFormatter=new SpatialDimensionRowFormatter(incrementalIndexSchema.getSpatialDimensions());
+  this.spatialDimensions=incrementalIndexSchema.getSpatialDimensions();
+  this.spatialDimensionRowFormatter=new SpatialDimensionRowFormatter(spatialDimensions);
   this.dimValues=new DimensionHolder();
   this.facts=new ConcurrentSkipListMap<TimeAndDims,Aggregator[]>();
 }

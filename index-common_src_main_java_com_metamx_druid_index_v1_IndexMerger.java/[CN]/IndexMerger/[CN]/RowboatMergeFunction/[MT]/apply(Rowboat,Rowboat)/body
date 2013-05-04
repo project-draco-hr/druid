@@ -11,7 +11,7 @@
   for (int i=0; i < metrics.length; ++i) {
     metrics[i]=metricAggs[i].combine(lhsMetrics[i],rhsMetrics[i]);
   }
-  final Rowboat retVal=new Rowboat(lhs.getTimestamp(),lhs.getDims(),metrics,lhs.getRowNum());
+  final Rowboat retVal=new Rowboat(lhs.getTimestamp(),lhs.getDims(),metrics,lhs.getRowNum(),lhs.getDescriptions());
   for (  Rowboat rowboat : Arrays.asList(lhs,rhs)) {
     for (    Map.Entry<Integer,TreeSet<Integer>> entry : rowboat.getComprisedRows().entrySet()) {
       for (      Integer rowNum : entry.getValue()) {

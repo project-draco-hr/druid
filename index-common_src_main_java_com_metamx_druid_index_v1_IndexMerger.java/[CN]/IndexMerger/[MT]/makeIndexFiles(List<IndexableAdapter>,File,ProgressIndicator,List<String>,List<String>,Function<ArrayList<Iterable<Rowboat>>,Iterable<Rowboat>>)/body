@@ -126,7 +126,7 @@
           newMetrics[metricLookup[j]]=met;
           j++;
         }
-        return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum());
+        return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum(),input.getDescriptions());
       }
     }
 ),mergedDimensions,dimConversions.get(i),i));
@@ -166,6 +166,7 @@
     Arrays.fill(arr,INVALID_ROW);
     rowNumConversions.add(IntBuffer.wrap(arr));
   }
+  final Map<String,String> descriptions=Maps.newHashMap();
   for (  Rowboat theRow : theRows) {
     progress.progress();
     timeWriter.add(theRow.getTimestamp());
@@ -191,6 +192,7 @@
       log.info("outDir[%s] walked 500,000/%,d rows in %,d millis.",v8OutDir,rowCount,System.currentTimeMillis() - time);
       time=System.currentTimeMillis();
     }
+    descriptions.putAll(theRow.getDescriptions());
   }
   for (  IntBuffer rowNumConversion : rowNumConversions) {
     rowNumConversion.rewind();
@@ -252,7 +254,7 @@
   out=Files.newOutputStreamSupplier(geoFile,true);
   for (int i=0; i < mergedDimensions.size(); ++i) {
     String dimension=mergedDimensions.get(i);
-    if (!dimension.endsWith(".geo")) {
+    if (!"spatial".equals(descriptions.get(dimension))) {
       continue;
     }
     File dimOutFile=dimOuts.get(i).getFile();
