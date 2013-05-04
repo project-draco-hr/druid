@@ -1,0 +1,9 @@
+{
+  final Comparator<Row> comparator=makeComparator(dimensions,aggs,postAggs);
+  return new Function<Sequence<Row>,Sequence<Row>>(){
+    @Override public Sequence<Row> apply(    Sequence<Row> input){
+      return Sequences.limit(Sequences.sort(input,comparator),limit);
+    }
+  }
+;
+}
