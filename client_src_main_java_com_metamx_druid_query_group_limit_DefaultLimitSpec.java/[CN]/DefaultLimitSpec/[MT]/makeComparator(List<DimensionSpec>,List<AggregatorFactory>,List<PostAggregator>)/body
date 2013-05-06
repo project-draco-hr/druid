@@ -1,0 +1,33 @@
+{
+  Ordering<Row> ordering=new Ordering<Row>(){
+    @Override public int compare(    Row left,    Row right){
+      return Longs.compare(left.getTimestampFromEpoch(),right.getTimestampFromEpoch());
+    }
+  }
+;
+  Map<String,Ordering<Row>> possibleOrderings=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  for (  DimensionSpec spec : dimensions) {
+    final String dimension=spec.getOutputName();
+    possibleOrderings.put(dimension,dimensionOrdering(dimension));
+  }
+  for (  final AggregatorFactory agg : aggs) {
+    final String column=agg.getName();
+    possibleOrderings.put(column,metricOrdering(column,agg.getComparator()));
+  }
+  for (  PostAggregator postAgg : postAggs) {
+    final String column=postAgg.getName();
+    possibleOrderings.put(column,metricOrdering(column,postAgg.getComparator()));
+  }
+  for (  OrderByColumnSpec columnSpec : columns) {
+    Ordering<Row> nextOrdering=possibleOrderings.get(columnSpec.getDimension());
+    if (nextOrdering == null) {
+      throw new ISE("Unknown column in order clause[%s]",columnSpec);
+    }
+switch (columnSpec.getDirection()) {
+case DESCENDING:
+      nextOrdering=nextOrdering.reverse();
+  }
+  ordering=ordering.compound(nextOrdering);
+}
+return ordering;
+}
