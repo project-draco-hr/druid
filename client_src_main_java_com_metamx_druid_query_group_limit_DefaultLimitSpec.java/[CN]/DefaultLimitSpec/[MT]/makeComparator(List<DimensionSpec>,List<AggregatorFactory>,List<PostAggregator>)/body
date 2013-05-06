@@ -18,7 +18,7 @@
     final String column=postAgg.getName();
     possibleOrderings.put(column,metricOrdering(column,postAgg.getComparator()));
   }
-  for (  OrderByColumnSpec columnSpec : orderBy) {
+  for (  OrderByColumnSpec columnSpec : columns) {
     Ordering<Row> nextOrdering=possibleOrderings.get(columnSpec.getDimension());
     if (nextOrdering == null) {
       throw new ISE("Unknown column in order clause[%s]",columnSpec);
