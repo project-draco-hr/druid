@@ -8,7 +8,7 @@
   initializeDataSegmentPusher();
   initializeTaskToolbox();
   initializeTaskRunner();
-  initializeEventReceiverProvider();
+  initializeChatHandlerProvider();
   initializeJacksonInjections();
   initializeJacksonSubtypes();
   initializeServer();
@@ -18,7 +18,7 @@
   lifecycle.addManagedInstance(monitorScheduler);
   executorLifecycle=executorLifecycleFactory.build(taskRunner,getJsonMapper());
   lifecycle.addManagedInstance(executorLifecycle);
-  final Injector injector=Guice.createInjector(new ExecutorServletModule(getJsonMapper(),eventReceiverProvider));
+  final Injector injector=Guice.createInjector(new ExecutorServletModule(getJsonMapper(),chatHandlerProvider));
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
