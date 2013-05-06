@@ -3,4 +3,7 @@
     final ServiceDiscoveryConfig config=getConfigFactory().build(ServiceDiscoveryConfig.class);
     this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(getCuratorFramework(),config,getLifecycle());
   }
+  if (coordinatorServiceProvider == null) {
+    this.coordinatorServiceProvider=Initialization.makeServiceProvider(workerConfig.getMasterService(),serviceDiscovery,getLifecycle());
+  }
 }

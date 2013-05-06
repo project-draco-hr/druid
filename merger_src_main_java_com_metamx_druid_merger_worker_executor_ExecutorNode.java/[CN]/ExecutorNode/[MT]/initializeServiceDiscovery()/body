@@ -1,6 +1,13 @@
 {
+  final ServiceDiscoveryConfig config=configFactory.build(ServiceDiscoveryConfig.class);
   if (serviceDiscovery == null) {
-    final ServiceDiscoveryConfig config=configFactory.build(ServiceDiscoveryConfig.class);
     this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(getCuratorFramework(),config,lifecycle);
+  }
+  if (serviceAnnouncer == null) {
+    final ServiceInstanceFactory instanceFactory=Initialization.makeServiceInstanceFactory(config);
+    this.serviceAnnouncer=new CuratorServiceAnnouncer(serviceDiscovery,instanceFactory);
+  }
+  if (coordinatorServiceProvider == null) {
+    this.coordinatorServiceProvider=Initialization.makeServiceProvider(workerConfig.getMasterService(),serviceDiscovery,lifecycle);
   }
 }

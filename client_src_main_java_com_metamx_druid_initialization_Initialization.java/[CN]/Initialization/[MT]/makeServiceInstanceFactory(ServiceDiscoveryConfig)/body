@@ -1,0 +1,12 @@
+{
+  final String host=config.getHost();
+  final String address;
+  final int colon=host.indexOf(':');
+  if (colon < 0) {
+    address=host;
+  }
+ else {
+    address=host.substring(0,colon);
+  }
+  return new AddressPortServiceInstanceFactory(address,config.getPort());
+}
