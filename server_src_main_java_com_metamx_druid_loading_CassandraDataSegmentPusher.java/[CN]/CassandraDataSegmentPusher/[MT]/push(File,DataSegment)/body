@@ -6,12 +6,15 @@
   int version=IndexIO.getVersionFromDir(indexFilesDir);
   File descriptorFile=File.createTempFile("druid","descriptor.json");
   Files.copy(ByteStreams.newInputStreamSupplier(jsonMapper.writeValueAsBytes(segment)),descriptorFile);
-  String statement="INSERT INTO " + keyspace + "."+ table+ "(key, version, descriptor, index) VALUES (?,?,?,?)";
-  PreparedStatement ps=session.prepare(statement);
-  byte[] indexData=ByteStreams.toByteArray(new FileInputStream(compressedIndexFile));
-  byte[] descriptorData=ByteStreams.toByteArray(new FileInputStream(compressedIndexFile));
-  BoundStatement bs=ps.bind(key,version,descriptorData,indexData);
-  session.execute(bs);
+  try {
+    ObjectMetadata indexMeta=ChunkedStorage.newWriter(indexStorage,key,new FileInputStream(compressedIndexFile)).withConcurrencyLevel(CONCURRENCY).call();
+    ObjectMetadata descriptorMeta=ChunkedStorage.newWriter(descriptorStorage,key,new FileInputStream(descriptorFile)).withConcurrencyLevel(CONCURRENCY).call();
+    log.debug("Wrote index to C* [" + indexMeta.getParentPath() + "]");
+    log.debug("Wrote descriptor to C* [" + descriptorMeta.getParentPath() + "]");
+  }
+ catch (  Exception e) {
+    throw new IOException(e);
+  }
   segment=segment.withSize(indexSize).withLoadSpec(ImmutableMap.<String,Object>of("type","c*","key",key)).withBinaryVersion(IndexIO.getVersionFromDir(indexFilesDir));
   log.info("Deleting zipped index File[%s]",compressedIndexFile);
   compressedIndexFile.delete();

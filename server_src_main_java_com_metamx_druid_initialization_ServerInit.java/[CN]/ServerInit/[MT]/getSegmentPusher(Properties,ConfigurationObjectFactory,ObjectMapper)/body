@@ -2,6 +2,10 @@
   if (Boolean.parseBoolean(props.getProperty("druid.pusher.local","false"))) {
     return new LocalDataSegmentPusher(configFactory.build(LocalDataSegmentPusherConfig.class),jsonMapper);
   }
+ else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.cassandra","false"))) {
+    final CassandraDataSegmentPusherConfig config=configFactory.build(CassandraDataSegmentPusherConfig.class);
+    return new CassandraDataSegmentPusher(config,jsonMapper);
+  }
  else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.hdfs","false"))) {
     final HdfsDataSegmentPusherConfig config=configFactory.build(HdfsDataSegmentPusherConfig.class);
     return new HdfsDataSegmentPusher(config,new Configuration(),jsonMapper);
