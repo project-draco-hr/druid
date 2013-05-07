@@ -1,12 +1,4 @@
 {
-  this.timestampSpec=timestampSpec;
-  this.dataSpec=dataSpec;
-  this.dimensionExclusions=Sets.newHashSet();
-  if (dimensionExclusions != null) {
-    for (    String dimensionExclusion : dimensionExclusions) {
-      this.dimensionExclusions.add(dimensionExclusion.toLowerCase());
-    }
-  }
-  this.dimensionExclusions.add(timestampSpec.getTimestampColumn());
+  this.inputRowCreator=new MapInputRowParser(timestampSpec,dataSpec,dimensionExclusions);
   this.parser=new ToLowerCaseParser(dataSpec.getParser());
 }
