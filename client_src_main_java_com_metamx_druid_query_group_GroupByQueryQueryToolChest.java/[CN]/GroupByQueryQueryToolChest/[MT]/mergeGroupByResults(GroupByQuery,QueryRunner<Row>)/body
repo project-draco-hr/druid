@@ -23,11 +23,12 @@
     }
   }
 );
-  return Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
+  Sequence<Row> retVal=Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
     @Override public Row apply(    Row input){
       final MapBasedRow row=(MapBasedRow)input;
       return new MapBasedRow(gran.toDateTime(row.getTimestampFromEpoch()),row.getEvent());
     }
   }
 );
+  return query.applyLimit(retVal);
 }

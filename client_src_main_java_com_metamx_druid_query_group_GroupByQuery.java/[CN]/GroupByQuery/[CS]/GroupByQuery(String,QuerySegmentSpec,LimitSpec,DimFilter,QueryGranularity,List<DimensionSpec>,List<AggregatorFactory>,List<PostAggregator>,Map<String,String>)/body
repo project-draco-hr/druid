@@ -1,0 +1,13 @@
+{
+  super(dataSource,querySegmentSpec,context);
+  this.limitSpec=(limitSpec == null) ? new NoopLimitSpec() : limitSpec;
+  this.dimFilter=dimFilter;
+  this.granularity=granularity;
+  this.dimensions=dimensions == null ? ImmutableList.<DimensionSpec>of() : dimensions;
+  this.aggregatorSpecs=aggregatorSpecs;
+  this.postAggregatorSpecs=postAggregatorSpecs == null ? ImmutableList.<PostAggregator>of() : postAggregatorSpecs;
+  Preconditions.checkNotNull(this.granularity,"Must specify a granularity");
+  Preconditions.checkNotNull(this.aggregatorSpecs,"Must specify at least one aggregator");
+  Queries.verifyAggregations(this.aggregatorSpecs,this.postAggregatorSpecs);
+  orderByLimitFn=this.limitSpec.build(this.dimensions,this.aggregatorSpecs,this.postAggregatorSpecs);
+}

@@ -1,3 +1,10 @@
 {
-  return new GroupByQuery(dataSource,querySegmentSpec,dimFilter,granularity,dimensions,aggregatorSpecs,postAggregatorSpecs,context);
+  final LimitSpec theLimitSpec;
+  if (limitSpec == null) {
+    theLimitSpec=new DefaultLimitSpec(orderByColumnSpecs,limit);
+  }
+ else {
+    theLimitSpec=limitSpec;
+  }
+  return new GroupByQuery(dataSource,querySegmentSpec,theLimitSpec,dimFilter,granularity,dimensions,aggregatorSpecs,postAggregatorSpecs,context);
 }
