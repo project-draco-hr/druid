@@ -1,6 +1,6 @@
 {
   try {
-    final String workerStatusPath=JOINER.join(config.getStatusPath(),worker.getHost());
+    final String workerStatusPath=JOINER.join(config.getIndexerStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=new PathChildrenCache(cf,workerStatusPath,true);
     final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     statusCache.getListenable().addListener(new PathChildrenCacheListener(){
