@@ -3,7 +3,7 @@
     return new LocalDataSegmentPusher(configFactory.build(LocalDataSegmentPusherConfig.class),jsonMapper);
   }
  else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.cassandra","false"))) {
-    final CassandraDataSegmentPusherConfig config=configFactory.build(CassandraDataSegmentPusherConfig.class);
+    final CassandraDataSegmentConfig config=configFactory.build(CassandraDataSegmentConfig.class);
     return new CassandraDataSegmentPusher(config,jsonMapper);
   }
  else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.hdfs","false"))) {

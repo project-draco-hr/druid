@@ -1,9 +1,0 @@
-{
-  this.config=config;
-  this.jsonMapper=jsonMapper;
-  this.astyanaxContext=new AstyanaxContext.Builder().forCluster(CLUSTER_NAME).forKeyspace(config.getKeyspace()).withAstyanaxConfiguration(new AstyanaxConfigurationImpl().setDiscoveryType(NodeDiscoveryType.NONE)).withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool").setMaxConnsPerHost(10).setSeeds(config.getHost())).withConnectionPoolMonitor(new CountingConnectionPoolMonitor()).buildKeyspace(ThriftFamilyFactory.getInstance());
-  this.astyanaxContext.start();
-  this.keyspace=this.astyanaxContext.getEntity();
-  indexStorage=new CassandraChunkedStorageProvider(keyspace,INDEX_TABLE_NAME);
-  descriptorStorage=new CassandraChunkedStorageProvider(keyspace,DESCRIPTOR_TABLE_NAME);
-}
