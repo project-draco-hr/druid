@@ -2,6 +2,7 @@
   this.astyanaxContext=new AstyanaxContext.Builder().forCluster(CLUSTER_NAME).forKeyspace(config.getKeyspace()).withAstyanaxConfiguration(new AstyanaxConfigurationImpl().setDiscoveryType(NodeDiscoveryType.NONE)).withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool").setMaxConnsPerHost(10).setSeeds(config.getHost())).withConnectionPoolMonitor(new CountingConnectionPoolMonitor()).buildKeyspace(ThriftFamilyFactory.getInstance());
   this.astyanaxContext.start();
   this.keyspace=this.astyanaxContext.getEntity();
+  this.config=config;
   indexStorage=new CassandraChunkedStorageProvider(keyspace,INDEX_TABLE_NAME);
   descriptorStorage=new ColumnFamily<String,String>(DESCRIPTOR_TABLE_NAME,StringSerializer.get(),StringSerializer.get());
 }
