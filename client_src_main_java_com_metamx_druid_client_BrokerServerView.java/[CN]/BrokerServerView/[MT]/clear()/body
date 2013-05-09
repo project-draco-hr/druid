@@ -1,6 +1,6 @@
 {
 synchronized (lock) {
-    final Iterator<DruidServer> clientsIter=clients.keySet().iterator();
+    final Iterator<String> clientsIter=clients.keySet().iterator();
     while (clientsIter.hasNext()) {
       clientsIter.remove();
     }
@@ -10,7 +10,7 @@ synchronized (lock) {
       final ServerSelector selector=selectorsIter.next();
       selectorsIter.remove();
       while (!selector.isEmpty()) {
-        final DruidServer pick=selector.pick();
+        final QueryableDruidServer pick=selector.pick();
         selector.removeServer(pick);
       }
     }

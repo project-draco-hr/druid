@@ -1,5 +1,5 @@
 {
-  QueryRunner exists=clients.put(server,makeDirectClient(server));
+  QueryableDruidServer exists=clients.put(server.getName(),new QueryableDruidServer(server,makeDirectClient(server)));
   if (exists != null) {
     log.warn("QueryRunner for server[%s] already existed!?",server);
   }
