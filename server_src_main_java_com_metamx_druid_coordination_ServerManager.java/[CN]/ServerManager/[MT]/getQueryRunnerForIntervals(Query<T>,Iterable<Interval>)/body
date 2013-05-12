@@ -26,11 +26,6 @@
 );
     }
   }
-).filter(new Predicate<QueryRunner<T>>(){
-    @Override public boolean apply(    @Nullable QueryRunner<T> input){
-      return (input != null);
-    }
-  }
-);
+).filter(Predicates.<QueryRunner<T>>notNull());
   return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,adapters)),toolChest);
 }
