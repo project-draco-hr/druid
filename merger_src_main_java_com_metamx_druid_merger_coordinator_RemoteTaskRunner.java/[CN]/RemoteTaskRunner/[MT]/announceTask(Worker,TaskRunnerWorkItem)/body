@@ -9,8 +9,13 @@
   runningTasks.put(task.getId(),pendingTasks.remove(task.getId()));
   log.info("Task %s switched from pending to running",task.getId());
 synchronized (statusLock) {
-    while (findWorkerRunningTask(task.getId()) == null) {
+    while (!isWorkerRunningTask(theWorker.getHost(),task.getId())) {
       statusLock.wait(config.getTaskAssignmentTimeoutDuration().getMillis());
+      if (!isWorkerRunningTask(theWorker.getHost(),task.getId())) {
+        log.error("Something went wrong! %s never ran task %s after %s!",theWorker.getHost(),task.getId(),config.getTaskAssignmentTimeoutDuration());
+        retryTask(runningTasks.get(task.getId()),theWorker.getHost());
+        break;
+      }
     }
   }
 }
