@@ -78,7 +78,7 @@
     }
     boolean oversized=false;
     for (    final DimPartition partition : dimPartitions.partitions) {
-      if (partition.rows > config.getTargetPartitionSize() * SHARD_OVERSIZE_THRESHOLD) {
+      if (partition.rows > config.getMaxPartitionSize()) {
         log.info("Dimension[%s] has an oversized shard: %s",dimPartitions.dim,partition.shardSpec);
         oversized=true;
       }

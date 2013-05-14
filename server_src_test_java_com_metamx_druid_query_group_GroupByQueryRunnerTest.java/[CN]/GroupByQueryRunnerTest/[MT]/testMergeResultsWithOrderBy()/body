@@ -1,0 +1,24 @@
+{
+  LimitSpec[] orderBySpecs=new LimitSpec[]{new DefaultLimitSpec(OrderByColumnSpec.ascending("idx"),null),new DefaultLimitSpec(OrderByColumnSpec.ascending("rows","idx"),null),new DefaultLimitSpec(OrderByColumnSpec.descending("idx"),null),new DefaultLimitSpec(OrderByColumnSpec.descending("rows","idx"),null)};
+  final Comparator<Row> idxComparator=new Comparator<Row>(){
+    @Override public int compare(    Row o1,    Row o2){
+      return Float.compare(o1.getFloatMetric("idx"),o2.getFloatMetric("idx"));
+    }
+  }
+;
+  Comparator<Row> rowsIdxComparator=new Comparator<Row>(){
+    @Override public int compare(    Row o1,    Row o2){
+      int value=Float.compare(o1.getFloatMetric("rows"),o2.getFloatMetric("rows"));
+      if (value != 0) {
+        return value;
+      }
+      return idxComparator.compare(o1,o2);
+    }
+  }
+;
+  List<Row> allResults=Arrays.asList(createExpectedRow("2011-04-01","alias","automotive","rows",2L,"idx",269L),createExpectedRow("2011-04-01","alias","business","rows",2L,"idx",217L),createExpectedRow("2011-04-01","alias","entertainment","rows",2L,"idx",319L),createExpectedRow("2011-04-01","alias","health","rows",2L,"idx",216L),createExpectedRow("2011-04-01","alias","mezzanine","rows",6L,"idx",4420L),createExpectedRow("2011-04-01","alias","news","rows",2L,"idx",221L),createExpectedRow("2011-04-01","alias","premium","rows",6L,"idx",4416L),createExpectedRow("2011-04-01","alias","technology","rows",2L,"idx",177L),createExpectedRow("2011-04-01","alias","travel","rows",2L,"idx",243L));
+  List<List<Row>> expectedResults=Lists.newArrayList(Ordering.from(idxComparator).sortedCopy(allResults),Ordering.from(rowsIdxComparator).sortedCopy(allResults),Ordering.from(idxComparator).reverse().sortedCopy(allResults),Ordering.from(rowsIdxComparator).reverse().sortedCopy(allResults));
+  for (int i=0; i < orderBySpecs.length; ++i) {
+    doTestMergeResultsWithOrderBy(orderBySpecs[i],expectedResults.get(i));
+  }
+}

@@ -1,7 +1,7 @@
 {
   final HadoopDruidIndexerConfig cfg;
   try {
-    cfg=jsonMapper.readValue("{" + "\"targetPartitionSize\":100," + "\"partitionDimension\":\"foo\""+ "}",HadoopDruidIndexerConfig.class);
+    cfg=jsonReadWriteRead("{" + "\"targetPartitionSize\":100," + "\"partitionDimension\":\"foo\""+ "}",HadoopDruidIndexerConfig.class);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
@@ -9,5 +9,6 @@
   final PartitionsSpec partitionsSpec=cfg.getPartitionsSpec();
   Assert.assertEquals("isDeterminingPartitions",partitionsSpec.isDeterminingPartitions(),true);
   Assert.assertEquals("getTargetPartitionSize",partitionsSpec.getTargetPartitionSize(),100);
+  Assert.assertEquals("getMaxPartitionSize",partitionsSpec.getMaxPartitionSize(),150);
   Assert.assertEquals("getPartitionDimension",partitionsSpec.getPartitionDimension(),"foo");
 }

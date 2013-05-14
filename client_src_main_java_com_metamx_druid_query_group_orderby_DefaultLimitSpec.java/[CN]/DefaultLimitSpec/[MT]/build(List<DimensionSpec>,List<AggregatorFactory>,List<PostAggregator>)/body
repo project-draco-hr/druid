@@ -1,0 +1,12 @@
+{
+  if (columns.isEmpty()) {
+    return new LimitingFn(limit);
+  }
+  final Ordering<Row> ordering=makeComparator(dimensions,aggs,postAggs);
+  if (limit == Integer.MAX_VALUE) {
+    return new SortingFn(ordering);
+  }
+ else {
+    return new TopNFunction(ordering,limit);
+  }
+}
