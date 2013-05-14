@@ -1,0 +1,6 @@
+{
+  String emitterType=props.getProperty("druid.emitter","");
+  binder.install(new LogEmitterModule());
+  binder.install(new HttpEmitterModule());
+  binder.bind(Emitter.class).toProvider(new EmitterProvider(emitterType)).in(DruidScopes.SINGLETON);
+}

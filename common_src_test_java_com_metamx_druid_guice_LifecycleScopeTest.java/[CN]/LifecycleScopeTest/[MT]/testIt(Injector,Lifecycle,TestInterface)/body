@@ -1,0 +1,21 @@
+{
+  Assert.assertEquals(0,instance.getStarted());
+  Assert.assertEquals(0,instance.getStopped());
+  Assert.assertEquals(0,instance.getRan());
+  instance.run();
+  Assert.assertEquals(0,instance.getStarted());
+  Assert.assertEquals(0,instance.getStopped());
+  Assert.assertEquals(1,instance.getRan());
+  lifecycle.start();
+  Assert.assertEquals(1,instance.getStarted());
+  Assert.assertEquals(0,instance.getStopped());
+  Assert.assertEquals(1,instance.getRan());
+  injector.getInstance(TestInterface.class).run();
+  Assert.assertEquals(1,instance.getStarted());
+  Assert.assertEquals(0,instance.getStopped());
+  Assert.assertEquals(2,instance.getRan());
+  lifecycle.stop();
+  Assert.assertEquals(1,instance.getStarted());
+  Assert.assertEquals(1,instance.getStopped());
+  Assert.assertEquals(2,instance.getRan());
+}

@@ -1,0 +1,7 @@
+{
+  final HttpClientConfig.Builder builder=HttpClientConfig.builder().withNumConnections(1).withReadTimeout(config.get().getReadTimeout());
+  if (sslContext != null) {
+    builder.withSslContext(sslContext);
+  }
+  return new HttpPostEmitter(config.get(),HttpClientInit.createClient(builder.build(),lifecycle));
+}

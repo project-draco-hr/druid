@@ -1,10 +1,11 @@
 {
-  final ServiceDiscoveryConfig config=getConfigFactory().build(ServiceDiscoveryConfig.class);
+  final CuratorDiscoveryConfig config=getConfigFactory().build(CuratorDiscoveryConfig.class);
   if (serviceDiscovery == null) {
     this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(getCuratorFramework(),config,getLifecycle());
   }
   if (serviceAnnouncer == null) {
-    final ServiceInstanceFactory instanceFactory=Initialization.makeServiceInstanceFactory(config);
+    DruidNodeConfig nodeConfig=getConfigFactory().build(DruidNodeConfig.class);
+    final ServiceInstanceFactory<Void> instanceFactory=Initialization.makeServiceInstanceFactory(nodeConfig);
     this.serviceAnnouncer=new CuratorServiceAnnouncer(serviceDiscovery,instanceFactory);
   }
 }

@@ -1,0 +1,14 @@
+{
+  if (config.isCreateTables()) {
+    lifecycle.addHandler(new Lifecycle.Handler(){
+      @Override public void start() throws Exception {
+        dbConnector.createSegmentTable();
+        dbConnector.createRulesTable();
+      }
+      @Override public void stop(){
+      }
+    }
+);
+  }
+  return dbConnector.getDBI();
+}

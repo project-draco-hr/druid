@@ -3,6 +3,7 @@ synchronized (lock) {
     if (started) {
       return;
     }
+    createDefaultRule(dbi,getRulesTable(),config.getDefaultTier(),jsonMapper);
     ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getRulesPollDuration(),new Runnable(){
       @Override public void run(){
         poll();

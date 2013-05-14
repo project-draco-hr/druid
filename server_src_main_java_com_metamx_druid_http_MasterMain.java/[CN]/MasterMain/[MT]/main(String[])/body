@@ -1,44 +1,28 @@
 {
   LogLevelAdjuster.register();
-  final ObjectMapper jsonMapper=new DefaultObjectMapper();
-  final Properties props=Initialization.loadProperties();
-  final ConfigurationObjectFactory configFactory=Config.createFactory(props);
-  final Lifecycle lifecycle=new Lifecycle();
-  final HttpClientConfig.Builder httpClientConfigBuilder=HttpClientConfig.builder().withNumConnections(1);
-  final String emitterTimeout=props.getProperty("druid.emitter.timeOut");
-  if (emitterTimeout != null) {
-    httpClientConfigBuilder.withReadTimeout(new Duration(emitterTimeout));
-  }
-  final HttpClient httpClient=HttpClientInit.createClient(httpClientConfigBuilder.build(),lifecycle);
-  final ServiceEmitter emitter=new ServiceEmitter(PropUtils.getProperty(props,"druid.service"),PropUtils.getProperty(props,"druid.host"),Emitters.create(props,httpClient,jsonMapper,lifecycle));
-  EmittingLogger.registerEmitter(emitter);
+  Injector injector=makeInjector(DruidSecondaryModule.class,new LifecycleModule(Key.get(MonitorScheduler.class)),EmitterModule.class,CuratorModule.class,MetricsModule.class,DiscoveryModule.class,ServerModule.class,MasterModule.class);
+  final ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
+  final ConfigurationObjectFactory configFactory=injector.getInstance(ConfigurationObjectFactory.class);
+  final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+  final ServiceEmitter emitter=injector.getInstance(ServiceEmitter.class);
   final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
-  final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
-  CuratorFramework curatorFramework=Initialization.makeCuratorFramework(serviceDiscoveryConfig,lifecycle);
+  CuratorFramework curatorFramework=injector.getInstance(CuratorFramework.class);
   final ZkPathsConfig zkPaths=configFactory.build(ZkPathsConfig.class);
-  final ExecutorService exec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ServerInventoryView-%s").build());
-  ServerInventoryView serverInventoryView=new ServerInventoryView(configFactory.build(ServerInventoryViewConfig.class),zkPaths,curatorFramework,exec,jsonMapper);
-  lifecycle.addManagedInstance(serverInventoryView);
-  final DbConnectorConfig dbConnectorConfig=configFactory.build(DbConnectorConfig.class);
-  final DatabaseRuleManagerConfig databaseRuleManagerConfig=configFactory.build(DatabaseRuleManagerConfig.class);
-  final DBI dbi=new DbConnector(dbConnectorConfig).getDBI();
-  DbConnector.createSegmentTable(dbi,PropUtils.getProperty(props,"druid.database.segmentTable"));
-  DbConnector.createRuleTable(dbi,PropUtils.getProperty(props,"druid.database.ruleTable"));
-  DatabaseRuleManager.createDefaultRule(dbi,databaseRuleManagerConfig.getRuleTable(),databaseRuleManagerConfig.getDefaultDatasource(),jsonMapper);
-  final DatabaseSegmentManager databaseSegmentManager=new DatabaseSegmentManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseSegmentManager-Exec--%d"),configFactory.build(DatabaseSegmentManagerConfig.class),dbi);
-  final DatabaseRuleManager databaseRuleManager=new DatabaseRuleManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseRuleManager-Exec--%d"),databaseRuleManagerConfig,dbi);
-  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
-  final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor()));
-  lifecycle.addManagedInstance(healthMonitor);
+  ServerInventoryView serverInventoryView=injector.getInstance(ServerInventoryView.class);
+  final DatabaseSegmentManager databaseSegmentManager=injector.getInstance(DatabaseSegmentManager.class);
+  final DatabaseRuleManager databaseRuleManager=injector.getInstance(DatabaseRuleManager.class);
   final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
-  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
-  final ServiceAnnouncer serviceAnnouncer=Initialization.makeServiceAnnouncer(serviceDiscoveryConfig,serviceDiscovery);
-  Initialization.announceDefaultService(serviceDiscoveryConfig,serviceAnnouncer,lifecycle);
+  final DruidNodeConfig nodeConfig=configFactory.build(DruidNodeConfig.class);
+  final ServiceDiscovery<Void> serviceDiscovery=injector.getInstance(Key.get(new TypeLiteral<ServiceDiscovery<Void>>(){
+  }
+));
+  final ServiceAnnouncer serviceAnnouncer=injector.getInstance(ServiceAnnouncer.class);
+  Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
   IndexingServiceClient indexingServiceClient=null;
   if (druidMasterConfig.getMergerServiceName() != null) {
     ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
-    indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   }
+  DBI dbi=injector.getInstance(DBI.class);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
@@ -59,7 +43,7 @@
     }
   }
 ));
-  final Injector injector=Guice.createInjector(new MasterServletModule(serverInventoryView,databaseSegmentManager,databaseRuleManager,master,jsonMapper,indexingServiceClient));
+  final Injector injector2=Guice.createInjector(new MasterServletModule(serverInventoryView,databaseSegmentManager,databaseRuleManager,master,jsonMapper,indexingServiceClient));
   final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
   final RedirectInfo redirectInfo=new RedirectInfo(){
     @Override public boolean doLocal(){
@@ -89,7 +73,7 @@
   final Context root=new Context(server,"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
-  root.addEventListener(new GuiceServletConfig(injector));
+  root.addEventListener(new GuiceServletConfig(injector2));
   root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
   root.addFilter(GuiceFilter.class,"/info/*",0);
   root.addFilter(GuiceFilter.class,"/master/*",0);

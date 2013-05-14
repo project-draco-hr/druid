@@ -8,7 +8,7 @@
       DbConnector.createTaskTable(dbi,dbConnectorConfig.getTaskTable());
       DbConnector.createTaskLogTable(dbi,dbConnectorConfig.getTaskLogTable());
       DbConnector.createTaskLockTable(dbi,dbConnectorConfig.getTaskLockTable());
-      taskStorage=new DbTaskStorage(getJsonMapper(),dbConnectorConfig,new DbConnector(dbConnectorConfig).getDBI());
+      taskStorage=new DbTaskStorage(getJsonMapper(),dbConnectorConfig,new DbConnector(Suppliers.<DbConnectorConfig>ofInstance(dbConnectorConfig),null).getDBI());
     }
  else {
       throw new ISE("Invalid storage implementation: %s",config.getStorageImpl());
