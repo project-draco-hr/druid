@@ -8,7 +8,8 @@ synchronized (lock) {
       log.warn("Told to remove non-existant segment[%s]",segmentId);
       return;
     }
-    if (!selector.removeServer(server)) {
+    QueryableDruidServer queryableDruidServer=clients.get(server.getName());
+    if (!selector.removeServer(queryableDruidServer)) {
       log.warn("Asked to disassociate non-existant association between server[%s] and segment[%s]",server,segmentId);
     }
     if (selector.isEmpty()) {
