@@ -7,7 +7,7 @@
     }
     dbi.withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
-        handle.createStatement(String.format("UPDATE %s SET used=0 WHERE dataSource = :dataSource",config.getSegmentTable())).bind("dataSource",ds).execute();
+        handle.createStatement(String.format("UPDATE %s SET used=0 WHERE dataSource = :dataSource",getSegmentsTable())).bind("dataSource",ds).execute();
         return null;
       }
     }

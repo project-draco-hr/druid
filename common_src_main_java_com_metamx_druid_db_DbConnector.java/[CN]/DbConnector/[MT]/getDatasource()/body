@@ -1,10 +1,11 @@
 {
+  DbConnectorConfig connectorConfig=config.get();
   BasicDataSource dataSource=new BasicDataSource();
-  dataSource.setUsername(config.getDatabaseUser());
-  dataSource.setPassword(config.getDatabasePassword());
-  dataSource.setUrl(config.getDatabaseConnectURI());
-  if (config.useValidationQuery()) {
-    dataSource.setValidationQuery(config.getValidationQuery());
+  dataSource.setUsername(connectorConfig.getUser());
+  dataSource.setPassword(connectorConfig.getPassword());
+  dataSource.setUrl(connectorConfig.getConnectURI());
+  if (connectorConfig.isUseValidationQuery()) {
+    dataSource.setValidationQuery(connectorConfig.getValidationQuery());
     dataSource.setTestOnBorrow(true);
   }
   return dataSource;

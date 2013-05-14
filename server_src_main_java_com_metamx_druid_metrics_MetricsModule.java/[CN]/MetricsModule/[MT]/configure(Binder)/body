@@ -1,0 +1,7 @@
+{
+  binder.bind(JvmMonitor.class).in(LazySingleton.class);
+  binder.bind(SysMonitor.class).in(LazySingleton.class);
+  for (  Class<? extends Monitor> monitor : monitors) {
+    binder.bind(monitor).in(LazySingleton.class);
+  }
+}

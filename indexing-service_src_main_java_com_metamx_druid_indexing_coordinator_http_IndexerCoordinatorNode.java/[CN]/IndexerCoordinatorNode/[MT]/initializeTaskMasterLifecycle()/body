@@ -1,7 +1,7 @@
 {
   if (taskMasterLifecycle == null) {
-    final ServiceDiscoveryConfig serviceDiscoveryConfig=getConfigFactory().build(ServiceDiscoveryConfig.class);
-    taskMasterLifecycle=new TaskMasterLifecycle(taskQueue,taskActionClientFactory,config,serviceDiscoveryConfig,taskRunnerFactory,resourceManagementSchedulerFactory,getCuratorFramework(),serviceAnnouncer,emitter);
+    final DruidNodeConfig nodeConfig=getConfigFactory().build(DruidNodeConfig.class);
+    taskMasterLifecycle=new TaskMasterLifecycle(taskQueue,taskActionClientFactory,config,nodeConfig,taskRunnerFactory,resourceManagementSchedulerFactory,getCuratorFramework(),serviceAnnouncer,emitter);
     getLifecycle().addManagedInstance(taskMasterLifecycle);
   }
 }

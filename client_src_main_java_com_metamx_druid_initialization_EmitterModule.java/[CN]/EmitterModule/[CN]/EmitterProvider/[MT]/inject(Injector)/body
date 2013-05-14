@@ -1,0 +1,21 @@
+{
+  final List<Binding<Emitter>> emitterBindings=injector.findBindingsByType(new TypeLiteral<Emitter>(){
+  }
+);
+  for (  Binding<Emitter> binding : emitterBindings) {
+    if (Names.named(emitterType).equals(binding.getKey().getAnnotation())) {
+      emitter=binding.getProvider().get();
+      break;
+    }
+  }
+  if (emitter == null) {
+    List<String> knownTypes=Lists.newArrayList();
+    for (    Binding<Emitter> binding : emitterBindings) {
+      final Annotation annotation=binding.getKey().getAnnotation();
+      if (annotation != null) {
+        knownTypes.add(((Named)annotation).value());
+      }
+    }
+    throw new ISE("Uknown emitter type, known types[%s]",knownTypes);
+  }
+}

@@ -1,10 +1,11 @@
 {
   if (useDiscovery) {
     final Lifecycle lifecycle=getLifecycle();
-    final ServiceDiscoveryConfig serviceDiscoveryConfig=getConfigFactory().build(ServiceDiscoveryConfig.class);
-    final CuratorFramework curatorFramework=Initialization.makeCuratorFramework(serviceDiscoveryConfig,lifecycle);
-    final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
-    final ServiceAnnouncer serviceAnnouncer=Initialization.makeServiceAnnouncer(serviceDiscoveryConfig,serviceDiscovery);
-    Initialization.announceDefaultService(serviceDiscoveryConfig,serviceAnnouncer,lifecycle);
+    final CuratorDiscoveryConfig curatorDiscoveryConfig=getConfigFactory().build(CuratorDiscoveryConfig.class);
+    final DruidNodeConfig nodeConfig=getConfigFactory().build(DruidNodeConfig.class);
+    final CuratorFramework curatorFramework=Initialization.makeCuratorFramework(getConfigFactory().build(CuratorConfig.class),lifecycle);
+    final ServiceDiscovery<Void> serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,curatorDiscoveryConfig,lifecycle);
+    final ServiceAnnouncer serviceAnnouncer=Initialization.makeServiceAnnouncer(nodeConfig,serviceDiscovery);
+    Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
   }
 }

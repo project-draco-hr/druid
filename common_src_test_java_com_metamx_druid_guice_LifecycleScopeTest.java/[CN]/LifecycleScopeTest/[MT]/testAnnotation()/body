@@ -1,0 +1,11 @@
+{
+  final Injector injector=Guice.createInjector(new DruidGuiceExtensions(),new LifecycleModule(),new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(TestInterface.class).to(AnnotatedClass.class);
+    }
+  }
+);
+  final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+  final TestInterface instance=injector.getInstance(TestInterface.class);
+  testIt(injector,lifecycle,instance);
+}

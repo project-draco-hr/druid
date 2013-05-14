@@ -2,7 +2,7 @@
   try {
     VersionedIntervalTimeline<String,DataSegment> segmentTimeline=dbi.withHandle(new HandleCallback<VersionedIntervalTimeline<String,DataSegment>>(){
       @Override public VersionedIntervalTimeline<String,DataSegment> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource",config.getSegmentTable())).bind("dataSource",ds).fold(new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural()),new Folder3<VersionedIntervalTimeline<String,DataSegment>,Map<String,Object>>(){
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource",getSegmentsTable())).bind("dataSource",ds).fold(new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural()),new Folder3<VersionedIntervalTimeline<String,DataSegment>,Map<String,Object>>(){
           @Override public VersionedIntervalTimeline<String,DataSegment> fold(          VersionedIntervalTimeline<String,DataSegment> timeline,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
             try {
               DataSegment segment=jsonMapper.readValue((String)stringObjectMap.get("payload"),DataSegment.class);
@@ -32,7 +32,7 @@
       @Override public Void withHandle(      Handle handle) throws Exception {
         Batch batch=handle.createBatch();
         for (        DataSegment segment : segments) {
-          batch.add(String.format("UPDATE %s SET used=1 WHERE id = '%s'",config.getSegmentTable(),segment.getIdentifier()));
+          batch.add(String.format("UPDATE %s SET used=1 WHERE id = '%s'",getSegmentsTable(),segment.getIdentifier()));
         }
         batch.execute();
         return null;
