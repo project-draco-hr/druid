@@ -1,0 +1,10 @@
+{
+  AtomicInteger counter=new AtomicInteger(0);
+  OrHavingSpec spec=new OrHavingSpec(ImmutableList.of((HavingSpec)new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,false)));
+  spec.eval(ROW);
+  assertEquals(4,counter.get());
+  counter.set(0);
+  spec=new OrHavingSpec(ImmutableList.of((HavingSpec)new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,false),new CountingHavingSpec(counter,true)));
+  spec.eval(ROW);
+  assertEquals(4,counter.get());
+}
