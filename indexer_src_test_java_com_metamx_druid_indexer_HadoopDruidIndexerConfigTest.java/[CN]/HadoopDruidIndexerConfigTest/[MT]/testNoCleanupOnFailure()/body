@@ -1,0 +1,10 @@
+{
+  final HadoopDruidIndexerConfig cfg;
+  try {
+    cfg=jsonReadWriteRead("{\"cleanupOnFailure\":false}",HadoopDruidIndexerConfig.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  Assert.assertEquals("cleanupOnFailure",cfg.isCleanupOnFailure(),false);
+}
