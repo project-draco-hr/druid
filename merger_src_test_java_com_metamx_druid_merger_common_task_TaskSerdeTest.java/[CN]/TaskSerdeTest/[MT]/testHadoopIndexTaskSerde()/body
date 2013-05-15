@@ -1,5 +1,5 @@
 {
-  final HadoopIndexTask task=new HadoopIndexTask(null,new HadoopDruidIndexerConfig(null,"foo","timestamp","auto",new JSONDataSpec(ImmutableList.of("foo")),null,new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P1D"))),new StaticPathSpec("bar"),null,null,null,null,null,null,false,true,null,false,new DataRollupSpec(ImmutableList.<AggregatorFactory>of(),QueryGranularity.NONE),null,false,ImmutableList.<String>of()));
+  final HadoopIndexTask task=new HadoopIndexTask(null,new HadoopDruidIndexerConfig(null,"foo","timestamp","auto",new JSONDataSpec(ImmutableList.of("foo"),null),null,new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P1D"))),new StaticPathSpec("bar"),null,null,null,null,null,null,false,true,null,false,new DataRollupSpec(ImmutableList.<AggregatorFactory>of(),QueryGranularity.NONE),null,false,ImmutableList.<String>of()));
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
   final Task task2=jsonMapper.readValue(json,Task.class);
