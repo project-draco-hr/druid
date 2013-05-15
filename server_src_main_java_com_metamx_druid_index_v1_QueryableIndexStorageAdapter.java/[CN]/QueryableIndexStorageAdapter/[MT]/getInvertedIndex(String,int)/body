@@ -1,0 +1,10 @@
+{
+  final Column column=index.getColumn(dimension.toLowerCase());
+  if (column == null) {
+    return new ImmutableConciseSet();
+  }
+  if (!column.getCapabilities().hasBitmapIndexes()) {
+    return new ImmutableConciseSet();
+  }
+  return column.getBitmapIndex().getConciseSet(idx);
+}

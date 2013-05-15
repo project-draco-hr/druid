@@ -34,11 +34,11 @@
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
   final ServiceAnnouncer serviceAnnouncer=Initialization.makeServiceAnnouncer(serviceDiscoveryConfig,serviceDiscovery);
   Initialization.announceDefaultService(serviceDiscoveryConfig,serviceAnnouncer,lifecycle);
-  IndexingServiceClient indexingServiceClient=null;
+  ServiceProvider serviceProvider=null;
   if (druidMasterConfig.getMergerServiceName() != null) {
-    ServiceProvider serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
-    indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
+    serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
+  IndexingServiceClient indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
