@@ -1,6 +1,6 @@
 {
   final ByteOrder order=ByteOrder.nativeOrder();
-  CompressedLongsSupplierSerializer serializer=new CompressedLongsSupplierSerializer(999,new FlattenedArrayWriter<ResourceHolder<LongBuffer>>(new IOPeonForTesting(),"test",CompressedLongBufferObjectStrategy.getBufferForOrder(order)));
+  CompressedLongsSupplierSerializer serializer=new CompressedLongsSupplierSerializer(999,new GenericIndexedWriter<ResourceHolder<LongBuffer>>(new IOPeonForTesting(),"test",CompressedLongBufferObjectStrategy.getBufferForOrder(order)));
   serializer.open();
   final int numElements=10000;
   for (int i=0; i < numElements; ++i) {

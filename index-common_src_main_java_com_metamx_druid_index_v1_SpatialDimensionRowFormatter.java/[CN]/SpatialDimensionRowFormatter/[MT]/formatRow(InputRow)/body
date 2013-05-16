@@ -1,0 +1,45 @@
+{
+  final Map<String,List<String>> finalDimLookup=Maps.newHashMap();
+  final List<String> finalDims=Lists.newArrayList(Iterables.filter(Lists.transform(row.getDimensions(),new Function<String,String>(){
+    @Override public String apply(    String input){
+      return input.toLowerCase();
+    }
+  }
+),new Predicate<String>(){
+    @Override public boolean apply(    String input){
+      return !spatialDimNames.contains(input);
+    }
+  }
+));
+  for (  String dim : finalDims) {
+    finalDimLookup.put(dim,row.getDimension(dim));
+  }
+  InputRow retVal=new InputRow(){
+    @Override public List<String> getDimensions(){
+      return finalDims;
+    }
+    @Override public long getTimestampFromEpoch(){
+      return row.getTimestampFromEpoch();
+    }
+    @Override public List<String> getDimension(    String dimension){
+      return finalDimLookup.get(dimension);
+    }
+    @Override public float getFloatMetric(    String metric){
+      return row.getFloatMetric(metric);
+    }
+  }
+;
+  for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
+    List<String> spatialDimVals=Lists.newArrayList();
+    for (    String partialSpatialDim : spatialDimension.getDims()) {
+      List<String> dimVals=row.getDimension(partialSpatialDim);
+      if (dimVals == null || dimVals.isEmpty()) {
+        return retVal;
+      }
+      spatialDimVals.addAll(dimVals);
+    }
+    finalDimLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
+    finalDims.add(spatialDimension.getDimName());
+  }
+  return retVal;
+}

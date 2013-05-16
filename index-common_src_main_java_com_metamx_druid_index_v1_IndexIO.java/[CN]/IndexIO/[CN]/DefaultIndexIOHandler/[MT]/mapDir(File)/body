@@ -42,7 +42,12 @@
   for (int i=0; i < availableDimensions.size(); ++i) {
     invertedIndexed.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
   }
-  final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimColumns,invertedIndexed);
+  Map<String,ImmutableRTree> spatialIndexed=Maps.newHashMap();
+  ByteBuffer spatialBuffer=smooshedFiles.mapFile("spatial.drd");
+  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
+    spatialIndexed.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,IndexedRTree.objectStrategy));
+  }
+  final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimColumns,invertedIndexed,spatialIndexed);
   log.debug("Mapped v8 index[%s] in %,d millis",inDir,System.currentTimeMillis() - startTime);
   return retVal;
 }

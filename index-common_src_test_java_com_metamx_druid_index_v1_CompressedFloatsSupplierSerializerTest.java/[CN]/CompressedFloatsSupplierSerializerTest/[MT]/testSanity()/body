@@ -1,6 +1,6 @@
 {
   final ByteOrder order=ByteOrder.nativeOrder();
-  CompressedFloatsSupplierSerializer serializer=new CompressedFloatsSupplierSerializer(999,new FlattenedArrayWriter<ResourceHolder<FloatBuffer>>(new IOPeonForTesting(),"test",CompressedFloatBufferObjectStrategy.getBufferForOrder(order)));
+  CompressedFloatsSupplierSerializer serializer=new CompressedFloatsSupplierSerializer(999,new GenericIndexedWriter<ResourceHolder<FloatBuffer>>(new IOPeonForTesting(),"test",CompressedFloatBufferObjectStrategy.getBufferForOrder(order)));
   serializer.open();
   final int numElements=10000;
   for (int i=0; i < numElements; ++i) {

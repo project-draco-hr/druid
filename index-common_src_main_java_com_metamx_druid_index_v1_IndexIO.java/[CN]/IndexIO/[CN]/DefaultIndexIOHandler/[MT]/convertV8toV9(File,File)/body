@@ -20,6 +20,11 @@
   while (invertedBuffer.hasRemaining()) {
     bitmapIndexes.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
   }
+  Map<String,ImmutableRTree> spatialIndexes=Maps.newHashMap();
+  final ByteBuffer spatialBuffer=v8SmooshedFiles.mapFile("spatial.drd");
+  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
+    spatialIndexes.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,IndexedRTree.objectStrategy));
+  }
   final LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
   final Set<String> skippedDimensions=Sets.newLinkedHashSet();
   for (  String filename : v8SmooshedFiles.getInternalFilenames()) {
@@ -45,6 +50,7 @@
       VSizeIndexedInts singleValCol=null;
       VSizeIndexed multiValCol=VSizeIndexed.readFromByteBuffer(dimBuffer.asReadOnlyBuffer());
       GenericIndexed<ImmutableConciseSet> bitmaps=bitmapIndexes.get(dimension);
+      ImmutableRTree spatialIndex=spatialIndexes.get(dimension);
       boolean onlyOneValue=true;
       ConciseSet nullsSet=null;
       for (int i=0; i < multiValCol.size(); ++i) {
@@ -100,7 +106,7 @@
  else {
         builder.setHasMultipleValues(true);
       }
-      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmaps));
+      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmaps,spatialIndex));
       final ColumnDescriptor serdeficator=builder.build();
       ByteArrayOutputStream baos=new ByteArrayOutputStream();
       serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
