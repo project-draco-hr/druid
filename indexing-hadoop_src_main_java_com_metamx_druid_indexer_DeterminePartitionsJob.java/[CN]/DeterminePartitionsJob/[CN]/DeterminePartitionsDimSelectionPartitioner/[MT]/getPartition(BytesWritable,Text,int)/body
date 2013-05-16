@@ -1,0 +1,9 @@
+{
+  final ByteBuffer bytes=ByteBuffer.wrap(bytesWritable.getBytes());
+  bytes.position(4);
+  final int index=bytes.getInt();
+  if (index >= numPartitions) {
+    throw new ISE("Not enough partitions, index[%,d] >= numPartitions[%,d]",index,numPartitions);
+  }
+  return index;
+}

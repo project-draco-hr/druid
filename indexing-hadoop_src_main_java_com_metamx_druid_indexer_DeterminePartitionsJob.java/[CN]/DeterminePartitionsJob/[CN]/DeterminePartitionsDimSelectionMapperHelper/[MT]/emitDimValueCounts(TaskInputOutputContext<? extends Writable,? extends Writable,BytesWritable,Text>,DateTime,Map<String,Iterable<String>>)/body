@@ -4,7 +4,11 @@
     throw new ISE("WTF?! No bucket found for timestamp: %s",timestamp);
   }
   final Interval interval=maybeInterval.get();
-  final byte[] groupKey=interval.getStart().toString().getBytes(Charsets.UTF_8);
+  final int intervalIndex=intervalIndexes.get(interval.getStart());
+  final ByteBuffer buf=ByteBuffer.allocate(4 + 8);
+  buf.putInt(intervalIndex);
+  buf.putLong(interval.getStartMillis());
+  final byte[] groupKey=buf.array();
   write(context,groupKey,new DimValueCount("","",1));
   for (  final Map.Entry<String,Iterable<String>> dimAndValues : dims.entrySet()) {
     final String dim=dimAndValues.getKey();

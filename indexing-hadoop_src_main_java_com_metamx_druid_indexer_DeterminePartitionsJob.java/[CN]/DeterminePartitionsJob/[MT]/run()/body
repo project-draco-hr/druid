@@ -47,6 +47,8 @@
     dimSelectionJob.setOutputValueClass(Text.class);
     dimSelectionJob.setOutputFormatClass(DeterminePartitionsDimSelectionOutputFormat.class);
     dimSelectionJob.setJarByClass(DeterminePartitionsJob.class);
+    dimSelectionJob.setPartitionerClass(DeterminePartitionsDimSelectionPartitioner.class);
+    dimSelectionJob.setNumReduceTasks(config.getGranularitySpec().bucketIntervals().size());
     config.intoConfiguration(dimSelectionJob);
     FileOutputFormat.setOutputPath(dimSelectionJob,config.makeIntermediatePath());
     dimSelectionJob.submit();
