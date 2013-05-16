@@ -1,4 +1,11 @@
 {
   this.config=config;
   this.partitionDimension=partitionDimension;
+  final ImmutableMap.Builder<DateTime,Integer> timeIndexBuilder=ImmutableMap.builder();
+  int idx=0;
+  for (  final Interval bucketInterval : config.getGranularitySpec().bucketIntervals()) {
+    timeIndexBuilder.put(bucketInterval.getStart(),idx);
+    idx++;
+  }
+  this.intervalIndexes=timeIndexBuilder.build();
 }
