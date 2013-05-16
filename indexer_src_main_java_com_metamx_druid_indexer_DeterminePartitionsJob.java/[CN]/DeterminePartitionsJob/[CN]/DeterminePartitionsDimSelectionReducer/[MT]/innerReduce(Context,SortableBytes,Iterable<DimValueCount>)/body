@@ -1,5 +1,7 @@
 {
-  final DateTime bucket=new DateTime(new String(keyBytes.getGroupKey(),Charsets.UTF_8));
+  final ByteBuffer groupKey=ByteBuffer.wrap(keyBytes.getGroupKey());
+  groupKey.position(4);
+  final DateTime bucket=new DateTime(groupKey.getLong());
   final PeekingIterator<DimValueCount> iterator=Iterators.peekingIterator(combinedIterable.iterator());
   log.info("Determining partitions for interval: %s",config.getGranularitySpec().bucketInterval(bucket).orNull());
   final DimValueCount firstDvc=iterator.next();
