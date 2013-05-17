@@ -5,7 +5,7 @@
     result=this.keyspace.prepareQuery(descriptorStorage).getKey(key).execute();
     ColumnList<String> children=result.getResult();
     long lastModified=children.getColumnByName("lastmodified").getLongValue();
-    log.info("Read lastModified for [" + key + "] as ["+ lastModified+ "]");
+    log.info("Read lastModified for [%s] as [%d]",key,lastModified);
     return lastModified;
   }
  catch (  ConnectionException e) {
