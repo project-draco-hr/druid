@@ -70,8 +70,8 @@
     throw new ISE("No suitable partitioning dimension found!");
   }
   int maxCardinality=Integer.MIN_VALUE;
-  long minVariance=Long.MAX_VALUE;
-  DimPartitions minVariancePartitions=null;
+  long minDistance=Long.MAX_VALUE;
+  DimPartitions minDistancePartitions=null;
   DimPartitions maxCardinalityPartitions=null;
   for (  final DimPartitions dimPartitions : dimPartitionss.values()) {
     if (dimPartitions.getRows() != totalRows) {
@@ -89,21 +89,21 @@
       continue;
     }
     final int cardinality=dimPartitions.getCardinality();
-    final long variance=dimPartitions.getVariance();
+    final long distance=dimPartitions.getDistanceSquaredFromTarget(config.getTargetPartitionSize());
     if (cardinality > maxCardinality) {
       maxCardinality=cardinality;
       maxCardinalityPartitions=dimPartitions;
     }
-    if (variance < minVariance) {
-      minVariance=variance;
-      minVariancePartitions=dimPartitions;
+    if (distance < minDistance) {
+      minDistance=distance;
+      minDistancePartitions=dimPartitions;
     }
   }
   if (maxCardinalityPartitions == null) {
     throw new ISE("No suitable partitioning dimension found!");
   }
   final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0)),config.isOverwriteFiles());
-  final DimPartitions chosenPartitions=maxCardinality > HIGH_CARDINALITY_THRESHOLD ? maxCardinalityPartitions : minVariancePartitions;
+  final DimPartitions chosenPartitions=maxCardinality > HIGH_CARDINALITY_THRESHOLD ? maxCardinalityPartitions : minDistancePartitions;
   final List<ShardSpec> chosenShardSpecs=Lists.transform(chosenPartitions.partitions,new Function<DimPartition,ShardSpec>(){
     @Override public ShardSpec apply(    DimPartition dimPartition){
       return dimPartition.shardSpec;
