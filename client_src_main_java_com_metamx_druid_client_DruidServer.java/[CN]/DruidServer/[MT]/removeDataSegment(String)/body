@@ -11,10 +11,8 @@ synchronized (lock) {
       return this;
     }
     dataSource.removePartition(segmentId);
-    if (segments.containsKey(segmentId)) {
-      segments.remove(segmentId);
-      currSize-=segment.getSize();
-    }
+    segments.remove(segmentId);
+    currSize-=segment.getSize();
     if (dataSource.isEmpty()) {
       dataSources.remove(dataSource.getName());
     }
