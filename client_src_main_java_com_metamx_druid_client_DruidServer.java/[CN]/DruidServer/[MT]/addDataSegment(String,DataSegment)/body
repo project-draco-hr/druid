@@ -6,9 +6,11 @@ synchronized (lock) {
       dataSource=new DruidDataSource(dataSourceName,ImmutableMap.of("client","side"));
       dataSources.put(dataSourceName,dataSource);
     }
-    dataSource.addSegment(segmentName,segment);
-    segments.put(segmentName,segment);
-    currSize+=segment.getSize();
+    dataSource.addSegment(segmentId,segment);
+    if (!segments.containsKey(segmentId)) {
+      segments.put(segmentId,segment);
+      currSize+=segment.getSize();
+    }
   }
   return this;
 }
