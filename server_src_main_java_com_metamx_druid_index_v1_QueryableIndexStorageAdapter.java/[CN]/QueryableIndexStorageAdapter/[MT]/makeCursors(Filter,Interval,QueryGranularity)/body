@@ -5,6 +5,9 @@
     return ImmutableList.of();
   }
   final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(getMaxTime().getMillis()));
+  if (!actualInterval.overlaps(dataInterval)) {
+    return ImmutableList.of();
+  }
   if (actualInterval.getStart().isBefore(dataInterval.getStart())) {
     actualInterval=actualInterval.withStart(dataInterval.getStart());
   }
