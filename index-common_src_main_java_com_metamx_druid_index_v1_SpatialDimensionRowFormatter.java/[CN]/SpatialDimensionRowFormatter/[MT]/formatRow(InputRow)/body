@@ -1,5 +1,5 @@
 {
-  final Map<String,List<String>> finalDimLookup=Maps.newHashMap();
+  final Map<String,List<String>> spatialLookup=Maps.newHashMap();
   final List<String> finalDims=Lists.newArrayList(Iterables.filter(Lists.transform(row.getDimensions(),new Function<String,String>(){
     @Override public String apply(    String input){
       return input.toLowerCase();
@@ -11,9 +11,6 @@
     }
   }
 ));
-  for (  String dim : finalDims) {
-    finalDimLookup.put(dim,row.getDimension(dim));
-  }
   InputRow retVal=new InputRow(){
     @Override public List<String> getDimensions(){
       return finalDims;
@@ -22,7 +19,8 @@
       return row.getTimestampFromEpoch();
     }
     @Override public List<String> getDimension(    String dimension){
-      return finalDimLookup.get(dimension);
+      List<String> retVal=spatialLookup.get(dimension);
+      return (retVal == null) ? row.getDimension(dimension) : retVal;
     }
     @Override public float getFloatMetric(    String metric){
       return row.getFloatMetric(metric);
@@ -38,7 +36,7 @@
       }
       spatialDimVals.addAll(dimVals);
     }
-    finalDimLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
+    spatialLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
     finalDims.add(spatialDimension.getDimName());
   }
   return retVal;
