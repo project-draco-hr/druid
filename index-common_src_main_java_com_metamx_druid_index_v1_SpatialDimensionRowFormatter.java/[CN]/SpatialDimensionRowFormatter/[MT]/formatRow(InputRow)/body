@@ -7,7 +7,7 @@
   }
 ),new Predicate<String>(){
     @Override public boolean apply(    String input){
-      return !spatialDimNames.contains(input);
+      return !spatialDimNames.contains(input) && !spatialPartialDimNames.contains(input);
     }
   }
 ));
@@ -27,20 +27,31 @@
     }
   }
 ;
-  for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
-    if (!row.getDimension(spatialDimension.getDimName()).isEmpty()) {
-      continue;
-    }
-    List<String> spatialDimVals=Lists.newArrayList();
-    for (    String partialSpatialDim : spatialDimension.getDims()) {
-      List<String> dimVals=row.getDimension(partialSpatialDim);
-      if (isSpatialDimValsValid(dimVals)) {
-        spatialDimVals.addAll(dimVals);
+  if (!spatialPartialDimNames.isEmpty()) {
+    for (    SpatialDimensionSchema spatialDimension : spatialDimensions) {
+      List<String> spatialDimVals=Lists.newArrayList();
+      for (      String partialSpatialDim : spatialDimension.getDims()) {
+        List<String> dimVals=row.getDimension(partialSpatialDim);
+        if (isSpatialDimValsValid(dimVals)) {
+          spatialDimVals.addAll(dimVals);
+        }
+      }
+      if (spatialDimVals.size() == spatialPartialDimNames.size()) {
+        spatialLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
+        finalDims.add(spatialDimension.getDimName());
       }
     }
-    if (spatialDimVals.size() == spatialDimNames.size()) {
-      spatialLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
-      finalDims.add(spatialDimension.getDimName());
+  }
+ else {
+    for (    String spatialDimName : spatialDimNames) {
+      List<String> dimVals=row.getDimension(spatialDimName);
+      if (dimVals.size() != 1) {
+        throw new ISE("Cannot have a spatial dimension value with size[%d]",dimVals.size());
+      }
+      if (isJoinedSpatialDimValValid(dimVals.get(0))) {
+        spatialLookup.put(spatialDimName,dimVals);
+        finalDims.add(spatialDimName);
+      }
     }
   }
   return retVal;
