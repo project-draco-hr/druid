@@ -5,7 +5,7 @@
       return new Iterator<ImmutableConciseSet>(){
         private IntSet.IntIterator iter;
         @Override public boolean hasNext(){
-          return dimValueIndexesIter.hasNext() || iter.hasNext();
+          return dimValueIndexesIter.hasNext() || (iter != null && iter.hasNext());
         }
         @Override public ImmutableConciseSet next(){
           if (iter != null && !iter.hasNext()) {
