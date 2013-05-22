@@ -31,13 +31,14 @@
     List<String> spatialDimVals=Lists.newArrayList();
     for (    String partialSpatialDim : spatialDimension.getDims()) {
       List<String> dimVals=row.getDimension(partialSpatialDim);
-      if (dimVals == null || dimVals.isEmpty()) {
-        return retVal;
+      if (isSpatialDimValsValid(dimVals)) {
+        spatialDimVals.addAll(dimVals);
       }
-      spatialDimVals.addAll(dimVals);
     }
-    spatialLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
-    finalDims.add(spatialDimension.getDimName());
+    if (!spatialDimVals.isEmpty()) {
+      spatialLookup.put(spatialDimension.getDimName(),Arrays.asList(JOINER.join(spatialDimVals)));
+      finalDims.add(spatialDimension.getDimName());
+    }
   }
   return retVal;
 }
