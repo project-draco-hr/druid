@@ -62,7 +62,11 @@
     }
   }
   for (  Pair<ServerSelector,SegmentDescriptor> segment : segments) {
-    final DruidServer server=segment.lhs.pick().getServer();
+    final QueryableDruidServer queryableDruidServer=segment.lhs.pick();
+    if (queryableDruidServer == null) {
+      log.error("No servers found for %s?! How can this be?!",segment.rhs);
+    }
+    final DruidServer server=queryableDruidServer.getServer();
     List<SegmentDescriptor> descriptors=serverSegments.get(server);
     if (descriptors == null) {
       descriptors=Lists.newArrayList();
