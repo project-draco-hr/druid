@@ -65,6 +65,10 @@
       log.info("Server[%s] removed segment[%s]",container.getName(),inventoryKey);
       final DataSegment segment=container.getSegment(inventoryKey);
       final DruidServer retVal=container.removeDataSegment(inventoryKey);
+      if (segment == null) {
+        log.warn("Not running callbacks or cleanup for non-existing segment[%s] on server[%s]",inventoryKey,container.getName());
+        return retVal;
+      }
       runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
         @Override public CallbackAction apply(        SegmentCallback input){
           return input.segmentRemoved(container,segment);

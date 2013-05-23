@@ -3,6 +3,7 @@ synchronized (lock) {
     QueryableDruidServer queryableDruidServer=clients.get(server.getName());
     if (queryableDruidServer == null) {
       log.error("WTF?! No QueryableDruidServer found for %s",server.getName());
+      return null;
     }
     return queryableDruidServer.getClient();
   }

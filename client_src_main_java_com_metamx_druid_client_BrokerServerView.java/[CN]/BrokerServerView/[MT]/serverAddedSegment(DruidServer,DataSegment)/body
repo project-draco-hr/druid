@@ -13,9 +13,10 @@ synchronized (lock) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(selector));
       selectors.put(segmentId,selector);
     }
-    if (!clients.containsKey(server.getName())) {
-      addServer(server);
+    QueryableDruidServer queryableDruidServer=clients.get(server.getName());
+    if (queryableDruidServer == null) {
+      queryableDruidServer=addServer(server);
     }
-    selector.addServer(clients.get(server.getName()));
+    selector.addServer(queryableDruidServer);
   }
 }
