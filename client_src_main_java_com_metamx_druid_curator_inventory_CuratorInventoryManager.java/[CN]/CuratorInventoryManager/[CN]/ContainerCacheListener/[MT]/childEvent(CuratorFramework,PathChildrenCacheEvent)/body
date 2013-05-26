@@ -17,7 +17,7 @@ synchronized (lock) {
         PathChildrenCache inventoryCache=cacheFactory.make(curatorFramework,inventoryPath);
         inventoryCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
         containers.put(containerKey,new ContainerHolder(container,inventoryCache));
-        log.info("Starting inventory cache for %s, inventoryPath %s",container,inventoryPath);
+        log.info("Starting inventory cache for %s, inventoryPath %s",containerKey,inventoryPath);
         inventoryCache.start();
         strategy.newContainer(container);
       }
@@ -30,8 +30,8 @@ synchronized (lock) {
       log.warn("Container[%s] removed that wasn't a container!?",child.getPath());
       break;
     }
-    log.info("Closing inventory cache for %s",containerKey);
-    removed.getCache().clear();
+    log.info("Closing inventory cache for %s. Also removing listeners.",containerKey);
+    removed.getCache().getListenable().clear();
     removed.getCache().close();
     strategy.deadContainer(removed.getContainer());
     break;
