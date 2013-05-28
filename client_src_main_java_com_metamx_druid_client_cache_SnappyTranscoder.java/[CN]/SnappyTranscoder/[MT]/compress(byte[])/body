@@ -1,0 +1,14 @@
+{
+  if (in == null) {
+    throw new NullPointerException("Can't compress null");
+  }
+  byte[] out;
+  try {
+    out=Snappy.compress(in);
+  }
+ catch (  IOException e) {
+    throw new RuntimeException("IO exception compressing data",e);
+  }
+  getLogger().debug("Compressed %d bytes to %d",in.length,out.length);
+  return out;
+}
