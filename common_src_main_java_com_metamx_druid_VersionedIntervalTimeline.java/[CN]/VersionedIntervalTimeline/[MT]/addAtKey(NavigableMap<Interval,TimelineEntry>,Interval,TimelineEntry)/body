@@ -5,7 +5,7 @@
   if (!currKey.overlaps(entryInterval)) {
     return false;
   }
-  while (currKey != null && currKey.overlaps(entryInterval)) {
+  while (entryInterval != null && currKey != null && currKey.overlaps(entryInterval)) {
     Interval nextKey=timeline.higherKey(currKey);
     int versionCompare=versionComparator.compare(entry.getVersion(),timeline.get(currKey).getVersion());
     if (versionCompare < 0) {

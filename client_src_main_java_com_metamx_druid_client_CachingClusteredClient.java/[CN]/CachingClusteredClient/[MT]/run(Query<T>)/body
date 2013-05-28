@@ -66,13 +66,15 @@
     if (queryableDruidServer == null) {
       log.error("No servers found for %s?! How can this be?!",segment.rhs);
     }
-    final DruidServer server=queryableDruidServer.getServer();
-    List<SegmentDescriptor> descriptors=serverSegments.get(server);
-    if (descriptors == null) {
-      descriptors=Lists.newArrayList();
-      serverSegments.put(server,descriptors);
+ else {
+      final DruidServer server=queryableDruidServer.getServer();
+      List<SegmentDescriptor> descriptors=serverSegments.get(server);
+      if (descriptors == null) {
+        descriptors=Lists.newArrayList();
+        serverSegments.put(server,descriptors);
+      }
+      descriptors.add(segment.rhs);
     }
-    descriptors.add(segment.rhs);
   }
   return new LazySequence<T>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
