@@ -5,7 +5,7 @@
         @Override public Future<List<T>> apply(        final QueryRunner<T> input){
           return exec.submit(new PrioritizedCallable<List<T>>(){
             @Override public int getPriority(){
-              return Ints.tryParse(query.getContextValue("priority",Integer.toString(Queries.Priority.NORMAL.ordinal())));
+              return Queries.Priority.valueOf(query.getContextValue("priority",Queries.Priority.NORMAL.name())).ordinal();
             }
             @Override public List<T> call() throws Exception {
               try {

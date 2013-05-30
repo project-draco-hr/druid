@@ -1,3 +1,15 @@
 {
-  return new PrioritizedFuture<T>((PrioritizedCallable)tCallable);
+  Callable<T> theCallable=tCallable;
+  if (!(tCallable instanceof PrioritizedCallable)) {
+    theCallable=new PrioritizedCallable<T>(){
+      @Override public int getPriority(){
+        return Queries.Priority.NORMAL.ordinal();
+      }
+      @Override public T call() throws Exception {
+        return tCallable.call();
+      }
+    }
+;
+  }
+  return new PrioritizedFuture<T>((PrioritizedCallable)theCallable);
 }

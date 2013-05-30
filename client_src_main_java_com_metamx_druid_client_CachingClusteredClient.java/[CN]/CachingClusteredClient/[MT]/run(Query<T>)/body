@@ -7,7 +7,7 @@
   final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null;
   final boolean populateCache=Boolean.parseBoolean(query.getContextValue("populateCache","true")) && strategy != null;
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
-  final String priority=query.getContextValue("priority",Integer.toString(Queries.Priority.NORMAL.ordinal()));
+  final String priority=query.getContextValue("priority",Queries.Priority.NORMAL.name());
   final Query<T> prioritizedQuery=query.withOverriddenContext(ImmutableMap.of("priority",priority));
   final Query<T> rewrittenQuery;
   if (populateCache) {
