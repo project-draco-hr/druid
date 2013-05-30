@@ -1,0 +1,55 @@
+{
+  final ConcurrentLinkedQueue<Queries.Priority> order=new ConcurrentLinkedQueue<Queries.Priority>();
+  exec.submit(new PrioritizedCallable<Void>(){
+    @Override public int getPriority(){
+      return Queries.Priority.NORMAL.ordinal();
+    }
+    @Override public Void call() throws Exception {
+      latch.await();
+      return null;
+    }
+  }
+);
+  exec.submit(new PrioritizedCallable<Void>(){
+    @Override public int getPriority(){
+      return Queries.Priority.LOW.ordinal();
+    }
+    @Override public Void call() throws Exception {
+      order.add(Queries.Priority.LOW);
+      finishLatch.countDown();
+      return null;
+    }
+  }
+);
+  exec.submit(new PrioritizedCallable<Void>(){
+    @Override public int getPriority(){
+      return Queries.Priority.HIGH.ordinal();
+    }
+    @Override public Void call() throws Exception {
+      order.add(Queries.Priority.HIGH);
+      finishLatch.countDown();
+      return null;
+    }
+  }
+);
+  exec.submit(new PrioritizedCallable<Void>(){
+    @Override public int getPriority(){
+      return Queries.Priority.NORMAL.ordinal();
+    }
+    @Override public Void call() throws Exception {
+      order.add(Queries.Priority.NORMAL);
+      finishLatch.countDown();
+      return null;
+    }
+  }
+);
+  latch.countDown();
+  finishLatch.await();
+  Assert.assertTrue(order.size() == 3);
+  List<Queries.Priority> expected=Lists.newArrayList(Queries.Priority.HIGH,Queries.Priority.NORMAL,Queries.Priority.LOW);
+  int i=0;
+  for (  Queries.Priority priority : order) {
+    Assert.assertEquals(expected.get(i),priority);
+    i++;
+  }
+}

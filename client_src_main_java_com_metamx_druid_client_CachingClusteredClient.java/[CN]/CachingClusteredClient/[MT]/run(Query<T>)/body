@@ -7,14 +7,16 @@
   final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null;
   final boolean populateCache=Boolean.parseBoolean(query.getContextValue("populateCache","true")) && strategy != null;
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
+  final String priority=query.getContextValue("priority",Integer.toString(Queries.Priority.NORMAL.ordinal()));
+  final Query<T> prioritizedQuery=query.withOverriddenContext(ImmutableMap.of("priority",priority));
   final Query<T> rewrittenQuery;
   if (populateCache) {
-    rewrittenQuery=query.withOverriddenContext(ImmutableMap.of("bySegment","true","intermediate","true"));
+    rewrittenQuery=prioritizedQuery.withOverriddenContext(ImmutableMap.of("bySegment","true","intermediate","true"));
   }
  else {
-    rewrittenQuery=query.withOverriddenContext(ImmutableMap.of("intermediate","true"));
+    rewrittenQuery=prioritizedQuery.withOverriddenContext(ImmutableMap.of("intermediate","true"));
   }
-  VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
+  VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(prioritizedQuery.getDataSource());
   if (timeline == null) {
     return Sequences.empty();
   }
@@ -23,7 +25,7 @@
   for (  Interval interval : rewrittenQuery.getIntervals()) {
     serversLookup.addAll(timeline.lookup(interval));
   }
-  final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
+  final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(prioritizedQuery,serversLookup);
   for (  TimelineObjectHolder<String,ServerSelector> holder : filteredServersLookup) {
     for (    PartitionChunk<ServerSelector> chunk : holder.getObject()) {
       ServerSelector selector=chunk.getObject();
@@ -33,7 +35,7 @@
   }
   final byte[] queryCacheKey;
   if (strategy != null) {
-    queryCacheKey=strategy.computeCacheKey(query);
+    queryCacheKey=strategy.computeCacheKey(prioritizedQuery);
   }
  else {
     queryCacheKey=null;
