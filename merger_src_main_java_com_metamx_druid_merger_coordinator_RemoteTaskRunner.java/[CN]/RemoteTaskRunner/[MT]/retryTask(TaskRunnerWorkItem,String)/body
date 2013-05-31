@@ -4,7 +4,7 @@
     log.info("Retry scheduled in %s for %s",taskRunnerWorkItem.getRetryPolicy().getRetryDelay(),taskId);
     scheduledExec.schedule(new Runnable(){
       @Override public void run(){
-        cleanup(workerId,taskId);
+        runningTasks.remove(taskId);
         addPendingTask(taskRunnerWorkItem);
       }
     }
