@@ -62,13 +62,19 @@
     }
   }
   for (  Pair<ServerSelector,SegmentDescriptor> segment : segments) {
-    final DruidServer server=segment.lhs.pick().getServer();
-    List<SegmentDescriptor> descriptors=serverSegments.get(server);
-    if (descriptors == null) {
-      descriptors=Lists.newArrayList();
-      serverSegments.put(server,descriptors);
+    final QueryableDruidServer queryableDruidServer=segment.lhs.pick();
+    if (queryableDruidServer == null) {
+      log.error("No servers found for %s?! How can this be?!",segment.rhs);
     }
-    descriptors.add(segment.rhs);
+ else {
+      final DruidServer server=queryableDruidServer.getServer();
+      List<SegmentDescriptor> descriptors=serverSegments.get(server);
+      if (descriptors == null) {
+        descriptors=Lists.newArrayList();
+        serverSegments.put(server,descriptors);
+      }
+      descriptors.add(segment.rhs);
+    }
   }
   return new LazySequence<T>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
@@ -117,7 +123,8 @@
         final List<SegmentDescriptor> descriptors=entry.getValue();
         final QueryRunner clientQueryable=serverView.getQueryRunner(server);
         if (clientQueryable == null) {
-          throw new ISE("WTF!? server[%s] doesn't have a client Queryable?",server);
+          log.makeAlert("WTF!? server[%s] doesn't have a client Queryable?",server).emit();
+          continue;
         }
         final Sequence<T> resultSeqToAdd;
         final MultipleSpecificSegmentSpec segmentSpec=new MultipleSpecificSegmentSpec(descriptors);

@@ -1,0 +1,10 @@
+{
+  SegmentLoaderConfig config=configFactory.build(SegmentLoaderConfig.class);
+  DelegatingSegmentLoader delegateLoader=new DelegatingSegmentLoader();
+  final QueryableIndexFactory factory=new MMappedQueryableIndexFactory();
+  final RestS3Service s3Client=new RestS3Service(new AWSCredentials(props.getProperty("com.metamx.aws.accessKey",""),props.getProperty("com.metamx.aws.secretKey","")));
+  final S3DataSegmentPuller segmentGetter=new S3DataSegmentPuller(s3Client);
+  final SingleSegmentLoader s3segmentLoader=new SingleSegmentLoader(segmentGetter,factory,config);
+  delegateLoader.setLoaderTypes(ImmutableMap.<String,SegmentLoader>builder().put("local",new SingleSegmentLoader(new LocalDataSegmentPuller(),factory,config)).put("hdfs",new SingleSegmentLoader(new HdfsDataSegmentPuller(new Configuration()),factory,config)).put("s3",s3segmentLoader).put("s3_zip",s3segmentLoader).put("c*",new SingleSegmentLoader(new CassandraDataSegmentPuller(configFactory.build(CassandraDataSegmentConfig.class)),factory,config)).build());
+  return delegateLoader;
+}

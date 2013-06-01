@@ -2,6 +2,7 @@
   giant.lock();
   try {
     Preconditions.checkState(active,"Queue is not active!");
+    Preconditions.checkNotNull(task,"task");
     try {
       taskStorage.insert(task,TaskStatus.running(task.getId()));
     }

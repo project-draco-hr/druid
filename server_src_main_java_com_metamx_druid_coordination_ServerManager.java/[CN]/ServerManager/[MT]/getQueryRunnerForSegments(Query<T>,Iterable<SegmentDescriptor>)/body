@@ -23,6 +23,6 @@
       return Arrays.asList(buildAndDecorateQueryRunner(factory,toolChest,adapter,new SpecificSegmentSpec(input)));
     }
   }
-);
+).filter(Predicates.<QueryRunner<T>>notNull());
   return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,adapters)),toolChest);
 }

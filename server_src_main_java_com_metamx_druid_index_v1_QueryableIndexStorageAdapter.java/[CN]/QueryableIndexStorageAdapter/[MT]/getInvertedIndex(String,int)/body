@@ -6,5 +6,6 @@
   if (!column.getCapabilities().hasBitmapIndexes()) {
     return new ImmutableConciseSet();
   }
-  return column.getBitmapIndex().getConciseSet(idx);
+  final int index=column.getBitmapIndex().hasNulls() ? idx + 1 : idx;
+  return column.getBitmapIndex().getConciseSet(index);
 }

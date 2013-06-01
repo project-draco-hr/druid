@@ -73,7 +73,7 @@
   }
   List<Task> nextTasks=Lists.transform(shardSpecs,new Function<ShardSpec,Task>(){
     @Override public Task apply(    ShardSpec shardSpec){
-      return new IndexGeneratorTask(null,getGroupId(),getImplicitLockInterval().get(),firehoseFactory,new Schema(schema.getDataSource(),schema.getAggregators(),schema.getIndexGranularity(),shardSpec),rowFlushBoundary);
+      return new IndexGeneratorTask(null,getGroupId(),getImplicitLockInterval().get(),firehoseFactory,new Schema(schema.getDataSource(),schema.getSpatialDimensions(),schema.getAggregators(),schema.getIndexGranularity(),shardSpec),rowFlushBoundary);
     }
   }
 );

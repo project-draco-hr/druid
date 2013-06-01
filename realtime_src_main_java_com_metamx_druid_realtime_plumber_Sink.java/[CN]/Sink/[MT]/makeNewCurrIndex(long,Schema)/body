@@ -1,5 +1,5 @@
 {
-  IncrementalIndex newIndex=new IncrementalIndex(minTimestamp,schema.getIndexGranularity(),schema.getAggregators());
+  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getIndexGranularity()).withSpatialDimensions(schema.getSpatialDimensions()).withMetrics(schema.getAggregators()).build());
   FireHydrant old;
   if (currIndex == null) {
     old=currIndex;
