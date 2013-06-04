@@ -90,6 +90,7 @@
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
+  root.addFilter(GzipFilter.class,"/*",0);
   root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
   root.addFilter(GuiceFilter.class,"/info/*",0);
   root.addFilter(GuiceFilter.class,"/master/*",0);

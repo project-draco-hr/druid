@@ -19,6 +19,7 @@
   final Context root=new Context(getServer(),"/",Context.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),texasRanger,getEmitter(),getRequestLogger())),"/druid/v2/*");
+  root.addFilter(GzipFilter.class,"/*",0);
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(GuiceFilter.class,"/druid/v2/datasources/*",0);
   for (  String path : pathsForGuiceFilter) {
