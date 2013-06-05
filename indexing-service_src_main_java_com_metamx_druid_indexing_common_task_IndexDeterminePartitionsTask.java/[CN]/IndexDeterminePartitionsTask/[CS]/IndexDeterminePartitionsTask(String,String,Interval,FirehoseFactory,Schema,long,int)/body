@@ -1,5 +1,5 @@
 {
-  super(id != null ? id : String.format("%s_partitions_%s_%s",groupId,interval.getStart(),interval.getEnd()),groupId,schema.getDataSource(),Preconditions.checkNotNull(interval,"interval"));
+  super(id != null ? id : makeTaskId(groupId,interval.getStart(),interval.getEnd()),groupId,makeTaskId(groupId,interval.getStart(),interval.getEnd()),schema.getDataSource(),Preconditions.checkNotNull(interval,"interval"));
   this.firehoseFactory=firehoseFactory;
   this.schema=schema;
   this.targetPartitionSize=targetPartitionSize;

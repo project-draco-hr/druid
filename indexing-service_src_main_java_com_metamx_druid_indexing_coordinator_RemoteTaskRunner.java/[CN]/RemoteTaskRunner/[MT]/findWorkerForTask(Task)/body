@@ -1,0 +1,23 @@
+{
+  try {
+    final MinMaxPriorityQueue<ZkWorker> workerQueue=MinMaxPriorityQueue.<ZkWorker>orderedBy(new Comparator<ZkWorker>(){
+      @Override public int compare(      ZkWorker w1,      ZkWorker w2){
+        return -Ints.compare(w1.getRunningTasks().size(),w2.getRunningTasks().size());
+      }
+    }
+).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<ZkWorker>(){
+      @Override public boolean apply(      ZkWorker input){
+        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0 && !input.getAvailabilityGroups().contains(task.getAvailabilityGroup()));
+      }
+    }
+));
+    if (workerQueue.isEmpty()) {
+      log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
+      return null;
+    }
+    return workerQueue.peek();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
