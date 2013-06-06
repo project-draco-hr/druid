@@ -4,7 +4,8 @@ synchronized (lock) {
     if (!started) {
       return;
     }
-    curatorFramework.delete().guaranteed().forPath(getAnnouncementsPathForWorker());
+    announcer.unannounce(getAnnouncementsPathForWorker());
+    announcer.stop();
     started=false;
   }
 }

@@ -7,7 +7,13 @@
     }
 ).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<ZkWorker>(){
       @Override public boolean apply(      ZkWorker input){
-        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0 && !input.getAvailabilityGroups().contains(task.getAvailabilityGroup()));
+        for (        String taskId : input.getRunningTasks()) {
+          TaskRunnerWorkItem workerTask=runningTasks.get(taskId);
+          if (workerTask != null && task.getAvailabilityGroup().equalsIgnoreCase(workerTask.getTask().getAvailabilityGroup())) {
+            return false;
+          }
+        }
+        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0);
       }
     }
 ));

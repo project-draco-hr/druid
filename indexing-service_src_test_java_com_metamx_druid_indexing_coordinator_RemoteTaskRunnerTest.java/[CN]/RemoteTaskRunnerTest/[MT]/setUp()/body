@@ -1,7 +1,7 @@
 {
   testingCluster=new TestingCluster(1);
   testingCluster.start();
-  cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).build();
+  cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).compressionProvider(new PotentiallyGzippedCompressionProvider(false)).build();
   cf.start();
   cf.create().creatingParentsIfNeeded().forPath(announcementsPath);
   cf.create().forPath(tasksPath);

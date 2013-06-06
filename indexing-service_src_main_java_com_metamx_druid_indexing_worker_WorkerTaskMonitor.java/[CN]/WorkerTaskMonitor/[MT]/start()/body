@@ -6,14 +6,14 @@
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
           final Task task=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
           if (isTaskRunning(task)) {
-            log.warn("Got task %s that I am already running...",task.getId());
+            log.warn("I can't build it. There's something in the way. Got task %s that I am already running...",task.getId());
             workerCuratorCoordinator.unannounceTask(task.getId());
             return;
           }
           exec.submit(new Runnable(){
             @Override public void run(){
               final long startTime=System.currentTimeMillis();
-              log.info("Running task [%s]",task.getId());
+              log.info("Affirmative. Running task [%s]",task.getId());
               running.add(task);
               TaskStatus taskStatus;
               try {
@@ -22,7 +22,7 @@
                 taskStatus=taskRunner.run(task).get();
               }
  catch (              Exception e) {
-                log.makeAlert(e,"Failed to run task").addData("task",task.getId()).emit();
+                log.makeAlert(e,"I can't build there. Failed to run task").addData("task",task.getId()).emit();
                 taskStatus=TaskStatus.failure(task.getId());
               }
  finally {
@@ -31,7 +31,7 @@
               taskStatus=taskStatus.withDuration(System.currentTimeMillis() - startTime);
               try {
                 workerCuratorCoordinator.updateStatus(taskStatus);
-                log.info("Completed task [%s] with status [%s]",task.getId(),taskStatus.getStatusCode());
+                log.info("Job's finished. Completed [%s] with status [%s]",task.getId(),taskStatus.getStatusCode());
               }
  catch (              Exception e) {
                 log.makeAlert(e,"Failed to update task status").addData("task",task.getId()).emit();
