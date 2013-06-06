@@ -7,13 +7,14 @@
   final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null;
   final boolean populateCache=Boolean.parseBoolean(query.getContextValue("populateCache","true")) && strategy != null;
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
-  final Query<T> rewrittenQuery;
+  ImmutableMap.Builder<String,String> contextBuilder=new ImmutableMap.Builder<String,String>();
+  final String priority=query.getContextValue("priority","0");
+  contextBuilder.put("priority",priority);
   if (populateCache) {
-    rewrittenQuery=query.withOverriddenContext(ImmutableMap.of("bySegment","true","intermediate","true"));
+    contextBuilder.put("bySegment","true");
   }
- else {
-    rewrittenQuery=query.withOverriddenContext(ImmutableMap.of("intermediate","true"));
-  }
+  contextBuilder.put("intermediate","true");
+  final Query<T> rewrittenQuery=query.withOverriddenContext(contextBuilder.build());
   VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
   if (timeline == null) {
     return Sequences.empty();
