@@ -1,0 +1,28 @@
+{
+  initializeHttpClient();
+  initializeEmitter();
+  initializeS3Service();
+  initializeMonitors();
+  initializeMergerConfig();
+  initializeServiceDiscovery();
+  initializeDataSegmentPusher();
+  initializeTaskToolbox();
+  initializeTaskRunner();
+  initializeChatHandlerProvider();
+  initializeJacksonInjections();
+  initializeJacksonSubtypes();
+  initializeServer();
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  lifecycle.addManagedInstance(monitorScheduler);
+  executorLifecycle=executorLifecycleFactory.build(taskRunner,getJsonMapper());
+  lifecycle.addManagedInstance(executorLifecycle);
+  final Injector injector=Guice.createInjector(new ExecutorServletModule(getJsonMapper(),chatHandlerProvider));
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  root.addEventListener(new GuiceServletConfig(injector));
+  root.addFilter(GuiceFilter.class,"/druid/worker/v1/*",0);
+  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),taskRunner,emitter,getRequestLogger())),"/druid/v2/*");
+}

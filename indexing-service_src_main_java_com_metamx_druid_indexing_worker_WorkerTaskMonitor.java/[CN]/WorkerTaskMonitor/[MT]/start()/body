@@ -1,0 +1,50 @@
+{
+  try {
+    pathChildrenCache.start();
+    pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
+      @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+        if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
+          final Task task=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
+          if (isTaskRunning(task)) {
+            log.warn("I can't build it. There's something in the way. Got task %s that I am already running...",task.getId());
+            workerCuratorCoordinator.unannounceTask(task.getId());
+            return;
+          }
+          exec.submit(new Runnable(){
+            @Override public void run(){
+              final long startTime=System.currentTimeMillis();
+              log.info("Affirmative. Running task [%s]",task.getId());
+              running.add(task);
+              TaskStatus taskStatus;
+              try {
+                workerCuratorCoordinator.unannounceTask(task.getId());
+                workerCuratorCoordinator.announceStatus(TaskStatus.running(task.getId()));
+                taskStatus=taskRunner.run(task).get();
+              }
+ catch (              Exception e) {
+                log.makeAlert(e,"I can't build there. Failed to run task").addData("task",task.getId()).emit();
+                taskStatus=TaskStatus.failure(task.getId());
+              }
+ finally {
+                running.remove(task);
+              }
+              taskStatus=taskStatus.withDuration(System.currentTimeMillis() - startTime);
+              try {
+                workerCuratorCoordinator.updateStatus(taskStatus);
+                log.info("Job's finished. Completed [%s] with status [%s]",task.getId(),taskStatus.getStatusCode());
+              }
+ catch (              Exception e) {
+                log.makeAlert(e,"Failed to update task status").addData("task",task.getId()).emit();
+              }
+            }
+          }
+);
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception starting WorkerTaskMonitor").addData("exception",e.toString()).emit();
+  }
+}

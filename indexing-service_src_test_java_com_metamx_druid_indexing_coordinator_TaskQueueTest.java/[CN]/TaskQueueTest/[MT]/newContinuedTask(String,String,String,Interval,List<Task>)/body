@@ -1,0 +1,12 @@
+{
+  return new AbstractTask(id,groupId,id,dataSource,interval){
+    @Override public String getType(){
+      return "null";
+    }
+    @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
+      toolbox.getTaskActionClient().submit(new SpawnTasksAction(nextTasks));
+      return TaskStatus.success(id);
+    }
+  }
+;
+}

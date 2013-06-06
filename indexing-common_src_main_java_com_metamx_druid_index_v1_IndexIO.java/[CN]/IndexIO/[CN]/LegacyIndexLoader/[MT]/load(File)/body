@@ -1,0 +1,29 @@
+{
+  MMappedIndex index=IndexIO.mapDir(inDir);
+  Map<String,Column> columns=Maps.newHashMap();
+  for (  String dimension : index.getAvailableDimensions()) {
+    ColumnBuilder builder=new ColumnBuilder().setType(ValueType.STRING).setHasMultipleValues(true).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(index.getDimValueLookup(dimension),null,(index.getDimColumn(dimension)))).setBitmapIndex(new BitmapIndexColumnPartSupplier(index.getInvertedIndexes().get(dimension),index.getDimValueLookup(dimension)));
+    if (index.getSpatialIndexes().get(dimension) != null) {
+      builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(index.getSpatialIndexes().get(dimension)));
+    }
+    columns.put(dimension.toLowerCase(),builder.build());
+  }
+  for (  String metric : index.getAvailableMetrics()) {
+    final MetricHolder metricHolder=index.getMetricHolder(metric);
+    if (metricHolder.getType() == MetricHolder.MetricType.FLOAT) {
+      columns.put(metric.toLowerCase(),new ColumnBuilder().setType(ValueType.FLOAT).setGenericColumn(new FloatGenericColumnSupplier(metricHolder.floatType,BYTE_ORDER)).build());
+    }
+ else     if (metricHolder.getType() == MetricHolder.MetricType.COMPLEX) {
+      columns.put(metric.toLowerCase(),new ColumnBuilder().setType(ValueType.COMPLEX).setComplexColumn(new ComplexColumnPartSupplier(metricHolder.getTypeName(),(GenericIndexed)metricHolder.complexType)).build());
+    }
+  }
+  Set<String> colSet=Sets.newTreeSet();
+  for (  String dimension : index.getAvailableDimensions()) {
+    colSet.add(dimension.toLowerCase());
+  }
+  for (  String metric : index.getAvailableMetrics()) {
+    colSet.add(metric.toLowerCase());
+  }
+  String[] cols=colSet.toArray(new String[colSet.size()]);
+  return new SimpleQueryableIndex(index.getDataInterval(),new ArrayIndexed<String>(cols,String.class),index.getAvailableDimensions(),new ColumnBuilder().setType(ValueType.LONG).setGenericColumn(new LongGenericColumnSupplier(index.timestamps)).build(),columns);
+}

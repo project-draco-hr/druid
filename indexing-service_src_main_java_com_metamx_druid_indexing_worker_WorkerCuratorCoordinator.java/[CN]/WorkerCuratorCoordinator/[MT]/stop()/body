@@ -1,0 +1,11 @@
+{
+  log.info("Stopping WorkerCuratorCoordinator for worker[%s]",worker.getHost());
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    announcer.unannounce(getAnnouncementsPathForWorker());
+    announcer.stop();
+    started=false;
+  }
+}

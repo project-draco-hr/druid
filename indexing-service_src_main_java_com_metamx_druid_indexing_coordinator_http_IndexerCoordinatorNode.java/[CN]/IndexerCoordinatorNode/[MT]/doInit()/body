@@ -1,0 +1,56 @@
+{
+  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(getLifecycle());
+  initializeDB();
+  final ConfigManagerConfig managerConfig=getConfigFactory().build(ConfigManagerConfig.class);
+  DbConnector.createConfigTable(dbi,managerConfig.getConfigTable());
+  JacksonConfigManager configManager=new JacksonConfigManager(getLifecycle().addManagedInstance(new ConfigManager(dbi,managerConfig)),getJsonMapper());
+  initializeHttpClient();
+  initializeEmitter();
+  initializeMonitors();
+  initializeIndexerCoordinatorConfig();
+  initializeMergeDBCoordinator();
+  initializeJacksonSubtypes();
+  initializeJacksonInjections();
+  initializeServiceDiscovery();
+  initializeTaskStorage();
+  initializeTaskLockbox();
+  initializeTaskQueue();
+  initializeIndexerZkConfig();
+  initializeTaskActionClientFactory();
+  initializeTaskRunnerFactory(configManager);
+  initializeResourceManagement(configManager);
+  initializeTaskMasterLifecycle();
+  initializePersistentTaskLogs();
+  initializeTaskLogProvider();
+  initializeServer();
+  final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+  final MonitorScheduler monitorScheduler=new MonitorScheduler(getConfigFactory().build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
+  getLifecycle().addManagedInstance(monitorScheduler);
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),taskLogProvider,configManager));
+  final Context staticContext=new Context(server,"/static",Context.SESSIONS);
+  staticContext.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  ResourceCollection resourceCollection=new ResourceCollection(new String[]{IndexerCoordinatorNode.class.getClassLoader().getResource("static").toExternalForm(),IndexerCoordinatorNode.class.getClassLoader().getResource("indexer_static").toExternalForm()});
+  staticContext.setBaseResource(resourceCollection);
+  final Context root=new Context(server,"/",Context.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/druid/*");
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
+  root.addEventListener(new GuiceServletConfig(injector));
+  root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),new RedirectInfo(){
+    @Override public boolean doLocal(){
+      return taskMasterLifecycle.isLeading();
+    }
+    @Override public URL getRedirectURL(    String queryString,    String requestURI){
+      try {
+        return new URL(String.format("http://%s%s",taskMasterLifecycle.getLeader(),requestURI));
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+)),"/*",0);
+  root.addFilter(GuiceFilter.class,"/druid/indexer/v1/*",0);
+  root.addFilter(GuiceFilter.class,"/mmx/merger/v1/*",0);
+  initialized=true;
+}

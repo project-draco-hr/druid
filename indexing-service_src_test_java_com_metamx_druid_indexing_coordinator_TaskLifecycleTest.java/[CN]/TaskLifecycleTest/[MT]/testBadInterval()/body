@@ -1,0 +1,18 @@
+{
+  final Task task=new AbstractTask("id1","id1","id1","ds",new Interval("2012-01-01/P1D")){
+    @Override public String getType(){
+      return "test";
+    }
+    @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
+      final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+      final DataSegment segment=DataSegment.builder().dataSource("ds").interval(new Interval("2012-01-01/P2D")).version(myLock.getVersion()).build();
+      toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.of(segment)));
+      return TaskStatus.success(getId());
+    }
+  }
+;
+  final TaskStatus status=runTask(task);
+  Assert.assertEquals("statusCode",TaskStatus.Status.FAILED,status.getStatusCode());
+  Assert.assertEquals("segments published",0,mdc.getPublished().size());
+  Assert.assertEquals("segments nuked",0,mdc.getNuked().size());
+}
