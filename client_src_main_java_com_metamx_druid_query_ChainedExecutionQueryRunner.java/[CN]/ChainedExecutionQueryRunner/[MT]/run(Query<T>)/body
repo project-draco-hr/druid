@@ -1,11 +1,12 @@
 {
+  final int priority=Ints.tryParse(query.getContextValue("priority","0"));
   return new BaseSequence<T,Iterator<T>>(new BaseSequence.IteratorMaker<T,Iterator<T>>(){
     @Override public Iterator<T> make(){
       List<Future<List<T>>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,Future<List<T>>>(){
         @Override public Future<List<T>> apply(        final QueryRunner<T> input){
           return exec.submit(new PrioritizedCallable<List<T>>(){
             @Override public int getPriority(){
-              return Queries.Priority.valueOf(query.getContextValue("priority",Queries.Priority.NORMAL.name())).ordinal();
+              return priority;
             }
             @Override public List<T> call() throws Exception {
               try {
