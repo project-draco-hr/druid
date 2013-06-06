@@ -28,7 +28,12 @@
   final DatabaseSegmentManager databaseSegmentManager=new DatabaseSegmentManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseSegmentManager-Exec--%d"),configFactory.build(DatabaseSegmentManagerConfig.class),dbi);
   final DatabaseRuleManager databaseRuleManager=new DatabaseRuleManager(jsonMapper,scheduledExecutorFactory.create(1,"DatabaseRuleManager-Exec--%d"),databaseRuleManagerConfig,dbi);
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
-  final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of(new JvmMonitor(),new SysMonitor()));
+  final List<Monitor> monitors=Lists.newArrayList();
+  monitors.add(new JvmMonitor());
+  if (Boolean.parseBoolean(props.getProperty("druid.monitoring.monitorSystem","false"))) {
+    monitors.add(new SysMonitor());
+  }
+  final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(healthMonitor);
   final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
   final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
