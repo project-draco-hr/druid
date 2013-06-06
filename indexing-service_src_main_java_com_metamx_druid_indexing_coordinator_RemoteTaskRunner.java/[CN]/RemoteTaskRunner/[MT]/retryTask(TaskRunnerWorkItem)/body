@@ -1,0 +1,21 @@
+{
+  final String taskId=taskRunnerWorkItem.getTask().getId();
+  if (tasksToRetry.contains(taskId)) {
+    return;
+  }
+  tasksToRetry.add(taskId);
+  if (!taskRunnerWorkItem.getRetryPolicy().hasExceededRetryThreshold()) {
+    log.info("Retry scheduled in %s for %s",taskRunnerWorkItem.getRetryPolicy().getRetryDelay(),taskId);
+    scheduledExec.schedule(new Runnable(){
+      @Override public void run(){
+        runningTasks.remove(taskId);
+        tasksToRetry.remove(taskId);
+        addPendingTask(taskRunnerWorkItem);
+      }
+    }
+,taskRunnerWorkItem.getRetryPolicy().getAndIncrementRetryDelay().getMillis(),TimeUnit.MILLISECONDS);
+  }
+ else {
+    log.makeAlert("Task exceeded retry threshold").addData("task",taskId).emit();
+  }
+}

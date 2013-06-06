@@ -1,0 +1,112 @@
+{
+synchronized (tasks) {
+    if (!tasks.containsKey(task.getId())) {
+      tasks.put(task.getId(),new TaskInfo(exec.submit(new Callable<TaskStatus>(){
+        @Override public TaskStatus call(){
+          final String attemptUUID=UUID.randomUUID().toString();
+          final File taskDir=new File(config.getBaseTaskDir(),task.getId());
+          final File attemptDir=new File(taskDir,attemptUUID);
+          final ProcessHolder processHolder;
+          try {
+            if (!attemptDir.mkdirs()) {
+              throw new IOException(String.format("Could not create directories: %s",attemptDir));
+            }
+            final File taskFile=new File(attemptDir,"task.json");
+            final File statusFile=new File(attemptDir,"status.json");
+            final File logFile=new File(attemptDir,"log");
+synchronized (tasks) {
+              final TaskInfo taskInfo=tasks.get(task.getId());
+              if (taskInfo.shutdown) {
+                throw new IllegalStateException("Task has been shut down!");
+              }
+              if (taskInfo == null) {
+                throw new ISE("WTF?! TaskInfo disappeared for task: %s",task.getId());
+              }
+              if (taskInfo.processHolder != null) {
+                throw new ISE("WTF?! TaskInfo already has a process holder for task: %s",task.getId());
+              }
+              final List<String> command=Lists.newArrayList();
+              final int childPort=findUnusedPort();
+              final String childHost=String.format(config.getHostPattern(),childPort);
+              command.add(config.getJavaCommand());
+              command.add("-cp");
+              command.add(config.getJavaClasspath());
+              Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
+              for (              String propName : props.stringPropertyNames()) {
+                command.add(String.format("-D%s=%s",propName,props.getProperty(propName)));
+              }
+              for (              String propName : props.stringPropertyNames()) {
+                if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
+                  command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
+                }
+              }
+              String nodeType=task.getNodeType();
+              if (nodeType != null) {
+                command.add(String.format("-Ddruid.executor.nodeType=%s",nodeType));
+              }
+              command.add(String.format("-Ddruid.host=%s",childHost));
+              command.add(String.format("-Ddruid.port=%d",childPort));
+              command.add(config.getMainClass());
+              command.add(taskFile.toString());
+              command.add(statusFile.toString());
+              jsonMapper.writeValue(taskFile,task);
+              log.info("Running command: %s",Joiner.on(" ").join(command));
+              taskInfo.processHolder=new ProcessHolder(new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,childPort);
+              processHolder=taskInfo.processHolder;
+            }
+            log.info("Logging task %s output to: %s",task.getId(),logFile);
+            final OutputStream toProc=processHolder.process.getOutputStream();
+            final InputStream fromProc=processHolder.process.getInputStream();
+            final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput();
+            boolean runFailed=false;
+            try {
+              ByteStreams.copy(fromProc,toLogfile);
+              final int statusCode=processHolder.process.waitFor();
+              log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
+              if (statusCode != 0) {
+                runFailed=true;
+              }
+            }
+ catch (            Exception e) {
+              log.warn(e,"Failed to read from process for task: %s",task.getId());
+              runFailed=true;
+            }
+ finally {
+              Closeables.closeQuietly(fromProc);
+              Closeables.closeQuietly(toLogfile);
+              Closeables.closeQuietly(toProc);
+            }
+            taskLogPusher.pushTaskLog(task.getId(),logFile);
+            if (!runFailed) {
+              return jsonMapper.readValue(statusFile,TaskStatus.class);
+            }
+ else {
+              return TaskStatus.failure(task.getId());
+            }
+          }
+ catch (          Exception e) {
+            log.info(e,"Exception caught during execution");
+            throw Throwables.propagate(e);
+          }
+ finally {
+            try {
+synchronized (tasks) {
+                final TaskInfo taskInfo=tasks.remove(task.getId());
+                if (taskInfo != null && taskInfo.processHolder != null) {
+                  taskInfo.processHolder.process.destroy();
+                }
+              }
+              log.info("Removing temporary directory: %s",attemptDir);
+              FileUtils.deleteDirectory(attemptDir);
+            }
+ catch (            Exception e) {
+              log.error(e,"Suppressing exception caught while cleaning up task");
+            }
+          }
+        }
+      }
+)));
+    }
+    return tasks.get(task.getId()).statusFuture;
+  }
+}

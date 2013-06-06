@@ -1,0 +1,12 @@
+{
+  bind(IndexerCoordinatorResource.class);
+  bind(OldIndexerCoordinatorResource.class);
+  bind(ObjectMapper.class).toInstance(jsonMapper);
+  bind(IndexerCoordinatorConfig.class).toInstance(indexerCoordinatorConfig);
+  bind(ServiceEmitter.class).toInstance(emitter);
+  bind(TaskMasterLifecycle.class).toInstance(taskMasterLifecycle);
+  bind(TaskStorageQueryAdapter.class).toInstance(taskStorageQueryAdapter);
+  bind(TaskLogProvider.class).toInstance(taskLogProvider);
+  bind(JacksonConfigManager.class).toInstance(configManager);
+  serve("/*").with(GuiceContainer.class);
+}

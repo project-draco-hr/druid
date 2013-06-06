@@ -1,0 +1,41 @@
+{
+  WorkerCuratorCoordinator workerCuratorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig(){
+    @Override public String getIndexerAnnouncementPath(){
+      return announcementsPath;
+    }
+    @Override public String getIndexerTaskPath(){
+      return tasksPath;
+    }
+    @Override public String getIndexerStatusPath(){
+      return statusPath;
+    }
+    @Override public String getZkBasePath(){
+      throw new UnsupportedOperationException();
+    }
+    @Override public long getMaxNumBytes(){
+      return 1000;
+    }
+  }
+,cf,worker1);
+  workerCuratorCoordinator.start();
+  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(){
+    @Override public File getBaseTaskDir(){
+      try {
+        return File.createTempFile("billy","yay");
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public int getDefaultRowFlushBoundary(){
+      return 0;
+    }
+    @Override public String getHadoopWorkingPath(){
+      return null;
+    }
+  }
+,null,null,null,null,null,null,null,null,jsonMapper),Executors.newSingleThreadExecutor()),Executors.newSingleThreadExecutor());
+  jsonMapper.registerSubtypes(new NamedType(TestTask.class,"test"));
+  jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
+  workerTaskMonitor.start();
+}

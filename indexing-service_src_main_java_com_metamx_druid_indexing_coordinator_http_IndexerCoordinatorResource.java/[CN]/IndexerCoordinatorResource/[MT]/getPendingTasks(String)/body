@@ -1,0 +1,16 @@
+{
+  if (full != null) {
+    return asLeaderWith(taskMasterLifecycle.getTaskRunner(),new Function<TaskRunner,Response>(){
+      @Override public Response apply(      TaskRunner taskRunner){
+        return Response.ok(taskRunner.getPendingTasks()).build();
+      }
+    }
+);
+  }
+  return asLeaderWith(taskMasterLifecycle.getTaskRunner(),new Function<TaskRunner,Response>(){
+    @Override public Response apply(    TaskRunner taskRunner){
+      return Response.ok(Collections2.transform(taskRunner.getPendingTasks(),simplifyTaskFn)).build();
+    }
+  }
+);
+}
