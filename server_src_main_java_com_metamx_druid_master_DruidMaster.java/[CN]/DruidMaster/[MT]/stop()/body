@@ -4,6 +4,12 @@ synchronized (lock) {
       return;
     }
     stopBeingMaster();
+    try {
+      leaderLatch.get().close();
+    }
+ catch (    IOException e) {
+      log.warn(e,"Unable to close leaderLatch, ignoring");
+    }
     started=false;
     exec.shutdownNow();
   }
