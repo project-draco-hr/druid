@@ -108,7 +108,12 @@ synchronized (handoffCondition) {
     private void bootstrapSinksFromDisk(){
       for (      File sinkDir : computeBaseDir(schema).listFiles()) {
         Interval sinkInterval=new Interval(sinkDir.getName().replace("_","/"));
-        final File[] sinkFiles=sinkDir.listFiles();
+        final File[] sinkFiles=sinkDir.listFiles(new FilenameFilter(){
+          @Override public boolean accept(          File dir,          String fileName){
+            return !fileName.equalsIgnoreCase("merged");
+          }
+        }
+);
         Arrays.sort(sinkFiles,new Comparator<File>(){
           @Override public int compare(          File o1,          File o2){
             try {
@@ -125,6 +130,7 @@ synchronized (handoffCondition) {
           List<FireHydrant> hydrants=Lists.newArrayList();
           for (          File segmentDir : sinkFiles) {
             log.info("Loading previously persisted segment at [%s]",segmentDir);
+            if (segmentDir.getName().equalsIgnoreCase("merged"))             continue;
             hydrants.add(new FireHydrant(new QueryableIndexSegment(null,IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
           }
           Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
