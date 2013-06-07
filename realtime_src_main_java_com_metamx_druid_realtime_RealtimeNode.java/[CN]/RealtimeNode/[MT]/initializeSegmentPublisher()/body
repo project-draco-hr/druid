@@ -1,7 +1,7 @@
 {
   if (segmentPublisher == null) {
     final DbSegmentPublisherConfig dbSegmentPublisherConfig=getConfigFactory().build(DbSegmentPublisherConfig.class);
-    segmentPublisher=new DbSegmentPublisher(getJsonMapper(),dbSegmentPublisherConfig,new DbConnector(getConfigFactory().build(DbConnectorConfig.class)).getDBI());
+    segmentPublisher=new DbSegmentPublisher(getJsonMapper(),dbSegmentPublisherConfig,new DbConnector(Suppliers.ofInstance(getConfigFactory().build(DbConnectorConfig.class)),null).getDBI());
     getLifecycle().addManagedInstance(segmentPublisher);
   }
 }

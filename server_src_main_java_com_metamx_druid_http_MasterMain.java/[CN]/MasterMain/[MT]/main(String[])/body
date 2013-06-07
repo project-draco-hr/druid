@@ -19,10 +19,10 @@
   final ServiceAnnouncer serviceAnnouncer=injector.getInstance(ServiceAnnouncer.class);
   Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
   ServiceProvider serviceProvider=null;
+  IndexingServiceClient indexingServiceClient=null;
   if (druidMasterConfig.getMergerServiceName() != null) {
     serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
   }
-  IndexingServiceClient indexingServiceClient=new IndexingServiceClient(httpClient,jsonMapper,serviceProvider);
   DBI dbi=injector.getInstance(DBI.class);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
@@ -76,7 +76,7 @@
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(GzipFilter.class,"/*",0);
-  root.addFilter(new FilterHolder(new RedirectFilter(new ToStringResponseHandler(Charsets.UTF_8),redirectInfo)),"/*",0);
+  root.addFilter(new FilterHolder(new RedirectFilter(redirectInfo)),"/*",0);
   root.addFilter(GuiceFilter.class,"/info/*",0);
   root.addFilter(GuiceFilter.class,"/master/*",0);
   server.start();
