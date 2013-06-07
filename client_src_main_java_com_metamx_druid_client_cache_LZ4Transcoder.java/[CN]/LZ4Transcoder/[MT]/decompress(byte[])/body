@@ -1,0 +1,10 @@
+{
+  byte[] out=null;
+  if (in != null) {
+    LZ4Decompressor decompressor=lz4Factory.decompressor();
+    int size=ByteBuffer.wrap(in).getInt();
+    out=new byte[size];
+    decompressor.decompress(in,Ints.BYTES,out,0,out.length);
+  }
+  return out == null ? null : out;
+}

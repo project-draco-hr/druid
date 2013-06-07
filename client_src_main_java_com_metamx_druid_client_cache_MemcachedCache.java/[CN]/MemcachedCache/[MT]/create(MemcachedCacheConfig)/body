@@ -1,7 +1,7 @@
 {
   try {
-    SerializingTranscoder transcoder=new SerializingTranscoder(config.getMaxObjectSize());
-    transcoder.setCompressionThreshold(Integer.MAX_VALUE);
+    LZ4Transcoder transcoder=new LZ4Transcoder(config.getMaxObjectSize());
+    transcoder.setCompressionThreshold(0);
     return new MemcachedCache(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).build(),AddrUtil.getAddresses(config.getHosts())),config.getMemcachedPrefix(),config.getTimeout(),config.getExpiration());
   }
  catch (  IOException e) {
