@@ -33,7 +33,11 @@ synchronized (tasks) {
               command.add(config.getJavaClasspath());
               Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
               for (              String propName : props.stringPropertyNames()) {
-                command.add(String.format("-D%s=%s",propName,props.getProperty(propName)));
+                for (                String allowedPrefix : config.getAllowedPrefixes()) {
+                  if (propName.startsWith(allowedPrefix)) {
+                    command.add(String.format("-D%s=%s",propName,props.getProperty(propName)));
+                  }
+                }
               }
               for (              String propName : props.stringPropertyNames()) {
                 if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
