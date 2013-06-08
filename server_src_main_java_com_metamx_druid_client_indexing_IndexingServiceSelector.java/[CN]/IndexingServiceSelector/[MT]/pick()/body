@@ -1,0 +1,19 @@
+{
+  final ServiceInstance instance;
+  try {
+    instance=serviceProvider.getInstance();
+  }
+ catch (  Exception e) {
+    log.info(e,"");
+    return null;
+  }
+  return new Server(){
+    @Override public String getHost(){
+      return instance.getAddress();
+    }
+    @Override public int getPort(){
+      return instance.getPort();
+    }
+  }
+;
+}

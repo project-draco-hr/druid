@@ -3,4 +3,8 @@
   ConfigProvider.bind(binder,ServerInventoryViewConfig.class);
   ConfigProvider.bind(binder,DbConnectorConfig.class);
   JsonConfigProvider.bind(binder,"druid.database.tables",DbTablesConfig.class);
+  binder.bind(new TypeLiteral<DiscoverySelector<Server>>(){
+  }
+).annotatedWith(IndexingService.class).to(IndexingServiceSelector.class).in(ManageLifecycle.class);
+  binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
 }

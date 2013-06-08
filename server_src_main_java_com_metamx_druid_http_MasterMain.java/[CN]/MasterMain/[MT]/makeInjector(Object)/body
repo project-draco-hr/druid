@@ -1,6 +1,9 @@
 {
   final Injector baseInjector=Guice.createInjector(new DruidGuiceExtensions(),new JacksonModule(),new PropertiesModule("runtime.properties"),new ConfigFactoryModule());
-  return Guice.createInjector(Iterables.transform(Arrays.asList(modules),new Function<Object,Module>(){
+  List<Object> actualModules=Lists.newArrayList();
+  actualModules.add(DruidSecondaryModule.class);
+  actualModules.addAll(Arrays.asList(modules));
+  return Guice.createInjector(Lists.transform(actualModules,new Function<Object,Module>(){
     @Override @SuppressWarnings("unchecked") public Module apply(    @Nullable Object input){
       if (input instanceof Module) {
         baseInjector.injectMembers(input);

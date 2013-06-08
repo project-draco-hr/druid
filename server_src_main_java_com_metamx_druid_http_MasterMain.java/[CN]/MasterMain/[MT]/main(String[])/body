@@ -1,6 +1,6 @@
 {
   LogLevelAdjuster.register();
-  Injector injector=makeInjector(DruidSecondaryModule.class,new LifecycleModule(Key.get(MonitorScheduler.class)),EmitterModule.class,CuratorModule.class,MetricsModule.class,DiscoveryModule.class,ServerModule.class,MasterModule.class);
+  Injector injector=makeInjector(new LifecycleModule(Key.get(MonitorScheduler.class)),EmitterModule.class,HttpClientModule.class,CuratorModule.class,MetricsModule.class,DiscoveryModule.class,ServerModule.class,MasterModule.class);
   final ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
   final ConfigurationObjectFactory configFactory=injector.getInstance(ConfigurationObjectFactory.class);
   final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
@@ -13,22 +13,14 @@
   final DatabaseRuleManager databaseRuleManager=injector.getInstance(DatabaseRuleManager.class);
   final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
   final DruidNodeConfig nodeConfig=configFactory.build(DruidNodeConfig.class);
-  final ServiceDiscovery<Void> serviceDiscovery=injector.getInstance(Key.get(new TypeLiteral<ServiceDiscovery<Void>>(){
-  }
-));
   final ServiceAnnouncer serviceAnnouncer=injector.getInstance(ServiceAnnouncer.class);
   Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
-  ServiceProvider serviceProvider=null;
-  IndexingServiceClient indexingServiceClient=null;
-  if (druidMasterConfig.getMergerServiceName() != null) {
-    serviceProvider=Initialization.makeServiceProvider(druidMasterConfig.getMergerServiceName(),serviceDiscovery,lifecycle);
-  }
-  DBI dbi=injector.getInstance(DBI.class);
+  IDBI dbi=injector.getInstance(IDBI.class);
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
   final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,Execs.singleThreaded("Master-PeonExec--%d"));
-  final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,indexingServiceClient,taskMaster);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,injector.getInstance(IndexingServiceClient.class),taskMaster);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
@@ -44,7 +36,6 @@
     }
   }
 ));
-  final Injector injector2=Guice.createInjector(new MasterServletModule(serverInventoryView,databaseSegmentManager,databaseRuleManager,master,jsonMapper,indexingServiceClient));
   final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
   final RedirectInfo redirectInfo=new RedirectInfo(){
     @Override public boolean doLocal(){
