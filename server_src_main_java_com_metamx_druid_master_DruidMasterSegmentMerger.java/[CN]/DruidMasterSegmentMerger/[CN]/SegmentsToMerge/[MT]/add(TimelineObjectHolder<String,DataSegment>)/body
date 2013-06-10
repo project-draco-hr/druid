@@ -1,9 +1,13 @@
 {
   final Interval timelineObjectInterval=timelineObject.getInterval();
-  final Interval underlyingInterval=timelineObject.getObject().getChunk(0).getObject().getInterval();
   if (timelineObjects.size() > 0) {
     Preconditions.checkArgument(timelineObjectInterval.getStart().getMillis() >= timelineObjects.get(timelineObjects.size() - 1).lhs.getInterval().getEnd().getMillis(),"timeline objects must be provided in order");
   }
+  PartitionChunk<DataSegment> firstChunk=Iterables.getFirst(timelineObject.getObject(),null);
+  if (firstChunk == null) {
+    throw new ISE("Unable to find an underlying interval");
+  }
+  Interval underlyingInterval=firstChunk.getObject().getInterval();
   for (  final PartitionChunk<DataSegment> segment : timelineObject.getObject()) {
     segments.add(segment.getObject());
     if (segments.count(segment.getObject()) == 1) {

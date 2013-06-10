@@ -17,7 +17,13 @@
     List<TimelineObjectHolder<String,DataSegment>> timelineObjects=timeline.lookup(new Interval(new DateTime(0),new DateTime("3000-01-01")));
     SegmentsToMerge segmentsToMerge=new SegmentsToMerge();
     for (int i=0; i < timelineObjects.size(); i++) {
-      segmentsToMerge.add(timelineObjects.get(i));
+      try {
+        segmentsToMerge.add(timelineObjects.get(i));
+      }
+ catch (      Exception e) {
+        log.error("Unable to merge segments for %s",entry.getKey());
+        throw Throwables.propagate(e);
+      }
       if (segmentsToMerge.getByteCount() > params.getMergeBytesLimit() || segmentsToMerge.getSegmentCount() >= params.getMergeSegmentsLimit()) {
         i-=segmentsToMerge.backtrack(params.getMergeBytesLimit());
         if (segmentsToMerge.getSegmentCount() > 1) {
