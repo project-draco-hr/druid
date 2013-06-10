@@ -3,7 +3,8 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollDuration().toStandardDuration(),new Runnable(){
+    final Duration delay=config.get().getPollDuration().toStandardDuration();
+    ScheduledExecutors.scheduleWithFixedDelay(exec,delay,delay,new Runnable(){
       @Override public void run(){
         poll();
       }
