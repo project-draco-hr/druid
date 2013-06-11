@@ -110,7 +110,7 @@ synchronized (handoffCondition) {
         Interval sinkInterval=new Interval(sinkDir.getName().replace("_","/"));
         final File[] sinkFiles=sinkDir.listFiles(new FilenameFilter(){
           @Override public boolean accept(          File dir,          String fileName){
-            return !fileName.equalsIgnoreCase("merged");
+            return !(Ints.tryParse(fileName) == null);
           }
         }
 );
@@ -130,7 +130,9 @@ synchronized (handoffCondition) {
           List<FireHydrant> hydrants=Lists.newArrayList();
           for (          File segmentDir : sinkFiles) {
             log.info("Loading previously persisted segment at [%s]",segmentDir);
-            if (segmentDir.getName().equalsIgnoreCase("merged"))             continue;
+            if (Ints.tryParse(segmentDir.getName()) == null) {
+              continue;
+            }
             hydrants.add(new FireHydrant(new QueryableIndexSegment(null,IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
           }
           Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
