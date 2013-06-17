@@ -1,0 +1,19 @@
+{
+  final Server server=Initialization.makeJettyServer(config);
+  initializer.initialize(server,injector);
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      server.start();
+    }
+    @Override public void stop(){
+      try {
+        server.stop();
+      }
+ catch (      Exception e) {
+        log.warn(e,"Unable to stop Jetty server.");
+      }
+    }
+  }
+);
+  return server;
+}

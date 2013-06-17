@@ -1,0 +1,11 @@
+{
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      dbConnector.createConfigTable();
+    }
+    @Override public void stop(){
+    }
+  }
+);
+  return new ConfigManager(dbConnector.getDBI(),dbTables,config);
+}

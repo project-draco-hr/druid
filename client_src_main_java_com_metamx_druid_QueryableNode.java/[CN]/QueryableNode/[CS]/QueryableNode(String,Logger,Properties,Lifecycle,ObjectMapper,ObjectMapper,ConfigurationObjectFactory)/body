@@ -11,6 +11,7 @@
   Preconditions.checkNotNull(jsonMapper,"jsonMapper");
   Preconditions.checkNotNull(smileMapper,"smileMapper");
   Preconditions.checkNotNull(configFactory,"configFactory");
+  this.jsonConfigurator=new JsonConfigurator(jsonMapper,Validation.buildDefaultValidatorFactory().getValidator());
   Preconditions.checkState(smileMapper.getJsonFactory() instanceof SmileFactory,"smileMapper should use smile.");
   this.nodeType=nodeType;
 }

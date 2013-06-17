@@ -19,10 +19,10 @@
   executorLifecycle=executorLifecycleFactory.build(taskRunner,getJsonMapper());
   lifecycle.addManagedInstance(executorLifecycle);
   final Injector injector=Guice.createInjector(new ExecutorServletModule(getJsonMapper(),chatHandlerProvider));
-  final Context root=new Context(server,"/",Context.SESSIONS);
+  final ServletContextHandler root=new ServletContextHandler(server,"/",ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(GuiceFilter.class,"/druid/worker/v1/*",0);
+  root.addFilter(GuiceFilter.class,"/druid/worker/v1/*",null);
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),taskRunner,emitter,getRequestLogger())),"/druid/v2/*");
 }

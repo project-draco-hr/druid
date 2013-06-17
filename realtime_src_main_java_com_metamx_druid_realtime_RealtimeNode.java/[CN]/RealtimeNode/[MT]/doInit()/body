@@ -9,7 +9,7 @@
   final RealtimeManager realtimeManager=new RealtimeManager(departments,conglomerate);
   lifecycle.addManagedInstance(realtimeManager);
   startMonitoring(monitors);
-  final Context root=new Context(getServer(),"/",Context.SESSIONS);
+  final ServletContextHandler root=new ServletContextHandler(getServer(),"/",ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),realtimeManager,emitter,getRequestLogger())),"/druid/v2/*");
   initialized=true;

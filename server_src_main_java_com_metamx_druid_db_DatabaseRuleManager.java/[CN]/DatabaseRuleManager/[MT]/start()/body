@@ -3,8 +3,8 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    createDefaultRule(dbi,getRulesTable(),config.getDefaultTier(),jsonMapper);
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getRulesPollDuration(),new Runnable(){
+    createDefaultRule(dbi,getRulesTable(),config.get().getDefaultTier(),jsonMapper);
+    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollDuration().toStandardDuration(),new Runnable(){
       @Override public void run(){
         poll();
       }

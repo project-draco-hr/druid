@@ -9,7 +9,7 @@
   lifecycle.addManagedInstance(coordinator);
   monitors.add(new ServerMonitor(getDruidServerMetadata(),serverManager));
   startMonitoring(monitors);
-  final Context root=new Context(getServer(),"/",Context.SESSIONS);
+  final ServletContextHandler root=new ServletContextHandler(getServer(),"/",ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),serverManager,emitter,getRequestLogger())),"/druid/v2/*");
 }

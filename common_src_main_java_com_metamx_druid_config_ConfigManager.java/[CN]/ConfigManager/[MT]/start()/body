@@ -4,7 +4,7 @@ synchronized (lock) {
       return;
     }
     poller=new PollingCallable();
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.getPollDuration(),poller);
+    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollDuration().toStandardDuration(),poller);
     started=true;
   }
 }

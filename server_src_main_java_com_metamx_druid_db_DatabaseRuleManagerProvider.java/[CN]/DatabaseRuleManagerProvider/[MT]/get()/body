@@ -1,0 +1,12 @@
+{
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      dbConnector.createRulesTable();
+      DatabaseRuleManager.createDefaultRule(dbConnector.getDBI(),dbTables.get().getRulesTable(),config.get().getDefaultTier(),jsonMapper);
+    }
+    @Override public void stop(){
+    }
+  }
+);
+  return new DatabaseRuleManager(jsonMapper,config,dbTables,dbConnector.getDBI());
+}

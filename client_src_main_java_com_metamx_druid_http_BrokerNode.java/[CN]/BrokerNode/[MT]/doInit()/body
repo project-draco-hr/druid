@@ -16,13 +16,14 @@
   theModules.add(new ClientServletModule(texasRanger,getInventoryView(),getJsonMapper()));
   theModules.addAll(extraModules);
   final Injector injector=Guice.createInjector(theModules);
-  final Context root=new Context(getServer(),"/",Context.SESSIONS);
+  final ServletContextHandler root=new ServletContextHandler();
+  root.setContextPath("/");
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),texasRanger,getEmitter(),getRequestLogger())),"/druid/v2/*");
-  root.addFilter(GzipFilter.class,"/*",0);
+  root.addFilter(GzipFilter.class,"/*",null);
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(GuiceFilter.class,"/druid/v2/datasources/*",0);
+  root.addFilter(GuiceFilter.class,"/druid/v2/datasources/*",null);
   for (  String path : pathsForGuiceFilter) {
-    root.addFilter(GuiceFilter.class,path,0);
+    root.addFilter(GuiceFilter.class,path,null);
   }
 }

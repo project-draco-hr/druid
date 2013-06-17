@@ -1,0 +1,33 @@
+{
+  final String propertyBase=propertyPrefix.endsWith(".") ? propertyPrefix : propertyPrefix + ".";
+  Map<String,Object> jsonMap=Maps.newHashMap();
+  for (  String prop : props.stringPropertyNames()) {
+    if (prop.startsWith(propertyBase)) {
+      final String propValue=props.getProperty(prop);
+      Object value;
+      try {
+        value=jsonMapper.readValue(propValue,Object.class);
+      }
+ catch (      IOException e) {
+        log.debug("Unable to parse [%s]=[%s] as a json object, using as is.",prop,propValue);
+        value=propValue;
+      }
+      jsonMap.put(prop.substring(propertyBase.length()),value);
+    }
+  }
+  final T config=jsonMapper.convertValue(jsonMap,clazz);
+  final Set<ConstraintViolation<T>> violations=validator.validate(config);
+  if (!violations.isEmpty()) {
+    List<String> messages=Lists.newArrayList();
+    for (    ConstraintViolation<T> violation : violations) {
+      messages.add(String.format("%s - %s",violation.getPropertyPath().toString(),violation.getMessage()));
+    }
+    throw new ProvisionException(Iterables.transform(messages,new Function<String,Message>(){
+      @Nullable @Override public Message apply(      @Nullable String input){
+        return new Message(String.format("%s%s",propertyBase,input));
+      }
+    }
+));
+  }
+  return config;
+}

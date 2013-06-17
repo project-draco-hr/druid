@@ -1,0 +1,24 @@
+{
+  final Injector baseInjector=Guice.createInjector(new DruidGuiceExtensions(),new JacksonModule(),new PropertiesModule("runtime.properties"),new ConfigModule());
+  List<Object> actualModules=Lists.newArrayList();
+  actualModules.add(DruidSecondaryModule.class);
+  actualModules.addAll(Arrays.asList(modules));
+  return Guice.createInjector(Lists.transform(actualModules,new Function<Object,Module>(){
+    @Override @SuppressWarnings("unchecked") public Module apply(    @Nullable Object input){
+      if (input instanceof Module) {
+        baseInjector.injectMembers(input);
+        return (Module)input;
+      }
+      if (input instanceof Class) {
+        if (Module.class.isAssignableFrom((Class)input)) {
+          return baseInjector.getInstance((Class<? extends Module>)input);
+        }
+ else {
+          throw new ISE("Class[%s] does not implement %s",input.getClass(),Module.class);
+        }
+      }
+      throw new ISE("Unknown module type[%s]",input.getClass());
+    }
+  }
+));
+}

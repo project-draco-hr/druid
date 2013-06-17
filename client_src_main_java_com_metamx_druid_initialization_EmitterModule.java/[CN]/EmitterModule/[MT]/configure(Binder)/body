@@ -1,5 +1,5 @@
 {
-  String emitterType=props.getProperty("druid.emitter","");
+  String emitterType=props.getProperty(EMITTER_PROPERTY,"");
   binder.install(new LogEmitterModule());
   binder.install(new HttpEmitterModule());
   binder.bind(Emitter.class).toProvider(new EmitterProvider(emitterType)).in(LazySingleton.class);

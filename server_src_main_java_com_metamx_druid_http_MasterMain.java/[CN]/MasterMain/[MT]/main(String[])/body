@@ -1,75 +1,16 @@
 {
   LogLevelAdjuster.register();
-  Injector injector=makeInjector(new LifecycleModule(Key.get(MonitorScheduler.class)),EmitterModule.class,HttpClientModule.class,CuratorModule.class,MetricsModule.class,DiscoveryModule.class,ServerModule.class,MasterModule.class);
-  final ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
-  final ConfigurationObjectFactory configFactory=injector.getInstance(ConfigurationObjectFactory.class);
+  Injector injector=Initialization.makeInjector(new LifecycleModule(Key.get(MonitorScheduler.class),Key.get(DruidMaster.class)),EmitterModule.class,HttpClientModule.class,CuratorModule.class,new MetricsModule(),DiscoveryModule.class,ServerModule.class,new JettyServerModule(new MasterJettyServerInitializer()),MasterModule.class);
   final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
-  final ServiceEmitter emitter=injector.getInstance(ServiceEmitter.class);
-  final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
-  CuratorFramework curatorFramework=injector.getInstance(CuratorFramework.class);
-  final ZkPathsConfig zkPaths=configFactory.build(ZkPathsConfig.class);
-  ServerInventoryView serverInventoryView=injector.getInstance(ServerInventoryView.class);
-  final DatabaseSegmentManager databaseSegmentManager=injector.getInstance(DatabaseSegmentManager.class);
-  final DatabaseRuleManager databaseRuleManager=injector.getInstance(DatabaseRuleManager.class);
-  final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
-  final DruidNodeConfig nodeConfig=configFactory.build(DruidNodeConfig.class);
+  final DruidNodeConfig nodeConfig=injector.getInstance(DruidNodeConfig.class);
   final ServiceAnnouncer serviceAnnouncer=injector.getInstance(ServiceAnnouncer.class);
-  Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
-  IDBI dbi=injector.getInstance(IDBI.class);
-  final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
-  DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
-  JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
-  final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,Execs.singleThreaded("Master-PeonExec--%d"));
-  final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,injector.getInstance(IndexingServiceClient.class),taskMaster);
-  lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
+    Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
   }
  catch (  Throwable t) {
     log.error(t,"Error when starting up.  Failing.");
     System.exit(1);
   }
-  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
-    @Override public void run(){
-      log.info("Running shutdown hook");
-      lifecycle.stop();
-    }
-  }
-));
-  final Server server=Initialization.makeJettyServer(configFactory.build(ServerConfig.class));
-  final RedirectInfo redirectInfo=new RedirectInfo(){
-    @Override public boolean doLocal(){
-      return master.isClusterMaster();
-    }
-    @Override public URL getRedirectURL(    String queryString,    String requestURI){
-      try {
-        final String currentMaster=master.getCurrentMaster();
-        if (currentMaster == null) {
-          return null;
-        }
-        String location=String.format("http://%s%s",currentMaster,requestURI);
-        if (queryString != null) {
-          location=String.format("%s?%s",location,queryString);
-        }
-        return new URL(location);
-      }
- catch (      Exception e) {
-        throw Throwables.propagate(e);
-      }
-    }
-  }
-;
-  final Context staticContext=new Context(server,"/static",Context.SESSIONS);
-  staticContext.addServlet(new ServletHolder(new RedirectServlet(redirectInfo)),"/*");
-  staticContext.setResourceBase(ComputeMain.class.getClassLoader().getResource("static").toExternalForm());
-  final Context root=new Context(server,"/",Context.SESSIONS);
-  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
-  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
-  root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(GzipFilter.class,"/*",0);
-  root.addFilter(new FilterHolder(new RedirectFilter(redirectInfo)),"/*",0);
-  root.addFilter(GuiceFilter.class,"/info/*",0);
-  root.addFilter(GuiceFilter.class,"/master/*",0);
-  server.start();
-  server.join();
+  lifecycle.join();
 }
