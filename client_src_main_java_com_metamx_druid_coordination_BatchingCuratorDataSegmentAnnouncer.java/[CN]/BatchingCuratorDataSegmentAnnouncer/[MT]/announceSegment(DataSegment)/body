@@ -1,0 +1,19 @@
+{
+  Map.Entry<String,Integer> zNode=(zNodes.entrySet().isEmpty()) ? null : zNodes.entrySet().iterator().next();
+  final String path=(zNode == null) ? makeServedSegmentPath(new DateTime().toString()) : zNode.getKey();
+  Set<DataSegment> zkSegments=segmentReader.read(path);
+  zkSegments.add(segment);
+  if (zkSegments.size() >= config.getSegmentsPerNode()) {
+    zNodes.remove(path);
+  }
+ else {
+    zNodes.put(path,zkSegments.size());
+  }
+  segmentLookup.put(segment.getIdentifier(),path);
+  log.info("Announcing segment[%s] to path[%s]",segment.getIdentifier(),path);
+  byte[] bytes=jsonMapper.writeValueAsBytes(zkSegments);
+  if (bytes.length > config.getMaxNumBytes()) {
+    throw new ISE("byte size %,d exceeds %,d",bytes.length,config.getMaxNumBytes());
+  }
+  announcer.update(path,bytes);
+}

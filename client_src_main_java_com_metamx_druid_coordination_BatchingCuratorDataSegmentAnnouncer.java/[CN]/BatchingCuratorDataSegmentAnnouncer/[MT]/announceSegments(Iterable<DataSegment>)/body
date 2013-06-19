@@ -1,0 +1,18 @@
+{
+  Iterable<List<DataSegment>> batched=Iterables.partition(segments,config.getSegmentsPerNode());
+  for (  List<DataSegment> batch : batched) {
+    final String path=makeServedSegmentPath(new DateTime().toString());
+    for (    DataSegment segment : batch) {
+      log.info("Announcing segment[%s] to path[%s]",segment.getIdentifier(),path);
+      segmentLookup.put(segment.getIdentifier(),path);
+    }
+    if (batch.size() < config.getSegmentsPerNode()) {
+      zNodes.put(path,batch.size());
+    }
+    byte[] bytes=jsonMapper.writeValueAsBytes(batch);
+    if (bytes.length > config.getMaxNumBytes()) {
+      throw new ISE("byte size %,d exceeds %,d",bytes.length,config.getMaxNumBytes());
+    }
+    announcer.update(path,bytes);
+  }
+}

@@ -30,6 +30,22 @@ synchronized (lock) {
         toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
       }
     }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+      for (      DataSegment segment : segments) {
+        toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
+      }
+      toolbox.getSegmentAnnouncer().announceSegments(segments);
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+      try {
+        toolbox.getSegmentAnnouncer().unannounceSegments(segments);
+      }
+  finally {
+        for (        DataSegment segment : segments) {
+          toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+        }
+      }
+    }
   }
 ;
   final VersioningPolicy versioningPolicy=new VersioningPolicy(){

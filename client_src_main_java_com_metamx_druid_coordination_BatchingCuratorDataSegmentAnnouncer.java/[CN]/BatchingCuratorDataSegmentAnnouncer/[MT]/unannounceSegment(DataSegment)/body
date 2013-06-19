@@ -1,0 +1,13 @@
+{
+  final String path=segmentLookup.get(segment.getIdentifier());
+  Set<DataSegment> zkSegments=segmentReader.read(path);
+  zkSegments.remove(segment);
+  log.info("Unannouncing segment[%s] at path[%s]",segment.getIdentifier(),path);
+  if (zkSegments.isEmpty()) {
+    announcer.unannounce(path);
+  }
+ else   if (zkSegments.size() < config.getSegmentsPerNode()) {
+    zNodes.put(path,zkSegments.size());
+    announcer.update(path,jsonMapper.writeValueAsBytes(zkSegments));
+  }
+}
