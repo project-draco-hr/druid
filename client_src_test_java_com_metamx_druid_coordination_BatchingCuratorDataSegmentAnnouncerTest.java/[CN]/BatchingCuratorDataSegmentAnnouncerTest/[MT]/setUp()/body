@@ -1,0 +1,28 @@
+{
+  testingCluster=new TestingCluster(1);
+  testingCluster.start();
+  cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).compressionProvider(new PotentiallyGzippedCompressionProvider(false)).build();
+  cf.start();
+  cf.create().creatingParentsIfNeeded().forPath(testBasePath);
+  jsonMapper=new DefaultObjectMapper();
+  announcer=new Announcer(cf,MoreExecutors.sameThreadExecutor());
+  announcer.start();
+  segmentReader=new SegmentReader(cf,jsonMapper);
+  segmentAnnouncer=new BatchingCuratorDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier"),new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return testBasePath;
+    }
+    @Override public int getSegmentsPerNode(){
+      return 50;
+    }
+    @Override public long getMaxNumBytes(){
+      return 100000;
+    }
+  }
+,announcer,jsonMapper,segmentReader);
+  segmentAnnouncer.start();
+  testSegments=Sets.newHashSet();
+  for (int i=0; i < 100; i++) {
+    testSegments.add(makeSegment(i));
+  }
+}
