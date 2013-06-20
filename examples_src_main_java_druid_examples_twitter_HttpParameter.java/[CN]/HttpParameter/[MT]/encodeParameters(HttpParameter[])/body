@@ -1,0 +1,16 @@
+{
+  if (null == httpParams) {
+    return "";
+  }
+  StringBuilder buf=new StringBuilder();
+  for (int j=0; j < httpParams.length; j++) {
+    if (httpParams[j].isFile()) {
+      throw new IllegalArgumentException("parameter [" + httpParams[j].name + "]should be text");
+    }
+    if (j != 0) {
+      buf.append("&");
+    }
+    buf.append(encode(httpParams[j].name)).append("=").append(encode(httpParams[j].value));
+  }
+  return buf.toString();
+}

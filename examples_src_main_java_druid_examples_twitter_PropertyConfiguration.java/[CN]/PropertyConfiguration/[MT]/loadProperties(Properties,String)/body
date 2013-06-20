@@ -1,0 +1,24 @@
+{
+  FileInputStream fis=null;
+  try {
+    File file=new File(path);
+    if (file.exists() && file.isFile()) {
+      fis=new FileInputStream(file);
+      props.load(fis);
+      normalize(props);
+      return true;
+    }
+  }
+ catch (  Exception ignore) {
+  }
+ finally {
+    try {
+      if (fis != null) {
+        fis.close();
+      }
+    }
+ catch (    IOException ignore) {
+    }
+  }
+  return false;
+}

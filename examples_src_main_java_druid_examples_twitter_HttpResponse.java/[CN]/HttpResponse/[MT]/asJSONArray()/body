@@ -1,0 +1,31 @@
+{
+  if (jsonArray == null) {
+    Reader reader=null;
+    try {
+      if (responseAsString == null) {
+        reader=asReader();
+        jsonArray=new JSONArray(new JSONTokener(reader));
+      }
+ else {
+        jsonArray=new JSONArray(responseAsString);
+      }
+      if (CONF.isPrettyDebugEnabled()) {
+      }
+ else {
+      }
+    }
+ catch (    JSONException jsone) {
+    }
+ finally {
+      if (reader != null) {
+        try {
+          reader.close();
+        }
+ catch (        IOException ignore) {
+        }
+      }
+      disconnectForcibly();
+    }
+  }
+  return jsonArray;
+}
