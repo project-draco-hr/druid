@@ -1,4 +1,14 @@
 {
-  final T config=configurator.configurate(props,propertyBase,classToProvide);
-  return Suppliers.ofInstance(config);
+  if (retVal != null) {
+    return retVal;
+  }
+  try {
+    final T config=configurator.configurate(props,propertyBase,classToProvide);
+    retVal=Suppliers.ofInstance(config);
+  }
+ catch (  RuntimeException e) {
+    retVal=Suppliers.ofInstance(null);
+    throw e;
+  }
+  return retVal;
 }

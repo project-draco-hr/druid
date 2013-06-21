@@ -1,8 +1,15 @@
 {
   Lifecycle lifecycle=new Lifecycle();
   scope.setLifecycle(lifecycle);
-  for (  Key<?> key : eagerClasses) {
-    injector.getInstance(key);
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      for (      Key<?> key : eagerClasses) {
+        injector.getInstance(key);
+      }
+    }
+    @Override public void stop(){
+    }
   }
+);
   return lifecycle;
 }
