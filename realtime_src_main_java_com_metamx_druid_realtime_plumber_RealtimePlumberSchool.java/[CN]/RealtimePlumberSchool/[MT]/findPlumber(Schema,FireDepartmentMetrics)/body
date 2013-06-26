@@ -43,13 +43,13 @@
       }
 ;
       return toolchest.mergeResults(factory.mergeRunners(EXEC,FunctionalIterable.create(sinks.values()).transform(new Function<Sink,QueryRunner<T>>(){
-        @Override public QueryRunner<T> apply(        @Nullable Sink input){
-          return new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(input,new Function<FireHydrant,QueryRunner<T>>(){
-            @Override public QueryRunner<T> apply(            @Nullable FireHydrant input){
+        @Override public QueryRunner<T> apply(        Sink input){
+          return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(input,new Function<FireHydrant,QueryRunner<T>>(){
+            @Override public QueryRunner<T> apply(            FireHydrant input){
               return factory.createRunner(input.getSegment());
             }
           }
-)));
+))),new SpecificSegmentSpec(new SegmentDescriptor(input.getInterval(),input.getSegment().getVersion(),input.getSegment().getShardSpec().getPartitionNum())));
         }
       }
 )));
