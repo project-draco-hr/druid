@@ -6,7 +6,7 @@
       if (isValid(line)) {
         try {
           HashMap<String,Object> map=mapper.readValue(line,typeRef);
-          queue.offer(map,15L,TimeUnit.SECONDS);
+          queue.offer(map,queueWaitTime,TimeUnit.SECONDS);
           log.info("Successfully added to queue");
         }
  catch (        JsonParseException e) {
