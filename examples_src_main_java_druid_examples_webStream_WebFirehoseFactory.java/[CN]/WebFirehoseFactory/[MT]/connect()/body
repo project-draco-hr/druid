@@ -2,28 +2,12 @@
   final int QUEUE_SIZE=2000;
   final BlockingQueue<Map<String,Object>> queue=new ArrayBlockingQueue<Map<String,Object>>(QUEUE_SIZE);
   Runnable updateStream=new UpdateStream(new WebJsonSupplier(dimensions,url),queue);
-  Thread.UncaughtExceptionHandler h=new Thread.UncaughtExceptionHandler(){
-    public void uncaughtException(    Thread th,    Throwable ex){
-      System.out.println("Uncaught exception: " + ex);
-    }
-  }
-;
-  final Thread t=new Thread(updateStream);
-  t.setUncaughtExceptionHandler(h);
-  t.start();
+  final ExecutorService service=Executors.newSingleThreadExecutor();
+  service.submit(updateStream);
   return new Firehose(){
-    private final Runnable doNothingRunnable=new Runnable(){
-      public void run(){
-      }
-    }
-;
+    private final Runnable doNothingRunnable=new NoopRunnable();
     @Override public boolean hasMore(){
-      if (t.isAlive()) {
-        return true;
-      }
- else {
-        return false;
-      }
+      return !(service.isTerminated());
     }
     @Override public InputRow nextRow(){
       if (Thread.currentThread().isInterrupted()) {
@@ -37,20 +21,20 @@
         throw new RuntimeException("InterrutpedException",e);
       }
       Map<String,Object> processedMap=processMap(update);
-      return new MapBasedInputRow(((Integer)processedMap.get(timeDimension)).longValue() * 1000,newDimensionNames,processedMap);
+      return new MapBasedInputRow(((Integer)processedMap.get(timeDimension)).longValue() * 1000,renamedDimensions,processedMap);
     }
     private Map<String,Object> renameKeys(    Map<String,Object> update){
       Map<String,Object> renamedMap=new HashMap<String,Object>();
       int iter=0;
       while (iter < dimensions.size()) {
         Object obj=update.get(dimensions.get(iter));
-        renamedMap.put(newDimensionNames.get(iter),obj);
+        renamedMap.put(renamedDimensions.get(iter),obj);
         iter++;
       }
       return renamedMap;
     }
     private void processNullDimensions(    Map<String,Object> map){
-      for (      String key : newDimensionNames) {
+      for (      String key : renamedDimensions) {
         if (map.get(key) == null) {
           if (key.equals(timeDimension)) {
             map.put(key,new Integer((int)System.currentTimeMillis() / 1000));
@@ -70,7 +54,8 @@
       return doNothingRunnable;
     }
     @Override public void close() throws IOException {
-      System.out.println("CLOSING!!!");
+      log.info("CLOSING!!!");
+      service.shutdown();
     }
   }
 ;
