@@ -5,8 +5,11 @@
       if ("emitter".equals(loggingType)) {
         setRequestLogger(Initialization.makeEmittingRequestLogger(getProps(),getEmitter()));
       }
- else {
+ else       if ("file".equalsIgnoreCase(loggingType)) {
         setRequestLogger(Initialization.makeFileRequestLogger(getJsonMapper(),getScheduledExecutorFactory(),getProps()));
+      }
+ else {
+        setRequestLogger(new NoopRequestLogger());
       }
     }
  catch (    IOException e) {
