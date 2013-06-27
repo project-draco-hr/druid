@@ -1,12 +1,15 @@
 {
   if (persistentTaskLogs == null) {
     final TaskLogConfig taskLogConfig=getConfigFactory().build(TaskLogConfig.class);
-    if (taskLogConfig.getLogStorageBucket() != null) {
+    if (taskLogConfig.getLogType().equalsIgnoreCase("s3")) {
       initializeS3Service();
       persistentTaskLogs=new S3TaskLogs(taskLogConfig.getLogStorageBucket(),taskLogConfig.getLogStoragePrefix(),s3Service);
     }
- else {
+ else     if (taskLogConfig.getLogType().equalsIgnoreCase("noop")) {
       persistentTaskLogs=new NoopTaskLogs();
+    }
+ else {
+      throw new IAE("Unknown log type %s",taskLogConfig.getLogType());
     }
   }
 }
