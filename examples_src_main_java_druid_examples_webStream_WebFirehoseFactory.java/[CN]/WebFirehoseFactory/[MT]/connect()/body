@@ -4,7 +4,7 @@
   final ExecutorService service=Executors.newSingleThreadExecutor();
   service.submit(updateStream);
   return new Firehose(){
-    private final Runnable doNothingRunnable=new NoopRunnable();
+    private final Runnable doNothingRunnable=Runnables.getNoopRunnable();
     @Override public boolean hasMore(){
       return !(service.isTerminated());
     }
