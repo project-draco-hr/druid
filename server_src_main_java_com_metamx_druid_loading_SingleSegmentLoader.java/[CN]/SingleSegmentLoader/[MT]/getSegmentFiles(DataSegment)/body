@@ -1,49 +1,26 @@
 {
-  File localStorageDir=new File(config.getCacheDirectory(),DataSegmentPusherUtil.getStorageDir(segment));
-  final String legacyDir=DataSegmentPusherUtil.getLegacyStorageDir(segment);
-  if (legacyDir != null) {
-    File legacyStorageDir=new File(config.getCacheDirectory(),legacyDir);
-    if (legacyStorageDir.exists()) {
-      log.info("Found legacyStorageDir[%s], moving to new storage location[%s]",legacyStorageDir,localStorageDir);
-      if (localStorageDir.exists()) {
-        try {
-          FileUtils.deleteDirectory(localStorageDir);
-        }
- catch (        IOException e) {
-          throw new SegmentLoadingException(e,"Error deleting localDir[%s]",localStorageDir);
-        }
-      }
-      final File parentDir=localStorageDir.getParentFile();
-      if (!parentDir.exists()) {
-        log.info("Parent[%s] didn't exist, creating.",parentDir);
-        if (!parentDir.mkdirs()) {
-          log.warn("Unable to make parentDir[%s]",parentDir);
-        }
-      }
-      if (!legacyStorageDir.renameTo(localStorageDir)) {
-        log.warn("Failed moving [%s] to [%s]",legacyStorageDir,localStorageDir);
-      }
+  StorageLocation loc=findStorageLocationIfLoaded(segment);
+  final File retVal;
+  if (loc == null) {
+    Iterator<StorageLocation> locIter=locations.iterator();
+    loc=locIter.next();
+    while (locIter.hasNext()) {
+      loc=loc.mostEmpty(locIter.next());
     }
-  }
-  if (localStorageDir.exists()) {
-    long localLastModified=localStorageDir.lastModified();
-    long remoteLastModified=dataSegmentPuller.getLastModified(segment);
-    if (remoteLastModified > 0 && localLastModified >= remoteLastModified) {
-      log.info("Found localStorageDir[%s] with modified[%s], which is same or after remote[%s].  Using.",localStorageDir,localLastModified,remoteLastModified);
-      return localStorageDir;
+    if (!loc.canHandle(segment.getSize())) {
+      throw new ISE("Segment[%s:%,d] too large for storage[%s:%,d].",segment.getIdentifier(),segment.getSize(),loc.getPath(),loc.available());
     }
-  }
-  if (localStorageDir.exists()) {
-    try {
-      FileUtils.deleteDirectory(localStorageDir);
+    File storageDir=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
+    if (!storageDir.mkdirs()) {
+      log.debug("Unable to make parent file[%s]",storageDir);
     }
- catch (    IOException e) {
-      log.warn(e,"Exception deleting previously existing local dir[%s]",localStorageDir);
-    }
+    dataSegmentPuller.getSegmentFiles(segment,storageDir);
+    loc.addSegment(segment);
+    retVal=storageDir;
   }
-  if (!localStorageDir.mkdirs()) {
-    log.info("Unable to make parent file[%s]",localStorageDir);
+ else {
+    retVal=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
   }
-  dataSegmentPuller.getSegmentFiles(segment,localStorageDir);
-  return localStorageDir;
+  loc.addSegment(segment);
+  return retVal;
 }
