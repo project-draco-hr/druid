@@ -59,7 +59,6 @@ synchronized (tasks) {
               processHolder=taskInfo.processHolder;
             }
             log.info("Logging task %s output to: %s",task.getId(),logFile);
-            final OutputStream toProc=processHolder.process.getOutputStream();
             final InputStream fromProc=processHolder.process.getInputStream();
             final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput();
             boolean runFailed=false;
@@ -70,15 +69,15 @@ synchronized (tasks) {
               if (statusCode != 0) {
                 runFailed=true;
               }
+              toLogfile.close();
             }
  catch (            Exception e) {
-              log.warn(e,"Failed to read from process for task: %s",task.getId());
+              log.warn(e,"Failed to log process output for task: %s",task.getId());
               runFailed=true;
+              Closeables.close(toLogfile,true);
             }
  finally {
-              Closeables.closeQuietly(fromProc);
-              Closeables.closeQuietly(toLogfile);
-              Closeables.closeQuietly(toProc);
+              Closeables.close(processHolder,true);
             }
             taskLogPusher.pushTaskLog(task.getId(),logFile);
             if (!runFailed) {
