@@ -1,0 +1,13 @@
+{
+  try {
+    if (cf.checkExists().forPath(path) != null) {
+      return jsonMapper.readValue(cf.getData().forPath(path),new TypeReference<Set<DataSegment>>(){
+      }
+);
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return Sets.newHashSet();
+}

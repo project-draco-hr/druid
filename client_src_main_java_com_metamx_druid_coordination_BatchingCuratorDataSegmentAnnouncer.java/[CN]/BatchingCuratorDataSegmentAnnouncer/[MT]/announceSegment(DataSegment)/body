@@ -1,19 +1,24 @@
 {
-  Map.Entry<String,Integer> zNode=(zNodes.entrySet().isEmpty()) ? null : zNodes.entrySet().iterator().next();
-  final String path=(zNode == null) ? makeServedSegmentPath(new DateTime().toString()) : zNode.getKey();
-  Set<DataSegment> zkSegments=segmentReader.read(path);
-  zkSegments.add(segment);
-  if (zkSegments.size() >= config.getSegmentsPerNode()) {
-    zNodes.remove(path);
+  int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
+  if (newBytesLen > config.getMaxNumBytes()) {
+    throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxNumBytes());
   }
- else {
-    zNodes.put(path,zkSegments.size());
+  if (availableZNodes.isEmpty()) {
+    availableZNodes.add(new SegmentZNode(makeServedSegmentPath(new DateTime().toString())));
   }
-  segmentLookup.put(segment.getIdentifier(),path);
-  log.info("Announcing segment[%s] to path[%s]",segment.getIdentifier(),path);
-  byte[] bytes=jsonMapper.writeValueAsBytes(zkSegments);
-  if (bytes.length > config.getMaxNumBytes()) {
-    throw new ISE("byte size %,d exceeds %,d",bytes.length,config.getMaxNumBytes());
+  Iterator<SegmentZNode> iter=availableZNodes.iterator();
+  boolean done=false;
+  while (iter.hasNext() && !done) {
+    SegmentZNode availableZNode=iter.next();
+    if (availableZNode.getBytes().length + newBytesLen < config.getMaxNumBytes()) {
+      availableZNode.addSegment(segment);
+      log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+      announcer.update(availableZNode.getPath(),availableZNode.getBytes());
+      segmentLookup.put(segment,availableZNode);
+      if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
+        availableZNodes.remove(availableZNode);
+      }
+      done=true;
+    }
   }
-  announcer.update(path,bytes);
 }

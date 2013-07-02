@@ -18,15 +18,9 @@
     @Override public String getZkBasePath(){
       return "/druid";
     }
-    @Override public int getSegmentsPerNode(){
-      return 1;
-    }
-    @Override public long getMaxNumBytes(){
-      return 1000;
-    }
   }
 ;
-  announcer=new BatchingCuratorDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper,new SegmentReader(curator,jsonMapper));
+  announcer=new CuratorDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
   zkCoordinator=new ZkCoordinator(jsonMapper,new ZkCoordinatorConfig(){
     @Override public File getSegmentInfoCacheDirectory(){
       return cacheDir;

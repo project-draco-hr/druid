@@ -8,7 +8,7 @@
   announcer=new Announcer(cf,MoreExecutors.sameThreadExecutor());
   announcer.start();
   segmentReader=new SegmentReader(cf,jsonMapper);
-  segmentAnnouncer=new BatchingCuratorDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier"),new ZkPathsConfig(){
+  segmentAnnouncer=new BatchingCuratorDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier"),new ZkDataSegmentAnnouncerConfig(){
     @Override public String getZkBasePath(){
       return testBasePath;
     }
@@ -19,7 +19,7 @@
       return 100000;
     }
   }
-,announcer,jsonMapper,segmentReader);
+,announcer,jsonMapper);
   segmentAnnouncer.start();
   testSegments=Sets.newHashSet();
   for (int i=0; i < 100; i++) {

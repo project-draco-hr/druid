@@ -8,7 +8,11 @@
     return;
   }
   try {
-    updateAnnouncement(path,bytes);
+    byte[] oldBytes=subPaths.get(nodePath);
+    if (!Arrays.equals(oldBytes,bytes)) {
+      subPaths.put(nodePath,bytes);
+      updateAnnouncement(path,bytes);
+    }
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
