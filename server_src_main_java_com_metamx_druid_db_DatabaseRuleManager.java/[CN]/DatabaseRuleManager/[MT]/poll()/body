@@ -2,7 +2,7 @@
   try {
     ConcurrentHashMap<String,List<Rule>> newRules=new ConcurrentHashMap<String,List<Rule>>(dbi.withHandle(new HandleCallback<Map<String,List<Rule>>>(){
       @Override public Map<String,List<Rule>> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT %1$s.dataSource, %1$s.payload FROM %1$s INNER JOIN(SELECT dataSource, max(version) as version, payload FROM %1$s GROUP BY dataSource) ds ON %1$s.datasource = ds.datasource and %1$s.version = ds.version",config.getRuleTable())).fold(Maps.<String,List<Rule>>newHashMap(),new Folder3<Map<String,List<Rule>>,Map<String,Object>>(){
+        return handle.createQuery(String.format("SELECT %1$s.dataSource, %1$s.payload FROM %1$s INNER JOIN(SELECT dataSource, max(version) as version FROM %1$s GROUP BY dataSource) ds ON %1$s.datasource = ds.datasource and %1$s.version = ds.version",config.getRuleTable())).fold(Maps.<String,List<Rule>>newHashMap(),new Folder3<Map<String,List<Rule>>,Map<String,Object>>(){
           @Override public Map<String,List<Rule>> fold(          Map<String,List<Rule>> retVal,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
             try {
               String dataSource=MapUtils.getString(stringObjectMap,"dataSource");
