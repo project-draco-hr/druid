@@ -1,10 +1,15 @@
 {
-  Map<String,Object> renamedMap=Maps.newHashMap();
-  for (int iter=0; iter < dimensions.size(); iter++) {
-    if (update.get(dimensions.get(iter)) != null) {
-      Object obj=update.get(dimensions.get(iter));
-      renamedMap.put(renamedDimensions.get(iter),obj);
+  if (renamedDimensions != null) {
+    Map<String,Object> renamedMap=Maps.newHashMap();
+    for (    String key : renamedDimensions.keySet()) {
+      if (update.get(key) != null) {
+        Object obj=update.get(key);
+        renamedMap.put(renamedDimensions.get(key),obj);
+      }
     }
+    return renamedMap;
   }
-  return renamedMap;
+ else {
+    return update;
+  }
 }
