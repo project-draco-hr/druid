@@ -12,7 +12,7 @@
     }
     dbi.withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
-        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
+        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
         return null;
       }
     }
