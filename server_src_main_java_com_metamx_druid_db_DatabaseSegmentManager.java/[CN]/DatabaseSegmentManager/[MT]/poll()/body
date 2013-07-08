@@ -6,7 +6,7 @@
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
     List<Map<String,Object>> segmentRows=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
       @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=1",config.getSegmentTable())).list();
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",config.getSegmentTable())).list();
       }
     }
 );
