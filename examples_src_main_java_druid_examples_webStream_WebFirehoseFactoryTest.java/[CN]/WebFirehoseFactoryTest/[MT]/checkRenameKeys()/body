@@ -1,6 +1,5 @@
 {
   Map<String,Object> expectedAnswer=new HashMap<String,Object>();
-  queue=new ArrayBlockingQueue<Map<String,Object>>(QUEUE_SIZE);
   Map<String,String> renamedDimensions=new HashMap<String,String>();
   renamedDimensions.put("g","bitly_hash");
   renamedDimensions.put("c","country");
@@ -34,8 +33,8 @@
   expectedAnswer.put("timestamp_hash",1368193091);
   expectedAnswer.put("city","New York");
   expectedAnswer.put("latitude_longitude",Arrays.asList(40.862598,-73.921799));
-  UpdateStream updateStream=new UpdateStream(testCaseSupplier,queue,mapper,renamedDimensions,timeDimension);
+  UpdateStream updateStream=new UpdateStream(testCaseSupplier,mapper,renamedDimensions,timeDimension);
   updateStream.run();
-  Map<String,Object> inputRow=queue.poll(10,TimeUnit.SECONDS);
+  Map<String,Object> inputRow=updateStream.takeFromQueue();
   Assert.assertEquals(expectedAnswer,inputRow);
 }

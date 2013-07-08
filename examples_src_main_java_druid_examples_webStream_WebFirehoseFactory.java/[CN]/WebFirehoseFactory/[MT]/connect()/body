@@ -1,6 +1,5 @@
 {
-  final BlockingQueue<Map<String,Object>> queue=new ArrayBlockingQueue<Map<String,Object>>(QUEUE_SIZE);
-  Runnable updateStream=new UpdateStream(new WebJsonSupplier(url),queue,new DefaultObjectMapper(),renamedDimensions,timeDimension);
+  final UpdateStream updateStream=new UpdateStream(new WebJsonSupplier(url),new DefaultObjectMapper(),renamedDimensions,timeDimension);
   final ExecutorService service=Executors.newSingleThreadExecutor();
   service.submit(updateStream);
   return new Firehose(){
@@ -10,7 +9,7 @@
     }
     @Override public InputRow nextRow(){
       try {
-        Map<String,Object> map=queue.take();
+        Map<String,Object> map=updateStream.takeFromQueue();
         DateTime date=TimestampParser.createTimestampParser(timeFormat).apply(map.get(newTimeDimension).toString());
         return new MapBasedInputRow(date.getMillis(),new ArrayList(map.keySet()),map);
       }
