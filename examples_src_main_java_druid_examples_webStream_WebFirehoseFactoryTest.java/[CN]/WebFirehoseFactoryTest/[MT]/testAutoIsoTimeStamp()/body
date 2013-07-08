@@ -1,0 +1,14 @@
+{
+  testCaseSupplier=new TestCaseSupplier("{\"item1\": \"value1\"," + "\"item2\":2," + "\"time\":\"2013-07-08\"}");
+  UpdateStreamFactory updateStreamFactory=new UpdateStreamFactory(testCaseSupplier,null,"time");
+  webbie=new WebFirehoseFactory(updateStreamFactory,null);
+  Firehose firehose2=webbie.connect();
+  if (firehose2.hasMore()) {
+    long milliSeconds=firehose2.nextRow().getTimestampFromEpoch();
+    DateTime date=new DateTime("2013-07-08");
+    Assert.assertEquals(date.getMillis(),milliSeconds);
+  }
+ else {
+    Assert.assertFalse("hasMore returned false",true);
+  }
+}

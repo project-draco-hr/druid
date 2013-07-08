@@ -1,0 +1,14 @@
+{
+  Map<String,Object> expectedAnswer=new HashMap<String,Object>();
+  Map<String,String> renamedDimensions=new HashMap<String,String>();
+  renamedDimensions.put("item1","i1");
+  renamedDimensions.put("item2","i2");
+  renamedDimensions.put("time","t");
+  expectedAnswer.put("i1","value1");
+  expectedAnswer.put("i2",2);
+  expectedAnswer.put("t",1372121562);
+  UpdateStream updateStream=new UpdateStream(testCaseSupplier,renamedDimensions,timeDimension);
+  updateStream.run();
+  Map<String,Object> inputRow=updateStream.pollFromQueue();
+  Assert.assertEquals(expectedAnswer,inputRow);
+}

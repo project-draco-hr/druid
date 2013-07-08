@@ -1,0 +1,10 @@
+{
+  testCaseSupplier=new TestCaseSupplier("{\"item1\": \"value1\"," + "\"time\":1372121562 }");
+  Map<String,Object> expectedAnswer=new HashMap<String,Object>();
+  expectedAnswer.put("item1","value1");
+  expectedAnswer.put("time",1372121562);
+  UpdateStream updateStream=new UpdateStream(testCaseSupplier,null,timeDimension);
+  updateStream.run();
+  Map<String,Object> insertedRow=updateStream.pollFromQueue();
+  Assert.assertEquals(expectedAnswer,insertedRow);
+}
