@@ -1,2 +1,8 @@
 {
+  queue=new ArrayBlockingQueue<Map<String,Object>>(QUEUE_SIZE);
+  UpdateStream updateStream=new UpdateStream(testCaseSupplier,queue,mapper,dimensions,dimensions,timeDimension);
+  Thread t=new Thread(updateStream);
+  t.start();
+  Map<String,Object> insertedRow=queue.poll(10,TimeUnit.SECONDS);
+  Assert.assertEquals(expectedAnswer,insertedRow);
 }

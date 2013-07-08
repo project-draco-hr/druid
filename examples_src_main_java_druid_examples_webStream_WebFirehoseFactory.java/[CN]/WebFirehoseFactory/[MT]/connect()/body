@@ -1,43 +1,23 @@
 {
   final BlockingQueue<Map<String,Object>> queue=new ArrayBlockingQueue<Map<String,Object>>(QUEUE_SIZE);
-  Runnable updateStream=new UpdateStream(new WebJsonSupplier(dimensions,url),queue,new DefaultObjectMapper());
+  Runnable updateStream=new UpdateStream(new WebJsonSupplier(url),queue,new DefaultObjectMapper(),dimensions,renamedDimensions,timeDimension);
   final ExecutorService service=Executors.newSingleThreadExecutor();
   service.submit(updateStream);
   return new Firehose(){
     private final Runnable doNothingRunnable=Runnables.getNoopRunnable();
     @Override public boolean hasMore(){
-      return !(service.isTerminated());
+      return !(service.isTerminated()) && queue.size() > 0;
     }
     @Override public InputRow nextRow(){
       try {
-        Map<String,Object> processedMap=processMap(queue.take());
-        DateTime date=TimestampParser.createTimestampParser("auto").apply(processedMap.get(timeDimension).toString());
+        Map<String,Object> map=queue.take();
+        DateTime date=TimestampParser.createTimestampParser(timeFormat).apply(map.get(timeDimension).toString());
         long seconds=(long)date.getMillis();
-        if (new DateTime(seconds * 1000).getYear() == new DateTime().getYear()) {
-          seconds=(long)date.getMillis() * 1000;
-        }
-        return new MapBasedInputRow(seconds,renamedDimensions,processedMap);
+        return new MapBasedInputRow(seconds,renamedDimensions,map);
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);
       }
-    }
-    private Map<String,Object> renameKeys(    Map<String,Object> update){
-      Map<String,Object> renamedMap=Maps.newHashMap();
-      for (int iter=0; iter < dimensions.size(); iter++) {
-        if (update.get(dimensions.get(iter)) != null) {
-          Object obj=update.get(dimensions.get(iter));
-          renamedMap.put(renamedDimensions.get(iter),obj);
-        }
-      }
-      if (renamedMap.get(timeDimension) == null) {
-        renamedMap.put(timeDimension,System.currentTimeMillis());
-      }
-      return renamedMap;
-    }
-    private Map<String,Object> processMap(    Map<String,Object> map){
-      Map<String,Object> renamedMap=renameKeys(map);
-      return renamedMap;
     }
     @Override public Runnable commit(){
       return doNothingRunnable;

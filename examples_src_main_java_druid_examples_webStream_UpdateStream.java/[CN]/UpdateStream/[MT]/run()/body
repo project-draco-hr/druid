@@ -5,8 +5,14 @@
     while ((line=reader.readLine()) != null) {
       if (isValid(line)) {
         HashMap<String,Object> map=mapper.readValue(line,typeRef);
-        queue.offer(map,queueWaitTime,TimeUnit.SECONDS);
-        log.debug("Successfully added to queue");
+        if (map.get(timeDimension) != null) {
+          Map<String,Object> renamedMap=renameKeys(map);
+          queue.offer(renamedMap,queueWaitTime,TimeUnit.SECONDS);
+          log.debug("Successfully added to queue");
+        }
+ else {
+          log.debug("missing timestamp");
+        }
       }
     }
   }
