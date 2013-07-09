@@ -1,7 +1,6 @@
 {
   final UpdateStream updateStream=factory.build();
-  final ExecutorService service=Executors.newSingleThreadExecutor();
-  service.submit(updateStream);
+  updateStream.start();
   return new Firehose(){
     Map<String,Object> map;
     private final Runnable doNothingRunnable=Runnables.getNoopRunnable();
@@ -30,7 +29,7 @@
       return doNothingRunnable;
     }
     @Override public void close() throws IOException {
-      service.shutdown();
+      updateStream.stop();
     }
   }
 ;

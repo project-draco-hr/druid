@@ -1,7 +1,7 @@
 {
   testCaseSupplier=new TestCaseSupplier("{\"item1\": \"value1\"," + "\"time\":1372121562 }");
   InputSupplierUpdateStream updateStream=new InputSupplierUpdateStream(testCaseSupplier,timeDimension);
-  updateStream.run();
+  updateStream.start();
   Map<String,Object> insertedRow=updateStream.pollFromQueue(waitTime,unit);
   Map<String,Object> expectedAnswer=new HashMap<String,Object>();
   expectedAnswer.put("item1","value1");

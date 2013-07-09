@@ -1,0 +1,28 @@
+{
+  addToQueueThread=new StoppableThread(){
+    public void run(){
+      while (!finished)       try {
+        BufferedReader reader=supplier.getInput();
+        String line;
+        while ((line=reader.readLine()) != null) {
+          if (isValid(line)) {
+            HashMap<String,Object> map=mapper.readValue(line,typeRef);
+            if (map.get(timeDimension) != null) {
+              queue.offer(map,queueWaitTime,TimeUnit.SECONDS);
+              log.debug("Successfully added to queue");
+            }
+ else {
+              log.error("missing timestamp");
+            }
+          }
+        }
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+;
+  addToQueueThread.setDaemon(true);
+  addToQueueThread.start();
+}
