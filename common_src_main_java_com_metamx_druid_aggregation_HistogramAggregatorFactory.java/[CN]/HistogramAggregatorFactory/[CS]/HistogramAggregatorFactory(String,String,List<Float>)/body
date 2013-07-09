@@ -1,7 +1,11 @@
 {
+  Preconditions.checkNotNull(name,"Must have a valid, non-null aggregator name");
+  Preconditions.checkNotNull(fieldName,"Must have a valid, non-null fieldName");
   this.name=name;
   this.fieldName=fieldName;
-  this.breaksList=breaksList;
-  this.breaks=new float[breaksList.size()];
-  for (int i=0; i < breaksList.size(); ++i)   this.breaks[i]=breaksList.get(i);
+  this.breaksList=(breaksList == null) ? Lists.<Float>newArrayList() : breaksList;
+  this.breaks=new float[this.breaksList.size()];
+  for (int i=0; i < this.breaksList.size(); ++i) {
+    this.breaks[i]=this.breaksList.get(i);
+  }
 }
