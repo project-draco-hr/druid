@@ -4,13 +4,4 @@
   dimensions.add("item2");
   dimensions.add("time");
   testCaseSupplier=new TestCaseSupplier("{\"item1\":\"value1\"," + "\"item2\":2," + "\"time\":1372121562 }");
-  UpdateStreamFactory updateStreamFactory=new UpdateStreamFactory(testCaseSupplier,null,"time");
-  webbie=new WebFirehoseFactory(updateStreamFactory,"posix");
-  firehose=webbie.connect();
-  if (firehose.hasMore()) {
-    inputRow=firehose.nextRow();
-  }
- else {
-    throw new RuntimeException("queue is empty");
-  }
 }

@@ -1,4 +1,14 @@
 {
+  InputRow inputRow;
+  UpdateStreamFactory updateStreamFactory=new UpdateStreamFactory(testCaseSupplier,"time");
+  webbie=new WebFirehoseFactory(new RenamingKeysUpdateStreamFactory(updateStreamFactory,null),"posix");
+  Firehose firehose=webbie.connect();
+  if (firehose.hasMore()) {
+    inputRow=firehose.nextRow();
+  }
+ else {
+    throw new RuntimeException("queue is empty");
+  }
   long expectedTime=1372121562L * 1000L;
   Assert.assertEquals(expectedTime,inputRow.getTimestampFromEpoch());
 }

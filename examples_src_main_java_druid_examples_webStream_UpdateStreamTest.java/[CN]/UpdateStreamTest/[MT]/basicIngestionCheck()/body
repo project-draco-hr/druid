@@ -1,6 +1,6 @@
 {
-  UpdateStream updateStream=new UpdateStream(testCaseSupplier,null,timeDimension);
+  UpdateStream updateStream=new UpdateStream(testCaseSupplier,timeDimension);
   updateStream.run();
-  Map<String,Object> insertedRow=updateStream.pollFromQueue();
+  Map<String,Object> insertedRow=updateStream.pollFromQueue(waitTime,unit);
   Assert.assertEquals(expectedAnswer,insertedRow);
 }

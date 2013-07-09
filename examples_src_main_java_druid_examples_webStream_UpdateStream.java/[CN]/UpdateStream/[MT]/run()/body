@@ -6,8 +6,7 @@
       if (isValid(line)) {
         HashMap<String,Object> map=mapper.readValue(line,typeRef);
         if (map.get(timeDimension) != null) {
-          Map<String,Object> renamedMap=renameKeys(map);
-          queue.offer(renamedMap,queueWaitTime,TimeUnit.SECONDS);
+          queue.offer(map,queueWaitTime,TimeUnit.SECONDS);
           log.debug("Successfully added to queue");
         }
  else {

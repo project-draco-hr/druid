@@ -1,7 +1,7 @@
 {
   testCaseSupplier=new TestCaseSupplier("{\"item1\": \"value1\"," + "\"item2\":2," + "\"time\":1373241600000}");
-  UpdateStreamFactory updateStreamFactory=new UpdateStreamFactory(testCaseSupplier,null,"time");
-  webbie=new WebFirehoseFactory(updateStreamFactory,null);
+  UpdateStreamFactory updateStreamFactory=new UpdateStreamFactory(testCaseSupplier,"time");
+  webbie=new WebFirehoseFactory(new RenamingKeysUpdateStreamFactory(updateStreamFactory,null),null);
   Firehose firehose3=webbie.connect();
   if (firehose3.hasMore()) {
     long milliSeconds=firehose3.nextRow().getTimestampFromEpoch();
