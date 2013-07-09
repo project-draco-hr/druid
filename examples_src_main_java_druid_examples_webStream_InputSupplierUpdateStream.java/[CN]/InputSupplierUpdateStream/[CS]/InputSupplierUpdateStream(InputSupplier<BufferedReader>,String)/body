@@ -1,7 +1,7 @@
 {
-  addToQueueThread=new StoppableThread(){
+  addToQueueThread=new Thread(){
     public void run(){
-      while (!finished) {
+      while (!isInterrupted()) {
         try {
           BufferedReader reader=supplier.getInput();
           String line;
