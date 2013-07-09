@@ -2,10 +2,12 @@
   LogLevelAdjuster.register();
   Injector injector=Initialization.makeInjector(new LifecycleModule(Key.get(MonitorScheduler.class),Key.get(DruidMaster.class)),EmitterModule.class,HttpClientModule.class,CuratorModule.class,new MetricsModule(),DiscoveryModule.class,ServerModule.class,new JettyServerModule(new MasterJettyServerInitializer()),MasterModule.class);
   final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
-  final DruidNodeConfig nodeConfig=injector.getInstance(DruidNodeConfig.class);
+  final Supplier<DruidNodeConfig> nodeConfig=injector.getInstance(Key.get(new TypeLiteral<Supplier<DruidNodeConfig>>(){
+  }
+));
   final ServiceAnnouncer serviceAnnouncer=injector.getInstance(ServiceAnnouncer.class);
   try {
-    Initialization.announceDefaultService(nodeConfig,serviceAnnouncer,lifecycle);
+    Initialization.announceDefaultService(nodeConfig.get(),serviceAnnouncer,lifecycle);
     lifecycle.start();
   }
  catch (  Throwable t) {
