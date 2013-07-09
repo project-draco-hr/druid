@@ -1,13 +1,13 @@
 {
-  final RenamingKeysUpdateStream renamingUpdateStream=factory.build();
+  final UpdateStream updateStream=factory.build();
   final ExecutorService service=Executors.newSingleThreadExecutor();
-  service.submit(renamingUpdateStream);
+  service.submit(updateStream);
   return new Firehose(){
     Map<String,Object> map;
     private final Runnable doNothingRunnable=Runnables.getNoopRunnable();
     @Override public boolean hasMore(){
       try {
-        map=renamingUpdateStream.pollFromQueue(queueWaitTime,TimeUnit.SECONDS);
+        map=updateStream.pollFromQueue(queueWaitTime,TimeUnit.SECONDS);
         return map != null;
       }
  catch (      InterruptedException e) {
@@ -16,7 +16,7 @@
     }
     @Override public InputRow nextRow(){
       try {
-        DateTime date=TimestampParser.createTimestampParser(timeFormat).apply(map.get(renamingUpdateStream.getTimeDimension()).toString());
+        DateTime date=TimestampParser.createTimestampParser(timeFormat).apply(map.get(updateStream.getTimeDimension()).toString());
         return new MapBasedInputRow(date.getMillis(),new ArrayList(map.keySet()),map);
       }
  catch (      Exception e) {
