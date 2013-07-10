@@ -1,0 +1,13 @@
+{
+  InputRow inputRow;
+  Firehose firehose=webbie.connect();
+  if (firehose.hasMore()) {
+    inputRow=firehose.nextRow();
+  }
+ else {
+    throw new RuntimeException("queue is empty");
+  }
+  List<String> actualAnswer=inputRow.getDimensions();
+  Collections.sort(actualAnswer);
+  Assert.assertEquals(actualAnswer,dimensions);
+}
