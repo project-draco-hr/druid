@@ -10,7 +10,7 @@
     }
     if (count >= config.getSegmentsPerNode() || byteSize + newBytesLen > config.getMaxNumBytes()) {
       segmentZNode.addSegments(batch);
-      announcer.update(segmentZNode.getPath(),segmentZNode.getBytes());
+      announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
       segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
       batch=Sets.newHashSet();
       count=0;
@@ -23,5 +23,5 @@
     byteSize+=newBytesLen;
   }
   segmentZNode.addSegments(batch);
-  announcer.update(segmentZNode.getPath(),segmentZNode.getBytes());
+  announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
 }

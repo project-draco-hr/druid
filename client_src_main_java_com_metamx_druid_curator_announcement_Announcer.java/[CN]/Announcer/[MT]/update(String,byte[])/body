@@ -1,13 +1,12 @@
 {
-synchronized (lock) {
-    final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
-    final String parentPath=pathAndNode.getPath();
-    final String nodePath=pathAndNode.getNode();
-    ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);
-    if (subPaths == null || subPaths.get(nodePath) == null) {
-      announce(path,bytes);
-      return;
-    }
+  final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
+  final String parentPath=pathAndNode.getPath();
+  final String nodePath=pathAndNode.getNode();
+  ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);
+  if (subPaths == null || subPaths.get(nodePath) == null) {
+    throw new ISE("Cannot update a path[%s] that hasn't been announced!",path);
+  }
+synchronized (subPaths) {
     try {
       byte[] oldBytes=subPaths.get(nodePath);
       if (!Arrays.equals(oldBytes,bytes)) {
