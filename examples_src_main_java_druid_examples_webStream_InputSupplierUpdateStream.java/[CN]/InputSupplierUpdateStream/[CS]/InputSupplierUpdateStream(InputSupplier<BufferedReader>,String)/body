@@ -18,8 +18,18 @@
             }
           }
         }
- catch (        Exception e) {
-          log.info(e,e.getMessage());
+ catch (        InterruptedException e) {
+          log.info(e,"Thread adding events to the queue interrupted");
+          return;
+        }
+catch (        JsonMappingException e) {
+          log.info(e,"Error in converting json to map");
+        }
+catch (        JsonParseException e) {
+          log.info(e,"Error in parsing json");
+        }
+catch (        IOException e) {
+          log.info(e,"Error in connecting to InputStream");
         }
       }
     }
