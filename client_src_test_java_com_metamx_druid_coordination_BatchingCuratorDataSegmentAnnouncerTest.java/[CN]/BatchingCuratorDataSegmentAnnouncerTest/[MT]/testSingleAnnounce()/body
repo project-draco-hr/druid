@@ -1,0 +1,23 @@
+{
+  Iterator<DataSegment> segIter=testSegments.iterator();
+  DataSegment firstSegment=segIter.next();
+  DataSegment secondSegment=segIter.next();
+  segmentAnnouncer.announceSegment(firstSegment);
+  List<String> zNodes=cf.getChildren().forPath(testSegmentsPath);
+  for (  String zNode : zNodes) {
+    Set<DataSegment> segments=segmentReader.read(joiner.join(testSegmentsPath,zNode));
+    Assert.assertEquals(segments.iterator().next(),firstSegment);
+  }
+  segmentAnnouncer.announceSegment(secondSegment);
+  for (  String zNode : zNodes) {
+    Set<DataSegment> segments=segmentReader.read(joiner.join(testSegmentsPath,zNode));
+    Assert.assertEquals(Sets.newHashSet(firstSegment,secondSegment),segments);
+  }
+  segmentAnnouncer.unannounceSegment(firstSegment);
+  for (  String zNode : zNodes) {
+    Set<DataSegment> segments=segmentReader.read(joiner.join(testSegmentsPath,zNode));
+    Assert.assertEquals(segments.iterator().next(),secondSegment);
+  }
+  segmentAnnouncer.unannounceSegment(secondSegment);
+  Assert.assertTrue(cf.getChildren().forPath(testSegmentsPath).isEmpty());
+}

@@ -1,0 +1,27 @@
+{
+  SegmentZNode segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+  Set<DataSegment> batch=Sets.newHashSet();
+  int byteSize=0;
+  int count=0;
+  for (  DataSegment segment : segments) {
+    int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
+    if (newBytesLen > config.getMaxNumBytes()) {
+      throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxNumBytes());
+    }
+    if (count >= config.getSegmentsPerNode() || byteSize + newBytesLen > config.getMaxNumBytes()) {
+      segmentZNode.addSegments(batch);
+      announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
+      segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+      batch=Sets.newHashSet();
+      count=0;
+      byteSize=0;
+    }
+    log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),segmentZNode.getPath());
+    segmentLookup.put(segment,segmentZNode);
+    batch.add(segment);
+    count++;
+    byteSize+=newBytesLen;
+  }
+  segmentZNode.addSegments(batch);
+  announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
+}
