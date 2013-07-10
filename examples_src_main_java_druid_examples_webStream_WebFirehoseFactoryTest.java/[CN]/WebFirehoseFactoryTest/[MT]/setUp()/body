@@ -1,0 +1,17 @@
+{
+  dimensions.add("item1");
+  dimensions.add("item2");
+  dimensions.add("time");
+  webbie=new WebFirehoseFactory(new UpdateStreamFactory(){
+    @Override public UpdateStream build(){
+      return new MyUpdateStream(ImmutableMap.<String,Object>of("item1","value1","item2",2,"time","1372121562"));
+    }
+  }
+,"posix");
+  webbie1=new WebFirehoseFactory(new UpdateStreamFactory(){
+    @Override public UpdateStream build(){
+      return new MyUpdateStream(ImmutableMap.<String,Object>of("item1","value1","item2",2,"time","1373241600000"));
+    }
+  }
+,"auto");
+}
