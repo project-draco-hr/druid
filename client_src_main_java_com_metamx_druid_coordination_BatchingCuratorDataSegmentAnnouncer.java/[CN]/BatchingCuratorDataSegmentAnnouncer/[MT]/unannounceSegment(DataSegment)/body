@@ -1,0 +1,13 @@
+{
+  final SegmentZNode segmentZNode=segmentLookup.remove(segment);
+  segmentZNode.removeSegment(segment);
+  log.info("Unannouncing segment[%s] at path[%s]",segment.getIdentifier(),segmentZNode.getPath());
+  if (segmentZNode.getCount() == 0) {
+    availableZNodes.remove(segmentZNode);
+    announcer.unannounce(segmentZNode.getPath());
+  }
+ else {
+    announcer.update(segmentZNode.getPath(),segmentZNode.getBytes());
+    availableZNodes.add(segmentZNode);
+  }
+}

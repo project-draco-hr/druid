@@ -1,0 +1,14 @@
+{
+  InputSupplierUpdateStream updateStream=new InputSupplierUpdateStream(testCaseSupplier,timeDimension);
+  Map<String,String> renamedKeys=new HashMap<String,String>();
+  renamedKeys.put("item1","i1");
+  renamedKeys.put("item2","i2");
+  renamedKeys.put("time","t");
+  RenamingKeysUpdateStream renamer=new RenamingKeysUpdateStream(updateStream,renamedKeys);
+  renamer.start();
+  Map<String,Object> expectedAnswer=new HashMap<String,Object>();
+  expectedAnswer.put("i1","value1");
+  expectedAnswer.put("i2",2);
+  expectedAnswer.put("t",1372121562);
+  Assert.assertEquals(expectedAnswer,renamer.pollFromQueue(waitTime,unit));
+}
