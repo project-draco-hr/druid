@@ -1,0 +1,32 @@
+{
+  try {
+    Map<String,ZkWorker> existingTasks=Maps.newHashMap();
+    Set<String> existingWorkers=Sets.newHashSet(cf.getChildren().forPath(config.getIndexerAnnouncementPath()));
+    for (    String existingWorker : existingWorkers) {
+      Worker worker=jsonMapper.readValue(cf.getData().forPath(JOINER.join(config.getIndexerAnnouncementPath(),existingWorker)),Worker.class);
+      ZkWorker zkWorker=addWorker(worker);
+      List<String> runningTasks=cf.getChildren().forPath(JOINER.join(config.getIndexerStatusPath(),existingWorker));
+      for (      String runningTask : runningTasks) {
+        existingTasks.put(runningTask,zkWorker);
+      }
+    }
+    for (    Task task : tasks) {
+      TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),new DateTime());
+      ZkWorker zkWorker=existingTasks.remove(task.getId());
+      if (zkWorker != null) {
+        runningTasks.put(task.getId(),taskRunnerWorkItem);
+        zkWorker.addRunningTask(task);
+      }
+ else {
+        addPendingTask(taskRunnerWorkItem);
+      }
+    }
+    for (    String existingTask : existingTasks.keySet()) {
+      shutdown(existingTask);
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  init();
+}
