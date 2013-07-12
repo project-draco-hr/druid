@@ -1,0 +1,14 @@
+{
+  int payloadSize=message.payloadSize();
+  if (bytes == null || bytes.remaining() < payloadSize) {
+    bytes=ByteBuffer.allocate(payloadSize);
+  }
+  bytes.put(message.payload());
+  bytes.flip();
+  try {
+    return parser.parse(bytes);
+  }
+  finally {
+    bytes.clear();
+  }
+}

@@ -6,47 +6,11 @@
     return null;
   }
   final KafkaStream<Message> stream=streamList.get(0);
-  return new Firehose(){
-    Iterator<MessageAndMetadata<Message>> iter=stream.iterator();
-    private CharBuffer chars=null;
-    @Override public boolean hasMore(){
-      return iter.hasNext();
-    }
-    @Override public InputRow nextRow() throws FormattedException {
-      final Message message=iter.next().message();
-      if (message == null) {
-        return null;
-      }
-      int payloadSize=message.payloadSize();
-      if (chars == null || chars.remaining() < payloadSize) {
-        chars=CharBuffer.allocate(payloadSize);
-      }
-      final CoderResult coderResult=Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPLACE).onUnmappableCharacter(CodingErrorAction.REPLACE).decode(message.payload(),chars,true);
-      if (coderResult.isUnderflow()) {
-        chars.flip();
-        try {
-          return parser.parse(chars.toString());
-        }
-  finally {
-          chars.clear();
-        }
-      }
- else {
-        throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_ROW).withMessage(String.format("Failed with CoderResult[%s]",coderResult)).build();
-      }
-    }
-    @Override public Runnable commit(){
-      return new Runnable(){
-        @Override public void run(){
-          log.info("committing offsets");
-          connector.commitOffsets();
-        }
-      }
-;
-    }
-    @Override public void close() throws IOException {
-      connector.shutdown();
-    }
+  if (parser instanceof StringInputRowParser) {
+    return new StringMessageFirehose(connector,stream);
   }
-;
+ else   if (parser instanceof ProtoBufInputRowParser) {
+    return new ProtoBufMessageFirehose(stream,connector);
+  }
+  throw new RuntimeException("No Firehose for parser: " + parser.getClass().getName());
 }
