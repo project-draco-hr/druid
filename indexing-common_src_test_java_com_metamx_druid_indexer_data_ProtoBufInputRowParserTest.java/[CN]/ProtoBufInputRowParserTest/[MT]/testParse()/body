@@ -4,7 +4,7 @@
   ProtoTestEventWrapper.ProtoTestEvent event=ProtoTestEventWrapper.ProtoTestEvent.newBuilder().setDescription("description").setEventType(CATEGORY_ONE).setId(4711L).setIsValid(true).setSomeOtherId(4712).setTimestamp(dateTime.toString()).setSomeFloatColumn(47.11F).setSomeIntColumn(815).setSomeLongColumn(816L).build();
   ByteArrayOutputStream out=new ByteArrayOutputStream();
   event.writeTo(out);
-  InputRow row=parser.parse(out.toByteArray());
+  InputRow row=parser.parse(ByteString.copyFrom(out.toByteArray()));
   System.out.println(row);
   assertEquals(Arrays.asList(DIMENSIONS),row.getDimensions());
   assertEquals(dateTime.getMillis(),row.getTimestampFromEpoch());
