@@ -1,0 +1,64 @@
+{
+  final ConnectionFactory factory=new ConnectionFactory();
+  factory.setHost(consumerProps.getProperty("host",factory.getHost()));
+  factory.setUsername(consumerProps.getProperty("username",factory.getUsername()));
+  factory.setPassword(consumerProps.getProperty("password",factory.getPassword()));
+  factory.setVirtualHost(consumerProps.getProperty("virtualHost",factory.getVirtualHost()));
+  final Connection connection=factory.newConnection();
+  final Channel channel=connection.createChannel();
+  channel.queueDeclare(queue,true,false,false,null);
+  channel.queueBind(queue,exchange,routingKey);
+  final QueueingConsumer consumer=new QueueingConsumer(channel);
+  channel.basicConsume(queue,false,consumer);
+  return new Firehose(){
+    /** 
+ * Storing the latest delivery as a member variable should be safe since this will only be run
+ * by a single thread.
+ */
+    private QueueingConsumer.Delivery delivery;
+    /** 
+ * Store the latest delivery tag to be able to commit (acknowledge) the message delivery up to
+ * and including this tag. See commit() for more detail.
+ */
+    private long lastDeliveryTag;
+    @Override public boolean hasMore(){
+      try {
+        delivery=consumer.nextDelivery();
+        lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
+        log.debug("got new message");
+      }
+ catch (      InterruptedException e) {
+        log.wtf(e,"Don't know if this is supposed to ever happen.");
+        return false;
+      }
+      if (delivery != null) {
+        return true;
+      }
+      return false;
+    }
+    @Override public InputRow nextRow(){
+      log.debug("consuming new message");
+      return parser.parse(new String(delivery.getBody()));
+    }
+    @Override public Runnable commit(){
+      return new Runnable(){
+        final long deliveryTag=lastDeliveryTag;
+        @Override public void run(){
+          try {
+            log.info("Acknowledging delivery of messages up to tag: " + deliveryTag);
+            channel.basicAck(deliveryTag,true);
+          }
+ catch (          IOException e) {
+            log.error(e,"Unable to acknowledge message reception to message queue.");
+          }
+        }
+      }
+;
+    }
+    @Override public void close() throws IOException {
+      channel.close();
+      connection.close();
+    }
+  }
+;
+}
