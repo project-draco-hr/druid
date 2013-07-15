@@ -38,6 +38,7 @@
  */
     private long lastDeliveryTag;
     @Override public boolean hasMore(){
+      delivery=null;
       try {
         delivery=consumer.nextDelivery();
         lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
@@ -45,16 +46,17 @@
       }
  catch (      InterruptedException e) {
         log.wtf(e,"Don't know if this is supposed to ever happen.");
-        return false;
       }
       if (delivery != null) {
         return true;
       }
-      log.wtf("We shouldn't be here!");
       return false;
     }
     @Override public InputRow nextRow(){
-      log.debug("consuming new message");
+      if (delivery == null) {
+        log.wtf("I have nothing in delivery. Method hasMore() should have returned false.");
+        return null;
+      }
       return parser.parse(new String(delivery.getBody()));
     }
     @Override public Runnable commit(){
