@@ -14,6 +14,18 @@
   channel.queueBind(queue,exchange,routingKey);
   final QueueingConsumer consumer=new QueueingConsumer(channel);
   channel.basicConsume(queue,autoAck,consumer);
+  channel.addShutdownListener(new ShutdownListener(){
+    @Override public void shutdownCompleted(    ShutdownSignalException cause){
+      log.warn(cause,"Channel closed!");
+    }
+  }
+);
+  connection.addShutdownListener(new ShutdownListener(){
+    @Override public void shutdownCompleted(    ShutdownSignalException cause){
+      log.warn(cause,"Connection closed!");
+    }
+  }
+);
   return new Firehose(){
     /** 
  * Storing the latest delivery as a member variable should be safe since this will only be run
@@ -61,6 +73,7 @@
 ;
     }
     @Override public void close() throws IOException {
+      log.info("Closing connection to RabbitMQ");
       channel.close();
       connection.close();
     }
