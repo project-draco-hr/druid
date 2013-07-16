@@ -1,15 +1,17 @@
 {
   final MasterStats stats=new MasterStats();
   while (totalReplicants < expectedReplicants) {
+    boolean replicate=totalReplicants > 0;
+    if (replicate && !replicationManager.canAddReplicant(getTier())) {
+      break;
+    }
     final ServerHolder holder=analyzer.findNewSegmentHomeAssign(segment,serverHolderList);
     if (holder == null) {
       log.warn("Not enough %s servers or node capacity to assign segment[%s]! Expected Replicants[%d]",getTier(),segment.getIdentifier(),expectedReplicants);
       break;
     }
-    if (totalReplicants > 0) {
-      if (!replicationManager.canAddReplicant(getTier()) || !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier(),holder.getServer().getHost())) {
-        break;
-      }
+    if (replicate && !replicationManager.registerReplicantCreation(getTier(),segment.getIdentifier(),holder.getServer().getHost())) {
+      break;
     }
     holder.getPeon().loadSegment(segment,new LoadPeonCallback(){
       @Override protected void execute(){
