@@ -1,0 +1,13 @@
+{
+  if (bytes.length == 0) {
+    return Sets.newHashSet();
+  }
+  try {
+    return jsonMapper.readValue(bytes,new TypeReference<Set<DataSegment>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

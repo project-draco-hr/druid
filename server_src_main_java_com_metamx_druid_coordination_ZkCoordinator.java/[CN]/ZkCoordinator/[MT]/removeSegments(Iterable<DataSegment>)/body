@@ -1,0 +1,15 @@
+{
+  try {
+    for (    DataSegment segment : segments) {
+      serverManager.dropSegment(segment);
+      File segmentInfoCacheFile=new File(config.getSegmentInfoCacheDirectory(),segment.getIdentifier());
+      if (!segmentInfoCacheFile.delete()) {
+        log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
+      }
+    }
+    announcer.unannounceSegments(segments);
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Failed to remove segments").addData("segments",segments).emit();
+  }
+}

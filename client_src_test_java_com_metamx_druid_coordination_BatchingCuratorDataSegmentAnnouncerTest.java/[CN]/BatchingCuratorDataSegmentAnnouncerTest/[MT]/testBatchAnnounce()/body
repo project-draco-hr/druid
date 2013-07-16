@@ -1,0 +1,12 @@
+{
+  segmentAnnouncer.announceSegments(testSegments);
+  List<String> zNodes=cf.getChildren().forPath(testSegmentsPath);
+  Assert.assertTrue(zNodes.size() == 2);
+  Set<DataSegment> allSegments=Sets.newHashSet();
+  for (  String zNode : zNodes) {
+    allSegments.addAll(segmentReader.read(joiner.join(testSegmentsPath,zNode)));
+  }
+  Assert.assertEquals(allSegments,testSegments);
+  segmentAnnouncer.unannounceSegments(testSegments);
+  Assert.assertTrue(cf.getChildren().forPath(testSegmentsPath).isEmpty());
+}

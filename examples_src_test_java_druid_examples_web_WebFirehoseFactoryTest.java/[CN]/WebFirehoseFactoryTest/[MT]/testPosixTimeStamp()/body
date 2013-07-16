@@ -1,0 +1,12 @@
+{
+  InputRow inputRow;
+  Firehose firehose=webbie.connect();
+  if (firehose.hasMore()) {
+    inputRow=firehose.nextRow();
+  }
+ else {
+    throw new RuntimeException("queue is empty");
+  }
+  long expectedTime=1372121562L * 1000L;
+  Assert.assertEquals(expectedTime,inputRow.getTimestampFromEpoch());
+}
