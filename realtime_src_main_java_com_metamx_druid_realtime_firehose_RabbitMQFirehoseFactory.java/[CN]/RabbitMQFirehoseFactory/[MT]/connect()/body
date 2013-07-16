@@ -1,31 +1,42 @@
 {
   final ConnectionFactory factory=new ConnectionFactory();
   factory.setHost(consumerProps.getProperty("host",factory.getHost()));
+  factory.setPort(Integer.parseInt(consumerProps.getProperty("port",Integer.toString(factory.getPort()))));
   factory.setUsername(consumerProps.getProperty("username",factory.getUsername()));
   factory.setPassword(consumerProps.getProperty("password",factory.getPassword()));
   factory.setVirtualHost(consumerProps.getProperty("virtualHost",factory.getVirtualHost()));
+  if (consumerProps.containsKey("uri")) {
+    try {
+      factory.setUri(consumerProps.getProperty("uri"));
+    }
+ catch (    Exception e) {
+      throw new IOException("Bad URI format.",e);
+    }
+  }
+  String queue=consumerProps.getProperty("queue");
+  String exchange=consumerProps.getProperty("exchange");
+  String routingKey=consumerProps.getProperty("routingKey");
   boolean durable=Boolean.valueOf(consumerProps.getProperty("durable","false"));
   boolean exclusive=Boolean.valueOf(consumerProps.getProperty("exclusive","false"));
   boolean autoDelete=Boolean.valueOf(consumerProps.getProperty("autoDelete","false"));
-  boolean autoAck=Boolean.valueOf(consumerProps.getProperty("autoAck","true"));
   final Connection connection=factory.newConnection();
-  final Channel channel=connection.createChannel();
-  channel.queueDeclare(queue,durable,exclusive,autoDelete,null);
-  channel.queueBind(queue,exchange,routingKey);
-  final QueueingConsumer consumer=new QueueingConsumer(channel);
-  channel.basicConsume(queue,autoAck,consumer);
-  channel.addShutdownListener(new ShutdownListener(){
-    @Override public void shutdownCompleted(    ShutdownSignalException cause){
-      log.warn(cause,"Channel closed!");
-    }
-  }
-);
   connection.addShutdownListener(new ShutdownListener(){
     @Override public void shutdownCompleted(    ShutdownSignalException cause){
       log.warn(cause,"Connection closed!");
     }
   }
 );
+  final Channel channel=connection.createChannel();
+  channel.queueDeclare(queue,durable,exclusive,autoDelete,null);
+  channel.queueBind(queue,exchange,routingKey);
+  channel.addShutdownListener(new ShutdownListener(){
+    @Override public void shutdownCompleted(    ShutdownSignalException cause){
+      log.warn(cause,"Channel closed!");
+    }
+  }
+);
+  final QueueingConsumer consumer=new QueueingConsumer(channel);
+  channel.basicConsume(queue,false,consumer);
   return new Firehose(){
     /** 
  * Storing the latest delivery as a member variable should be safe since this will only be run
@@ -42,10 +53,9 @@
       try {
         delivery=consumer.nextDelivery();
         lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
-        log.debug("got new message");
       }
  catch (      InterruptedException e) {
-        log.wtf(e,"Don't know if this is supposed to ever happen.");
+        log.wtf(e,"Got interrupted while waiting for next delivery. Doubt this should ever happen.");
       }
       if (delivery != null) {
         return true;
