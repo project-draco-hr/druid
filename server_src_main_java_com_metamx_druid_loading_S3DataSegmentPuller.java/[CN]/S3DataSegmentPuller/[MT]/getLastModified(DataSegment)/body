@@ -1,7 +1,7 @@
 {
   final S3Coords coords=new S3Coords(segment);
   try {
-    final StorageObject objDetails=retryS3Operation(new Callable<StorageObject>(){
+    final StorageObject objDetails=S3Utils.retryS3Operation(new Callable<StorageObject>(){
       @Override public StorageObject call() throws Exception {
         return s3Client.getObjectDetails(coords.bucket,coords.path);
       }
