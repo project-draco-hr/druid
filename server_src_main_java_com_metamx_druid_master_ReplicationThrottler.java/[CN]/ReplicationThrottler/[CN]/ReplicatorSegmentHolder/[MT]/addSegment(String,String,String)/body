@@ -4,9 +4,7 @@
     segments=new ConcurrentHashMap<String,String>();
     currentlyProcessingSegments.put(tier,segments);
   }
-  if (segments.size() < maxReplicants) {
+  if (!isAtMaxReplicants(tier)) {
     segments.put(segmentId,serverId);
-    return true;
   }
-  return false;
 }
