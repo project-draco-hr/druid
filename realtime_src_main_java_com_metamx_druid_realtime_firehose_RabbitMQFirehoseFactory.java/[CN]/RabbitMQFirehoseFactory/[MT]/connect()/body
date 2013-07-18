@@ -1,25 +1,11 @@
 {
-  final ConnectionFactory factory=new ConnectionFactory();
-  factory.setHost(consumerProps.getProperty("host",factory.getHost()));
-  factory.setPort(Integer.parseInt(consumerProps.getProperty("port",Integer.toString(factory.getPort()))));
-  factory.setUsername(consumerProps.getProperty("username",factory.getUsername()));
-  factory.setPassword(consumerProps.getProperty("password",factory.getPassword()));
-  factory.setVirtualHost(consumerProps.getProperty("virtualHost",factory.getVirtualHost()));
-  if (consumerProps.containsKey("uri")) {
-    try {
-      factory.setUri(consumerProps.getProperty("uri"));
-    }
- catch (    Exception e) {
-      throw new IOException("Bad URI format.",e);
-    }
-  }
-  String queue=consumerProps.getProperty("queue");
-  String exchange=consumerProps.getProperty("exchange");
-  String routingKey=consumerProps.getProperty("routingKey");
-  boolean durable=Boolean.valueOf(consumerProps.getProperty("durable","false"));
-  boolean exclusive=Boolean.valueOf(consumerProps.getProperty("exclusive","false"));
-  boolean autoDelete=Boolean.valueOf(consumerProps.getProperty("autoDelete","false"));
-  final Connection connection=factory.newConnection();
+  String queue=config.getQueue();
+  String exchange=config.getExchange();
+  String routingKey=config.getRoutingKey();
+  boolean durable=config.isDurable();
+  boolean exclusive=config.isExclusive();
+  boolean autoDelete=config.isAutoDelete();
+  final Connection connection=connectionFactory.newConnection();
   connection.addShutdownListener(new ShutdownListener(){
     @Override public void shutdownCompleted(    ShutdownSignalException cause){
       log.warn(cause,"Connection closed!");
