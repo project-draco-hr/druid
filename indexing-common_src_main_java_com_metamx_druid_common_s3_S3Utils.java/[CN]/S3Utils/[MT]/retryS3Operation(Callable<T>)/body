@@ -1,0 +1,29 @@
+{
+  int nTry=0;
+  final int maxTries=3;
+  while (true) {
+    try {
+      nTry++;
+      return f.call();
+    }
+ catch (    IOException e) {
+      if (nTry <= maxTries) {
+        awaitNextRetry(e,nTry);
+      }
+ else {
+        throw Throwables.propagate(e);
+      }
+    }
+catch (    ServiceException e) {
+      if (nTry <= maxTries && (e.getCause() instanceof IOException || (e.getErrorCode() != null && e.getErrorCode().equals("RequestTimeout")))) {
+        awaitNextRetry(e,nTry);
+      }
+ else {
+        throw e;
+      }
+    }
+catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}
