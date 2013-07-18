@@ -1,18 +1,6 @@
 {
   final ConnectionFactory factory=new ConnectionFactory();
-  factory.setHost(consumerProps.getProperty("host",factory.getHost()));
-  factory.setPort(Integer.parseInt(consumerProps.getProperty("port",Integer.toString(factory.getPort()))));
-  factory.setUsername(consumerProps.getProperty("username",factory.getUsername()));
-  factory.setPassword(consumerProps.getProperty("password",factory.getPassword()));
-  factory.setVirtualHost(consumerProps.getProperty("virtualHost",factory.getVirtualHost()));
-  if (consumerProps.containsKey("uri")) {
-    try {
-      factory.setUri(consumerProps.getProperty("uri"));
-    }
- catch (    Exception e) {
-      throw new IOException("Bad URI format.",e);
-    }
-  }
+  primeConnectionFactory(factory);
   String queue=consumerProps.getProperty("queue");
   String exchange=consumerProps.getProperty("exchange");
   String routingKey=consumerProps.getProperty("routingKey");
@@ -52,13 +40,13 @@
       delivery=null;
       try {
         delivery=consumer.nextDelivery();
-        lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
+        if (delivery != null) {
+          lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
+          return true;
+        }
       }
  catch (      InterruptedException e) {
         log.wtf(e,"Got interrupted while waiting for next delivery. Doubt this should ever happen.");
-      }
-      if (delivery != null) {
-        return true;
       }
       return false;
     }
