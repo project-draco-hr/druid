@@ -1,8 +1,16 @@
 {
   try {
-    return s3Client.isObjectInBucket(coords.bucket,coords.path);
+    return S3Utils.retryS3Operation(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        return s3Client.isObjectInBucket(coords.bucket,coords.path);
+      }
+    }
+);
   }
- catch (  ServiceException e) {
-    throw new SegmentLoadingException(e,"S3 fail!  Key[%s]",coords);
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  ServiceException e) {
+    throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
   }
 }
