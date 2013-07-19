@@ -6,11 +6,5 @@
     return null;
   }
   final KafkaStream<Message> stream=streamList.get(0);
-  if (parser instanceof StringInputRowParser) {
-    return new StringMessageFirehose(connector,stream);
-  }
- else   if (parser instanceof ProtoBufInputRowParser) {
-    return new ProtoBufMessageFirehose(stream,connector);
-  }
-  throw new RuntimeException("No Firehose for parser: " + parser.getClass().getName());
+  return new DefaultFirehose(connector,stream,parser);
 }

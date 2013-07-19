@@ -1,0 +1,21 @@
+{
+  int payloadSize=input.limit();
+  if (chars == null || chars.remaining() < payloadSize) {
+    chars=CharBuffer.allocate(payloadSize);
+  }
+  final CoderResult coderResult=Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPLACE).onUnmappableCharacter(CodingErrorAction.REPLACE).decode(input,chars,true);
+  Map<String,Object> theMap;
+  if (coderResult.isUnderflow()) {
+    chars.flip();
+    try {
+      theMap=parser.parse(chars.toString());
+    }
+  finally {
+      chars.clear();
+    }
+  }
+ else {
+    throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_ROW).withMessage(String.format("Failed with CoderResult[%s]",coderResult)).build();
+  }
+  return theMap;
+}
