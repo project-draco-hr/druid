@@ -6,10 +6,14 @@
       final String propValue=props.getProperty(prop);
       Object value;
       try {
-        value=jsonMapper.readValue(propValue,Object.class);
+        String modifiedPropValue=propValue;
+        if (!(modifiedPropValue.startsWith("[") || modifiedPropValue.startsWith("{"))) {
+          modifiedPropValue=String.format("\"%s\"",modifiedPropValue);
+        }
+        value=jsonMapper.readValue(modifiedPropValue,Object.class);
       }
  catch (      IOException e) {
-        log.debug("Unable to parse [%s]=[%s] as a json object, using as is.",prop,propValue);
+        log.info(e,"Unable to parse [%s]=[%s] as a json object, using as is.",prop,propValue);
         value=propValue;
       }
       jsonMap.put(prop.substring(propertyBase.length()),value);
@@ -29,5 +33,6 @@
     }
 ));
   }
+  log.info("Loaded class[%s] as [%s]",clazz,config);
   return config;
 }
