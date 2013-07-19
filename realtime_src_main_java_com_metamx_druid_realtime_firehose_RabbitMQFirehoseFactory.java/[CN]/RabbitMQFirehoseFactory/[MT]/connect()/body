@@ -1,13 +1,11 @@
 {
-  final ConnectionFactory factory=new ConnectionFactory();
-  primeConnectionFactory(factory);
-  String queue=consumerProps.getProperty("queue");
-  String exchange=consumerProps.getProperty("exchange");
-  String routingKey=consumerProps.getProperty("routingKey");
-  boolean durable=Boolean.valueOf(consumerProps.getProperty("durable","false"));
-  boolean exclusive=Boolean.valueOf(consumerProps.getProperty("exclusive","false"));
-  boolean autoDelete=Boolean.valueOf(consumerProps.getProperty("autoDelete","false"));
-  final Connection connection=factory.newConnection();
+  String queue=config.getQueue();
+  String exchange=config.getExchange();
+  String routingKey=config.getRoutingKey();
+  boolean durable=config.isDurable();
+  boolean exclusive=config.isExclusive();
+  boolean autoDelete=config.isAutoDelete();
+  final Connection connection=connectionFactory.newConnection();
   connection.addShutdownListener(new ShutdownListener(){
     @Override public void shutdownCompleted(    ShutdownSignalException cause){
       log.warn(cause,"Connection closed!");
