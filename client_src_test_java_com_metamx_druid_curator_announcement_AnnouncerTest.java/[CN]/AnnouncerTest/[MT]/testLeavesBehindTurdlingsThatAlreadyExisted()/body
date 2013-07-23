@@ -1,0 +1,15 @@
+{
+  curator.start();
+  Announcer announcer=new Announcer(curator,exec);
+  final byte[] billy="billy".getBytes();
+  final String testPath="/somewhere/test2";
+  final String parent=ZKPaths.getPathAndNode(testPath).getPath();
+  curator.create().forPath(parent);
+  final Stat initialStat=curator.checkExists().forPath(parent);
+  announcer.start();
+  Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
+  announcer.announce(testPath,billy);
+  Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
+  announcer.stop();
+  Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
+}

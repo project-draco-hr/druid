@@ -7,8 +7,17 @@ synchronized (toAnnounce) {
   }
   final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
   final String parentPath=pathAndNode.getPath();
+  boolean buildParentPath=false;
   ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);
   if (subPaths == null) {
+    try {
+      if (curator.checkExists().forPath(parentPath) == null) {
+        buildParentPath=true;
+      }
+    }
+ catch (    Exception e) {
+      log.debug(e,"Problem checking if the parent existed, ignoring.");
+    }
     announcements.putIfAbsent(parentPath,new MapMaker().<String,byte[]>makeMap());
     final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);
 synchronized (finalSubPaths) {
@@ -54,16 +63,14 @@ break;
 }
 }
 );
-try {
 synchronized (toAnnounce) {
 if (started) {
-cache.start();
+if (buildParentPath) {
+createPath(parentPath);
+}
+startCache(cache);
 listeners.put(parentPath,cache);
 }
-}
-}
- catch (Exception e) {
-throw Throwables.propagate(e);
 }
 }
 }

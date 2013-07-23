@@ -2,7 +2,7 @@
   if (announcer == null) {
     final Announcer announcer=new Announcer(getCuratorFramework(),Execs.singleThreaded("Announcer-%s"));
     lifecycle.addManagedInstance(announcer);
-    setAnnouncer(new MultipleDataSegmentAnnouncerDataSegmentAnnouncer(Arrays.<AbstractDataSegmentAnnouncer>asList(new BatchingCuratorDataSegmentAnnouncer(getDruidServerMetadata(),getConfigFactory().build(ZkDataSegmentAnnouncerConfig.class),announcer,getJsonMapper()),new CuratorDataSegmentAnnouncer(getDruidServerMetadata(),getZkPaths(),announcer,getJsonMapper()))));
+    setAnnouncer(new MultipleDataSegmentAnnouncerDataSegmentAnnouncer(Arrays.<AbstractDataSegmentAnnouncer>asList(new BatchingDataSegmentAnnouncer(getDruidServerMetadata(),getConfigFactory().build(ZkDataSegmentAnnouncerConfig.class),announcer,getJsonMapper()),new SingleDataSegmentAnnouncer(getDruidServerMetadata(),getZkPaths(),announcer,getJsonMapper()))));
     lifecycle.addManagedInstance(getAnnouncer(),Lifecycle.Stage.LAST);
   }
 }
