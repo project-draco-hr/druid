@@ -1,5 +1,15 @@
 {
-  final Injector baseInjector=Guice.createInjector(new DruidGuiceExtensions(),new JacksonModule(),new PropertiesModule("runtime.properties"),new ConfigModule());
+  final Injector baseInjector=Guice.createInjector(new DruidGuiceExtensions(),new JacksonModule(),new PropertiesModule("runtime.properties"),new ConfigModule(),new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(DruidSecondaryModule.class);
+      for (      Object module : modules) {
+        if (module instanceof Class) {
+          binder.bind((Class)module);
+        }
+      }
+    }
+  }
+);
   List<Object> actualModules=Lists.newArrayList();
   actualModules.add(DruidSecondaryModule.class);
   actualModules.addAll(Arrays.asList(modules));
