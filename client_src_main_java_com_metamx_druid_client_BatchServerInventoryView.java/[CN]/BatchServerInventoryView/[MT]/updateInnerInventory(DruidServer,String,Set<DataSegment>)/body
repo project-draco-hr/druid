@@ -1,0 +1,14 @@
+{
+  Set<DataSegment> existing=zNodes.get(inventoryKey);
+  if (existing == null) {
+    throw new ISE("Trying to update an inventoryKey[%s] that didn't exist?!",inventoryKey);
+  }
+  for (  DataSegment segment : Sets.difference(inventory,existing)) {
+    addSingleInventory(container,segment);
+  }
+  for (  DataSegment segment : Sets.difference(existing,inventory)) {
+    removeSingleInventory(container,segment.getIdentifier());
+  }
+  zNodes.put(inventoryKey,inventory);
+  return container;
+}
