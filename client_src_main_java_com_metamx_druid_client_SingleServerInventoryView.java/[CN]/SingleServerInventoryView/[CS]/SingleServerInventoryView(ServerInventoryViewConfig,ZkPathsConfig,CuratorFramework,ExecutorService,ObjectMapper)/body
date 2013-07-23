@@ -1,5 +1,13 @@
 {
-  super(config,zkPaths,curator,exec,jsonMapper,new TypeReference<DataSegment>(){
+  super(config,new InventoryManagerConfig(){
+    @Override public String getContainerPath(){
+      return zkPaths.getAnnouncementsPath();
+    }
+    @Override public String getInventoryPath(){
+      return zkPaths.getServedSegmentsPath();
+    }
+  }
+,curator,exec,jsonMapper,new TypeReference<DataSegment>(){
   }
 );
 }

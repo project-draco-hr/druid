@@ -1,14 +1,6 @@
 {
   this.config=config;
-  this.inventoryManager=new CuratorInventoryManager<DruidServer,InventoryType>(curator,new InventoryManagerConfig(){
-    @Override public String getContainerPath(){
-      return zkPaths.getAnnouncementsPath();
-    }
-    @Override public String getInventoryPath(){
-      return zkPaths.getServedSegmentsPath();
-    }
-  }
-,exec,new CuratorInventoryManagerStrategy<DruidServer,InventoryType>(){
+  this.inventoryManager=new CuratorInventoryManager<DruidServer,InventoryType>(curator,inventoryManagerConfig,exec,new CuratorInventoryManagerStrategy<DruidServer,InventoryType>(){
     @Override public DruidServer deserializeContainer(    byte[] bytes){
       try {
         return jsonMapper.readValue(bytes,DruidServer.class);

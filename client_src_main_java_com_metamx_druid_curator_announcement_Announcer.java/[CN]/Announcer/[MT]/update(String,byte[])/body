@@ -6,7 +6,7 @@
   if (subPaths == null || subPaths.get(nodePath) == null) {
     throw new ISE("Cannot update a path[%s] that hasn't been announced!",path);
   }
-synchronized (subPaths) {
+synchronized (toAnnounce) {
     try {
       byte[] oldBytes=subPaths.get(nodePath);
       if (!Arrays.equals(oldBytes,bytes)) {
