@@ -74,6 +74,7 @@
     }
     @Override public void finishJob(){
       log.info("Shutting down...");
+      noMoreData=true;
       while (!sinks.isEmpty()) {
         try {
           log.info("Cannot shut down yet! Sinks remaining: %s",Joiner.on(", ").join(Iterables.transform(sinks.values(),new Function<Sink,String>(){
@@ -203,7 +204,7 @@ synchronized (handoffCondition) {
           List<Map.Entry<Long,Sink>> sinksToPush=Lists.newArrayList();
           for (          Map.Entry<Long,Sink> entry : sinks.entrySet()) {
             final Long intervalStart=entry.getKey();
-            if (intervalStart < minTimestamp) {
+            if (noMoreData || intervalStart < minTimestamp) {
               log.info("Adding entry[%s] for merge and push.",entry);
               sinksToPush.add(entry);
             }
