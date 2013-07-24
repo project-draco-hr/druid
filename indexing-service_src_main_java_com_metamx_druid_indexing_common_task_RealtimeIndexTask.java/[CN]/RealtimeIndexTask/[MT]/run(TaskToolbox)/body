@@ -60,6 +60,9 @@
   realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
   realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
   realtimePlumberSchool.setServiceEmitter(toolbox.getEmitter());
+  if (this.rejectionPolicyFactory != null) {
+    realtimePlumberSchool.setRejectionPolicyFactory(new NoopRejectionPolicyFactory());
+  }
   final FireDepartment fireDepartment=new FireDepartment(schema,fireDepartmentConfig,null,null);
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
