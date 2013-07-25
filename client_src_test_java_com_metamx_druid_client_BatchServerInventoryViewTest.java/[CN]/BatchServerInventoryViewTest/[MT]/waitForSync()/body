@@ -1,0 +1,9 @@
+{
+  Stopwatch stopwatch=new Stopwatch().start();
+  while (Iterables.get(batchServerInventoryView.getInventory(),0).getSegments().size() != testSegments.size()) {
+    Thread.sleep(500);
+    if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > 5000) {
+      throw new ISE("BatchServerInventoryView is not updating");
+    }
+  }
+}

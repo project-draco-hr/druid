@@ -26,10 +26,11 @@
       }
       if (holder.isServingSegment(segment)) {
         if (expectedNumReplicantsForType > 0) {
-          if (!replicationManager.canDestroyReplicant(getTier()) || !replicationManager.registerReplicantTermination(getTier(),segment.getIdentifier(),holder.getServer().getHost())) {
+          if (!replicationManager.canDestroyReplicant(getTier())) {
             serverQueue.add(holder);
             break;
           }
+          replicationManager.registerReplicantTermination(getTier(),segment.getIdentifier(),holder.getServer().getHost());
         }
         holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
           @Override protected void execute(){

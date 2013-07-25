@@ -1,0 +1,7 @@
+{
+  final long baseSleepMillis=1000;
+  final double fuzziness=0.2;
+  final long sleepMillis=Math.max(baseSleepMillis,(long)(baseSleepMillis * Math.pow(2,nTry) * (1 + new Random().nextGaussian() * fuzziness)));
+  log.info(e,"S3 fail on try %d, retrying in %,dms.",nTry,sleepMillis);
+  Thread.sleep(sleepMillis);
+}

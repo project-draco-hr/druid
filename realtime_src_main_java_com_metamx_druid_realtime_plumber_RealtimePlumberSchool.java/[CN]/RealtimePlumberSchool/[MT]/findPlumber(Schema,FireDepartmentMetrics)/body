@@ -7,6 +7,7 @@
     private volatile ExecutorService persistExecutor=null;
     private volatile ScheduledExecutorService scheduledExecutor=null;
     private final Map<Long,Sink> sinks=Maps.newConcurrentMap();
+    private final VersionedIntervalTimeline<String,Sink> sinkTimeline=new VersionedIntervalTimeline<String,Sink>(String.CASE_INSENSITIVE_ORDER);
     @Override public void startJob(){
       computeBaseDir(schema).mkdirs();
       initializeExecutors();
@@ -26,6 +27,7 @@
         try {
           segmentAnnouncer.announceSegment(retVal.getSegment());
           sinks.put(truncatedTime,retVal);
+          sinkTimeline.add(retVal.getInterval(),retVal.getVersion(),new SingleElementPartitionChunk<Sink>(retVal));
         }
  catch (        IOException e) {
           log.makeAlert(e,"Failed to announce new segment[%s]",schema.getDataSource()).addData("interval",retVal.getInterval()).emit();
@@ -42,14 +44,19 @@
         }
       }
 ;
-      return toolchest.mergeResults(factory.mergeRunners(EXEC,FunctionalIterable.create(sinks.values()).transform(new Function<Sink,QueryRunner<T>>(){
-        @Override public QueryRunner<T> apply(        Sink input){
-          return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(input,new Function<FireHydrant,QueryRunner<T>>(){
+      List<TimelineObjectHolder<String,Sink>> querySinks=Lists.newArrayList();
+      for (      Interval interval : query.getIntervals()) {
+        querySinks.addAll(sinkTimeline.lookup(interval));
+      }
+      return toolchest.mergeResults(factory.mergeRunners(EXEC,FunctionalIterable.create(querySinks).transform(new Function<TimelineObjectHolder<String,Sink>,QueryRunner<T>>(){
+        @Override public QueryRunner<T> apply(        TimelineObjectHolder<String,Sink> holder){
+          final Sink theSink=holder.getObject().getChunk(0).getObject();
+          return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
             @Override public QueryRunner<T> apply(            FireHydrant input){
               return factory.createRunner(input.getSegment());
             }
           }
-))),new SpecificSegmentSpec(new SegmentDescriptor(input.getInterval(),input.getSegment().getVersion(),input.getSegment().getShardSpec().getPartitionNum())));
+))),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum())));
         }
       }
 )));
@@ -137,6 +144,7 @@ synchronized (handoffCondition) {
           }
           Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
           sinks.put(sinkInterval.getStartMillis(),currSink);
+          sinkTimeline.add(currSink.getInterval(),currSink.getVersion(),new SingleElementPartitionChunk<Sink>(currSink));
           segmentAnnouncer.announceSegment(currSink.getSegment());
         }
  catch (        IOException e) {
@@ -172,6 +180,7 @@ synchronized (handoffCondition) {
                     FileUtils.deleteDirectory(computePersistDir(schema,sink.getInterval()));
                     log.info("Removing sinkKey %d for segment %s",sinkKey,sink.getSegment().getIdentifier());
                     sinks.remove(sinkKey);
+                    sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<Sink>(sink));
 synchronized (handoffCondition) {
                       handoffCondition.notifyAll();
                     }

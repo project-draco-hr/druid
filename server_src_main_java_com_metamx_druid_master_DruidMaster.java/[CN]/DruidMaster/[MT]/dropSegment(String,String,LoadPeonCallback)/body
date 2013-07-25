@@ -1,17 +1,23 @@
 {
-  final DruidServer fromServer=serverInventoryView.getInventoryValue(from);
-  if (fromServer == null) {
-    throw new IllegalArgumentException(String.format("Unable to find server [%s]",from));
+  try {
+    final DruidServer fromServer=serverInventoryView.getInventoryValue(from);
+    if (fromServer == null) {
+      throw new IAE("Unable to find server [%s]",from);
+    }
+    final DataSegment segment=fromServer.getSegment(segmentName);
+    if (segment == null) {
+      throw new IAE("Unable to find segment [%s] on server [%s]",segmentName,from);
+    }
+    final LoadQueuePeon dropPeon=loadManagementPeons.get(from);
+    if (dropPeon == null) {
+      throw new IAE("LoadQueuePeon hasn't been created yet for path [%s]",from);
+    }
+    if (!dropPeon.getSegmentsToDrop().contains(segment)) {
+      dropPeon.dropSegment(segment,callback);
+    }
   }
-  final DataSegment segment=fromServer.getSegment(segmentName);
-  if (segment == null) {
-    throw new IllegalArgumentException(String.format("Unable to find segment [%s] on server [%s]",segmentName,from));
-  }
-  final LoadQueuePeon dropPeon=loadManagementPeons.get(from);
-  if (dropPeon == null) {
-    throw new IllegalArgumentException(String.format("LoadQueuePeon hasn't been created yet for path [%s]",from));
-  }
-  if (!dropPeon.getSegmentsToDrop().contains(segment)) {
-    dropPeon.dropSegment(segment,callback);
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception dropping segment %s",segmentName).emit();
+    callback.execute();
   }
 }
