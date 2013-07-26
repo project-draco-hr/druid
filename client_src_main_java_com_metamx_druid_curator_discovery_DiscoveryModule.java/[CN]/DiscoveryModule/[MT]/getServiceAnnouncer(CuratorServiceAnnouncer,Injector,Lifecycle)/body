@@ -1,0 +1,27 @@
+{
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    private volatile List<Supplier<DruidNode>> nodes=null;
+    @Override public void start() throws Exception {
+      if (nodes == null) {
+        nodes=Lists.transform(nodesToAnnounce,new Function<Key<Supplier<DruidNode>>,Supplier<DruidNode>>(){
+          @Nullable @Override public Supplier<DruidNode> apply(          @Nullable Key<Supplier<DruidNode>> input){
+            return injector.getInstance(input);
+          }
+        }
+);
+      }
+      for (      Supplier<DruidNode> node : nodes) {
+        announcer.announce(node.get());
+      }
+    }
+    @Override public void stop(){
+      if (nodes != null) {
+        for (        Supplier<DruidNode> node : nodes) {
+          announcer.unannounce(node.get());
+        }
+      }
+    }
+  }
+,Lifecycle.Stage.LAST);
+  return announcer;
+}

@@ -1,0 +1,6 @@
+{
+  final MonitorsConfig config=configurator.configurate(props,"druid.monitoring",MonitorsConfig.class);
+  for (  Class<? extends Monitor> monitorClazz : config.getMonitors()) {
+    register(monitorClazz);
+  }
+}

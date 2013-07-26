@@ -4,9 +4,7 @@
     this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(getCuratorFramework(),config,lifecycle);
   }
   if (serviceAnnouncer == null) {
-    DruidNodeConfig nodeConfig=configFactory.build(DruidNodeConfig.class);
-    final ServiceInstanceFactory<Void> instanceFactory=Initialization.makeServiceInstanceFactory(nodeConfig);
-    this.serviceAnnouncer=new CuratorServiceAnnouncer(serviceDiscovery,instanceFactory);
+    this.serviceAnnouncer=new CuratorServiceAnnouncer(serviceDiscovery);
   }
   if (coordinatorServiceProvider == null) {
     this.coordinatorServiceProvider=Initialization.makeServiceProvider(workerConfig.getMasterService(),serviceDiscovery,lifecycle);

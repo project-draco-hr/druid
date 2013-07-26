@@ -1,8 +1,7 @@
 {
   JsonConfigProvider.bind(binder,"druid.monitoring",DruidMonitorSchedulerConfig.class);
-  binder.bind(JvmMonitor.class).in(LazySingleton.class);
-  binder.bind(SysMonitor.class).in(LazySingleton.class);
   for (  Class<? extends Monitor> monitor : monitors) {
     binder.bind(monitor).in(LazySingleton.class);
   }
+  binder.bind(Key.get(MonitorScheduler.class,Names.named("ForTheEagerness"))).to(MonitorScheduler.class).asEagerSingleton();
 }

@@ -2,12 +2,12 @@
   if (chatHandlerProvider == null) {
     final ChatHandlerProviderConfig config=configFactory.build(ChatHandlerProviderConfig.class);
     final ServiceAnnouncer myServiceAnnouncer;
-    if (config.getServiceFormat() == null) {
-      log.info("ChatHandlerProvider: Using NoopServiceAnnouncer. Good luck finding your firehoses!");
-      myServiceAnnouncer=new NoopServiceAnnouncer();
+    if (config.isPublishDiscovery()) {
+      myServiceAnnouncer=serviceAnnouncer;
     }
  else {
-      myServiceAnnouncer=serviceAnnouncer;
+      log.info("ChatHandlerProvider: Using NoopServiceAnnouncer. Good luck finding your firehoses!");
+      myServiceAnnouncer=new NoopServiceAnnouncer();
     }
     this.chatHandlerProvider=new ChatHandlerProvider(config,myServiceAnnouncer);
   }
