@@ -1,3 +1,7 @@
 {
-  return runningTasks.values();
+  Map<String,TaskStatus> retVal=Maps.newHashMap();
+  for (  TaskStatus taskStatus : Lists.transform(statusCache.getCurrentData(),cacheConverter)) {
+    retVal.put(taskStatus.getId(),taskStatus);
+  }
+  return retVal;
 }

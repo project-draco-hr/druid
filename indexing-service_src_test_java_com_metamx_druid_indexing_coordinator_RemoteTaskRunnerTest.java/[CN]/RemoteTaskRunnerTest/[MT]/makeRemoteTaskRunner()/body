@@ -1,5 +1,5 @@
 {
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCache,new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,1,null,null)),null);
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCacheFactory,new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,1,null,null)),null);
   remoteTaskRunner.start();
   remoteTaskRunner.bootstrap(Lists.<Task>newArrayList());
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("%s/worker1",announcementsPath),jsonMapper.writeValueAsBytes(worker1));

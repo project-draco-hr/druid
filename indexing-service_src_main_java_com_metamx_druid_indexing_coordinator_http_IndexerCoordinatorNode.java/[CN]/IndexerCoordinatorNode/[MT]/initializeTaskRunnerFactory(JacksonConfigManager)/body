@@ -4,7 +4,8 @@
       taskRunnerFactory=new TaskRunnerFactory(){
         @Override public TaskRunner build(){
           final CuratorFramework curator=getCuratorFramework();
-          return new RemoteTaskRunner(getJsonMapper(),getConfigFactory().build(RemoteTaskRunnerConfig.class),curator,new PathChildrenCache(curator,indexerZkConfig.getIndexerAnnouncementPath(),true),configManager.watch(WorkerSetupData.CONFIG_KEY,WorkerSetupData.class),httpClient);
+          final RemoteTaskRunnerConfig remoteTaskRunnerConfig=getConfigFactory().build(RemoteTaskRunnerConfig.class);
+          return new RemoteTaskRunner(getJsonMapper(),remoteTaskRunnerConfig,curator,new SimplePathChildrenCacheFactory.Builder().withCompressed(remoteTaskRunnerConfig.enableCompression()).build(),configManager.watch(WorkerSetupData.CONFIG_KEY,WorkerSetupData.class),httpClient);
         }
       }
 ;

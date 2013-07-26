@@ -7,7 +7,6 @@
       try {
         log.info("By the power of Grayskull, I have the power!");
         taskRunner=runnerFactory.build();
-        resourceManagementScheduler=managementSchedulerFactory.build(taskRunner);
         final TaskConsumer taskConsumer=new TaskConsumer(taskQueue,taskRunner,taskActionClientFactory,emitter);
         taskQueue.bootstrap();
         final Lifecycle leaderLifecycle=new Lifecycle();
@@ -15,7 +14,13 @@
         leaderLifecycle.addManagedInstance(taskRunner);
         Initialization.announceDefaultService(serviceDiscoveryConfig,serviceAnnouncer,leaderLifecycle);
         leaderLifecycle.addManagedInstance(taskConsumer);
-        leaderLifecycle.addManagedInstance(resourceManagementScheduler);
+        if ("remote".equalsIgnoreCase(indexerCoordinatorConfig.getRunnerImpl())) {
+          if (!(taskRunner instanceof RemoteTaskRunner)) {
+            throw new ISE("WTF?! We configured a remote runner and got %s",taskRunner.getClass());
+          }
+          resourceManagementScheduler=managementSchedulerFactory.build((RemoteTaskRunner)taskRunner);
+          leaderLifecycle.addManagedInstance(resourceManagementScheduler);
+        }
         try {
           leaderLifecycle.start();
           leading=true;

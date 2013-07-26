@@ -19,13 +19,10 @@
 ,cf,worker1);
   workerCuratorCoordinator.start();
   workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,new PathChildrenCache(cf,String.format("%s/worker1",tasksPath),true),cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(){
-    @Override public File getBaseTaskDir(){
-      try {
-        return File.createTempFile("billy","yay");
-      }
- catch (      Exception e) {
-        throw Throwables.propagate(e);
-      }
+    @Override public String getBaseDir(){
+      File tmp=Files.createTempDir();
+      tmp.deleteOnExit();
+      return tmp.toString();
     }
     @Override public int getDefaultRowFlushBoundary(){
       return 0;

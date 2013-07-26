@@ -2,7 +2,7 @@
   if (runningTasks.containsKey(task.getId()) || pendingTasks.containsKey(task.getId())) {
     throw new ISE("Assigned a task[%s] that is already running or pending, WTF is happening?!",task.getId());
   }
-  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),new DateTime());
+  RemoteTaskRunnerWorkItem taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create());
   addPendingTask(taskRunnerWorkItem);
   return taskRunnerWorkItem.getResult();
 }
