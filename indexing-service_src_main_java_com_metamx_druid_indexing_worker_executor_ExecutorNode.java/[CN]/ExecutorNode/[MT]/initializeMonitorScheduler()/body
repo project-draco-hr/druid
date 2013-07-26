@@ -1,0 +1,8 @@
+{
+  if (monitorScheduler == null) {
+    final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
+    final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
+    this.monitorScheduler=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,ImmutableList.<Monitor>of());
+    lifecycle.addManagedInstance(monitorScheduler);
+  }
+}

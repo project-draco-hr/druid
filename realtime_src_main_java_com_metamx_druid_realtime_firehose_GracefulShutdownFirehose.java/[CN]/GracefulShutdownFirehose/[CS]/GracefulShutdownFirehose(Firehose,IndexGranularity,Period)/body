@@ -1,9 +1,0 @@
-{
-  this.firehose=firehose;
-  this.segmentGranularity=segmentGranularity;
-  this.windowMillis=windowPeriod.toStandardDuration().getMillis() * 2;
-  this.scheduledExecutor=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("firehose_scheduled_%d").build());
-  final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
-  final long end=segmentGranularity.increment(truncatedNow);
-  this.rejectionPolicy=new IntervalRejectionPolicyFactory(new Interval(truncatedNow,end)).create(windowPeriod);
-}
