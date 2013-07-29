@@ -10,6 +10,10 @@ synchronized (lock) {
       databaseRuleManager.start();
       serverInventoryView.start();
       final List<Pair<? extends MasterRunnable,Duration>> masterRunnables=Lists.newArrayList();
+      if (!defaultConfigsSet) {
+        configManager.set(DynamicConfigs.CONFIG_KEY,new DynamicConfigs());
+        defaultConfigsSet=true;
+      }
       masterRunnables.add(Pair.of(new MasterComputeManagerRunnable(),config.getMasterPeriod()));
       if (indexingServiceClient != null) {
         masterRunnables.add(Pair.of(new MasterIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(MergerWhitelist.CONFIG_KEY,MergerWhitelist.class))),config.getMasterSegmentMergerPeriod()));

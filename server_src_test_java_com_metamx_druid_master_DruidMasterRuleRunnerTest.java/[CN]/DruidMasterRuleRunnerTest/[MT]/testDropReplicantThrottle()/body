@@ -19,7 +19,12 @@
   }
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1,mockPeon),new ServerHolder(server2,mockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
-  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withMillisToWaitBeforeDeleting(0L).withAvailableSegments(longerAvailableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new DynamicConfigs(){
+    @Override public long getMillisToWaitBeforeDeleting(){
+      return 0L;
+    }
+  }
+).withAvailableSegments(longerAvailableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidMasterRuntimeParams afterParams=ruleRunner.run(params);
   MasterStats stats=afterParams.getMasterStats();
   Assert.assertTrue(stats.getPerTierStats().get("droppedCount").get("normal").get() == 24);
