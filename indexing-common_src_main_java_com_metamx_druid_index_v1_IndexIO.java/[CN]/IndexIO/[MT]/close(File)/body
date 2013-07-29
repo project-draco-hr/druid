@@ -1,0 +1,11 @@
+{
+  init();
+  final int version=getVersionFromDir(inDir);
+  final IndexLoader loader=indexLoaders.get(version);
+  if (loader != null) {
+    loader.close(inDir);
+  }
+ else {
+    throw new ISE("Unknown index version[%s]",version);
+  }
+}
