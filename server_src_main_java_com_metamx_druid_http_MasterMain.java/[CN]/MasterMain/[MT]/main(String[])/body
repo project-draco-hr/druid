@@ -1,6 +1,6 @@
 {
   LogLevelAdjuster.register();
-  Injector injector=Initialization.makeInjector(new LifecycleModule(),EmitterModule.class,HttpClientModule.class,DbConnectorModule.class,JacksonConfigManagerModule.class,CuratorModule.class,new MetricsModule(),new DiscoveryModule().register(Self.class),ServerModule.class,new JettyServerModule(new MasterJettyServerInitializer()),MasterModule.class);
+  Injector injector=Initialization.makeInjector(new LifecycleModule().register(DruidMaster.class),EmitterModule.class,HttpClientModule.class,DbConnectorModule.class,JacksonConfigManagerModule.class,CuratorModule.class,new MetricsModule(),new DiscoveryModule().register(Self.class),ServerModule.class,new JettyServerModule(new MasterJettyServerInitializer()).addResource(InfoResource.class).addResource(MasterResource.class).addResource(StatusResource.class),MasterModule.class);
   final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
   try {
     lifecycle.start();

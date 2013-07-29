@@ -2,7 +2,6 @@
 synchronized (lock) {
     try {
       log.info("I am no longer the master...");
-      leaderLatch.get().close();
       for (      String server : loadManagementPeons.keySet()) {
         LoadQueuePeon peon=loadManagementPeons.remove(server);
         peon.stop();

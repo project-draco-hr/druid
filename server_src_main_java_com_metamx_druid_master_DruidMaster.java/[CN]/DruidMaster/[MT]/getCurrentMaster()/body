@@ -1,7 +1,14 @@
 {
   try {
     final LeaderLatch latch=leaderLatch.get();
-    return latch == null ? null : latch.getLeader().getId();
+    if (latch == null) {
+      return null;
+    }
+    Participant participant=latch.getLeader();
+    if (participant.isLeader()) {
+      return participant.getId();
+    }
+    return null;
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

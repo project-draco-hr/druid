@@ -1,0 +1,22 @@
+{
+  Binder binder=binder();
+  ConfigProvider.bind(binder,ServerConfig.class);
+  try {
+    final Class<?> classToBind=Class.forName("com.google.inject.servlet.InternalServletModule$BackwardsCompatibleServletContextProvider");
+    binder.bind(classToBind);
+  }
+ catch (  ClassNotFoundException e) {
+    throw Throwables.propagate(e);
+  }
+  binder.bind(GuiceContainer.class).to(DruidGuiceContainer.class);
+  binder.bind(DruidGuiceContainer.class).in(Scopes.SINGLETON);
+  serve("/*").with(DruidGuiceContainer.class);
+  final ImmutableSet<Class<?>> theResources=ImmutableSet.copyOf(resources);
+  binder.bind(new TypeLiteral<Set<Class<?>>>(){
+  }
+).annotatedWith(Names.named("resourceClasses")).toInstance(theResources);
+  for (  Class<?> resource : theResources) {
+    binder.bind(resource);
+  }
+  binder.bind(Key.get(Server.class,Names.named("ForTheEagerness"))).to(Server.class).asEagerSingleton();
+}
