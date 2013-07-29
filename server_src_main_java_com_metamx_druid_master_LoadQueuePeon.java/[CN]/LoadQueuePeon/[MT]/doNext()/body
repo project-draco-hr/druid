@@ -26,6 +26,15 @@ synchronized (lock) {
               final String path=ZKPaths.makePath(basePath,currentlyLoading.getSegmentIdentifier());
               final byte[] payload=jsonMapper.writeValueAsBytes(currentlyLoading.getChangeRequest());
               curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,payload);
+              ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutorService,config.getLoadTimeoutDelay(),new Callable<ScheduledExecutors.Signal>(){
+                @Override public ScheduledExecutors.Signal call() throws Exception {
+                  if (curator.checkExists().forPath(path) != null) {
+                    throw new ISE("%s was never removed! Failing this assign!",path);
+                  }
+                  return ScheduledExecutors.Signal.STOP;
+                }
+              }
+);
               final Stat stat=curator.checkExists().usingWatcher(new CuratorWatcher(){
                 @Override public void process(                WatchedEvent watchedEvent) throws Exception {
 switch (watchedEvent.getType()) {
