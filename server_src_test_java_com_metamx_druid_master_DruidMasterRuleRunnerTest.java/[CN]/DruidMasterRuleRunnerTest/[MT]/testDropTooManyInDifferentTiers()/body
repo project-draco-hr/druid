@@ -16,7 +16,7 @@
   }
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1,mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server2,mockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
-  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new DynamicConfigs(){
+  DruidMasterRuntimeParams params=new DruidMasterRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new DynamicConfigs(null,null,null,null){
     @Override public long getMillisToWaitBeforeDeleting(){
       return 0L;
     }
