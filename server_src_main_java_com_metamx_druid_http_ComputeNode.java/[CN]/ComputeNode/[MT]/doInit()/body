@@ -7,7 +7,7 @@
   final ServerManager serverManager=new ServerManager(getSegmentLoader(),conglomerate,emitter,executorService);
   final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),getConfigFactory().build(ZkCoordinatorConfig.class),getZkPaths(),getDruidServerMetadata(),getAnnouncer(),getCuratorFramework(),serverManager);
   lifecycle.addManagedInstance(coordinator);
-  monitors.add(new ServerMonitor(getDruidServerMetadata(),serverManager));
+  monitors.add(new ServerMonitor(getConfigFactory().build(DruidServerConfig.class),serverManager));
   startMonitoring(monitors);
   final ServletContextHandler root=new ServletContextHandler(getServer(),"/",ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");

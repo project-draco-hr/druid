@@ -1,14 +1,17 @@
 {
-  emitter.emit(new ServiceMetricEvent.Builder().build("server/segment/max",druidServer.getMaxSize()));
+  emitter.emit(new ServiceMetricEvent.Builder().build("server/segment/max",serverConfig.getMaxSize()));
   for (  Map.Entry<String,Long> entry : serverManager.getDataSourceSizes().entrySet()) {
     String dataSource=entry.getKey();
     long used=entry.getValue();
-    emitter.emit(new ServiceMetricEvent.Builder().setUser1(dataSource).build("server/segment/used",used));
+    final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setUser1(dataSource).setUser2(serverConfig.getTier());
+    emitter.emit(builder.build("server/segment/used",used));
+    emitter.emit(builder.build("server/segment/usedPercent",used / (double)serverConfig.getMaxSize()));
   }
   for (  Map.Entry<String,Long> entry : serverManager.getDataSourceCounts().entrySet()) {
     String dataSource=entry.getKey();
     long count=entry.getValue();
-    emitter.emit(new ServiceMetricEvent.Builder().setUser1(dataSource).build("server/segment/count",count));
+    final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setUser1(dataSource).setUser2(serverConfig.getTier());
+    emitter.emit(builder.build("server/segment/count",count));
   }
   return true;
 }

@@ -1,0 +1,6 @@
+{
+  final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
+  root.setResourceBase("/");
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
+  root.addServlet(new ServletHolder(injector.getInstance(QueryServlet.class)),"/druid/v2/*");
+}
