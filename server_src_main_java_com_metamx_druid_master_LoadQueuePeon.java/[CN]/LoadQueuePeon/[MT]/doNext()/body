@@ -26,15 +26,19 @@ synchronized (lock) {
               final String path=ZKPaths.makePath(basePath,currentlyLoading.getSegmentIdentifier());
               final byte[] payload=jsonMapper.writeValueAsBytes(currentlyLoading.getChangeRequest());
               curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,payload);
-              ScheduledExecutors.scheduleWithFixedDelay(scheduledExecutorService,config.getLoadTimeoutDelay(),new Callable<ScheduledExecutors.Signal>(){
-                @Override public ScheduledExecutors.Signal call() throws Exception {
-                  if (curator.checkExists().forPath(path) != null) {
-                    throw new ISE("%s was never removed! Failing this assign!",path);
+              zkWritingExecutor.schedule(new Runnable(){
+                @Override public void run(){
+                  try {
+                    if (curator.checkExists().forPath(path) != null) {
+                      failAssign(new ISE("%s was never removed! Failing this assign!",path));
+                    }
                   }
-                  return ScheduledExecutors.Signal.STOP;
+ catch (                  Exception e) {
+                    failAssign(e);
+                  }
                 }
               }
-);
+,config.getLoadTimeoutDelay().getMillis(),TimeUnit.MILLISECONDS);
               final Stat stat=curator.checkExists().usingWatcher(new CuratorWatcher(){
                 @Override public void process(                WatchedEvent watchedEvent) throws Exception {
 switch (watchedEvent.getType()) {
@@ -51,9 +55,7 @@ case NodeDeleted:
             }
           }
  catch (          Exception e) {
-            log.error(e,"Server[%s], throwable caught when submitting [%s].",basePath,currentlyLoading);
-            actionCompleted();
-            doNext();
+            failAssign(e);
           }
         }
       }

@@ -58,9 +58,8 @@
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
-  final ScheduledExecutorService scheduledExecutorService=scheduledExecutorFactory.create(1,"Master-Exec--%d");
-  final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,Execs.singleThreaded("Master-PeonExec--%d"),scheduledExecutorService,druidMasterConfig);
-  final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorService,indexingServiceClient,taskMaster);
+  final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,scheduledExecutorFactory.create(1,"Master-PeonExec--%d"),druidMasterConfig);
+  final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,indexingServiceClient,taskMaster);
   lifecycle.addManagedInstance(master);
   try {
     lifecycle.start();
