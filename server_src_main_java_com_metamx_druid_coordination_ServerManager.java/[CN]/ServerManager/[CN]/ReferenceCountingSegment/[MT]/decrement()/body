@@ -1,0 +1,11 @@
+{
+  references.getAndDecrement();
+  if (references.get() < 0) {
+    try {
+      close();
+    }
+ catch (    Exception e) {
+      log.error("Unable to close queryable index %s",getIdentifier());
+    }
+  }
+}
