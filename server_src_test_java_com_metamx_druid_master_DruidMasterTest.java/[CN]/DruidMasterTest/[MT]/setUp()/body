@@ -6,8 +6,8 @@
   serverInventoryView=EasyMock.createMock(SingleServerInventoryView.class);
   databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
-  scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
-  EasyMock.replay(scheduledExecutorFactory);
+  scheduledExecutorService=EasyMock.createNiceMock(ScheduledExecutorService.class);
+  EasyMock.replay(scheduledExecutorService);
   master=new DruidMaster(new DruidMasterConfig(){
     @Override public String getHost(){
       return null;
@@ -42,5 +42,5 @@
       return "";
     }
   }
-,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,loadManagementPeons);
+,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorService,null,taskMaster,loadManagementPeons);
 }

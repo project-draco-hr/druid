@@ -1,7 +1,8 @@
 {
   final ServiceDiscoveryConfig config=configFactory.build(ServiceDiscoveryConfig.class);
   if (serviceDiscovery == null) {
-    this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(getCuratorFramework(),config,lifecycle);
+    final CuratorFramework serviceDiscoveryCuratorFramework=Initialization.makeCuratorFramework(config,lifecycle);
+    this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(serviceDiscoveryCuratorFramework,config,lifecycle);
   }
   if (serviceAnnouncer == null) {
     final ServiceInstanceFactory instanceFactory=Initialization.makeServiceInstanceFactory(config);
