@@ -1,0 +1,17 @@
+{
+synchronized (lock) {
+    if (!isClosed) {
+      if (--numReferences < 0) {
+        try {
+          close();
+        }
+ catch (        Exception e) {
+          log.error("Unable to close queryable index %s",getIdentifier());
+        }
+ finally {
+          isClosed=true;
+        }
+      }
+    }
+  }
+}

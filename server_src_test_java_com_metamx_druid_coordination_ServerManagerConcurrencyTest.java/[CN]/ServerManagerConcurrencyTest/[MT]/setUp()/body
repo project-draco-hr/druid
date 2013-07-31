@@ -1,6 +1,8 @@
 {
   EmittingLogger.registerEmitter(new NoopServiceEmitter());
-  factory=new MyQueryRunnerFactory();
+  queryWaitLatch=new CountDownLatch(1);
+  queryNotifyLatch=new CountDownLatch(1);
+  factory=new ConcurrencyTestQueryRunnerFactory(queryWaitLatch,queryNotifyLatch);
   serverManager=new TestServerManager(factory);
   serverManager.loadQueryable("test","1",new Interval("P1d/2011-04-01"));
   serverManager.loadQueryable("test","1",new Interval("P1d/2011-04-02"));
