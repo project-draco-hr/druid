@@ -1,4 +1,5 @@
 {
+  verifyClazzIsConfigurable(clazz);
   final String propertyBase=propertyPrefix.endsWith(".") ? propertyPrefix : propertyPrefix + ".";
   Map<String,Object> jsonMap=Maps.newHashMap();
   for (  String prop : props.stringPropertyNames()) {
@@ -24,7 +25,24 @@
   if (!violations.isEmpty()) {
     List<String> messages=Lists.newArrayList();
     for (    ConstraintViolation<T> violation : violations) {
-      messages.add(String.format("%s - %s",violation.getPropertyPath().toString(),violation.getMessage()));
+      List<String> pathParts=Lists.newArrayList();
+      try {
+        Class<?> beanClazz=violation.getRootBeanClass();
+        final Iterator<Path.Node> iter=violation.getPropertyPath().iterator();
+        while (iter.hasNext()) {
+          Path.Node next=iter.next();
+          if (next.getKind() == ElementKind.PROPERTY) {
+            final String fieldName=next.getName();
+            final Field theField=beanClazz.getDeclaredField(fieldName);
+            JsonProperty annotation=theField.getAnnotation(JsonProperty.class);
+            pathParts.add(annotation == null || annotation.value() == null ? fieldName : annotation.value());
+          }
+        }
+      }
+ catch (      NoSuchFieldException e) {
+        throw Throwables.propagate(e);
+      }
+      messages.add(String.format("%s - %s",JOINER.join(pathParts),violation.getMessage()));
     }
     throw new ProvisionException(Iterables.transform(messages,new Function<String,Message>(){
       @Nullable @Override public Message apply(      @Nullable String input){
