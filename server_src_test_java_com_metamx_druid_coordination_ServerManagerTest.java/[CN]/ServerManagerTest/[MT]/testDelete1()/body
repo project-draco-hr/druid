@@ -1,7 +1,9 @@
 {
   final String dataSouce="test";
   final Interval interval=new Interval("2011-04-01/2011-04-02");
-  assertQueryable(QueryGranularity.DAY,dataSouce,interval,ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",interval)));
-  serverManager.dropQueryable(dataSouce,"2",interval);
-  assertQueryable(QueryGranularity.DAY,dataSouce,interval,ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("1",interval)));
+  Future future=assertQueryable(QueryGranularity.DAY,dataSouce,interval,ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",interval)));
+  waitForTestVerificationAndCleanup(future);
+  dropQueryable(dataSouce,"2",interval);
+  future=assertQueryable(QueryGranularity.DAY,dataSouce,interval,ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("1",interval)));
+  waitForTestVerificationAndCleanup(future);
 }

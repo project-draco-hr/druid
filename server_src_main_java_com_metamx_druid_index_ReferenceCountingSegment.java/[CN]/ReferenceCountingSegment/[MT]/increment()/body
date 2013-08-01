@@ -2,6 +2,16 @@
 synchronized (lock) {
     if (!isClosed) {
       numReferences++;
+      final AtomicBoolean decrementOnce=new AtomicBoolean(false);
+      return new Closeable(){
+        @Override public void close() throws IOException {
+          if (decrementOnce.compareAndSet(false,true)) {
+            decrement();
+          }
+        }
+      }
+;
     }
+    return null;
   }
 }

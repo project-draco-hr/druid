@@ -1,3 +1,8 @@
 {
-  baseSegment.close();
+synchronized (lock) {
+    if (!isClosed) {
+      baseSegment.close();
+      isClosed=true;
+    }
+  }
 }

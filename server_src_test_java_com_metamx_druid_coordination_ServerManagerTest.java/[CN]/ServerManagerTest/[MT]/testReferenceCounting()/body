@@ -1,5 +1,5 @@
 {
-  serverManager.loadQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
+  loadQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
   Future future=assertQueryable(QueryGranularity.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
   queryNotifyLatch.await();
   Assert.assertTrue(factory.getAdapters().size() == 1);
@@ -8,7 +8,7 @@
   }
   queryWaitLatch.countDown();
   future.get();
-  serverManager.dropQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
+  dropQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
   for (  SegmentForTesting segmentForTesting : factory.getAdapters()) {
     Assert.assertTrue(segmentForTesting.isClosed());
   }

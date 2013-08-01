@@ -1,4 +1,3 @@
 {
-  segment.increment();
-  return new ReferenceCountingYielder<OutType>(baseSequence.toYielder(initValue,accumulator),segment);
+  return new ResourceClosingYielder<OutType>(baseSequence.toYielder(initValue,accumulator),segment.increment());
 }

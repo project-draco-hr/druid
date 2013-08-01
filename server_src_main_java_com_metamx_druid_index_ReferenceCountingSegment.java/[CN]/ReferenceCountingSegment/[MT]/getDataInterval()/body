@@ -1,3 +1,8 @@
 {
-  return baseSegment.getDataInterval();
+synchronized (lock) {
+    if (!isClosed) {
+      return baseSegment.getDataInterval();
+    }
+    return null;
+  }
 }

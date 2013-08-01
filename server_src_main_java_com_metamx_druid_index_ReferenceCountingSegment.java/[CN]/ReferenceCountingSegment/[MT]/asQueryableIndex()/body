@@ -1,3 +1,8 @@
 {
-  return baseSegment.asQueryableIndex();
+synchronized (lock) {
+    if (!isClosed) {
+      return baseSegment.asQueryableIndex();
+    }
+    return null;
+  }
 }
