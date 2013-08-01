@@ -6,7 +6,7 @@ synchronized (lock) {
     }
     loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ZkCoordinator-%s").build());
     try {
-      config.getSegmentInfoCacheDirectory().mkdirs();
+      config.getInfoDir().mkdirs();
       curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
       loadCache();

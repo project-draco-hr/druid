@@ -35,7 +35,7 @@
             final String fieldName=next.getName();
             final Field theField=beanClazz.getDeclaredField(fieldName);
             JsonProperty annotation=theField.getAnnotation(JsonProperty.class);
-            pathParts.add(annotation == null || annotation.value() == null ? fieldName : annotation.value());
+            pathParts.add(annotation == null || Strings.isNullOrEmpty(annotation.value()) ? fieldName : annotation.value());
           }
         }
       }

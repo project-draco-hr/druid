@@ -5,7 +5,7 @@
   final QueryRunnerFactoryConglomerate conglomerate=getConglomerate();
   final ExecutorService executorService=new MetricsEmittingExecutorService(ExecutorServices.create(getLifecycle(),getConfigFactory().buildWithReplacements(ExecutorServiceConfig.class,ImmutableMap.of("base_path","druid.processing"))),emitter,new ServiceMetricEvent.Builder());
   final ServerManager serverManager=new ServerManager(getSegmentLoader(),conglomerate,emitter,executorService);
-  final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),getConfigFactory().build(ZkCoordinatorConfig.class),getZkPaths(),getDruidServerMetadata(),getAnnouncer(),getCuratorFramework(),serverManager);
+  final ZkCoordinator coordinator=new ZkCoordinator(getJsonMapper(),null,getZkPaths(),getDruidServerMetadata(),getAnnouncer(),getCuratorFramework(),serverManager);
   lifecycle.addManagedInstance(coordinator);
   monitors.add(new ServerMonitor(getConfigFactory().build(DruidServerConfig.class),serverManager));
   startMonitoring(monitors);

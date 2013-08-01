@@ -2,12 +2,12 @@
   setupServerAndCurator();
   curator.start();
   try {
-    cacheDir=new File(File.createTempFile("blah","blah2").getParent(),"ZkCoordinatorTest");
-    cacheDir.mkdirs();
-    for (    File file : cacheDir.listFiles()) {
+    infoDir=new File(File.createTempFile("blah","blah2").getParent(),"ZkCoordinatorTest");
+    infoDir.mkdirs();
+    for (    File file : infoDir.listFiles()) {
       file.delete();
     }
-    log.info("Creating tmp test files in [%s]",cacheDir);
+    log.info("Creating tmp test files in [%s]",infoDir);
   }
  catch (  IOException e) {
     throw new RuntimeException(e);
@@ -21,9 +21,9 @@
   }
 ;
   announcer=new CuratorDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
-  zkCoordinator=new ZkCoordinator(jsonMapper,new ZkCoordinatorConfig(){
-    @Override public File getSegmentInfoCacheDirectory(){
-      return cacheDir;
+  zkCoordinator=new ZkCoordinator(jsonMapper,new SegmentLoaderConfig(){
+    @Override public File getInfoDir(){
+      return infoDir;
     }
   }
 ,zkPaths,me,announcer,curator,serverManager);

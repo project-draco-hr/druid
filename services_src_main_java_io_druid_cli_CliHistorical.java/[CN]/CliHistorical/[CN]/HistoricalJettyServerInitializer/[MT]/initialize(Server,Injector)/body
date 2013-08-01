@@ -3,4 +3,7 @@
   root.setResourceBase("/");
   root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(injector.getInstance(QueryServlet.class)),"/druid/v2/*");
+  final HandlerList handlerList=new HandlerList();
+  handlerList.setHandlers(new Handler[]{root,new DefaultHandler()});
+  server.setHandler(handlerList);
 }

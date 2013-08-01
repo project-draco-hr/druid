@@ -1,5 +1,5 @@
 {
-  File baseDir=config.getSegmentInfoCacheDirectory();
+  File baseDir=config.getInfoDir();
   if (!baseDir.exists()) {
     return;
   }
@@ -12,7 +12,7 @@
       }
  else {
         log.warn("Unable to find cache file for %s. Deleting lookup entry",segment.getIdentifier());
-        File segmentInfoCacheFile=new File(config.getSegmentInfoCacheDirectory(),segment.getIdentifier());
+        File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
         if (!segmentInfoCacheFile.delete()) {
           log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
         }

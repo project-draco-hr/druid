@@ -1,7 +1,7 @@
 {
-  ConfigProvider.bind(binder,DruidServerConfig.class);
   ConfigProvider.bind(binder,DruidProcessingConfig.class,ImmutableMap.of("base_path","druid.processing"));
   binder.bind(ExecutorServiceConfig.class).to(DruidProcessingConfig.class);
+  JsonConfigProvider.bind(binder,"druid.server",DruidServerConfig.class);
   JsonConfigProvider.bind(binder,"druid.segmentCache",SegmentLoaderConfig.class);
   binder.bind(ServerManager.class).in(LazySingleton.class);
   binder.bind(SegmentLoader.class).to(BaseSegmentLoader.class).in(LazySingleton.class);
@@ -24,4 +24,6 @@
   JsonConfigProvider.bind(binder,"druid.query.groupBy",GroupByQueryConfig.class);
   binder.bind(GroupByQueryEngine.class).in(LazySingleton.class);
   binder.bind(QueryRunnerFactoryConglomerate.class).to(DefaultQueryRunnerFactoryConglomerate.class).in(LazySingleton.class);
+  binder.bind(ZkCoordinator.class).in(ManageLifecycle.class);
+  binder.bind(DataSegmentAnnouncer.class).to(CuratorDataSegmentAnnouncer.class).in(ManageLifecycleLast.class);
 }
