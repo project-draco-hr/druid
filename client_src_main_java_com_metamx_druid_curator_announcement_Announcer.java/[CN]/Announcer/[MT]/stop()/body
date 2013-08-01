@@ -13,5 +13,13 @@ synchronized (toAnnounce) {
         unannounce(ZKPaths.makePath(basePath,announcementPath));
       }
     }
+    for (    String parent : parentsIBuilt) {
+      try {
+        curator.delete().forPath(parent);
+      }
+ catch (      Exception e) {
+        log.info(e,"Unable to delete parent[%s], boooo.",parent);
+      }
+    }
   }
 }
