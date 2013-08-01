@@ -5,21 +5,21 @@
     return new NoopQueryRunner<T>();
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
-  final VersionedIntervalTimeline<String,Segment> timeline=dataSources.get(query.getDataSource());
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(query.getDataSource());
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
   FunctionalIterable<QueryRunner<T>> adapters=FunctionalIterable.create(specs).transformCat(new Function<SegmentDescriptor,Iterable<QueryRunner<T>>>(){
-    @Override @SuppressWarnings("unchecked") public Iterable<QueryRunner<T>> apply(    @Nullable SegmentDescriptor input){
-      final PartitionHolder<Segment> entry=timeline.findEntry(input.getInterval(),input.getVersion());
+    @Override @SuppressWarnings("unchecked") public Iterable<QueryRunner<T>> apply(    SegmentDescriptor input){
+      final PartitionHolder<ReferenceCountingSegment> entry=timeline.findEntry(input.getInterval(),input.getVersion());
       if (entry == null) {
         return null;
       }
-      final PartitionChunk<Segment> chunk=entry.getChunk(input.getPartitionNumber());
+      final PartitionChunk<ReferenceCountingSegment> chunk=entry.getChunk(input.getPartitionNumber());
       if (chunk == null) {
         return null;
       }
-      final Segment adapter=chunk.getObject();
+      final ReferenceCountingSegment adapter=chunk.getObject();
       return Arrays.asList(buildAndDecorateQueryRunner(factory,toolChest,adapter,new SpecificSegmentSpec(input)));
     }
   }

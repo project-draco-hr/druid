@@ -1,6 +1,9 @@
 {
   EmittingLogger.registerEmitter(new NoopServiceEmitter());
-  factory=new MyQueryRunnerFactory();
+  queryWaitLatch=new CountDownLatch(1);
+  queryNotifyLatch=new CountDownLatch(1);
+  factory=new MyQueryRunnerFactory(queryWaitLatch,queryNotifyLatch);
+  serverManagerExec=Executors.newFixedThreadPool(2);
   serverManager=new ServerManager(new SegmentLoader(){
     @Override public boolean isSegmentLoaded(    DataSegment segment) throws SegmentLoadingException {
       return false;
@@ -16,7 +19,7 @@
       return (QueryRunnerFactory)factory;
     }
   }
-,new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
+,new NoopServiceEmitter(),serverManagerExec);
   loadQueryable("test","1",new Interval("P1d/2011-04-01"));
   loadQueryable("test","1",new Interval("P1d/2011-04-02"));
   loadQueryable("test","2",new Interval("P1d/2011-04-02"));

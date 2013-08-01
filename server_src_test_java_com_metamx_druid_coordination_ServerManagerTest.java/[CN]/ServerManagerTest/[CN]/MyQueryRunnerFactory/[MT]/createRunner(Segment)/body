@@ -1,4 +1,7 @@
 {
-  adapters.add((SegmentForTesting)adapter);
-  return new NoopQueryRunner<Result<SearchResultValue>>();
+  if (!(adapter instanceof ReferenceCountingSegment)) {
+    throw new IAE("Expected instance of ReferenceCountingSegment, got %s",adapter.getClass());
+  }
+  adapters.add((SegmentForTesting)((ReferenceCountingSegment)adapter).getBaseSegment());
+  return new BlockingQueryRunner<Result<SearchResultValue>>(new NoopQueryRunner<Result<SearchResultValue>>(),waitLatch,notifyLatch);
 }
