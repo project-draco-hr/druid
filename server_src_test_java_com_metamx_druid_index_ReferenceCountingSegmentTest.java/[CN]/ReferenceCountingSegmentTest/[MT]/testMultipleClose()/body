@@ -1,0 +1,40 @@
+{
+  Assert.assertFalse(segment.isClosed());
+  final Closeable closeable=segment.increment();
+  Assert.assertTrue(segment.getNumReferences() == 1);
+  closeable.close();
+  closeable.close();
+  exec.submit(new Runnable(){
+    @Override public void run(){
+      try {
+        closeable.close();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+  Assert.assertTrue(segment.getNumReferences() == 0);
+  Assert.assertFalse(segment.isClosed());
+  segment.close();
+  segment.close();
+  exec.submit(new Runnable(){
+    @Override public void run(){
+      try {
+        segment.close();
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+  Assert.assertTrue(segment.getNumReferences() == 0);
+  Assert.assertTrue(segment.isClosed());
+  segment.increment();
+  segment.increment();
+  segment.increment();
+  segment.close();
+  Assert.assertTrue(segment.getNumReferences() == 0);
+}
