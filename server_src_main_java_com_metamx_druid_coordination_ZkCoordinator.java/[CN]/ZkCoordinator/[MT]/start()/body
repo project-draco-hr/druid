@@ -4,12 +4,18 @@ synchronized (lock) {
     if (started) {
       return;
     }
+    final String loadQueueLocation=ZKPaths.makePath(zkPaths.getLoadQueuePath(),me.getName());
+    final String servedSegmentsLocation=ZKPaths.makePath(zkPaths.getServedSegmentsPath(),me.getName());
+    final String liveSegmentsLocation=ZKPaths.makePath(zkPaths.getLiveSegmentsPath(),me.getName());
     loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ZkCoordinator-%s").build());
     try {
       config.getInfoDir().mkdirs();
       curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
-      loadCache();
+      curator.newNamespaceAwareEnsurePath(liveSegmentsLocation).ensure(curator.getZookeeperClient());
+      if (config.isLoadFromSegmentCacheEnabled()) {
+        loadCache();
+      }
       loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
         @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {
           final ChildData child=event.getData();

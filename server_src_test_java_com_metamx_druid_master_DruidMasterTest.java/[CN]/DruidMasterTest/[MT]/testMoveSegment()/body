@@ -10,6 +10,15 @@
   EasyMock.replay(loadQueuePeon);
   EasyMock.expect(serverInventoryView.getInventoryValue("from")).andReturn(druidServer);
   EasyMock.expect(serverInventoryView.getInventoryValue("to")).andReturn(druidServer);
+  EasyMock.expect(serverInventoryView.getInventoryManagerConfig()).andReturn(new InventoryManagerConfig(){
+    @Override public String getContainerPath(){
+      return "";
+    }
+    @Override public String getInventoryPath(){
+      return "";
+    }
+  }
+);
   EasyMock.replay(serverInventoryView);
   master.moveSegment("from","to","dummySegment",null);
 }

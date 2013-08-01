@@ -1,0 +1,12 @@
+{
+  Set<DataSegment> zkSegments=getSegments();
+  zkSegments.addAll(segments);
+  try {
+    bytes=jsonMapper.writeValueAsBytes(zkSegments);
+  }
+ catch (  Exception e) {
+    zkSegments.removeAll(segments);
+    throw Throwables.propagate(e);
+  }
+  count+=segments.size();
+}

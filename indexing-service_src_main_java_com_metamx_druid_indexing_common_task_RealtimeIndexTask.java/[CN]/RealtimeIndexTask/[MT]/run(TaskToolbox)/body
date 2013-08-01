@@ -6,15 +6,8 @@
     toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
   }
   boolean normalExit=true;
-  final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-synchronized (lock) {
-    if (shutdown) {
-      return TaskStatus.success(getId());
-    }
-    log.info("Wrapping firehose in GracefulShutdownFirehose with segmentGranularity[%s] and windowPeriod[%s]",segmentGranularity,windowPeriod);
-    firehose=new GracefulShutdownFirehose(firehoseFactory.connect(),segmentGranularity,windowPeriod);
-  }
+  final Firehose firehose=firehoseFactory.connect();
   final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final DataSegmentAnnouncer lockingSegmentAnnouncer=new DataSegmentAnnouncer(){
@@ -28,6 +21,22 @@ synchronized (lock) {
       }
   finally {
         toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+      }
+    }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+      for (      DataSegment segment : segments) {
+        toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
+      }
+      toolbox.getSegmentAnnouncer().announceSegments(segments);
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+      try {
+        toolbox.getSegmentAnnouncer().unannounceSegments(segments);
+      }
+  finally {
+        for (        DataSegment segment : segments) {
+          toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+        }
       }
     }
   }
@@ -51,10 +60,16 @@ synchronized (lock) {
   realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
   realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
   realtimePlumberSchool.setServiceEmitter(toolbox.getEmitter());
-  this.toolbox=toolbox;
-  this.plumber=realtimePlumberSchool.findPlumber(schema,metrics);
+  if (this.rejectionPolicyFactory != null) {
+    realtimePlumberSchool.setRejectionPolicyFactory(rejectionPolicyFactory);
+  }
+  final FireDepartment fireDepartment=new FireDepartment(schema,fireDepartmentConfig,null,null);
+  final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
+  this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
+  this.plumber=realtimePlumberSchool.findPlumber(schema,fireDepartment.getMetrics());
   try {
     plumber.startJob();
+    toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
     long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
     while (firehose.hasMore()) {
       final InputRow inputRow;
@@ -65,7 +80,7 @@ synchronized (lock) {
         }
         final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
         if (sink == null) {
-          metrics.incrementThrownAway();
+          fireDepartment.getMetrics().incrementThrownAway();
           log.debug("Throwing away event[%s]",inputRow);
           if (System.currentTimeMillis() > nextFlush) {
             plumber.persist(firehose.commit());
@@ -77,7 +92,7 @@ synchronized (lock) {
           log.info("Task %s: New sink: %s",getId(),sink);
         }
         int currCount=sink.add(inputRow);
-        metrics.incrementProcessed();
+        fireDepartment.getMetrics().incrementProcessed();
         if (currCount >= fireDepartmentConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
@@ -85,7 +100,7 @@ synchronized (lock) {
       }
  catch (      FormattedException e) {
         log.warn(e,"unparseable line");
-        metrics.incrementUnparseable();
+        fireDepartment.getMetrics().incrementUnparseable();
       }
     }
   }
@@ -105,6 +120,7 @@ synchronized (lock) {
       }
  finally {
         Closeables.closeQuietly(firehose);
+        toolbox.getMonitorScheduler().removeMonitor(metricsMonitor);
       }
     }
   }

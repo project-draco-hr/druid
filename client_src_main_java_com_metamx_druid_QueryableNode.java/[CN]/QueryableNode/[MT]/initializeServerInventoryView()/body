@@ -1,6 +1,17 @@
 {
   if (serverInventoryView == null) {
-    serverInventoryView=new ServerInventoryView(getConfigFactory().build(ServerInventoryViewConfig.class),getZkPaths(),getCuratorFramework(),getJsonMapper());
+    final ExecutorService exec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ServerInventoryView-%s").build());
+    final ServerInventoryViewConfig serverInventoryViewConfig=getConfigFactory().build(ServerInventoryViewConfig.class);
+    final String announcerType=serverInventoryViewConfig.getAnnouncerType();
+    if ("legacy".equalsIgnoreCase(announcerType)) {
+      serverInventoryView=new SingleServerInventoryView(serverInventoryViewConfig,getZkPaths(),getCuratorFramework(),exec,getJsonMapper());
+    }
+ else     if ("batch".equalsIgnoreCase(announcerType)) {
+      serverInventoryView=new BatchServerInventoryView(serverInventoryViewConfig,getZkPaths(),getCuratorFramework(),exec,getJsonMapper());
+    }
+ else {
+      throw new IAE("Unknown type %s",announcerType);
+    }
     lifecycle.addManagedInstance(serverInventoryView);
   }
 }

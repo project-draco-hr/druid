@@ -1,8 +1,15 @@
 {
-  File cacheFile=getLocalStorageDir(segment);
+  StorageLocation loc=findStorageLocationIfLoaded(segment);
+  return new File(config.getLocations(),outputKey);
+  if (loc == null) {
+    log.info("Asked to cleanup something[%s] that didn't exist.  Skipping.",segment);
+    return;
+  }
   try {
+    File cacheFile=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
     log.info("Deleting directory[%s]",cacheFile);
     FileUtils.deleteDirectory(cacheFile);
+    loc.removeSegment(segment);
   }
  catch (  IOException e) {
     throw new SegmentLoadingException(e,e.getMessage());

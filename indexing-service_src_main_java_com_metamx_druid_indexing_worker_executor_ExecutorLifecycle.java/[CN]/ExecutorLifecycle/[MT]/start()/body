@@ -10,22 +10,7 @@
   parentMonitorExec.submit(new Runnable(){
     @Override public void run(){
       try {
-        final BufferedReader parentReader=new BufferedReader(new InputStreamReader(parentStream));
-        String messageString;
-        while ((messageString=parentReader.readLine()) != null) {
-          final Map<String,Object> message=jsonMapper.readValue(messageString,new TypeReference<Map<String,Object>>(){
-          }
-);
-          if (message == null) {
-            break;
-          }
- else           if (message.get("shutdown") != null && message.get("shutdown").equals("now")) {
-            log.info("Shutting down!");
-            task.shutdown();
-          }
- else {
-            throw new ISE("Unrecognized message from parent: %s",message);
-          }
+        while (parentStream.read() != -1) {
         }
       }
  catch (      Exception e) {

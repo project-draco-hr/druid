@@ -10,7 +10,9 @@
   return new JavaScriptAggregator.ScriptAggregator(){
     @Override public double aggregate(    final double current,    final ObjectColumnSelector[] selectorList){
       Context cx=Context.getCurrentContext();
-      if (cx == null)       cx=contextFactory.enterContext();
+      if (cx == null) {
+        cx=contextFactory.enterContext();
+      }
       final int size=selectorList.length;
       final Object[] args=new Object[size + 1];
       args[0]=current;

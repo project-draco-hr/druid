@@ -1,0 +1,66 @@
+{
+  this.config=config;
+  this.log=log;
+  this.inventoryManager=new CuratorInventoryManager<DruidServer,InventoryType>(curator,new InventoryManagerConfig(){
+    @Override public String getContainerPath(){
+      return zkPaths.getAnnouncementsPath();
+    }
+    @Override public String getInventoryPath(){
+      return zkPaths.getServedSegmentsPath();
+    }
+  }
+,Execs.singleThreaded("ServerInventoryView-%s"),new CuratorInventoryManagerStrategy<DruidServer,DataSegment>(){
+    @Override public DruidServer deserializeContainer(    byte[] bytes){
+      try {
+        return jsonMapper.readValue(bytes,DruidServer.class);
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public byte[] serializeContainer(    DruidServer container){
+      try {
+        return jsonMapper.writeValueAsBytes(container);
+      }
+ catch (      JsonProcessingException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public InventoryType deserializeInventory(    byte[] bytes){
+      try {
+        return jsonMapper.readValue(bytes,typeReference);
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public byte[] serializeInventory(    InventoryType inventory){
+      try {
+        return jsonMapper.writeValueAsBytes(inventory);
+      }
+ catch (      JsonProcessingException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void newContainer(    DruidServer container){
+      log.info("New Server[%s]",container);
+    }
+    @Override public void deadContainer(    DruidServer deadContainer){
+      log.info("Server Disappeared[%s]",deadContainer);
+      runServerCallbacks(deadContainer);
+    }
+    @Override public DruidServer updateContainer(    DruidServer oldContainer,    DruidServer newContainer){
+      return newContainer.addDataSegments(oldContainer);
+    }
+    @Override public DruidServer addInventory(    final DruidServer container,    String inventoryKey,    final InventoryType inventory){
+      return addInnerInventory(container,inventoryKey,inventory);
+    }
+    @Override public DruidServer updateInventory(    DruidServer container,    String inventoryKey,    InventoryType inventory){
+      return updateInnerInventory(container,inventoryKey,inventory);
+    }
+    @Override public DruidServer removeInventory(    final DruidServer container,    String inventoryKey){
+      return removeInnerInventory(container,inventoryKey);
+    }
+  }
+);
+}

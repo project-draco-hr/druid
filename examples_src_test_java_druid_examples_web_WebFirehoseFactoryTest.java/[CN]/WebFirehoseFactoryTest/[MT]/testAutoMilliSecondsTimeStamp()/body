@@ -1,0 +1,11 @@
+{
+  Firehose firehose3=webbie1.connect();
+  if (firehose3.hasMore()) {
+    long milliSeconds=firehose3.nextRow().getTimestampFromEpoch();
+    DateTime date=new DateTime("2013-07-08");
+    Assert.assertEquals(date.getMillis(),milliSeconds);
+  }
+ else {
+    Assert.assertFalse("hasMore returned false",true);
+  }
+}

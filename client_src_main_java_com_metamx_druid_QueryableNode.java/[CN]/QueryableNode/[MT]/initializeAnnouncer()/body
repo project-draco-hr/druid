@@ -2,7 +2,19 @@
   if (announcer == null) {
     final Announcer announcer=new Announcer(getCuratorFramework(),Execs.singleThreaded("Announcer-%s"));
     lifecycle.addManagedInstance(announcer);
-    setAnnouncer(new CuratorDataSegmentAnnouncer(getDruidServerMetadata(),getZkPaths(),announcer,getJsonMapper()));
+    final ZkDataSegmentAnnouncerConfig config=getConfigFactory().build(ZkDataSegmentAnnouncerConfig.class);
+    final String announcerType=config.getAnnouncerType();
+    final DataSegmentAnnouncer dataSegmentAnnouncer;
+    if ("batch".equalsIgnoreCase(announcerType)) {
+      dataSegmentAnnouncer=new BatchDataSegmentAnnouncer(getDruidServerMetadata(),config,announcer,getJsonMapper());
+    }
+ else     if ("legacy".equalsIgnoreCase(announcerType)) {
+      dataSegmentAnnouncer=new MultipleDataSegmentAnnouncerDataSegmentAnnouncer(Arrays.<AbstractDataSegmentAnnouncer>asList(new BatchDataSegmentAnnouncer(getDruidServerMetadata(),config,announcer,getJsonMapper()),new SingleDataSegmentAnnouncer(getDruidServerMetadata(),getZkPaths(),announcer,getJsonMapper())));
+    }
+ else {
+      throw new ISE("Unknown announcer type [%s]",announcerType);
+    }
+    setAnnouncer(dataSegmentAnnouncer);
     lifecycle.addManagedInstance(getAnnouncer(),Lifecycle.Stage.LAST);
   }
 }

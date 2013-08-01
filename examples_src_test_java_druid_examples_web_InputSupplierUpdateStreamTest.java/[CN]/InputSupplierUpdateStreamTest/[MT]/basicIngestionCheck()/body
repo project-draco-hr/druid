@@ -1,0 +1,7 @@
+{
+  InputSupplierUpdateStream updateStream=new InputSupplierUpdateStream(testCaseSupplier,timeDimension);
+  updateStream.start();
+  Map<String,Object> insertedRow=updateStream.pollFromQueue(waitTime,unit);
+  Assert.assertEquals(expectedAnswer,insertedRow);
+  updateStream.stop();
+}
