@@ -1,8 +1,13 @@
 {
 synchronized (lock) {
     if (!isClosed) {
-      baseSegment.close();
-      isClosed=true;
+      if (numReferences > 0) {
+        decrement();
+      }
+ else {
+        baseSegment.close();
+        isClosed=true;
+      }
     }
   }
 }
