@@ -1,17 +1,12 @@
 {
-  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(new GroupByQueryEngine(new GroupByQueryEngineConfig(){
-    @Override public int getMaxIntermediateRows(){
-      return 10000;
-    }
-  }
-,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+  GroupByQueryConfig config=new GroupByQueryConfig();
+  config.setMaxIntermediateRows(10000);
+  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(new GroupByQueryEngine(Suppliers.ofInstance(config),new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(1024 * 1024);
     }
   }
-)),new GroupByQueryRunnerFactoryConfig(){
-  }
-);
+)),Suppliers.ofInstance(config));
   final Collection<?> objects=QueryRunnerTestHelper.makeQueryRunners(factory);
   Object[][] newObjects=new Object[objects.size()][];
   int i=0;

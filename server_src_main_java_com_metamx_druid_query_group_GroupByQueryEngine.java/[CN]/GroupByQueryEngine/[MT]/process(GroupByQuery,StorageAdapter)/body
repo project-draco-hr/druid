@@ -11,7 +11,7 @@
         @Override public Sequence<Row> apply(        @Nullable final Cursor cursor){
           return new BaseSequence<Row,CloseableIterator<Row>>(new BaseSequence.IteratorMaker<Row,CloseableIterator<Row>>(){
             @Override public CloseableIterator<Row> make(){
-              return new RowIterator(query,cursor,bufferHolder.get());
+              return new RowIterator(query,cursor,bufferHolder.get(),config.get());
             }
             @Override public void cleanup(            CloseableIterator iterFromMake){
               Closeables.closeQuietly(iterFromMake);

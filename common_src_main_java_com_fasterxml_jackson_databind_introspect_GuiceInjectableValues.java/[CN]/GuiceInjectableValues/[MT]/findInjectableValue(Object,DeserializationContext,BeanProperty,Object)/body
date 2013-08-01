@@ -1,0 +1,18 @@
+{
+  final AnnotatedMember member=forProperty.getMember();
+  Annotation guiceAnnotation=null;
+  for (  Annotation annotation : member.getAllAnnotations()._annotations.values()) {
+    if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class)) {
+      guiceAnnotation=annotation;
+      break;
+    }
+  }
+  final Key<?> key;
+  if (guiceAnnotation == null) {
+    key=Key.get(forProperty.getMember().getGenericType());
+  }
+ else {
+    key=Key.get(forProperty.getMember().getGenericType(),guiceAnnotation);
+  }
+  return injector.getInstance(key);
+}

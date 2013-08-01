@@ -1,0 +1,5 @@
+{
+  final MapBinder<String,DataSegmentPuller> segmentPullerBinder=MapBinder.newMapBinder(binder,String.class,DataSegmentPuller.class);
+  segmentPullerBinder.addBinding("c*").to(CassandraDataSegmentPuller.class).in(LazySingleton.class);
+  ConfigProvider.bind(binder,CassandraDataSegmentConfig.class);
+}

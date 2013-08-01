@@ -14,12 +14,21 @@
   actualModules.add(DruidSecondaryModule.class);
   actualModules.addAll(Arrays.asList(modules));
   return Guice.createInjector(Lists.transform(actualModules,new Function<Object,Module>(){
+    ObjectMapper jsonMapper=baseInjector.getInstance(Key.get(ObjectMapper.class,Json.class));
+    ObjectMapper smileMapper=baseInjector.getInstance(Key.get(ObjectMapper.class,Smile.class));
     @Override @SuppressWarnings("unchecked") public Module apply(    @Nullable Object input){
+      if (input instanceof DruidModule) {
+        baseInjector.injectMembers(input);
+        return registerJacksonModules(((DruidModule)input));
+      }
       if (input instanceof Module) {
         baseInjector.injectMembers(input);
         return (Module)input;
       }
       if (input instanceof Class) {
+        if (DruidModule.class.isAssignableFrom((Class)input)) {
+          return registerJacksonModules(baseInjector.getInstance((Class<? extends DruidModule>)input));
+        }
         if (Module.class.isAssignableFrom((Class)input)) {
           return baseInjector.getInstance((Class<? extends Module>)input);
         }
@@ -28,6 +37,13 @@
         }
       }
       throw new ISE("Unknown module type[%s]",input.getClass());
+    }
+    private DruidModule registerJacksonModules(    DruidModule module){
+      for (      com.fasterxml.jackson.databind.Module jacksonModule : module.getJacksonModules()) {
+        jsonMapper.registerModule(jacksonModule);
+        smileMapper.registerModule(jacksonModule);
+      }
+      return module;
     }
   }
 ));

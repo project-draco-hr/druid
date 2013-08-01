@@ -1,0 +1,5 @@
+{
+  final MapBinder<String,DataSegmentPuller> segmentPullerBinder=MapBinder.newMapBinder(binder,String.class,DataSegmentPuller.class);
+  segmentPullerBinder.addBinding("s3_zip").to(S3DataSegmentPuller.class).in(LazySingleton.class);
+  JsonConfigProvider.bind(binder,"druid.s3",S3CredentialsConfig.class);
+}
