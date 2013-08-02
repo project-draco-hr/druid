@@ -1,44 +1,24 @@
 {
   try {
-    workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
-      @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
-        Worker worker;
-switch (event.getType()) {
-case CHILD_ADDED:
-          worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
-        log.info("Worker[%s] reportin' for duty!",worker.getHost());
-      addWorker(worker,PathChildrenCache.StartMode.NORMAL);
-    break;
-case CHILD_REMOVED:
-  worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
-log.info("Kaboom! Worker[%s] removed!",worker.getHost());
-removeWorker(worker);
-break;
-default :
-break;
-}
-}
-}
-);
-workerPathCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
-Set<String> existingTasks=Sets.newHashSet();
-for (ChildData childData : workerPathCache.getCurrentData()) {
-final Worker worker=jsonMapper.readValue(childData.getData(),Worker.class);
-log.info("Worker[%s] reportin' for duty!",worker.getHost());
-final ZkWorker zkWorker=addWorker(worker,PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
-existingTasks.addAll(zkWorker.getRunningTasks().keySet());
-}
-Set<String> bootstrappedTasks=Sets.newHashSet(Lists.transform(tasks,new Function<Task,String>(){
-@Override public String apply(Task input){
-return input.getId();
-}
-}
-));
-for (String taskId : Sets.difference(existingTasks,bootstrappedTasks)) {
-shutdown(taskId);
-}
-}
- catch (Exception e) {
-throw Throwables.propagate(e);
-}
+    if (!started) {
+      throw new ISE("Must start RTR first before calling bootstrap!");
+    }
+    Set<String> existingTasks=Sets.newHashSet();
+    for (    ZkWorker zkWorker : zkWorkers.values()) {
+      existingTasks.addAll(zkWorker.getRunningTasks().keySet());
+    }
+    for (    Task task : tasks) {
+      if (existingTasks.contains(task.getId())) {
+        log.info("Bootstrap found %s running.",task.getId());
+        runningTasks.put(task.getId(),new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create()));
+      }
+ else {
+        log.info("Bootstrap didn't find %s running. Running it again",task.getId());
+        run(task);
+      }
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
 }

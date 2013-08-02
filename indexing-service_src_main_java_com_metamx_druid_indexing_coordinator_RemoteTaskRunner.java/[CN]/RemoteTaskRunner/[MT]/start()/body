@@ -1,6 +1,34 @@
 {
-  if (started) {
-    return;
-  }
-  started=true;
+  try {
+    if (started) {
+      return;
+    }
+    workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
+      @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
+        Worker worker;
+switch (event.getType()) {
+case CHILD_ADDED:
+          worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
+        addWorker(worker,PathChildrenCache.StartMode.NORMAL);
+      break;
+case CHILD_REMOVED:
+    worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
+  removeWorker(worker);
+break;
+default :
+break;
+}
+}
+}
+);
+workerPathCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+for (ChildData childData : workerPathCache.getCurrentData()) {
+final Worker worker=jsonMapper.readValue(childData.getData(),Worker.class);
+addWorker(worker,PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+}
+started=true;
+}
+ catch (Exception e) {
+throw Throwables.propagate(e);
+}
 }

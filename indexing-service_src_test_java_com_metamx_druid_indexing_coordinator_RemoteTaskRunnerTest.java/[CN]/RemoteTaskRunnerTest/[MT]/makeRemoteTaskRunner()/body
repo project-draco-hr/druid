@@ -1,14 +1,4 @@
 {
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,pathChildrenCacheFactory,new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,1,null,null)),null);
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),cf,new SimplePathChildrenCacheFactory.Builder().build(),new AtomicReference<WorkerSetupData>(new WorkerSetupData("0",0,1,null,null)),null);
   remoteTaskRunner.start();
-  remoteTaskRunner.bootstrap(Lists.<Task>newArrayList());
-  cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(String.format("%s/worker1",announcementsPath),jsonMapper.writeValueAsBytes(worker1));
-  int count=0;
-  while (remoteTaskRunner.getWorkers().size() == 0) {
-    Thread.sleep(500);
-    if (count > 10) {
-      throw new ISE("WTF?! Still can't find worker!");
-    }
-    count++;
-  }
 }
