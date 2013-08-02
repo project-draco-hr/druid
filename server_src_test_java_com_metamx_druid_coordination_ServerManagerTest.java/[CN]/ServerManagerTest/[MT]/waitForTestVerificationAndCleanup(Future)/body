@@ -1,0 +1,11 @@
+{
+  try {
+    queryNotifyLatch.await();
+    queryWaitLatch.countDown();
+    future.get();
+    factory.clearAdapters();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
