@@ -2,10 +2,10 @@
   this.dataSegmentPuller=dataSegmentPuller;
   this.factory=factory;
   final ImmutableList.Builder<StorageLocation> locBuilder=ImmutableList.builder();
-  for (  String dirSpec : config.getCacheDirectory().split(",")) {
+  for (  String dirSpec : config.getLocations().split(",")) {
     String[] dirSplit=dirSpec.split("\\|");
     if (dirSplit.length == 1) {
-      locBuilder.add(new StorageLocation(new File(dirSplit[0]),config.getServerMaxSize()));
+      locBuilder.add(new StorageLocation(new File(dirSplit[0]),Integer.MAX_VALUE));
     }
  else     if (dirSplit.length == 2) {
       final Long maxSize=Longs.tryParse(dirSplit[1]);
@@ -15,7 +15,7 @@
       locBuilder.add(new StorageLocation(new File(dirSplit[0]),maxSize));
     }
  else {
-      throw new ISE("Unknown segment storage location[%s]=>[%s], config[%s].",dirSplit.length,dirSpec,config.getCacheDirectory());
+      throw new ISE("Unknown segment storage location[%s]=>[%s], config[%s].",dirSplit.length,dirSpec,config.getLocations());
     }
   }
   locations=locBuilder.build();

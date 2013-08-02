@@ -4,10 +4,10 @@
     final ServerInventoryViewConfig serverInventoryViewConfig=getConfigFactory().build(ServerInventoryViewConfig.class);
     final String announcerType=serverInventoryViewConfig.getAnnouncerType();
     if ("legacy".equalsIgnoreCase(announcerType)) {
-      serverInventoryView=new SingleServerInventoryView(serverInventoryViewConfig,getZkPaths(),getCuratorFramework(),exec,getJsonMapper());
+      serverInventoryView=new SingleServerInventoryView(getZkPaths(),getCuratorFramework(),getJsonMapper());
     }
  else     if ("batch".equalsIgnoreCase(announcerType)) {
-      serverInventoryView=new BatchServerInventoryView(serverInventoryViewConfig,getZkPaths(),getCuratorFramework(),exec,getJsonMapper());
+      serverInventoryView=new BatchServerInventoryView(getZkPaths(),getCuratorFramework(),getJsonMapper());
     }
  else {
       throw new IAE("Unknown type %s",announcerType);

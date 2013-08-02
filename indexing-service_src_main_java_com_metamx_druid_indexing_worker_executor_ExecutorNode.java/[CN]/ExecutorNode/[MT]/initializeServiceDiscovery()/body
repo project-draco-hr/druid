@@ -1,8 +1,9 @@
 {
-  final CuratorDiscoveryConfig config=configFactory.build(CuratorDiscoveryConfig.class);
+  final CuratorConfig config=configFactory.build(CuratorConfig.class);
   if (serviceDiscovery == null) {
     final CuratorFramework serviceDiscoveryCuratorFramework=Initialization.makeCuratorFramework(config,lifecycle);
-    this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(serviceDiscoveryCuratorFramework,config,lifecycle);
+    CuratorDiscoveryConfig discoveryConfig=getJsonConfigurator().configurate(getProps(),"druid.discovery.curator",CuratorDiscoveryConfig.class);
+    this.serviceDiscovery=Initialization.makeServiceDiscoveryClient(serviceDiscoveryCuratorFramework,discoveryConfig,lifecycle);
   }
   if (serviceAnnouncer == null) {
     this.serviceAnnouncer=new CuratorServiceAnnouncer(serviceDiscovery);
