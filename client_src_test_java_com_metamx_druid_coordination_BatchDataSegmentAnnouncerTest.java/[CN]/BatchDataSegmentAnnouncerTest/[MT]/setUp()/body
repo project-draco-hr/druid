@@ -8,18 +8,14 @@
   announcer=new Announcer(cf,MoreExecutors.sameThreadExecutor());
   announcer.start();
   segmentReader=new SegmentReader(cf,jsonMapper);
-  segmentAnnouncer=new BatchDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier"),new ZkDataSegmentAnnouncerConfig(){
-    @Override public String getZkBasePath(){
-      return testBasePath;
-    }
+  segmentAnnouncer=new BatchDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier"),new BatchDataSegmentAnnouncerConfig(){
     @Override public int getSegmentsPerNode(){
       return 50;
     }
-    @Override public long getMaxNumBytes(){
-      return 100000;
-    }
-    @Override public String getAnnouncerType(){
-      return "batch";
+  }
+,new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return testBasePath;
     }
   }
 ,announcer,jsonMapper);

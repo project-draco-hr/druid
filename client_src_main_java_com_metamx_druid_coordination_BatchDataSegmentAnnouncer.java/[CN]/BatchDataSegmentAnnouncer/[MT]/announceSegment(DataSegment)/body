@@ -1,7 +1,7 @@
 {
   int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
-  if (newBytesLen > config.getMaxNumBytes()) {
-    throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxNumBytes());
+  if (newBytesLen > config.getMaxBytesPerNode()) {
+    throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
   }
   if (availableZNodes.isEmpty()) {
     SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
@@ -16,7 +16,7 @@
     boolean done=false;
     while (iter.hasNext() && !done) {
       SegmentZNode availableZNode=iter.next();
-      if (availableZNode.getBytes().length + newBytesLen < config.getMaxNumBytes()) {
+      if (availableZNode.getBytes().length + newBytesLen < config.getMaxBytesPerNode()) {
         availableZNode.addSegment(segment);
         log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
         announcer.update(availableZNode.getPath(),availableZNode.getBytes());

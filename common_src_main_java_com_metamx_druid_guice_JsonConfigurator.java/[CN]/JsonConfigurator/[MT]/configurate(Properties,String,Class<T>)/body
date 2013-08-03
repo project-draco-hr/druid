@@ -25,7 +25,7 @@
   if (!violations.isEmpty()) {
     List<String> messages=Lists.newArrayList();
     for (    ConstraintViolation<T> violation : violations) {
-      List<String> pathParts=Lists.newArrayList();
+      String path="";
       try {
         Class<?> beanClazz=violation.getRootBeanClass();
         final Iterator<Path.Node> iter=violation.getPropertyPath().iterator();
@@ -34,15 +34,26 @@
           if (next.getKind() == ElementKind.PROPERTY) {
             final String fieldName=next.getName();
             final Field theField=beanClazz.getDeclaredField(fieldName);
+            if (theField.getAnnotation(JacksonInject.class) != null) {
+              path=String.format(" -- Injected field[%s] not bound!?",fieldName);
+              break;
+            }
             JsonProperty annotation=theField.getAnnotation(JsonProperty.class);
-            pathParts.add(annotation == null || Strings.isNullOrEmpty(annotation.value()) ? fieldName : annotation.value());
+            final boolean noAnnotationValue=annotation == null || Strings.isNullOrEmpty(annotation.value());
+            final String pathPart=noAnnotationValue ? fieldName : annotation.value();
+            if (path.isEmpty()) {
+              path+=pathPart;
+            }
+ else {
+              path+="." + pathPart;
+            }
           }
         }
       }
  catch (      NoSuchFieldException e) {
         throw Throwables.propagate(e);
       }
-      messages.add(String.format("%s - %s",JOINER.join(pathParts),violation.getMessage()));
+      messages.add(String.format("%s - %s",path,violation.getMessage()));
     }
     throw new ProvisionException(Iterables.transform(messages,new Function<String,Message>(){
       @Nullable @Override public Message apply(      @Nullable String input){

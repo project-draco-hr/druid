@@ -5,10 +5,10 @@
   int count=0;
   for (  DataSegment segment : segments) {
     int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
-    if (newBytesLen > config.getMaxNumBytes()) {
-      throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxNumBytes());
+    if (newBytesLen > config.getMaxBytesPerNode()) {
+      throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
     }
-    if (count >= config.getSegmentsPerNode() || byteSize + newBytesLen > config.getMaxNumBytes()) {
+    if (count >= config.getSegmentsPerNode() || byteSize + newBytesLen > config.getMaxBytesPerNode()) {
       segmentZNode.addSegments(batch);
       announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
       segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
