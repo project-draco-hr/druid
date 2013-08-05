@@ -1,29 +1,16 @@
 {
-  try {
-    final MinMaxPriorityQueue<ZkWorker> workerQueue=MinMaxPriorityQueue.<ZkWorker>orderedBy(new Comparator<ZkWorker>(){
-      @Override public int compare(      ZkWorker w1,      ZkWorker w2){
-        return -Ints.compare(w1.getRunningTasks().size(),w2.getRunningTasks().size());
-      }
+  TreeSet<ZkWorker> sortedWorkers=Sets.newTreeSet(new Comparator<ZkWorker>(){
+    @Override public int compare(    ZkWorker zkWorker,    ZkWorker zkWorker2){
+      return -Ints.compare(zkWorker.getCurrCapacity(),zkWorker2.getCurrCapacity());
     }
-).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<ZkWorker>(){
-      @Override public boolean apply(      ZkWorker input){
-        for (        String taskId : input.getRunningTasks()) {
-          TaskRunnerWorkItem workerTask=runningTasks.get(taskId);
-          if (workerTask != null && task.getAvailabilityGroup().equalsIgnoreCase(workerTask.getTask().getAvailabilityGroup())) {
-            return false;
-          }
-        }
-        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0);
-      }
-    }
-));
-    if (workerQueue.isEmpty()) {
-      log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
-      return null;
-    }
-    return workerQueue.peek();
   }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
+);
+  sortedWorkers.addAll(zkWorkers.values());
+  for (  ZkWorker zkWorker : sortedWorkers) {
+    if (zkWorker.canRunTask(task) && zkWorker.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0) {
+      return zkWorker;
+    }
   }
+  log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
+  return null;
 }
