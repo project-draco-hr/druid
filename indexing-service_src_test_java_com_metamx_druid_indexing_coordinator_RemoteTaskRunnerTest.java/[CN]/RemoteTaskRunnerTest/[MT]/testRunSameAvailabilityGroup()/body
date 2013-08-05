@@ -1,11 +1,12 @@
 {
-  TestRealtimeTask theTask=new TestRealtimeTask("rt1","rt1","foo",TaskStatus.running("rt1"));
+  doSetup();
+  TestRealtimeTask theTask=new TestRealtimeTask("rt1",new TaskResource("rt1",1),"foo",TaskStatus.running("rt1"));
   remoteTaskRunner.run(theTask);
-  remoteTaskRunner.run(new TestRealtimeTask("rt2","rt1","foo",TaskStatus.running("rt2")));
-  remoteTaskRunner.run(new TestRealtimeTask("rt3","rt2","foo",TaskStatus.running("rt3")));
+  remoteTaskRunner.run(new TestRealtimeTask("rt2",new TaskResource("rt1",1),"foo",TaskStatus.running("rt2")));
+  remoteTaskRunner.run(new TestRealtimeTask("rt3",new TaskResource("rt2",1),"foo",TaskStatus.running("rt3")));
   Stopwatch stopwatch=new Stopwatch();
   stopwatch.start();
-  while (remoteTaskRunner.getRunningTasks().isEmpty()) {
+  while (remoteTaskRunner.getRunningTasks().size() < 2) {
     Thread.sleep(100);
     if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > 1000) {
       throw new ISE("Cannot find running task");
