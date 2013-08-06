@@ -9,6 +9,9 @@
   }
   Interval underlyingInterval=firstChunk.getObject().getInterval();
   for (  final PartitionChunk<DataSegment> segment : timelineObject.getObject()) {
+    if (!(segment.getObject().getShardSpec() instanceof NoneShardSpec)) {
+      return false;
+    }
     segments.add(segment.getObject());
     if (segments.count(segment.getObject()) == 1) {
       byteCount+=segment.getObject().getSize();
@@ -23,4 +26,5 @@
     final DateTime end=underlyingInterval.getEnd().isAfter(mergedUnderlyingInterval.getEnd()) ? underlyingInterval.getEnd() : mergedUnderlyingInterval.getEnd();
     timelineObjects.add(Pair.of(timelineObject,new Interval(start,end)));
   }
+  return true;
 }
