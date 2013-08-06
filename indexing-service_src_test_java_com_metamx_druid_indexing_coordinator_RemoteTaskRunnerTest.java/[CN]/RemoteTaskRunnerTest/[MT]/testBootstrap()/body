@@ -1,0 +1,22 @@
+{
+  cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,"first"),jsonMapper.writeValueAsBytes(TaskStatus.running("first")));
+  cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,"second"),jsonMapper.writeValueAsBytes(TaskStatus.running("second")));
+  doSetup();
+  Set<String> existingTasks=Sets.newHashSet();
+  for (  ZkWorker zkWorker : remoteTaskRunner.getWorkers()) {
+    existingTasks.addAll(zkWorker.getRunningTasks().keySet());
+  }
+  Assert.assertTrue(existingTasks.size() == 2);
+  Assert.assertTrue(existingTasks.contains("first"));
+  Assert.assertTrue(existingTasks.contains("second"));
+  remoteTaskRunner.bootstrap(Arrays.<Task>asList(makeTask(TaskStatus.running("second"))));
+  Set<String> runningTasks=Sets.newHashSet(Iterables.transform(remoteTaskRunner.getRunningTasks(),new Function<RemoteTaskRunnerWorkItem,String>(){
+    @Override public String apply(    RemoteTaskRunnerWorkItem input){
+      return input.getTask().getId();
+    }
+  }
+));
+  Assert.assertTrue(runningTasks.size() == 1);
+  Assert.assertTrue(runningTasks.contains("second"));
+  Assert.assertFalse(runningTasks.contains("first"));
+}
