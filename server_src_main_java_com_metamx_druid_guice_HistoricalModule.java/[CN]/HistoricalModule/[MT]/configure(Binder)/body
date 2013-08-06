@@ -11,18 +11,6 @@
   bindDeepStorageS3(binder);
   bindDeepStorageHdfs(binder);
   bindDeepStorageCassandra(binder);
-  final MapBinder<Class<? extends Query>,QueryRunnerFactory> queryFactoryBinder=MapBinder.newMapBinder(binder,new TypeLiteral<Class<? extends Query>>(){
-  }
-,new TypeLiteral<QueryRunnerFactory>(){
-  }
-);
-  queryFactoryBinder.addBinding(TimeseriesQuery.class).to(TimeseriesQueryRunnerFactory.class).in(LazySingleton.class);
-  queryFactoryBinder.addBinding(SearchQuery.class).to(SearchQueryRunnerFactory.class).in(LazySingleton.class);
-  queryFactoryBinder.addBinding(TimeBoundaryQuery.class).to(TimeBoundaryQueryRunnerFactory.class).in(LazySingleton.class);
-  queryFactoryBinder.addBinding(SegmentMetadataQuery.class).to(SegmentMetadataQueryRunnerFactory.class).in(LazySingleton.class);
-  queryFactoryBinder.addBinding(GroupByQuery.class).to(GroupByQueryRunnerFactory.class).in(LazySingleton.class);
-  JsonConfigProvider.bind(binder,"druid.query.groupBy",GroupByQueryConfig.class);
-  binder.bind(GroupByQueryEngine.class).in(LazySingleton.class);
   binder.bind(QueryRunnerFactoryConglomerate.class).to(DefaultQueryRunnerFactoryConglomerate.class).in(LazySingleton.class);
   binder.bind(ZkCoordinator.class).in(ManageLifecycle.class);
   JsonConfigProvider.bind(binder,"druid.announcer",BatchDataSegmentAnnouncerConfig.class);

@@ -1,4 +1,5 @@
 {
+  final GroupByQueryConfig config=configSupplier.get();
   final QueryGranularity gran=query.getGranularity();
   final long timeStart=query.getIntervals().get(0).getStartMillis();
   final long granTimeStart=gran.iterable(timeStart,timeStart + 1).iterator().next();
@@ -16,8 +17,8 @@
 );
   final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    Row in){
-      if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions)) > maxRows) {
-        throw new ISE("Computation exceeds maxRows limit[%s]",maxRows);
+      if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions)) > config.getMaxResults()) {
+        throw new ISE("Computation exceeds maxRows limit[%s]",config.getMaxResults());
       }
       return accumulated;
     }
