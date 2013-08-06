@@ -13,13 +13,7 @@
         }
       }
 );
-      if (serverMap.get(fromServerName) == null) {
-        serverMap.put(fromServerName,segment.getFromServer().getSegments().size());
-      }
-      if (serverMap.get(toServerName) == null) {
-        serverMap.put(toServerName,0);
-      }
-      serverMap.put(toServerName,serverMap.get(toServerName) + 1);
+      currentlyMovingSegments.get("normal").put(segmentName,segment);
     }
  catch (    Exception e) {
       log.info(e,String.format("[%s] : Moving exception",segmentName));
