@@ -16,8 +16,7 @@ synchronized (lock) {
         return;
       }
     }
-    DynamicConfigs dynamicConfigs=configManager.watch(DynamicConfigs.CONFIG_KEY,DynamicConfigs.class).get();
-    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(dynamicConfigs).withEmitter(emitter).build();
+    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withMasterSegmentSettings(segmentSettingsAtomicReference.get()).withEmitter(emitter).build();
     for (    DruidMasterHelper helper : helpers) {
       params=helper.run(params);
     }

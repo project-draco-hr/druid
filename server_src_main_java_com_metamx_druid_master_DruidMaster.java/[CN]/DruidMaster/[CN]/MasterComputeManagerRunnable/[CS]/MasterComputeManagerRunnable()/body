@@ -39,7 +39,7 @@
         peon.stop();
       }
       decrementRemovedSegmentsLifetime();
-      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withDynamicConfigs(configManager.watch(DynamicConfigs.CONFIG_KEY,DynamicConfigs.class).get()).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withMasterSegmentSettings(segmentSettingsAtomicReference.get()).build();
     }
   }
 ,new DruidMasterRuleRunner(DruidMaster.this,config.getReplicantLifetime(),config.getReplicantThrottleLimit()),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this),new DruidMasterLogger()));
