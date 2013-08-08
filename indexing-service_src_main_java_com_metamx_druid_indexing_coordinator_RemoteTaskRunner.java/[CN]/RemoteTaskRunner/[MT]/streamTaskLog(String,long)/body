@@ -4,7 +4,7 @@
     return Optional.absent();
   }
  else {
-    final URL url=workerURL(zkWorker.getWorker(),String.format("/task/%s/log?offset=%d",taskId,offset));
+    final URL url=makeWorkerURL(zkWorker.getWorker(),String.format("/task/%s/log?offset=%d",taskId,offset));
     return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
       @Override public InputStream getInput() throws IOException {
         try {

@@ -1,29 +1,22 @@
 {
-  try {
-    final MinMaxPriorityQueue<ZkWorker> workerQueue=MinMaxPriorityQueue.<ZkWorker>orderedBy(new Comparator<ZkWorker>(){
-      @Override public int compare(      ZkWorker w1,      ZkWorker w2){
-        return -Ints.compare(w1.getRunningTasks().size(),w2.getRunningTasks().size());
+  TreeSet<ZkWorker> sortedWorkers=Sets.newTreeSet(new Comparator<ZkWorker>(){
+    @Override public int compare(    ZkWorker zkWorker,    ZkWorker zkWorker2){
+      int retVal=-Ints.compare(zkWorker.getCurrCapacityUsed(),zkWorker2.getCurrCapacityUsed());
+      if (retVal == 0) {
+        retVal=zkWorker.getWorker().getHost().compareTo(zkWorker2.getWorker().getHost());
       }
+      return retVal;
     }
-).create(FunctionalIterable.create(zkWorkers.values()).filter(new Predicate<ZkWorker>(){
-      @Override public boolean apply(      ZkWorker input){
-        for (        String taskId : input.getRunningTasks()) {
-          TaskRunnerWorkItem workerTask=runningTasks.get(taskId);
-          if (workerTask != null && task.getAvailabilityGroup().equalsIgnoreCase(workerTask.getTask().getAvailabilityGroup())) {
-            return false;
-          }
-        }
-        return (!input.isAtCapacity() && input.getWorker().getVersion().compareTo(workerSetupData.get().getMinVersion()) >= 0);
-      }
-    }
-));
-    if (workerQueue.isEmpty()) {
-      log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
-      return null;
-    }
-    return workerQueue.peek();
   }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
+);
+  sortedWorkers.addAll(zkWorkers.values());
+  final String configMinWorkerVer=workerSetupData.get().getMinVersion();
+  final String minWorkerVer=configMinWorkerVer == null ? config.getWorkerVersion() : configMinWorkerVer;
+  for (  ZkWorker zkWorker : sortedWorkers) {
+    if (zkWorker.canRunTask(task) && zkWorker.isValidVersion(minWorkerVer)) {
+      return zkWorker;
+    }
   }
+  log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
+  return null;
 }

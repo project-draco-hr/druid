@@ -1,29 +1,32 @@
 {
+  log.info("Kaboom! Worker[%s] removed!",worker.getHost());
   ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
-      Set<String> tasksToRetry=Sets.newHashSet(cf.getChildren().forPath(JOINER.join(config.getIndexerTaskPath(),worker.getHost())));
-      tasksToRetry.addAll(cf.getChildren().forPath(JOINER.join(config.getIndexerStatusPath(),worker.getHost())));
-      log.info("%s has %d tasks to retry",worker.getHost(),tasksToRetry.size());
-      for (      String taskId : tasksToRetry) {
-        TaskRunnerWorkItem taskRunnerWorkItem=runningTasks.get(taskId);
+      for (      String assignedTask : cf.getChildren().forPath(JOINER.join(config.getIndexerTaskPath(),worker.getHost()))) {
+        RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.get(assignedTask);
         if (taskRunnerWorkItem != null) {
-          String taskPath=JOINER.join(config.getIndexerTaskPath(),worker.getHost(),taskId);
+          String taskPath=JOINER.join(config.getIndexerTaskPath(),worker.getHost(),assignedTask);
           if (cf.checkExists().forPath(taskPath) != null) {
             cf.delete().guaranteed().forPath(taskPath);
           }
-          retryTask(taskRunnerWorkItem);
+          taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
         }
  else {
-          log.warn("RemoteTaskRunner has no knowledge of task %s",taskId);
+          log.warn("RemoteTaskRunner has no knowledge of task %s",assignedTask);
         }
       }
-      zkWorker.close();
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);
     }
  finally {
+      try {
+        zkWorker.close();
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception closing worker %s!",worker.getHost());
+      }
       zkWorkers.remove(worker.getHost());
     }
   }
