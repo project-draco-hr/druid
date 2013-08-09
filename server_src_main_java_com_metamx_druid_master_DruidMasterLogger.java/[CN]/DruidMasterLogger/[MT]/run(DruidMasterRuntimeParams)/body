@@ -61,6 +61,7 @@
     String serverName=entry.getKey();
     LoadQueuePeon queuePeon=entry.getValue();
     emitter.emit(new ServiceMetricEvent.Builder().setUser1(serverName).build("master/loadQueue/size",queuePeon.getLoadQueueSize()));
+    emitter.emit(new ServiceMetricEvent.Builder().setUser1(serverName).build("master/loadQueue/failed",queuePeon.getAndResetFailedAssignCount()));
     emitter.emit(new ServiceMetricEvent.Builder().setUser1(serverName).build("master/loadQueue/count",queuePeon.getSegmentsToLoad().size()));
     emitter.emit(new ServiceMetricEvent.Builder().setUser1(serverName).build("master/dropQueue/count",queuePeon.getSegmentsToDrop().size()));
   }

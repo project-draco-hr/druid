@@ -7,8 +7,8 @@
   mdc=newMockMDC();
   tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter()));
   tb=new TaskToolboxFactory(new TaskConfig(){
-    @Override public File getBaseTaskDir(){
-      return tmp;
+    @Override public String getBaseDir(){
+      return tmp.toString();
     }
     @Override public int getDefaultRowFlushBoundary(){
       return 50000;
@@ -26,7 +26,7 @@
     @Override public void kill(    DataSegment segments) throws SegmentLoadingException {
     }
   }
-,null,null,null,new DefaultObjectMapper());
+,null,null,null,null,new DefaultObjectMapper());
   tr=new ThreadPoolTaskRunner(tb,Executors.newSingleThreadExecutor());
   tc=new TaskConsumer(tq,tr,tac,newMockEmitter());
   tsqa=new TaskStorageQueryAdapter(ts);

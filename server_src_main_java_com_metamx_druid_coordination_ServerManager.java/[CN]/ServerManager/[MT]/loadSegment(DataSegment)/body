@@ -16,17 +16,17 @@
   }
 synchronized (lock) {
     String dataSource=segment.getDataSource();
-    VersionedIntervalTimeline<String,Segment> loadedIntervals=dataSources.get(dataSource);
+    VersionedIntervalTimeline<String,ReferenceCountingSegment> loadedIntervals=dataSources.get(dataSource);
     if (loadedIntervals == null) {
-      loadedIntervals=new VersionedIntervalTimeline<String,Segment>(Ordering.natural());
+      loadedIntervals=new VersionedIntervalTimeline<String,ReferenceCountingSegment>(Ordering.natural());
       dataSources.put(dataSource,loadedIntervals);
     }
-    PartitionHolder<Segment> entry=loadedIntervals.findEntry(segment.getInterval(),segment.getVersion());
+    PartitionHolder<ReferenceCountingSegment> entry=loadedIntervals.findEntry(segment.getInterval(),segment.getVersion());
     if ((entry != null) && (entry.getChunk(segment.getShardSpec().getPartitionNum()) != null)) {
       log.info("Told to load a adapter for a segment[%s] that already exists",segment.getIdentifier());
       throw new SegmentLoadingException("Segment already exists[%s]",segment.getIdentifier());
     }
-    loadedIntervals.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(adapter));
+    loadedIntervals.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(new ReferenceCountingSegment(adapter)));
 synchronized (dataSourceSizes) {
       dataSourceSizes.add(dataSource,segment.getSize());
     }

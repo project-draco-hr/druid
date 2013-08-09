@@ -14,7 +14,9 @@
   EmittingLogger.registerEmitter(emitter);
   final ScheduledExecutorFactory scheduledExecutorFactory=ScheduledExecutors.createFactory(lifecycle);
   final ServiceDiscoveryConfig serviceDiscoveryConfig=configFactory.build(ServiceDiscoveryConfig.class);
-  CuratorFramework curatorFramework=Initialization.makeCuratorFramework(serviceDiscoveryConfig,lifecycle);
+  CuratorFramework serviceDiscoveryCuratorFramework=Initialization.makeCuratorFramework(serviceDiscoveryConfig,lifecycle);
+  final CuratorConfig curatorConfig=configFactory.build(CuratorConfig.class);
+  CuratorFramework curatorFramework=Initialization.makeCuratorFramework(curatorConfig,lifecycle);
   final ZkPathsConfig zkPaths=configFactory.build(ZkPathsConfig.class);
   final ExecutorService exec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ServerInventoryView-%s").build());
   final ServerInventoryViewConfig serverInventoryViewConfig=configFactory.build(ServerInventoryViewConfig.class);
@@ -47,7 +49,7 @@
   final MonitorScheduler healthMonitor=new MonitorScheduler(configFactory.build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   lifecycle.addManagedInstance(healthMonitor);
   final DruidMasterConfig druidMasterConfig=configFactory.build(DruidMasterConfig.class);
-  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(curatorFramework,serviceDiscoveryConfig,lifecycle);
+  final ServiceDiscovery serviceDiscovery=Initialization.makeServiceDiscoveryClient(serviceDiscoveryCuratorFramework,serviceDiscoveryConfig,lifecycle);
   final ServiceAnnouncer serviceAnnouncer=Initialization.makeServiceAnnouncer(serviceDiscoveryConfig,serviceDiscovery);
   Initialization.announceDefaultService(serviceDiscoveryConfig,serviceAnnouncer,lifecycle);
   ServiceProvider serviceProvider=null;
@@ -58,7 +60,7 @@
   final ConfigManagerConfig configManagerConfig=configFactory.build(ConfigManagerConfig.class);
   DbConnector.createConfigTable(dbi,configManagerConfig.getConfigTable());
   JacksonConfigManager configManager=new JacksonConfigManager(new ConfigManager(dbi,configManagerConfig),jsonMapper);
-  final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,Execs.singleThreaded("Master-PeonExec--%d"));
+  final LoadQueueTaskMaster taskMaster=new LoadQueueTaskMaster(curatorFramework,jsonMapper,scheduledExecutorFactory.create(1,"Master-PeonExec--%d"),druidMasterConfig);
   final DruidMaster master=new DruidMaster(druidMasterConfig,zkPaths,configManager,databaseSegmentManager,serverInventoryView,databaseRuleManager,curatorFramework,emitter,scheduledExecutorFactory,indexingServiceClient,taskMaster);
   lifecycle.addManagedInstance(master);
   try {

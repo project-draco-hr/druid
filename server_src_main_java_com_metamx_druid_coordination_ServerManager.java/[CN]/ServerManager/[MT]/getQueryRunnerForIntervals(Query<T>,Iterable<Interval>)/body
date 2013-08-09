@@ -4,22 +4,22 @@
     throw new ISE("Unknown query type[%s].",query.getClass());
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
-  final VersionedIntervalTimeline<String,Segment> timeline=dataSources.get(query.getDataSource());
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(query.getDataSource());
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
-  FunctionalIterable<QueryRunner<T>> adapters=FunctionalIterable.create(intervals).transformCat(new Function<Interval,Iterable<TimelineObjectHolder<String,Segment>>>(){
-    @Override public Iterable<TimelineObjectHolder<String,Segment>> apply(    Interval input){
+  FunctionalIterable<QueryRunner<T>> adapters=FunctionalIterable.create(intervals).transformCat(new Function<Interval,Iterable<TimelineObjectHolder<String,ReferenceCountingSegment>>>(){
+    @Override public Iterable<TimelineObjectHolder<String,ReferenceCountingSegment>> apply(    Interval input){
       return timeline.lookup(input);
     }
   }
-).transformCat(new Function<TimelineObjectHolder<String,Segment>,Iterable<QueryRunner<T>>>(){
-    @Override public Iterable<QueryRunner<T>> apply(    @Nullable final TimelineObjectHolder<String,Segment> holder){
+).transformCat(new Function<TimelineObjectHolder<String,ReferenceCountingSegment>,Iterable<QueryRunner<T>>>(){
+    @Override public Iterable<QueryRunner<T>> apply(    @Nullable final TimelineObjectHolder<String,ReferenceCountingSegment> holder){
       if (holder == null) {
         return null;
       }
-      return FunctionalIterable.create(holder.getObject()).transform(new Function<PartitionChunk<Segment>,QueryRunner<T>>(){
-        @Override public QueryRunner<T> apply(        PartitionChunk<Segment> input){
+      return FunctionalIterable.create(holder.getObject()).transform(new Function<PartitionChunk<ReferenceCountingSegment>,QueryRunner<T>>(){
+        @Override public QueryRunner<T> apply(        PartitionChunk<ReferenceCountingSegment> input){
           return buildAndDecorateQueryRunner(factory,toolChest,input.getObject(),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),holder.getVersion(),input.getChunkNumber())));
         }
       }
