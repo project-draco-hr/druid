@@ -1,37 +1,30 @@
 {
   try {
     final List<String> segmentFailures=Lists.newArrayList();
-    Iterable<DataSegment> validSegments=FunctionalIterable.create(segments).transform(new Function<DataSegment,DataSegment>(){
-      @Nullable @Override public DataSegment apply(      @Nullable DataSegment segment){
-        if (segment == null) {
-          return null;
-        }
-        log.info("Loading segment %s",segment.getIdentifier());
+    final List<DataSegment> validSegments=Lists.newArrayList();
+    for (    DataSegment segment : segments) {
+      log.info("Loading segment %s",segment.getIdentifier());
+      try {
+        serverManager.loadSegment(segment);
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception loading segment[%s]",segment.getIdentifier());
+        removeSegment(segment);
+        segmentFailures.add(segment.getIdentifier());
+      }
+      File segmentInfoCacheFile=new File(config.getSegmentInfoCacheDirectory(),segment.getIdentifier());
+      if (!segmentInfoCacheFile.exists()) {
         try {
-          serverManager.loadSegment(segment);
+          jsonMapper.writeValue(segmentInfoCacheFile,segment);
         }
- catch (        Exception e) {
-          log.error(e,"Exception loading segment[%s]",segment.getIdentifier());
+ catch (        IOException e) {
+          log.error(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
           removeSegment(segment);
           segmentFailures.add(segment.getIdentifier());
-          return null;
         }
-        File segmentInfoCacheFile=new File(config.getSegmentInfoCacheDirectory(),segment.getIdentifier());
-        if (!segmentInfoCacheFile.exists()) {
-          try {
-            jsonMapper.writeValue(segmentInfoCacheFile,segment);
-          }
- catch (          IOException e) {
-            log.error(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
-            removeSegment(segment);
-            segmentFailures.add(segment.getIdentifier());
-            return null;
-          }
-        }
-        return segment;
       }
+      validSegments.add(segment);
     }
-).filter(Predicates.<DataSegment>notNull());
     try {
       announcer.announceSegments(validSegments);
     }
@@ -39,7 +32,8 @@
       throw new SegmentLoadingException(e,"Failed to announce segments[%s]",segments);
     }
     if (!segmentFailures.isEmpty()) {
-      throw new SegmentLoadingException("Error loading segments: %s",segmentFailures);
+      log.error("Exception loading segments: %s",segmentFailures);
+      throw new SegmentLoadingException("%,d errors seen while loading segments",segmentFailures.size());
     }
   }
  catch (  SegmentLoadingException e) {
