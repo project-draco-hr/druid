@@ -28,18 +28,18 @@
         cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
       }
       SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
-      for (      String name : Sets.difference(Sets.newHashSet(Iterables.transform(servers,new Function<DruidServer,String>(){
+      for (      String name : Sets.difference(loadManagementPeons.keySet(),Sets.newHashSet(Iterables.transform(servers,new Function<DruidServer,String>(){
         @Override public String apply(        @Nullable DruidServer input){
           return input.getName();
         }
       }
-)),loadManagementPeons.keySet())) {
+)))) {
         log.info("Removing listener for server[%s] which is no longer there.",name);
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();
       }
       decrementRemovedSegmentsLifetime();
-      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withMasterSegmentSettings(segmentSettingsAtomicReference.get()).build();
     }
   }
 ,new DruidMasterRuleRunner(DruidMaster.this,config.getReplicantLifetime(),config.getReplicantThrottleLimit()),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this),new DruidMasterLogger()));
