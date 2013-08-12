@@ -14,7 +14,12 @@ synchronized (lock) {
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(liveSegmentsLocation).ensure(curator.getZookeeperClient());
       if (config.isLoadFromSegmentCacheEnabled()) {
-        loadCache();
+        try {
+          loadCache();
+        }
+ catch (        Exception e) {
+          log.makeAlert(e,"Exception loading from cache").emit();
+        }
       }
       loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
         @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {
