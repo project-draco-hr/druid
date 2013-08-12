@@ -10,6 +10,9 @@
  catch (  InterruptedException e) {
     throw Throwables.propagate(e);
   }
+catch (  IOException e) {
+    throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
+  }
 catch (  ServiceException e) {
     throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
   }
