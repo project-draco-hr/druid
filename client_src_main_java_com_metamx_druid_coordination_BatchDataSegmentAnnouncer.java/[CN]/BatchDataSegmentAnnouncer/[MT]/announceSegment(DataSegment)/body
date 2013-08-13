@@ -3,28 +3,30 @@
   if (newBytesLen > config.getMaxNumBytes()) {
     throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxNumBytes());
   }
-  if (availableZNodes.isEmpty()) {
-    SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
-    availableZNode.addSegment(segment);
-    log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
-    announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
-    segmentLookup.put(segment,availableZNode);
-    availableZNodes.add(availableZNode);
-  }
+synchronized (lock) {
+    if (availableZNodes.isEmpty()) {
+      SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+      availableZNode.addSegment(segment);
+      log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+      announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
+      segmentLookup.put(segment,availableZNode);
+      availableZNodes.add(availableZNode);
+    }
  else {
-    Iterator<SegmentZNode> iter=availableZNodes.iterator();
-    boolean done=false;
-    while (iter.hasNext() && !done) {
-      SegmentZNode availableZNode=iter.next();
-      if (availableZNode.getBytes().length + newBytesLen < config.getMaxNumBytes()) {
-        availableZNode.addSegment(segment);
-        log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
-        announcer.update(availableZNode.getPath(),availableZNode.getBytes());
-        segmentLookup.put(segment,availableZNode);
-        if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
-          availableZNodes.remove(availableZNode);
+      Iterator<SegmentZNode> iter=availableZNodes.iterator();
+      boolean done=false;
+      while (iter.hasNext() && !done) {
+        SegmentZNode availableZNode=iter.next();
+        if (availableZNode.getBytes().length + newBytesLen < config.getMaxNumBytes()) {
+          availableZNode.addSegment(segment);
+          log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+          announcer.update(availableZNode.getPath(),availableZNode.getBytes());
+          segmentLookup.put(segment,availableZNode);
+          if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
+            availableZNodes.remove(availableZNode);
+          }
+          done=true;
         }
-        done=true;
       }
     }
   }
