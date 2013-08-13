@@ -9,11 +9,11 @@
     @Override public Iterator<Sequence<Row>> make(){
       return FunctionalIterator.create(cursors.iterator()).transform(new Function<Cursor,Sequence<Row>>(){
         @Override public Sequence<Row> apply(        @Nullable final Cursor cursor){
-          return new BaseSequence<Row,CloseableIterator<Row>>(new BaseSequence.IteratorMaker<Row,CloseableIterator<Row>>(){
-            @Override public CloseableIterator<Row> make(){
+          return new BaseSequence<Row,RowIterator>(new BaseSequence.IteratorMaker<Row,RowIterator>(){
+            @Override public RowIterator make(){
               return new RowIterator(query,cursor,bufferHolder.get());
             }
-            @Override public void cleanup(            CloseableIterator iterFromMake){
+            @Override public void cleanup(            RowIterator iterFromMake){
               Closeables.closeQuietly(iterFromMake);
             }
           }
