@@ -1,5 +1,8 @@
 {
   final SegmentZNode segmentZNode=segmentLookup.remove(segment);
+  if (segmentZNode == null) {
+    return;
+  }
   segmentZNode.removeSegment(segment);
   log.info("Unannouncing segment[%s] at path[%s]",segment.getIdentifier(),segmentZNode.getPath());
   if (segmentZNode.getCount() == 0) {
