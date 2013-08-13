@@ -2,7 +2,12 @@
   loadQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
   Future future=assertQueryable(QueryGranularity.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
   queryNotifyLatch.await();
-  Assert.assertTrue(factory.getAdapters().size() == 1);
+  Assert.assertEquals(1,factory.getSegmentReferences().size());
+  for (  ReferenceCountingSegment referenceCountingSegment : factory.getSegmentReferences()) {
+    Assert.assertEquals(1,referenceCountingSegment.getNumReferences());
+  }
+  queryWaitYieldLatch.countDown();
+  Assert.assertEquals(1,factory.getAdapters().size());
   for (  SegmentForTesting segmentForTesting : factory.getAdapters()) {
     Assert.assertFalse(segmentForTesting.isClosed());
   }
