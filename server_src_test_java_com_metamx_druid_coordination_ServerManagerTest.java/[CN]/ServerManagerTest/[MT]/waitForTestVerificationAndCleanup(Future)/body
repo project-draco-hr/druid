@@ -1,6 +1,7 @@
 {
   try {
     queryNotifyLatch.await();
+    queryWaitYieldLatch.countDown();
     queryWaitLatch.countDown();
     future.get();
     factory.clearAdapters();

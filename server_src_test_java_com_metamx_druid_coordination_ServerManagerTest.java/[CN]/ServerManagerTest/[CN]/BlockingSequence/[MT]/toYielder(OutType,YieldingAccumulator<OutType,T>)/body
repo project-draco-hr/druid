@@ -1,5 +1,11 @@
 {
   notifyLatch.countDown();
+  try {
+    waitYieldLatch.await();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
   final Yielder<OutType> baseYielder=baseSequence.toYielder(initValue,accumulator);
   return new Yielder<OutType>(){
     @Override public OutType get(){
