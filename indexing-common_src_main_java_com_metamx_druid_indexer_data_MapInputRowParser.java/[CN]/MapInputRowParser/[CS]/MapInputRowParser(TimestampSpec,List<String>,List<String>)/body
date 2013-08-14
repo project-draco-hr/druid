@@ -1,0 +1,13 @@
+{
+  this.timestampSpec=timestampSpec;
+  if (dimensions != null) {
+    this.dimensions=ImmutableList.copyOf(dimensions);
+  }
+  this.dimensionExclusions=Sets.newHashSet();
+  if (dimensionExclusions != null) {
+    for (    String dimensionExclusion : dimensionExclusions) {
+      this.dimensionExclusions.add(dimensionExclusion.toLowerCase());
+    }
+  }
+  this.dimensionExclusions.add(timestampSpec.getTimestampColumn().toLowerCase());
+}
