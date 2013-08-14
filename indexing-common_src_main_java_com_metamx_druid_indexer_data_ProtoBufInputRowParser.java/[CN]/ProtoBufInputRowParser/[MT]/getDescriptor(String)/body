@@ -1,0 +1,11 @@
+{
+  try {
+    InputStream fin=this.getClass().getClassLoader().getResourceAsStream(descriptorFileInClassPath);
+    FileDescriptorSet set=FileDescriptorSet.parseFrom(fin);
+    FileDescriptor file=FileDescriptor.buildFrom(set.getFile(0),new FileDescriptor[]{});
+    return file.getMessageTypes().get(0);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
