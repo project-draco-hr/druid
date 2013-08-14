@@ -1,0 +1,50 @@
+{
+  EasyMock.expect(druidServer1.getName()).andReturn("1").atLeastOnce();
+  EasyMock.expect(druidServer1.getCurrSize()).andReturn(30L).atLeastOnce();
+  EasyMock.expect(druidServer1.getMaxSize()).andReturn(100L).atLeastOnce();
+  EasyMock.expect(druidServer1.getSegments()).andReturn(segmentsMap1).anyTimes();
+  EasyMock.expect(druidServer1.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+  EasyMock.replay(druidServer1);
+  EasyMock.expect(druidServer2.getName()).andReturn("2").atLeastOnce();
+  EasyMock.expect(druidServer2.getTier()).andReturn("normal").anyTimes();
+  EasyMock.expect(druidServer2.getCurrSize()).andReturn(30L).atLeastOnce();
+  EasyMock.expect(druidServer2.getMaxSize()).andReturn(100L).atLeastOnce();
+  EasyMock.expect(druidServer2.getSegments()).andReturn(segmentsMap2).anyTimes();
+  EasyMock.expect(druidServer2.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+  EasyMock.replay(druidServer2);
+  EasyMock.expect(druidServer3.getName()).andReturn("3").atLeastOnce();
+  EasyMock.expect(druidServer3.getTier()).andReturn("normal").anyTimes();
+  EasyMock.expect(druidServer3.getCurrSize()).andReturn(30L).atLeastOnce();
+  EasyMock.expect(druidServer3.getMaxSize()).andReturn(100L).atLeastOnce();
+  EasyMock.expect(druidServer3.getSegments()).andReturn(segmentsMap3).anyTimes();
+  EasyMock.expect(druidServer3.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+  EasyMock.replay(druidServer3);
+  EasyMock.expect(druidServer4.getName()).andReturn("4").atLeastOnce();
+  EasyMock.expect(druidServer4.getTier()).andReturn("normal").anyTimes();
+  EasyMock.expect(druidServer4.getCurrSize()).andReturn(30L).atLeastOnce();
+  EasyMock.expect(druidServer4.getMaxSize()).andReturn(100L).atLeastOnce();
+  EasyMock.expect(druidServer4.getSegments()).andReturn(segmentsMap4).anyTimes();
+  EasyMock.expect(druidServer4.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+  EasyMock.replay(druidServer4);
+  EasyMock.expect(holder1.getServer()).andReturn(druidServer1).anyTimes();
+  EasyMock.replay(holder1);
+  EasyMock.expect(holder2.getServer()).andReturn(druidServer2).anyTimes();
+  EasyMock.replay(holder2);
+  EasyMock.expect(holder3.getServer()).andReturn(druidServer3).anyTimes();
+  EasyMock.replay(holder3);
+  EasyMock.expect(holder4.getServer()).andReturn(druidServer4).anyTimes();
+  EasyMock.replay(holder4);
+  List<ServerHolder> holderList=Lists.newArrayList();
+  holderList.add(holder1);
+  holderList.add(holder2);
+  holderList.add(holder3);
+  holderList.add(holder4);
+  Map<DataSegment,Integer> segmentCountMap=Maps.newHashMap();
+  ReservoirSegmentSampler sampler=new ReservoirSegmentSampler();
+  for (int i=0; i < 5000; i++) {
+    segmentCountMap.put(sampler.getRandomBalancerSegmentHolder(holderList).getSegment(),1);
+  }
+  for (  DataSegment segment : segments) {
+    Assert.assertEquals(segmentCountMap.get(segment),new Integer(1));
+  }
+}
