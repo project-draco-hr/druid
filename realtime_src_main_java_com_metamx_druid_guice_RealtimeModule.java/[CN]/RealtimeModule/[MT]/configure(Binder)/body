@@ -1,0 +1,7 @@
+{
+  JsonConfigProvider.bind(binder,"druid.publish",SegmentPublisherProvider.class);
+  JsonConfigProvider.bind(binder,"druid.db.tables",DbSegmentPublisherConfig.class);
+  binder.bind(SegmentPublisher.class).toProvider(SegmentPublisherProvider.class);
+  JsonConfigProvider.bind(binder,"druid.realtime",RealtimeManagerConfig.class);
+  binder.bind(RealtimeManager.class).toProvider(RealtimeManagerProvider.class).in(ManageLifecycle.class);
+}
