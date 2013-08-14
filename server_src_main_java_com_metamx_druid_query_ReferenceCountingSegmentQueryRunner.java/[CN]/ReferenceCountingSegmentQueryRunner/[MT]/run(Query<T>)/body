@@ -1,7 +1,7 @@
 {
   final Closeable closeable=adapter.increment();
   try {
-    final Sequence<T> baseSequence=runner.run(query);
+    final Sequence<T> baseSequence=factory.createRunner(adapter).run(query);
     return new ResourceClosingSequence<T>(baseSequence,closeable);
   }
  catch (  RuntimeException e) {
