@@ -13,7 +13,27 @@
   String pageUrl=page.replaceAll("\\s","_");
   dimensions.put("page",pageUrl);
   String user=m.group(4);
-  boolean anonymous=ipPattern.matcher(user).matches();
+  Matcher ipMatch=ipPattern.matcher(user);
+  boolean anonymous=ipMatch.matches();
+  if (anonymous) {
+    try {
+      final InetAddress ip=InetAddress.getByName(ipMatch.group());
+      final Omni lookup=geoLookup.omni(ip);
+      dimensions.put("continent",lookup.getContinent().getName());
+      dimensions.put("country",lookup.getCountry().getName());
+      dimensions.put("region",lookup.getMostSpecificSubdivision().getName());
+      dimensions.put("city",lookup.getCity().getName());
+    }
+ catch (    UnknownHostException e) {
+      log.error(e,"invalid ip [%s]",ipMatch.group());
+    }
+catch (    IOException e) {
+      log.error(e,"error looking up geo ip");
+    }
+catch (    GeoIp2Exception e) {
+      log.error(e,"error looking up geo ip");
+    }
+  }
   dimensions.put("user",user);
   final String flags=m.group(2);
   dimensions.put("unpatrolled",Boolean.toString(flags.contains("!")));

@@ -1,0 +1,25 @@
+{
+  if (namespaces == null)   namespaces=Maps.newHashMap();
+  this.namespaces=namespaces;
+  File geoDb;
+  if (geoDbFile != null) {
+    geoDb=new File(geoDbFile);
+  }
+ else {
+    try {
+      geoDb=File.createTempFile("geoip",null);
+      geoDb.deleteOnExit();
+      log.info("Downloading geo ip database to [%s]",geoDb);
+      FileUtils.copyInputStreamToFile(new GZIPInputStream(new URL("http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz").openStream()),geoDb);
+    }
+ catch (    IOException e) {
+      throw new RuntimeException("Unable to download geo ip database [%s]",e);
+    }
+  }
+  try {
+    geoLookup=new DatabaseReader(geoDb);
+  }
+ catch (  IOException e) {
+    throw new RuntimeException("Unable to open geo ip lookup database",e);
+  }
+}
