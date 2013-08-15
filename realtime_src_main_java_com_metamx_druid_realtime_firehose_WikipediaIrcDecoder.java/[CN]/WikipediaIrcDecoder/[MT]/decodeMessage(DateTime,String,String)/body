@@ -42,8 +42,9 @@ catch (    GeoIp2Exception e) {
   dimensions.put("anonymous",Boolean.toString(anonymous));
   String[] parts=page.split(":");
   if (parts.length > 1 && !parts[1].startsWith(" ")) {
-    if (namespaces.containsKey(parts[0])) {
-      dimensions.put("namespace",namespaces.get(parts[0]));
+    Map<String,String> channelNamespaces=namespaces.get(channel);
+    if (channelNamespaces != null && channelNamespaces.containsKey(parts[0])) {
+      dimensions.put("namespace",channelNamespaces.get(parts[0]));
     }
  else {
       dimensions.put("namespace","wikipedia");
