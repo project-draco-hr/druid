@@ -1,0 +1,9 @@
+{
+  final MapInputRowParser parser=new MapInputRowParser(new TimestampSpec("timestamp","iso"),ImmutableList.of("foo","bar"),ImmutableList.of("baz"));
+  final MapInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(parser),MapInputRowParser.class);
+  final InputRow parsed=parser2.parse(ImmutableMap.<String,Object>of("foo","x","bar","y","qux","z","timestamp","2000"));
+  Assert.assertEquals(ImmutableList.of("foo","bar"),parsed.getDimensions());
+  Assert.assertEquals(ImmutableList.of("x"),parsed.getDimension("foo"));
+  Assert.assertEquals(ImmutableList.of("y"),parsed.getDimension("bar"));
+  Assert.assertEquals(new DateTime("2000").getMillis(),parsed.getTimestampFromEpoch());
+}
