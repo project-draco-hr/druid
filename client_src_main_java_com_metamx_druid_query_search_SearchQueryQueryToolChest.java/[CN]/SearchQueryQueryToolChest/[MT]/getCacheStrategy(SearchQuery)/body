@@ -17,7 +17,7 @@
         dimensionsBytesSize+=dimensionsBytes[index].length;
         ++index;
       }
-      final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ querySpecBytes.length+ dimensionsBytesSize).put(SEARCH_QUERY).put(Ints.toByteArray(query.getLimit())).put(granularityBytes).put(filterBytes).put(querySpecBytes);
+      final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + 4 + granularityBytes.length+ filterBytes.length+ querySpecBytes.length+ dimensionsBytesSize).put(SEARCH_QUERY).put(Ints.toByteArray(query.getLimit())).put(granularityBytes).put(filterBytes).put(querySpecBytes);
       for (      byte[] bytes : dimensionsBytes) {
         queryCacheKey.put(bytes);
       }
