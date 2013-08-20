@@ -1,5 +1,5 @@
 {
-  final Task task=new RealtimeIndexTask(null,null,new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),IndexGranularity.HOUR,null);
+  final Task task=new RealtimeIndexTask(null,new TaskResource("rofl",2),new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),IndexGranularity.HOUR,null);
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
@@ -8,6 +8,8 @@
   Assert.assertEquals(Optional.<Interval>absent(),task.getImplicitLockInterval());
   Assert.assertEquals(new Period("PT10M"),((RealtimeIndexTask)task).getWindowPeriod());
   Assert.assertEquals(IndexGranularity.HOUR,((RealtimeIndexTask)task).getSegmentGranularity());
+  Assert.assertEquals(2,task.getTaskResource().getRequiredCapacity());
+  Assert.assertEquals("rofl",task.getTaskResource().getAvailabilityGroup());
   Assert.assertEquals(task.getId(),task2.getId());
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
