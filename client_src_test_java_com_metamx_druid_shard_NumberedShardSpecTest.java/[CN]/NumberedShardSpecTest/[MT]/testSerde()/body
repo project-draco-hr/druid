@@ -1,0 +1,7 @@
+{
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final ShardSpec spec=new NumberedShardSpec(1,2);
+  final ShardSpec spec2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(spec),ShardSpec.class);
+  Assert.assertEquals(1,spec2.getPartitionNum());
+  Assert.assertEquals(2,((NumberedShardSpec)spec).getPartitions());
+}
