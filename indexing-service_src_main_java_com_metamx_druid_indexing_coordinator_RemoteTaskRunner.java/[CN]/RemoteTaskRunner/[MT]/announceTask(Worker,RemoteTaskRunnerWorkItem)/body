@@ -9,7 +9,7 @@
   if (cf.checkExists().forPath(taskPath) == null) {
     cf.create().withMode(CreateMode.EPHEMERAL).forPath(taskPath,rawBytes);
   }
-  runningTasks.put(task.getId(),pendingTasks.remove(task.getId()));
+  runningTasks.put(task.getId(),pendingTasks.remove(task.getId()).withWorker(theWorker));
   log.info("Task %s switched from pending to running",task.getId());
   Stopwatch timeoutStopwatch=new Stopwatch();
   timeoutStopwatch.start();

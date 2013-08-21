@@ -1,10 +1,16 @@
 {
   log.info("Kaboom! Worker[%s] removed!",worker.getHost());
-  ZkWorker zkWorker=zkWorkers.get(worker.getHost());
+  final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
       List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(config.getIndexerTaskPath(),worker.getHost())));
-      tasksToFail.addAll(zkWorker.getRunningTaskIds());
+      log.info("%s: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
+      for (      Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
+        if (entry.getValue().getWorker().getHost().equalsIgnoreCase(worker.getHost())) {
+          log.info("%s: Found %s running",worker.getHost(),entry.getKey());
+          tasksToFail.add(entry.getKey());
+        }
+      }
       for (      String assignedTask : tasksToFail) {
         RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
         if (taskRunnerWorkItem != null) {
