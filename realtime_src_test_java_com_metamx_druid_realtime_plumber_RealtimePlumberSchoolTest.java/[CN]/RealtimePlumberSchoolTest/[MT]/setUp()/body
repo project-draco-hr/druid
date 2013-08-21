@@ -1,0 +1,25 @@
+{
+  final File tmpDir=Files.createTempDir();
+  tmpDir.deleteOnExit();
+  final Schema schema=new Schema("test",Lists.<SpatialDimensionSchema>newArrayList(),new AggregatorFactory[]{new CountAggregatorFactory("rows")},QueryGranularity.NONE,new NoneShardSpec());
+  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(new Period("PT10m"),tmpDir,IndexGranularity.HOUR);
+  announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
+  announcer.announceSegment(EasyMock.<DataSegment>anyObject());
+  EasyMock.expectLastCall().anyTimes();
+  segmentPublisher=EasyMock.createMock(SegmentPublisher.class);
+  dataSegmentPusher=EasyMock.createMock(DataSegmentPusher.class);
+  serverView=EasyMock.createMock(ServerView.class);
+  serverView.registerSegmentCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.SegmentCallback>anyObject());
+  EasyMock.expectLastCall().anyTimes();
+  emitter=EasyMock.createMock(ServiceEmitter.class);
+  EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
+  realtimePlumberSchool.setConglomerate(new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()));
+  realtimePlumberSchool.setSegmentAnnouncer(announcer);
+  realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
+  realtimePlumberSchool.setRejectionPolicyFactory(new NoopRejectionPolicyFactory());
+  realtimePlumberSchool.setVersioningPolicy(new IntervalStartVersioningPolicy());
+  realtimePlumberSchool.setDataSegmentPusher(dataSegmentPusher);
+  realtimePlumberSchool.setServerView(serverView);
+  realtimePlumberSchool.setServiceEmitter(emitter);
+  plumber=realtimePlumberSchool.findPlumber(schema,new FireDepartmentMetrics());
+}
