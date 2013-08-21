@@ -1,12 +1,3 @@
 {
-  StringBuffer buf=new StringBuffer();
-  Runtime runtime=Runtime.getRuntime();
-  long maxMemory=runtime.maxMemory();
-  long totalMemory=runtime.totalMemory();
-  long freeMemory=runtime.freeMemory();
-  buf.append(String.format("Max Memory:\t%,18d\t%1$d%n",maxMemory));
-  buf.append(String.format("Total Memory:\t%,18d\t%1$d%n",totalMemory));
-  buf.append(String.format("Free Memory:\t%,18d\t%1$d%n",freeMemory));
-  buf.append(String.format("Used Memory:\t%,18d\t%1$d%n",totalMemory - freeMemory));
-  return Response.ok(buf.toString()).build();
+  return new Status(StatusResource.class.getPackage().getImplementationVersion(),new Memory(Runtime.getRuntime()));
 }
