@@ -9,7 +9,12 @@
   if (cf.checkExists().forPath(taskPath) == null) {
     cf.create().withMode(CreateMode.EPHEMERAL).forPath(taskPath,rawBytes);
   }
-  runningTasks.put(task.getId(),pendingTasks.remove(task.getId()));
+  RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(task.getId());
+  if (workItem == null) {
+    log.makeAlert("WTF?! Got a null work item from pending tasks?! How can this be?!").addData("taskId",task.getId()).emit();
+    return;
+  }
+  runningTasks.put(task.getId(),workItem.withWorker(theWorker));
   log.info("Task %s switched from pending to running",task.getId());
   Stopwatch timeoutStopwatch=new Stopwatch();
   timeoutStopwatch.start();
