@@ -1,8 +1,13 @@
 {
-  PartitionChunk<T> element=holderSet.tailSet(chunk,true).first();
-  if (chunk.equals(element)) {
-    holderSet.remove(element);
-    return element;
+  if (!holderSet.isEmpty()) {
+    SortedSet<PartitionChunk<T>> tailSet=holderSet.tailSet(chunk,true);
+    if (!tailSet.isEmpty()) {
+      PartitionChunk<T> element=tailSet.first();
+      if (chunk.equals(element)) {
+        holderSet.remove(element);
+        return element;
+      }
+    }
   }
   return null;
 }

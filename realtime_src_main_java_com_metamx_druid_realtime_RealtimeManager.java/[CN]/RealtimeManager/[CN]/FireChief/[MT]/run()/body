@@ -26,11 +26,11 @@
           continue;
         }
         int currCount=sink.add(inputRow);
-        metrics.incrementProcessed();
         if (currCount >= config.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
         }
+        metrics.incrementProcessed();
       }
  catch (      FormattedException e) {
         log.info(e,"unparseable line: %s",e.getDetails());

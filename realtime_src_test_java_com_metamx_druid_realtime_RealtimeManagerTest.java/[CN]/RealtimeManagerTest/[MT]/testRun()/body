@@ -1,0 +1,15 @@
+{
+  realtimeManager.start();
+  Stopwatch stopwatch=new Stopwatch().start();
+  while (realtimeManager.getMetrics("test").processed() != 1) {
+    Thread.sleep(100);
+    if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > 1000) {
+      throw new ISE("Realtime manager should have completed processing 2 events!");
+    }
+  }
+  Assert.assertEquals(1,realtimeManager.getMetrics("test").processed());
+  Assert.assertEquals(1,realtimeManager.getMetrics("test").thrownAway());
+  Assert.assertTrue(plumber.isStartedJob());
+  Assert.assertTrue(plumber.isFinishedJob());
+  Assert.assertEquals(1,plumber.getPersistCount());
+}

@@ -1,0 +1,8 @@
+{
+  Period period=new Period("PT10M");
+  RejectionPolicy rejectionPolicy=new ServerTimeRejectionPolicyFactory().create(period);
+  DateTime now=new DateTime();
+  DateTime past=now.minus(period).minus(1);
+  Assert.assertTrue(rejectionPolicy.accept(now.getMillis()));
+  Assert.assertFalse(rejectionPolicy.accept(past.getMillis()));
+}
