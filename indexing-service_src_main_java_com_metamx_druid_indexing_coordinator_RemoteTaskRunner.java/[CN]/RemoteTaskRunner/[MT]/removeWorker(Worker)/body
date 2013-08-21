@@ -4,10 +4,10 @@
   if (zkWorker != null) {
     try {
       List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(config.getIndexerTaskPath(),worker.getHost())));
-      log.info("%s: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
+      log.info("[%s]: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
       for (      Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
         if (entry.getValue().getWorker().getHost().equalsIgnoreCase(worker.getHost())) {
-          log.info("%s: Found %s running",worker.getHost(),entry.getKey());
+          log.info("[%s]: Found [%s] running",worker.getHost(),entry.getKey());
           tasksToFail.add(entry.getKey());
         }
       }
@@ -18,11 +18,11 @@
           if (cf.checkExists().forPath(taskPath) != null) {
             cf.delete().guaranteed().forPath(taskPath);
           }
-          log.info("Failing task %s",assignedTask);
+          log.info("Failing task[%s]",assignedTask);
           taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
         }
  else {
-          log.warn("RemoteTaskRunner has no knowledge of task %s",assignedTask);
+          log.warn("RemoteTaskRunner has no knowledge of task[%s]",assignedTask);
         }
       }
     }
@@ -34,7 +34,7 @@
         zkWorker.close();
       }
  catch (      Exception e) {
-        log.error(e,"Exception closing worker %s!",worker.getHost());
+        log.error(e,"Exception closing worker[%s]!",worker.getHost());
       }
       zkWorkers.remove(worker.getHost());
     }
