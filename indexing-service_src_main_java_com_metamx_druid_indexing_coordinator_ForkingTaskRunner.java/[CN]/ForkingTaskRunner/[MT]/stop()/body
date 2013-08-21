@@ -1,10 +1,10 @@
 {
 synchronized (tasks) {
     exec.shutdown();
-    for (    TaskInfo taskInfo : tasks.values()) {
-      if (taskInfo.processHolder != null) {
-        log.info("Destroying process: %s",taskInfo.processHolder.process);
-        taskInfo.processHolder.process.destroy();
+    for (    ForkingTaskRunnerWorkItem taskWorkItem : tasks.values()) {
+      if (taskWorkItem.processHolder != null) {
+        log.info("Destroying process: %s",taskWorkItem.processHolder.process);
+        taskWorkItem.processHolder.process.destroy();
       }
     }
   }

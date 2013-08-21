@@ -1,3 +1,11 @@
 {
-  return ImmutableList.of();
+synchronized (tasks) {
+    final List<TaskRunnerWorkItem> ret=Lists.newArrayList();
+    for (    final ForkingTaskRunnerWorkItem taskWorkItem : tasks.values()) {
+      if (taskWorkItem.processHolder == null) {
+        ret.add(taskWorkItem);
+      }
+    }
+    return ret;
+  }
 }
