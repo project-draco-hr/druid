@@ -32,6 +32,7 @@
   ResourceCollection resourceCollection=new ResourceCollection(new String[]{IndexerCoordinatorNode.class.getClassLoader().getResource("static").toExternalForm(),IndexerCoordinatorNode.class.getClassLoader().getResource("indexer_static").toExternalForm()});
   staticContext.setBaseResource(resourceCollection);
   final ServletContextHandler root=new ServletContextHandler(server,"/",ServletContextHandler.SESSIONS);
+  root.addServlet(new ServletHolder(new StatusServlet()),"/status");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/druid/*");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
   root.addEventListener(new GuiceServletConfig(injector));
@@ -49,7 +50,6 @@
     }
   }
 )),"/*",null);
-  root.addFilter(GuiceFilter.class,"/status",null);
   root.addFilter(GuiceFilter.class,"/druid/indexer/v1/*",null);
   root.addFilter(GuiceFilter.class,"/mmx/merger/v1/*",null);
   initialized=true;
