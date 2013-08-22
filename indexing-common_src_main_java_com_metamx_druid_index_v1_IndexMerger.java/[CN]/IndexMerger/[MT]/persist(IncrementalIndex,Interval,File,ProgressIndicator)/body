@@ -1,4 +1,7 @@
 {
+  if (index.isEmpty()) {
+    throw new IAE("Trying to persist an empty index!");
+  }
   final long firstTimestamp=index.getMinTime().getMillis();
   final long lastTimestamp=index.getMaxTime().getMillis();
   if (!(dataInterval.contains(firstTimestamp) && dataInterval.contains(lastTimestamp))) {
