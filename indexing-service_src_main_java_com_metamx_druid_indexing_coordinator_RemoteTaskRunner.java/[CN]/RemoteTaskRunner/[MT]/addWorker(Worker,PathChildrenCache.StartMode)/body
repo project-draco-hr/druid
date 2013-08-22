@@ -28,7 +28,7 @@ case CHILD_UPDATED:
 break;
 case CHILD_REMOVED:
 taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
-taskRunnerWorkItem=runningTasks.get(taskId);
+taskRunnerWorkItem=runningTasks.remove(taskId);
 if (taskRunnerWorkItem != null) {
 log.info("Task[%s] just disappeared!",taskId);
 taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
