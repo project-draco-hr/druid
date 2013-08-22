@@ -40,7 +40,10 @@
   log.info("%,d lines completed.",lineCount);
   List<QueryableIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
   final File mergedBase;
-  if (toMerge.size() == 0 && !index.isEmpty()) {
+  if (toMerge.size() == 0) {
+    if (index.isEmpty()) {
+      throw new IAE("If you try to persist empty indexes you are going to have a bad time");
+    }
     mergedBase=new File(baseFlushFile,"merged");
     IndexMerger.persist(index,interval,mergedBase,new IndexMerger.ProgressIndicator(){
       @Override public void progress(){
