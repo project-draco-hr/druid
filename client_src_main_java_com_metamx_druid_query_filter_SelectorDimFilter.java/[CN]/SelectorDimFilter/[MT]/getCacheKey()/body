@@ -1,5 +1,5 @@
 {
   byte[] dimensionBytes=dimension.getBytes();
-  byte[] valueBytes=value.getBytes();
+  byte[] valueBytes=(value == null) ? new byte[]{} : value.getBytes();
   return ByteBuffer.allocate(1 + dimensionBytes.length + valueBytes.length).put(DimFilterCacheHelper.SELECTOR_CACHE_ID).put(dimensionBytes).put(valueBytes).array();
 }
