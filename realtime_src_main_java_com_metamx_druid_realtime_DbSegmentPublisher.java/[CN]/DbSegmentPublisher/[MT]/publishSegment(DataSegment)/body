@@ -2,7 +2,7 @@
   try {
     List<Map<String,Object>> exists=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
       @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT id FROM %s WHERE id=:id",config.getSegmentTable())).bind("id",segment.getIdentifier()).list();
+        return handle.createQuery(String.format("SELECT id FROM %s WHERE id=:id",config.getSegmentsTable())).bind("id",segment.getIdentifier()).list();
       }
     }
 );
@@ -14,10 +14,10 @@
       @Override public Void withHandle(      Handle handle) throws Exception {
         String statement;
         if (!handle.getConnection().getMetaData().getDatabaseProductName().contains("PostgreSQL")) {
-          statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentTable());
+          statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentsTable());
         }
  else {
-          statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentTable());
+          statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentsTable());
         }
         handle.createStatement(statement).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
         return null;
