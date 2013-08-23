@@ -9,8 +9,8 @@ synchronized (lock) {
         return;
       }
       byte[] rawBytes=jsonMapper.writeValueAsBytes(status);
-      if (rawBytes.length > config.getMaxNumBytes()) {
-        throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxNumBytes());
+      if (rawBytes.length > config.getMaxZnodeBytes()) {
+        throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxZnodeBytes());
       }
       curatorFramework.setData().forPath(getStatusPathForId(status.getId()),rawBytes);
     }

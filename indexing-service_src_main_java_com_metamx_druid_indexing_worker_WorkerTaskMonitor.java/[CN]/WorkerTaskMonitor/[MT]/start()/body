@@ -1,6 +1,5 @@
 {
   try {
-    pathChildrenCache.start();
     pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
@@ -43,6 +42,7 @@
       }
     }
 );
+    pathChildrenCache.start();
   }
  catch (  Exception e) {
     log.makeAlert(e,"Exception starting WorkerTaskMonitor").addData("exception",e.toString()).emit();
