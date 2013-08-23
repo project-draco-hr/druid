@@ -12,7 +12,7 @@
     log.debug("Cannot scale anymore. Num workers = %d, Max num workers = %d",zkWorkers.size(),workerSetupdDataRef.get().getMaxNumWorkers());
     return false;
   }
-  List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(zkWorkers,new Function<ZkWorker,String>(){
+  List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.<ZkWorker,String>transform(zkWorkers,new Function<ZkWorker,String>(){
     @Override public String apply(    ZkWorker input){
       return input.getWorker().getIp();
     }
@@ -34,7 +34,7 @@
  else {
     Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
     log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
-    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration())) {
+    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
       log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
       List<String> nodeIps=autoScalingStrategy.idToIpLookup(Lists.newArrayList(currentlyProvisioning));
       autoScalingStrategy.terminate(nodeIps);

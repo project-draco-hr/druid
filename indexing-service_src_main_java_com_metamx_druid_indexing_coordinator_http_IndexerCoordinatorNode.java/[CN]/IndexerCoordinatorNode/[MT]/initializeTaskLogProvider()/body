@@ -1,19 +1,8 @@
 {
-  if (taskLogProvider == null) {
-    final List<TaskLogProvider> providers=Lists.newArrayList();
-    providers.add(new TaskLogProvider(){
-      @Override public Optional<InputSupplier<InputStream>> streamTaskLog(      String taskid,      long offset) throws IOException {
-        final TaskRunner runner=taskMasterLifecycle.getTaskRunner().orNull();
-        if (runner instanceof TaskLogProvider) {
-          return ((TaskLogProvider)runner).streamTaskLog(taskid,offset);
-        }
- else {
-          return Optional.absent();
-        }
-      }
-    }
-);
+  if (taskLogStreamer == null) {
+    final List<TaskLogStreamer> providers=Lists.newArrayList();
+    providers.add(new TaskRunnerTaskLogStreamer(IndexerCoordinatorNode.this.taskMaster));
     providers.add(persistentTaskLogs);
-    taskLogProvider=new SwitchingTaskLogProvider(providers);
+    taskLogStreamer=new SwitchingTaskLogStreamer(providers);
   }
 }

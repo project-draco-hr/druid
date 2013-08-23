@@ -3,7 +3,7 @@
     final TaskLogConfig taskLogConfig=getConfigFactory().build(TaskLogConfig.class);
     if (taskLogConfig.getLogStorageBucket() != null) {
       initializeS3Service();
-      persistentTaskLogs=new S3TaskLogs(taskLogConfig.getLogStorageBucket(),taskLogConfig.getLogStoragePrefix(),s3Service);
+      persistentTaskLogs=new S3TaskLogs(null,s3Service);
     }
  else {
       persistentTaskLogs=new NoopTaskLogs();

@@ -1,0 +1,19 @@
+{
+  binder.bind(TaskMaster.class).in(ManageLifecycle.class);
+  binder.bind(TaskLogStreamer.class).to(SwitchingTaskLogStreamer.class).in(LazySingleton.class);
+  binder.bind(new TypeLiteral<List<TaskLogStreamer>>(){
+  }
+).toProvider(new ListProvider<TaskLogStreamer>().add(TaskRunnerTaskLogStreamer.class).add(TaskLogs.class)).in(LazySingleton.class);
+  binder.bind(TaskActionClientFactory.class).to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
+  binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
+  binder.bind(TaskQueue.class).in(LazySingleton.class);
+  binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
+  binder.bind(TaskLockbox.class).in(LazySingleton.class);
+  binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
+  binder.bind(ResourceManagementSchedulerFactory.class).to(ResourceManagementSchedulerFactoryImpl.class).in(LazySingleton.class);
+  configureTaskStorage(binder);
+  configureRunners(binder);
+  configureAutoscale(binder);
+  binder.bind(RedirectFilter.class).in(LazySingleton.class);
+  binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
+}

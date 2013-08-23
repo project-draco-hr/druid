@@ -4,7 +4,7 @@ synchronized (tasks) {
       tasks.put(task.getId(),new TaskInfo(exec.submit(new Callable<TaskStatus>(){
         @Override public TaskStatus call(){
           final String attemptUUID=UUID.randomUUID().toString();
-          final File taskDir=new File(config.getBaseTaskDir(),task.getId());
+          final File taskDir=new File(config.getTaskDir(),task.getId());
           final File attemptDir=new File(taskDir,attemptUUID);
           final ProcessHolder processHolder;
           try {
@@ -29,11 +29,11 @@ synchronized (tasks) {
                 }
                 final List<String> command=Lists.newArrayList();
                 final int childPort=findUnusedPort();
-                final String childHost=String.format(config.getHostPattern(),childPort);
+                final String childHost=String.format("%s:%d",node.getHostNoPort(),childPort);
                 command.add(config.getJavaCommand());
                 command.add("-cp");
-                command.add(config.getJavaClasspath());
-                Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOptions()));
+                command.add(config.getClasspath());
+                Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOpts()));
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
                     if (propName.startsWith(allowedPrefix)) {

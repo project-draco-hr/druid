@@ -1,7 +1,7 @@
 {
-  if (taskMasterLifecycle == null) {
+  if (taskMaster == null) {
     final DruidNode nodeConfig=getConfigFactory().build(DruidNode.class);
-    taskMasterLifecycle=new TaskMasterLifecycle(taskQueue,taskActionClientFactory,config,nodeConfig,taskRunnerFactory,resourceManagementSchedulerFactory,getCuratorFramework(),serviceAnnouncer,emitter);
-    getLifecycle().addManagedInstance(taskMasterLifecycle);
+    taskMaster=new TaskMaster(taskQueue,taskActionClientFactory,nodeConfig,getZkPaths(),taskRunnerFactory,resourceManagementSchedulerFactory,getCuratorFramework(),serviceAnnouncer,emitter);
+    getLifecycle().addManagedInstance(taskMaster);
   }
 }

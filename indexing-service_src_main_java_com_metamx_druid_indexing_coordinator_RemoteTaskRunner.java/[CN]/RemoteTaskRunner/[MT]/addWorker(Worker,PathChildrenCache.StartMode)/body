@@ -1,7 +1,7 @@
 {
   log.info("Worker[%s] reportin' for duty!",worker.getHost());
   try {
-    final String workerStatusPath=JOINER.join(config.getIndexerStatusPath(),worker.getHost());
+    final String workerStatusPath=JOINER.join(zkPaths.getIndexerStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=pathChildrenCacheFactory.make(cf,workerStatusPath);
     final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     zkWorker.addListener(new PathChildrenCacheListener(){

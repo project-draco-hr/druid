@@ -22,7 +22,7 @@
     }
     List<ZkWorker> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers).filter(new Predicate<ZkWorker>(){
       @Override public boolean apply(      ZkWorker input){
-        return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() >= config.getMaxWorkerIdleTimeMillisBeforeDeletion();
+        return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().getMillis();
       }
     }
 ));
@@ -48,7 +48,7 @@
  else {
     Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
     log.info("%s still terminating. Wait for all nodes to terminate before trying again.",currentlyTerminating);
-    if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration())) {
+    if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
       log.makeAlert("Worker node termination taking too long!").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
       currentlyTerminating.clear();
     }

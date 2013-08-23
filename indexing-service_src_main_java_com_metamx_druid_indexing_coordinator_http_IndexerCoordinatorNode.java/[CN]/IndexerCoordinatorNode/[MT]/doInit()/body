@@ -26,7 +26,7 @@
   final ScheduledExecutorService globalScheduledExec=scheduledExecutorFactory.create(1,"Global--%d");
   final MonitorScheduler monitorScheduler=new MonitorScheduler(getConfigFactory().build(MonitorSchedulerConfig.class),globalScheduledExec,emitter,monitors);
   getLifecycle().addManagedInstance(monitorScheduler);
-  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMasterLifecycle,new TaskStorageQueryAdapter(taskStorage),taskLogProvider,configManager));
+  final Injector injector=Guice.createInjector(new IndexerCoordinatorServletModule(getJsonMapper(),config,emitter,taskMaster,new TaskStorageQueryAdapter(taskStorage),taskLogStreamer,configManager));
   final ServletContextHandler staticContext=new ServletContextHandler(server,"/static",ServletContextHandler.SESSIONS);
   staticContext.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   ResourceCollection resourceCollection=new ResourceCollection(new String[]{IndexerCoordinatorNode.class.getClassLoader().getResource("static").toExternalForm(),IndexerCoordinatorNode.class.getClassLoader().getResource("indexer_static").toExternalForm()});
@@ -36,20 +36,7 @@
   root.addServlet(new ServletHolder(new DefaultServlet()),"/druid/*");
   root.addServlet(new ServletHolder(new DefaultServlet()),"/mmx/*");
   root.addEventListener(new GuiceServletConfig(injector));
-  root.addFilter(new FilterHolder(new RedirectFilter(new RedirectInfo(){
-    @Override public boolean doLocal(){
-      return taskMasterLifecycle.isLeading();
-    }
-    @Override public URL getRedirectURL(    String queryString,    String requestURI){
-      try {
-        return new URL(String.format("http://%s%s",taskMasterLifecycle.getLeader(),requestURI));
-      }
- catch (      Exception e) {
-        throw Throwables.propagate(e);
-      }
-    }
-  }
-)),"/*",null);
+  root.addFilter(new FilterHolder(new RedirectFilter(new OverlordRedirectInfo(taskMaster))),"/*",null);
   root.addFilter(GuiceFilter.class,"/druid/indexer/v1/*",null);
   root.addFilter(GuiceFilter.class,"/mmx/merger/v1/*",null);
   initialized=true;

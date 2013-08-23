@@ -1,7 +1,7 @@
 {
   final String taskKey=getTaskLogKey(taskid);
   try {
-    final StorageObject objectDetails=service.getObjectDetails(bucket,taskKey,null,null,null,null);
+    final StorageObject objectDetails=service.getObjectDetails(config.getS3Bucket(),taskKey,null,null,null,null);
     return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
       @Override public InputStream getInput() throws IOException {
         try {
@@ -16,7 +16,7 @@
  else {
             start=0;
           }
-          return service.getObject(bucket,taskKey,null,null,new String[]{objectDetails.getETag()},null,start,end).getDataInputStream();
+          return service.getObject(config.getS3Bucket(),taskKey,null,null,new String[]{objectDetails.getETag()},null,start,end).getDataInputStream();
         }
  catch (        ServiceException e) {
           throw new IOException(e);

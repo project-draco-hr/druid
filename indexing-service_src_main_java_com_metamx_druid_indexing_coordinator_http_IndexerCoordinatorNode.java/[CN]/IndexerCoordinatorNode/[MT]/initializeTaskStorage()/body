@@ -6,7 +6,7 @@
  else     if (config.getStorageImpl().equals("db")) {
       final IndexerDbConnectorConfig dbConnectorConfig=getConfigFactory().build(IndexerDbConnectorConfig.class);
       dbi.createTaskTables();
-      taskStorage=new DbTaskStorage(getJsonMapper(),dbConnectorConfig,dbi.getDBI());
+      taskStorage=new DbTaskStorage(getJsonMapper(),null,dbi.getDBI());
     }
  else {
       throw new ISE("Invalid storage implementation: %s",config.getStorageImpl());

@@ -3,10 +3,10 @@
   ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
-      for (      String assignedTask : cf.getChildren().forPath(JOINER.join(config.getIndexerTaskPath(),worker.getHost()))) {
+      for (      String assignedTask : cf.getChildren().forPath(JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost()))) {
         RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.get(assignedTask);
         if (taskRunnerWorkItem != null) {
-          String taskPath=JOINER.join(config.getIndexerTaskPath(),worker.getHost(),assignedTask);
+          String taskPath=JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost(),assignedTask);
           if (cf.checkExists().forPath(taskPath) != null) {
             cf.delete().guaranteed().forPath(taskPath);
           }

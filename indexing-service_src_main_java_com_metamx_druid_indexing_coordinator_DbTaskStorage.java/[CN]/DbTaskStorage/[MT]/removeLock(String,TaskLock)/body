@@ -9,7 +9,7 @@
       log.info("Deleting TaskLock with id[%d]: %s",id,taskLock);
       dbi.withHandle(new HandleCallback<Integer>(){
         @Override public Integer withHandle(        Handle handle) throws Exception {
-          return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",dbConnectorConfig.getTaskLockTable())).bind("id",id).execute();
+          return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",dbTables.getTaskLockTable())).bind("id",id).execute();
         }
       }
 );

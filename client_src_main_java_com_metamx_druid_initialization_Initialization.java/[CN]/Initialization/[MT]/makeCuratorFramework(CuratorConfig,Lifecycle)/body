@@ -2,9 +2,11 @@
   final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(curatorConfig.getZkHosts()).sessionTimeoutMs(curatorConfig.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(curatorConfig.enableCompression())).build();
   lifecycle.addHandler(new Lifecycle.Handler(){
     @Override public void start() throws Exception {
+      log.info("Starting Curator");
       framework.start();
     }
     @Override public void stop(){
+      log.info("Stopping Curator");
       framework.close();
     }
   }
