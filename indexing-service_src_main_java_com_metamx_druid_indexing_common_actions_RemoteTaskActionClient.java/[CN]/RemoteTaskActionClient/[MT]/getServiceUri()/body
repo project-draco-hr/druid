@@ -1,20 +1,7 @@
 {
-  final ServiceInstance instance=serviceProvider.getInstance();
-  final String scheme;
-  final String host;
-  final int port;
-  final String path="/druid/indexer/v1/action";
+  final Server instance=serviceProvider.pick();
   if (instance == null) {
     throw new ISE("Cannot find instance of indexer to talk to!");
   }
-  host=instance.getAddress();
-  if (instance.getSslPort() != null && instance.getSslPort() > 0) {
-    scheme="https";
-    port=instance.getSslPort();
-  }
- else {
-    scheme="http";
-    port=instance.getPort();
-  }
-  return new URI(scheme,null,host,port,path,null,null);
+  return new URI(instance.getScheme(),null,instance.getHost(),instance.getPort(),"/druid/indexer/v1/action",null,null);
 }

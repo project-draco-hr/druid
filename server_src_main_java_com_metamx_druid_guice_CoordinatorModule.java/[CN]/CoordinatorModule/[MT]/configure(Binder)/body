@@ -7,9 +7,6 @@
   binder.bind(RedirectFilter.class).in(LazySingleton.class);
   binder.bind(DatabaseSegmentManager.class).toProvider(DatabaseSegmentManagerProvider.class).in(ManageLifecycle.class);
   binder.bind(DatabaseRuleManager.class).toProvider(DatabaseRuleManagerProvider.class).in(ManageLifecycle.class);
-  binder.bind(new TypeLiteral<DiscoverySelector<Server>>(){
-  }
-).annotatedWith(IndexingService.class).to(IndexingServiceSelector.class).in(ManageLifecycle.class);
   binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
   binder.bind(RedirectInfo.class).to(MasterRedirectInfo.class).in(LazySingleton.class);
   binder.bind(DruidMaster.class);

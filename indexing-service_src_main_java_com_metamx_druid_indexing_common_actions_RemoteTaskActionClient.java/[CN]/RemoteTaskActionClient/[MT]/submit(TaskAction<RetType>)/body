@@ -26,14 +26,15 @@
       return jsonMapper.convertValue(responseDict.get("result"),taskAction.getReturnTypeReference());
     }
  catch (    IOException e) {
-      log.warn(e,"Exception submitting action for task: %s",task.getId());
-      if (retryPolicy.hasExceededRetryThreshold()) {
+      log.warn(e,"Exception submitting action for task[%s]",task.getId());
+      final Duration delay=retryPolicy.getAndIncrementRetryDelay();
+      if (delay == null) {
         throw e;
       }
  else {
         try {
-          final long sleepTime=retryPolicy.getAndIncrementRetryDelay().getMillis();
-          log.info("Will try again in %s.",new Duration(sleepTime).toString());
+          final long sleepTime=delay.getMillis();
+          log.info("Will try again in [%s].",new Duration(sleepTime).toString());
           Thread.sleep(sleepTime);
         }
  catch (        InterruptedException e2) {

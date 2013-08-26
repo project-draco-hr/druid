@@ -6,20 +6,8 @@
   }
 ,new TestRemoteTaskRunnerConfig(),cf,worker);
   workerCuratorCoordinator.start();
-  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(){
-    @Override public String getBaseDir(){
-      File tmp=Files.createTempDir();
-      tmp.deleteOnExit();
-      return tmp.toString();
-    }
-    @Override public int getDefaultRowFlushBoundary(){
-      return 0;
-    }
-    @Override public String getHadoopWorkingPath(){
-      return null;
-    }
-  }
-,null,null,null,null,null,null,null,null,null,jsonMapper),Executors.newSingleThreadExecutor()),new WorkerConfig().setCapacity(1));
+  final File tmp=Files.createTempDir();
+  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,0),null,null,null,null,null,null,null,null,null,jsonMapper)),new WorkerConfig().setCapacity(1));
   jsonMapper.registerSubtypes(new NamedType(TestTask.class,"test"));
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();
