@@ -22,23 +22,19 @@ case CHILD_UPDATED:
       log.warn("WTF?! Worker[%s] announcing a status for a task I didn't know about: %s",zkWorker.getWorker().getHost(),taskId);
     }
   if (taskStatus.isComplete()) {
-    if (taskRunnerWorkItem != null) {
-      final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();
-      if (result != null) {
-        ((SettableFuture<TaskStatus>)result).set(taskStatus);
-      }
-    }
-    zkWorker.setLastCompletedTaskTime(new DateTime());
-    cleanup(zkWorker.getWorker().getHost(),taskId);
+    taskComplete(taskRunnerWorkItem,zkWorker,taskId,taskStatus);
     runPendingTasks();
   }
 break;
 case CHILD_REMOVED:
 taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
-taskRunnerWorkItem=runningTasks.get(taskId);
+taskRunnerWorkItem=runningTasks.remove(taskId);
 if (taskRunnerWorkItem != null) {
-log.info("Task %s just disappeared!",taskId);
+log.info("Task[%s] just disappeared!",taskId);
 taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
+}
+ else {
+log.warn("Task[%s] just disappeared but I didn't know about it?!",taskId);
 }
 break;
 }

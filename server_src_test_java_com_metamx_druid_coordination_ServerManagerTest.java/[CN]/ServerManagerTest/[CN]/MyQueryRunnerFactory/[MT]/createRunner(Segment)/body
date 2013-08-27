@@ -2,6 +2,9 @@
   if (!(adapter instanceof ReferenceCountingSegment)) {
     throw new IAE("Expected instance of ReferenceCountingSegment, got %s",adapter.getClass());
   }
-  adapters.add((SegmentForTesting)((ReferenceCountingSegment)adapter).getBaseSegment());
-  return new BlockingQueryRunner<Result<SearchResultValue>>(new NoopQueryRunner<Result<SearchResultValue>>(),waitLatch,notifyLatch);
+  final ReferenceCountingSegment segment=(ReferenceCountingSegment)adapter;
+  Assert.assertTrue(segment.getNumReferences() > 0);
+  segmentReferences.add(segment);
+  adapters.add((SegmentForTesting)segment.getBaseSegment());
+  return new BlockingQueryRunner<Result<SearchResultValue>>(new NoopQueryRunner<Result<SearchResultValue>>(),waitLatch,waitYieldLatch,notifyLatch);
 }

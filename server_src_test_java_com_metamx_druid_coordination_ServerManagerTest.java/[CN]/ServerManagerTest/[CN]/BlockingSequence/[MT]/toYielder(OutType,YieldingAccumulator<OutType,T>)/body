@@ -1,10 +1,16 @@
 {
   notifyLatch.countDown();
+  try {
+    waitYieldLatch.await(25,TimeUnit.MILLISECONDS);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
   final Yielder<OutType> baseYielder=baseSequence.toYielder(initValue,accumulator);
   return new Yielder<OutType>(){
     @Override public OutType get(){
       try {
-        waitLatch.await();
+        waitLatch.await(25,TimeUnit.MILLISECONDS);
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);

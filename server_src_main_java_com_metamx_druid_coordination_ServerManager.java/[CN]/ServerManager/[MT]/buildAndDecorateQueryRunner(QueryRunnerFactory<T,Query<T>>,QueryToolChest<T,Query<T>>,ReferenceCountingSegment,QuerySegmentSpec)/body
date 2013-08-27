@@ -4,10 +4,5 @@
       return toolChest.makeMetricBuilder(input);
     }
   }
-,new BySegmentQueryRunner<T>(adapter.getIdentifier(),adapter.getDataInterval().getStart(),new QueryRunner<T>(){
-    @Override public Sequence<T> run(    final Query<T> query){
-      return new ReferenceCountingSequence<T>(factory.createRunner(adapter).run(query),adapter);
-    }
-  }
-)).withWaitMeasuredFromNow(),segmentSpec);
+,new BySegmentQueryRunner<T>(adapter.getIdentifier(),adapter.getDataInterval().getStart(),new ReferenceCountingSegmentQueryRunner<T>(factory,adapter))).withWaitMeasuredFromNow(),segmentSpec);
 }

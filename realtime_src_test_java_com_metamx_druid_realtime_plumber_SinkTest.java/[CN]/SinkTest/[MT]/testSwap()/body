@@ -1,0 +1,43 @@
+{
+  final Schema schema=new Schema("test",Lists.<SpatialDimensionSchema>newArrayList(),new AggregatorFactory[]{new CountAggregatorFactory("rows")},QueryGranularity.MINUTE,new NoneShardSpec());
+  final Interval interval=new Interval("2013-01-01/2013-01-02");
+  final String version=new DateTime().toString();
+  final Sink sink=new Sink(interval,schema,version);
+  sink.add(new InputRow(){
+    @Override public List<String> getDimensions(){
+      return Lists.newArrayList();
+    }
+    @Override public long getTimestampFromEpoch(){
+      return new DateTime("2013-01-01").getMillis();
+    }
+    @Override public List<String> getDimension(    String dimension){
+      return Lists.newArrayList();
+    }
+    @Override public float getFloatMetric(    String metric){
+      return 0;
+    }
+  }
+);
+  FireHydrant currHydrant=sink.getCurrIndex();
+  Assert.assertEquals(new Interval("2013-01-01/PT1M"),currHydrant.getIndex().getInterval());
+  FireHydrant swapHydrant=sink.swap();
+  sink.add(new InputRow(){
+    @Override public List<String> getDimensions(){
+      return Lists.newArrayList();
+    }
+    @Override public long getTimestampFromEpoch(){
+      return new DateTime("2013-01-01").getMillis();
+    }
+    @Override public List<String> getDimension(    String dimension){
+      return Lists.newArrayList();
+    }
+    @Override public float getFloatMetric(    String metric){
+      return 0;
+    }
+  }
+);
+  Assert.assertEquals(currHydrant,swapHydrant);
+  Assert.assertNotSame(currHydrant,sink.getCurrIndex());
+  Assert.assertEquals(new Interval("2013-01-01/PT1M"),sink.getCurrIndex().getIndex().getInterval());
+  Assert.assertEquals(2,Iterators.size(sink.iterator()));
+}

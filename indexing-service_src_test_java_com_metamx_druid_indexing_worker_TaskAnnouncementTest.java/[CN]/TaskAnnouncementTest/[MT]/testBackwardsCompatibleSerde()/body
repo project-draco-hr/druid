@@ -1,0 +1,20 @@
+{
+  final Task task=new RealtimeIndexTask("theid",new TaskResource("rofl",2),new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),IndexGranularity.HOUR,null);
+  final TaskStatus status=TaskStatus.running(task.getId());
+  final TaskAnnouncement announcement=TaskAnnouncement.create(task,status);
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final String statusJson=jsonMapper.writeValueAsString(status);
+  final String announcementJson=jsonMapper.writeValueAsString(announcement);
+  final TaskStatus statusFromStatus=jsonMapper.readValue(statusJson,TaskStatus.class);
+  final TaskStatus statusFromAnnouncement=jsonMapper.readValue(announcementJson,TaskStatus.class);
+  final TaskAnnouncement announcementFromStatus=jsonMapper.readValue(statusJson,TaskAnnouncement.class);
+  final TaskAnnouncement announcementFromAnnouncement=jsonMapper.readValue(announcementJson,TaskAnnouncement.class);
+  Assert.assertEquals("theid",statusFromStatus.getId());
+  Assert.assertEquals("theid",statusFromAnnouncement.getId());
+  Assert.assertEquals("theid",announcementFromStatus.getTaskStatus().getId());
+  Assert.assertEquals("theid",announcementFromAnnouncement.getTaskStatus().getId());
+  Assert.assertEquals("theid",announcementFromStatus.getTaskResource().getAvailabilityGroup());
+  Assert.assertEquals("rofl",announcementFromAnnouncement.getTaskResource().getAvailabilityGroup());
+  Assert.assertEquals(1,announcementFromStatus.getTaskResource().getRequiredCapacity());
+  Assert.assertEquals(2,announcementFromAnnouncement.getTaskResource().getRequiredCapacity());
+}

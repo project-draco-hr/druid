@@ -1,10 +1,16 @@
 {
   final String taskKey=getTaskLogKey(taskid);
+  log.info("Pushing task log %s to: %s",logFile,taskKey);
   try {
-    log.info("Pushing task log %s to: %s",logFile,taskKey);
-    final StorageObject object=new StorageObject(logFile);
-    object.setKey(taskKey);
-    service.putObject(config.getS3Bucket(),object);
+    S3Utils.retryS3Operation(new Callable<Void>(){
+      @Override public Void call() throws Exception {
+        final StorageObject object=new StorageObject(logFile);
+        object.setKey(taskKey);
+        service.putObject(bucket,object);
+        return null;
+      }
+    }
+);
   }
  catch (  Exception e) {
     Throwables.propagateIfInstanceOf(e,IOException.class);

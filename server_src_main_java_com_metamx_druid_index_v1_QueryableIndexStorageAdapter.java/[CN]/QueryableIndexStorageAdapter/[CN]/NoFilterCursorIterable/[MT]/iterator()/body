@@ -28,25 +28,28 @@
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
-          final Column columnDesc=index.getColumn(dimensionName);
-          if (columnDesc == null) {
+          final Column column=index.getColumn(dimensionName);
+          if (column == null) {
             return null;
           }
-          final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
-          if (columnDesc.getCapabilities().hasMultipleValues()) {
+          final DictionaryEncodedColumn dict=column.getDictionaryEncoding();
+          if (dict == null) {
+            return null;
+          }
+ else           if (column.getCapabilities().hasMultipleValues()) {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return column.getMultiValueRow(currRow);
+                return dict.getMultiValueRow(currRow);
               }
               @Override public int getValueCardinality(){
-                return column.getCardinality();
+                return dict.getCardinality();
               }
               @Override public String lookupName(              int id){
-                final String retVal=column.lookupName(id);
+                final String retVal=dict.lookupName(id);
                 return retVal == null ? "" : retVal;
               }
               @Override public int lookupId(              String name){
-                return column.lookupId(name);
+                return dict.lookupId(name);
               }
             }
 ;
@@ -54,28 +57,16 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                final int value=column.getSingleValueRow(currRow);
-                return new IndexedInts(){
-                  @Override public int size(){
-                    return 1;
-                  }
-                  @Override public int get(                  int index){
-                    return value;
-                  }
-                  @Override public Iterator<Integer> iterator(){
-                    return Iterators.singletonIterator(value);
-                  }
-                }
-;
+                return new SingleIndexedInts(dict.getSingleValueRow(currRow));
               }
               @Override public int getValueCardinality(){
-                return column.getCardinality();
+                return dict.getCardinality();
               }
               @Override public String lookupName(              int id){
-                return column.lookupName(id);
+                return dict.lookupName(id);
               }
               @Override public int lookupId(              String name){
-                return column.lookupId(name);
+                return dict.lookupId(name);
               }
             }
 ;

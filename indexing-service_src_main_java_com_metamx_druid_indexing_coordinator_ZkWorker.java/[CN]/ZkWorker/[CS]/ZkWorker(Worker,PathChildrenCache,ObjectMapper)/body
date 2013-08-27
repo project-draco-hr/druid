@@ -1,10 +1,10 @@
 {
   this.worker=worker;
   this.statusCache=statusCache;
-  this.cacheConverter=new Function<ChildData,TaskStatus>(){
-    @Override public TaskStatus apply(    ChildData input){
+  this.cacheConverter=new Function<ChildData,TaskAnnouncement>(){
+    @Override public TaskAnnouncement apply(    ChildData input){
       try {
-        return jsonMapper.readValue(input.getData(),TaskStatus.class);
+        return jsonMapper.readValue(input.getData(),TaskAnnouncement.class);
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);

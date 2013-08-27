@@ -1,9 +1,9 @@
 {
   final ProcessHolder processHolder;
 synchronized (tasks) {
-    final TaskInfo taskInfo=tasks.get(taskid);
-    if (taskInfo != null && taskInfo.processHolder != null) {
-      processHolder=taskInfo.processHolder;
+    final ForkingTaskRunnerWorkItem taskWorkItem=tasks.get(taskid);
+    if (taskWorkItem != null && taskWorkItem.processHolder != null) {
+      processHolder=taskWorkItem.processHolder;
     }
  else {
       return Optional.absent();

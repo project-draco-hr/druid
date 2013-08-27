@@ -1,9 +1,15 @@
 {
-  final List<String> dimensions=dataSpec.hasCustomDimensions() ? dataSpec.getDimensions() : Lists.newArrayList(Sets.difference(theMap.keySet(),dimensionExclusions));
-  final DateTime timestamp=timestampSpec.extractTimestamp(theMap);
-  if (timestamp == null) {
-    final String input=theMap.toString();
-    throw new NullPointerException(String.format("Null timestamp in input: %s",input.length() < 100 ? input : input.substring(0,100) + "..."));
+  final List<String> dimensions=hasCustomDimensions() ? this.dimensions : Lists.newArrayList(Sets.difference(theMap.keySet(),dimensionExclusions));
+  final DateTime timestamp;
+  try {
+    timestamp=timestampSpec.extractTimestamp(theMap);
+    if (timestamp == null) {
+      final String input=theMap.toString();
+      throw new NullPointerException(String.format("Null timestamp in input: %s",input.length() < 100 ? input : input.substring(0,100) + "..."));
+    }
+  }
+ catch (  Exception e) {
+    throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_TIMESTAMP).withMessage(e.toString()).build();
   }
   return new MapBasedInputRow(timestamp.getMillis(),dimensions,theMap);
 }

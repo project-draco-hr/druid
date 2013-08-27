@@ -34,7 +34,10 @@
             return null;
           }
           final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
-          if (columnDesc.getCapabilities().hasMultipleValues()) {
+          if (column == null) {
+            return null;
+          }
+ else           if (columnDesc.getCapabilities().hasMultipleValues()) {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
                 return column.getMultiValueRow(cursorOffset.getOffset());
@@ -55,19 +58,7 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                final int value=column.getSingleValueRow(cursorOffset.getOffset());
-                return new IndexedInts(){
-                  @Override public int size(){
-                    return 1;
-                  }
-                  @Override public int get(                  int index){
-                    return value;
-                  }
-                  @Override public Iterator<Integer> iterator(){
-                    return Iterators.singletonIterator(value);
-                  }
-                }
-;
+                return new SingleIndexedInts(column.getSingleValueRow(cursorOffset.getOffset()));
               }
               @Override public int getValueCardinality(){
                 return column.getCardinality();

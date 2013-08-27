@@ -41,6 +41,9 @@
   List<QueryableIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
   final File mergedBase;
   if (toMerge.size() == 0) {
+    if (index.isEmpty()) {
+      throw new IAE("If you try to persist empty indexes you are going to have a bad time");
+    }
     mergedBase=new File(baseFlushFile,"merged");
     IndexMerger.persist(index,interval,mergedBase,new IndexMerger.ProgressIndicator(){
       @Override public void progress(){
@@ -50,14 +53,16 @@
 );
   }
  else {
-    final File finalFile=new File(baseFlushFile,"final");
-    IndexMerger.persist(index,interval,finalFile,new IndexMerger.ProgressIndicator(){
-      @Override public void progress(){
-        context.progress();
+    if (!index.isEmpty()) {
+      final File finalFile=new File(baseFlushFile,"final");
+      IndexMerger.persist(index,interval,finalFile,new IndexMerger.ProgressIndicator(){
+        @Override public void progress(){
+          context.progress();
+        }
       }
-    }
 );
-    toMerge.add(finalFile);
+      toMerge.add(finalFile);
+    }
     for (    File file : toMerge) {
       indexes.add(IndexIO.loadIndex(file));
     }

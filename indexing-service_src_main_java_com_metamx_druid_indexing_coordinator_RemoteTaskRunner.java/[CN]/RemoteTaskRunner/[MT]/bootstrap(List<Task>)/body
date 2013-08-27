@@ -3,14 +3,17 @@
     if (!started) {
       throw new ISE("Must start RTR first before calling bootstrap!");
     }
-    Set<String> existingTasks=Sets.newHashSet();
+    Map<String,Worker> existingTasks=Maps.newHashMap();
     for (    ZkWorker zkWorker : zkWorkers.values()) {
-      existingTasks.addAll(zkWorker.getRunningTasks().keySet());
+      for (      String runningTask : zkWorker.getRunningTasks().keySet()) {
+        existingTasks.put(runningTask,zkWorker.getWorker());
+      }
     }
     for (    Task task : tasks) {
-      if (existingTasks.contains(task.getId())) {
-        log.info("Bootstrap found %s running.",task.getId());
-        runningTasks.put(task.getId(),new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create()));
+      Worker worker=existingTasks.get(task.getId());
+      if (worker != null) {
+        log.info("Bootstrap found [%s] running on [%s].",task.getId(),worker.getHost());
+        runningTasks.put(task.getId(),new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),worker));
       }
     }
   }

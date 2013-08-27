@@ -1,13 +1,16 @@
 {
 synchronized (lock) {
-    if (!isClosed) {
-      if (numReferences > 0) {
-        decrement();
-      }
+    if (isClosed) {
+      log.info("Failed to close, %s is closed already",baseSegment.getIdentifier());
+      return;
+    }
+    if (numReferences > 0) {
+      log.info("%d references to %s still exist. Decrementing.",numReferences,baseSegment.getIdentifier());
+      decrement();
+    }
  else {
-        baseSegment.close();
-        isClosed=true;
-      }
+      log.info("Closing %s",baseSegment.getIdentifier());
+      innerClose();
     }
   }
 }

@@ -1,8 +1,9 @@
 {
   EmittingLogger.registerEmitter(new NoopServiceEmitter());
   queryWaitLatch=new CountDownLatch(1);
+  queryWaitYieldLatch=new CountDownLatch(1);
   queryNotifyLatch=new CountDownLatch(1);
-  factory=new MyQueryRunnerFactory(queryWaitLatch,queryNotifyLatch);
+  factory=new MyQueryRunnerFactory(queryWaitLatch,queryWaitYieldLatch,queryNotifyLatch);
   serverManagerExec=Executors.newFixedThreadPool(2);
   serverManager=new ServerManager(new SegmentLoader(){
     @Override public boolean isSegmentLoaded(    DataSegment segment) throws SegmentLoadingException {
