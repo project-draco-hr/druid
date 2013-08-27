@@ -22,10 +22,12 @@ synchronized (tasks) {
                   throw new IllegalStateException("Task has been shut down!");
                 }
                 if (taskInfo == null) {
-                  throw new ISE("WTF?! TaskInfo disappeared for task: %s",task.getId());
+                  log.makeAlert("WTF?! TaskInfo disappeared!").addData("task",task.getId()).emit();
+                  throw new ISE("TaskInfo disappeared for task[%s]!",task.getId());
                 }
                 if (taskInfo.processHolder != null) {
-                  throw new ISE("WTF?! TaskInfo already has a process holder for task: %s",task.getId());
+                  log.makeAlert("WTF?! TaskInfo already has a processHolder").addData("task",task.getId()).emit();
+                  throw new ISE("TaskInfo already has processHolder for task[%s]!",task.getId());
                 }
                 final List<String> command=Lists.newArrayList();
                 final int childPort=findUnusedPort();
@@ -33,7 +35,7 @@ synchronized (tasks) {
                 command.add(config.getJavaCommand());
                 command.add("-cp");
                 command.add(config.getClasspath());
-                Iterables.addAll(command,Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().split(config.getJavaOpts()));
+                Iterables.addAll(command,whiteSpaceSplitter.split(config.getJavaOpts()));
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
                     if (propName.startsWith(allowedPrefix)) {
@@ -46,13 +48,15 @@ synchronized (tasks) {
                     command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
                   }
                 }
-                String nodeType=task.getNodeType();
-                if (nodeType != null) {
-                  command.add(String.format("-Ddruid.executor.nodeType=%s",nodeType));
-                }
                 command.add(String.format("-Ddruid.host=%s",childHost));
                 command.add(String.format("-Ddruid.port=%d",childPort));
-                command.add(config.getMainClass());
+                command.add("io.druid.cli.Main");
+                command.add("internal");
+                command.add("peon");
+                String nodeType=task.getNodeType();
+                if (nodeType != null) {
+                  command.add(String.format("--nodeType %s",nodeType));
+                }
                 command.add(taskFile.toString());
                 command.add(statusFile.toString());
                 jsonMapper.writeValue(taskFile,task);

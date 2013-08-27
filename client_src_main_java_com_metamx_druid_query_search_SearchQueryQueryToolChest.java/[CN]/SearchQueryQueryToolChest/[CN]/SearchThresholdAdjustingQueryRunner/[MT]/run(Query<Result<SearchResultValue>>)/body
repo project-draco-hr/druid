@@ -3,11 +3,11 @@
     throw new ISE("Can only handle [%s], got [%s]",SearchQuery.class,input.getClass());
   }
   final SearchQuery query=(SearchQuery)input;
-  if (query.getLimit() < maxSearchLimit) {
+  if (query.getLimit() < config.getMaxSearchLimit()) {
     return runner.run(query);
   }
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
-  return Sequences.map(runner.run(query.withLimit(maxSearchLimit)),new Function<Result<SearchResultValue>,Result<SearchResultValue>>(){
+  return Sequences.map(runner.run(query.withLimit(config.getMaxSearchLimit())),new Function<Result<SearchResultValue>,Result<SearchResultValue>>(){
     @Override public Result<SearchResultValue> apply(    Result<SearchResultValue> input){
       if (isBySegment) {
         BySegmentSearchResultValue value=(BySegmentSearchResultValue)input.getValue();

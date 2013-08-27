@@ -1,0 +1,19 @@
+{
+  try {
+    LogLevelAdjuster.register();
+    final Injector injector=getInjector();
+    final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+    try {
+      lifecycle.start();
+      injector.getInstance(ExecutorLifecycle.class).join();
+      lifecycle.stop();
+    }
+ catch (    Throwable t) {
+      log.error(t,"Error when starting up.  Failing.");
+      System.exit(1);
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

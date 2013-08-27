@@ -9,4 +9,8 @@
   binder.bind(TaskActionClientFactory.class).to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);
   binder.bind(RetryPolicyFactory.class).in(LazySingleton.class);
   binder.bind(DataSegmentKiller.class).to(S3DataSegmentKiller.class).in(LazySingleton.class);
+  binder.bind(ExecutorLifecycle.class).in(ManageLifecycle.class);
+  binder.bind(ExecutorLifecycleConfig.class).toInstance(config);
+  binder.bind(TaskRunner.class).to(ThreadPoolTaskRunner.class).in(LazySingleton.class);
+  binder.bind(ThreadPoolTaskRunner.class).in(ManageLifecycle.class);
 }

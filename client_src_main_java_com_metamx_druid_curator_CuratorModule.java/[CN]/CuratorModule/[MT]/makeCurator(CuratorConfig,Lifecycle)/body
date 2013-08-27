@@ -1,3 +1,15 @@
 {
-  return Initialization.makeCuratorFramework(config,lifecycle);
+  final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(config.getZkHosts()).sessionTimeoutMs(config.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(config.enableCompression())).build();
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      log.info("Starting Curator");
+      framework.start();
+    }
+    @Override public void stop(){
+      log.info("Stopping Curator");
+      framework.close();
+    }
+  }
+);
+  return framework;
 }
