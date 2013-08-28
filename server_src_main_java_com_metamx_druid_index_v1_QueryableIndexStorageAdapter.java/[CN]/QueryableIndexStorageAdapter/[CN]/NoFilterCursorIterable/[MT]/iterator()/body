@@ -122,7 +122,7 @@
           }
 ;
         }
-        @Override public ObjectColumnSelector makeObjectColumnSelector(        String column){
+        @Override public ObjectMetricSelector makeObjectColumnSelector(        String column){
           final String columnName=column.toLowerCase();
           Object cachedColumnVals=objectColumnCache.get(columnName);
           if (cachedColumnVals == null) {
@@ -153,7 +153,7 @@
             final GenericColumn columnVals=(GenericColumn)cachedColumnVals;
             final ValueType type=columnVals.getType();
             if (type == ValueType.FLOAT) {
-              return new ObjectColumnSelector<Float>(){
+              return new ObjectMetricSelector<Float>(){
                 @Override public Class classOfObject(){
                   return Float.TYPE;
                 }
@@ -164,7 +164,7 @@
 ;
             }
             if (type == ValueType.LONG) {
-              return new ObjectColumnSelector<Long>(){
+              return new ObjectMetricSelector<Long>(){
                 @Override public Class classOfObject(){
                   return Long.TYPE;
                 }
@@ -175,7 +175,7 @@
 ;
             }
             if (type == ValueType.STRING) {
-              return new ObjectColumnSelector<String>(){
+              return new ObjectMetricSelector<String>(){
                 @Override public Class classOfObject(){
                   return String.class;
                 }
@@ -188,7 +188,7 @@
           }
           if (cachedColumnVals instanceof DictionaryEncodedColumn) {
             final DictionaryEncodedColumn columnVals=(DictionaryEncodedColumn)cachedColumnVals;
-            return new ObjectColumnSelector<String>(){
+            return new ObjectMetricSelector<String>(){
               @Override public Class classOfObject(){
                 return String.class;
               }
@@ -199,7 +199,7 @@
 ;
           }
           final ComplexColumn columnVals=(ComplexColumn)cachedColumnVals;
-          return new ObjectColumnSelector(){
+          return new ObjectMetricSelector(){
             @Override public Class classOfObject(){
               return columnVals.getClazz();
             }

@@ -1,62 +1,9 @@
 {
   super(factory);
-  SimpleModule serializerModule=new SimpleModule("Druid default serializers",new Version(1,0,0,null));
-  JodaStuff.register(serializerModule);
-  serializerModule.addDeserializer(Granularity.class,new JsonDeserializer<Granularity>(){
-    @Override public Granularity deserialize(    JsonParser jp,    DeserializationContext ctxt) throws IOException {
-      return Granularity.valueOf(jp.getText().toUpperCase());
-    }
-  }
-);
-  serializerModule.addDeserializer(DateTimeZone.class,new JsonDeserializer<DateTimeZone>(){
-    @Override public DateTimeZone deserialize(    JsonParser jp,    DeserializationContext ctxt) throws IOException {
-      String tzId=jp.getText();
-      try {
-        return DateTimeZone.forID(tzId);
-      }
- catch (      IllegalArgumentException e) {
-        return DateTimeZone.forTimeZone(TimeZone.getTimeZone(tzId));
-      }
-    }
-  }
-);
-  serializerModule.addSerializer(DateTimeZone.class,new JsonSerializer<DateTimeZone>(){
-    @Override public void serialize(    DateTimeZone dateTimeZone,    JsonGenerator jsonGenerator,    SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-      jsonGenerator.writeString(dateTimeZone.getID());
-    }
-  }
-);
-  serializerModule.addSerializer(Sequence.class,new JsonSerializer<Sequence>(){
-    @Override public void serialize(    Sequence value,    final JsonGenerator jgen,    SerializerProvider provider) throws IOException, JsonProcessingException {
-      jgen.writeStartArray();
-      value.accumulate(null,new Accumulator(){
-        @Override public Object accumulate(        Object o,        Object o1){
-          try {
-            jgen.writeObject(o1);
-          }
- catch (          IOException e) {
-            throw Throwables.propagate(e);
-          }
-          return o;
-        }
-      }
-);
-      jgen.writeEndArray();
-    }
-  }
-);
-  serializerModule.addSerializer(ByteOrder.class,ToStringSerializer.instance);
-  serializerModule.addDeserializer(ByteOrder.class,new JsonDeserializer<ByteOrder>(){
-    @Override public ByteOrder deserialize(    JsonParser jp,    DeserializationContext ctxt) throws IOException, JsonProcessingException {
-      if (ByteOrder.BIG_ENDIAN.toString().equals(jp.getText())) {
-        return ByteOrder.BIG_ENDIAN;
-      }
-      return ByteOrder.LITTLE_ENDIAN;
-    }
-  }
-);
-  registerModule(serializerModule);
+  registerModule(new DruidDefaultSerializersModule());
   registerModule(new GuavaModule());
+  registerModule(new QueryGranularityModule());
+  registerModule(new AggregatorFactoriesModule());
   configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
   configure(MapperFeature.AUTO_DETECT_GETTERS,false);
   configure(MapperFeature.AUTO_DETECT_FIELDS,false);

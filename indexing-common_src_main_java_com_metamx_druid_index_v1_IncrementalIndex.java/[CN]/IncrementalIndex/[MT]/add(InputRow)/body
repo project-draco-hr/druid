@@ -37,7 +37,7 @@
     aggs=new Aggregator[metrics.length];
     for (int i=0; i < metrics.length; ++i) {
       final AggregatorFactory agg=metrics[i];
-      aggs[i]=agg.factorize(new ColumnSelectorFactory(){
+      aggs[i]=agg.factorize(new MetricSelectorFactory(){
         @Override public FloatMetricSelector makeFloatMetricSelector(        String metric){
           final String metricName=metric.toLowerCase();
           return new FloatMetricSelector(){
@@ -65,11 +65,11 @@
           }
 ;
         }
-        @Override public ObjectColumnSelector makeObjectColumnSelector(        String column){
+        @Override public ObjectMetricSelector makeObjectColumnSelector(        String column){
           final String typeName=agg.getTypeName();
           final String columnName=column.toLowerCase();
           if (typeName.equals("float")) {
-            return new ObjectColumnSelector<Float>(){
+            return new ObjectMetricSelector<Float>(){
               @Override public Class classOfObject(){
                 return Float.TYPE;
               }
@@ -84,7 +84,7 @@
             throw new ISE("Don't know how to handle type[%s]",typeName);
           }
           final ComplexMetricExtractor extractor=serde.getExtractor();
-          return new ObjectColumnSelector(){
+          return new ObjectMetricSelector(){
             @Override public Class classOfObject(){
               return extractor.extractedClass();
             }
