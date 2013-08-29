@@ -6,14 +6,14 @@
   delegate=Iterators.emptyIterator();
   dimensionSpecs=query.getDimensions();
   dimensions=Lists.newArrayListWithExpectedSize(dimensionSpecs.size());
-  dimNames=new String[dimensionSpecs.size()];
+  dimNames=Lists.newArrayListWithExpectedSize(dimensionSpecs.size());
   for (int i=0; i < dimensionSpecs.size(); ++i) {
     final DimensionSpec dimSpec=dimensionSpecs.get(i);
     final DimensionSelector selector=cursor.makeDimensionSelector(dimSpec.getDimension());
     if (selector != null) {
       dimensions.add(selector);
+      dimNames.add(dimSpec.getOutputName());
     }
-    dimNames[i]=dimSpec.getOutputName();
   }
   aggregatorSpecs=query.getAggregatorSpecs();
   aggregators=new BufferAggregator[aggregatorSpecs.size()];
