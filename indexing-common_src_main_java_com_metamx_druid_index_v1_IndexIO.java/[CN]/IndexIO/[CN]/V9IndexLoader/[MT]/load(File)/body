@@ -11,7 +11,7 @@
   final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
   final Interval dataInterval=new Interval(indexBuffer.getLong(),indexBuffer.getLong());
   Map<String,Column> columns=Maps.newHashMap();
-  ObjectMapper mapper=new CommonObjectMapper();
+  ObjectMapper mapper=new DefaultObjectMapper();
   for (  String columnName : cols) {
     columns.put(columnName,deserializeColumn(mapper,smooshedFiles.mapFile(columnName)));
   }

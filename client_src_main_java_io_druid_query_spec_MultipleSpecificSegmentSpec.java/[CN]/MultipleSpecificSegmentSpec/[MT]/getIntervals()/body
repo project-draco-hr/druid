@@ -1,0 +1,12 @@
+{
+  if (intervals != null) {
+    return intervals;
+  }
+  intervals=JodaUtils.condenseIntervals(Iterables.transform(descriptors,new Function<SegmentDescriptor,Interval>(){
+    @Override public Interval apply(    SegmentDescriptor input){
+      return input.getInterval();
+    }
+  }
+));
+  return intervals;
+}
