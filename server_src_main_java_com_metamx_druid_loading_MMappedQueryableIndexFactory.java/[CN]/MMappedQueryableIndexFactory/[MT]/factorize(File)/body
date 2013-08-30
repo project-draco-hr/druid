@@ -1,22 +1,5 @@
 {
   try {
-    if (!IndexIO.canBeMapped(parentDir)) {
-      File canBeMappedDir=new File(parentDir,"forTheMapping");
-      if (canBeMappedDir.exists()) {
-        FileUtils.deleteDirectory(canBeMappedDir);
-      }
-      canBeMappedDir.mkdirs();
-      IndexIO.storeLatest(IndexIO.readIndex(parentDir),canBeMappedDir);
-      if (!IndexIO.canBeMapped(canBeMappedDir)) {
-        throw new SegmentLoadingException("WTF!? newly written file[%s] cannot be mapped!?",canBeMappedDir);
-      }
-      for (      File file : canBeMappedDir.listFiles()) {
-        if (!file.renameTo(new File(parentDir,file.getName()))) {
-          throw new SegmentLoadingException("Couldn't rename[%s] to [%s]",canBeMappedDir,parentDir);
-        }
-      }
-      FileUtils.deleteDirectory(canBeMappedDir);
-    }
     return IndexIO.loadIndex(parentDir);
   }
  catch (  IOException e) {
