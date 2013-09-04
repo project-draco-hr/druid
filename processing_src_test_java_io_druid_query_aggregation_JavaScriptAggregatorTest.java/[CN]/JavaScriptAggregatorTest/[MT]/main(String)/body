@@ -1,7 +1,7 @@
 {
-  final LoopingFloatMetricSelector selector=new LoopingFloatMetricSelector(new float[]{42.12f,9f});
+  final LoopingFloatColumnSelector selector=new LoopingFloatColumnSelector(new float[]{42.12f,9f});
   Map<String,String> script=scriptDoubleSum;
-  JavaScriptAggregator aggRhino=new JavaScriptAggregator("billy",Lists.asList(MetricSelectorUtils.wrap(selector),new ObjectMetricSelector[]{}),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
+  JavaScriptAggregator aggRhino=new JavaScriptAggregator("billy",Lists.asList(MetricSelectorUtils.wrap(selector),new ObjectColumnSelector[]{}),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
   DoubleSumAggregator doubleAgg=new DoubleSumAggregator("billy",selector);
   int i=0;
   long t=0;

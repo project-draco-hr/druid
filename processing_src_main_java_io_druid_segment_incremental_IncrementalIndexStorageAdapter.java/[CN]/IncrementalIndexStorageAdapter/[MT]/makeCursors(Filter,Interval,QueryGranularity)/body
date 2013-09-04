@@ -120,11 +120,11 @@
               }
 ;
             }
-            @Override public FloatMetricSelector makeFloatMetricSelector(            String metric){
-              final String metricName=metric.toLowerCase();
+            @Override public FloatColumnSelector makeFloatColumnSelector(            String columnName){
+              final String metricName=columnName.toLowerCase();
               final Integer metricIndexInt=index.getMetricIndex(metricName);
               if (metricIndexInt == null) {
-                return new FloatMetricSelector(){
+                return new FloatColumnSelector(){
                   @Override public float get(){
                     return 0.0f;
                   }
@@ -132,38 +132,20 @@
 ;
               }
               final int metricIndex=metricIndexInt;
-              return new FloatMetricSelector(){
+              return new FloatColumnSelector(){
                 @Override public float get(){
                   return currEntry.getValue()[metricIndex].getFloat();
                 }
               }
 ;
             }
-            @Override public ComplexMetricSelector makeComplexMetricSelector(            String metric){
-              final String metricName=metric.toLowerCase();
-              final Integer metricIndexInt=index.getMetricIndex(metricName);
-              if (metricIndexInt == null) {
-                return null;
-              }
-              final int metricIndex=metricIndexInt;
-              final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(index.getMetricType(metricName));
-              return new ComplexMetricSelector(){
-                @Override public Class classOfObject(){
-                  return serde.getObjectStrategy().getClazz();
-                }
-                @Override public Object get(){
-                  return currEntry.getValue()[metricIndex].get();
-                }
-              }
-;
-            }
-            @Override public ObjectMetricSelector makeObjectColumnSelector(            String column){
+            @Override public ObjectColumnSelector makeObjectColumnSelector(            String column){
               final String columnName=column.toLowerCase();
               final Integer metricIndexInt=index.getMetricIndex(columnName);
               if (metricIndexInt != null) {
                 final int metricIndex=metricIndexInt;
                 final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(index.getMetricType(columnName));
-                return new ObjectMetricSelector(){
+                return new ObjectColumnSelector(){
                   @Override public Class classOfObject(){
                     return serde.getObjectStrategy().getClazz();
                   }
@@ -176,7 +158,7 @@
               final Integer dimensionIndexInt=index.getDimensionIndex(columnName);
               if (dimensionIndexInt != null) {
                 final int dimensionIndex=dimensionIndexInt;
-                return new ObjectMetricSelector<String>(){
+                return new ObjectColumnSelector<String>(){
                   @Override public Class classOfObject(){
                     return String.class;
                   }
