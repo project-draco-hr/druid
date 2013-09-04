@@ -34,7 +34,11 @@
       Map<String,Object> theEvent=Maps.newLinkedHashMap();
       ByteBuffer keyBuffer=input.getKey().duplicate();
       for (int i=0; i < dimensions.size(); ++i) {
-        theEvent.put(dimNames.get(i),dimensions.get(i).lookupName(keyBuffer.getInt()));
+        final DimensionSelector dimSelector=dimensions.get(i);
+        final int dimVal=keyBuffer.getInt();
+        if (dimSelector.getValueCardinality() != dimVal) {
+          theEvent.put(dimNames.get(i),dimSelector.lookupName(dimVal));
+        }
       }
       int position=input.getValue();
       for (int i=0; i < aggregators.length; ++i) {
