@@ -1,0 +1,30 @@
+{
+  final TeslaAether aether=getAetherClient(config);
+  for (  String coordinate : config.getCoordinates()) {
+    log.info("Loading extension[%s]",coordinate);
+    try {
+      final List<Artifact> artifacts=aether.resolveArtifacts(coordinate);
+      List<URL> urls=Lists.newArrayListWithExpectedSize(artifacts.size());
+      for (      Artifact artifact : artifacts) {
+        if (!exclusions.contains(artifact.getGroupId())) {
+          urls.add(artifact.getFile().toURI().toURL());
+        }
+ else {
+          log.debug("Skipped Artifact[%s]",artifact);
+        }
+      }
+      for (      URL url : urls) {
+        log.debug("Added URL[%s]",url);
+      }
+      ClassLoader loader=new URLClassLoader(urls.toArray(new URL[urls.size()]),Initialization.class.getClassLoader());
+      final ServiceLoader<DruidModule> serviceLoader=ServiceLoader.load(DruidModule.class,loader);
+      for (      DruidModule module : serviceLoader) {
+        log.info("Adding extension module[%s]",module.getClass());
+        actualModules.addModule(module);
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}
