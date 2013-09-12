@@ -1,0 +1,21 @@
+{
+  if (!ran.getAndSet(true)) {
+    String tablePrefix=properties.getProperty("druid.database.segmentTable");
+    if (tablePrefix == null) {
+      tablePrefix="druid";
+    }
+ else {
+      tablePrefix=tablePrefix.split("_")[0];
+    }
+    Map<String,String> retVal=Maps.newLinkedHashMap();
+    retVal.put("druid.db.tables.base",tablePrefix);
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.segmentTable","segments");
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.configTable","config");
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.ruleTable","rules");
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.taskTable","tasks");
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.taskLockTable","taskLock");
+    addIfNotDefault(properties,tablePrefix,retVal,"druid.database.taskLogTable","taskLog");
+    return retVal;
+  }
+  return ImmutableMap.of();
+}

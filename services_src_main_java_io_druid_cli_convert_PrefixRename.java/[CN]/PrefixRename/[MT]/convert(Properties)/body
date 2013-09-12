@@ -1,0 +1,12 @@
+{
+  if (!ran.getAndSet(true)) {
+    Map<String,String> retVal=Maps.newLinkedHashMap();
+    for (    String property : properties.stringPropertyNames()) {
+      if (property.startsWith(prefix)) {
+        retVal.put(property.replace(prefix,outputPrefix),properties.getProperty(property));
+      }
+    }
+    return retVal;
+  }
+  return ImmutableMap.of();
+}
