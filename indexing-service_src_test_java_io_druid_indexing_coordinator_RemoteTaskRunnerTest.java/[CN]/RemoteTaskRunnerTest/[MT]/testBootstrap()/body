@@ -9,7 +9,7 @@
   Assert.assertTrue(existingTasks.size() == 2);
   Assert.assertTrue(existingTasks.contains("first"));
   Assert.assertTrue(existingTasks.contains("second"));
-  remoteTaskRunner.bootstrap(Arrays.<Task>asList(makeTask(TaskStatus.running("second"))));
+  remoteTaskRunner.bootstrap(Arrays.<Task>asList(TestMergeTask.createDummyTask("second")));
   Set<String> runningTasks=Sets.newHashSet(Iterables.transform(remoteTaskRunner.getRunningTasks(),new Function<RemoteTaskRunnerWorkItem,String>(){
     @Override public String apply(    RemoteTaskRunnerWorkItem input){
       return input.getTask().getId();
