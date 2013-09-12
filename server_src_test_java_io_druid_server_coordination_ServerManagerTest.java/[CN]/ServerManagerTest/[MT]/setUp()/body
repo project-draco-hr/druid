@@ -12,6 +12,9 @@
     @Override public Segment getSegment(    final DataSegment segment){
       return new SegmentForTesting(MapUtils.getString(segment.getLoadSpec(),"version"),(Interval)segment.getLoadSpec().get("interval"));
     }
+    @Override public File getSegmentFiles(    DataSegment segment) throws SegmentLoadingException {
+      throw new UnsupportedOperationException();
+    }
     @Override public void cleanup(    DataSegment segment) throws SegmentLoadingException {
     }
   }

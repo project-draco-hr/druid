@@ -1,13 +1,7 @@
 {
-  final SingleSegmentLoader loader=new SingleSegmentLoader(new S3DataSegmentPuller(s3Client),new MMappedQueryableIndexFactory(),new SegmentLoaderConfig(){
-    @Override public String getLocations(){
-      return new File(getTaskWorkDir(),"fetched_segments").toString();
-    }
-  }
-);
   Map<DataSegment,File> retVal=Maps.newLinkedHashMap();
   for (  DataSegment segment : segments) {
-    retVal.put(segment,loader.getSegmentFiles(segment));
+    retVal.put(segment,segmentLoader.getSegmentFiles(segment));
   }
   return retVal;
 }
