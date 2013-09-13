@@ -1,6 +1,5 @@
 {
   initializeHttpClient();
-  initializeEmitter();
   initializeS3Service();
   initializeMergerConfig();
   initializeServiceDiscovery();
@@ -20,5 +19,5 @@
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addEventListener(new GuiceServletConfig(injector));
   root.addFilter(GuiceFilter.class,"/druid/worker/v1/*",0);
-  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),taskRunner,emitter,getRequestLogger())),"/druid/v2/*");
+  root.addServlet(new ServletHolder(new QueryServlet(getJsonMapper(),getSmileMapper(),taskRunner,getEmitter(),getRequestLogger())),"/druid/v2/*");
 }
