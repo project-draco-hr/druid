@@ -1,0 +1,13 @@
+{
+  doSetup();
+  remoteTaskRunner.run(task);
+  Assert.assertTrue(taskAnnounced(task.getId()));
+  mockWorkerRunningTask(task);
+  Assert.assertTrue(workerRunningTask(task.getId()));
+  ListenableFuture<TaskStatus> result=remoteTaskRunner.run(task);
+  Assert.assertFalse(result.isDone());
+  mockWorkerCompleteSuccessfulTask(task);
+  Assert.assertTrue(workerCompletedTask(result));
+  Assert.assertEquals(task.getId(),result.get().getId());
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,result.get().getStatusCode());
+}

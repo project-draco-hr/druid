@@ -3,8 +3,7 @@
   if (runningTask != null) {
     ZkWorker zkWorker=findWorkerRunningTask(task.getId());
     if (zkWorker == null) {
-      log.makeAlert("Told to run task that is in the running queue but no worker is actually running it?!").addData("taskId",task.getId()).emit();
-      runningTasks.remove(task.getId());
+      log.warn("Told to run task[%s], but no worker has started running it yet.",task.getId());
     }
  else {
       log.info("Task[%s] already running on %s.",task.getId(),zkWorker.getWorker().getHost());
@@ -12,8 +11,8 @@
       if (announcement.getTaskStatus().isComplete()) {
         taskComplete(runningTask,zkWorker,task.getId(),announcement.getTaskStatus());
       }
-      return runningTask.getResult();
     }
+    return runningTask.getResult();
   }
   RemoteTaskRunnerWorkItem pendingTask=pendingTasks.get(task.getId());
   if (pendingTask != null) {
