@@ -21,9 +21,11 @@
   timeoutStopwatch.start();
 synchronized (statusLock) {
     while (!isWorkerRunningTask(theWorker,task)) {
-      statusLock.wait(config.getTaskAssignmentTimeout().getMillis());
-      if (timeoutStopwatch.elapsed(TimeUnit.MILLISECONDS) >= config.getTaskAssignmentTimeout().getMillis()) {
-        log.error("Something went wrong! %s never ran task %s after %s!",theWorker.getHost(),task.getId(),config.getTaskAssignmentTimeout());
+      final long waitMs=config.getTaskAssignmentTimeout().toStandardDuration().getMillis();
+      statusLock.wait(waitMs);
+      long elapsed=timeoutStopwatch.elapsed(TimeUnit.MILLISECONDS);
+      if (elapsed >= waitMs) {
+        log.error("Something went wrong! [%s] never ran task [%s]! Timeout: (%s >= %s)!",theWorker.getHost(),task.getId(),elapsed,config.getTaskAssignmentTimeout());
         taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
         break;
       }

@@ -1,0 +1,13 @@
+{
+  return TestUtils.conditionValid(new IndexingServiceCondition(){
+    @Override public boolean isValid(){
+      try {
+        return cf.checkExists().forPath(path) != null;
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+}
