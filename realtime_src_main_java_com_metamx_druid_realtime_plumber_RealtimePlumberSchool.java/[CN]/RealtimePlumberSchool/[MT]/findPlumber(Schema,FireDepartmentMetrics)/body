@@ -48,10 +48,10 @@
       for (      Interval interval : query.getIntervals()) {
         querySinks.addAll(sinkTimeline.lookup(interval));
       }
-      return toolchest.mergeResults(factory.mergeRunners(EXEC,FunctionalIterable.create(querySinks).transform(new Function<TimelineObjectHolder<String,Sink>,QueryRunner<T>>(){
+      return toolchest.mergeResults(factory.mergeRunners(queryExecutorService,FunctionalIterable.create(querySinks).transform(new Function<TimelineObjectHolder<String,Sink>,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        TimelineObjectHolder<String,Sink> holder){
           final Sink theSink=holder.getObject().getChunk(0).getObject();
-          return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(EXEC,Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
+          return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
             @Override public QueryRunner<T> apply(            FireHydrant input){
               return factory.createRunner(input.getSegment());
             }

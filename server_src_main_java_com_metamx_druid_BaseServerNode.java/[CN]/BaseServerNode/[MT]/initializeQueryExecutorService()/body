@@ -1,0 +1,6 @@
+{
+  if (queryExecutorService == null) {
+    final PrioritizedExecutorService innerExecutorService=PrioritizedExecutorService.create(getLifecycle(),getConfigFactory().buildWithReplacements(ExecutorServiceConfig.class,ImmutableMap.of("base_path","druid.processing")));
+    setQueryExecutorService(new MetricsEmittingExecutorService(innerExecutorService,getEmitter(),new ServiceMetricEvent.Builder()));
+  }
+}
