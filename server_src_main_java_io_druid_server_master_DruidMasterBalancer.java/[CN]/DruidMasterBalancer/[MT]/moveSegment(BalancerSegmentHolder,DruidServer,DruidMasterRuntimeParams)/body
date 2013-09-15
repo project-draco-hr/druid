@@ -6,8 +6,10 @@
   final String segmentName=segmentToMove.getIdentifier();
   if (!toPeon.getSegmentsToLoad().contains(segmentToMove) && (toServer.getSegment(segmentName) == null) && new ServerHolder(toServer,toPeon).getAvailableSize() > segmentToMove.getSize()) {
     log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServerName,toServerName);
+    LoadPeonCallback callback=null;
     try {
-      master.moveSegment(fromServerName,toServerName,segmentToMove.getIdentifier(),new LoadPeonCallback(){
+      currentlyMovingSegments.get(toServer.getTier()).put(segmentName,segment);
+      callback=new LoadPeonCallback(){
         @Override protected void execute(){
           Map<String,BalancerSegmentHolder> movingSegments=currentlyMovingSegments.get(toServer.getTier());
           if (movingSegments != null) {
@@ -15,11 +17,14 @@
           }
         }
       }
-);
-      currentlyMovingSegments.get(toServer.getTier()).put(segmentName,segment);
+;
+      master.moveSegment(fromServerName,toServerName,segmentToMove.getIdentifier(),callback);
     }
  catch (    Exception e) {
       log.makeAlert(e,String.format("[%s] : Moving exception",segmentName)).emit();
+      if (callback != null) {
+        callback.execute();
+      }
     }
   }
  else {
