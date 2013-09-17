@@ -10,6 +10,9 @@
     }
   }
   if (guiceAnnotation == null) {
+    if (m instanceof AnnotatedMethod) {
+      throw new IAE("Annotated methods don't work very well yet...");
+    }
     return Key.get(m.getGenericType());
   }
   return Key.get(m.getGenericType(),guiceAnnotation);
