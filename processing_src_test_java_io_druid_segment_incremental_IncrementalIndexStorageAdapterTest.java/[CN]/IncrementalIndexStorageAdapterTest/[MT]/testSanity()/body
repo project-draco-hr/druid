@@ -2,12 +2,12 @@
   IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")});
   index.add(new MapBasedInputRow(new DateTime().minus(1).getMillis(),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));
   index.add(new MapBasedInputRow(new DateTime().minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","bo")));
-  GroupByQueryEngine engine=new GroupByQueryEngine(new GroupByQueryEngineConfig(){
+  GroupByQueryEngine engine=new GroupByQueryEngine(Suppliers.<GroupByQueryConfig>ofInstance(new GroupByQueryConfig(){
     @Override public int getMaxIntermediateRows(){
       return 5;
     }
   }
-,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+),new StupidPool(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(50000);
     }
