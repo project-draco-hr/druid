@@ -1,0 +1,8 @@
+{
+  PolyBind.createChoice(binder,"druid.indexer.storage.type",Key.get(TaskStorage.class),Key.get(HeapMemoryTaskStorage.class));
+  final MapBinder<String,TaskStorage> storageBinder=PolyBind.optionBinder(binder,Key.get(TaskStorage.class));
+  storageBinder.addBinding("local").to(HeapMemoryTaskStorage.class);
+  binder.bind(HeapMemoryTaskStorage.class).in(LazySingleton.class);
+  storageBinder.addBinding("db").to(DbTaskStorage.class);
+  binder.bind(DbTaskStorage.class).in(LazySingleton.class);
+}

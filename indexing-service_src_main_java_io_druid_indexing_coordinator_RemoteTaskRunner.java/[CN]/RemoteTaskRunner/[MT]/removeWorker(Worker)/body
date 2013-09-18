@@ -1,0 +1,48 @@
+{
+  log.info("Kaboom! Worker[%s] removed!",worker.getHost());
+  final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
+  if (zkWorker != null) {
+    try {
+      List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost())));
+      log.info("[%s]: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
+      for (      Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
+        if (entry.getValue() == null) {
+          log.error("Huh? null work item for [%s]",entry.getKey());
+        }
+ else         if (entry.getValue().getWorker() == null) {
+          log.error("Huh? no worker for [%s]",entry.getKey());
+        }
+ else         if (entry.getValue().getWorker().getHost().equalsIgnoreCase(worker.getHost())) {
+          log.info("[%s]: Found [%s] running",worker.getHost(),entry.getKey());
+          tasksToFail.add(entry.getKey());
+        }
+      }
+      for (      String assignedTask : tasksToFail) {
+        RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
+        if (taskRunnerWorkItem != null) {
+          String taskPath=JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost(),assignedTask);
+          if (cf.checkExists().forPath(taskPath) != null) {
+            cf.delete().guaranteed().forPath(taskPath);
+          }
+          log.info("Failing task[%s]",assignedTask);
+          taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTask().getId()));
+        }
+ else {
+          log.warn("RemoteTaskRunner has no knowledge of task[%s]",assignedTask);
+        }
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+ finally {
+      try {
+        zkWorker.close();
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception closing worker[%s]!",worker.getHost());
+      }
+      zkWorkers.remove(worker.getHost());
+    }
+  }
+}

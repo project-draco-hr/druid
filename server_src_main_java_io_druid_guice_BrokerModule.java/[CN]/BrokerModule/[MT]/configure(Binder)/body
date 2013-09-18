@@ -1,0 +1,10 @@
+{
+  binder.bind(QueryToolChestWarehouse.class).to(MapQueryToolChestWarehouse.class);
+  binder.bind(CachingClusteredClient.class).in(LazySingleton.class);
+  binder.bind(TimelineServerView.class).to(BrokerServerView.class).in(LazySingleton.class);
+  binder.bind(Cache.class).toProvider(CacheProvider.class).in(ManageLifecycle.class);
+  JsonConfigProvider.bind(binder,"druid.broker.cache",CacheProvider.class);
+  binder.bind(new TypeLiteral<StupidPool<ByteBuffer>>(){
+  }
+).annotatedWith(Global.class).toInstance(new NoopStupidPool(null));
+}

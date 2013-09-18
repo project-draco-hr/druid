@@ -1,0 +1,16 @@
+{
+  try {
+    final String currentMaster=master.getCurrentMaster();
+    if (currentMaster == null) {
+      return null;
+    }
+    String location=String.format("http://%s%s",currentMaster,requestURI);
+    if (queryString != null) {
+      location=String.format("%s?%s",location,queryString);
+    }
+    return new URL(location);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

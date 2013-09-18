@@ -1,9 +1,0 @@
-{
-  final Optional<TaskStatus> status=taskStorageQueryAdapter.getSameGroupMergedStatus(taskid);
-  final Set<DataSegment> segments=taskStorageQueryAdapter.getSameGroupNewSegments(taskid);
-  final Map<String,Object> ret=jsonMapper.convertValue(status,new TypeReference<Map<String,Object>>(){
-  }
-);
-  ret.put("segments",segments);
-  return Response.ok().entity(ret).build();
-}

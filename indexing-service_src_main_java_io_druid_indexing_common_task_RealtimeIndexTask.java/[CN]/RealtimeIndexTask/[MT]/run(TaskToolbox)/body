@@ -1,0 +1,129 @@
+{
+  if (this.plumber != null) {
+    throw new IllegalStateException("WTF?!? run with non-null plumber??!");
+  }
+  for (  final TaskLock taskLock : toolbox.getTaskActionClient().submit(new LockListAction())) {
+    toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
+  }
+  boolean normalExit=true;
+  final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
+  final Firehose firehose=firehoseFactory.connect();
+  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
+  final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
+  final DataSegmentAnnouncer lockingSegmentAnnouncer=new DataSegmentAnnouncer(){
+    @Override public void announceSegment(    final DataSegment segment) throws IOException {
+      toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
+      toolbox.getSegmentAnnouncer().announceSegment(segment);
+    }
+    @Override public void unannounceSegment(    final DataSegment segment) throws IOException {
+      try {
+        toolbox.getSegmentAnnouncer().unannounceSegment(segment);
+      }
+  finally {
+        toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+      }
+    }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+      for (      DataSegment segment : segments) {
+        toolbox.getTaskActionClient().submit(new LockAcquireAction(segment.getInterval()));
+      }
+      toolbox.getSegmentAnnouncer().announceSegments(segments);
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+      try {
+        toolbox.getSegmentAnnouncer().unannounceSegments(segments);
+      }
+  finally {
+        for (        DataSegment segment : segments) {
+          toolbox.getTaskActionClient().submit(new LockReleaseAction(segment.getInterval()));
+        }
+      }
+    }
+  }
+;
+  final VersioningPolicy versioningPolicy=new VersioningPolicy(){
+    @Override public String getVersion(    final Interval interval){
+      try {
+        final TaskLock myLock=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval));
+        return myLock.getVersion();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+;
+  realtimePlumberSchool.setDataSegmentPusher(toolbox.getSegmentPusher());
+  realtimePlumberSchool.setConglomerate(toolbox.getQueryRunnerFactoryConglomerate());
+  realtimePlumberSchool.setQueryExecutorService(toolbox.getQueryExecutorService());
+  realtimePlumberSchool.setVersioningPolicy(versioningPolicy);
+  realtimePlumberSchool.setSegmentAnnouncer(lockingSegmentAnnouncer);
+  realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
+  realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
+  realtimePlumberSchool.setEmitter(toolbox.getEmitter());
+  if (this.rejectionPolicyFactory != null) {
+    realtimePlumberSchool.setRejectionPolicyFactory(rejectionPolicyFactory);
+  }
+  final FireDepartment fireDepartment=new FireDepartment(schema,fireDepartmentConfig,null,null);
+  final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
+  this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
+  this.plumber=realtimePlumberSchool.findPlumber(schema,fireDepartment.getMetrics());
+  try {
+    plumber.startJob();
+    toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
+    long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+    while (firehose.hasMore()) {
+      final InputRow inputRow;
+      try {
+        inputRow=firehose.nextRow();
+        if (inputRow == null) {
+          continue;
+        }
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if (sink == null) {
+          fireDepartment.getMetrics().incrementThrownAway();
+          log.debug("Throwing away event[%s]",inputRow);
+          if (System.currentTimeMillis() > nextFlush) {
+            plumber.persist(firehose.commit());
+            nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+          }
+          continue;
+        }
+        if (sink.isEmpty()) {
+          log.info("Task %s: New sink: %s",getId(),sink);
+        }
+        int currCount=sink.add(inputRow);
+        fireDepartment.getMetrics().incrementProcessed();
+        if (currCount >= fireDepartmentConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+          plumber.persist(firehose.commit());
+          nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+        }
+      }
+ catch (      FormattedException e) {
+        log.warn(e,"unparseable line");
+        fireDepartment.getMetrics().incrementUnparseable();
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception aborted realtime processing[%s]",schema.getDataSource()).emit();
+    normalExit=false;
+    throw Throwables.propagate(e);
+  }
+ finally {
+    if (normalExit) {
+      try {
+        plumber.persist(firehose.commit());
+        plumber.finishJob();
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to finish realtime task").emit();
+      }
+ finally {
+        Closeables.closeQuietly(firehose);
+        toolbox.getMonitorScheduler().removeMonitor(metricsMonitor);
+      }
+    }
+  }
+  return TaskStatus.success(getId());
+}

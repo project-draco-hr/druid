@@ -1,0 +1,7 @@
+{
+  JsonConfigProvider.bind(binder,"druid.selectors.indexing",IndexingServiceSelectorConfig.class);
+  binder.bind(new TypeLiteral<DiscoverySelector<Server>>(){
+  }
+).annotatedWith(IndexingService.class).to(IndexingServiceSelector.class);
+  binder.bind(IndexingServiceSelector.class).in(ManageLifecycle.class);
+}

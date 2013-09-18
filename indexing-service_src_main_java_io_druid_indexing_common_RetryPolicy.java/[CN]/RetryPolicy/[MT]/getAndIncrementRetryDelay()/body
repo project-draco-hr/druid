@@ -1,0 +1,9 @@
+{
+  if (hasExceededRetryThreshold()) {
+    return null;
+  }
+  Duration retVal=currRetryDelay;
+  currRetryDelay=new Duration(Math.min(currRetryDelay.getMillis() * 2,maxRetryDelay.getMillis()));
+  ++retryCount;
+  return retVal;
+}

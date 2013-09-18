@@ -1,0 +1,16 @@
+{
+  final TestFloatColumnSelector selector=new TestFloatColumnSelector(new float[]{24.15f,20f});
+  LongSumAggregator agg=new LongSumAggregator("billy",selector);
+  Assert.assertEquals("billy",agg.getName());
+  Assert.assertEquals(0l,agg.get());
+  Assert.assertEquals(0l,agg.get());
+  Assert.assertEquals(0l,agg.get());
+  aggregate(selector,agg);
+  Assert.assertEquals(24l,agg.get());
+  Assert.assertEquals(24l,agg.get());
+  Assert.assertEquals(24l,agg.get());
+  aggregate(selector,agg);
+  Assert.assertEquals(44l,agg.get());
+  Assert.assertEquals(44l,agg.get());
+  Assert.assertEquals(44l,agg.get());
+}

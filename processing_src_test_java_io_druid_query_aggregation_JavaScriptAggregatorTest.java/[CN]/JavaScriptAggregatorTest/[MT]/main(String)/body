@@ -1,0 +1,34 @@
+{
+  final LoopingFloatColumnSelector selector=new LoopingFloatColumnSelector(new float[]{42.12f,9f});
+  Map<String,String> script=scriptDoubleSum;
+  JavaScriptAggregator aggRhino=new JavaScriptAggregator("billy",Lists.asList(MetricSelectorUtils.wrap(selector),new ObjectColumnSelector[]{}),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
+  DoubleSumAggregator doubleAgg=new DoubleSumAggregator("billy",selector);
+  int i=0;
+  long t=0;
+  while (i < 10000) {
+    aggregate(selector,aggRhino);
+    ++i;
+  }
+  i=0;
+  while (i < 10000) {
+    aggregate(selector,doubleAgg);
+    ++i;
+  }
+  t=System.currentTimeMillis();
+  i=0;
+  while (i < 500000000) {
+    aggregate(selector,aggRhino);
+    ++i;
+  }
+  long t1=System.currentTimeMillis() - t;
+  System.out.println(String.format("JavaScript aggregator == %,f: %d ms",aggRhino.get(),t1));
+  t=System.currentTimeMillis();
+  i=0;
+  while (i < 500000000) {
+    aggregate(selector,doubleAgg);
+    ++i;
+  }
+  long t2=System.currentTimeMillis() - t;
+  System.out.println(String.format("DoubleSum  aggregator == %,f: %d ms",doubleAgg.get(),t2));
+  System.out.println(String.format("JavaScript is %2.1fx slower",(double)t1 / t2));
+}

@@ -1,0 +1,26 @@
+{
+  final Cli.CliBuilder<Runnable> builder=Cli.builder("druid");
+  builder.withDescription("Druid command-line runner.").withDefaultCommand(Help.class).withCommands(Help.class);
+  builder.withGroup("server").withDescription("Run one of the Druid server types.").withDefaultCommand(Help.class).withCommands(CliCoordinator.class,CliHistorical.class,CliBroker.class,CliRealtime.class,CliOverlord.class,CliMiddleManager.class);
+  builder.withGroup("example").withDescription("Run an example").withDefaultCommand(Help.class).withCommands(CliRealtimeExample.class);
+  builder.withGroup("tools").withDescription("Various tools for working with Druid").withDefaultCommand(Help.class).withCommands(ConvertProperties.class);
+  builder.withGroup("internal").withDescription("Processes that Druid runs \"internally\", you should rarely use these directly").withDefaultCommand(Help.class).withCommands(CliPeon.class);
+  final Injector injector=makeStartupInjector();
+  final ExtensionsConfig config=injector.getInstance(ExtensionsConfig.class);
+  final List<CliCommandCreator> extensionCommands=Initialization.getFromExtensions(config,CliCommandCreator.class);
+  for (  CliCommandCreator creator : extensionCommands) {
+    creator.addCommands(builder);
+  }
+  final Cli<Runnable> cli=builder.build();
+  try {
+    final Runnable command=cli.parse(args);
+    injector.injectMembers(command);
+    command.run();
+  }
+ catch (  ParseException e) {
+    System.out.println("ERROR!!!!");
+    System.out.println(e.getMessage());
+    System.out.println("===");
+    cli.parse(new String[]{"help"}).run();
+  }
+}

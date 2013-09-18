@@ -1,0 +1,13 @@
+{
+  GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null)).setLimitSpec(orderBySpec);
+  final GroupByQuery fullQuery=builder.build();
+  QueryRunner mergedRunner=factory.getToolchest().mergeResults(new QueryRunner<Row>(){
+    @Override public Sequence run(    Query<Row> query){
+      final Query query1=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-02/2011-04-03"))));
+      final Query query2=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-03/2011-04-04"))));
+      return Sequences.concat(runner.run(query1),runner.run(query2));
+    }
+  }
+);
+  TestHelper.assertExpectedObjects(expectedResults,mergedRunner.run(fullQuery),"merged");
+}

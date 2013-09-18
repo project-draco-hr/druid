@@ -1,0 +1,40 @@
+{
+  EmittingLogger.registerEmitter(new NoopServiceEmitter());
+  queryWaitLatch=new CountDownLatch(1);
+  queryWaitYieldLatch=new CountDownLatch(1);
+  queryNotifyLatch=new CountDownLatch(1);
+  factory=new MyQueryRunnerFactory(queryWaitLatch,queryWaitYieldLatch,queryNotifyLatch);
+  serverManagerExec=Executors.newFixedThreadPool(2);
+  serverManager=new ServerManager(new SegmentLoader(){
+    @Override public boolean isSegmentLoaded(    DataSegment segment) throws SegmentLoadingException {
+      return false;
+    }
+    @Override public Segment getSegment(    final DataSegment segment){
+      return new SegmentForTesting(MapUtils.getString(segment.getLoadSpec(),"version"),(Interval)segment.getLoadSpec().get("interval"));
+    }
+    @Override public File getSegmentFiles(    DataSegment segment) throws SegmentLoadingException {
+      throw new UnsupportedOperationException();
+    }
+    @Override public void cleanup(    DataSegment segment) throws SegmentLoadingException {
+    }
+  }
+,new QueryRunnerFactoryConglomerate(){
+    @Override public <T,QueryType extends Query<T>>QueryRunnerFactory<T,QueryType> findFactory(    QueryType query){
+      return (QueryRunnerFactory)factory;
+    }
+  }
+,new NoopServiceEmitter(),serverManagerExec);
+  loadQueryable("test","1",new Interval("P1d/2011-04-01"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-02"));
+  loadQueryable("test","2",new Interval("P1d/2011-04-02"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-03"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-04"));
+  loadQueryable("test","1",new Interval("P1d/2011-04-05"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T01"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T02"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T03"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T05"));
+  loadQueryable("test","2",new Interval("PT1h/2011-04-04T06"));
+  loadQueryable("test2","1",new Interval("P1d/2011-04-01"));
+  loadQueryable("test2","1",new Interval("P1d/2011-04-02"));
+}

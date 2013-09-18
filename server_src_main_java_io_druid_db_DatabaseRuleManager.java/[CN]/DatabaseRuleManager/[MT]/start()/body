@@ -1,0 +1,16 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    this.exec=Execs.scheduledSingleThreaded("DatabaseRuleManager-Exec--%d");
+    createDefaultRule(dbi,getRulesTable(),config.get().getDefaultTier(),jsonMapper);
+    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollDuration().toStandardDuration(),new Runnable(){
+      @Override public void run(){
+        poll();
+      }
+    }
+);
+    started=true;
+  }
+}

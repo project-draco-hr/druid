@@ -1,0 +1,22 @@
+{
+  final TestFloatColumnSelector selector1=new TestFloatColumnSelector(new float[]{42.12f,9f});
+  final TestFloatColumnSelector selector2=new TestFloatColumnSelector(new float[]{2f,3f});
+  Map<String,String> script=sumLogATimesBPlusTen;
+  JavaScriptAggregator agg=new JavaScriptAggregator("billy",Arrays.<ObjectColumnSelector>asList(MetricSelectorUtils.wrap(selector1),MetricSelectorUtils.wrap(selector2)),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
+  agg.reset();
+  Assert.assertEquals("billy",agg.getName());
+  double val=10.;
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  aggregate(selector1,selector2,agg);
+  val+=Math.log(42.12f) * 2f;
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  aggregate(selector1,selector2,agg);
+  val+=Math.log(9f) * 3f;
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+}

@@ -1,0 +1,33 @@
+{
+  int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
+  if (newBytesLen > config.getMaxBytesPerNode()) {
+    throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
+  }
+synchronized (lock) {
+    if (availableZNodes.isEmpty()) {
+      SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+      availableZNode.addSegment(segment);
+      log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+      announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
+      segmentLookup.put(segment,availableZNode);
+      availableZNodes.add(availableZNode);
+    }
+ else {
+      Iterator<SegmentZNode> iter=availableZNodes.iterator();
+      boolean done=false;
+      while (iter.hasNext() && !done) {
+        SegmentZNode availableZNode=iter.next();
+        if (availableZNode.getBytes().length + newBytesLen < config.getMaxBytesPerNode()) {
+          availableZNode.addSegment(segment);
+          log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+          announcer.update(availableZNode.getPath(),availableZNode.getBytes());
+          segmentLookup.put(segment,availableZNode);
+          if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
+            availableZNodes.remove(availableZNode);
+          }
+          done=true;
+        }
+      }
+    }
+  }
+}

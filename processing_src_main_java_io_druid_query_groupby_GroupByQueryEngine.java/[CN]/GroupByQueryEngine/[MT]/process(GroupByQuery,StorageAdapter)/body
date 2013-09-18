@@ -1,0 +1,30 @@
+{
+  final List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
+  if (intervals.size() != 1) {
+    throw new IAE("Should only have one interval, got[%s]",intervals);
+  }
+  final Iterable<Cursor> cursors=storageAdapter.makeCursors(Filters.convertDimensionFilters(query.getDimFilter()),intervals.get(0),query.getGranularity());
+  final ResourceHolder<ByteBuffer> bufferHolder=intermediateResultsBufferPool.take();
+  return Sequences.concat(new BaseSequence<Sequence<Row>,Iterator<Sequence<Row>>>(new BaseSequence.IteratorMaker<Sequence<Row>,Iterator<Sequence<Row>>>(){
+    @Override public Iterator<Sequence<Row>> make(){
+      return FunctionalIterator.create(cursors.iterator()).transform(new Function<Cursor,Sequence<Row>>(){
+        @Override public Sequence<Row> apply(        @Nullable final Cursor cursor){
+          return new BaseSequence<Row,RowIterator>(new BaseSequence.IteratorMaker<Row,RowIterator>(){
+            @Override public RowIterator make(){
+              return new RowIterator(query,cursor,bufferHolder.get(),config.get());
+            }
+            @Override public void cleanup(            RowIterator iterFromMake){
+              Closeables.closeQuietly(iterFromMake);
+            }
+          }
+);
+        }
+      }
+);
+    }
+    @Override public void cleanup(    Iterator<Sequence<Row>> iterFromMake){
+      Closeables.closeQuietly(bufferHolder);
+    }
+  }
+));
+}

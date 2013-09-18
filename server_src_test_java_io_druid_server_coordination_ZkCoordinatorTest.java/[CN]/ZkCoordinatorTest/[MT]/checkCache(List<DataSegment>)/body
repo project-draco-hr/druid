@@ -1,0 +1,11 @@
+{
+  Assert.assertTrue(infoDir.exists());
+  File[] files=infoDir.listFiles();
+  List<File> sortedFiles=Lists.newArrayList(files);
+  Collections.sort(sortedFiles);
+  Assert.assertEquals(segments.size(),sortedFiles.size());
+  for (int i=0; i < sortedFiles.size(); i++) {
+    DataSegment segment=jsonMapper.readValue(sortedFiles.get(i),DataSegment.class);
+    Assert.assertEquals(segments.get(i),segment);
+  }
+}

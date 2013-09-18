@@ -1,0 +1,11 @@
+{
+  List<Monitor> monitors=Lists.newArrayList();
+  for (  Key<?> key : injector.getBindings().keySet()) {
+    if (Monitor.class.isAssignableFrom(key.getTypeLiteral().getRawType())) {
+      final Monitor monitor=(Monitor)injector.getInstance(key);
+      log.info("Adding monitor[%s]",monitor);
+      monitors.add(monitor);
+    }
+  }
+  return new MonitorScheduler(config.get(),Execs.scheduledSingleThreaded("MonitorScheduler-%s"),emitter,monitors);
+}

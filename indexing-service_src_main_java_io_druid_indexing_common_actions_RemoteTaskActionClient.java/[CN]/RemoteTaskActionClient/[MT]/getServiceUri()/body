@@ -1,0 +1,7 @@
+{
+  final Server instance=serviceProvider.pick();
+  if (instance == null) {
+    throw new ISE("Cannot find instance of indexer to talk to!");
+  }
+  return new URI(instance.getScheme(),null,instance.getHost(),instance.getPort(),"/druid/indexer/v1/action",null,null);
+}

@@ -1,0 +1,12 @@
+{
+  ModuleList actualModules=new ModuleList(baseInjector);
+  actualModules.addModule(DruidSecondaryModule.class);
+  for (  Object module : modules) {
+    actualModules.addModule(module);
+  }
+  final ExtensionsConfig config=baseInjector.getInstance(ExtensionsConfig.class);
+  for (  DruidModule module : Initialization.getFromExtensions(config,DruidModule.class)) {
+    actualModules.addModule(module);
+  }
+  return Guice.createInjector(actualModules.getModules());
+}

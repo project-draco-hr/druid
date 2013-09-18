@@ -1,0 +1,25 @@
+{
+  RemoteTaskRunnerWorkItem runningTask=runningTasks.get(task.getId());
+  if (runningTask != null) {
+    ZkWorker zkWorker=findWorkerRunningTask(task.getId());
+    if (zkWorker == null) {
+      log.warn("Told to run task[%s], but no worker has started running it yet.",task.getId());
+    }
+ else {
+      log.info("Task[%s] already running on %s.",task.getId(),zkWorker.getWorker().getHost());
+      TaskAnnouncement announcement=zkWorker.getRunningTasks().get(task.getId());
+      if (announcement.getTaskStatus().isComplete()) {
+        taskComplete(runningTask,zkWorker,task.getId(),announcement.getTaskStatus());
+      }
+    }
+    return runningTask.getResult();
+  }
+  RemoteTaskRunnerWorkItem pendingTask=pendingTasks.get(task.getId());
+  if (pendingTask != null) {
+    log.info("Assigned a task[%s] that is already pending, not doing anything",task.getId());
+    return pendingTask.getResult();
+  }
+  RemoteTaskRunnerWorkItem taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),null);
+  addPendingTask(taskRunnerWorkItem);
+  return taskRunnerWorkItem.getResult();
+}

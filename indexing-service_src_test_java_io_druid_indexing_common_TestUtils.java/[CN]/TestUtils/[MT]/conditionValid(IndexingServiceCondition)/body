@@ -1,0 +1,16 @@
+{
+  try {
+    Stopwatch stopwatch=new Stopwatch();
+    stopwatch.start();
+    while (!condition.isValid()) {
+      Thread.sleep(100);
+      if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > 1000) {
+        throw new ISE("Cannot find running task");
+      }
+    }
+  }
+ catch (  Exception e) {
+    return false;
+  }
+  return true;
+}

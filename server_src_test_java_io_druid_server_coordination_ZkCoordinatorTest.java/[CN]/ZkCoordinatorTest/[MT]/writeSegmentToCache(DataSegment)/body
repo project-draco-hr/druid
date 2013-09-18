@@ -1,0 +1,13 @@
+{
+  if (!infoDir.exists()) {
+    infoDir.mkdir();
+  }
+  File segmentInfoCacheFile=new File(infoDir,segment.getIdentifier());
+  try {
+    jsonMapper.writeValue(segmentInfoCacheFile,segment);
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+  Assert.assertTrue(segmentInfoCacheFile.exists());
+}

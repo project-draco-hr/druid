@@ -1,0 +1,11 @@
+{
+  long now=System.currentTimeMillis();
+  for (  TaskRunnerWorkItem pendingTask : pendingTasks) {
+    final Duration durationSinceInsertion=new Duration(pendingTask.getQueueInsertionTime().getMillis(),now);
+    final Duration timeoutDuration=config.getPendingTaskTimeout().toStandardDuration();
+    if (durationSinceInsertion.isEqual(timeoutDuration) || durationSinceInsertion.isLongerThan(timeoutDuration)) {
+      return true;
+    }
+  }
+  return false;
+}

@@ -1,0 +1,10 @@
+{
+  PolyBind.createChoice(binder,"druid.indexer.logs.type",Key.get(TaskLogs.class),Key.get(NoopTaskLogs.class));
+  final MapBinder<String,TaskLogs> taskLogBinder=PolyBind.optionBinder(binder,Key.get(TaskLogs.class));
+  JsonConfigProvider.bind(binder,"druid.indexer.logs",S3TaskLogsConfig.class);
+  taskLogBinder.addBinding("s3").to(S3TaskLogs.class);
+  binder.bind(S3TaskLogs.class).in(LazySingleton.class);
+  taskLogBinder.addBinding("noop").to(NoopTaskLogs.class).in(LazySingleton.class);
+  binder.bind(NoopTaskLogs.class).in(LazySingleton.class);
+  binder.bind(TaskLogPusher.class).to(TaskLogs.class);
+}

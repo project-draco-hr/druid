@@ -1,0 +1,16 @@
+{
+  giant.lock();
+  try {
+    if (leading) {
+      leading=false;
+      mayBeStopped.signalAll();
+      final Lifecycle leaderLifecycle=leaderLifecycleRef.getAndSet(null);
+      if (leaderLifecycle != null) {
+        leaderLifecycle.stop();
+      }
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

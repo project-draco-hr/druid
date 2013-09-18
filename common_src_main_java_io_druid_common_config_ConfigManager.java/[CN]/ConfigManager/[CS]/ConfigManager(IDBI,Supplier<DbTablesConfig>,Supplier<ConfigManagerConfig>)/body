@@ -1,0 +1,9 @@
+{
+  this.dbi=dbi;
+  this.config=config;
+  this.exec=ScheduledExecutors.fixed(1,"config-manager-%s");
+  this.watchedConfigs=Maps.newConcurrentMap();
+  final String configTable=dbTables.get().getConfigTable();
+  this.selectStatement=String.format("SELECT payload FROM %s WHERE name = :name",configTable);
+  insertStatement=String.format("INSERT INTO %s (name, payload) VALUES (:name, :payload) ON DUPLICATE KEY UPDATE payload = :payload",configTable);
+}

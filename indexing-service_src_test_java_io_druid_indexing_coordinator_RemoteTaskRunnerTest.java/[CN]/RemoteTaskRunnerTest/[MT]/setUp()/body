@@ -1,0 +1,10 @@
+{
+  testingCluster=new TestingCluster(1);
+  testingCluster.start();
+  cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).compressionProvider(new PotentiallyGzippedCompressionProvider(false)).build();
+  cf.start();
+  cf.create().creatingParentsIfNeeded().forPath(basePath);
+  cf.create().creatingParentsIfNeeded().forPath(tasksPath);
+  cf.create().creatingParentsIfNeeded().forPath(statusPath);
+  task=TestMergeTask.createDummyTask("task");
+}

@@ -1,0 +1,30 @@
+{
+  setupServerAndCurator();
+  curator.start();
+  try {
+    infoDir=new File(File.createTempFile("blah","blah2").getParent(),"ZkCoordinatorTest");
+    infoDir.mkdirs();
+    for (    File file : infoDir.listFiles()) {
+      file.delete();
+    }
+    log.info("Creating tmp test files in [%s]",infoDir);
+  }
+ catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+  serverManager=new ServerManager(new CacheTestSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
+  final DruidServerMetadata me=new DruidServerMetadata("dummyServer","dummyHost",0,"dummyType","normal");
+  final ZkPathsConfig zkPaths=new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return "/druid";
+    }
+  }
+;
+  announcer=new SingleDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
+  zkCoordinator=new ZkCoordinator(jsonMapper,new SegmentLoaderConfig(){
+    @Override public File getInfoDir(){
+      return infoDir;
+    }
+  }
+,zkPaths,me,announcer,curator,serverManager);
+}

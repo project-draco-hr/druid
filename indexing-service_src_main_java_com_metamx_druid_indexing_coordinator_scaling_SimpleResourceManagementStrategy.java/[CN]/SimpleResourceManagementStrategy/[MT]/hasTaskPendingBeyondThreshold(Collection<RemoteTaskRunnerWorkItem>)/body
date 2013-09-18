@@ -1,9 +1,0 @@
-{
-  long now=System.currentTimeMillis();
-  for (  TaskRunnerWorkItem pendingTask : pendingTasks) {
-    if (new Duration(pendingTask.getQueueInsertionTime().getMillis(),now).isEqual(config.getMaxPendingTaskDuration()) || new Duration(pendingTask.getQueueInsertionTime().getMillis(),now).isLongerThan(config.getMaxPendingTaskDuration())) {
-      return true;
-    }
-  }
-  return false;
-}

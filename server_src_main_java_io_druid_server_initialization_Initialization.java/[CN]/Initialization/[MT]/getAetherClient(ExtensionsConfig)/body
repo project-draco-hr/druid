@@ -1,0 +1,13 @@
+{
+  if (log.isTraceEnabled() || log.isDebugEnabled()) {
+    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+  }
+  PrintStream oldOut=System.out;
+  try {
+    System.setOut(new PrintStream(ByteStreams.nullOutputStream()));
+    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+  }
+  finally {
+    System.setOut(oldOut);
+  }
+}

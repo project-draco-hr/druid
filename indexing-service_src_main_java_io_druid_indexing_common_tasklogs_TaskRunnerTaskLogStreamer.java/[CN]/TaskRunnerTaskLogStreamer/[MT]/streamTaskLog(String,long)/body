@@ -1,0 +1,9 @@
+{
+  final TaskRunner runner=taskMaster.getTaskRunner().orNull();
+  if (runner instanceof TaskLogStreamer) {
+    return ((TaskLogStreamer)runner).streamTaskLog(taskid,offset);
+  }
+ else {
+    return Optional.absent();
+  }
+}

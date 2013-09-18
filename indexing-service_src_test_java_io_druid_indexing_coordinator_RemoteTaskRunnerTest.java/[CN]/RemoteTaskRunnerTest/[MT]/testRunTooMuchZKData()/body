@@ -1,0 +1,8 @@
+{
+  ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
+  EmittingLogger.registerEmitter(emitter);
+  EasyMock.replay(emitter);
+  doSetup();
+  remoteTaskRunner.run(TestMergeTask.createDummyTask(new String(new char[5000])));
+  EasyMock.verify(emitter);
+}
