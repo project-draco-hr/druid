@@ -1,0 +1,9 @@
+{
+  super.initialize(server,injector);
+  final ServletContextHandler resources=new ServletContextHandler(ServletContextHandler.SESSIONS);
+  resources.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  resources.addFilter(GuiceFilter.class,"/druid/v2/datasources/*",null);
+  final HandlerList handlerList=new HandlerList();
+  handlerList.setHandlers(new Handler[]{resources});
+  server.setHandler(handlerList);
+}
