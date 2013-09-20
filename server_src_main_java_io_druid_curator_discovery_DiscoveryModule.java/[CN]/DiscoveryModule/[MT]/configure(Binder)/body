@@ -1,8 +1,6 @@
 {
-synchronized (nodesToAnnounce) {
-    configured=true;
-    JsonConfigProvider.bind(binder,"druid.discovery.curator",CuratorDiscoveryConfig.class);
-    binder.bind(CuratorServiceAnnouncer.class).in(LazySingleton.class);
-    binder.bind(ServiceAnnouncer.class).to(Key.get(CuratorServiceAnnouncer.class,Names.named(NAME))).asEagerSingleton();
-  }
+  JsonConfigProvider.bind(binder,"druid.discovery.curator",CuratorDiscoveryConfig.class);
+  binder.bind(CuratorServiceAnnouncer.class).in(LazySingleton.class);
+  DruidBinders.discoveryAnnouncementBinder(binder);
+  binder.bind(ServiceAnnouncer.class).to(Key.get(CuratorServiceAnnouncer.class,Names.named(NAME))).asEagerSingleton();
 }

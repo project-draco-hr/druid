@@ -1,9 +1,0 @@
-{
-  PolyBind.createChoice(binder,"druid.indexer.runner.type",Key.get(TaskRunnerFactory.class),Key.get(ForkingTaskRunnerFactory.class));
-  final MapBinder<String,TaskRunnerFactory> biddy=PolyBind.optionBinder(binder,Key.get(TaskRunnerFactory.class));
-  IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
-  biddy.addBinding("local").to(ForkingTaskRunnerFactory.class);
-  binder.bind(ForkingTaskRunnerFactory.class).in(LazySingleton.class);
-  biddy.addBinding("remote").to(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
-  binder.bind(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
-}

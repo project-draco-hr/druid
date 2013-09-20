@@ -1,0 +1,11 @@
+{
+  JsonConfigProvider.bind(binder,"druid.publish",SegmentPublisherProvider.class);
+  binder.bind(SegmentPublisher.class).toProvider(SegmentPublisherProvider.class);
+  JsonConfigProvider.bind(binder,"druid.realtime",RealtimeManagerConfig.class);
+  binder.bind(new TypeLiteral<List<FireDepartment>>(){
+  }
+).toProvider(FireDepartmentsProvider.class).in(LazySingleton.class);
+  binder.bind(QuerySegmentWalker.class).to(RealtimeManager.class).in(ManageLifecycle.class);
+  binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig("realtime"));
+  binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
+}

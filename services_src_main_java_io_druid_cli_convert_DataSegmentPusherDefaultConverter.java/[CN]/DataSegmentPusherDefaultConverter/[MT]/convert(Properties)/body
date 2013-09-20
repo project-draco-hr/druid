@@ -1,0 +1,21 @@
+{
+  String type=null;
+  if (Boolean.parseBoolean(props.getProperty("druid.pusher.local","false"))) {
+    type="local";
+  }
+ else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.cassandra","false"))) {
+    type="c*";
+  }
+ else   if (Boolean.parseBoolean(props.getProperty("druid.pusher.hdfs","false"))) {
+    type="hdfs";
+  }
+  if (type != null) {
+    return ImmutableMap.of("druid.pusher.type",type);
+  }
+  Map<String,String> retVal=Maps.newHashMap();
+  retVal.put("druid.pusher.type",type);
+  retVal.putAll(new Rename("druid.pusher.s3.bucket","druid.pusher.bucket").convert(props));
+  retVal.putAll(new Rename("druid.pusher.s3.baseKey","druid.pusher.baseKey").convert(props));
+  retVal.putAll(new Rename("druid.pusher.s3.disableAcl","druid.pusher.disableAcl").convert(props));
+  return retVal;
+}

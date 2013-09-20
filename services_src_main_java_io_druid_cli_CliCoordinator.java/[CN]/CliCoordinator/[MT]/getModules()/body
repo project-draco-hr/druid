@@ -1,3 +1,26 @@
 {
-  return ImmutableList.<Object>of(new LifecycleModule().register(DruidMaster.class),EmitterModule.class,HttpClientModule.global(),DbConnectorModule.class,JacksonConfigManagerModule.class,CuratorModule.class,new MetricsModule(),new DiscoveryModule().register(Self.class),new ServerModule(),new JettyServerModule(new CoordinatorJettyServerInitializer()).addResource(InfoResource.class).addResource(BackwardsCompatiableInfoResource.class).addResource(MasterResource.class).addResource(StatusResource.class),new ServerViewModule(),new IndexingServiceDiscoveryModule(),CoordinatorModule.class);
+  return ImmutableList.<Object>of(new Module(){
+    @Override public void configure(    Binder binder){
+      ConfigProvider.bind(binder,DruidMasterConfig.class);
+      JsonConfigProvider.bind(binder,"druid.manager.segment",DatabaseSegmentManagerConfig.class);
+      JsonConfigProvider.bind(binder,"druid.manager.rules",DatabaseRuleManagerConfig.class);
+      binder.bind(RedirectServlet.class).in(LazySingleton.class);
+      binder.bind(RedirectFilter.class).in(LazySingleton.class);
+      binder.bind(DatabaseSegmentManager.class).toProvider(DatabaseSegmentManagerProvider.class).in(ManageLifecycle.class);
+      binder.bind(DatabaseRuleManager.class).toProvider(DatabaseRuleManagerProvider.class).in(ManageLifecycle.class);
+      binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
+      binder.bind(RedirectInfo.class).to(MasterRedirectInfo.class).in(LazySingleton.class);
+      binder.bind(DruidMaster.class);
+      LifecycleModule.register(binder,DruidMaster.class);
+      DiscoveryModule.register(binder,Self.class);
+      binder.bind(JettyServerInitializer.class).toInstance(new CoordinatorJettyServerInitializer());
+      Jerseys.addResource(binder,BackwardsCompatiableInfoResource.class);
+      Jerseys.addResource(binder,InfoResource.class);
+      Jerseys.addResource(binder,MasterResource.class);
+    }
+    @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidMasterConfig config){
+      return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),config);
+    }
+  }
+);
 }

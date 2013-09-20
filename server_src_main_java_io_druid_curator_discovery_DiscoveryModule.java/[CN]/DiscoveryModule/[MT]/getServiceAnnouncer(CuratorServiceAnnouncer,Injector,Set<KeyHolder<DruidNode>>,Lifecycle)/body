@@ -1,0 +1,25 @@
+{
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    private volatile List<DruidNode> nodes=null;
+    @Override public void start() throws Exception {
+      if (nodes == null) {
+        nodes=Lists.newArrayList();
+        for (        KeyHolder<DruidNode> holder : nodesToAnnounce) {
+          nodes.add(injector.getInstance(holder.getKey()));
+        }
+      }
+      for (      DruidNode node : nodes) {
+        announcer.announce(node);
+      }
+    }
+    @Override public void stop(){
+      if (nodes != null) {
+        for (        DruidNode node : nodes) {
+          announcer.unannounce(node);
+        }
+      }
+    }
+  }
+,Lifecycle.Stage.LAST);
+  return announcer;
+}
