@@ -14,6 +14,7 @@
       LifecycleModule.register(binder,DruidMaster.class);
       DiscoveryModule.register(binder,Self.class);
       binder.bind(JettyServerInitializer.class).toInstance(new CoordinatorJettyServerInitializer());
+      Jerseys.addResource(binder,BackwardsCompatiableInfoResource.class);
       Jerseys.addResource(binder,InfoResource.class);
       Jerseys.addResource(binder,MasterResource.class);
     }
