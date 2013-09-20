@@ -1,3 +1,4 @@
 {
-  return new TaskToolbox(config,task,taskActionClientFactory,emitter,segmentPusher,dataSegmentKiller,segmentAnnouncer,newSegmentServerView,queryRunnerFactoryConglomerate,queryExecutorService,monitorScheduler,segmentLoader,objectMapper);
+  final File taskWorkDir=new File(new File(config.getBaseTaskDir(),task.getId()),"work");
+  return new TaskToolbox(config,task,taskActionClientFactory,emitter,segmentPusher,dataSegmentKiller,segmentAnnouncer,newSegmentServerView,queryRunnerFactoryConglomerate,queryExecutorService,monitorScheduler,segmentLoaderFactory.manufacturate(taskWorkDir),objectMapper,taskWorkDir);
 }

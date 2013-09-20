@@ -1,3 +1,26 @@
 {
-  return Initialization.makeInjectorWithModules(injector,ImmutableList.of(new LifecycleModule(),EmitterModule.class,HttpClientModule.global(),CuratorModule.class,new MetricsModule(),new ServerModule(),new JettyServerModule(new QueryJettyServerInitializer()).addResource(StatusResource.class).addResource(ChatHandlerResource.class),new DiscoveryModule(),new ServerViewModule(),new StorageNodeModule(nodeType),new DataSegmentPullerModule(),new DataSegmentPusherModule(),new AnnouncerModule(),new DruidProcessingModule(),new QueryableModule(ThreadPoolTaskRunner.class),new QueryRunnerFactoryModule(),new IndexingServiceDiscoveryModule(),new AWSModule(),new PeonModule(new ExecutorLifecycleConfig().setTaskFile(new File(taskAndStatusFile.get(0))).setStatusFile(new File(taskAndStatusFile.get(1))))));
+  return Initialization.makeInjectorWithModules(injector,ImmutableList.<Object>of(new Module(){
+    @Override public void configure(    Binder binder){
+      PolyBind.createChoice(binder,"druid.indexer.task.chathandler.type",Key.get(ChatHandlerProvider.class),Key.get(NoopChatHandlerProvider.class));
+      final MapBinder<String,ChatHandlerProvider> handlerProviderBinder=PolyBind.optionBinder(binder,Key.get(ChatHandlerProvider.class));
+      handlerProviderBinder.addBinding("curator").to(EventReceivingChatHandlerProvider.class);
+      handlerProviderBinder.addBinding("noop").to(NoopChatHandlerProvider.class);
+      binder.bind(TaskToolboxFactory.class).in(LazySingleton.class);
+      JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
+      JsonConfigProvider.bind(binder,"druid.worker.taskActionClient.retry",RetryPolicyConfig.class);
+      binder.bind(TaskActionClientFactory.class).to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);
+      binder.bind(RetryPolicyFactory.class).in(LazySingleton.class);
+      binder.bind(DataSegmentKiller.class).to(S3DataSegmentKiller.class).in(LazySingleton.class);
+      binder.bind(ExecutorLifecycle.class).in(ManageLifecycle.class);
+      binder.bind(ExecutorLifecycleConfig.class).toInstance(new ExecutorLifecycleConfig().setTaskFile(new File(taskAndStatusFile.get(0))).setStatusFile(new File(taskAndStatusFile.get(1))));
+      binder.bind(TaskRunner.class).to(ThreadPoolTaskRunner.class);
+      binder.bind(QuerySegmentWalker.class).to(ThreadPoolTaskRunner.class);
+      binder.bind(ThreadPoolTaskRunner.class).in(ManageLifecycle.class);
+      binder.bind(SegmentLoaderConfig.class).toInstance(new SegmentLoaderConfig().withLocations(Arrays.<StorageLocationConfig>asList()));
+      binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class);
+      Jerseys.addResource(binder,ChatHandlerResource.class);
+      binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig(nodeType));
+    }
+  }
+));
 }

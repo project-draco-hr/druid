@@ -4,9 +4,7 @@
   binder.bind(GuiceContainer.class).to(DruidGuiceContainer.class);
   binder.bind(DruidGuiceContainer.class).in(Scopes.SINGLETON);
   serve("/*").with(DruidGuiceContainer.class);
-  for (  Class<?> resource : resources) {
-    Jerseys.addResource(binder,resource);
-    binder.bind(resource).in(LazySingleton.class);
-  }
+  Jerseys.addResource(binder,StatusResource.class);
+  binder.bind(StatusResource.class).in(LazySingleton.class);
   binder.bind(Key.get(Server.class,Names.named("ForTheEagerness"))).to(Server.class).asEagerSingleton();
 }

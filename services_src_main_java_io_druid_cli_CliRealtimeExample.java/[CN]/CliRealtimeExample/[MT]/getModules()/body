@@ -1,3 +1,15 @@
 {
-  return ImmutableList.of(new LifecycleModule(),EmitterModule.class,DruidProcessingModule.class,new ServerModule(),new StorageNodeModule("realtime"),new JettyServerModule(new QueryJettyServerInitializer()).addResource(StatusResource.class),new QueryableModule(RealtimeManager.class),new QueryRunnerFactoryModule(),RealtimeExampleModule.class);
+  return ImmutableList.<Object>of(new RealtimeModule(),new DruidModule(){
+    @Override public void configure(    Binder binder){
+      binder.bind(SegmentPublisher.class).toProvider(NoopSegmentPublisherProvider.class);
+      binder.bind(DataSegmentPusher.class).to(NoopDataSegmentPusher.class);
+      binder.bind(DataSegmentAnnouncer.class).to(NoopDataSegmentAnnouncer.class);
+      binder.bind(InventoryView.class).to(NoopInventoryView.class);
+      binder.bind(ServerView.class).to(NoopServerView.class);
+    }
+    @Override public List<Module> getJacksonModules(){
+      return Arrays.<Module>asList(new SimpleModule("RealtimeExampleModule").registerSubtypes(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"),new NamedType(FlightsFirehoseFactory.class,"flights"),new NamedType(RandomFirehoseFactory.class,"rand"),new NamedType(WebFirehoseFactory.class,"webstream")));
+    }
+  }
+);
 }

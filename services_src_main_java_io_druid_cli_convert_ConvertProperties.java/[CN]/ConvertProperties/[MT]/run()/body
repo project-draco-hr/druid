@@ -31,6 +31,7 @@
       updatedProps.put(property,fromFile.getProperty(property));
     }
   }
+  updatedProps.setProperty("druid.monitoring.monitors","[\"io.druid.server.metrics.ServerMonitor\", \"com.metamx.metrics.SysMonitor\"]");
   try (Writer out=new OutputStreamWriter(new FileOutputStream(outFile),Charsets.UTF_8)){
     updatedProps.store(out,null);
   }

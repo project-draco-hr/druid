@@ -1,3 +1,16 @@
 {
-  return ImmutableList.<Object>of(new LifecycleModule(),EmitterModule.class,HttpClientModule.global(),CuratorModule.class,new MetricsModule().register(CacheMonitor.class),new DiscoveryModule().register(Self.class),new ServerModule(),new JettyServerModule(new QueryJettyServerInitializer()).addResource(StatusResource.class),new QueryableModule(ClientQuerySegmentWalker.class),new QueryToolChestModule(),new ServerViewModule(),new HttpClientModule("druid.broker.http",Client.class),new BrokerModule());
+  return ImmutableList.<Object>of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(QueryToolChestWarehouse.class).to(MapQueryToolChestWarehouse.class);
+      binder.bind(CachingClusteredClient.class).in(LazySingleton.class);
+      binder.bind(TimelineServerView.class).to(BrokerServerView.class).in(LazySingleton.class);
+      binder.bind(Cache.class).toProvider(CacheProvider.class).in(ManageLifecycle.class);
+      JsonConfigProvider.bind(binder,"druid.broker.cache",CacheProvider.class);
+      binder.bind(QuerySegmentWalker.class).to(ClientQuerySegmentWalker.class).in(LazySingleton.class);
+      binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
+      DiscoveryModule.register(binder,Self.class);
+      MetricsModule.register(binder,CacheMonitor.class);
+    }
+  }
+);
 }

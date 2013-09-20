@@ -1,6 +1,6 @@
 {
   binder.bind(QueryServlet.class).in(LazySingleton.class);
-  binder.bind(QuerySegmentWalker.class).to(walkerClass).in(LazySingleton.class);
+  binder.bind(QuerySegmentWalker.class).toProvider(Providers.<QuerySegmentWalker>of(null));
   binder.bind(RequestLogger.class).toProvider(RequestLoggerProvider.class).in(ManageLifecycle.class);
   JsonConfigProvider.bind(binder,"druid.request.logging",RequestLoggerProvider.class);
 }
