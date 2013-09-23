@@ -20,6 +20,7 @@
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).toInstance(new OverlordJettyServerInitializer());
       Jerseys.addResource(binder,IndexerCoordinatorResource.class);
+      LifecycleModule.register(binder,Server.class);
     }
     private void configureTaskStorage(    Binder binder){
       PolyBind.createChoice(binder,"druid.indexer.storage.type",Key.get(TaskStorage.class),Key.get(HeapMemoryTaskStorage.class));

@@ -10,6 +10,7 @@
       LifecycleModule.register(binder,WorkerTaskMonitor.class);
       binder.bind(JettyServerInitializer.class).toInstance(new MiddleManagerJettyServerInitializer());
       Jerseys.addResource(binder,WorkerResource.class);
+      LifecycleModule.register(binder,Server.class);
     }
     @Provides @LazySingleton public Worker getWorker(    @Self DruidNode node,    WorkerConfig config){
       return new Worker(node.getHost(),config.getIp(),config.getCapacity(),config.getVersion());
