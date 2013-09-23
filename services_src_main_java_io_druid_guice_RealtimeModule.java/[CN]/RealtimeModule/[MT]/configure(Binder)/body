@@ -1,6 +1,8 @@
 {
-  JsonConfigProvider.bind(binder,"druid.publish",SegmentPublisherProvider.class);
-  binder.bind(SegmentPublisher.class).toProvider(SegmentPublisherProvider.class);
+  PolyBind.createChoice(binder,"druid.publish.type",Key.get(SegmentPublisher.class),Key.get(NoopSegmentPublisher.class));
+  final MapBinder<String,SegmentPublisher> publisherBinder=PolyBind.optionBinder(binder,Key.get(SegmentPublisher.class));
+  publisherBinder.addBinding("db").to(DbSegmentPublisher.class);
+  binder.bind(DbSegmentPublisher.class).in(LazySingleton.class);
   JsonConfigProvider.bind(binder,"druid.realtime",RealtimeManagerConfig.class);
   binder.bind(new TypeLiteral<List<FireDepartment>>(){
   }
