@@ -1,16 +1,8 @@
 {
   try {
-    LogLevelAdjuster.register();
-    final Injector injector=Initialization.makeInjectorWithModules(getBaseInjector(),getModules());
-    final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+    Injector injector=makeInjector();
     final HadoopDruidIndexerJob job=injector.getInstance(HadoopDruidIndexerJob.class);
-    try {
-      lifecycle.start();
-    }
- catch (    Throwable t) {
-      log.error(t,"Error when starting up.  Failing.");
-      System.exit(1);
-    }
+    Lifecycle lifecycle=initLifecycle(injector);
     job.run();
     try {
       lifecycle.stop();
@@ -21,6 +13,6 @@
     }
   }
  catch (  Exception e) {
-    throw com.google.common.base.Throwables.propagate(e);
+    throw Throwables.propagate(e);
   }
 }
