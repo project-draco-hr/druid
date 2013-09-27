@@ -4,7 +4,6 @@
       binder.bind(HadoopDruidIndexerJob.class).in(LazySingleton.class);
     }
     @Provides @LazySingleton public HadoopDruidIndexerConfig getHadoopDruidIndexerConfig(){
-      Preconditions.checkNotNull(argumentSpec,"argumentSpec");
       try {
         if (argumentSpec.startsWith("{")) {
           return HadoopDruidIndexerConfig.fromString(argumentSpec);
