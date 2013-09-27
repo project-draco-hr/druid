@@ -1,6 +1,12 @@
 {
   final TeslaAether aether=getAetherClient(config);
   List<T> retVal=Lists.newArrayList();
+  if (config.searchCurrentClassloader()) {
+    for (    T module : ServiceLoader.load(clazz,Initialization.class.getClassLoader())) {
+      log.info("Adding local module[%s]",module.getClass());
+      retVal.add(module);
+    }
+  }
   for (  String coordinate : config.getCoordinates()) {
     log.info("Loading extension[%s]",coordinate);
     try {
@@ -36,7 +42,7 @@
           }
         }
         for (        URL url : urls) {
-          log.error("Added URL[%s]",url);
+          log.info("Added URL[%s]",url);
         }
         loader=new URLClassLoader(urls.toArray(new URL[urls.size()]),Initialization.class.getClassLoader());
         loadersMap.put(coordinate,loader);

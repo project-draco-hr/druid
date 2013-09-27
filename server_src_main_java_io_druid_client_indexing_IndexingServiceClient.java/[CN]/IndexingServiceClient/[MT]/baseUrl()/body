@@ -1,10 +1,10 @@
 {
   try {
-    final Server instance=serviceProvider.pick();
+    final Server instance=selector.pick();
     if (instance == null) {
       throw new ISE("Cannot find instance of indexingService");
     }
-    return String.format("http://%s:%s/druid/indexer/v1",instance.getHost(),instance.getPort());
+    return String.format("http://%s/druid/indexer/v1",instance.getHost());
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
