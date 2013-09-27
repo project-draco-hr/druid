@@ -36,9 +36,9 @@
     peonMap.put(Integer.toString(i),peon);
     serverHolderList.add(new ServerHolder(server,peon));
   }
-  DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancerTester.percentUsedComparator).create(serverHolderList)))).withLoadManagementPeons(peonMap).withAvailableSegments(segmentMap.values()).withMasterSegmentSettings(new MasterSegmentSettings.Builder().withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).build()).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).withEmitter(emitter).withDatabaseRuleManager(manager).withReplicationManager(new ReplicationThrottler(2,500)).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancerTester.percentUsedComparator).create(serverHolderList))))).build();
+  DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancerTester.percentUsedComparator).create(serverHolderList)))).withLoadManagementPeons(peonMap).withAvailableSegments(segmentMap.values()).withDynamicConfigs(new MasterDynamicConfig.Builder().withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).withReplicantLifetime(500).withReplicationThrottleLimit(5).build()).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).withEmitter(emitter).withDatabaseRuleManager(manager).withReplicationManager(new ReplicationThrottler(2,500)).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidMasterBalancerTester.percentUsedComparator).create(serverHolderList))))).build();
   DruidMasterBalancerTester tester=new DruidMasterBalancerTester(master);
-  DruidMasterRuleRunner runner=new DruidMasterRuleRunner(master,500,5);
+  DruidMasterRuleRunner runner=new DruidMasterRuleRunner(master);
   watch.start();
   DruidMasterRuntimeParams balanceParams=tester.run(params);
   DruidMasterRuntimeParams assignParams=runner.run(params);

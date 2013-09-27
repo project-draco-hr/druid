@@ -16,7 +16,7 @@ synchronized (lock) {
         return;
       }
     }
-    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withMasterSegmentSettings(segmentSettingsAtomicReference.get()).withEmitter(emitter).build();
+    DruidMasterRuntimeParams params=DruidMasterRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(dynamicConfigs.get()).withEmitter(emitter).build();
     for (    DruidMasterHelper helper : helpers) {
       params=helper.run(params);
     }
