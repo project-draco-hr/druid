@@ -20,6 +20,7 @@
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).toInstance(new OverlordJettyServerInitializer());
       Jerseys.addResource(binder,IndexerCoordinatorResource.class);
+      Jerseys.addResource(binder,OldIndexerCoordinatorResource.class);
       LifecycleModule.register(binder,Server.class);
     }
     private void configureTaskStorage(    Binder binder){

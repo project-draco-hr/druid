@@ -28,6 +28,7 @@
     @Override public TaskStatus apply(    TaskStatus taskStatus){
       try {
         log.info("Task completed with status: %s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(taskStatus));
+        statusFile.getParentFile().mkdirs();
         jsonMapper.writeValue(statusFile,taskStatus);
         return taskStatus;
       }

@@ -1,10 +1,8 @@
 {
   try {
-    LogLevelAdjuster.register();
-    final Injector injector=getInjector();
-    final Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+    Injector injector=makeInjector();
+    Lifecycle lifecycle=initLifecycle(injector);
     try {
-      lifecycle.start();
       injector.getInstance(ExecutorLifecycle.class).join();
       lifecycle.stop();
     }
