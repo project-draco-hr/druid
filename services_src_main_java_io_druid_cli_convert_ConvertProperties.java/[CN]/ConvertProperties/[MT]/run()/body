@@ -4,7 +4,7 @@
     System.out.printf("File[%s] does not exist.%n",file);
   }
   File outFile=new File(outFilename);
-  if (!outFile.getParentFile().exists()) {
+  if (outFile.getParentFile() != null && !outFile.getParentFile().exists()) {
     outFile.getParentFile().mkdirs();
   }
   Properties fromFile=new Properties();
@@ -21,8 +21,10 @@
     for (    PropertyConverter converter : converters) {
       if (converter.canHandle(property)) {
         for (        Map.Entry<String,String> entry : converter.convert(fromFile).entrySet()) {
-          ++count;
-          updatedProps.setProperty(entry.getKey(),entry.getValue());
+          if (entry.getValue() != null) {
+            ++count;
+            updatedProps.setProperty(entry.getKey(),entry.getValue());
+          }
         }
         handled=true;
       }
