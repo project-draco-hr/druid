@@ -53,12 +53,12 @@ synchronized (tasks) {
                 command.add("io.druid.cli.Main");
                 command.add("internal");
                 command.add("peon");
+                command.add(taskFile.toString());
+                command.add(statusFile.toString());
                 String nodeType=task.getNodeType();
                 if (nodeType != null) {
                   command.add(String.format("--nodeType %s",nodeType));
                 }
-                command.add(taskFile.toString());
-                command.add(statusFile.toString());
                 jsonMapper.writeValue(taskFile,task);
                 log.info("Running command: %s",Joiner.on(" ").join(command));
                 taskWorkItem.processHolder=new ProcessHolder(new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,childPort);
