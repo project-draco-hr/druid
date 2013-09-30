@@ -37,8 +37,8 @@
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();
       }
-      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withMasterSegmentSettings(segmentSettingsAtomicReference.get()).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withDynamicConfigs(dynamicConfigs.get()).build();
     }
   }
-,new DruidMasterRuleRunner(DruidMaster.this,config.getReplicantLifetime(),config.getReplicantThrottleLimit()),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this),new DruidMasterLogger()));
+,new DruidMasterRuleRunner(DruidMaster.this),new DruidMasterCleanup(DruidMaster.this),new DruidMasterBalancer(DruidMaster.this),new DruidMasterLogger()));
 }
