@@ -1,5 +1,5 @@
 {
-  return ImmutableList.<Object>of(new DruidModule(){
+  return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
       IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
@@ -14,9 +14,6 @@
     }
     @Provides @LazySingleton public Worker getWorker(    @Self DruidNode node,    WorkerConfig config){
       return new Worker(node.getHost(),config.getIp(),config.getCapacity(),config.getVersion());
-    }
-    @Override public List<? extends com.fasterxml.jackson.databind.Module> getJacksonModules(){
-      return Arrays.<com.fasterxml.jackson.databind.Module>asList(new SimpleModule("RealtimeModule").registerSubtypes(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"),new NamedType(FlightsFirehoseFactory.class,"flights"),new NamedType(RandomFirehoseFactory.class,"rand"),new NamedType(WebFirehoseFactory.class,"webstream"),new NamedType(KafkaFirehoseFactory.class,"kafka-0.7.2"),new NamedType(RabbitMQFirehoseFactory.class,"rabbitmq"),new NamedType(ClippedFirehoseFactory.class,"clipped"),new NamedType(TimedShutoffFirehoseFactory.class,"timed"),new NamedType(IrcFirehoseFactory.class,"irc"),new NamedType(StaticS3FirehoseFactory.class,"s3"),new NamedType(EventReceiverFirehoseFactory.class,"receiver"),new NamedType(LocalFirehoseFactory.class,"local")));
     }
   }
 );
