@@ -1,12 +1,14 @@
 {
   try {
-    nextFile();
+    if (lineIterator == null || !lineIterator.hasNext()) {
+      if (lineIterator != null) {
+        lineIterator.close();
+      }
+      lineIterator=lineIterators.next();
+    }
+    return parser.parse(lineIterator.next());
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
   }
-  if (lineIterator == null) {
-    throw new NoSuchElementException();
-  }
-  return parser.parse(lineIterator.next());
 }
