@@ -1,5 +1,5 @@
 {
-  return ImmutableList.<Object>of(new DruidModule(){
+  return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
       binder.bind(TaskLogStreamer.class).to(SwitchingTaskLogStreamer.class).in(LazySingleton.class);
@@ -13,6 +13,7 @@
       binder.bind(TaskLockbox.class).in(LazySingleton.class);
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
       binder.bind(ResourceManagementSchedulerFactory.class).to(ResourceManagementSchedulerFactoryImpl.class).in(LazySingleton.class);
+      binder.bind(ChatHandlerProvider.class).toProvider(Providers.<ChatHandlerProvider>of(null));
       configureTaskStorage(binder);
       configureRunners(binder);
       configureAutoscale(binder);
@@ -51,9 +52,6 @@
       autoScalingBinder.addBinding("noop").to(NoopAutoScalingStrategy.class);
       binder.bind(NoopAutoScalingStrategy.class).in(LazySingleton.class);
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",SimpleResourceManagementConfig.class);
-    }
-    @Override public List<? extends com.fasterxml.jackson.databind.Module> getJacksonModules(){
-      return Arrays.<com.fasterxml.jackson.databind.Module>asList(new SimpleModule("RealtimeModule").registerSubtypes(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"),new NamedType(FlightsFirehoseFactory.class,"flights"),new NamedType(RandomFirehoseFactory.class,"rand"),new NamedType(WebFirehoseFactory.class,"webstream"),new NamedType(KafkaFirehoseFactory.class,"kafka-0.7.2"),new NamedType(RabbitMQFirehoseFactory.class,"rabbitmq"),new NamedType(ClippedFirehoseFactory.class,"clipped"),new NamedType(TimedShutoffFirehoseFactory.class,"timed"),new NamedType(IrcFirehoseFactory.class,"irc"),new NamedType(StaticS3FirehoseFactory.class,"s3"),new NamedType(EventReceiverFirehoseFactory.class,"receiver")));
     }
   }
 );
