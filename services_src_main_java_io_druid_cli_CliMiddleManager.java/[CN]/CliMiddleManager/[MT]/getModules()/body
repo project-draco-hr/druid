@@ -5,6 +5,7 @@
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
       binder.bind(TaskRunner.class).to(ForkingTaskRunner.class);
       binder.bind(ForkingTaskRunner.class).in(LazySingleton.class);
+      binder.bind(ChatHandlerProvider.class).toProvider(Providers.<ChatHandlerProvider>of(null));
       binder.bind(WorkerTaskMonitor.class).in(ManageLifecycle.class);
       binder.bind(WorkerCuratorCoordinator.class).in(ManageLifecycle.class);
       LifecycleModule.register(binder,WorkerTaskMonitor.class);

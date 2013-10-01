@@ -1,8 +1,12 @@
 {
-  log.info("Connecting firehose: %s",firehoseId);
+  log.info("Connecting firehose: %s",serviceName);
   final EventReceiverFirehose firehose=new EventReceiverFirehose();
   if (chatHandlerProvider.isPresent()) {
-    chatHandlerProvider.get().register(firehoseId,firehose);
+    log.info("Found chathandler with type[%s]",chatHandlerProvider.get().getType());
+    chatHandlerProvider.get().register(serviceName,firehose);
+  }
+ else {
+    log.info("No chathandler detected");
   }
   return firehose;
 }
