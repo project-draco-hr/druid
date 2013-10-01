@@ -1,0 +1,13 @@
+{
+  return new FileIteratingFirehose<File>(new LineIteratorFactory<File>(){
+    @Override public LineIterator make(    File file) throws Exception {
+      return FileUtils.lineIterator(file);
+    }
+  }
+,Lists.<File>newLinkedList(Arrays.<File>asList(baseDir.listFiles(new FilenameFilter(){
+    @Override public boolean accept(    File file,    String name){
+      return name.contains(filter);
+    }
+  }
+))),parser);
+}
