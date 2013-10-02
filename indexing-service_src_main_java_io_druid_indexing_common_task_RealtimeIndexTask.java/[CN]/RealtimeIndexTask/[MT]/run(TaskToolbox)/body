@@ -2,7 +2,7 @@
   if (this.plumber != null) {
     throw new IllegalStateException("WTF?!? run with non-null plumber??!");
   }
-  for (  final TaskLock taskLock : toolbox.getTaskActionClient().submit(new LockListAction())) {
+  for (  final TaskLock taskLock : getTaskLocks(toolbox)) {
     toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
   }
   boolean normalExit=true;

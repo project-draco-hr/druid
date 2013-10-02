@@ -1,0 +1,7 @@
+{
+  final List<TaskLock> locks=toolbox.getTaskActionClient().submit(new LockListAction());
+  if (locks.isEmpty()) {
+    return Arrays.asList(toolbox.getTaskActionClient().submit(new LockAcquireAction(getImplicitLockInterval().get())));
+  }
+  return locks;
+}

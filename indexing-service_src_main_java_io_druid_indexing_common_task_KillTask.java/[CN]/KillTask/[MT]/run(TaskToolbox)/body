@@ -1,5 +1,5 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   if (!myLock.getDataSource().equals(getDataSource())) {
     throw new ISE("WTF?! Lock dataSource[%s] != task dataSource[%s]",myLock.getDataSource(),getDataSource());
   }
