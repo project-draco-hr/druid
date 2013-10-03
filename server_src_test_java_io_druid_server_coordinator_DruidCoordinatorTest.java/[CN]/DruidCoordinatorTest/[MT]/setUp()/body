@@ -1,0 +1,31 @@
+{
+  druidServer=EasyMock.createMock(DruidServer.class);
+  segment=EasyMock.createNiceMock(DataSegment.class);
+  loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
+  loadManagementPeons=new MapMaker().makeMap();
+  serverInventoryView=EasyMock.createMock(SingleServerInventoryView.class);
+  databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
+  EasyMock.replay(databaseSegmentManager);
+  scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
+  EasyMock.replay(scheduledExecutorFactory);
+  coordinator=new DruidCoordinator(new DruidCoordinatorConfig(){
+    @Override public String getHost(){
+      return null;
+    }
+    @Override public Duration getCoordinatorStartDelay(){
+      return null;
+    }
+    @Override public Duration getCoordinatorPeriod(){
+      return null;
+    }
+    @Override public Duration getCoordinatorSegmentMergerPeriod(){
+      return null;
+    }
+  }
+,new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return "";
+    }
+  }
+,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,loadManagementPeons);
+}

@@ -1,0 +1,18 @@
+{
+  Response resp=Response.status(Response.Status.OK).build();
+  for (  SegmentToMove segmentToMove : segmentsToMove) {
+    try {
+      coordinator.moveSegment(segmentToMove.getFromServer(),segmentToMove.getToServer(),segmentToMove.getSegmentName(),new LoadPeonCallback(){
+        @Override protected void execute(){
+          return;
+        }
+      }
+);
+    }
+ catch (    Exception e) {
+      resp=Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+      break;
+    }
+  }
+  return resp;
+}
