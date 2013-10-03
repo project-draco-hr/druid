@@ -3,12 +3,12 @@
     @Override public void configure(    Binder binder){
       PolyBind.createChoice(binder,"druid.indexer.task.chathandler.type",Key.get(ChatHandlerProvider.class),Key.get(NoopChatHandlerProvider.class));
       final MapBinder<String,ChatHandlerProvider> handlerProviderBinder=PolyBind.optionBinder(binder,Key.get(ChatHandlerProvider.class));
-      handlerProviderBinder.addBinding("receiver").to(EventReceivingChatHandlerProvider.class).in(LazySingleton.class);
+      handlerProviderBinder.addBinding("announce").to(ServiceAnnouncingChatHandlerProvider.class).in(LazySingleton.class);
       handlerProviderBinder.addBinding("noop").to(NoopChatHandlerProvider.class).in(LazySingleton.class);
       binder.bind(TaskToolboxFactory.class).in(LazySingleton.class);
       JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       JsonConfigProvider.bind(binder,"druid.worker.taskActionClient.retry",RetryPolicyConfig.class);
-      binder.bind(TaskActionClientFactory.class).to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);
+      configureTaskActionClient(binder);
       binder.bind(RetryPolicyFactory.class).in(LazySingleton.class);
       binder.bind(DataSegmentKiller.class).to(S3DataSegmentKiller.class).in(LazySingleton.class);
       binder.bind(ExecutorLifecycle.class).in(ManageLifecycle.class);
@@ -21,6 +21,16 @@
       Jerseys.addResource(binder,ChatHandlerResource.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig(nodeType));
       LifecycleModule.register(binder,Server.class);
+    }
+    private void configureTaskActionClient(    Binder binder){
+      PolyBind.createChoice(binder,"druid.peon.mode",Key.get(TaskActionClientFactory.class),Key.get(RemoteTaskActionClientFactory.class));
+      final MapBinder<String,TaskActionClientFactory> taskActionBinder=PolyBind.optionBinder(binder,Key.get(TaskActionClientFactory.class));
+      taskActionBinder.addBinding("local").to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
+      binder.bind(TaskStorage.class).to(HeapMemoryTaskStorage.class).in(LazySingleton.class);
+      binder.bind(TaskQueue.class).in(LazySingleton.class);
+      binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
+      binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
+      taskActionBinder.addBinding("remote").to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);
     }
   }
 );

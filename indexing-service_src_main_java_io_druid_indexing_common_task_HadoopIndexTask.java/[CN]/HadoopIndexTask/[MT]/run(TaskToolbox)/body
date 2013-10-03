@@ -1,6 +1,6 @@
 {
   final HadoopDruidIndexerConfig configCopy=toolbox.getObjectMapper().readValue(toolbox.getObjectMapper().writeValueAsBytes(config),HadoopDruidIndexerConfig.class);
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   log.info("Setting version to: %s",myLock.getVersion());
   configCopy.setVersion(myLock.getVersion());
   configCopy.setJobOutputDir(toolbox.getConfig().getHadoopWorkingPath());

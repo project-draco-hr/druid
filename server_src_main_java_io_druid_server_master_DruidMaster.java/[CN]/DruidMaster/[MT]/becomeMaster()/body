@@ -13,7 +13,7 @@ synchronized (lock) {
       dynamicConfigs=configManager.watch(MasterDynamicConfig.CONFIG_KEY,MasterDynamicConfig.class,new MasterDynamicConfig.Builder().build());
       masterRunnables.add(Pair.of(new MasterComputeManagerRunnable(),config.getMasterPeriod()));
       if (indexingServiceClient != null) {
-        masterRunnables.add(Pair.of(new MasterIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(MergerWhitelist.CONFIG_KEY,MergerWhitelist.class))),config.getMasterSegmentMergerPeriod()));
+        masterRunnables.add(Pair.of(new MasterIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(DatasourceWhitelist.CONFIG_KEY,DatasourceWhitelist.class))),config.getMasterSegmentMergerPeriod()));
       }
       for (      final Pair<? extends MasterRunnable,Duration> masterRunnable : masterRunnables) {
         ScheduledExecutors.scheduleWithFixedDelay(exec,config.getMasterStartDelay(),masterRunnable.rhs,new Callable<ScheduledExecutors.Signal>(){
