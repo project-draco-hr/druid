@@ -5,7 +5,14 @@
   boolean durable=config.isDurable();
   boolean exclusive=config.isExclusive();
   boolean autoDelete=config.isAutoDelete();
-  final Connection connection=connectionFactory.newConnection();
+  final Connection connection;
+  try {
+    connection=connectionFactory.newConnection();
+  }
+ catch (  Exception e) {
+    log.error("Unable to find a RabbitMQ broker. Are you sure you have one running?");
+    throw Throwables.propagate(e);
+  }
   connection.addShutdownListener(new ShutdownListener(){
     @Override public void shutdownCompleted(    ShutdownSignalException cause){
       log.warn(cause,"Connection closed!");
