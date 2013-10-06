@@ -1,7 +1,7 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
-      ConfigProvider.bind(binder,DruidMasterConfig.class);
+      ConfigProvider.bind(binder,DruidCoordinatorConfig.class);
       JsonConfigProvider.bind(binder,"druid.manager.segment",DatabaseSegmentManagerConfig.class);
       JsonConfigProvider.bind(binder,"druid.manager.rules",DatabaseRuleManagerConfig.class);
       binder.bind(RedirectServlet.class).in(LazySingleton.class);
@@ -9,18 +9,18 @@
       binder.bind(DatabaseSegmentManager.class).toProvider(DatabaseSegmentManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(DatabaseRuleManager.class).toProvider(DatabaseRuleManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
-      binder.bind(RedirectInfo.class).to(MasterRedirectInfo.class).in(LazySingleton.class);
-      binder.bind(DruidMaster.class);
-      LifecycleModule.register(binder,DruidMaster.class);
+      binder.bind(RedirectInfo.class).to(CoordinatorRedirectInfo.class).in(LazySingleton.class);
+      binder.bind(DruidCoordinator.class);
+      LifecycleModule.register(binder,DruidCoordinator.class);
       DiscoveryModule.register(binder,Self.class);
       binder.bind(JettyServerInitializer.class).toInstance(new CoordinatorJettyServerInitializer());
       Jerseys.addResource(binder,BackwardsCompatiableInfoResource.class);
       Jerseys.addResource(binder,InfoResource.class);
-      Jerseys.addResource(binder,MasterResource.class);
-      Jerseys.addResource(binder,MasterDynamicConfigsResource.class);
+      Jerseys.addResource(binder,CoordinatorResource.class);
+      Jerseys.addResource(binder,CoordinatorDynamicConfigsResource.class);
       LifecycleModule.register(binder,Server.class);
     }
-    @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidMasterConfig config){
+    @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
       return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),config);
     }
   }

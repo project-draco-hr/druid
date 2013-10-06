@@ -1,0 +1,48 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    log.info("I am the leader of the coordinators, all must bow!");
+    try {
+      leader=true;
+      databaseSegmentManager.start();
+      databaseRuleManager.start();
+      serverInventoryView.start();
+      final List<Pair<? extends CoordinatorRunnable,Duration>> coordinatorRunnables=Lists.newArrayList();
+      dynamicConfigs=configManager.watch(CoordinatorDynamicConfig.CONFIG_KEY,CoordinatorDynamicConfig.class,new CoordinatorDynamicConfig.Builder().build());
+      coordinatorRunnables.add(Pair.of(new CoordinatorHistoricalManagerRunnable(),config.getCoordinatorPeriod()));
+      if (indexingServiceClient != null) {
+        coordinatorRunnables.add(Pair.of(new CoordinatorIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(DatasourceWhitelist.CONFIG_KEY,DatasourceWhitelist.class))),config.getCoordinatorSegmentMergerPeriod()));
+      }
+      for (      final Pair<? extends CoordinatorRunnable,Duration> coordinatorRunnable : coordinatorRunnables) {
+        ScheduledExecutors.scheduleWithFixedDelay(exec,config.getCoordinatorStartDelay(),coordinatorRunnable.rhs,new Callable<ScheduledExecutors.Signal>(){
+          private final CoordinatorRunnable theRunnable=coordinatorRunnable.lhs;
+          @Override public ScheduledExecutors.Signal call(){
+            if (leader) {
+              theRunnable.run();
+            }
+            if (leader) {
+              return ScheduledExecutors.Signal.REPEAT;
+            }
+ else {
+              return ScheduledExecutors.Signal.STOP;
+            }
+          }
+        }
+);
+      }
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Unable to become leader").emit();
+      final LeaderLatch oldLatch=createNewLeaderLatch();
+      Closeables.closeQuietly(oldLatch);
+      try {
+        leaderLatch.get().start();
+      }
+ catch (      Exception e1) {
+        log.makeAlert(e1,"I am a zombie").emit();
+      }
+    }
+  }
+}
