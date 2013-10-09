@@ -1,0 +1,14 @@
+{
+  Binders.dataSegmentPullerBinder(binder).addBinding("hdfs").to(HdfsDataSegmentPuller.class).in(LazySingleton.class);
+  Binders.dataSegmentPusherBinder(binder).addBinding("hdfs").to(HdfsDataSegmentPusher.class).in(LazySingleton.class);
+  final Configuration conf=new Configuration();
+  if (props != null) {
+    for (    String propName : System.getProperties().stringPropertyNames()) {
+      if (propName.startsWith("hadoop.")) {
+        conf.set(propName.substring("hadoop.".length()),System.getProperty(propName));
+      }
+    }
+  }
+  binder.bind(Configuration.class).toInstance(conf);
+  JsonConfigProvider.bind(binder,"druid.storage",HdfsDataSegmentPusherConfig.class);
+}

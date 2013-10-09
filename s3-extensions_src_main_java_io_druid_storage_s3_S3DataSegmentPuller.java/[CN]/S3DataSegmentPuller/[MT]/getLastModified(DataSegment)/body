@@ -1,0 +1,18 @@
+{
+  final S3Coords coords=new S3Coords(segment);
+  try {
+    final S3Object objDetails=S3Utils.retryS3Operation(new Callable<S3Object>(){
+      @Override public S3Object call() throws Exception {
+        return s3Client.getObjectDetails(new S3Bucket(coords.bucket),coords.path);
+      }
+    }
+);
+    return objDetails.getLastModifiedDate().getTime();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  S3ServiceException|IOException e) {
+    throw new SegmentLoadingException(e,e.getMessage());
+  }
+}
