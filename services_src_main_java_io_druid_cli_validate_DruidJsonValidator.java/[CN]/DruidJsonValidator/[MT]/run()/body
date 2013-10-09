@@ -1,0 +1,28 @@
+{
+  File file=new File(jsonFile);
+  if (!file.exists()) {
+    System.out.printf("File[%s] does not exist.%n",file);
+  }
+  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  try {
+    if (type.equalsIgnoreCase("query")) {
+      jsonMapper.readValue(file,Query.class);
+    }
+ else     if (type.equalsIgnoreCase("hadoopConfig")) {
+      jsonMapper.readValue(file,HadoopDruidIndexerConfig.class);
+    }
+ else     if (type.equalsIgnoreCase("task")) {
+      jsonMapper.readValue(file,Task.class);
+    }
+ else     if (type.equalsIgnoreCase("realtimeSchema")) {
+      jsonMapper.readValue(file,Schema.class);
+    }
+ else {
+      throw new UOE("Unknown type[%s]",type);
+    }
+  }
+ catch (  Exception e) {
+    System.out.println("INVALID JSON!");
+    throw Throwables.propagate(e);
+  }
+}
