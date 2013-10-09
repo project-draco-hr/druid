@@ -1,0 +1,25 @@
+{
+  final LinkedList<File> files=Lists.<File>newLinkedList(Arrays.<File>asList(baseDir.listFiles(new FilenameFilter(){
+    @Override public boolean accept(    File file,    String name){
+      return name.contains(filter);
+    }
+  }
+)));
+  return new FileIteratingFirehose(new Iterator<LineIterator>(){
+    @Override public boolean hasNext(){
+      return !files.isEmpty();
+    }
+    @Override public LineIterator next(){
+      try {
+        return FileUtils.lineIterator(files.poll());
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+,parser);
+}

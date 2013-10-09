@@ -1,9 +1,12 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Interval interval=getImplicitLockInterval().get();
   final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),myLock.getVersion(),schema.getShardSpec().getPartitionNum()));
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String dataSource){
+      return toolbox.getSegmentPusher().getPathForHadoop(dataSource);
+    }
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       final DataSegment pushedSegment=toolbox.getSegmentPusher().push(file,segment);
       pushedSegments.add(pushedSegment);

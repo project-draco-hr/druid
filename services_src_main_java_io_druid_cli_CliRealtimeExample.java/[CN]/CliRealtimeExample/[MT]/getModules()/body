@@ -1,14 +1,10 @@
 {
-  return ImmutableList.<Object>of(new RealtimeModule(),new DruidModule(){
+  return ImmutableList.<Object>of(new RealtimeModule(),new Module(){
     @Override public void configure(    Binder binder){
-      binder.bind(SegmentPublisher.class).toProvider(NoopSegmentPublisherProvider.class);
-      binder.bind(DataSegmentPusher.class).to(NoopDataSegmentPusher.class);
-      binder.bind(DataSegmentAnnouncer.class).to(NoopDataSegmentAnnouncer.class);
-      binder.bind(InventoryView.class).to(NoopInventoryView.class);
-      binder.bind(ServerView.class).to(NoopServerView.class);
-    }
-    @Override public List<Module> getJacksonModules(){
-      return Arrays.<Module>asList(new SimpleModule("RealtimeExampleModule").registerSubtypes(new NamedType(TwitterSpritzerFirehoseFactory.class,"twitzer"),new NamedType(FlightsFirehoseFactory.class,"flights"),new NamedType(RandomFirehoseFactory.class,"rand"),new NamedType(WebFirehoseFactory.class,"webstream"),new NamedType(KafkaFirehoseFactory.class,"kafka"),new NamedType(RabbitMQFirehoseFactory.class,"rabbitmq"),new NamedType(ClippedFirehoseFactory.class,"clipped"),new NamedType(TimedShutoffFirehoseFactory.class,"timed"),new NamedType(IrcFirehoseFactory.class,"irc"),new NamedType(StaticS3FirehoseFactory.class,"s3"),new NamedType(EventReceiverFirehoseFactory.class,"receiver")));
+      binder.bind(DataSegmentPusher.class).to(NoopDataSegmentPusher.class).in(LazySingleton.class);
+      binder.bind(DataSegmentAnnouncer.class).to(NoopDataSegmentAnnouncer.class).in(LazySingleton.class);
+      binder.bind(InventoryView.class).to(NoopInventoryView.class).in(LazySingleton.class);
+      binder.bind(ServerView.class).to(NoopServerView.class).in(LazySingleton.class);
     }
   }
 );

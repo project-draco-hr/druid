@@ -1,0 +1,28 @@
+{
+  try {
+    WorkerSetupData setupData=workerSetupDataRef.get();
+    EC2NodeData workerConfig=setupData.getNodeData();
+    GalaxyUserData userData=setupData.getUserData();
+    if (config.getWorkerVersion() != null) {
+      userData=userData.withVersion(config.getWorkerVersion());
+    }
+    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withPlacement(new Placement(setupData.getAvailabilityZone())).withKeyName(workerConfig.getKeyName()).withUserData(Base64.encodeBase64String(jsonMapper.writeValueAsBytes(userData))));
+    List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
+      @Override public String apply(      Instance input){
+        return input.getInstanceId();
+      }
+    }
+);
+    log.info("Created instances: %s",instanceIds);
+    return new AutoScalingData(Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
+      @Override public String apply(      Instance input){
+        return input.getInstanceId();
+      }
+    }
+),result.getReservation().getInstances());
+  }
+ catch (  Exception e) {
+    log.error(e,"Unable to provision any EC2 instances.");
+  }
+  return null;
+}

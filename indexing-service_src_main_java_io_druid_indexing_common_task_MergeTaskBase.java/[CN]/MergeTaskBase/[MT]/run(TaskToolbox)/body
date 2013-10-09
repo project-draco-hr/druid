@@ -1,5 +1,5 @@
 {
-  final TaskLock myLock=Iterables.getOnlyElement(toolbox.getTaskActionClient().submit(new LockListAction()));
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final ServiceEmitter emitter=toolbox.getEmitter();
   final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder();
   final DataSegment mergedSegment=computeMergedSegment(getDataSource(),myLock.getVersion(),segments);

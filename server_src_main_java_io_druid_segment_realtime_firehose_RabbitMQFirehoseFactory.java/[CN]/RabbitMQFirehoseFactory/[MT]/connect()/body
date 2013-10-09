@@ -1,0 +1,87 @@
+{
+  String queue=config.getQueue();
+  String exchange=config.getExchange();
+  String routingKey=config.getRoutingKey();
+  boolean durable=config.isDurable();
+  boolean exclusive=config.isExclusive();
+  boolean autoDelete=config.isAutoDelete();
+  final Connection connection;
+  try {
+    connection=connectionFactory.newConnection();
+  }
+ catch (  Exception e) {
+    log.error("Unable to find a RabbitMQ broker. Are you sure you have one running?");
+    throw Throwables.propagate(e);
+  }
+  connection.addShutdownListener(new ShutdownListener(){
+    @Override public void shutdownCompleted(    ShutdownSignalException cause){
+      log.warn(cause,"Connection closed!");
+    }
+  }
+);
+  final Channel channel=connection.createChannel();
+  channel.queueDeclare(queue,durable,exclusive,autoDelete,null);
+  channel.queueBind(queue,exchange,routingKey);
+  channel.addShutdownListener(new ShutdownListener(){
+    @Override public void shutdownCompleted(    ShutdownSignalException cause){
+      log.warn(cause,"Channel closed!");
+    }
+  }
+);
+  final QueueingConsumer consumer=new QueueingConsumer(channel);
+  channel.basicConsume(queue,false,consumer);
+  return new Firehose(){
+    /** 
+ * Storing the latest delivery as a member variable should be safe since this will only be run
+ * by a single thread.
+ */
+    private QueueingConsumer.Delivery delivery;
+    /** 
+ * Store the latest delivery tag to be able to commit (acknowledge) the message delivery up to
+ * and including this tag. See commit() for more detail.
+ */
+    private long lastDeliveryTag;
+    @Override public boolean hasMore(){
+      delivery=null;
+      try {
+        delivery=consumer.nextDelivery();
+        if (delivery != null) {
+          lastDeliveryTag=delivery.getEnvelope().getDeliveryTag();
+          return true;
+        }
+      }
+ catch (      InterruptedException e) {
+        log.wtf(e,"Got interrupted while waiting for next delivery. Doubt this should ever happen.");
+      }
+      return false;
+    }
+    @Override public InputRow nextRow(){
+      if (delivery == null) {
+        log.wtf("I have nothing in delivery. Method hasMore() should have returned false.");
+        return null;
+      }
+      return parser.parse(new String(delivery.getBody()));
+    }
+    @Override public Runnable commit(){
+      return new Runnable(){
+        final long deliveryTag=lastDeliveryTag;
+        @Override public void run(){
+          try {
+            log.info("Acknowledging delivery of messages up to tag: " + deliveryTag);
+            channel.basicAck(deliveryTag,true);
+          }
+ catch (          IOException e) {
+            log.error(e,"Unable to acknowledge message reception to message queue.");
+          }
+        }
+      }
+;
+    }
+    @Override public void close() throws IOException {
+      log.info("Closing connection to RabbitMQ");
+      channel.close();
+      connection.close();
+    }
+  }
+;
+}

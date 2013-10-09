@@ -1,0 +1,21 @@
+{
+  if (log.isTraceEnabled() || log.isDebugEnabled()) {
+    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+  }
+  PrintStream oldOut=System.out;
+  try {
+    System.setOut(new PrintStream(new OutputStream(){
+      @Override public void write(      int b) throws IOException {
+      }
+      @Override public void write(      byte[] b) throws IOException {
+      }
+      @Override public void write(      byte[] b,      int off,      int len) throws IOException {
+      }
+    }
+));
+    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+  }
+  finally {
+    System.setOut(oldOut);
+  }
+}

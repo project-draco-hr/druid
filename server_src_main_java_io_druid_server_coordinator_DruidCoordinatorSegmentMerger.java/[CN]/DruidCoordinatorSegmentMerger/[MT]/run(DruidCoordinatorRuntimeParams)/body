@@ -1,0 +1,37 @@
+{
+  DatasourceWhitelist whitelist=whiteListRef.get();
+  CoordinatorStats stats=new CoordinatorStats();
+  Map<String,VersionedIntervalTimeline<String,DataSegment>> dataSources=Maps.newHashMap();
+  for (  DataSegment dataSegment : params.getAvailableSegments()) {
+    if (whitelist == null || whitelist.contains(dataSegment.getDataSource())) {
+      VersionedIntervalTimeline<String,DataSegment> timeline=dataSources.get(dataSegment.getDataSource());
+      if (timeline == null) {
+        timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural());
+        dataSources.put(dataSegment.getDataSource(),timeline);
+      }
+      timeline.add(dataSegment.getInterval(),dataSegment.getVersion(),dataSegment.getShardSpec().createChunk(dataSegment));
+    }
+  }
+  for (  final Map.Entry<String,VersionedIntervalTimeline<String,DataSegment>> entry : dataSources.entrySet()) {
+    VersionedIntervalTimeline<String,DataSegment> timeline=entry.getValue();
+    List<TimelineObjectHolder<String,DataSegment>> timelineObjects=timeline.lookup(new Interval(new DateTime(0),new DateTime("3000-01-01")));
+    SegmentsToMerge segmentsToMerge=new SegmentsToMerge();
+    for (int i=0; i < timelineObjects.size(); i++) {
+      if (!segmentsToMerge.add(timelineObjects.get(i)) || segmentsToMerge.getByteCount() > params.getCoordinatorDynamicConfig().getMergeBytesLimit() || segmentsToMerge.getSegmentCount() >= params.getCoordinatorDynamicConfig().getMergeSegmentsLimit()) {
+        i-=segmentsToMerge.backtrack(params.getCoordinatorDynamicConfig().getMergeBytesLimit());
+        if (segmentsToMerge.getSegmentCount() > 1) {
+          stats.addToGlobalStat("mergedCount",mergeSegments(segmentsToMerge,entry.getKey()));
+        }
+        if (segmentsToMerge.getSegmentCount() == 0) {
+          i++;
+        }
+        segmentsToMerge=new SegmentsToMerge();
+      }
+    }
+    segmentsToMerge.backtrack(params.getCoordinatorDynamicConfig().getMergeBytesLimit());
+    if (segmentsToMerge.getSegmentCount() > 1) {
+      stats.addToGlobalStat("mergedCount",mergeSegments(segmentsToMerge,entry.getKey()));
+    }
+  }
+  return params.buildFromExisting().withCoordinatorStats(stats).build();
+}

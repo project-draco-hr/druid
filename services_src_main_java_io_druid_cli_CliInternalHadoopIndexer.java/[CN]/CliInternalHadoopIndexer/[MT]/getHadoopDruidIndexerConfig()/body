@@ -1,0 +1,13 @@
+{
+  try {
+    if (argumentSpec.startsWith("{")) {
+      return HadoopDruidIndexerConfig.fromString(argumentSpec);
+    }
+ else {
+      return HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

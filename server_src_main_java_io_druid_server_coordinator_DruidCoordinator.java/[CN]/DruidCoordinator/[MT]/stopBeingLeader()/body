@@ -1,0 +1,18 @@
+{
+synchronized (lock) {
+    try {
+      log.info("I am no longer the leader...");
+      for (      String server : loadManagementPeons.keySet()) {
+        LoadQueuePeon peon=loadManagementPeons.remove(server);
+        peon.stop();
+      }
+      loadManagementPeons.clear();
+      databaseSegmentManager.stop();
+      serverInventoryView.stop();
+      leader=false;
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Unable to stopBeingLeader").emit();
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  final Set<DataSegment> availableSegments=coordinator.getAvailableDataSegments();
+  if (log.isDebugEnabled()) {
+    log.debug("Available DataSegments");
+    for (    DataSegment dataSegment : availableSegments) {
+      log.debug("  %s",dataSegment);
+    }
+  }
+  return params.buildFromExisting().withAvailableSegments(availableSegments).build();
+}

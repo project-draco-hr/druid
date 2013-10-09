@@ -5,8 +5,8 @@
   builder.withGroup("example").withDescription("Run an example").withDefaultCommand(Help.class).withCommands(CliRealtimeExample.class);
   builder.withGroup("tools").withDescription("Various tools for working with Druid").withDefaultCommand(Help.class).withCommands(ConvertProperties.class);
   builder.withGroup("index").withDescription("Run indexing for druid").withDefaultCommand(Help.class).withCommands(CliHadoopIndexer.class);
-  builder.withGroup("internal").withDescription("Processes that Druid runs \"internally\", you should rarely use these directly").withDefaultCommand(Help.class).withCommands(CliPeon.class);
-  final Injector injector=makeStartupInjector();
+  builder.withGroup("internal").withDescription("Processes that Druid runs \"internally\", you should rarely use these directly").withDefaultCommand(Help.class).withCommands(CliPeon.class,CliInternalHadoopIndexer.class);
+  final Injector injector=Initialization.makeStartupInjector();
   final ExtensionsConfig config=injector.getInstance(ExtensionsConfig.class);
   final List<CliCommandCreator> extensionCommands=Initialization.getFromExtensions(config,CliCommandCreator.class);
   for (  CliCommandCreator creator : extensionCommands) {
@@ -15,7 +15,9 @@
   final Cli<Runnable> cli=builder.build();
   try {
     final Runnable command=cli.parse(args);
-    injector.injectMembers(command);
+    if (!(command instanceof Help)) {
+      injector.injectMembers(command);
+    }
     command.run();
   }
  catch (  ParseException e) {
