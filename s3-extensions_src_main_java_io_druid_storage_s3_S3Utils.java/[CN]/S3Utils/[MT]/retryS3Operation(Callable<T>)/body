@@ -1,0 +1,29 @@
+{
+  int nTry=0;
+  final int maxTries=3;
+  while (true) {
+    try {
+      nTry++;
+      return f.call();
+    }
+ catch (    IOException e) {
+      if (nTry <= maxTries) {
+        awaitNextRetry(e,nTry);
+      }
+ else {
+        throw e;
+      }
+    }
+catch (    S3ServiceException e) {
+      if (nTry <= maxTries && (e.getCause() instanceof IOException || (e.getS3ErrorCode() != null && e.getS3ErrorCode().equals("RequestTimeout")))) {
+        awaitNextRetry(e,nTry);
+      }
+ else {
+        throw e;
+      }
+    }
+catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

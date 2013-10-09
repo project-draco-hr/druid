@@ -48,10 +48,11 @@
   }
   String queryStr=jsonWriter.writeValueAsString(query);
   if (cmd.hasOption("v"))   System.err.println(queryStr);
-  PostMethod req=new PostMethod("http://" + hostname + "/druid/v2/?pretty");
-  req.setRequestEntity(new StringRequestEntity(queryStr,"application/json","utf-8"));
-  new HttpClient().executeMethod(req);
-  BufferedReader stdInput=new BufferedReader(new InputStreamReader(req.getResponseBodyAsStream()));
+  URL url=new URL(String.format("http://%s/druid/v2/?pretty",hostname));
+  final URLConnection urlConnection=url.openConnection();
+  urlConnection.addRequestProperty("content-type","application/json");
+  urlConnection.getOutputStream().write(queryStr.getBytes(Charsets.UTF_8));
+  BufferedReader stdInput=new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
   Object res=objectMapper.readValue(stdInput,typeRef);
   Joiner tabJoiner=Joiner.on("\t");
   if (groupBy) {

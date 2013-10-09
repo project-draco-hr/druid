@@ -21,7 +21,7 @@
     FileOutputFormat.setOutputPath(job,config.makeIntermediatePath());
     config.addInputPaths(job);
     config.intoConfiguration(job);
-    job.setJarByClass(IndexGeneratorJob.class);
+    JobHelper.setupClasspath(config,job);
     job.submit();
     log.info("Job %s submitted, status available at %s",job.getJobName(),job.getTrackingURL());
     boolean success=job.waitForCompletion(true);
