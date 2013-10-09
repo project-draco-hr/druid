@@ -5,11 +5,11 @@
     for (    File file : dataSegmentFile.listFiles()) {
       size+=file.length();
     }
-    return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outDir)).withSize(size).withBinaryVersion(IndexIO.getVersionFromDir(dataSegmentFile)),outDir);
+    return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outDir)).withSize(size).withBinaryVersion(SegmentUtils.getVersionFromDir(dataSegmentFile)),outDir);
   }
   outDir.mkdirs();
   File outFile=new File(outDir,"index.zip");
   log.info("Compressing files from[%s] to [%s]",dataSegmentFile,outFile);
   long size=CompressionUtils.zip(dataSegmentFile,outFile);
-  return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outFile)).withSize(size).withBinaryVersion(IndexIO.getVersionFromDir(dataSegmentFile)),outDir);
+  return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outFile)).withSize(size).withBinaryVersion(SegmentUtils.getVersionFromDir(dataSegmentFile)),outDir);
 }

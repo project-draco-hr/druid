@@ -1,0 +1,40 @@
+{
+  URLClassLoader loader=loadersMap.get(coordinate);
+  if (loader == null) {
+    final CollectRequest collectRequest=new CollectRequest();
+    collectRequest.setRoot(new Dependency(new DefaultArtifact(coordinate),JavaScopes.RUNTIME));
+    DependencyRequest dependencyRequest=new DependencyRequest(collectRequest,DependencyFilterUtils.andFilter(DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME),new DependencyFilter(){
+      @Override public boolean accept(      DependencyNode node,      List<DependencyNode> parents){
+        if (accept(node.getArtifact())) {
+          return false;
+        }
+        for (        DependencyNode parent : parents) {
+          if (accept(parent.getArtifact())) {
+            return false;
+          }
+        }
+        return true;
+      }
+      private boolean accept(      final Artifact artifact){
+        return exclusions.contains(artifact.getGroupId());
+      }
+    }
+));
+    final List<Artifact> artifacts=aether.resolveArtifacts(dependencyRequest);
+    List<URL> urls=Lists.newArrayListWithExpectedSize(artifacts.size());
+    for (    Artifact artifact : artifacts) {
+      if (!exclusions.contains(artifact.getGroupId())) {
+        urls.add(artifact.getFile().toURI().toURL());
+      }
+ else {
+        log.debug("Skipped Artifact[%s]",artifact);
+      }
+    }
+    for (    URL url : urls) {
+      log.info("Added URL[%s]",url);
+    }
+    loader=new URLClassLoader(urls.toArray(new URL[urls.size()]),Initialization.class.getClassLoader());
+    loadersMap.put(coordinate,loader);
+  }
+  return loader;
+}

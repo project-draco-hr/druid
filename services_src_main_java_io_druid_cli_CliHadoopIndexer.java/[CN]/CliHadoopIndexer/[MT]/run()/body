@@ -1,18 +1,22 @@
 {
   try {
-    Injector injector=makeInjector();
-    final HadoopDruidIndexerJob job=injector.getInstance(HadoopDruidIndexerJob.class);
-    Lifecycle lifecycle=initLifecycle(injector);
-    job.run();
-    try {
-      lifecycle.stop();
-    }
- catch (    Throwable t) {
-      log.error(t,"Error when stopping. Failing.");
-      System.exit(1);
-    }
+    final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
+    final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopCoordinates);
+    final URL[] urLs=((URLClassLoader)hadoopLoader).getURLs();
+    final URL[] nonHadoopUrls=((URLClassLoader)CliHadoopIndexer.class.getClassLoader()).getURLs();
+    List<URL> theURLS=Lists.newArrayList();
+    theURLS.addAll(Arrays.asList(urLs));
+    theURLS.addAll(Arrays.asList(nonHadoopUrls));
+    final URLClassLoader loader=new URLClassLoader(theURLS.toArray(new URL[theURLS.size()]),null);
+    Thread.currentThread().setContextClassLoader(loader);
+    System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(nonHadoopUrls));
+    final Class<?> mainClass=loader.loadClass(Main.class.getName());
+    final Method mainMethod=mainClass.getMethod("main",String[].class);
+    String[] args=new String[]{"internal","hadoop-indexer",argumentSpec};
+    mainMethod.invoke(null,new Object[]{args});
   }
  catch (  Exception e) {
-    throw Throwables.propagate(e);
+    log.error(e,"failure!!!!");
+    System.exit(1);
   }
 }

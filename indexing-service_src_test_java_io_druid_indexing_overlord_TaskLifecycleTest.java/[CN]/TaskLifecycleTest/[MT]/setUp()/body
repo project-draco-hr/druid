@@ -7,6 +7,9 @@
   mdc=newMockMDC();
   tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter()));
   tb=new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,50000),tac,newMockEmitter(),new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String dataSource){
+      throw new UnsupportedOperationException();
+    }
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       return segment;
     }
