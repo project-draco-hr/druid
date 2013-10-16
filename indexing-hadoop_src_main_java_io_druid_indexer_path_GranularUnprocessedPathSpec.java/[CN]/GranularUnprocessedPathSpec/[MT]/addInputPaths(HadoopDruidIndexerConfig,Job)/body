@@ -14,7 +14,7 @@
   for (  Map.Entry<DateTime,Long> entry : inputModifiedTimes.entrySet()) {
     DateTime timeBucket=entry.getKey();
     long mTime=entry.getValue();
-    String bucketOutput=String.format("%s/%s",config.getSegmentOutputDir(),segmentGranularity.toPath(timeBucket));
+    String bucketOutput=String.format("%s/%s",config.getSegmentOutputPath(),segmentGranularity.toPath(timeBucket));
     for (    FileStatus fileStatus : FSSpideringIterator.spiderIterable(fs,new Path(bucketOutput))) {
       if (fileStatus.getModificationTime() > mTime) {
         bucketsToRun.add(new Interval(timeBucket,segmentGranularity.increment(timeBucket)));
