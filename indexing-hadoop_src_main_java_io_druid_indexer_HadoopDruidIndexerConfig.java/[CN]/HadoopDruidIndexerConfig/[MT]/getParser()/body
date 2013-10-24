@@ -5,7 +5,7 @@
   }
  else {
     dimensionExclusions=Lists.newArrayList();
-    dimensionExclusions.add(getTimestampColumnName());
+    dimensionExclusions.add(timestampSpec.getTimestampColumn());
     dimensionExclusions.addAll(Lists.transform(getRollupSpec().getAggs(),new Function<AggregatorFactory,String>(){
       @Override public String apply(      AggregatorFactory aggregatorFactory){
         return aggregatorFactory.getName();

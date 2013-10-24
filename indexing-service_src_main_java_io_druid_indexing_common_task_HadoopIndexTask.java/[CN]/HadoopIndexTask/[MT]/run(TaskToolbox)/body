@@ -1,15 +1,24 @@
 {
-  final HadoopDruidIndexerConfig configCopy=toolbox.getObjectMapper().readValue(toolbox.getObjectMapper().writeValueAsBytes(config),HadoopDruidIndexerConfig.class);
+  final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
+  final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopCoordinates);
+  final URL[] urLs=((URLClassLoader)hadoopLoader).getURLs();
+  final URL[] nonHadoopUrls=((URLClassLoader)HadoopIndexTask.class.getClassLoader()).getURLs();
+  List<URL> theURLS=Lists.newArrayList();
+  theURLS.addAll(Arrays.asList(urLs));
+  theURLS.addAll(Arrays.asList(nonHadoopUrls));
+  final URLClassLoader loader=new URLClassLoader(theURLS.toArray(new URL[theURLS.size()]),null);
+  Thread.currentThread().setContextClassLoader(loader);
+  System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(nonHadoopUrls));
+  final Class<?> mainClass=loader.loadClass(HadoopIndexTaskInnerProcessing.class.getName());
+  final Method mainMethod=mainClass.getMethod("runTask",String[].class);
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   log.info("Setting version to: %s",myLock.getVersion());
-  configCopy.setVersion(myLock.getVersion());
-  configCopy.setJobOutputDir(toolbox.getConfig().getHadoopWorkingPath());
-  configCopy.setSegmentOutputDir(toolbox.getSegmentPusher().getPathForHadoop(getDataSource()));
-  HadoopDruidIndexerJob job=new HadoopDruidIndexerJob(configCopy);
-  configCopy.verify();
-  log.info("Starting a hadoop index generator job...");
-  if (job.run()) {
-    List<DataSegment> publishedSegments=job.getPublishedSegments();
+  String[] args=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),myLock.getVersion(),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
+  String segments=(String)mainMethod.invoke(null,new Object[]{args});
+  if (segments != null) {
+    List<DataSegment> publishedSegments=toolbox.getObjectMapper().readValue(segments,new TypeReference<List<DataSegment>>(){
+    }
+);
     toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.copyOf(publishedSegments)));
     return TaskStatus.success(getId());
   }

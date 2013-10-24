@@ -12,7 +12,7 @@
         throw new IOException("Failed to locate service uri",e);
       }
       final String response;
-      log.info("Submitting action for task[%s] to coordinator[%s]: %s",task.getId(),serviceUri,taskAction);
+      log.info("Submitting action for task[%s] to overlord[%s]: %s",task.getId(),serviceUri,taskAction);
       try {
         response=httpClient.post(serviceUri.toURL()).setContent("application/json",dataToSend).go(new ToStringResponseHandler(Charsets.UTF_8)).get();
       }
