@@ -1,6 +1,28 @@
 {
+  List<String> remoteUriList=config.getRemoteRepositories();
+  List<Repository> remoteRepositories=Lists.newArrayList();
+  for (  String uri : remoteUriList) {
+    try {
+      URI u=new URI(uri);
+      Repository r=new Repository(uri);
+      if (u.getUserInfo() != null) {
+        String[] auth=u.getUserInfo().split(":",2);
+        if (auth.length == 2) {
+          r.setUsername(auth[0]);
+          r.setPassword(auth[1]);
+        }
+ else {
+          log.warn("Invalid credentials in repository URI, expecting [<user>:<password>], got [%s] for [%s]",u.getUserInfo(),uri);
+        }
+      }
+      remoteRepositories.add(r);
+    }
+ catch (    URISyntaxException e) {
+      throw Throwables.propagate(e);
+    }
+  }
   if (log.isTraceEnabled() || log.isDebugEnabled()) {
-    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+    return new DefaultTeslaAether(config.getLocalRepository(),remoteRepositories.toArray(new Repository[remoteRepositories.size()]));
   }
   PrintStream oldOut=System.out;
   try {
@@ -13,7 +35,7 @@
       }
     }
 ));
-    return new DefaultTeslaAether(config.getLocalRepository(),config.getRemoteRepositories());
+    return new DefaultTeslaAether(config.getLocalRepository(),remoteRepositories.toArray(new Repository[remoteRepositories.size()]));
   }
   finally {
     System.setOut(oldOut);
