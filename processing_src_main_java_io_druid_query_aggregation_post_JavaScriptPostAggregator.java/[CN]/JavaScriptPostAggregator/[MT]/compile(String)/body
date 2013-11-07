@@ -1,0 +1,18 @@
+{
+  final ContextFactory contextFactory=ContextFactory.getGlobal();
+  final Context context=contextFactory.enterContext();
+  context.setOptimizationLevel(9);
+  final ScriptableObject scope=context.initStandardObjects();
+  final org.mozilla.javascript.Function fn=context.compileFunction(scope,function,"aggregate",1,null);
+  Context.exit();
+  return new Function(){
+    public double apply(    Object[] args){
+      Context cx=Context.getCurrentContext();
+      if (cx == null) {
+        cx=contextFactory.enterContext();
+      }
+      return Context.toNumber(fn.call(cx,scope,scope,args));
+    }
+  }
+;
+}
