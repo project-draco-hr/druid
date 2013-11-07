@@ -3,5 +3,8 @@
   closed=true;
   if (chatHandlerProvider.isPresent()) {
     chatHandlerProvider.get().unregister(serviceName);
+    if (oldServiceName != null) {
+      chatHandlerProvider.get().unregister(oldServiceName);
+    }
   }
 }
