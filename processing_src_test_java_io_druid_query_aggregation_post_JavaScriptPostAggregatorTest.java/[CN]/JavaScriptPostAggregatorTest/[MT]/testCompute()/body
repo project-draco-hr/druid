@@ -1,0 +1,9 @@
+{
+  JavaScriptPostAggregator javaScriptPostAggregator;
+  Map<String,Object> metricValues=Maps.newHashMap();
+  metricValues.put("delta",-10.0);
+  metricValues.put("total",100.0);
+  String absPercentFunction="function(delta, total) { return 100 * Math.abs(delta) / total; }";
+  javaScriptPostAggregator=new JavaScriptPostAggregator("absPercent",Lists.newArrayList("delta","total"),absPercentFunction);
+  Assert.assertEquals(10.0,javaScriptPostAggregator.compute(metricValues));
+}
