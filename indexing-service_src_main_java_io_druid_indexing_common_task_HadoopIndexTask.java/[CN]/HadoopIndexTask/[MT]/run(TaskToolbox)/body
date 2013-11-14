@@ -14,8 +14,8 @@
   final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);
   Thread.currentThread().setContextClassLoader(loader);
   final Set<URL> jobUrls=Sets.newHashSet();
-  jobUrls.addAll(extensionURLs);
   jobUrls.addAll(nonHadoopURLs);
+  jobUrls.addAll(extensionURLs);
   System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
   final Class<?> mainClass=loader.loadClass(HadoopIndexTaskInnerProcessing.class.getName());
   final Method mainMethod=mainClass.getMethod("runTask",String[].class);
