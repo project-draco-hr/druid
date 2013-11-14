@@ -5,11 +5,11 @@
     final URL[] urLs=((URLClassLoader)hadoopLoader).getURLs();
     final URL[] nonHadoopUrls=((URLClassLoader)CliHadoopIndexer.class.getClassLoader()).getURLs();
     List<URL> theURLS=Lists.newArrayList();
-    theURLS.addAll(Arrays.asList(urLs));
     theURLS.addAll(Arrays.asList(nonHadoopUrls));
+    theURLS.addAll(Arrays.asList(urLs));
     final URLClassLoader loader=new URLClassLoader(theURLS.toArray(new URL[theURLS.size()]),null);
     Thread.currentThread().setContextClassLoader(loader);
-    System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(nonHadoopUrls));
+    System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(theURLS));
     final Class<?> mainClass=loader.loadClass(Main.class.getName());
     final Method mainMethod=mainClass.getMethod("main",String[].class);
     String[] args=new String[]{"internal","hadoop-indexer",argumentSpec};
