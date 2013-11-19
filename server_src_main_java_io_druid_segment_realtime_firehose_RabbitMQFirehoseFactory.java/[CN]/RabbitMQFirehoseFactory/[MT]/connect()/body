@@ -1,18 +1,13 @@
 {
+  ConnectionOptions lyraOptions=new ConnectionOptions(this.connectionFactory);
+  Config lyraConfig=new Config().withRecoveryPolicy(new RetryPolicy().withMaxRetries(config.getMaxRetries()).withRetryInterval(Duration.seconds(config.getRetryIntervalSeconds())).withMaxDuration(Duration.seconds(config.getMaxDurationSeconds())));
   String queue=config.getQueue();
   String exchange=config.getExchange();
   String routingKey=config.getRoutingKey();
   boolean durable=config.isDurable();
   boolean exclusive=config.isExclusive();
   boolean autoDelete=config.isAutoDelete();
-  final Connection connection;
-  try {
-    connection=connectionFactory.newConnection();
-  }
- catch (  Exception e) {
-    log.error("Unable to find a RabbitMQ broker. Are you sure you have one running?");
-    throw Throwables.propagate(e);
-  }
+  final Connection connection=Connections.create(lyraOptions,lyraConfig);
   connection.addShutdownListener(new ShutdownListener(){
     @Override public void shutdownCompleted(    ShutdownSignalException cause){
       log.warn(cause,"Connection closed!");
