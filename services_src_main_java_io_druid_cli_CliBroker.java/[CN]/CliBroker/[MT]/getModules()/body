@@ -10,6 +10,7 @@
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
       Jerseys.addResource(binder,QueryResource.class);
       Jerseys.addResource(binder,ClientInfoResource.class);
+      LifecycleModule.register(binder,QueryResource.class);
       DiscoveryModule.register(binder,Self.class);
       MetricsModule.register(binder,CacheMonitor.class);
       LifecycleModule.register(binder,Server.class);
