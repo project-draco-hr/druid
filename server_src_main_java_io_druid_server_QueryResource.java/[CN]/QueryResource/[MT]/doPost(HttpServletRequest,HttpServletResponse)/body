@@ -17,7 +17,7 @@
     resp.setContentType("application/x-javascript");
     out=resp.getOutputStream();
     jsonWriter.writeValue(out,results);
-    long requestTime=System.currentTimeMillis() - ((Request)req).getTimeStamp();
+    long requestTime=System.currentTimeMillis() - req.getSession().getCreationTime();
     emitter.emit(new ServiceMetricEvent.Builder().setUser2(query.getDataSource()).setUser4(query.getType()).setUser5(query.getIntervals().get(0).toString()).setUser6(String.valueOf(query.hasFilters())).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
   }
  catch (  Exception e) {
