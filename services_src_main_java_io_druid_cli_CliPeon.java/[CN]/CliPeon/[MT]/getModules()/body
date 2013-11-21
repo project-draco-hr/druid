@@ -19,7 +19,9 @@
       binder.bind(ThreadPoolTaskRunner.class).in(ManageLifecycle.class);
       binder.bind(SegmentLoaderConfig.class).toInstance(new SegmentLoaderConfig().withLocations(Arrays.<StorageLocationConfig>asList()));
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class);
+      Jerseys.addResource(binder,QueryResource.class);
       Jerseys.addResource(binder,ChatHandlerResource.class);
+      LifecycleModule.register(binder,QueryResource.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig(nodeType));
       LifecycleModule.register(binder,Server.class);
     }
