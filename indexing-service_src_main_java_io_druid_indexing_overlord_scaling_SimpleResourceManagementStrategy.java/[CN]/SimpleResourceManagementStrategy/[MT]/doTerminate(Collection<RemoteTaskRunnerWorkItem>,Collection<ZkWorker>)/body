@@ -22,7 +22,7 @@
     }
     List<ZkWorker> thoseLazyWorkers=Lists.newArrayList(FunctionalIterable.create(zkWorkers).filter(new Predicate<ZkWorker>(){
       @Override public boolean apply(      ZkWorker input){
-        return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().getMillis();
+        return input.getRunningTasks().isEmpty() && System.currentTimeMillis() - input.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().toStandardDuration().getMillis();
       }
     }
 ));

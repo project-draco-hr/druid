@@ -2,14 +2,22 @@
   try {
     final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
     final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopCoordinates);
-    final URL[] urLs=((URLClassLoader)hadoopLoader).getURLs();
-    final URL[] nonHadoopUrls=((URLClassLoader)CliHadoopIndexer.class.getClassLoader()).getURLs();
-    List<URL> theURLS=Lists.newArrayList();
-    theURLS.addAll(Arrays.asList(urLs));
-    theURLS.addAll(Arrays.asList(nonHadoopUrls));
-    final URLClassLoader loader=new URLClassLoader(theURLS.toArray(new URL[theURLS.size()]),null);
+    final List<URL> extensionURLs=Lists.newArrayList();
+    for (    String coordinate : extensionsConfig.getCoordinates()) {
+      final ClassLoader coordinateLoader=Initialization.getClassLoaderForCoordinates(aetherClient,coordinate);
+      extensionURLs.addAll(Arrays.asList(((URLClassLoader)coordinateLoader).getURLs()));
+    }
+    final List<URL> nonHadoopURLs=Lists.newArrayList();
+    nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)CliHadoopIndexer.class.getClassLoader()).getURLs()));
+    final List<URL> driverURLs=Lists.newArrayList();
+    driverURLs.addAll(nonHadoopURLs);
+    driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
+    final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);
     Thread.currentThread().setContextClassLoader(loader);
-    System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(nonHadoopUrls));
+    final List<URL> jobUrls=Lists.newArrayList();
+    jobUrls.addAll(nonHadoopURLs);
+    jobUrls.addAll(extensionURLs);
+    System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
     final Class<?> mainClass=loader.loadClass(Main.class.getName());
     final Method mainMethod=mainClass.getMethod("main",String[].class);
     String[] args=new String[]{"internal","hadoop-indexer",argumentSpec};

@@ -1,7 +1,6 @@
 {
   final ServletContextHandler queries=new ServletContextHandler(ServletContextHandler.SESSIONS);
   queries.setResourceBase("/");
-  queries.addServlet(new ServletHolder(injector.getInstance(QueryServlet.class)),"/druid/v2/*");
   final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
   root.addFilter(GzipFilter.class,"/*",null);
