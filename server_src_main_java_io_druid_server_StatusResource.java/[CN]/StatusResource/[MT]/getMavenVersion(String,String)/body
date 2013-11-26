@@ -1,0 +1,13 @@
+{
+  Properties properties=new Properties();
+  try {
+    InputStream is=StatusResource.class.getClassLoader().getResourceAsStream(String.format("META-INF/maven/%s/%s/pom.properties",groupId,artifactId));
+    if (is == null) {
+      return null;
+    }
+    properties.load(is);
+  }
+ catch (  IOException e) {
+  }
+  return properties.getProperty("version");
+}
