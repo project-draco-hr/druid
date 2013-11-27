@@ -5,13 +5,13 @@
   final ScriptableObject scope=context.initStandardObjects();
   final org.mozilla.javascript.Function fn=context.compileFunction(scope,function,"fn",1,null);
   Context.exit();
-  return new Function(){
-    public double apply(    Object[] args){
+  return new Function<String,String>(){
+    public String apply(    String input){
       Context cx=Context.getCurrentContext();
       if (cx == null) {
         cx=contextFactory.enterContext();
       }
-      return Context.toNumber(fn.call(cx,scope,scope,args));
+      return Context.toString(fn.call(cx,scope,scope,new String[]{input}));
     }
   }
 ;
