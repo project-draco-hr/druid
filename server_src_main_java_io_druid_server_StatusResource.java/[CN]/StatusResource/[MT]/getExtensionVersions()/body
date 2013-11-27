@@ -1,0 +1,11 @@
+{
+  final Injector injector=Initialization.makeStartupInjector();
+  final ExtensionsConfig config=injector.getInstance(ExtensionsConfig.class);
+  final List<DruidModule> druidModules=Initialization.getFromExtensions(config,DruidModule.class);
+  Map<String,String> moduleVersions=new HashMap<>();
+  for (  DruidModule module : druidModules) {
+    Package pkg=module.getClass().getPackage();
+    moduleVersions.put(pkg.getImplementationTitle(),pkg.getImplementationVersion());
+  }
+  return moduleVersions;
+}
