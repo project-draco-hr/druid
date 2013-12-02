@@ -1,4 +1,5 @@
 {
+  final long start=System.currentTimeMillis();
   Query query=null;
   byte[] requestQuery=null;
   final boolean isSmile="application/smile".equals(req.getContentType());
@@ -17,7 +18,7 @@
     resp.setContentType("application/x-javascript");
     out=resp.getOutputStream();
     jsonWriter.writeValue(out,results);
-    long requestTime=System.currentTimeMillis() - req.getSession().getCreationTime();
+    long requestTime=System.currentTimeMillis() - start;
     emitter.emit(new ServiceMetricEvent.Builder().setUser2(query.getDataSource()).setUser4(query.getType()).setUser5(query.getIntervals().get(0).toString()).setUser6(String.valueOf(query.hasFilters())).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
   }
  catch (  Exception e) {
