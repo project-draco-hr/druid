@@ -26,6 +26,14 @@
         @Override public void reset(){
           currRow=initRow;
         }
+        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
+          return new TimestampColumnSelector(){
+            @Override public long getTimestamp(){
+              return timestamps.getLongSingleValueRow(currRow);
+            }
+          }
+;
+        }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
           final Column column=index.getColumn(dimensionName);

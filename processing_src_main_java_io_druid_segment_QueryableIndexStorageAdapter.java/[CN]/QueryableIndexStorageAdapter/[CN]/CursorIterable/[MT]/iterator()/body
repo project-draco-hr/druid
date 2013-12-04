@@ -27,6 +27,14 @@
         @Override public void reset(){
           cursorOffset=initOffset.clone();
         }
+        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
+          return new TimestampColumnSelector(){
+            @Override public long getTimestamp(){
+              return index.getTimeColumn().getGenericColumn().getLongSingleValueRow(cursorOffset.getOffset());
+            }
+          }
+;
+        }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
           final Column columnDesc=index.getColumn(dimensionName);

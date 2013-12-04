@@ -1,0 +1,37 @@
+{
+  return new CacheStrategy<Result<SelectResultValue>,Object,SelectQuery>(){
+    @Override public byte[] computeCacheKey(    SelectQuery query){
+      final DimFilter dimFilter=query.getDimensionsFilter();
+      final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
+      final byte[] granularityBytes=query.getGranularity().cacheKey();
+      return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length).put(SELECT_QUERY).put(granularityBytes).put(filterBytes).array();
+    }
+    @Override public TypeReference<Object> getCacheObjectClazz(){
+      return OBJECT_TYPE_REFERENCE;
+    }
+    @Override public Function<Result<SelectResultValue>,Object> prepareForCache(){
+      return new Function<Result<SelectResultValue>,Object>(){
+        @Override public Object apply(        final Result<SelectResultValue> input){
+          return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getBaseObject());
+        }
+      }
+;
+    }
+    @Override public Function<Object,Result<SelectResultValue>> pullFromCache(){
+      return new Function<Object,Result<SelectResultValue>>(){
+        private final QueryGranularity granularity=query.getGranularity();
+        @Override public Result<SelectResultValue> apply(        Object input){
+          List<Object> results=(List<Object>)input;
+          Iterator<Object> resultIter=results.iterator();
+          DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
+          return new Result<SelectResultValue>(timestamp,new SelectResultValue(Lists.newArrayList(resultIter)));
+        }
+      }
+;
+    }
+    @Override public Sequence<Result<SelectResultValue>> mergeSequences(    Sequence<Sequence<Result<SelectResultValue>>> seqOfSequences){
+      return new MergeSequence<Result<SelectResultValue>>(getOrdering(),seqOfSequences);
+    }
+  }
+;
+}
