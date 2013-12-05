@@ -12,7 +12,7 @@
     @Override public Function<Result<SelectResultValue>,Object> prepareForCache(){
       return new Function<Result<SelectResultValue>,Object>(){
         @Override public Object apply(        final Result<SelectResultValue> input){
-          return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getBaseObject());
+          return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getPagingIdentifiers(),input.getValue().getEvents());
         }
       }
 ;
@@ -24,7 +24,7 @@
           List<Object> results=(List<Object>)input;
           Iterator<Object> resultIter=results.iterator();
           DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
-          return new Result<SelectResultValue>(timestamp,new SelectResultValue(Lists.newArrayList(resultIter)));
+          return new Result<SelectResultValue>(timestamp,new SelectResultValue(resultIter.next(),Lists.newArrayList(resultIter.next())));
         }
       }
 ;
