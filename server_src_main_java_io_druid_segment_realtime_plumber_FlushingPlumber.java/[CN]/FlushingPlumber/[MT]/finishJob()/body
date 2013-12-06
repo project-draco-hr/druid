@@ -4,4 +4,8 @@
     flushAfterDuration(entry.getKey(),entry.getValue());
   }
   shutdownExecutors();
+  if (flushScheduledExec != null) {
+    flushScheduledExec.shutdown();
+  }
+  stopped=true;
 }
