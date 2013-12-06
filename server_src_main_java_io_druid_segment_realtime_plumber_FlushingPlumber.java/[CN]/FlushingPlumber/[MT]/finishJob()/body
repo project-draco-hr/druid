@@ -1,0 +1,7 @@
+{
+  log.info("Shutting down...");
+  for (  final Map.Entry<Long,Sink> entry : getSinks().entrySet()) {
+    flushAfterDuration(entry.getKey(),entry.getValue());
+  }
+  shutdownScheduledExecutor();
+}

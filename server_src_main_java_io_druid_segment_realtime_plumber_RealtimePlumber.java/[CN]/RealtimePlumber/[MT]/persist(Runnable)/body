@@ -1,0 +1,18 @@
+{
+  final List<Pair<FireHydrant,Interval>> indexesToPersist=Lists.newArrayList();
+  for (  Sink sink : sinks.values()) {
+    if (sink.swappable()) {
+      indexesToPersist.add(Pair.of(sink.swap(),sink.getInterval()));
+    }
+  }
+  log.info("Submitting persist runnable for dataSource[%s]",schema.getDataSource());
+  persistExecutor.execute(new ThreadRenamingRunnable(String.format("%s-incremental-persist",schema.getDataSource())){
+    @Override public void doRun(){
+      for (      Pair<FireHydrant,Interval> pair : indexesToPersist) {
+        metrics.incrementRowOutputCount(persistHydrant(pair.lhs,schema,pair.rhs));
+      }
+      commitRunnable.run();
+    }
+  }
+);
+}
