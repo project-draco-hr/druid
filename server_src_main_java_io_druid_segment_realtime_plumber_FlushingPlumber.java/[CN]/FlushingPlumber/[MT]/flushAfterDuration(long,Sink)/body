@@ -1,7 +1,9 @@
 {
-  ScheduledExecutors.scheduleWithFixedDelay(getScheduledExecutor(),flushDuration,new Runnable(){
-    @Override public void run(){
+  ScheduledExecutors.scheduleWithFixedDelay(flushScheduledExec,flushDuration,new Callable<ScheduledExecutors.Signal>(){
+    @Override public ScheduledExecutors.Signal call() throws Exception {
+      log.info("Abandoning segment %s",sink.getSegment().getIdentifier());
       abandonSegment(truncatedTime,sink);
+      return ScheduledExecutors.Signal.STOP;
     }
   }
 );
