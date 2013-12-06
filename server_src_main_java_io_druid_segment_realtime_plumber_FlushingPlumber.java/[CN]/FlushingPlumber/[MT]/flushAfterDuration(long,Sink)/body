@@ -1,4 +1,5 @@
 {
+  log.info("Abandoning segment at %s",new DateTime().plusMillis(flushDuration.toPeriod().getMillis()));
   ScheduledExecutors.scheduleWithFixedDelay(flushScheduledExec,flushDuration,new Callable<ScheduledExecutors.Signal>(){
     @Override public ScheduledExecutors.Signal call() throws Exception {
       log.info("Abandoning segment %s",sink.getSegment().getIdentifier());
