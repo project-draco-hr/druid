@@ -34,7 +34,7 @@
         if (Ints.tryParse(segmentDir.getName()) == null) {
           continue;
         }
-        hydrants.add(new FireHydrant(new QueryableIndexSegment(null,IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
+        hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),new NoneShardSpec()),IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
       }
       Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
       sinks.put(sinkInterval.getStartMillis(),currSink);
