@@ -4,7 +4,38 @@
       final DimFilter dimFilter=query.getDimensionsFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
       final byte[] granularityBytes=query.getGranularity().cacheKey();
-      return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length).put(SELECT_QUERY).put(granularityBytes).put(filterBytes).array();
+      final Set<String> dimensions=Sets.newTreeSet();
+      if (query.getDimensions() != null) {
+        dimensions.addAll(query.getDimensions());
+      }
+      final byte[][] dimensionsBytes=new byte[dimensions.size()][];
+      int dimensionsBytesSize=0;
+      int index=0;
+      for (      String dimension : dimensions) {
+        dimensionsBytes[index]=dimension.getBytes();
+        dimensionsBytesSize+=dimensionsBytes[index].length;
+        ++index;
+      }
+      final Set<String> metrics=Sets.newTreeSet();
+      if (query.getMetrics() != null) {
+        dimensions.addAll(query.getMetrics());
+      }
+      final byte[][] metricBytes=new byte[metrics.size()][];
+      int metricBytesSize=0;
+      index=0;
+      for (      String metric : metrics) {
+        metricBytes[index]=metric.getBytes();
+        metricBytesSize+=metricBytes[index].length;
+        ++index;
+      }
+      final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ query.getPagingSpec().getCacheKey().length+ dimensionsBytesSize+ metricBytesSize).put(SELECT_QUERY).put(granularityBytes).put(filterBytes).put(query.getPagingSpec().getCacheKey());
+      for (      byte[] dimensionsByte : dimensionsBytes) {
+        queryCacheKey.put(dimensionsByte);
+      }
+      for (      byte[] metricByte : metricBytes) {
+        queryCacheKey.put(metricByte);
+      }
+      return queryCacheKey.array();
     }
     @Override public TypeReference<Object> getCacheObjectClazz(){
       return OBJECT_TYPE_REFERENCE;
@@ -24,7 +55,11 @@
           List<Object> results=(List<Object>)input;
           Iterator<Object> resultIter=results.iterator();
           DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
-          return new Result<SelectResultValue>(timestamp,new SelectResultValue(resultIter.next(),Lists.newArrayList(resultIter.next())));
+          return new Result<SelectResultValue>(timestamp,new SelectResultValue((Map<String,Integer>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Map<String,Integer>>(){
+          }
+),(List<EventHolder>)jsonMapper.convertValue(resultIter.next(),new TypeReference<List<EventHolder>>(){
+          }
+)));
         }
       }
 ;
