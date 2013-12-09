@@ -3,7 +3,7 @@
     Map<String,Object> loadSpec=segment.getLoadSpec();
     String s3Bucket=MapUtils.getString(loadSpec,"bucket");
     String s3Path=MapUtils.getString(loadSpec,"key");
-    String s3DescriptorPath=s3Path.substring(0,s3Path.lastIndexOf("/")) + "/descriptor.json";
+    String s3DescriptorPath=S3Utils.descriptorPathForSegmentPath(s3Path);
     final String s3ArchiveBucket=config.getArchiveBucket();
     if (s3ArchiveBucket.isEmpty()) {
       log.warn("S3 archive bucket not specified, refusing to move segment [s3://%s/%s]",s3Bucket,s3Path);
