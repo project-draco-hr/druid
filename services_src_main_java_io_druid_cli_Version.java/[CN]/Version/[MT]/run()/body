@@ -1,16 +1,18 @@
 {
-  System.out.println("Druid version " + Initialization.class.getPackage().getImplementationVersion());
+  StringBuilder output=new StringBuilder();
+  output.append("Druid version ").append(NL);
+  output.append(Initialization.class.getPackage().getImplementationVersion()).append(NL).append(NL);
   ExtensionsConfig config=Initialization.makeStartupInjector().getInstance(ExtensionsConfig.class);
-  System.out.println("");
-  System.out.println("Registered Druid Modules");
+  output.append("Registered Druid Modules").append(NL);
   for (  DruidModule module : Initialization.getFromExtensions(config,DruidModule.class)) {
     String artifact=module.getClass().getPackage().getImplementationTitle();
     String version=module.getClass().getPackage().getImplementationVersion();
     if (artifact != null) {
-      System.out.println(String.format("  - %s (%s-%s)",module.getClass().getCanonicalName(),module.getClass().getPackage().getImplementationTitle(),module.getClass().getPackage().getImplementationVersion()));
+      output.append(String.format("  - %s (%s-%s)",module.getClass().getCanonicalName(),artifact,version)).append(NL);
     }
  else {
-      System.out.println(String.format("  - %s",module.getClass().getCanonicalName()));
+      output.append(String.format("  - %s",module.getClass().getCanonicalName())).append(NL);
     }
   }
+  System.out.println(output.toString());
 }
