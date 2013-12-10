@@ -33,6 +33,7 @@
       binder.bind(DbTaskStorage.class).in(LazySingleton.class);
     }
     private void configureRunners(    Binder binder){
+      JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
       PolyBind.createChoice(binder,"druid.indexer.runner.type",Key.get(TaskRunnerFactory.class),Key.get(ForkingTaskRunnerFactory.class));
       final MapBinder<String,TaskRunnerFactory> biddy=PolyBind.optionBinder(binder,Key.get(TaskRunnerFactory.class));
       IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
