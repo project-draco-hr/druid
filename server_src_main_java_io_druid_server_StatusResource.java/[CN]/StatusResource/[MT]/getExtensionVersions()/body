@@ -1,0 +1,19 @@
+{
+  final Injector injector=Initialization.makeStartupInjector();
+  final ExtensionsConfig config=injector.getInstance(ExtensionsConfig.class);
+  final List<DruidModule> druidModules=Initialization.getFromExtensions(config,DruidModule.class);
+  List<ModuleVersion> moduleVersions=new ArrayList<>();
+  for (  DruidModule module : druidModules) {
+    String artifact=module.getClass().getPackage().getImplementationTitle();
+    String version=module.getClass().getPackage().getImplementationVersion();
+    ModuleVersion moduleVersion;
+    if (artifact != null) {
+      moduleVersion=new ModuleVersion(module.getClass().getCanonicalName(),artifact,version);
+    }
+ else {
+      moduleVersion=new ModuleVersion(module.getClass().getCanonicalName());
+    }
+    moduleVersions.add(moduleVersion);
+  }
+  return moduleVersions;
+}
