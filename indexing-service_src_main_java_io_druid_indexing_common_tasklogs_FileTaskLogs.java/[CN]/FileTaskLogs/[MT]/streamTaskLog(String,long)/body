@@ -1,0 +1,16 @@
+{
+  final File file=fileForTask(taskid);
+  if (file.exists()) {
+    return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
+      @Override public InputStream getInput() throws IOException {
+        final InputStream inputStream=new FileInputStream(file);
+        ByteStreams.skipFully(inputStream,offset);
+        return inputStream;
+      }
+    }
+);
+  }
+ else {
+    return Optional.absent();
+  }
+}

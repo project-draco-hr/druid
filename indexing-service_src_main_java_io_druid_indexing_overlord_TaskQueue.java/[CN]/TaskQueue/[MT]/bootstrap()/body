@@ -6,7 +6,7 @@
     queue.clear();
     taskLockbox.clear();
     final Multimap<TaskLock,Task> tasksByLock=ArrayListMultimap.create();
-    for (    final Task task : taskStorage.getRunningTasks()) {
+    for (    final Task task : taskStorage.getActiveTasks()) {
       try {
         final List<TaskLock> taskLocks=taskStorage.getLocks(task.getId());
         queue.add(task);
