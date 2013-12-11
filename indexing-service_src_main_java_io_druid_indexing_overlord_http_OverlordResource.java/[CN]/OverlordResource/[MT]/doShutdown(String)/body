@@ -1,7 +1,7 @@
 {
-  return asLeaderWith(taskMaster.getTaskRunner(),new Function<TaskRunner,Response>(){
-    @Override public Response apply(    TaskRunner taskRunner){
-      taskRunner.shutdown(taskid);
+  return asLeaderWith(taskMaster.getTaskQueue(),new Function<TaskQueue,Response>(){
+    @Override public Response apply(    TaskQueue taskQueue){
+      taskQueue.shutdown(taskid);
       return Response.ok(ImmutableMap.of("task",taskid)).build();
     }
   }

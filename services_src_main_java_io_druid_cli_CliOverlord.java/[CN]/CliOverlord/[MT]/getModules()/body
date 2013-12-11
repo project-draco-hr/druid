@@ -1,6 +1,7 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      JsonConfigProvider.bind(binder,"druid.indexer.queue",TaskQueueConfig.class);
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
       binder.bind(TaskLogStreamer.class).to(SwitchingTaskLogStreamer.class).in(LazySingleton.class);
       binder.bind(new TypeLiteral<List<TaskLogStreamer>>(){
@@ -8,7 +9,6 @@
 ).toProvider(new ListProvider<TaskLogStreamer>().add(TaskRunnerTaskLogStreamer.class).add(TaskLogs.class)).in(LazySingleton.class);
       binder.bind(TaskActionClientFactory.class).to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
-      binder.bind(TaskQueue.class).in(LazySingleton.class);
       binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
       binder.bind(TaskLockbox.class).in(LazySingleton.class);
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
@@ -21,7 +21,6 @@
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).toInstance(new OverlordJettyServerInitializer());
       Jerseys.addResource(binder,OverlordResource.class);
-      Jerseys.addResource(binder,OldOverlordResource.class);
       LifecycleModule.register(binder,Server.class);
     }
     private void configureTaskStorage(    Binder binder){

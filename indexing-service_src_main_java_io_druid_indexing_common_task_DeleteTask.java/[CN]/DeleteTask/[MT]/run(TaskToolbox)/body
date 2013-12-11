@@ -1,6 +1,5 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
-  final Interval interval=this.getImplicitLockInterval().get();
   final IncrementalIndex empty=new IncrementalIndex(0,QueryGranularity.NONE,new AggregatorFactory[0]);
   final IndexableAdapter emptyAdapter=new IncrementalIndexAdapter(interval,empty);
   final DataSegment segment=DataSegment.builder().dataSource(this.getDataSource()).interval(interval).version(myLock.getVersion()).shardSpec(new NoneShardSpec()).build();

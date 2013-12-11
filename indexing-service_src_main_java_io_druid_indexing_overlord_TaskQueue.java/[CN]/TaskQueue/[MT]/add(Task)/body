@@ -3,6 +3,7 @@
   try {
     Preconditions.checkState(active,"Queue is not active!");
     Preconditions.checkNotNull(task,"task");
+    Preconditions.checkState(tasks.size() < config.getMaxSize(),"Too many tasks (max = %,d)",config.getMaxSize());
     try {
       taskStorage.insert(task,TaskStatus.running(task.getId()));
     }
@@ -10,11 +11,8 @@
       log.warn("Attempt to add task twice: %s",task.getId());
       throw Throwables.propagate(e);
     }
-    queue.add(task);
-    workMayBeAvailable.signalAll();
-    if (task.getImplicitLockInterval().isPresent()) {
-      taskLockbox.tryLock(task,task.getImplicitLockInterval().get());
-    }
+    tasks.add(task);
+    managementMayBeNecessary.signalAll();
     return true;
   }
   finally {

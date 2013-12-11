@@ -1,0 +1,13 @@
+{
+  zkWorker.setLastCompletedTaskTime(new DateTime());
+  if (taskRunnerWorkItem != null) {
+    completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
+  }
+  runningTasks.remove(taskStatus.getId());
+  if (taskRunnerWorkItem != null) {
+    final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();
+    if (result != null) {
+      ((SettableFuture<TaskStatus>)result).set(taskStatus);
+    }
+  }
+}

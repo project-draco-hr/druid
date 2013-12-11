@@ -1,3 +1,18 @@
 {
-  throw new IllegalStateException("IndexTasks should not be run!");
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
+  final Set<DataSegment> segments=Sets.newHashSet();
+  for (  final Interval bucket : granularitySpec.bucketIntervals()) {
+    final List<ShardSpec> shardSpecs;
+    if (targetPartitionSize > 0) {
+      shardSpecs=determinePartitions(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,new NoneShardSpec()),bucket,targetPartitionSize);
+    }
+ else {
+      shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
+    }
+    for (    final ShardSpec shardSpec : shardSpecs) {
+      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),interval,myLock.getVersion());
+      segments.add(segment);
+    }
+  }
+  return TaskStatus.success(getId());
 }

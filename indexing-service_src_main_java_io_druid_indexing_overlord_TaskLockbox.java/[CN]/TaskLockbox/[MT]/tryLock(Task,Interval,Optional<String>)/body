@@ -1,9 +1,6 @@
 {
   giant.lock();
   try {
-    if (task.getImplicitLockInterval().isPresent() && !task.getImplicitLockInterval().get().equals(interval)) {
-      throw new IAE("Task must lock its fixed interval: %s",task.getId());
-    }
     final String dataSource=task.getDataSource();
     final List<TaskLockPosse> foundPosses=findLockPossesForInterval(dataSource,interval);
     final TaskLockPosse posseToUse;
@@ -38,15 +35,18 @@
       log.info("Added task[%s] to TaskLock[%s]",task.getId(),posseToUse.getTaskLock().getGroupId());
       try {
         taskStorage.addLock(task.getId(),posseToUse.getTaskLock());
+        return Optional.of(posseToUse.getTaskLock());
       }
  catch (      Exception e) {
         log.makeAlert("Failed to persist lock in storage").addData("task",task.getId()).addData("dataSource",posseToUse.getTaskLock().getDataSource()).addData("interval",posseToUse.getTaskLock().getInterval()).addData("version",posseToUse.getTaskLock().getVersion()).emit();
+        unlock(task,interval);
+        return Optional.absent();
       }
     }
  else {
       log.info("Task[%s] already present in TaskLock[%s]",task.getId(),posseToUse.getTaskLock().getGroupId());
+      return Optional.of(posseToUse.getTaskLock());
     }
-    return Optional.of(posseToUse.getTaskLock());
   }
   finally {
     giant.unlock();

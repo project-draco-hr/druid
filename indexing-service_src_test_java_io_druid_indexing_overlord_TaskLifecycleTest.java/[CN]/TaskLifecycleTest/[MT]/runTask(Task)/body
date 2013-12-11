@@ -3,7 +3,7 @@
   tq.add(task);
   TaskStatus status;
   try {
-    while ((status=tsqa.getSameGroupMergedStatus(task.getId()).get()).isRunnable()) {
+    while ((status=tsqa.getStatus(task.getId()).get()).isRunnable()) {
       if (System.currentTimeMillis() > startTime + 10 * 1000) {
         throw new ISE("Where did the task go?!: %s",task.getId());
       }

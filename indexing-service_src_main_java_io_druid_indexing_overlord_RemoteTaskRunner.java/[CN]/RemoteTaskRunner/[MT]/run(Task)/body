@@ -9,7 +9,7 @@
       log.info("Task[%s] already running on %s.",task.getId(),zkWorker.getWorker().getHost());
       TaskAnnouncement announcement=zkWorker.getRunningTasks().get(task.getId());
       if (announcement.getTaskStatus().isComplete()) {
-        taskComplete(runningTask,zkWorker,task.getId(),announcement.getTaskStatus());
+        taskComplete(runningTask,zkWorker,announcement.getTaskStatus());
       }
     }
     return runningTask.getResult();
