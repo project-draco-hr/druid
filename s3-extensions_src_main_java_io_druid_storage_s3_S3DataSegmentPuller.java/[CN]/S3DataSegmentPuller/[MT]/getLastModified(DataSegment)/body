@@ -9,10 +9,10 @@
 );
     return objDetails.getLastModifiedDate().getTime();
   }
- catch (  InterruptedException e) {
-    throw Throwables.propagate(e);
-  }
-catch (  S3ServiceException|IOException e) {
+ catch (  S3ServiceException|IOException e) {
     throw new SegmentLoadingException(e,e.getMessage());
+  }
+catch (  Exception e) {
+    throw Throwables.propagate(e);
   }
 }
