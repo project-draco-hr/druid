@@ -1,8 +1,8 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final IncrementalIndex empty=new IncrementalIndex(0,QueryGranularity.NONE,new AggregatorFactory[0]);
-  final IndexableAdapter emptyAdapter=new IncrementalIndexAdapter(interval,empty);
-  final DataSegment segment=DataSegment.builder().dataSource(this.getDataSource()).interval(interval).version(myLock.getVersion()).shardSpec(new NoneShardSpec()).build();
+  final IndexableAdapter emptyAdapter=new IncrementalIndexAdapter(getInterval(),empty);
+  final DataSegment segment=DataSegment.builder().dataSource(this.getDataSource()).interval(getInterval()).version(myLock.getVersion()).shardSpec(new NoneShardSpec()).build();
   final File outDir=new File(toolbox.getTaskWorkDir(),segment.getIdentifier());
   final File fileToUpload=IndexMerger.merge(Lists.newArrayList(emptyAdapter),new AggregatorFactory[0],outDir);
   final DataSegment uploadedSegment=toolbox.getSegmentPusher().push(fileToUpload,segment);

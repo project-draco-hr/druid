@@ -3,8 +3,8 @@
   if (!myLock.getDataSource().equals(getDataSource())) {
     throw new ISE("WTF?! Lock dataSource[%s] != task dataSource[%s]",myLock.getDataSource(),getDataSource());
   }
-  if (!myLock.getInterval().equals(interval)) {
-    throw new ISE("WTF?! Lock interval[%s] != task interval[%s]",myLock.getInterval(),interval);
+  if (!myLock.getInterval().equals(getInterval())) {
+    throw new ISE("WTF?! Lock interval[%s] != task interval[%s]",myLock.getInterval(),getInterval());
   }
   final List<DataSegment> unusedSegments=toolbox.getTaskActionClient().submit(new SegmentListUnusedAction(myLock.getDataSource(),myLock.getInterval()));
   for (  final DataSegment unusedSegment : unusedSegments) {
