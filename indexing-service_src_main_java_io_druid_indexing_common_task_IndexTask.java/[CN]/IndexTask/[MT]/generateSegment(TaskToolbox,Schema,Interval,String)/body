@@ -17,6 +17,7 @@
   final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,metrics);
   final int myRowFlushBoundary=this.rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
   try {
+    plumber.startJob();
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
       if (shouldIndex(schema,interval,inputRow)) {
