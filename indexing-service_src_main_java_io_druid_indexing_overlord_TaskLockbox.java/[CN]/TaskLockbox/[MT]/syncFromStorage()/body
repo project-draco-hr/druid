@@ -1,0 +1,41 @@
+{
+  giant.lock();
+  try {
+    final List<Pair<Task,TaskLock>> storedLocks=Lists.newArrayList();
+    for (    final Task task : taskStorage.getActiveTasks()) {
+      for (      final TaskLock taskLock : taskStorage.getLocks(task.getId())) {
+        storedLocks.add(Pair.of(task,taskLock));
+      }
+    }
+    final Ordering<Pair<Task,TaskLock>> byVersionOrdering=new Ordering<Pair<Task,TaskLock>>(){
+      @Override public int compare(      Pair<Task,TaskLock> left,      Pair<Task,TaskLock> right){
+        return ComparisonChain.start().compare(left.rhs.getVersion(),right.rhs.getVersion()).compare(left.lhs.getId(),right.lhs.getId()).result();
+      }
+    }
+;
+    running.clear();
+    final Set<String> uniqueTaskIds=Sets.newHashSet();
+    int taskLockCount=0;
+    for (    final Pair<Task,TaskLock> taskAndLock : byVersionOrdering.sortedCopy(storedLocks)) {
+      final Task task=taskAndLock.lhs;
+      final TaskLock savedTaskLock=taskAndLock.rhs;
+      uniqueTaskIds.add(task.getId());
+      final Optional<TaskLock> acquiredTaskLock=tryLock(task,savedTaskLock.getInterval(),Optional.of(savedTaskLock.getVersion()));
+      if (acquiredTaskLock.isPresent() && savedTaskLock.getVersion().equals(acquiredTaskLock.get().getVersion())) {
+        taskLockCount++;
+        log.info("Reacquired lock on interval[%s] version[%s] for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),task.getId());
+      }
+ else       if (acquiredTaskLock.isPresent()) {
+        taskLockCount++;
+        log.info("Could not reacquire lock on interval[%s] version[%s] (got version[%s] instead) for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),acquiredTaskLock.get().getVersion(),task.getId());
+      }
+ else {
+        log.info("Could not reacquire lock on interval[%s] version[%s] for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),task.getId());
+      }
+    }
+    log.info("Synced %,d locks for %,d tasks from storage (%,d locks ignored).",taskLockCount,uniqueTaskIds.size(),storedLocks.size() - taskLockCount);
+  }
+  finally {
+    giant.unlock();
+  }
+}

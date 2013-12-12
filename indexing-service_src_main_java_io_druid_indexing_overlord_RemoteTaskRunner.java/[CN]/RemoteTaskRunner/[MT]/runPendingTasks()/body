@@ -3,8 +3,11 @@
     @Override public Void call() throws Exception {
       try {
         List<RemoteTaskRunnerWorkItem> copy=Lists.newArrayList(pendingTasks.values());
-        for (        RemoteTaskRunnerWorkItem taskWrapper : copy) {
-          assignTask(taskWrapper);
+        for (        RemoteTaskRunnerWorkItem taskRunnerWorkItem : copy) {
+          String taskId=taskRunnerWorkItem.getTaskId();
+          if (tryAssignTask(pendingTaskPayloads.get(taskId),taskRunnerWorkItem)) {
+            pendingTaskPayloads.remove(taskId);
+          }
         }
       }
  catch (      Exception e) {

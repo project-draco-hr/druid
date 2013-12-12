@@ -1,10 +1,12 @@
 {
   giant.lock();
   try {
-    log.info("Naptime! Shutting down until we are started again.");
-    queue.clear();
-    taskLockbox.clear();
+    tasks.clear();
+    taskFutures.clear();
     active=false;
+    managerExec.shutdownNow();
+    storageSyncExec.shutdownNow();
+    managementMayBeNecessary.signalAll();
   }
   finally {
     giant.unlock();

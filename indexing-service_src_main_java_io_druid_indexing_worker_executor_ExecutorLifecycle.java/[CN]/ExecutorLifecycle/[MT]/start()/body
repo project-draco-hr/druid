@@ -1,7 +1,7 @@
 {
-  final File taskFile=config.getTaskFile();
-  final File statusFile=config.getStatusFile();
-  final InputStream parentStream=config.getParentStream();
+  final File taskFile=Preconditions.checkNotNull(config.getTaskFile(),"taskFile");
+  final File statusFile=Preconditions.checkNotNull(config.getStatusFile(),"statusFile");
+  final InputStream parentStream=Preconditions.checkNotNull(config.getParentStream(),"parentStream");
   final Task task;
   try {
     task=jsonMapper.readValue(taskFile,Task.class);
@@ -24,11 +24,22 @@
     }
   }
 );
+  try {
+    if (!task.isReady(taskActionClientFactory.create(task))) {
+      throw new ISE("Task is not ready to run yet!",task.getId());
+    }
+  }
+ catch (  Exception e) {
+    throw new ISE(e,"Failed to run isReady",task.getId());
+  }
   statusFuture=Futures.transform(taskRunner.run(task),new Function<TaskStatus,TaskStatus>(){
     @Override public TaskStatus apply(    TaskStatus taskStatus){
       try {
         log.info("Task completed with status: %s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(taskStatus));
-        statusFile.getParentFile().mkdirs();
+        final File statusFileParent=statusFile.getParentFile();
+        if (statusFileParent != null) {
+          statusFileParent.mkdirs();
+        }
         jsonMapper.writeValue(statusFile,taskStatus);
         return taskStatus;
       }

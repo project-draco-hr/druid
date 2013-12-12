@@ -1,0 +1,9 @@
+{
+  final Set<DataSegment> segments=Sets.newHashSet();
+  for (  final TaskAction action : storage.getAuditLogs(taskid)) {
+    if (action instanceof SegmentInsertAction) {
+      segments.addAll(((SegmentInsertAction)action).getSegments());
+    }
+  }
+  return segments;
+}

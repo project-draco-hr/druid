@@ -2,17 +2,12 @@
   giant.lock();
   try {
     final Iterable<TaskLockPosse> searchSpace;
-    if (task.getImplicitLockInterval().isPresent()) {
-      searchSpace=findLockPossesForInterval(task.getDataSource(),task.getImplicitLockInterval().get());
+    final NavigableMap<Interval,TaskLockPosse> dsRunning=running.get(task.getDataSource());
+    if (dsRunning == null) {
+      searchSpace=ImmutableList.of();
     }
  else {
-      final NavigableMap<Interval,TaskLockPosse> dsRunning=running.get(task.getDataSource());
-      if (dsRunning == null) {
-        searchSpace=ImmutableList.of();
-      }
- else {
-        searchSpace=dsRunning.values();
-      }
+      searchSpace=dsRunning.values();
     }
     return ImmutableList.copyOf(Iterables.filter(searchSpace,new Predicate<TaskLockPosse>(){
       @Override public boolean apply(      TaskLockPosse taskLock){

@@ -7,13 +7,10 @@
     }
 );
   }
- catch (  InterruptedException e) {
+ catch (  S3ServiceException|IOException e) {
+    throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
+  }
+catch (  Exception e) {
     throw Throwables.propagate(e);
-  }
-catch (  IOException e) {
-    throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
-  }
-catch (  S3ServiceException e) {
-    throw new SegmentLoadingException(e,"S3 fail! Key[%s]",coords);
   }
 }

@@ -1,11 +1,13 @@
 {
-  EmittingLogger.registerEmitter(EasyMock.createMock(ServiceEmitter.class));
+  final ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
+  EmittingLogger.registerEmitter(emitter);
   tmp=Files.createTempDir();
+  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\"}",TaskQueueConfig.class);
   ts=new HeapMemoryTaskStorage();
+  tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);
-  tq=new TaskQueue(ts,tl);
   mdc=newMockMDC();
-  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tq,tl,mdc,newMockEmitter()));
+  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
   tb=new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,50000),tac,newMockEmitter(),new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
@@ -25,8 +27,6 @@
   }
 )),new DefaultObjectMapper());
   tr=new ThreadPoolTaskRunner(tb);
-  tc=new TaskConsumer(tq,tr,tac,newMockEmitter());
-  tsqa=new TaskStorageQueryAdapter(ts);
+  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
   tq.start();
-  tc.start();
 }

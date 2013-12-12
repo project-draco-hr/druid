@@ -3,6 +3,7 @@
     if (!started) {
       return;
     }
+    started=false;
     for (    ZkWorker zkWorker : zkWorkers.values()) {
       zkWorker.close();
     }
@@ -10,8 +11,5 @@
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
-  }
- finally {
-    started=false;
   }
 }

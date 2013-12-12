@@ -1,7 +1,7 @@
 {
-  return dbi.withHandle(new HandleCallback<List<Task>>(){
+  return retryingHandle(new HandleCallback<List<Task>>(){
     @Override public List<Task> withHandle(    Handle handle) throws Exception {
-      final List<Map<String,Object>> dbTasks=handle.createQuery(String.format("SELECT id, payload, status_payload FROM %s WHERE active = 1",dbTables.getTasksTable())).list();
+      final List<Map<String,Object>> dbTasks=handle.createQuery(String.format("SELECT id, payload, status_payload FROM %s WHERE active = 1 ORDER BY created_date",dbTables.getTasksTable())).list();
       final ImmutableList.Builder<Task> tasks=ImmutableList.builder();
       for (      final Map<String,Object> row : dbTasks) {
         final String id=row.get("id").toString();

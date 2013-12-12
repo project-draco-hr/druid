@@ -3,7 +3,53 @@
   try {
     Preconditions.checkState(!active,"queue must be stopped");
     active=true;
-    workMayBeAvailable.signalAll();
+    syncFromStorage();
+    managerExec.submit(new Runnable(){
+      @Override public void run(){
+        while (true) {
+          try {
+            manage();
+            break;
+          }
+ catch (          InterruptedException e) {
+            log.info("Interrupted, exiting!");
+            break;
+          }
+catch (          Exception e) {
+            final long restartDelay=config.getRestartDelay().getMillis();
+            log.makeAlert(e,"Failed to manage").addData("restartDelay",restartDelay).emit();
+            try {
+              Thread.sleep(restartDelay);
+            }
+ catch (            InterruptedException e2) {
+              log.info("Interrupted, exiting!");
+              break;
+            }
+          }
+        }
+      }
+    }
+);
+    ScheduledExecutors.scheduleAtFixedRate(storageSyncExec,config.getStorageSyncRate(),new Callable<ScheduledExecutors.Signal>(){
+      @Override public ScheduledExecutors.Signal call(){
+        try {
+          syncFromStorage();
+        }
+ catch (        Exception e) {
+          if (active) {
+            log.makeAlert(e,"Failed to sync with storage").emit();
+          }
+        }
+        if (active) {
+          return ScheduledExecutors.Signal.REPEAT;
+        }
+ else {
+          return ScheduledExecutors.Signal.STOP;
+        }
+      }
+    }
+);
+    managementMayBeNecessary.signalAll();
   }
   finally {
     giant.unlock();

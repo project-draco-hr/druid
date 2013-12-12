@@ -1,5 +1,5 @@
 {
-  return dbi.withHandle(new HandleCallback<Optional<TaskStatus>>(){
+  return retryingHandle(new HandleCallback<Optional<TaskStatus>>(){
     @Override public Optional<TaskStatus> withHandle(    Handle handle) throws Exception {
       final List<Map<String,Object>> dbStatuses=handle.createQuery(String.format("SELECT status_payload FROM %s WHERE id = :id",dbTables.getTasksTable())).bind("id",taskid).list();
       if (dbStatuses.size() == 0) {

@@ -1,8 +1,27 @@
 {
   if (segment == null) {
-    throw new ISE("Segment was null, this should never run.",this.getClass().getSimpleName());
+    final List<DataSegment> segments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(getDataSource(),getInterval()));
+    final FunctionalIterable<Task> tasks=FunctionalIterable.create(segments).keep(new Function<DataSegment,Task>(){
+      @Override public Task apply(      DataSegment segment){
+        final Integer segmentVersion=segment.getBinaryVersion();
+        if (!CURR_VERSION_INTEGER.equals(segmentVersion)) {
+          return new SubTask(getGroupId(),segment);
+        }
+        log.info("Skipping[%s], already version[%s]",segment.getIdentifier(),segmentVersion);
+        return null;
+      }
+    }
+);
+    for (    final Task subTask : tasks) {
+      final TaskStatus status=subTask.run(toolbox);
+      if (!status.isSuccess()) {
+        return status;
+      }
+    }
   }
-  log.info("I'm in a subless mood.");
-  convertSegment(toolbox,segment);
+ else {
+    log.info("I'm in a subless mood.");
+    convertSegment(toolbox,segment);
+  }
   return success();
 }

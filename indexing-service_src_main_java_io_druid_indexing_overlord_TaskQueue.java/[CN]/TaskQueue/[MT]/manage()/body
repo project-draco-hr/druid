@@ -1,0 +1,61 @@
+{
+  log.info("Beginning management in %s.",config.getStartDelay());
+  Thread.sleep(config.getStartDelay().getMillis());
+  while (active) {
+    giant.lock();
+    try {
+      final Map<String,ListenableFuture<TaskStatus>> runnerTaskFutures=Maps.newHashMap();
+      for (      final TaskRunnerWorkItem workItem : taskRunner.getKnownTasks()) {
+        runnerTaskFutures.put(workItem.getTaskId(),workItem.getResult());
+      }
+      for (      final Task task : tasks) {
+        if (!taskFutures.containsKey(task.getId())) {
+          final ListenableFuture<TaskStatus> runnerTaskFuture;
+          if (runnerTaskFutures.containsKey(task.getId())) {
+            runnerTaskFuture=runnerTaskFutures.get(task.getId());
+          }
+ else {
+            final boolean taskIsReady;
+            try {
+              taskIsReady=task.isReady(taskActionClientFactory.create(task));
+            }
+ catch (            Exception e) {
+              log.makeAlert(e,"Exception thrown during isReady").addData("task",task.getId()).emit();
+              notifyStatus(task,TaskStatus.failure(task.getId()));
+              continue;
+            }
+            if (taskIsReady) {
+              log.info("Asking taskRunner to run: %s",task.getId());
+              runnerTaskFuture=taskRunner.run(task);
+            }
+ else {
+              continue;
+            }
+          }
+          taskFutures.put(task.getId(),attachCallbacks(task,runnerTaskFuture));
+        }
+      }
+      final Set<String> tasksToKill=Sets.difference(runnerTaskFutures.keySet(),ImmutableSet.copyOf(Lists.transform(tasks,new Function<Task,Object>(){
+        @Override public String apply(        Task task){
+          return task.getId();
+        }
+      }
+)));
+      if (!tasksToKill.isEmpty()) {
+        log.info("Asking taskRunner to clean up %,d tasks.",tasksToKill.size());
+        for (        final String taskId : tasksToKill) {
+          try {
+            taskRunner.shutdown(taskId);
+          }
+ catch (          Exception e) {
+            log.warn(e,"TaskRunner failed to clean up task: %s",taskId);
+          }
+        }
+      }
+      managementMayBeNecessary.awaitNanos(60000000000L);
+    }
+  finally {
+      giant.unlock();
+    }
+  }
+}

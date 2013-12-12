@@ -1,0 +1,50 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(task,"task");
+    Preconditions.checkNotNull(taskStatus,"status");
+    Preconditions.checkState(active,"Queue is not active!");
+    Preconditions.checkArgument(task.getId().equals(taskStatus.getId()),"Mismatching task ids[%s/%s]",task.getId(),taskStatus.getId());
+    try {
+      taskRunner.shutdown(task.getId());
+    }
+ catch (    Exception e) {
+      log.warn(e,"TaskRunner failed to cleanup task after completion: %s",task.getId());
+    }
+    int removed=0;
+    for (int i=tasks.size() - 1; i >= 0; i--) {
+      if (tasks.get(i).getId().equals(task.getId())) {
+        removed++;
+        tasks.remove(i);
+        break;
+      }
+    }
+    if (removed == 0) {
+      log.warn("Unknown task completed: %s",task.getId());
+    }
+ else     if (removed > 1) {
+      log.makeAlert("Removed multiple copies of task").addData("count",removed).addData("task",task.getId()).emit();
+    }
+    taskFutures.remove(task.getId());
+    if (removed > 0) {
+      try {
+        final Optional<TaskStatus> previousStatus=taskStorage.getStatus(task.getId());
+        if (!previousStatus.isPresent() || !previousStatus.get().isRunnable()) {
+          log.makeAlert("Ignoring notification for already-complete task").addData("task",task.getId()).emit();
+        }
+ else {
+          taskStorage.setStatus(taskStatus);
+          taskLockbox.unlock(task);
+          log.info("Task done: %s",task);
+          managementMayBeNecessary.signalAll();
+        }
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to persist status for task").addData("task",task.getId()).addData("statusCode",taskStatus.getStatusCode()).emit();
+      }
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}
