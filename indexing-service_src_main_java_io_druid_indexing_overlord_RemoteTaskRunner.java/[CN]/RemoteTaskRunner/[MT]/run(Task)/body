@@ -1,6 +1,10 @@
 {
-  final RemoteTaskRunnerWorkItem runningTask=runningTasks.get(task.getId());
-  if (runningTask != null) {
+  final RemoteTaskRunnerWorkItem completeTask, runningTask, pendingTask;
+  if ((pendingTask=pendingTasks.get(task.getId())) != null) {
+    log.info("Assigned a task[%s] that is already pending, not doing anything",task.getId());
+    return pendingTask.getResult();
+  }
+ else   if ((runningTask=runningTasks.get(task.getId())) != null) {
     ZkWorker zkWorker=findWorkerRunningTask(task.getId());
     if (zkWorker == null) {
       log.warn("Told to run task[%s], but no worker has started running it yet.",task.getId());
@@ -14,10 +18,10 @@
     }
     return runningTask.getResult();
   }
-  RemoteTaskRunnerWorkItem pendingTask=pendingTasks.get(task.getId());
-  if (pendingTask != null) {
-    log.info("Assigned a task[%s] that is already pending, not doing anything",task.getId());
-    return pendingTask.getResult();
+ else   if ((completeTask=completeTasks.get(task.getId())) != null) {
+    return completeTask.getResult();
   }
-  return addPendingTask(task).getResult();
+ else {
+    return addPendingTask(task).getResult();
+  }
 }

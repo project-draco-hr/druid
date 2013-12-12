@@ -2,6 +2,7 @@
   Preconditions.checkNotNull(taskRunnerWorkItem,"taskRunnerWorkItem");
   Preconditions.checkNotNull(zkWorker,"zkWorker");
   Preconditions.checkNotNull(taskStatus,"taskStatus");
+  log.info("Worker[%s] completed task[%s] with status[%s]",zkWorker.getWorker().getHost(),taskStatus.getId(),taskStatus.getStatusCode());
   zkWorker.setLastCompletedTaskTime(new DateTime());
   completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
   runningTasks.remove(taskStatus.getId());

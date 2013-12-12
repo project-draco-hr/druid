@@ -3,6 +3,7 @@
   try {
     final String workerStatusPath=JOINER.join(zkPaths.getIndexerStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=pathChildrenCacheFactory.make(cf,workerStatusPath);
+    final SettableFuture<ZkWorker> retVal=SettableFuture.create();
     final ZkWorker zkWorker=new ZkWorker(worker,statusCache,jsonMapper);
     zkWorker.addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      PathChildrenCacheEvent event) throws Exception {
@@ -43,8 +44,13 @@ log.info("Task[%s] went bye bye.",taskId);
 }
 break;
 case INITIALIZED:
-if (zkWorkers.putIfAbsent(worker.getHost(),zkWorker) != null) {
-log.makeAlert("WTF?! Tried to add already-existing worker[%s]",worker.getHost()).addData("workerHost",worker.getHost()).addData("workerIp",worker.getIp()).emit();
+if (zkWorkers.putIfAbsent(worker.getHost(),zkWorker) == null) {
+retVal.set(zkWorker);
+}
+ else {
+final String message=String.format("WTF?! Tried to add already-existing worker[%s]",worker.getHost());
+log.makeAlert(message).addData("workerHost",worker.getHost()).addData("workerIp",worker.getIp()).emit();
+retVal.setException(new IllegalStateException(message));
 }
 runPendingTasks();
 }
@@ -57,7 +63,7 @@ log.makeAlert(e,"Failed to handle new worker status").addData("worker",zkWorker.
 }
 );
 zkWorker.start();
-return zkWorker;
+return retVal;
 }
  catch (Exception e) {
 throw Throwables.propagate(e);

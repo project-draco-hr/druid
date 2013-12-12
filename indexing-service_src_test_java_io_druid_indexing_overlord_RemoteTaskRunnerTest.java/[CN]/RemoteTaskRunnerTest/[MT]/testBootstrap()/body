@@ -2,20 +2,16 @@
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,"first"),jsonMapper.writeValueAsBytes(TaskStatus.running("first")));
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,"second"),jsonMapper.writeValueAsBytes(TaskStatus.running("second")));
   doSetup();
-  Set<String> existingTasks=Sets.newHashSet();
+  final Set<String> existingTasks=Sets.newHashSet();
   for (  ZkWorker zkWorker : remoteTaskRunner.getWorkers()) {
     existingTasks.addAll(zkWorker.getRunningTasks().keySet());
   }
-  Assert.assertTrue(existingTasks.size() == 2);
-  Assert.assertTrue(existingTasks.contains("first"));
-  Assert.assertTrue(existingTasks.contains("second"));
-  Set<String> runningTasks=Sets.newHashSet(Iterables.transform(remoteTaskRunner.getRunningTasks(),new Function<RemoteTaskRunnerWorkItem,String>(){
+  Assert.assertEquals("existingTasks",ImmutableSet.of("first","second"),existingTasks);
+  final Set<String> runningTasks=Sets.newHashSet(Iterables.transform(remoteTaskRunner.getRunningTasks(),new Function<RemoteTaskRunnerWorkItem,String>(){
     @Override public String apply(    RemoteTaskRunnerWorkItem input){
       return input.getTaskId();
     }
   }
 ));
-  Assert.assertTrue(runningTasks.size() == 1);
-  Assert.assertTrue(runningTasks.contains("second"));
-  Assert.assertFalse(runningTasks.contains("first"));
+  Assert.assertEquals("runningTasks",ImmutableSet.of("first","second"),runningTasks);
 }
