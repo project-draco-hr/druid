@@ -1,6 +1,9 @@
 {
-  final IndexTask task=new IndexTask(null,"foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P2D"))),null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,null,-1);
+  final IndexTask task=new IndexTask(null,"foo",new UniformGranularitySpec(Granularity.DAY,ImmutableList.of(new Interval("2010-01-01/P2D"))),null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},QueryGranularity.NONE,10000,new LocalFirehoseFactory(new File("lol"),"rofl",null),-1);
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  for (  final Module jacksonModule : new FirehoseModule().getJacksonModules()) {
+    jsonMapper.registerModule(jacksonModule);
+  }
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final IndexTask task2=(IndexTask)jsonMapper.readValue(json,Task.class);
@@ -10,4 +13,6 @@
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
   Assert.assertEquals(task.getInterval(),task2.getInterval());
+  Assert.assertTrue(task.getFirehoseFactory() instanceof LocalFirehoseFactory);
+  Assert.assertTrue(task2.getFirehoseFactory() instanceof LocalFirehoseFactory);
 }
