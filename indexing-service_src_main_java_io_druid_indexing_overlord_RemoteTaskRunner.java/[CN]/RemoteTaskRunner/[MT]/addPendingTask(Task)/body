@@ -1,0 +1,8 @@
+{
+  log.info("Added pending task %s",task.getId());
+  final RemoteTaskRunnerWorkItem taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(task.getId(),SettableFuture.<TaskStatus>create(),null);
+  pendingTaskPayloads.put(task.getId(),task);
+  pendingTasks.put(task.getId(),taskRunnerWorkItem);
+  runPendingTasks();
+  return taskRunnerWorkItem;
+}

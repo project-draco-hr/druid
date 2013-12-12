@@ -1,12 +1,7 @@
 {
   QueryRunner<T> queryRunner=null;
-  final List<Task> runningTasks=Lists.transform(ImmutableList.copyOf(getRunningTasks()),new Function<TaskRunnerWorkItem,Task>(){
-    @Override public Task apply(    TaskRunnerWorkItem o){
-      return o.getTask();
-    }
-  }
-);
-  for (  final Task task : runningTasks) {
+  for (  final ThreadPoolTaskRunnerWorkItem taskRunnerWorkItem : ImmutableList.copyOf(runningItems)) {
+    final Task task=taskRunnerWorkItem.getTask();
     if (task.getDataSource().equals(query.getDataSource())) {
       final QueryRunner<T> taskQueryRunner=task.getQueryRunner(query);
       if (taskQueryRunner != null) {

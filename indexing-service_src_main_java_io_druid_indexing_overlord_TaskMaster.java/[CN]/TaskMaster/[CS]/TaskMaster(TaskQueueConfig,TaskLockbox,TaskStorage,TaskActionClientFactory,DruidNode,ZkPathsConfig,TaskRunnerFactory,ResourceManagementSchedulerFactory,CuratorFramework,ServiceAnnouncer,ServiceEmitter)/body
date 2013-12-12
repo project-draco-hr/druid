@@ -14,6 +14,11 @@
           log.makeAlert("TaskMaster set a new Lifecycle without the old one being cleared!  Race condition").emit();
         }
         leaderLifecycle.addManagedInstance(taskRunner);
+        if (taskRunner instanceof RemoteTaskRunner) {
+          final ScheduledExecutorFactory executorFactory=ScheduledExecutors.createFactory(leaderLifecycle);
+          resourceManagementScheduler=managementSchedulerFactory.build((RemoteTaskRunner)taskRunner,executorFactory);
+          leaderLifecycle.addManagedInstance(resourceManagementScheduler);
+        }
         leaderLifecycle.addManagedInstance(taskQueue);
         leaderLifecycle.addHandler(new Lifecycle.Handler(){
           @Override public void start() throws Exception {
@@ -24,11 +29,6 @@
           }
         }
 );
-        if (taskRunner instanceof RemoteTaskRunner) {
-          final ScheduledExecutorFactory executorFactory=ScheduledExecutors.createFactory(leaderLifecycle);
-          resourceManagementScheduler=managementSchedulerFactory.build((RemoteTaskRunner)taskRunner,executorFactory);
-          leaderLifecycle.addManagedInstance(resourceManagementScheduler);
-        }
         try {
           leaderLifecycle.start();
           leading=true;

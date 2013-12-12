@@ -1,7 +1,7 @@
 {
 synchronized (tasks) {
     if (!tasks.containsKey(task.getId())) {
-      tasks.put(task.getId(),new ForkingTaskRunnerWorkItem(task,exec.submit(new Callable<TaskStatus>(){
+      tasks.put(task.getId(),new ForkingTaskRunnerWorkItem(task.getId(),exec.submit(new Callable<TaskStatus>(){
         @Override public TaskStatus call(){
           final String attemptUUID=UUID.randomUUID().toString();
           final File taskDir=new File(config.getTaskDir(),task.getId());

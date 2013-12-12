@@ -1,5 +1,5 @@
 {
-  RemoteTaskRunnerWorkItem runningTask=runningTasks.get(task.getId());
+  final RemoteTaskRunnerWorkItem runningTask=runningTasks.get(task.getId());
   if (runningTask != null) {
     ZkWorker zkWorker=findWorkerRunningTask(task.getId());
     if (zkWorker == null) {
@@ -19,7 +19,5 @@
     log.info("Assigned a task[%s] that is already pending, not doing anything",task.getId());
     return pendingTask.getResult();
   }
-  RemoteTaskRunnerWorkItem taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(task,SettableFuture.<TaskStatus>create(),null);
-  addPendingTask(taskRunnerWorkItem);
-  return taskRunnerWorkItem.getResult();
+  return addPendingTask(task).getResult();
 }

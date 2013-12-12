@@ -1,7 +1,7 @@
 {
   final TaskToolbox toolbox=toolboxFactory.build(task);
   final ListenableFuture<TaskStatus> statusFuture=exec.submit(new ThreadPoolTaskRunnerCallable(task,toolbox));
-  final TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(task,statusFuture);
+  final ThreadPoolTaskRunnerWorkItem taskRunnerWorkItem=new ThreadPoolTaskRunnerWorkItem(task,statusFuture);
   runningItems.add(taskRunnerWorkItem);
   Futures.addCallback(statusFuture,new FutureCallback<TaskStatus>(){
     @Override public void onSuccess(    TaskStatus result){

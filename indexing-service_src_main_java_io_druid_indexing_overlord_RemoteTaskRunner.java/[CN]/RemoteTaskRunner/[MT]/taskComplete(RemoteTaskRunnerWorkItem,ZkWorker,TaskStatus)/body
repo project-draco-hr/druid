@@ -1,13 +1,12 @@
 {
+  Preconditions.checkNotNull(taskRunnerWorkItem,"taskRunnerWorkItem");
+  Preconditions.checkNotNull(zkWorker,"zkWorker");
+  Preconditions.checkNotNull(taskStatus,"taskStatus");
   zkWorker.setLastCompletedTaskTime(new DateTime());
-  if (taskRunnerWorkItem != null) {
-    completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
-  }
+  completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
   runningTasks.remove(taskStatus.getId());
-  if (taskRunnerWorkItem != null) {
-    final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();
-    if (result != null) {
-      ((SettableFuture<TaskStatus>)result).set(taskStatus);
-    }
+  final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();
+  if (result != null) {
+    ((SettableFuture<TaskStatus>)result).set(taskStatus);
   }
 }
