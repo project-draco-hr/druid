@@ -6,8 +6,7 @@
     String s3DescriptorPath=S3Utils.descriptorPathForSegmentPath(s3Path);
     final String s3ArchiveBucket=config.getArchiveBucket();
     if (s3ArchiveBucket.isEmpty()) {
-      log.warn("S3 archive bucket not specified, refusing to move segment [s3://%s/%s]",s3Bucket,s3Path);
-      return segment;
+      throw new SegmentLoadingException("S3 archive bucket not specified");
     }
     if (s3Client.isObjectInBucket(s3Bucket,s3Path)) {
       log.info("Moving index file[s3://%s/%s] to [s3://%s/%s]",s3Bucket,s3Path,s3ArchiveBucket,s3Path);
