@@ -6,10 +6,8 @@
   ts=new HeapMemoryTaskStorage();
   tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);
-  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  tr=new ThreadPoolTaskRunner(tb);
-  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
   mdc=newMockMDC();
+  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
   tb=new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,50000),tac,newMockEmitter(),new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
@@ -28,5 +26,7 @@
     }
   }
 )),new DefaultObjectMapper());
+  tr=new ThreadPoolTaskRunner(tb);
+  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
   tq.start();
 }
