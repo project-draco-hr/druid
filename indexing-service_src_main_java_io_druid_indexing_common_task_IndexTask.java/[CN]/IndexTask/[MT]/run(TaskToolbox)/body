@@ -10,9 +10,10 @@
       shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
-      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),getInterval(),myLock.getVersion());
+      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),bucket,myLock.getVersion());
       segments.add(segment);
     }
   }
+  toolbox.getTaskActionClient().submit(new SegmentInsertAction(segments));
   return TaskStatus.success(getId());
 }
