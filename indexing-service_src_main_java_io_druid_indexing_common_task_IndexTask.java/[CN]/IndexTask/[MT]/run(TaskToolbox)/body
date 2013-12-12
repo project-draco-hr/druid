@@ -4,7 +4,7 @@
   for (  final Interval bucket : granularitySpec.bucketIntervals()) {
     final List<ShardSpec> shardSpecs;
     if (targetPartitionSize > 0) {
-      shardSpecs=determinePartitions(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,new NoneShardSpec()),bucket,targetPartitionSize);
+      shardSpecs=determinePartitions(bucket,targetPartitionSize);
     }
  else {
       shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
