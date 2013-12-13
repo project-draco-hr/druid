@@ -1,0 +1,14 @@
+{
+  final Map<String,Object> data=Maps.newLinkedHashMap();
+  data.put("id",id);
+  if (createdTime.getMillis() > 0) {
+    data.put("createdTime",createdTime);
+  }
+  if (queueInsertionTime.getMillis() > 0) {
+    data.put("queueInsertionTime",queueInsertionTime);
+  }
+  if (status.isPresent()) {
+    data.put("statusCode",status.get().getStatusCode().toString());
+  }
+  return data;
+}
