@@ -1,14 +1,20 @@
 {
   giant.lock();
   try {
-    final ImmutableList.Builder<TaskStatus> listBuilder=ImmutableList.builder();
+    final List<TaskStatus> returns=Lists.newArrayList();
     final long recent=System.currentTimeMillis() - RECENCY_THRESHOLD;
-    for (    final TaskStuff taskStuff : tasks.values()) {
-      if (taskStuff.getStatus().isComplete() && taskStuff.getCreatedDate().getMillis() > recent) {
-        listBuilder.add(taskStuff.getStatus());
+    final Ordering<TaskStuff> createdDateDesc=new Ordering<TaskStuff>(){
+      @Override public int compare(      TaskStuff a,      TaskStuff b){
+        return a.getCreatedDate().compareTo(b.getCreatedDate());
       }
     }
-    return listBuilder.build();
+.reverse();
+    for (    final TaskStuff taskStuff : createdDateDesc.sortedCopy(tasks.values())) {
+      if (taskStuff.getStatus().isComplete() && taskStuff.getCreatedDate().getMillis() > recent) {
+        returns.add(taskStuff.getStatus());
+      }
+    }
+    return returns;
   }
   finally {
     giant.unlock();

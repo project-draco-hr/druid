@@ -2,7 +2,7 @@
   final DateTime recent=new DateTime().minus(RECENCY_THRESHOLD);
   return retryingHandle(new HandleCallback<List<TaskStatus>>(){
     @Override public List<TaskStatus> withHandle(    Handle handle) throws Exception {
-      final List<Map<String,Object>> dbTasks=handle.createQuery(String.format("SELECT id, status_payload FROM %s WHERE active = 0 AND created_date >= :recent ORDER BY created_date",dbTables.getTasksTable())).bind("recent",recent.toString()).list();
+      final List<Map<String,Object>> dbTasks=handle.createQuery(String.format("SELECT id, status_payload FROM %s WHERE active = 0 AND created_date >= :recent ORDER BY created_date DESC",dbTables.getTasksTable())).bind("recent",recent.toString()).list();
       final ImmutableList.Builder<TaskStatus> statuses=ImmutableList.builder();
       for (      final Map<String,Object> row : dbTasks) {
         final String id=row.get("id").toString();
