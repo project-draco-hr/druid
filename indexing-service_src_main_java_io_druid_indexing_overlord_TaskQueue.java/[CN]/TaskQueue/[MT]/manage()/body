@@ -8,7 +8,7 @@
       for (      final TaskRunnerWorkItem workItem : taskRunner.getKnownTasks()) {
         runnerTaskFutures.put(workItem.getTaskId(),workItem.getResult());
       }
-      for (      final Task task : tasks) {
+      for (      final Task task : ImmutableList.copyOf(tasks)) {
         if (!taskFutures.containsKey(task.getId())) {
           final ListenableFuture<TaskStatus> runnerTaskFuture;
           if (runnerTaskFutures.containsKey(task.getId())) {

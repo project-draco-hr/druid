@@ -2,7 +2,7 @@
   final ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
   EmittingLogger.registerEmitter(emitter);
   tmp=Files.createTempDir();
-  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\"}",TaskQueueConfig.class);
+  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
   ts=new HeapMemoryTaskStorage();
   tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);

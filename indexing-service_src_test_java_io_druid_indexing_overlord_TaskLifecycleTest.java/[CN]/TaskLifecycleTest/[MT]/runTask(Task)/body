@@ -1,17 +1,26 @@
 {
+  final Task dummyTask=new DefaultObjectMapper().readValue("{\"type\":\"noop\", \"isReadyResult\":\"exception\"}\"",Task.class);
   final long startTime=System.currentTimeMillis();
+  Preconditions.checkArgument(!task.getId().equals(dummyTask.getId()));
+  tq.add(dummyTask);
   tq.add(task);
-  TaskStatus status;
-  try {
-    while ((status=tsqa.getStatus(task.getId()).get()).isRunnable()) {
-      if (System.currentTimeMillis() > startTime + 10 * 1000) {
-        throw new ISE("Where did the task go?!: %s",task.getId());
+  TaskStatus retVal=null;
+  for (  final String taskId : ImmutableList.of(dummyTask.getId(),task.getId())) {
+    try {
+      TaskStatus status;
+      while ((status=tsqa.getStatus(taskId).get()).isRunnable()) {
+        if (System.currentTimeMillis() > startTime + 10 * 1000) {
+          throw new ISE("Where did the task go?!: %s",task.getId());
+        }
+        Thread.sleep(100);
       }
-      Thread.sleep(100);
+      if (taskId.equals(task.getId())) {
+        retVal=status;
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
     }
   }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
-  return status;
+  return retVal;
 }
