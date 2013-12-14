@@ -1,6 +1,6 @@
 {
   log.info("Uploading [%s] to S3",indexFilesDir);
-  final String outputKey=JOINER.join(config.getBaseKey().isEmpty() ? null : config.getBaseKey(),DataSegmentPusherUtil.getStorageDir(inSegment));
+  final String s3Path=S3Utils.constructSegmentPath(config.getBaseKey(),inSegment);
   final File zipOutFile=File.createTempFile("druid","index.zip");
   final long indexSize=CompressionUtils.zip(indexFilesDir,zipOutFile);
   try {
@@ -8,7 +8,6 @@
       @Override public DataSegment call() throws Exception {
         S3Object toPush=new S3Object(zipOutFile);
         final String outputBucket=config.getBucket();
-        final String s3Path=outputKey + "/index.zip";
         final String s3DescriptorPath=S3Utils.descriptorPathForSegmentPath(s3Path);
         toPush.setBucketName(outputBucket);
         toPush.setKey(s3Path);

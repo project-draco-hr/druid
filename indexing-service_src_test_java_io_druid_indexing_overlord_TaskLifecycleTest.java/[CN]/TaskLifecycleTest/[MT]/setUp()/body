@@ -23,8 +23,13 @@
     }
   }
 ,new DataSegmentMover(){
-    @Override public DataSegment move(    DataSegment dataSegment) throws SegmentLoadingException {
+    @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
       return dataSegment;
+    }
+  }
+,new DataSegmentArchiver(){
+    @Override public DataSegment archive(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
     }
   }
 ,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
