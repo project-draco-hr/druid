@@ -2,7 +2,7 @@
   giant.lock();
   try {
     final List<TaskStatus> returns=Lists.newArrayList();
-    final long recent=System.currentTimeMillis() - RECENCY_THRESHOLD;
+    final long recent=System.currentTimeMillis() - config.getRecentlyFinishedThreshold().getMillis();
     final Ordering<TaskStuff> createdDateDesc=new Ordering<TaskStuff>(){
       @Override public int compare(      TaskStuff a,      TaskStuff b){
         return a.getCreatedDate().compareTo(b.getCreatedDate());
