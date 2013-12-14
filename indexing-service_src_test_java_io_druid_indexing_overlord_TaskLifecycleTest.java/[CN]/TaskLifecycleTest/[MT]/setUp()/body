@@ -3,7 +3,9 @@
   EmittingLogger.registerEmitter(emitter);
   tmp=Files.createTempDir();
   final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
-  ts=new HeapMemoryTaskStorage();
+  ts=new HeapMemoryTaskStorage(new TaskStorageConfig(new Period("PT24H")){
+  }
+);
   tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);
   mdc=newMockMDC();
