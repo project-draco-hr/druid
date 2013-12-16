@@ -2,11 +2,11 @@
   try {
     s3Client.getObjectDetails(new S3Bucket(bucketName),objectKey);
   }
- catch (  S3ServiceException e) {
-    if (404 == e.getResponseCode() || "NoSuchKey".equals(e.getS3ErrorCode()) || "NoSuchBucket".equals(e.getS3ErrorCode())) {
+ catch (  ServiceException e) {
+    if (404 == e.getResponseCode() || "NoSuchKey".equals(e.getErrorCode()) || "NoSuchBucket".equals(e.getErrorCode())) {
       return false;
     }
-    if ("AccessDenied".equals(e.getS3ErrorCode())) {
+    if ("AccessDenied".equals(e.getErrorCode())) {
       return true;
     }
     throw e;

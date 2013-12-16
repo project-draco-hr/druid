@@ -4,9 +4,9 @@
       if (e instanceof IOException) {
         return true;
       }
- else       if (e instanceof S3ServiceException) {
+ else       if (e instanceof ServiceException) {
         final boolean isIOException=e.getCause() instanceof IOException;
-        final boolean isTimeout="RequestTimeout".equals(((S3ServiceException)e).getS3ErrorCode());
+        final boolean isTimeout="RequestTimeout".equals(((ServiceException)e).getErrorCode());
         return isIOException || isTimeout;
       }
  else {
