@@ -14,14 +14,8 @@
     if (targetS3Path.isEmpty()) {
       throw new SegmentLoadingException("Target S3 baseKey is not specified");
     }
-    if (s3Client.isObjectInBucket(s3Bucket,s3Path)) {
-      log.info("Moving index file[s3://%s/%s] to [s3://%s/%s]",s3Bucket,s3Path,targetS3Bucket,targetS3Path);
-      s3Client.moveObject(s3Bucket,s3Path,targetS3Bucket,new S3Object(targetS3Path),false);
-    }
-    if (s3Client.isObjectInBucket(s3Bucket,s3DescriptorPath)) {
-      log.info("Moving descriptor file[s3://%s/%s] to [s3://%s/%s]",s3Bucket,s3DescriptorPath,targetS3Bucket,targetS3DescriptorPath);
-      s3Client.moveObject(s3Bucket,s3DescriptorPath,targetS3Bucket,new S3Object(targetS3DescriptorPath),false);
-    }
+    safeMove(s3Bucket,s3Path,targetS3Bucket,targetS3Path);
+    safeMove(s3Bucket,s3DescriptorPath,targetS3Bucket,targetS3DescriptorPath);
     return segment.withLoadSpec(ImmutableMap.<String,Object>builder().putAll(loadSpec).put("bucket",targetS3Bucket).put("key",targetS3Path).build());
   }
  catch (  ServiceException e) {
