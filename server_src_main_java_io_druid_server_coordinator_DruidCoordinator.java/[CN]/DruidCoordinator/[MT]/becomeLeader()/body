@@ -9,6 +9,7 @@ synchronized (lock) {
       databaseSegmentManager.start();
       databaseRuleManager.start();
       serverInventoryView.start();
+      serviceAnnouncer.announce(self);
       final List<Pair<? extends CoordinatorRunnable,Duration>> coordinatorRunnables=Lists.newArrayList();
       dynamicConfigs=configManager.watch(CoordinatorDynamicConfig.CONFIG_KEY,CoordinatorDynamicConfig.class,new CoordinatorDynamicConfig.Builder().build());
       coordinatorRunnables.add(Pair.of(new CoordinatorHistoricalManagerRunnable(),config.getCoordinatorPeriod()));
