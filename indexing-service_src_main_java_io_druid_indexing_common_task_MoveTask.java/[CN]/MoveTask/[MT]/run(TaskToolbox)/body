@@ -17,6 +17,6 @@
   for (  DataSegment segment : unusedSegments) {
     movedSegments.add(toolbox.getDataSegmentMover().move(segment,targetLoadSpec));
   }
-  toolbox.getTaskActionClient().submit(new SegmentMoveAction(ImmutableSet.copyOf(movedSegments)));
+  toolbox.getTaskActionClient().submit(new SegmentMetadataUpdateAction(ImmutableSet.copyOf(movedSegments)));
   return TaskStatus.success(getId());
 }
