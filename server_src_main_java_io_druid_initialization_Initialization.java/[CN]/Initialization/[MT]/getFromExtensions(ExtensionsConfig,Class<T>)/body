@@ -1,6 +1,6 @@
 {
   final TeslaAether aether=getAetherClient(config);
-  List<T> retVal=Lists.newArrayList();
+  Set<T> retVal=Sets.newHashSet();
   if (config.searchCurrentClassloader()) {
     for (    T module : ServiceLoader.load(clazz,Initialization.class.getClassLoader())) {
       log.info("Adding local module[%s]",module.getClass());
@@ -21,8 +21,6 @@
       throw Throwables.propagate(e);
     }
   }
-  if (clazz.equals(DruidModule.class)) {
-    loadedDruidModules.addAll(retVal);
-  }
+  extensionsMap.put(clazz,retVal);
   return retVal;
 }
