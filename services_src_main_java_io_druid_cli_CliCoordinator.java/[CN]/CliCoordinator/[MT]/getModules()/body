@@ -12,7 +12,6 @@
       binder.bind(RedirectInfo.class).to(CoordinatorRedirectInfo.class).in(LazySingleton.class);
       binder.bind(DruidCoordinator.class);
       LifecycleModule.register(binder,DruidCoordinator.class);
-      DiscoveryModule.register(binder,Self.class);
       binder.bind(JettyServerInitializer.class).toInstance(new CoordinatorJettyServerInitializer());
       Jerseys.addResource(binder,BackwardsCompatiableInfoResource.class);
       Jerseys.addResource(binder,InfoResource.class);
