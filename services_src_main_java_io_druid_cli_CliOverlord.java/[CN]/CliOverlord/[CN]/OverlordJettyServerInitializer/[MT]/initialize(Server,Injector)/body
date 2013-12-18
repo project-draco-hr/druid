@@ -1,15 +1,12 @@
 {
-  final ServletContextHandler redirect=new ServletContextHandler(ServletContextHandler.SESSIONS);
-  redirect.setContextPath("/");
-  redirect.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
-  final ResourceHandler resourceHandler=new ResourceHandler();
-  resourceHandler.setBaseResource(new ResourceCollection(new String[]{TaskMaster.class.getClassLoader().getResource("static").toExternalForm(),TaskMaster.class.getClassLoader().getResource("indexer_static").toExternalForm()}));
   final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
-  root.setContextPath("/");
-  HandlerList handlerList=new HandlerList();
-  handlerList.setHandlers(new Handler[]{redirect,resourceHandler,root,new DefaultHandler()});
-  server.setHandler(handlerList);
-  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  ServletHolder holderPwd=new ServletHolder("default",DefaultServlet.class);
+  root.addServlet(holderPwd,"/");
+  root.setBaseResource(new ResourceCollection(new String[]{TaskMaster.class.getClassLoader().getResource("static").toExternalForm(),TaskMaster.class.getClassLoader().getResource("indexer_static").toExternalForm()}));
+  root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GzipFilter.class,"/*",null);
-  root.addFilter(GuiceFilter.class,"/*",null);
+  root.addFilter(GuiceFilter.class,"/druid/*",null);
+  HandlerList handlerList=new HandlerList();
+  handlerList.setHandlers(new Handler[]{root});
+  server.setHandler(handlerList);
 }
