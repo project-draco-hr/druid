@@ -5,6 +5,7 @@
   root.setResourceBase(DruidCoordinator.class.getClassLoader().getResource("static").toExternalForm());
   root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GzipFilter.class,"/*",null);
+  root.addFilter(GuiceFilter.class,"/status/*",null);
   root.addFilter(GuiceFilter.class,"/info/*",null);
   root.addFilter(GuiceFilter.class,"/coordinator/*",null);
   HandlerList handlerList=new HandlerList();

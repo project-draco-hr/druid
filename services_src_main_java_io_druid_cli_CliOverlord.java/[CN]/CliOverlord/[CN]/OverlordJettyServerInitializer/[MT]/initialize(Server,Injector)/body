@@ -5,6 +5,7 @@
   root.setBaseResource(new ResourceCollection(new String[]{TaskMaster.class.getClassLoader().getResource("static").toExternalForm(),TaskMaster.class.getClassLoader().getResource("indexer_static").toExternalForm()}));
   root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GzipFilter.class,"/*",null);
+  root.addFilter(GuiceFilter.class,"/status/*",null);
   root.addFilter(GuiceFilter.class,"/druid/*",null);
   HandlerList handlerList=new HandlerList();
   handlerList.setHandlers(new Handler[]{root});
