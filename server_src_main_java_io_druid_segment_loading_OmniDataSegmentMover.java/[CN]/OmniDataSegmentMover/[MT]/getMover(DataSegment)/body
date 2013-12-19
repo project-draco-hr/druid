@@ -1,0 +1,8 @@
+{
+  String type=MapUtils.getString(segment.getLoadSpec(),"type");
+  DataSegmentMover mover=movers.get(type);
+  if (mover == null) {
+    throw new SegmentLoadingException("Unknown loader type[%s].  Known types are %s",type,movers.keySet());
+  }
+  return mover;
+}

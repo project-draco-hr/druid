@@ -1,0 +1,8 @@
+{
+  String type=MapUtils.getString(segment.getLoadSpec(),"type");
+  DataSegmentArchiver archiver=archivers.get(type);
+  if (archiver == null) {
+    throw new SegmentLoadingException("Unknown loader type[%s].  Known types are %s",type,archivers.keySet());
+  }
+  return archiver;
+}

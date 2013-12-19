@@ -2,8 +2,10 @@
   final ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
   EmittingLogger.registerEmitter(emitter);
   tmp=Files.createTempDir();
-  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\"}",TaskQueueConfig.class);
-  ts=new HeapMemoryTaskStorage();
+  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
+  ts=new HeapMemoryTaskStorage(new TaskStorageConfig(){
+  }
+);
   tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);
   mdc=newMockMDC();
@@ -18,6 +20,16 @@
   }
 ,new DataSegmentKiller(){
     @Override public void kill(    DataSegment segments) throws SegmentLoadingException {
+    }
+  }
+,new DataSegmentMover(){
+    @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
+      return dataSegment;
+    }
+  }
+,new DataSegmentArchiver(){
+    @Override public DataSegment archive(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
     }
   }
 ,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
