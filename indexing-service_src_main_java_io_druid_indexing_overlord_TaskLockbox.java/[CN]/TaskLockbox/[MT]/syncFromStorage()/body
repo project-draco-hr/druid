@@ -19,6 +19,10 @@
     for (    final Pair<Task,TaskLock> taskAndLock : byVersionOrdering.sortedCopy(storedLocks)) {
       final Task task=taskAndLock.lhs;
       final TaskLock savedTaskLock=taskAndLock.rhs;
+      if (savedTaskLock.getInterval().toDurationMillis() <= 0) {
+        log.warn("WTF?! Got lock with empty interval for task: %s",task.getId());
+        continue;
+      }
       uniqueTaskIds.add(task.getId());
       final Optional<TaskLock> acquiredTaskLock=tryLock(task,savedTaskLock.getInterval(),Optional.of(savedTaskLock.getVersion()));
       if (acquiredTaskLock.isPresent() && savedTaskLock.getVersion().equals(acquiredTaskLock.get().getVersion())) {
