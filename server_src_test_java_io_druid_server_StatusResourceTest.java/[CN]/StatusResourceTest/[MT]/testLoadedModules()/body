@@ -1,0 +1,19 @@
+{
+  final StatusResource resource=new StatusResource();
+  List<ModuleVersion> statusResourceModuleList;
+  statusResourceModuleList=resource.doGet().getModules();
+  Assert.assertEquals("No Modules should be loaded currently!",statusResourceModuleList.size(),0);
+  Collection<DruidModule> modules=loadTestModule();
+  statusResourceModuleList=resource.doGet().getModules();
+  Assert.assertEquals("Status should have all modules loaded!",statusResourceModuleList.size(),modules.size());
+  for (  DruidModule module : modules) {
+    String moduleName=module.getClass().getCanonicalName();
+    boolean contains=Boolean.FALSE;
+    for (    ModuleVersion version : statusResourceModuleList) {
+      if (version.getName().equals(moduleName)) {
+        contains=Boolean.TRUE;
+      }
+    }
+    Assert.assertTrue("Status resource should contains module " + moduleName,contains);
+  }
+}
