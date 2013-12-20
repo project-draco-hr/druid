@@ -15,7 +15,7 @@
   }
   for (  DataSegment segment : unusedSegments) {
     toolbox.getDataSegmentKiller().kill(segment);
+    toolbox.getTaskActionClient().submit(new SegmentNukeAction(ImmutableSet.of(segment)));
   }
-  toolbox.getTaskActionClient().submit(new SegmentNukeAction(ImmutableSet.copyOf(unusedSegments)));
   return TaskStatus.success(getId());
 }

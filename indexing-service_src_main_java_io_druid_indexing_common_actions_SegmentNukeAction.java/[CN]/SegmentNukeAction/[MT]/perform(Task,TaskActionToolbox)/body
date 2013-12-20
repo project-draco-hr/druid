@@ -1,7 +1,5 @@
 {
-  if (!toolbox.taskLockCoversSegments(task,segments,true)) {
-    throw new ISE("Segments not covered by locks for task: %s",task.getId());
-  }
+  toolbox.verifyTaskLocksAndSinglePartitionSettitude(task,segments,true);
   toolbox.getIndexerDBCoordinator().deleteSegments(segments);
   final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType());
   for (  DataSegment segment : segments) {
