@@ -1,7 +1,8 @@
 {
 synchronized (lock) {
     final WorkerSetupData workerSetupData=workerSetupDataRef.get();
-    final Collection<ZkWorker> validWorkers=Collections2.filter(zkWorkers,createValidWorkerPredicate(workerSetupData));
+    final Collection<ZkWorker> validWorkers=Collections2.filter(zkWorkers,createValidWorkerPredicate(config,workerSetupData));
+    final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config,workerSetupData);
     if (targetWorkerCount < 0) {
       targetWorkerCount=zkWorkers.size();
       log.info("Starting with a target of %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),workerSetupData.getMinNumWorkers(),workerSetupData.getMaxNumWorkers());

@@ -1,6 +1,7 @@
 {
 synchronized (lock) {
-    if (workerSetupDataRef.get() == null) {
+    final WorkerSetupData workerSetupData=workerSetupDataRef.get();
+    if (workerSetupData == null) {
       log.warn("No workerSetupData available, cannot terminate workers.");
       return false;
     }
@@ -20,6 +21,7 @@ synchronized (lock) {
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
     updateTargetWorkerCount(pendingTasks,zkWorkers);
+    final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config,workerSetupData);
     if (currentlyTerminating.isEmpty()) {
       final int want=zkWorkers.size() - targetWorkerCount;
       if (want > 0) {
