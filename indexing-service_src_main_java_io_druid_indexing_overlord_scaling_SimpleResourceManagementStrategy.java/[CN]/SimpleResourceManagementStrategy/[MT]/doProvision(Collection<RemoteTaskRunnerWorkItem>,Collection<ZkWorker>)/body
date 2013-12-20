@@ -2,6 +2,10 @@
 synchronized (lock) {
     boolean didProvision=false;
     final WorkerSetupData workerSetupData=workerSetupDataRef.get();
+    if (workerSetupData == null) {
+      log.warn("No workerSetupData available, cannot provision new workers.");
+      return false;
+    }
     final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(workerSetupData);
     final int currValidWorkers=Collections2.filter(zkWorkers,isValidWorker).size();
     final List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.<ZkWorker,String>transform(zkWorkers,new Function<ZkWorker,String>(){
@@ -12,23 +16,22 @@ synchronized (lock) {
 )));
     currentlyProvisioning.removeAll(workerNodeIds);
     updateTargetWorkerCount(pendingTasks,zkWorkers);
-    if (currentlyProvisioning.isEmpty()) {
-      int want=targetWorkerCount - (currValidWorkers + currentlyProvisioning.size());
-      while (want > 0) {
-        final AutoScalingData provisioned=autoScalingStrategy.provision();
-        if (provisioned == null) {
-          break;
-        }
+    int want=targetWorkerCount - (currValidWorkers + currentlyProvisioning.size());
+    while (want > 0) {
+      final AutoScalingData provisioned=autoScalingStrategy.provision();
+      final List<String> newNodes;
+      if (provisioned == null || (newNodes=provisioned.getNodeIds()).isEmpty()) {
+        break;
+      }
  else {
-          currentlyProvisioning.addAll(provisioned.getNodeIds());
-          lastProvisionTime=new DateTime();
-          scalingStats.addProvisionEvent(provisioned);
-          want-=provisioned.getNodeIds().size();
-          didProvision=true;
-        }
+        currentlyProvisioning.addAll(newNodes);
+        lastProvisionTime=new DateTime();
+        scalingStats.addProvisionEvent(provisioned);
+        want-=provisioned.getNodeIds().size();
+        didProvision=true;
       }
     }
- else {
+    if (!currentlyProvisioning.isEmpty()) {
       Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
       log.info("%s provisioning. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
       if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {

@@ -1,5 +1,9 @@
 {
 synchronized (lock) {
+    if (workerSetupDataRef.get() == null) {
+      log.warn("No workerSetupData available, cannot terminate workers.");
+      return false;
+    }
     boolean didTerminate=false;
     final Set<String> workerNodeIds=Sets.newHashSet(autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.transform(zkWorkers,new Function<ZkWorker,String>(){
       @Override public String apply(      ZkWorker input){
@@ -37,7 +41,7 @@ synchronized (lock) {
     }
  else {
       Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
-      log.info("%s terminating. Current wait time: ",currentlyTerminating,durSinceLastTerminate);
+      log.info("%s terminating. Current wait time: %s",currentlyTerminating,durSinceLastTerminate);
       if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
         log.makeAlert("Worker node termination taking too long!").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
         currentlyTerminating.clear();
