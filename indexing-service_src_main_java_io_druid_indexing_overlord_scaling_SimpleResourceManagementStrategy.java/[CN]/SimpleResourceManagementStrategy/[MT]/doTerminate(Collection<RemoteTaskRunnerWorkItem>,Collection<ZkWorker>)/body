@@ -20,24 +20,29 @@ synchronized (lock) {
     }
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
-    updateTargetWorkerCount(pendingTasks,zkWorkers);
+    updateTargetWorkerCount(workerSetupData,pendingTasks,zkWorkers);
     final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config,workerSetupData);
     if (currentlyTerminating.isEmpty()) {
-      final int want=zkWorkers.size() - targetWorkerCount;
-      if (want > 0) {
-        final List<String> laziestWorkerIps=FluentIterable.from(zkWorkers).filter(isLazyWorker).limit(want).transform(new Function<ZkWorker,String>(){
+      final int excessWorkers=(zkWorkers.size() + currentlyProvisioning.size()) - targetWorkerCount;
+      if (excessWorkers > 0) {
+        final List<String> laziestWorkerIps=FluentIterable.from(zkWorkers).filter(isLazyWorker).limit(excessWorkers).transform(new Function<ZkWorker,String>(){
           @Override public String apply(          ZkWorker zkWorker){
             return zkWorker.getWorker().getIp();
           }
         }
 ).toList();
-        log.info("Terminating %,d workers (wanted %,d): %s",laziestWorkerIps.size(),want,Joiner.on(", ").join(laziestWorkerIps));
-        final AutoScalingData terminated=autoScalingStrategy.terminate(laziestWorkerIps);
-        if (terminated != null) {
-          currentlyTerminating.addAll(terminated.getNodeIds());
-          lastTerminateTime=new DateTime();
-          scalingStats.addTerminateEvent(terminated);
-          didTerminate=true;
+        if (laziestWorkerIps.isEmpty()) {
+          log.info("Wanted to terminate %,d workers, but couldn't find any lazy ones!");
+        }
+ else {
+          log.info("Terminating %,d workers (wanted %,d): %s",laziestWorkerIps.size(),excessWorkers,Joiner.on(", ").join(laziestWorkerIps));
+          final AutoScalingData terminated=autoScalingStrategy.terminate(laziestWorkerIps);
+          if (terminated != null) {
+            currentlyTerminating.addAll(terminated.getNodeIds());
+            lastTerminateTime=new DateTime();
+            scalingStats.addTerminateEvent(terminated);
+            didTerminate=true;
+          }
         }
       }
     }
