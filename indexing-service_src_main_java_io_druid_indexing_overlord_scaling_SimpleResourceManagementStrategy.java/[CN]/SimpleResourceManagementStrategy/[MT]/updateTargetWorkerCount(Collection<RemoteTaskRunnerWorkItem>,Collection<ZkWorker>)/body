@@ -1,0 +1,24 @@
+{
+synchronized (lock) {
+    final WorkerSetupData workerSetupData=workerSetupDataRef.get();
+    if (targetWorkerCount < 0) {
+      targetWorkerCount=zkWorkers.size();
+      log.info("Starting with %,d workers (min = %,d, max = %,d).",targetWorkerCount,workerSetupData.getMinNumWorkers(),workerSetupData.getMaxNumWorkers());
+    }
+    final Collection<ZkWorker> validWorkers=Collections2.filter(zkWorkers,createValidWorkerPredicate(workerSetupData));
+    final boolean atSteadyState=currentlyProvisioning.isEmpty() && currentlyTerminating.isEmpty() && validWorkers.size() == targetWorkerCount;
+    final boolean shouldScaleUp=atSteadyState && hasTaskPendingBeyondThreshold(pendingTasks) && targetWorkerCount < workerSetupData.getMaxNumWorkers();
+    final boolean shouldScaleDown=atSteadyState && Iterables.any(validWorkers,isLazyWorker) && targetWorkerCount > workerSetupData.getMinNumWorkers();
+    if (shouldScaleUp) {
+      targetWorkerCount++;
+      log.info("I think we should scale up to %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),workerSetupData.getMinNumWorkers(),workerSetupData.getMaxNumWorkers());
+    }
+ else     if (shouldScaleDown) {
+      targetWorkerCount--;
+      log.info("I think we should scale down to %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),workerSetupData.getMinNumWorkers(),workerSetupData.getMaxNumWorkers());
+    }
+ else {
+      log.info("Our target is %,d workers, and I'm okay with that (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),workerSetupData.getMinNumWorkers(),workerSetupData.getMaxNumWorkers());
+    }
+  }
+}

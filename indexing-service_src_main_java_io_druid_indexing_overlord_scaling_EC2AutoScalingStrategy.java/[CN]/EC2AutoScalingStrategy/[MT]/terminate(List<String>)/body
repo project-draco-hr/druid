@@ -1,6 +1,6 @@
 {
   if (ips.isEmpty()) {
-    return new AutoScalingData(Lists.<String>newArrayList(),Lists.<Instance>newArrayList());
+    return new AutoScalingData(Lists.<String>newArrayList());
   }
   DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",ips)));
   List<Instance> instances=Lists.newArrayList();
@@ -20,7 +20,7 @@
         return String.format("%s:%s",input,config.getWorkerPort());
       }
     }
-),instances);
+));
   }
  catch (  Exception e) {
     log.error(e,"Unable to terminate any instances.");
