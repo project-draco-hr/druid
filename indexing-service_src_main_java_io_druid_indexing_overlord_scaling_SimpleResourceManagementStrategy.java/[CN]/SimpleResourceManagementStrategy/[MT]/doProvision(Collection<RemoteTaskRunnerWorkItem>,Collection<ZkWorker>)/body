@@ -1,45 +1,46 @@
 {
-  final WorkerSetupData workerSetupData=workerSetupdDataRef.get();
-  final String minVersion=workerSetupData.getMinVersion() == null ? config.getWorkerVersion() : workerSetupData.getMinVersion();
-  int maxNumWorkers=workerSetupData.getMaxNumWorkers();
-  int currValidWorkers=0;
-  for (  ZkWorker zkWorker : zkWorkers) {
-    if (zkWorker.isValidVersion(minVersion)) {
-      currValidWorkers++;
+synchronized (lock) {
+    boolean didProvision=false;
+    final WorkerSetupData workerSetupData=workerSetupDataRef.get();
+    if (workerSetupData == null) {
+      log.warn("No workerSetupData available, cannot provision new workers.");
+      return false;
     }
-  }
-  if (currValidWorkers >= maxNumWorkers) {
-    log.debug("Cannot scale anymore. Num workers = %d, Max num workers = %d",zkWorkers.size(),workerSetupdDataRef.get().getMaxNumWorkers());
-    return false;
-  }
-  List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.<ZkWorker,String>transform(zkWorkers,new Function<ZkWorker,String>(){
-    @Override public String apply(    ZkWorker input){
-      return input.getWorker().getIp();
-    }
-  }
-)));
-  currentlyProvisioning.removeAll(workerNodeIds);
-  boolean nothingProvisioning=currentlyProvisioning.isEmpty();
-  if (nothingProvisioning) {
-    if (hasTaskPendingBeyondThreshold(pendingTasks)) {
-      AutoScalingData provisioned=autoScalingStrategy.provision();
-      if (provisioned != null) {
-        currentlyProvisioning.addAll(provisioned.getNodeIds());
-        lastProvisionTime=new DateTime();
-        scalingStats.addProvisionEvent(provisioned);
-        return true;
+    final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(config,workerSetupData);
+    final int currValidWorkers=Collections2.filter(zkWorkers,isValidWorker).size();
+    final List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.<ZkWorker,String>transform(zkWorkers,new Function<ZkWorker,String>(){
+      @Override public String apply(      ZkWorker input){
+        return input.getWorker().getIp();
       }
     }
-  }
+)));
+    currentlyProvisioning.removeAll(workerNodeIds);
+    updateTargetWorkerCount(workerSetupData,pendingTasks,zkWorkers);
+    int want=targetWorkerCount - (currValidWorkers + currentlyProvisioning.size());
+    while (want > 0) {
+      final AutoScalingData provisioned=autoScalingStrategy.provision();
+      final List<String> newNodes;
+      if (provisioned == null || (newNodes=provisioned.getNodeIds()).isEmpty()) {
+        break;
+      }
  else {
-    Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
-    log.info("%s still provisioning. Wait for all provisioned nodes to complete before requesting new worker. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
-    if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
-      log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
-      List<String> nodeIps=autoScalingStrategy.idToIpLookup(Lists.newArrayList(currentlyProvisioning));
-      autoScalingStrategy.terminate(nodeIps);
-      currentlyProvisioning.clear();
+        currentlyProvisioning.addAll(newNodes);
+        lastProvisionTime=new DateTime();
+        scalingStats.addProvisionEvent(provisioned);
+        want-=provisioned.getNodeIds().size();
+        didProvision=true;
+      }
     }
+    if (!currentlyProvisioning.isEmpty()) {
+      Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
+      log.info("%s provisioning. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
+      if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
+        log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+        List<String> nodeIps=autoScalingStrategy.idToIpLookup(Lists.newArrayList(currentlyProvisioning));
+        autoScalingStrategy.terminate(nodeIps);
+        currentlyProvisioning.clear();
+      }
+    }
+    return didProvision;
   }
-  return false;
 }

@@ -13,10 +13,9 @@
     }
     log.info("OK to move segment: %s",unusedSegment.getIdentifier());
   }
-  List<DataSegment> movedSegments=Lists.newLinkedList();
   for (  DataSegment segment : unusedSegments) {
-    movedSegments.add(toolbox.getDataSegmentMover().move(segment,targetLoadSpec));
+    final DataSegment movedSegment=toolbox.getDataSegmentMover().move(segment,targetLoadSpec);
+    toolbox.getTaskActionClient().submit(new SegmentMetadataUpdateAction(ImmutableSet.of(movedSegment)));
   }
-  toolbox.getTaskActionClient().submit(new SegmentMetadataUpdateAction(ImmutableSet.copyOf(movedSegments)));
   return TaskStatus.success(getId());
 }
