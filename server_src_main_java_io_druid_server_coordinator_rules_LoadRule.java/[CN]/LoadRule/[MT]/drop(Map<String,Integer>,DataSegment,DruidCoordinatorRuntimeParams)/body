@@ -1,12 +1,14 @@
 {
   CoordinatorStats stats=new CoordinatorStats();
-  final ReplicationThrottler replicationManager=params.getReplicationManager();
   if (!params.hasDeletionWaitTimeElapsed()) {
     return stats;
   }
-  if (clusterReplicants < expectedReplicants) {
-    return stats;
+  for (  Integer leftToLoad : loadStatus.values()) {
+    if (leftToLoad > 0) {
+      return stats;
+    }
   }
+  final ReplicationThrottler replicationManager=params.getReplicationManager();
   Map<String,Integer> replicantsByTier=params.getSegmentReplicantLookup().getClusterTiers(segment.getIdentifier());
   for (  Map.Entry<String,Integer> entry : replicantsByTier.entrySet()) {
     final String tier=entry.getKey();

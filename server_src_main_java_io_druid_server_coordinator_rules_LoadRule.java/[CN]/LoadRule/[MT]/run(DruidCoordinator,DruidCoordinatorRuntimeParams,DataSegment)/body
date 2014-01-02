@@ -1,10 +1,10 @@
 {
   CoordinatorStats stats=new CoordinatorStats();
+  final Map<String,Integer> loadStatus=Maps.newHashMap();
   for (  Map.Entry<String,Integer> entry : getTieredReplicants().entrySet()) {
     final String tier=entry.getKey();
     final int expectedReplicants=entry.getValue();
     int totalReplicants=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier(),tier);
-    int clusterReplicants=params.getSegmentReplicantLookup().getClusterReplicants(segment.getIdentifier(),tier);
     MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(tier);
     if (serverQueue == null) {
       log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",tier).emit();
@@ -16,7 +16,9 @@
     if (params.getAvailableSegments().contains(segment)) {
       stats.accumulate(assign(params.getReplicationManager(),tier,expectedReplicants,totalReplicants,strategy,serverHolderList,segment));
     }
-    stats.accumulate(drop(expectedReplicants,clusterReplicants,segment,params));
+    int clusterReplicants=params.getSegmentReplicantLookup().getClusterReplicants(segment.getIdentifier(),tier);
+    loadStatus.put(tier,expectedReplicants - clusterReplicants);
   }
+  stats.accumulate(drop(loadStatus,segment,params));
   return stats;
 }

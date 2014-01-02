@@ -1,0 +1,9 @@
+{
+  mockPeon=EasyMock.createMock(LoadQueuePeon.class);
+  throttler=new ReplicationThrottler(1,1);
+  for (  String tier : Arrays.asList("hot",DruidServer.DEFAULT_TIER)) {
+    throttler.updateReplicationState(tier);
+    throttler.updateTerminationState(tier);
+  }
+  segment=new DataSegment("foo",new Interval("0/3000"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,0);
+}
