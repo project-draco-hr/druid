@@ -1,13 +1,14 @@
 {
   log.info("Performing action for task[%s]: %s",task.getId(),taskAction);
-  final RetType ret=taskAction.perform(task,toolbox);
   if (taskAction.isAudited()) {
     try {
       storage.addAuditLog(task,taskAction);
     }
  catch (    Exception e) {
-      log.makeAlert(e,"Failed to record action in audit log").addData("task",task.getId()).addData("actionClass",taskAction.getClass().getName()).emit();
+      final String actionClass=taskAction.getClass().getName();
+      log.makeAlert(e,"Failed to record action in audit log").addData("task",task.getId()).addData("actionClass",actionClass).emit();
+      throw new ISE(e,"Failed to record action [%s] in audit log",actionClass);
     }
   }
-  return ret;
+  return taskAction.perform(task,toolbox);
 }

@@ -1,11 +1,7 @@
 {
-  final StatusResource resource=new StatusResource();
-  List<ModuleVersion> statusResourceModuleList;
-  statusResourceModuleList=resource.doGet().getModules();
-  Assert.assertEquals("No Modules should be loaded currently! " + statusResourceModuleList,statusResourceModuleList.size(),0);
-  Collection<DruidModule> modules=loadTestModule();
-  statusResourceModuleList=resource.doGet().getModules();
-  Assert.assertEquals("Status should have all modules loaded!",statusResourceModuleList.size(),modules.size());
+  Collection<DruidModule> modules=ImmutableList.of((DruidModule)new InitializationTest.TestDruidModule());
+  List<ModuleVersion> statusResourceModuleList=new StatusResource.Status(modules).getModules();
+  Assert.assertEquals("Status should have all modules loaded!",modules.size(),statusResourceModuleList.size());
   for (  DruidModule module : modules) {
     String moduleName=module.getClass().getCanonicalName();
     boolean contains=Boolean.FALSE;
@@ -15,9 +11,5 @@
       }
     }
     Assert.assertTrue("Status resource should contain module " + moduleName,contains);
-  }
-  for (int i=0; i < 5; i++) {
-    Set<DruidModule> loadedModules=Initialization.getLoadedModules(DruidModule.class);
-    Assert.assertEquals("Set from loaded module should be same!",loadedModules,modules);
   }
 }

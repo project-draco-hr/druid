@@ -1,6 +1,6 @@
 {
   EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList()).times(2);
-  EasyMock.expect(autoScalingStrategy.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("fake"),Lists.newArrayList("faker")));
+  EasyMock.expect(autoScalingStrategy.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("fake")));
   EasyMock.replay(autoScalingStrategy);
   boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(testTask)));
   Assert.assertTrue(provisionedSomething);

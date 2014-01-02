@@ -27,7 +27,7 @@
     List<DataSegment> publishedSegments=toolbox.getObjectMapper().readValue(segments,new TypeReference<List<DataSegment>>(){
     }
 );
-    toolbox.getTaskActionClient().submit(new SegmentInsertAction(ImmutableSet.copyOf(publishedSegments)));
+    toolbox.pushSegments(publishedSegments);
     return TaskStatus.success(getId());
   }
  else {
