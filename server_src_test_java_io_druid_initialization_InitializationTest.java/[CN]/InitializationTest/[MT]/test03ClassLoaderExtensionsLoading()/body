@@ -1,0 +1,12 @@
+{
+  Injector startupInjector=Initialization.makeStartupInjector();
+  Function<DruidModule,String> fnClassName=new Function<DruidModule,String>(){
+    @Nullable @Override public String apply(    @Nullable DruidModule input){
+      return input.getClass().getCanonicalName();
+    }
+  }
+;
+  Assert.assertFalse("modules does not contain TestDruidModule",Collections2.transform(Initialization.getLoadedModules(DruidModule.class),fnClassName).contains("io.druid.initialization.InitializationTest.TestDruidModule"));
+  Collection<DruidModule> modules=Initialization.getFromExtensions(startupInjector.getInstance(ExtensionsConfig.class),DruidModule.class);
+  Assert.assertTrue("modules contains TestDruidModule",Collections2.transform(modules,fnClassName).contains("io.druid.initialization.InitializationTest.TestDruidModule"));
+}
