@@ -1,0 +1,19 @@
+{
+  try {
+    log.info("Publishing segment %s",segment.getIdentifier());
+    dbSegmentPublisher.publishSegment(segment);
+    serverView.registerSegmentCallback(exec,new ServerView.BaseSegmentCallback(){
+      @Override public ServerView.CallbackAction segmentAdded(      DruidServer server,      DataSegment theSegment){
+        if (theSegment.equals(segment)) {
+          callback.execute();
+          log.info("Callback executed");
+        }
+        return ServerView.CallbackAction.CONTINUE;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
