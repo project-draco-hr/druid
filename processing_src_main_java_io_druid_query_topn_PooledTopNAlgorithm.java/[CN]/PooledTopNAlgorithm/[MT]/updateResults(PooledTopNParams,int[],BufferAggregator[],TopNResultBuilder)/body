@@ -1,0 +1,16 @@
+{
+  final ByteBuffer resultsBuf=params.getResultsBuf();
+  final int[] aggregatorSizes=params.getAggregatorSizes();
+  final DimensionSelector dimSelector=params.getDimSelector();
+  for (int i=0; i < positions.length; i++) {
+    int position=positions[i];
+    if (position >= 0) {
+      Object[] vals=new Object[theAggregators.length];
+      for (int j=0; j < theAggregators.length; j++) {
+        vals[j]=theAggregators[j].get(resultsBuf,position);
+        position+=aggregatorSizes[j];
+      }
+      resultBuilder.addEntry(dimSelector.lookupName(i),i,vals,query.getAggregatorSpecs(),query.getPostAggregatorSpecs());
+    }
+  }
+}

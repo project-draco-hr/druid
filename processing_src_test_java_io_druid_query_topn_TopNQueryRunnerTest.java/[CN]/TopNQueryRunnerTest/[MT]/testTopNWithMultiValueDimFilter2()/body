@@ -1,0 +1,4 @@
+{
+  TopNQuery query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).filters(placementishDimension,"m","a","b").dimension(qualityDimension).metric(indexMetric).threshold(4).intervals(firstToThird).aggregators(commonAggregators).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TestHelper.assertExpectedResults(Sequences.toList(runner.run(new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).filters(qualityDimension,"mezzanine","automotive","business").dimension(qualityDimension).metric(indexMetric).threshold(4).intervals(firstToThird).aggregators(commonAggregators).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build()),Lists.<Result<TopNResultValue>>newArrayList()),runner.run(query));
+}

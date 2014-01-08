@@ -1,0 +1,10 @@
+{
+  int[] dimValSelector=new int[params.getDimSelector().getValueCardinality()];
+  Arrays.fill(dimValSelector,SKIP_POSITION_VALUE);
+  Iterator<DimValHolder> dimValIter=resultBuilder.getTopNIterator();
+  while (dimValIter.hasNext()) {
+    int dimValIndex=(Integer)dimValIter.next().getDimValIndex();
+    dimValSelector[dimValIndex]=INIT_POSITION_VALUE;
+  }
+  return dimValSelector;
+}

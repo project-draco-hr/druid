@@ -1,0 +1,21 @@
+{
+  boolean hasDimValSelector=(dimValSelector != null);
+  final int cardinality=params.getCardinality();
+  int numProcessed=0;
+  while (numProcessed < cardinality) {
+    final int numToProcess=Math.min(params.getNumValuesPerPass(),cardinality - numProcessed);
+    params.getCursor().reset();
+    DimValSelector theDimValSelector;
+    if (!hasDimValSelector) {
+      theDimValSelector=makeDimValSelector(params,numProcessed,numToProcess);
+    }
+ else {
+      theDimValSelector=updateDimValSelector(dimValSelector,numProcessed,numToProcess);
+    }
+    DimValAggregateStore aggregatesStore=makeDimValAggregateStore(params);
+    scanAndAggregate(params,theDimValSelector,aggregatesStore,numProcessed);
+    updateResults(params,theDimValSelector,aggregatesStore,resultBuilder);
+    closeAggregators(aggregatesStore);
+    numProcessed+=numToProcess;
+  }
+}

@@ -1,0 +1,16 @@
+{
+  this.value=(value == null) ? Lists.<DimensionAndMetricValueExtractor>newArrayList() : Lists.transform(value,new Function<Object,DimensionAndMetricValueExtractor>(){
+    @Override public DimensionAndMetricValueExtractor apply(    @Nullable Object input){
+      if (input instanceof Map) {
+        return new DimensionAndMetricValueExtractor((Map)input);
+      }
+ else       if (input instanceof DimensionAndMetricValueExtractor) {
+        return (DimensionAndMetricValueExtractor)input;
+      }
+ else {
+        throw new IAE("Unknown type for input[%s]",input.getClass());
+      }
+    }
+  }
+);
+}

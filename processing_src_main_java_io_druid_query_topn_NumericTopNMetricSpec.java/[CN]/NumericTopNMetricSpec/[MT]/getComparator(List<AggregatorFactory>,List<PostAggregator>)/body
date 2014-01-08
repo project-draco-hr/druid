@@ -1,0 +1,16 @@
+{
+  Comparator comp=null;
+  for (  AggregatorFactory factory : aggregatorSpecs) {
+    if (metric.equals(factory.getName())) {
+      comp=factory.getComparator();
+      break;
+    }
+  }
+  for (  PostAggregator pf : postAggregatorSpecs) {
+    if (metric.equals(pf.getName())) {
+      comp=pf.getComparator();
+      break;
+    }
+  }
+  return comp;
+}
