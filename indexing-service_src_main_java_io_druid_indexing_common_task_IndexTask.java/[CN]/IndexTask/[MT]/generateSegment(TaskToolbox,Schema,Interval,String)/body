@@ -44,7 +44,7 @@
     plumber.finishJob();
   }
   finally {
-    log.info("Task[%s] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away) and output %,d rows",getId(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
+    log.info("Task[%s] interval[%s] partition[%d] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away)" + " and output %,d rows",getId(),interval,schema.getShardSpec().getPartitionNum(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
   }
   return Iterables.getOnlyElement(pushedSegments);
 }
