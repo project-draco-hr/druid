@@ -20,7 +20,7 @@
     }
   }
 ;
-  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot"),mockPeon))),DruidServer.DEFAULT_TIER,MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical",DruidServer.DEFAULT_TIER),mockPeon)))));
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot",0),mockPeon))),DruidServer.DEFAULT_TIER,MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical",DruidServer.DEFAULT_TIER,0),mockPeon)))));
   CoordinatorStats stats=rule.run(null,DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(druidCluster).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withReplicationManager(throttler).withAvailableSegments(Arrays.asList(segment)).build(),segment);
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 1);
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get(DruidServer.DEFAULT_TIER).get() == 2);

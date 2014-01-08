@@ -1,0 +1,52 @@
+{
+  this.jsonMapper=jsonMapper;
+  this.config=config;
+  this.bridgeZkCoordinator=bridgeZkCoordinator;
+  this.announcer=announcer;
+  this.serverInventoryView=serverInventoryView;
+  this.curator=curator;
+  this.leaderLatch=leaderLatch;
+  this.exec=scheduledExecutorFactory.create(1,"Coordinator-Exec--%d");
+  this.self=self;
+  serverInventoryView.registerSegmentCallback(Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DruidClusterBridge-ServerInventoryView-%d").build()),new ServerView.BaseSegmentCallback(){
+    @Override public ServerView.CallbackAction segmentAdded(    DruidServer server,    DataSegment segment){
+      try {
+synchronized (lock) {
+          Integer count=segments.get(segment);
+          if (count == null) {
+            segments.put(segment,1);
+            dataSegmentAnnouncer.announceSegment(segment);
+          }
+ else {
+            segments.put(segment,count + 1);
+          }
+        }
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+      return ServerView.CallbackAction.CONTINUE;
+    }
+    @Override public ServerView.CallbackAction segmentRemoved(    DruidServer server,    DataSegment segment){
+      try {
+synchronized (lock) {
+          Integer count=segments.get(segment);
+          if (count != null) {
+            if (count == 1) {
+              dataSegmentAnnouncer.unannounceSegment(segment);
+              segments.remove(segment);
+            }
+ else {
+              segments.put(segment,count - 1);
+            }
+          }
+        }
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+);
+}

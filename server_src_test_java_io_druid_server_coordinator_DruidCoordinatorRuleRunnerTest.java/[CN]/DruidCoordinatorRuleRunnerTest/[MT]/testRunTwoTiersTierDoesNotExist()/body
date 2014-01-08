@@ -9,7 +9,7 @@
   EasyMock.replay(emitter);
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),null,1,"hot"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),null,1,"normal"))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
-  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal"),mockPeon)))));
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal",0),mockPeon)))));
   DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withEmitter(emitter).withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   ruleRunner.run(params);
   EasyMock.verify(emitter);
