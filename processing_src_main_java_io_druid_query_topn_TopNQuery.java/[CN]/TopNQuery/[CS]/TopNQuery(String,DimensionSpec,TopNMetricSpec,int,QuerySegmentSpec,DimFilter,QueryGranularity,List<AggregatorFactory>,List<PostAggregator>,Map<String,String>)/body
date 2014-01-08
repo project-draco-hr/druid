@@ -1,0 +1,15 @@
+{
+  super(dataSource,querySegmentSpec,context);
+  this.dimensionSpec=dimensionSpec;
+  this.topNMetricSpec=topNMetricSpec;
+  this.threshold=threshold;
+  this.dimFilter=dimFilter;
+  this.granularity=granularity;
+  this.aggregatorSpecs=aggregatorSpecs;
+  this.postAggregatorSpecs=postAggregatorSpecs == null ? ImmutableList.<PostAggregator>of() : postAggregatorSpecs;
+  Preconditions.checkNotNull(dimensionSpec,"dimensionSpec can't be null");
+  Preconditions.checkNotNull(topNMetricSpec,"must specify a metric");
+  Preconditions.checkArgument(threshold != 0,"Threshold cannot be equal to 0.");
+  topNMetricSpec.verifyPreconditions(this.aggregatorSpecs,this.postAggregatorSpecs);
+  Queries.verifyAggregations(this.aggregatorSpecs,this.postAggregatorSpecs);
+}

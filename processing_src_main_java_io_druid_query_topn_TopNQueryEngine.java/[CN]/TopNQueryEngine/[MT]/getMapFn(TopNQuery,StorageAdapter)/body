@@ -1,0 +1,28 @@
+{
+  if (adapter == null) {
+    log.warn("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped. Returning empty results.");
+    return null;
+  }
+  final Capabilities capabilities=adapter.getCapabilities();
+  final int cardinality=adapter.getDimensionCardinality(query.getDimensionSpec().getDimension());
+  int numBytesPerRecord=0;
+  for (  AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+    numBytesPerRecord+=aggregatorFactory.getMaxIntermediateSize();
+  }
+  final TopNAlgorithmSelector selector=new TopNAlgorithmSelector(cardinality,numBytesPerRecord);
+  query.initTopNAlgorithmSelector(selector);
+  TopNAlgorithm topNAlgorithm=null;
+  if (selector.isHasDimExtractionFn()) {
+    topNAlgorithm=new DimExtractionTopNAlgorithm(capabilities,query);
+  }
+ else   if (selector.isAggregateAllMetrics()) {
+    topNAlgorithm=new PooledTopNAlgorithm(capabilities,query,bufferPool);
+  }
+ else   if (selector.isAggregateTopNMetricFirst()) {
+    topNAlgorithm=new AggregateTopNMetricFirstAlgorithm(capabilities,query,bufferPool);
+  }
+ else {
+    topNAlgorithm=new PooledTopNAlgorithm(capabilities,query,bufferPool);
+  }
+  return new TopNMapFn(query,topNAlgorithm);
+}

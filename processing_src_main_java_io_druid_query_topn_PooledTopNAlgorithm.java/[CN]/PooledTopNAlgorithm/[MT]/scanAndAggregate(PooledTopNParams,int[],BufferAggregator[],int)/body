@@ -1,0 +1,32 @@
+{
+  final ByteBuffer resultsBuf=params.getResultsBuf();
+  final int numBytesPerRecord=params.getNumBytesPerRecord();
+  final int[] aggregatorSizes=params.getAggregatorSizes();
+  final Cursor cursor=params.getCursor();
+  final DimensionSelector dimSelector=params.getDimSelector();
+  while (!cursor.isDone()) {
+    final IndexedInts dimValues=dimSelector.getRow();
+    for (int i=0; i < dimValues.size(); ++i) {
+      final int dimIndex=dimValues.get(i);
+      int position=positions[dimIndex];
+switch (position) {
+case SKIP_POSITION_VALUE:
+        break;
+case INIT_POSITION_VALUE:
+      positions[dimIndex]=(dimIndex - numProcessed) * numBytesPerRecord;
+    position=positions[dimIndex];
+  for (int j=0; j < theAggregators.length; ++j) {
+    theAggregators[j].init(resultsBuf,position);
+    position+=aggregatorSizes[j];
+  }
+position=positions[dimIndex];
+default :
+for (int j=0; j < theAggregators.length; ++j) {
+theAggregators[j].aggregate(resultsBuf,position);
+position+=aggregatorSizes[j];
+}
+}
+}
+cursor.advance();
+}
+}
