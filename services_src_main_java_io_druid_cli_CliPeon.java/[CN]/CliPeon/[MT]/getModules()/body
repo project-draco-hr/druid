@@ -12,6 +12,10 @@
       binder.bind(RetryPolicyFactory.class).in(LazySingleton.class);
       Binders.dataSegmentKillerBinder(binder);
       binder.bind(DataSegmentKiller.class).to(OmniDataSegmentKiller.class).in(LazySingleton.class);
+      Binders.dataSegmentMoverBinder(binder);
+      binder.bind(DataSegmentMover.class).to(OmniDataSegmentMover.class).in(LazySingleton.class);
+      Binders.dataSegmentArchiverBinder(binder);
+      binder.bind(DataSegmentArchiver.class).to(OmniDataSegmentArchiver.class).in(LazySingleton.class);
       binder.bind(ExecutorLifecycle.class).in(ManageLifecycle.class);
       binder.bind(ExecutorLifecycleConfig.class).toInstance(new ExecutorLifecycleConfig().setTaskFile(new File(taskAndStatusFile.get(0))).setStatusFile(new File(taskAndStatusFile.get(1))));
       binder.bind(TaskRunner.class).to(ThreadPoolTaskRunner.class);
@@ -30,7 +34,6 @@
       final MapBinder<String,TaskActionClientFactory> taskActionBinder=PolyBind.optionBinder(binder,Key.get(TaskActionClientFactory.class));
       taskActionBinder.addBinding("local").to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
       binder.bind(TaskStorage.class).to(HeapMemoryTaskStorage.class).in(LazySingleton.class);
-      binder.bind(TaskQueue.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
       binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
       taskActionBinder.addBinding("remote").to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);

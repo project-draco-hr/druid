@@ -1,7 +1,0 @@
-{
-  PolyBind.createChoice(binder,"druid.indexer.logs.type",Key.get(TaskLogs.class),Key.get(NoopTaskLogs.class));
-  final MapBinder<String,TaskLogs> taskLogBinder=Binders.taskLogsBinder(binder);
-  taskLogBinder.addBinding("noop").to(NoopTaskLogs.class).in(LazySingleton.class);
-  binder.bind(NoopTaskLogs.class).in(LazySingleton.class);
-  binder.bind(TaskLogPusher.class).to(TaskLogs.class);
-}

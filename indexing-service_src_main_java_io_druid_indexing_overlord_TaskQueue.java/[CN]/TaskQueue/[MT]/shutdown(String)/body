@@ -1,0 +1,15 @@
+{
+  giant.lock();
+  try {
+    Preconditions.checkNotNull(taskId,"taskId");
+    for (    final Task task : tasks) {
+      if (task.getId().equals(taskId)) {
+        notifyStatus(task,TaskStatus.failure(taskId));
+        break;
+      }
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}

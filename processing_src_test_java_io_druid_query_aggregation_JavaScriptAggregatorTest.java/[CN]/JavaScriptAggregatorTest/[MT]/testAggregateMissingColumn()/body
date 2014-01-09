@@ -1,0 +1,18 @@
+{
+  Map<String,String> script=scriptDoubleSum;
+  JavaScriptAggregator agg=new JavaScriptAggregator("billy",Collections.<ObjectColumnSelector>singletonList(null),JavaScriptAggregatorFactory.compileScript(script.get("fnAggregate"),script.get("fnReset"),script.get("fnCombine")));
+  final double val=0;
+  Assert.assertEquals("billy",agg.getName());
+  agg.reset();
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  agg.aggregate();
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  agg.aggregate();
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+  Assert.assertEquals(val,agg.get());
+}

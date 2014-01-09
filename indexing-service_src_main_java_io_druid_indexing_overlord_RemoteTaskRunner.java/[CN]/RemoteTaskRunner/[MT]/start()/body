@@ -3,28 +3,53 @@
     if (started) {
       return;
     }
+    final MutableInt waitingFor=new MutableInt(1);
+    final Object waitingForMonitor=new Object();
     workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
         Worker worker;
 switch (event.getType()) {
 case CHILD_ADDED:
           worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
-        addWorker(worker,PathChildrenCache.StartMode.NORMAL);
-      break;
+synchronized (waitingForMonitor) {
+          waitingFor.increment();
+        }
+      Futures.addCallback(addWorker(worker),new FutureCallback<ZkWorker>(){
+        @Override public void onSuccess(        ZkWorker zkWorker){
+synchronized (waitingForMonitor) {
+            waitingFor.decrement();
+            waitingForMonitor.notifyAll();
+          }
+        }
+        @Override public void onFailure(        Throwable throwable){
+synchronized (waitingForMonitor) {
+            waitingFor.decrement();
+            waitingForMonitor.notifyAll();
+          }
+        }
+      }
+);
+    break;
 case CHILD_REMOVED:
-    worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
-  removeWorker(worker);
+  worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
+removeWorker(worker);
 break;
+case INITIALIZED:
+synchronized (waitingForMonitor) {
+waitingFor.decrement();
+waitingForMonitor.notifyAll();
+}
 default :
 break;
 }
 }
 }
 );
-workerPathCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
-for (ChildData childData : workerPathCache.getCurrentData()) {
-final Worker worker=jsonMapper.readValue(childData.getData(),Worker.class);
-addWorker(worker,PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+workerPathCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+synchronized (waitingForMonitor) {
+while (waitingFor.intValue() > 0) {
+waitingForMonitor.wait();
+}
 }
 started=true;
 }

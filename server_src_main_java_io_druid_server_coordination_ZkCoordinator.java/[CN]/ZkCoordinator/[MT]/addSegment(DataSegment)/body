@@ -1,28 +1,31 @@
 {
   try {
     log.info("Loading segment %s",segment.getIdentifier());
+    final boolean loaded;
     try {
-      serverManager.loadSegment(segment);
+      loaded=serverManager.loadSegment(segment);
     }
  catch (    Exception e) {
       removeSegment(segment);
       throw new SegmentLoadingException(e,"Exception loading segment[%s]",segment.getIdentifier());
     }
-    File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
-    if (!segmentInfoCacheFile.exists()) {
+    if (loaded) {
+      File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
+      if (!segmentInfoCacheFile.exists()) {
+        try {
+          jsonMapper.writeValue(segmentInfoCacheFile,segment);
+        }
+ catch (        IOException e) {
+          removeSegment(segment);
+          throw new SegmentLoadingException(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+        }
+      }
       try {
-        jsonMapper.writeValue(segmentInfoCacheFile,segment);
+        announcer.announceSegment(segment);
       }
  catch (      IOException e) {
-        removeSegment(segment);
-        throw new SegmentLoadingException(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+        throw new SegmentLoadingException(e,"Failed to announce segment[%s]",segment.getIdentifier());
       }
-    }
-    try {
-      announcer.announceSegment(segment);
-    }
- catch (    IOException e) {
-      throw new SegmentLoadingException(e,"Failed to announce segment[%s]",segment.getIdentifier());
     }
   }
  catch (  SegmentLoadingException e) {

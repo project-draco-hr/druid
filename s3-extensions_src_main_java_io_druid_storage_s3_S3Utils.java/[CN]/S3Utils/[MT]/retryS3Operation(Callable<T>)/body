@@ -1,29 +1,20 @@
 {
-  int nTry=0;
-  final int maxTries=10;
-  while (true) {
-    try {
-      nTry++;
-      return f.call();
-    }
- catch (    IOException e) {
-      if (nTry <= maxTries) {
-        awaitNextRetry(e,nTry);
+  final Predicate<Throwable> shouldRetry=new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable e){
+      if (e instanceof IOException) {
+        return true;
+      }
+ else       if (e instanceof ServiceException) {
+        final boolean isIOException=e.getCause() instanceof IOException;
+        final boolean isTimeout="RequestTimeout".equals(((ServiceException)e).getErrorCode());
+        return isIOException || isTimeout;
       }
  else {
-        throw e;
+        return false;
       }
-    }
-catch (    S3ServiceException e) {
-      if (nTry <= maxTries && (e.getCause() instanceof IOException || (e.getS3ErrorCode() != null && e.getS3ErrorCode().equals("RequestTimeout")))) {
-        awaitNextRetry(e,nTry);
-      }
- else {
-        throw e;
-      }
-    }
-catch (    Exception e) {
-      throw Throwables.propagate(e);
     }
   }
+;
+  final int maxTries=10;
+  return RetryUtils.retry(f,shouldRetry,maxTries);
 }

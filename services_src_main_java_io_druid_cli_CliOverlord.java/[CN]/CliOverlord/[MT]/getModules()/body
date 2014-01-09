@@ -1,6 +1,7 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      JsonConfigProvider.bind(binder,"druid.indexer.queue",TaskQueueConfig.class);
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
       binder.bind(TaskLogStreamer.class).to(SwitchingTaskLogStreamer.class).in(LazySingleton.class);
       binder.bind(new TypeLiteral<List<TaskLogStreamer>>(){
@@ -8,7 +9,6 @@
 ).toProvider(new ListProvider<TaskLogStreamer>().add(TaskRunnerTaskLogStreamer.class).add(TaskLogs.class)).in(LazySingleton.class);
       binder.bind(TaskActionClientFactory.class).to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
-      binder.bind(TaskQueue.class).in(LazySingleton.class);
       binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
       binder.bind(TaskLockbox.class).in(LazySingleton.class);
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
@@ -21,10 +21,10 @@
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).toInstance(new OverlordJettyServerInitializer());
       Jerseys.addResource(binder,OverlordResource.class);
-      Jerseys.addResource(binder,OldOverlordResource.class);
       LifecycleModule.register(binder,Server.class);
     }
     private void configureTaskStorage(    Binder binder){
+      JsonConfigProvider.bind(binder,"druid.indexer.storage",TaskStorageConfig.class);
       PolyBind.createChoice(binder,"druid.indexer.storage.type",Key.get(TaskStorage.class),Key.get(HeapMemoryTaskStorage.class));
       final MapBinder<String,TaskStorage> storageBinder=PolyBind.optionBinder(binder,Key.get(TaskStorage.class));
       storageBinder.addBinding("local").to(HeapMemoryTaskStorage.class);
@@ -33,6 +33,7 @@
       binder.bind(DbTaskStorage.class).in(LazySingleton.class);
     }
     private void configureRunners(    Binder binder){
+      JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
       PolyBind.createChoice(binder,"druid.indexer.runner.type",Key.get(TaskRunnerFactory.class),Key.get(ForkingTaskRunnerFactory.class));
       final MapBinder<String,TaskRunnerFactory> biddy=PolyBind.optionBinder(binder,Key.get(TaskRunnerFactory.class));
       IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
@@ -54,5 +55,5 @@
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",SimpleResourceManagementConfig.class);
     }
   }
-,new IndexingServiceFirehoseModule());
+,new IndexingServiceFirehoseModule(),new IndexingServiceTaskLogsModule());
 }

@@ -1,0 +1,15 @@
+{
+  Collection<DruidModule> modules=ImmutableList.of((DruidModule)new InitializationTest.TestDruidModule());
+  List<ModuleVersion> statusResourceModuleList=new StatusResource.Status(modules).getModules();
+  Assert.assertEquals("Status should have all modules loaded!",modules.size(),statusResourceModuleList.size());
+  for (  DruidModule module : modules) {
+    String moduleName=module.getClass().getCanonicalName();
+    boolean contains=Boolean.FALSE;
+    for (    ModuleVersion version : statusResourceModuleList) {
+      if (version.getName().equals(moduleName)) {
+        contains=Boolean.TRUE;
+      }
+    }
+    Assert.assertTrue("Status resource should contain module " + moduleName,contains);
+  }
+}

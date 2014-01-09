@@ -4,7 +4,7 @@
   Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
   log.info("Inserting task %s with status: %s",task.getId(),status);
   try {
-    dbi.withHandle(new HandleCallback<Void>(){
+    retryingHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
         handle.createStatement(String.format("INSERT INTO %s (id, created_date, datasource, payload, active, status_payload) VALUES (:id, :created_date, :datasource, :payload, :active, :status_payload)",dbTables.getTasksTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("datasource",task.getDataSource()).bind("payload",jsonMapper.writeValueAsBytes(task)).bind("active",status.isRunnable() ? 1 : 0).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute();
         return null;

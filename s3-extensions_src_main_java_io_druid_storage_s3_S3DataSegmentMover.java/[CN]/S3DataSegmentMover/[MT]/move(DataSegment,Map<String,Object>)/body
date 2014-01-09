@@ -1,0 +1,29 @@
+{
+  try {
+    Map<String,Object> loadSpec=segment.getLoadSpec();
+    String s3Bucket=MapUtils.getString(loadSpec,"bucket");
+    String s3Path=MapUtils.getString(loadSpec,"key");
+    String s3DescriptorPath=S3Utils.descriptorPathForSegmentPath(s3Path);
+    final String targetS3Bucket=MapUtils.getString(targetLoadSpec,"bucket");
+    final String targetS3BaseKey=MapUtils.getString(targetLoadSpec,"baseKey");
+    final String targetS3Path=S3Utils.constructSegmentPath(targetS3BaseKey,segment);
+    String targetS3DescriptorPath=S3Utils.descriptorPathForSegmentPath(targetS3Path);
+    if (targetS3Bucket.isEmpty()) {
+      throw new SegmentLoadingException("Target S3 bucket is not specified");
+    }
+    if (targetS3Path.isEmpty()) {
+      throw new SegmentLoadingException("Target S3 baseKey is not specified");
+    }
+    safeMove(s3Bucket,s3Path,targetS3Bucket,targetS3Path);
+    safeMove(s3Bucket,s3DescriptorPath,targetS3Bucket,targetS3DescriptorPath);
+    return segment.withLoadSpec(ImmutableMap.<String,Object>builder().putAll(Maps.filterKeys(loadSpec,new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return !(input.equals("bucket") || input.equals("key"));
+      }
+    }
+)).put("bucket",targetS3Bucket).put("key",targetS3Path).build());
+  }
+ catch (  ServiceException e) {
+    throw new SegmentLoadingException(e,"Unable to move segment[%s]",segment.getIdentifier());
+  }
+}

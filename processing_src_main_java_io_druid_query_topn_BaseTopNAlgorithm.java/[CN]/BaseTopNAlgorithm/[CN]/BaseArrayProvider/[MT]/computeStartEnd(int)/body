@@ -1,0 +1,20 @@
+{
+  int startIndex=ignoreFirstN;
+  if (previousStop != null) {
+    int lookupId=dimSelector.lookupId(previousStop) + 1;
+    if (lookupId < 0) {
+      lookupId*=-1;
+    }
+    if (lookupId > ignoreFirstN + keepOnlyN) {
+      startIndex=ignoreFirstN + keepOnlyN;
+    }
+ else {
+      startIndex=Math.max(lookupId,startIndex);
+    }
+  }
+  int endIndex=Math.min(ignoreFirstN + keepOnlyN,cardinality);
+  if (ignoreAfterThreshold && query.getDimensionsFilter() == null) {
+    endIndex=Math.min(endIndex,startIndex + query.getThreshold());
+  }
+  return Pair.of(startIndex,endIndex);
+}

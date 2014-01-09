@@ -1,7 +1,7 @@
 {
   Preconditions.checkNotNull(taskAction,"taskAction");
   log.info("Logging action for task[%s]: %s",task.getId(),taskAction);
-  dbi.withHandle(new HandleCallback<Integer>(){
+  retryingHandle(new HandleCallback<Integer>(){
     @Override public Integer withHandle(    Handle handle) throws Exception {
       return handle.createStatement(String.format("INSERT INTO %s (task_id, log_payload) VALUES (:task_id, :log_payload)",dbTables.getTaskLogTable())).bind("task_id",task.getId()).bind("log_payload",jsonMapper.writeValueAsBytes(taskAction)).execute();
     }

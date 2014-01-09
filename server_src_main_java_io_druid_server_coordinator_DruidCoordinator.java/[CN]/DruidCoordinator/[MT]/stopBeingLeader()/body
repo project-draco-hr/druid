@@ -7,8 +7,10 @@ synchronized (lock) {
         peon.stop();
       }
       loadManagementPeons.clear();
-      databaseSegmentManager.stop();
+      serviceAnnouncer.unannounce(self);
       serverInventoryView.stop();
+      databaseRuleManager.stop();
+      databaseSegmentManager.stop();
       leader=false;
     }
  catch (    Exception e) {

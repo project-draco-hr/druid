@@ -1,22 +1,30 @@
 {
-  if (pendingTasks.containsKey(taskId)) {
-    pendingTasks.remove(taskId);
-    return;
+  if (!started) {
+    log.info("This TaskRunner is stopped. Ignoring shutdown command for task: %s",taskId);
   }
-  final ZkWorker zkWorker=findWorkerRunningTask(taskId);
-  if (zkWorker == null) {
-    log.info("Can't shutdown! No worker running task %s",taskId);
-    return;
+ else   if (pendingTasks.remove(taskId) != null) {
+    pendingTaskPayloads.remove(taskId);
+    log.info("Removed task from pending queue: %s",taskId);
   }
-  try {
-    final URL url=makeWorkerURL(zkWorker.getWorker(),String.format("/task/%s/shutdown",taskId));
-    final StatusResponseHolder response=httpClient.post(url).go(RESPONSE_HANDLER).get();
-    log.info("Sent shutdown message to worker: %s, status %s, response: %s",zkWorker.getWorker().getHost(),response.getStatus(),response.getContent());
-    if (!response.getStatus().equals(HttpResponseStatus.ACCEPTED)) {
-      log.error("Shutdown failed for %s! Are you sure the task was running?",taskId);
+ else   if (completeTasks.containsKey(taskId)) {
+    cleanup(completeTasks.get(taskId).getWorker().getHost(),taskId);
+  }
+ else {
+    final ZkWorker zkWorker=findWorkerRunningTask(taskId);
+    if (zkWorker == null) {
+      log.info("Can't shutdown! No worker running task %s",taskId);
+      return;
     }
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
+    try {
+      final URL url=makeWorkerURL(zkWorker.getWorker(),String.format("/task/%s/shutdown",taskId));
+      final StatusResponseHolder response=httpClient.post(url).go(RESPONSE_HANDLER).get();
+      log.info("Sent shutdown message to worker: %s, status %s, response: %s",zkWorker.getWorker().getHost(),response.getStatus(),response.getContent());
+      if (!response.getStatus().equals(HttpResponseStatus.ACCEPTED)) {
+        log.error("Shutdown failed for %s! Are you sure the task was running?",taskId);
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
   }
 }

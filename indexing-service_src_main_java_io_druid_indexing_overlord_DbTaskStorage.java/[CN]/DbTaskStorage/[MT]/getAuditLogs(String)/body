@@ -1,18 +1,17 @@
 {
-  return dbi.withHandle(new HandleCallback<List<TaskAction>>(){
+  return retryingHandle(new HandleCallback<List<TaskAction>>(){
     @Override public List<TaskAction> withHandle(    Handle handle) throws Exception {
       final List<Map<String,Object>> dbTaskLogs=handle.createQuery(String.format("SELECT log_payload FROM %s WHERE task_id = :task_id",dbTables.getTaskLogTable())).bind("task_id",taskid).list();
-      return Lists.transform(dbTaskLogs,new Function<Map<String,Object>,TaskAction>(){
-        @Override public TaskAction apply(        Map<String,Object> row){
-          try {
-            return jsonMapper.readValue((byte[])row.get("log_payload"),TaskAction.class);
-          }
- catch (          Exception e) {
-            throw Throwables.propagate(e);
-          }
+      final List<TaskAction> retList=Lists.newArrayList();
+      for (      final Map<String,Object> dbTaskLog : dbTaskLogs) {
+        try {
+          retList.add(jsonMapper.readValue((byte[])dbTaskLog.get("log_payload"),TaskAction.class));
+        }
+ catch (        Exception e) {
+          log.makeAlert(e,"Failed to deserialize TaskLog").addData("task",taskid).addData("logPayload",dbTaskLog).emit();
         }
       }
-);
+      return retList;
     }
   }
 );

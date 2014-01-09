@@ -1,0 +1,10 @@
+{
+  toolbox.verifyTaskLocksAndSinglePartitionSettitude(task,segments,true);
+  toolbox.getIndexerDBCoordinator().updateSegmentMetadata(segments);
+  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType());
+  for (  DataSegment segment : segments) {
+    metricBuilder.setUser5(segment.getInterval().toString());
+    toolbox.getEmitter().emit(metricBuilder.build("indexer/segmentMoved/bytes",segment.getSize()));
+  }
+  return null;
+}

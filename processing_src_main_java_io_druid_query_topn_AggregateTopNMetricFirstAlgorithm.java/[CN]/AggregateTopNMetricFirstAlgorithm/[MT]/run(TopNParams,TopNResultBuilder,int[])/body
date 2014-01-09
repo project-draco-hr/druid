@@ -1,0 +1,53 @@
+{
+  final TopNResultBuilder singleMetricResultBuilder=makeResultBuilder(params);
+  final String metric=((NumericTopNMetricSpec)query.getTopNMetricSpec()).getMetric();
+  List<AggregatorFactory> condensedAggs=Lists.newArrayList();
+  for (  AggregatorFactory aggregatorSpec : query.getAggregatorSpecs()) {
+    if (aggregatorSpec.getName().equalsIgnoreCase(metric)) {
+      condensedAggs.add(aggregatorSpec);
+      break;
+    }
+  }
+  List<PostAggregator> condensedPostAggs=Lists.newArrayList();
+  if (condensedAggs.isEmpty()) {
+    for (    PostAggregator postAggregator : query.getPostAggregatorSpecs()) {
+      if (postAggregator.getName().equalsIgnoreCase(metric)) {
+        condensedPostAggs.add(postAggregator);
+        for (        AggregatorFactory aggregatorSpec : query.getAggregatorSpecs()) {
+          if (postAggregator.getDependentFields().contains(aggregatorSpec.getName())) {
+            condensedAggs.add(aggregatorSpec);
+          }
+        }
+        break;
+      }
+    }
+  }
+  if (condensedAggs.isEmpty() && condensedPostAggs.isEmpty()) {
+    throw new ISE("WTF! Can't find the metric to do topN over?");
+  }
+  TopNQuery singleMetricQuery=new TopNQueryBuilder().copy(query).aggregators(condensedAggs).postAggregators(condensedPostAggs).build();
+  PooledTopNAlgorithm singleMetricAlgo=new PooledTopNAlgorithm(capabilities,singleMetricQuery,bufferPool);
+  PooledTopNAlgorithm.PooledTopNParams singleMetricParam=null;
+  int[] dimValSelector=null;
+  try {
+    singleMetricParam=singleMetricAlgo.makeInitParams(params.getDimSelector(),params.getCursor());
+    singleMetricAlgo.run(singleMetricParam,singleMetricResultBuilder,null);
+    dimValSelector=getDimValSelectorForTopNMetric(singleMetricParam,singleMetricResultBuilder);
+  }
+  finally {
+    if (singleMetricParam != null) {
+      singleMetricAlgo.cleanup(singleMetricParam);
+    }
+  }
+  PooledTopNAlgorithm allMetricAlgo=new PooledTopNAlgorithm(capabilities,query,bufferPool);
+  PooledTopNAlgorithm.PooledTopNParams allMetricsParam=null;
+  try {
+    allMetricsParam=allMetricAlgo.makeInitParams(params.getDimSelector(),params.getCursor());
+    allMetricAlgo.run(allMetricsParam,resultBuilder,dimValSelector);
+  }
+  finally {
+    if (allMetricsParam != null) {
+      allMetricAlgo.cleanup(allMetricsParam);
+    }
+  }
+}

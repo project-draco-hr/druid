@@ -1,0 +1,21 @@
+{
+  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
+  if (!myLock.getDataSource().equals(getDataSource())) {
+    throw new ISE("WTF?! Lock dataSource[%s] != task dataSource[%s]",myLock.getDataSource(),getDataSource());
+  }
+  if (!myLock.getInterval().equals(getInterval())) {
+    throw new ISE("WTF?! Lock interval[%s] != task interval[%s]",myLock.getInterval(),getInterval());
+  }
+  final List<DataSegment> unusedSegments=toolbox.getTaskActionClient().submit(new SegmentListUnusedAction(myLock.getDataSource(),myLock.getInterval()));
+  for (  final DataSegment unusedSegment : unusedSegments) {
+    if (unusedSegment.getVersion().compareTo(myLock.getVersion()) > 0) {
+      throw new ISE("WTF?! Unused segment[%s] has version[%s] > task version[%s]",unusedSegment.getIdentifier(),unusedSegment.getVersion(),myLock.getVersion());
+    }
+    log.info("OK to move segment: %s",unusedSegment.getIdentifier());
+  }
+  for (  DataSegment segment : unusedSegments) {
+    final DataSegment movedSegment=toolbox.getDataSegmentMover().move(segment,targetLoadSpec);
+    toolbox.getTaskActionClient().submit(new SegmentMetadataUpdateAction(ImmutableSet.of(movedSegment)));
+  }
+  return TaskStatus.success(getId());
+}

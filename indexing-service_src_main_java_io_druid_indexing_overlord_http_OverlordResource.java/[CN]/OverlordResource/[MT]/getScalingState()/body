@@ -1,8 +1,9 @@
 {
-  return asLeaderWith(taskMaster.getResourceManagementScheduler(),new Function<ResourceManagementScheduler,Response>(){
-    @Override public Response apply(    ResourceManagementScheduler resourceManagementScheduler){
-      return Response.ok(resourceManagementScheduler.getStats()).build();
-    }
+  final Optional<ResourceManagementScheduler> rms=taskMaster.getResourceManagementScheduler();
+  if (rms.isPresent()) {
+    return Response.ok(rms.get().getStats()).build();
   }
-);
+ else {
+    return Response.ok().build();
+  }
 }
