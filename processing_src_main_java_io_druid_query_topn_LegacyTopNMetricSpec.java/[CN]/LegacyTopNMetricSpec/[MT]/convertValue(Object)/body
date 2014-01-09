@@ -1,0 +1,13 @@
+{
+  final String retVal;
+  if (metric instanceof String) {
+    retVal=(String)metric;
+  }
+ else   if (metric instanceof Map) {
+    retVal=(String)((Map)metric).get("metric");
+  }
+ else {
+    throw new IAE("Unknown type[%s] for metric[%s]",metric.getClass(),metric);
+  }
+  return retVal;
+}

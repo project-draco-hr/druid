@@ -1,0 +1,28 @@
+{
+  final Cursor cursor=params.getCursor();
+  final DimensionSelector dimSelector=params.getDimSelector();
+  while (!cursor.isDone()) {
+    final IndexedInts dimValues=dimSelector.getRow();
+    for (int i=0; i < dimValues.size(); ++i) {
+      final int dimIndex=dimValues.get(i);
+      Aggregator[] theAggregators=rowSelector[dimIndex];
+      if (theAggregators == null) {
+        String key=query.getDimensionSpec().getDimExtractionFn().apply(dimSelector.lookupName(dimIndex));
+        if (key == null) {
+          rowSelector[dimIndex]=EMPTY_ARRAY;
+          continue;
+        }
+        theAggregators=aggregatesStore.get(key);
+        if (theAggregators == null) {
+          theAggregators=makeAggregators(cursor,query.getAggregatorSpecs());
+          aggregatesStore.put(key,theAggregators);
+        }
+        rowSelector[dimIndex]=theAggregators;
+      }
+      for (      Aggregator aggregator : theAggregators) {
+        aggregator.aggregate();
+      }
+    }
+    cursor.advance();
+  }
+}

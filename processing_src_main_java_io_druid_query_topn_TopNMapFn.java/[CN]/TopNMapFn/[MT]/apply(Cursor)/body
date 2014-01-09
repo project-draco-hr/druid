@@ -1,0 +1,16 @@
+{
+  final DimensionSelector dimSelector=cursor.makeDimensionSelector(query.getDimensionSpec().getDimension());
+  if (dimSelector == null) {
+    return null;
+  }
+  TopNParams params=null;
+  try {
+    params=topNAlgorithm.makeInitParams(dimSelector,cursor);
+    TopNResultBuilder resultBuilder=topNAlgorithm.makeResultBuilder(params);
+    topNAlgorithm.run(params,resultBuilder,null);
+    return resultBuilder.build();
+  }
+  finally {
+    topNAlgorithm.cleanup(params);
+  }
+}

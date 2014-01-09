@@ -1,0 +1,26 @@
+{
+  ResourceHolder<ByteBuffer> resultsBufHolder=bufferPool.take();
+  ByteBuffer resultsBuf=resultsBufHolder.get();
+  resultsBuf.clear();
+  final int cardinality=dimSelector.getValueCardinality();
+  final TopNMetricSpecBuilder<int[]> arrayProvider=new BaseArrayProvider<int[]>(dimSelector,query,capabilities){
+    private final int[] positions=new int[cardinality];
+    @Override public int[] build(){
+      Pair<Integer,Integer> startEnd=computeStartEnd(cardinality);
+      Arrays.fill(positions,0,startEnd.lhs,SKIP_POSITION_VALUE);
+      Arrays.fill(positions,startEnd.lhs,startEnd.rhs,INIT_POSITION_VALUE);
+      Arrays.fill(positions,startEnd.rhs,positions.length,SKIP_POSITION_VALUE);
+      return positions;
+    }
+  }
+;
+  final int numBytesToWorkWith=resultsBuf.remaining();
+  final int[] aggregatorSizes=new int[query.getAggregatorSpecs().size()];
+  int numBytesPerRecord=0;
+  for (int i=0; i < query.getAggregatorSpecs().size(); ++i) {
+    aggregatorSizes[i]=query.getAggregatorSpecs().get(i).getMaxIntermediateSize();
+    numBytesPerRecord+=aggregatorSizes[i];
+  }
+  final int numValuesPerPass=numBytesToWorkWith / numBytesPerRecord;
+  return PooledTopNParams.builder().withDimSelector(dimSelector).withCursor(cursor).withCardinality(cardinality).withResultsBufHolder(resultsBufHolder).withResultsBuf(resultsBuf).withArrayProvider(arrayProvider).withNumBytesPerRecord(numBytesPerRecord).withNumValuesPerPass(numValuesPerPass).withAggregatorSizes(aggregatorSizes).build();
+}
