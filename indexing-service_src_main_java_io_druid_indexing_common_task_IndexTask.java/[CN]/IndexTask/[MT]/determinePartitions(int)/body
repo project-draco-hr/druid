@@ -1,7 +1,6 @@
 {
   Map<Interval,List<ShardSpec>> retVal=Maps.newLinkedHashMap();
   log.info("Determining partitions with targetPartitionSize[%d]",targetPartitionSize);
-  final Set<String> unusableDimensions=Sets.newHashSet();
   try (Firehose firehose=firehoseFactory.connect()){
     if (!firehose.hasMore()) {
       log.error("Unable to find any events to ingest! Check your firehose config!");
@@ -9,6 +8,7 @@
     }
     InputRow inputRow=firehose.nextRow();
     for (    Interval interval : granularitySpec.bucketIntervals()) {
+      final Set<String> unusableDimensions=Sets.newHashSet();
       final Map<String,TreeMultiset<String>> dimensionValueMultisets=Maps.newHashMap();
       boolean hasEventsInInterval=false;
       boolean done=false;
