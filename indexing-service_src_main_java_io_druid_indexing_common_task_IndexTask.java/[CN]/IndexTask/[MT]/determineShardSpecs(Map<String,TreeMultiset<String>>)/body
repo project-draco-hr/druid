@@ -1,32 +1,5 @@
 {
-  log.info("Determining partitions for interval[%s] with targetPartitionSize[%d]",interval,targetPartitionSize);
-  final Set<String> unusableDimensions=com.google.common.collect.Sets.newHashSet();
-  final Map<String,TreeMultiset<String>> dimensionValueMultisets=Maps.newHashMap();
-  try (Firehose firehose=firehoseFactory.connect()){
-    while (firehose.hasMore()) {
-      final InputRow inputRow=firehose.nextRow();
-      if (interval.contains(inputRow.getTimestampFromEpoch())) {
-        for (        final String dim : inputRow.getDimensions()) {
-          final List<String> dimValues=inputRow.getDimension(dim);
-          if (!unusableDimensions.contains(dim)) {
-            if (dimValues.size() == 1) {
-              TreeMultiset<String> dimensionValueMultiset=dimensionValueMultisets.get(dim);
-              if (dimensionValueMultiset == null) {
-                dimensionValueMultiset=TreeMultiset.create();
-                dimensionValueMultisets.put(dim,dimensionValueMultiset);
-              }
-              dimensionValueMultiset.add(dimValues.get(0));
-            }
- else {
-              unusableDimensions.add(dim);
-              dimensionValueMultisets.remove(dim);
-            }
-          }
-        }
-      }
-    }
-  }
-   final List<ShardSpec> shardSpecs=Lists.newArrayList();
+  final List<ShardSpec> shardSpecs=Lists.newArrayList();
   Ordering<Map.Entry<String,TreeMultiset<String>>> byCardinalityOrdering=new Ordering<Map.Entry<String,TreeMultiset<String>>>(){
     @Override public int compare(    Map.Entry<String,TreeMultiset<String>> left,    Map.Entry<String,TreeMultiset<String>> right){
       return Ints.compare(left.getValue().elementSet().size(),right.getValue().elementSet().size());
