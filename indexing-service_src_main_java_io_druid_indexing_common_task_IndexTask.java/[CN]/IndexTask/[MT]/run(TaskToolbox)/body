@@ -1,18 +1,20 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
-  final Map<Interval,List<ShardSpec>> shardSpecMap=determinePartitions(targetPartitionSize);
-  final Map<Interval,List<Schema>> schemass=Maps.transformEntries(shardSpecMap,new Maps.EntryTransformer<Interval,List<ShardSpec>,List<Schema>>(){
-    @Override public List<Schema> transformEntry(    Interval key,    List<ShardSpec> shardSpecs){
-      return Lists.transform(shardSpecs,new Function<ShardSpec,Schema>(){
-        @Override public Schema apply(        final ShardSpec shardSpec){
-          return new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec);
-        }
-      }
-);
+  final Set<DataSegment> segments=Sets.newHashSet();
+  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals(),getDataIntervals());
+  for (  final Interval bucket : validIntervals) {
+    final List<ShardSpec> shardSpecs;
+    if (targetPartitionSize > 0) {
+      shardSpecs=determinePartitions(bucket,targetPartitionSize);
+    }
+ else {
+      shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
+    }
+    for (    final ShardSpec shardSpec : shardSpecs) {
+      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),bucket,myLock.getVersion());
+      segments.add(segment);
     }
   }
-);
-  final Set<DataSegment> segments=generateSegments(toolbox,schemass,myLock.getVersion());
   toolbox.pushSegments(segments);
   return TaskStatus.success(getId());
 }

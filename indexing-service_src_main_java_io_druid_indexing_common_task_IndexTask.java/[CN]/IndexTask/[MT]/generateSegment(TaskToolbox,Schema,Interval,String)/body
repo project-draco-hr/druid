@@ -1,6 +1,6 @@
 {
   final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),version,schema.getShardSpec().getPartitionNum()));
-  final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<>();
+  final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       return toolbox.getSegmentPusher().getPathForHadoop(dataSource);
