@@ -15,10 +15,7 @@
   try {
     return RetryUtils.retry(call,shouldRetry,maxTries);
   }
- catch (  RuntimeException e) {
+ catch (  Exception e) {
     throw Throwables.propagate(e);
-  }
-catch (  Exception e) {
-    throw new CallbackFailedException(e);
   }
 }
