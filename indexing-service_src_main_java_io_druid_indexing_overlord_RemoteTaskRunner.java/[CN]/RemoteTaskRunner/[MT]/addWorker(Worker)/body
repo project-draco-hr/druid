@@ -25,7 +25,7 @@ case CHILD_UPDATED:
  else {
       log.warn("Worker[%s] announced a status for a task I didn't know about, adding to runningTasks: %s",zkWorker.getWorker().getHost(),taskId);
       taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(taskId,SettableFuture.<TaskStatus>create(),zkWorker.getWorker());
-      runningTasks.put(taskId,taskRunnerWorkItem);
+      runningTasks.put(taskId,taskRunnerWorkItem.withWorker(zkWorker.getWorker()));
     }
   if (taskStatus.isComplete()) {
     taskComplete(taskRunnerWorkItem,zkWorker,taskStatus);
