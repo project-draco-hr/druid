@@ -160,7 +160,7 @@ synchronized (handoffCondition) {
     }
     private void initializeExecutors(){
       if (persistExecutor == null) {
-        persistExecutor=Execs.blockingSingleThreaded("plumber_persist_%d",2);
+        persistExecutor=Execs.blockingSingleThreaded("plumber_persist_%d",maxPendingPersistBatches);
       }
       if (scheduledExecutor == null) {
         scheduledExecutor=Execs.scheduledSingleThreaded("plumber_scheduled_%d");
