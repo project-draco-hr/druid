@@ -1,0 +1,23 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (simple != null) {
+    Map<String,Map<String,Long>> metadata=Maps.newHashMap();
+    for (    DruidServer druidServer : serverInventoryView.getInventory()) {
+      Map<String,Long> tierMetadata=metadata.get(druidServer.getTier());
+      if (tierMetadata == null) {
+        tierMetadata=Maps.newHashMap();
+        metadata.put(druidServer.getTier(),tierMetadata);
+      }
+      Long currSize=tierMetadata.get("currSize");
+      tierMetadata.put("currSize",(currSize == null) ? 0 : currSize + druidServer.getCurrSize());
+      Long maxSize=tierMetadata.get("maxSize");
+      tierMetadata.put("maxSize",(maxSize == null) ? 0 : maxSize + druidServer.getMaxSize());
+    }
+    return builder.entity(metadata).build();
+  }
+  Set<String> tiers=Sets.newHashSet();
+  for (  DruidServer server : serverInventoryView.getInventory()) {
+    tiers.add(server.getTier());
+  }
+  return builder.entity(tiers).build();
+}
