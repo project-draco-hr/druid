@@ -160,10 +160,10 @@ synchronized (handoffCondition) {
     }
     private void initializeExecutors(){
       if (persistExecutor == null) {
-        persistExecutor=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("plumber_persist_%d").build());
+        persistExecutor=Execs.newBlockingSingleThreaded("plumber_persist_%d",maxPendingPersists);
       }
       if (scheduledExecutor == null) {
-        scheduledExecutor=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("plumber_scheduled_%d").build());
+        scheduledExecutor=Execs.scheduledSingleThreaded("plumber_scheduled_%d");
       }
     }
     private void bootstrapSinksFromDisk(){
