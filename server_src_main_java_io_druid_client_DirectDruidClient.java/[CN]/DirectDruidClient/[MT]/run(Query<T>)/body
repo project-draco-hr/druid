@@ -16,11 +16,10 @@
  else {
     typeRef=types.lhs;
   }
-  final Future<InputStream> future;
+  final ListenableFuture<InputStream> future;
   final String url=String.format("http://%s/druid/v2/",host);
   try {
     log.debug("Querying url[%s]",url);
-    openConnections.getAndIncrement();
     future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new InputStreamResponseHandler(){
       long startTime;
       long byteCount=0;
@@ -38,8 +37,17 @@
       @Override public ClientResponse<InputStream> done(      ClientResponse<AppendableByteArrayInputStream> clientResponse){
         long stopTime=System.currentTimeMillis();
         log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount,stopTime - startTime,byteCount / (0.0001 * (stopTime - startTime)));
-        openConnections.getAndDecrement();
         return super.done(clientResponse);
+      }
+    }
+);
+    openConnections.getAndIncrement();
+    Futures.addCallback(future,new FutureCallback<InputStream>(){
+      @Override public void onSuccess(      InputStream result){
+        openConnections.getAndDecrement();
+      }
+      @Override public void onFailure(      Throwable t){
+        openConnections.getAndDecrement();
       }
     }
 );

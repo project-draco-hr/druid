@@ -1,0 +1,11 @@
+{
+  DruidServer server=serverInventoryView.getInventoryValue(serverName);
+  if (server == null) {
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (simple != null) {
+    return builder.entity(makeSimpleServer(server)).build();
+  }
+  return builder.entity(server).build();
+}

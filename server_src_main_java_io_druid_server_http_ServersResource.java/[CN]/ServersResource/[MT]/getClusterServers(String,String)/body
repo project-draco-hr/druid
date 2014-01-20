@@ -1,0 +1,20 @@
+{
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (full != null) {
+    return builder.entity(Lists.newArrayList(serverInventoryView.getInventory())).build();
+  }
+ else   if (simple != null) {
+    return builder.entity(Lists.newArrayList(Iterables.transform(serverInventoryView.getInventory(),new Function<DruidServer,Map<String,Object>>(){
+      @Override public Map<String,Object> apply(      DruidServer input){
+        return makeSimpleServer(input);
+      }
+    }
+))).build();
+  }
+  return builder.entity(Lists.newArrayList(Iterables.transform(serverInventoryView.getInventory(),new Function<DruidServer,String>(){
+    @Override public String apply(    DruidServer druidServer){
+      return druidServer.getHost();
+    }
+  }
+))).build();
+}

@@ -1,0 +1,29 @@
+{
+  final CountingMap<String> expectedSegmentsInCluster=new CountingMap<>();
+  final DateTime now=new DateTime();
+  for (  DataSegment segment : getAvailableDataSegments()) {
+    List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
+    for (    Rule rule : rules) {
+      if (rule instanceof LoadRule && rule.appliesTo(segment,now)) {
+        expectedSegmentsInCluster.add(segment.getDataSource(),((LoadRule)rule).getReplicants());
+        break;
+      }
+    }
+  }
+  Map<String,Integer> segmentsInCluster=Maps.newHashMap();
+  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
+    for (    DataSegment segment : druidServer.getSegments().values()) {
+      Integer count=segmentsInCluster.get(segment.getDataSource());
+      if (count == null) {
+        count=0;
+      }
+      segmentsInCluster.put(segment.getDataSource(),count + 1);
+    }
+  }
+  Map<String,Double> loadStatus=Maps.newHashMap();
+  for (  Map.Entry<String,AtomicLong> entry : expectedSegmentsInCluster.entrySet()) {
+    Integer actual=segmentsInCluster.get(entry.getKey());
+    loadStatus.put(entry.getKey(),100 * (actual == null ? 0.0D : (double)actual) / entry.getValue().get());
+  }
+  return loadStatus;
+}

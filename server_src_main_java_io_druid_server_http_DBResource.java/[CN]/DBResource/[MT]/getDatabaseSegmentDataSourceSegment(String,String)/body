@@ -1,0 +1,12 @@
+{
+  DruidDataSource dataSource=databaseSegmentManager.getInventoryValue(dataSourceName);
+  if (dataSource == null) {
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+  for (  DataSegment segment : dataSource.getSegments()) {
+    if (segment.getIdentifier().equalsIgnoreCase(segmentId)) {
+      return Response.status(Response.Status.OK).entity(segment).build();
+    }
+  }
+  return Response.status(Response.Status.NOT_FOUND).build();
+}

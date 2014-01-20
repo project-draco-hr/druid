@@ -1,0 +1,11 @@
+{
+  SortedSet<Interval> retVal=Sets.newTreeSet(Comparators.intervalsByStartThenEnd());
+  try (Firehose firehose=firehoseFactory.connect()){
+    while (firehose.hasMore()) {
+      final InputRow inputRow=firehose.nextRow();
+      Interval interval=granularitySpec.getGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
+      retVal.add(interval);
+    }
+  }
+   return retVal;
+}
