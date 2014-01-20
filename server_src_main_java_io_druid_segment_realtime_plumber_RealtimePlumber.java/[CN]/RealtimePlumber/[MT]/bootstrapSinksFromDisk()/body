@@ -1,0 +1,48 @@
+{
+  File baseDir=computeBaseDir(schema);
+  if (baseDir == null || !baseDir.exists()) {
+    return;
+  }
+  File[] files=baseDir.listFiles();
+  if (files == null) {
+    return;
+  }
+  for (  File sinkDir : files) {
+    Interval sinkInterval=new Interval(sinkDir.getName().replace("_","/"));
+    final File[] sinkFiles=sinkDir.listFiles(new FilenameFilter(){
+      @Override public boolean accept(      File dir,      String fileName){
+        return !(Ints.tryParse(fileName) == null);
+      }
+    }
+);
+    Arrays.sort(sinkFiles,new Comparator<File>(){
+      @Override public int compare(      File o1,      File o2){
+        try {
+          return Ints.compare(Integer.parseInt(o1.getName()),Integer.parseInt(o2.getName()));
+        }
+ catch (        NumberFormatException e) {
+          log.error(e,"Couldn't compare as numbers? [%s][%s]",o1,o2);
+          return o1.compareTo(o2);
+        }
+      }
+    }
+);
+    try {
+      List<FireHydrant> hydrants=Lists.newArrayList();
+      for (      File segmentDir : sinkFiles) {
+        log.info("Loading previously persisted segment at [%s]",segmentDir);
+        if (Ints.tryParse(segmentDir.getName()) == null) {
+          continue;
+        }
+        hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),schema.getShardSpec()),IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
+      }
+      Sink currSink=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval),hydrants);
+      sinks.put(sinkInterval.getStartMillis(),currSink);
+      sinkTimeline.add(currSink.getInterval(),currSink.getVersion(),new SingleElementPartitionChunk<Sink>(currSink));
+      segmentAnnouncer.announceSegment(currSink.getSegment());
+    }
+ catch (    IOException e) {
+      log.makeAlert(e,"Problem loading sink[%s] from disk.",schema.getDataSource()).addData("interval",sinkInterval).emit();
+    }
+  }
+}

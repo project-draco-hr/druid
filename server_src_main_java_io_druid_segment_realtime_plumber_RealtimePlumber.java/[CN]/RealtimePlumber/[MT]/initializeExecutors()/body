@@ -1,0 +1,8 @@
+{
+  if (persistExecutor == null) {
+    persistExecutor=Execs.newBlockingSingleThreaded("plumber_persist_%d",maxPendingPersists);
+  }
+  if (scheduledExecutor == null) {
+    scheduledExecutor=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("plumber_scheduled_%d").build());
+  }
+}
