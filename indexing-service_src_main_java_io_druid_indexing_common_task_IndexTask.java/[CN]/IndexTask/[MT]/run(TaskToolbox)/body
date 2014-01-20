@@ -1,7 +1,11 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Set<DataSegment> segments=Sets.newHashSet();
-  for (  final Interval bucket : granularitySpec.bucketIntervals()) {
+  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals(),getDataIntervals());
+  if (validIntervals.isEmpty()) {
+    throw new ISE("No valid data intervals found. Check your configs!");
+  }
+  for (  final Interval bucket : validIntervals) {
     final List<ShardSpec> shardSpecs;
     if (targetPartitionSize > 0) {
       shardSpecs=determinePartitions(bucket,targetPartitionSize);

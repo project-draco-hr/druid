@@ -28,11 +28,11 @@
         cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
       }
       SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
-      final Set<String> disdappearedServers=Sets.newHashSet(loadManagementPeons.keySet());
+      final Set<String> disappeared=Sets.newHashSet(loadManagementPeons.keySet());
       for (      DruidServer server : servers) {
-        disdappearedServers.remove(server.getName());
+        disappeared.remove(server.getName());
       }
-      for (      String name : disdappearedServers) {
+      for (      String name : disappeared) {
         log.info("Removing listener for server[%s] which is no longer there.",name);
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();

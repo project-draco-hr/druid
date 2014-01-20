@@ -1,0 +1,14 @@
+{
+  if (indexingServiceClient == null) {
+    return Response.status(Response.Status.OK).entity(ImmutableMap.of("error","no indexing service found")).build();
+  }
+  if (kill != null && Boolean.valueOf(kill)) {
+    indexingServiceClient.killSegments(dataSourceName,new Interval(interval));
+  }
+ else {
+    if (!databaseSegmentManager.removeDatasource(dataSourceName)) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+  }
+  return Response.status(Response.Status.OK).build();
+}

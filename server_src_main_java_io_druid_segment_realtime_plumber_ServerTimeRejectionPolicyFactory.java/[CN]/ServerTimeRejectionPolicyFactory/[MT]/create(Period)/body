@@ -5,7 +5,10 @@
       return new DateTime();
     }
     @Override public boolean accept(    long timestamp){
-      return timestamp >= (System.currentTimeMillis() - windowMillis);
+      long now=System.currentTimeMillis();
+      boolean notTooOld=timestamp >= (now - windowMillis);
+      boolean notTooYoung=timestamp <= (now + windowMillis);
+      return notTooOld && notTooYoung;
     }
     @Override public String toString(){
       return String.format("serverTime-%s",windowPeriod);
