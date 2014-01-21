@@ -8,7 +8,7 @@
     instances.addAll(reservation.getInstances());
   }
   try {
-    log.info("Terminating instance[%s]",instances);
+    log.info("Terminating instances[%s]",instances);
     amazonEC2Client.terminateInstances(new TerminateInstancesRequest(Lists.transform(instances,new Function<Instance,String>(){
       @Override public String apply(      Instance input){
         return input.getInstanceId();
