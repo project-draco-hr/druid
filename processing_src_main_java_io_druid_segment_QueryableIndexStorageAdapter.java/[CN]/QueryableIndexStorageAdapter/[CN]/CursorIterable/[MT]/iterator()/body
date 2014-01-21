@@ -21,11 +21,26 @@
         @Override public void advance(){
           cursorOffset.increment();
         }
+        @Override public void advanceTo(        int offset){
+          int count=0;
+          while (count < offset && !isDone()) {
+            advance();
+            count++;
+          }
+        }
         @Override public boolean isDone(){
           return !cursorOffset.withinBounds();
         }
         @Override public void reset(){
           cursorOffset=initOffset.clone();
+        }
+        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
+          return new TimestampColumnSelector(){
+            @Override public long getTimestamp(){
+              return timestamps.getLongSingleValueRow(cursorOffset.getOffset());
+            }
+          }
+;
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();

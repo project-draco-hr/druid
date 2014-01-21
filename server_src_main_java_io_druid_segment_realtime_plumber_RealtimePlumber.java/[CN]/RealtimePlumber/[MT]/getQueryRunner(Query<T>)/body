@@ -1,0 +1,26 @@
+{
+  final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
+  final QueryToolChest<T,Query<T>> toolchest=factory.getToolchest();
+  final Function<Query<T>,ServiceMetricEvent.Builder> builderFn=new Function<Query<T>,ServiceMetricEvent.Builder>(){
+    @Override public ServiceMetricEvent.Builder apply(    @Nullable Query<T> input){
+      return toolchest.makeMetricBuilder(query);
+    }
+  }
+;
+  List<TimelineObjectHolder<String,Sink>> querySinks=Lists.newArrayList();
+  for (  Interval interval : query.getIntervals()) {
+    querySinks.addAll(sinkTimeline.lookup(interval));
+  }
+  return toolchest.mergeResults(factory.mergeRunners(queryExecutorService,FunctionalIterable.create(querySinks).transform(new Function<TimelineObjectHolder<String,Sink>,QueryRunner<T>>(){
+    @Override public QueryRunner<T> apply(    TimelineObjectHolder<String,Sink> holder){
+      final Sink theSink=holder.getObject().getChunk(0).getObject();
+      return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
+        @Override public QueryRunner<T> apply(        FireHydrant input){
+          return factory.createRunner(input.getSegment());
+        }
+      }
+))),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum())));
+    }
+  }
+)));
+}

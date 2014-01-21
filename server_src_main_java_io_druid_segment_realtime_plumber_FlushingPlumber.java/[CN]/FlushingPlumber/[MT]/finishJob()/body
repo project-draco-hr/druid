@@ -1,0 +1,11 @@
+{
+  log.info("Stopping job");
+  for (  final Map.Entry<Long,Sink> entry : getSinks().entrySet()) {
+    abandonSegment(entry.getKey(),entry.getValue());
+  }
+  shutdownExecutors();
+  if (flushScheduledExec != null) {
+    flushScheduledExec.shutdown();
+  }
+  stopped=true;
+}

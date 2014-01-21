@@ -1,0 +1,34 @@
+{
+  final long truncatedNow=segmentGranularity.truncate(new DateTime()).getMillis();
+  final long windowMillis=windowPeriod.toStandardDuration().getMillis();
+  log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis)));
+  ScheduledExecutors.scheduleAtFixedRate(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow) + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-overseer-%d",schema.getDataSource(),schema.getShardSpec().getPartitionNum())){
+    @Override public ScheduledExecutors.Signal doCall(){
+      if (stopped) {
+        log.info("Stopping merge-n-push overseer thread");
+        return ScheduledExecutors.Signal.STOP;
+      }
+      log.info("Starting merge and push.");
+      long minTimestamp=segmentGranularity.truncate(rejectionPolicy.getCurrMaxTime().minus(windowMillis)).getMillis();
+      List<Map.Entry<Long,Sink>> sinksToPush=Lists.newArrayList();
+      for (      Map.Entry<Long,Sink> entry : sinks.entrySet()) {
+        final Long intervalStart=entry.getKey();
+        if (intervalStart < minTimestamp) {
+          log.info("Adding entry[%s] for merge and push.",entry);
+          sinksToPush.add(entry);
+        }
+      }
+      for (      final Map.Entry<Long,Sink> entry : sinksToPush) {
+        persistAndMerge(entry.getKey(),entry.getValue());
+      }
+      if (stopped) {
+        log.info("Stopping merge-n-push overseer thread");
+        return ScheduledExecutors.Signal.STOP;
+      }
+ else {
+        return ScheduledExecutors.Signal.REPEAT;
+      }
+    }
+  }
+);
+}

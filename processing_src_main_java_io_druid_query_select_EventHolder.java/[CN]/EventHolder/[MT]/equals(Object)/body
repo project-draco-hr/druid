@@ -1,0 +1,19 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  EventHolder that=(EventHolder)o;
+  if (offset != that.offset) {
+    return false;
+  }
+  if (!Maps.difference(event,((EventHolder)o).event).areEqual()) {
+    return false;
+  }
+  if (segmentId != null ? !segmentId.equals(that.segmentId) : that.segmentId != null) {
+    return false;
+  }
+  return true;
+}

@@ -1,0 +1,15 @@
+{
+  try {
+    segmentAnnouncer.unannounceSegment(sink.getSegment());
+    FileUtils.deleteDirectory(computePersistDir(schema,sink.getInterval()));
+    log.info("Removing sinkKey %d for segment %s",truncatedTime,sink.getSegment().getIdentifier());
+    sinks.remove(truncatedTime);
+    sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<>(sink));
+synchronized (handoffCondition) {
+      handoffCondition.notifyAll();
+    }
+  }
+ catch (  IOException e) {
+    log.makeAlert(e,"Unable to abandon old segment for dataSource[%s]",schema.getDataSource()).addData("interval",sink.getInterval()).emit();
+  }
+}

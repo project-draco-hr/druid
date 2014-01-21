@@ -1,0 +1,27 @@
+{
+  log.info("Shutting down...");
+  shuttingDown=true;
+  for (  final Map.Entry<Long,Sink> entry : sinks.entrySet()) {
+    persistAndMerge(entry.getKey(),entry.getValue());
+  }
+  while (!sinks.isEmpty()) {
+    try {
+      log.info("Cannot shut down yet! Sinks remaining: %s",Joiner.on(", ").join(Iterables.transform(sinks.values(),new Function<Sink,String>(){
+        @Override public String apply(        Sink input){
+          return input.getSegment().getIdentifier();
+        }
+      }
+)));
+synchronized (handoffCondition) {
+        while (!sinks.isEmpty()) {
+          handoffCondition.wait();
+        }
+      }
+    }
+ catch (    InterruptedException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  shutdownExecutors();
+  stopped=true;
+}
