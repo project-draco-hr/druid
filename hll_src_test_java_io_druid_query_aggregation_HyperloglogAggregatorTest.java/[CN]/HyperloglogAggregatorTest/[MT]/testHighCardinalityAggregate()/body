@@ -1,0 +1,10 @@
+{
+  final TestHllComplexMetricSelector selector=new TestHllComplexMetricSelector();
+  final HyperloglogAggregatorFactory aggFactory=new HyperloglogAggregatorFactory("billy","billyG");
+  final HyperloglogAggregator agg=new HyperloglogAggregator("billy",selector);
+  final int card=100000;
+  for (int i=0; i < card; i++) {
+    aggregate(selector,agg);
+  }
+  Assert.assertEquals(99443L,aggFactory.finalizeComputation(agg.get()));
+}
