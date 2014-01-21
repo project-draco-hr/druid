@@ -8,16 +8,9 @@
     instances.addAll(reservation.getInstances());
   }
   try {
-    log.info("Terminating instances[%s]",instances);
-    amazonEC2Client.terminateInstances(new TerminateInstancesRequest(Lists.transform(instances,new Function<Instance,String>(){
+    return terminateWithIds(Lists.transform(instances,new Function<Instance,String>(){
       @Override public String apply(      Instance input){
         return input.getInstanceId();
-      }
-    }
-)));
-    return new AutoScalingData(Lists.transform(ips,new Function<String,String>(){
-      @Override public String apply(      @Nullable String input){
-        return String.format("%s:%s",input,config.getWorkerPort());
       }
     }
 ));
