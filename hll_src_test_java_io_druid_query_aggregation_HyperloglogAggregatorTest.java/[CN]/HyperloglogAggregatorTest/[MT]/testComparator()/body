@@ -1,0 +1,10 @@
+{
+  final TestHllComplexMetricSelector selector=new TestHllComplexMetricSelector();
+  final Comparator comp=new HyperloglogAggregatorFactory("billy","billyG").getComparator();
+  final HyperloglogAggregator agg=new HyperloglogAggregator("billy",selector);
+  Object first=new TIntByteHashMap((TIntByteHashMap)agg.get());
+  agg.aggregate();
+  Assert.assertEquals(0,comp.compare(first,first));
+  Assert.assertEquals(0,comp.compare(agg.get(),agg.get()));
+  Assert.assertEquals(1,comp.compare(agg.get(),first));
+}
