@@ -1,0 +1,14 @@
+{
+  if (ids.isEmpty()) {
+    return new AutoScalingData(Lists.<String>newArrayList());
+  }
+  try {
+    log.info("Terminating instances[%s]",ids);
+    amazonEC2Client.terminateInstances(new TerminateInstancesRequest(ids));
+    return new AutoScalingData(ids);
+  }
+ catch (  Exception e) {
+    log.error(e,"Unable to terminate any instances.");
+  }
+  return null;
+}
