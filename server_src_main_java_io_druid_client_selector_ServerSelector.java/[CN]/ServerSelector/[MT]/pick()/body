@@ -1,23 +1,14 @@
 {
 synchronized (this) {
-    TreeMap<Integer,Set<QueryableDruidServer>> prioritzedServers=Maps.newTreeMap();
+    TreeMap<Integer,Set<QueryableDruidServer>> prioritizedServers=Maps.newTreeMap();
     for (    QueryableDruidServer server : servers) {
-      Set<QueryableDruidServer> theServers=prioritzedServers.get(server.getServer().getPriority());
+      Set<QueryableDruidServer> theServers=prioritizedServers.get(server.getServer().getPriority());
       if (theServers == null) {
         theServers=Sets.newHashSet();
-        prioritzedServers.put(server.getServer().getPriority(),theServers);
+        prioritizedServers.put(server.getServer().getPriority(),theServers);
       }
       theServers.add(server);
     }
-    final Set<QueryableDruidServer> highestPriorityServers=prioritzedServers.pollLastEntry().getValue();
-    final int size=highestPriorityServers.size();
-switch (size) {
-case 0:
-      return null;
-case 1:
-    return highestPriorityServers.iterator().next();
-default :
-  return strategy.pick(highestPriorityServers);
-}
-}
+    return strategy.pick(prioritizedServers,segment);
+  }
 }

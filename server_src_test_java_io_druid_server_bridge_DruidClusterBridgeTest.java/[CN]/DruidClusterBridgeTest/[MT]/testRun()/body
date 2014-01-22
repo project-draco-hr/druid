@@ -47,6 +47,7 @@
   BatchServerInventoryView batchServerInventoryView=EasyMock.createMock(BatchServerInventoryView.class);
   EasyMock.expect(batchServerInventoryView.getInventory()).andReturn(Arrays.asList(new DruidServer("1","localhost",117,"historical",DruidServer.DEFAULT_TIER,0),new DruidServer("2","localhost",1,"historical",DruidServer.DEFAULT_TIER,0)));
   batchServerInventoryView.registerSegmentCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.SegmentCallback>anyObject());
+  batchServerInventoryView.registerServerCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.ServerCallback>anyObject());
   EasyMock.expectLastCall();
   batchServerInventoryView.start();
   EasyMock.expectLastCall();
