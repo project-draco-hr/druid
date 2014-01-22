@@ -1,11 +1,11 @@
 {
-  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),0,"normal"))).atLeastOnce();
+  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),null,0,"normal"))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
-  DruidServer server1=new DruidServer("server1","host1",1000,"historical","normal");
+  DruidServer server1=new DruidServer("server1","host1",1000,"historical","normal",0);
   server1.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));
-  DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal");
+  DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal",0);
   server2.addDataSegment(availableSegments.get(1).getIdentifier(),availableSegments.get(1));
-  DruidServer server3=new DruidServer("serverNorm3","hostNorm3",1000,"historical","normal");
+  DruidServer server3=new DruidServer("serverNorm3","hostNorm3",1000,"historical","normal",0);
   server3.addDataSegment(availableSegments.get(1).getIdentifier(),availableSegments.get(1));
   server3.addDataSegment(availableSegments.get(2).getIdentifier(),availableSegments.get(2));
   mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());

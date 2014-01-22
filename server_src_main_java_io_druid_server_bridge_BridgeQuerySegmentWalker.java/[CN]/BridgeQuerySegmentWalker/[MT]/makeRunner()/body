@@ -1,0 +1,23 @@
+{
+  return new QueryRunner<T>(){
+    @Override public Sequence<T> run(    Query<T> query){
+      try {
+        Server instance=brokerSelector.pick();
+        if (instance == null) {
+          return Sequences.empty();
+        }
+        final String url=String.format("http://%s/druid/v2/",brokerSelector.pick().getHost());
+        StatusResponseHolder response=httpClient.post(new URL(url)).setContent("application/json",jsonMapper.writeValueAsBytes(query)).go(responseHandler).get();
+        List<T> results=jsonMapper.readValue(response.getContent(),new TypeReference<List<T>>(){
+        }
+);
+        return Sequences.simple(results);
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception with bridge query");
+        return Sequences.empty();
+      }
+    }
+  }
+;
+}

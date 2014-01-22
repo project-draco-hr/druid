@@ -5,7 +5,9 @@
     List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
     for (    Rule rule : rules) {
       if (rule instanceof LoadRule && rule.appliesTo(segment,now)) {
-        expectedSegmentsInCluster.add(segment.getDataSource(),((LoadRule)rule).getReplicants());
+        for (        Integer numReplicants : ((LoadRule)rule).getTieredReplicants().values()) {
+          expectedSegmentsInCluster.add(segment.getDataSource(),numReplicants);
+        }
         break;
       }
     }
