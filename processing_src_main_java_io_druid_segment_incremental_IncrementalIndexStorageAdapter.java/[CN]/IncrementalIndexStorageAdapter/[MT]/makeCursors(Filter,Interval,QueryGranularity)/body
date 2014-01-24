@@ -50,6 +50,13 @@
                 done=true;
               }
             }
+            @Override public void advanceTo(            int offset){
+              int count=0;
+              while (count < offset && !isDone()) {
+                advance();
+                count++;
+              }
+            }
             @Override public boolean isDone(){
               return done;
             }
@@ -72,6 +79,14 @@
                 }
               }
               done=cursorMap.size() == 0 || !baseIter.hasNext();
+            }
+            @Override public TimestampColumnSelector makeTimestampColumnSelector(){
+              return new TimestampColumnSelector(){
+                @Override public long getTimestamp(){
+                  return currEntry.getKey().getTimestamp();
+                }
+              }
+;
             }
             @Override public DimensionSelector makeDimensionSelector(            String dimension){
               final String dimensionName=dimension.toLowerCase();

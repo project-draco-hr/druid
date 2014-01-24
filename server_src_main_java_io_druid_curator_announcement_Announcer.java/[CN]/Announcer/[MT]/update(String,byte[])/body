@@ -1,4 +1,10 @@
 {
+synchronized (toAnnounce) {
+    if (!started) {
+      toUpdate.add(Pair.of(path,bytes));
+      return;
+    }
+  }
   final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
   final String parentPath=pathAndNode.getPath();
   final String nodePath=pathAndNode.getNode();

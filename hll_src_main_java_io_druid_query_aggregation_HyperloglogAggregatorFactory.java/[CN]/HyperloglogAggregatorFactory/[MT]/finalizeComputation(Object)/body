@@ -1,0 +1,23 @@
+{
+  final TIntByteHashMap ibMap=(TIntByteHashMap)object;
+  final int[] keys=ibMap.keys();
+  final int count=keys.length;
+  double registerSum=0;
+  double zeros=0.0;
+  for (  int key : keys) {
+    int val=ibMap.get(key);
+    registerSum+=1.0 / (1 << val);
+    if (val == 0) {
+      zeros++;
+    }
+  }
+  registerSum+=(HyperloglogAggregator.m - count);
+  zeros+=HyperloglogAggregator.m - count;
+  double estimate=HyperloglogAggregator.alphaMM * (1.0 / registerSum);
+  if (estimate <= (5.0 / 2.0) * (HyperloglogAggregator.m)) {
+    return Math.round(HyperloglogAggregator.m * Math.log(HyperloglogAggregator.m / zeros));
+  }
+ else {
+    return Math.round(estimate);
+  }
+}

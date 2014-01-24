@@ -1,0 +1,14 @@
+{
+  final ByteBuffer fb=buf;
+  final int fp=position;
+  final TIntByteHashMap newObj=(TIntByteHashMap)(selector.get());
+  newObj.forEachEntry(new TIntByteProcedure(){
+    public boolean execute(    int a,    byte b){
+      if (b > fb.get(fp + a)) {
+        fb.put(fp + a,b);
+      }
+      return true;
+    }
+  }
+);
+}

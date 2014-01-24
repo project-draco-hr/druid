@@ -30,7 +30,7 @@
     final String toLoadQueueSegPath=ZKPaths.makePath(ZKPaths.makePath(zkPaths.getLoadQueuePath(),to),segmentName);
     final String toServedSegPath=ZKPaths.makePath(ZKPaths.makePath(serverInventoryView.getInventoryManagerConfig().getInventoryPath(),to),segmentName);
     loadPeon.loadSegment(segment,new LoadPeonCallback(){
-      @Override protected void execute(){
+      @Override public void execute(){
         try {
           if (curator.checkExists().forPath(toServedSegPath) != null && curator.checkExists().forPath(toLoadQueueSegPath) == null && !dropPeon.getSegmentsToDrop().contains(segment)) {
             dropPeon.dropSegment(segment,callback);

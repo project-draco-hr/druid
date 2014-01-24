@@ -1,0 +1,52 @@
+{
+  CoordinatorStats stats=new CoordinatorStats();
+  if (!params.hasDeletionWaitTimeElapsed()) {
+    return stats;
+  }
+  for (  Integer leftToLoad : loadStatus.values()) {
+    if (leftToLoad > 0) {
+      return stats;
+    }
+  }
+  final ReplicationThrottler replicationManager=params.getReplicationManager();
+  Map<String,Integer> replicantsByTier=params.getSegmentReplicantLookup().getClusterTiers(segment.getIdentifier());
+  for (  Map.Entry<String,Integer> entry : replicantsByTier.entrySet()) {
+    final String tier=entry.getKey();
+    int actualNumReplicantsForTier=entry.getValue();
+    int expectedNumReplicantsForTier=getNumReplicants(tier);
+    stats.addToTieredStat("droppedCount",tier,0);
+    MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().get(tier);
+    if (serverQueue == null) {
+      log.makeAlert("No holders found for tier[%s]",entry.getKey()).emit();
+      return stats;
+    }
+    List<ServerHolder> droppedServers=Lists.newArrayList();
+    while (actualNumReplicantsForTier > expectedNumReplicantsForTier) {
+      final ServerHolder holder=serverQueue.pollLast();
+      if (holder == null) {
+        log.warn("Wtf, holder was null?  I have no servers serving [%s]?",segment.getIdentifier());
+        break;
+      }
+      if (holder.isServingSegment(segment)) {
+        if (expectedNumReplicantsForTier > 0) {
+          if (!replicationManager.canDestroyReplicant(tier)) {
+            serverQueue.add(holder);
+            break;
+          }
+          replicationManager.registerReplicantTermination(tier,segment.getIdentifier(),holder.getServer().getHost());
+        }
+        holder.getPeon().dropSegment(segment,new LoadPeonCallback(){
+          @Override public void execute(){
+            replicationManager.unregisterReplicantTermination(tier,segment.getIdentifier(),holder.getServer().getHost());
+          }
+        }
+);
+        --actualNumReplicantsForTier;
+        stats.addToTieredStat("droppedCount",tier,1);
+      }
+      droppedServers.add(holder);
+    }
+    serverQueue.addAll(droppedServers);
+  }
+  return stats;
+}

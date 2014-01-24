@@ -1,0 +1,16 @@
+{
+  TIntByteHashMap ibmap=val;
+  int[] indexesResult=ibmap.keys();
+  byte[] valueResult=ibmap.values();
+  ByteBuffer buffer=ByteBuffer.allocate(4 * indexesResult.length + valueResult.length + 8);
+  byte[] result=new byte[4 * indexesResult.length + valueResult.length + 8];
+  buffer.putInt((int)indexesResult.length);
+  buffer.putInt((int)valueResult.length);
+  for (int i=0; i < indexesResult.length; i++) {
+    buffer.putInt(indexesResult[i]);
+  }
+  buffer.put(valueResult);
+  buffer.flip();
+  buffer.get(result);
+  return result;
+}

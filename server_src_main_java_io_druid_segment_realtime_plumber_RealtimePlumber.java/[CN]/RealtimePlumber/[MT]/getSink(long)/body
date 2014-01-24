@@ -1,0 +1,20 @@
+{
+  if (!rejectionPolicy.accept(timestamp)) {
+    return null;
+  }
+  final long truncatedTime=segmentGranularity.truncate(timestamp);
+  Sink retVal=sinks.get(truncatedTime);
+  if (retVal == null) {
+    final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
+    retVal=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval));
+    try {
+      segmentAnnouncer.announceSegment(retVal.getSegment());
+      sinks.put(truncatedTime,retVal);
+      sinkTimeline.add(retVal.getInterval(),retVal.getVersion(),new SingleElementPartitionChunk<Sink>(retVal));
+    }
+ catch (    IOException e) {
+      log.makeAlert(e,"Failed to announce new segment[%s]",schema.getDataSource()).addData("interval",retVal.getInterval()).emit();
+    }
+  }
+  return retVal;
+}

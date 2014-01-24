@@ -1,0 +1,11 @@
+{
+  final TIntByteMap newIbMap=new TIntByteHashMap((TIntByteMap)lhs);
+  final TIntByteMap rightIbMap=(TIntByteMap)rhs;
+  final int[] keys=rightIbMap.keys();
+  for (  int key : keys) {
+    if (newIbMap.get(key) == newIbMap.getNoEntryValue() || rightIbMap.get(key) > newIbMap.get(key)) {
+      newIbMap.put(key,rightIbMap.get(key));
+    }
+  }
+  return newIbMap;
+}

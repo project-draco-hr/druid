@@ -1,0 +1,12 @@
+{
+  databaseSegmentManager.removeSegment(segment.getDataSource(),segment.getIdentifier());
+  serverView.registerSegmentCallback(exec,new ServerView.BaseSegmentCallback(){
+    @Override public ServerView.CallbackAction segmentRemoved(    DruidServer server,    DataSegment theSegment){
+      if (theSegment.equals(segment)) {
+        callback.execute();
+      }
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+);
+}

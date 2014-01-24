@@ -1,0 +1,18 @@
+{
+  log.info("Stopping ZkCoordinator for [%s]",me);
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    try {
+      loadQueueCache.close();
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+ finally {
+      loadQueueCache=null;
+      started=false;
+    }
+  }
+}

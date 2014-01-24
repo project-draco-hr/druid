@@ -1,0 +1,37 @@
+{
+  try {
+    log.info("Loading segment %s",segment.getIdentifier());
+    final boolean loaded;
+    try {
+      loaded=serverManager.loadSegment(segment);
+    }
+ catch (    Exception e) {
+      removeSegment(segment,callback);
+      throw new SegmentLoadingException(e,"Exception loading segment[%s]",segment.getIdentifier());
+    }
+    if (loaded) {
+      File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
+      if (!segmentInfoCacheFile.exists()) {
+        try {
+          jsonMapper.writeValue(segmentInfoCacheFile,segment);
+        }
+ catch (        IOException e) {
+          removeSegment(segment,callback);
+          throw new SegmentLoadingException(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
+        }
+      }
+      try {
+        announcer.announceSegment(segment);
+      }
+ catch (      IOException e) {
+        throw new SegmentLoadingException(e,"Failed to announce segment[%s]",segment.getIdentifier());
+      }
+    }
+  }
+ catch (  SegmentLoadingException e) {
+    log.makeAlert(e,"Failed to load segment for dataSource").addData("segment",segment).emit();
+  }
+ finally {
+    callback.execute();
+  }
+}

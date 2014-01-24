@@ -1,0 +1,14 @@
+{
+  int count;
+  long totalTime=0;
+  final TestHllComplexMetricSelector selector=new TestHllComplexMetricSelector();
+  TIntByteHashMap combined=new TIntByteHashMap();
+  for (count=0; count < 1000000; ++count) {
+    final HyperloglogAggregator agg=new HyperloglogAggregator("billy",selector);
+    aggregate(selector,agg);
+    long start=System.nanoTime();
+    combined=(TIntByteHashMap)HyperloglogAggregator.combine(agg.get(),combined);
+    totalTime+=System.nanoTime() - start;
+  }
+  System.out.printf("benchmarkCombine took %d ms%n",totalTime / 1000000);
+}

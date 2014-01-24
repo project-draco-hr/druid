@@ -38,6 +38,14 @@
     for (int i=0; i < metrics.length; ++i) {
       final AggregatorFactory agg=metrics[i];
       aggs[i]=agg.factorize(new ColumnSelectorFactory(){
+        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
+          return new TimestampColumnSelector(){
+            @Override public long getTimestamp(){
+              return in.getTimestampFromEpoch();
+            }
+          }
+;
+        }
         @Override public FloatColumnSelector makeFloatColumnSelector(        String columnName){
           final String metricName=columnName.toLowerCase();
           return new FloatColumnSelector(){
