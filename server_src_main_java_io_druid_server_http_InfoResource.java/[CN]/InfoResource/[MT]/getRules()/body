@@ -1,3 +1,27 @@
 {
-  return Response.status(Response.Status.OK).entity(databaseRuleManager.getAllRules()).build();
+  return Response.ok().entity(Maps.transformValues(databaseRuleManager.getAllRules(),new Function<List<Rule>,Object>(){
+    @Override public Object apply(    List<Rule> rules){
+      return Lists.transform(rules,new Function<Rule,Object>(){
+        @Override public Object apply(        Rule rule){
+          if (rule instanceof LoadRule) {
+            Map<String,Object> newRule=jsonMapper.convertValue(rule,new TypeReference<Map<String,Object>>(){
+            }
+);
+            Set<String> tiers=Sets.newHashSet(((LoadRule)rule).getTieredReplicants().keySet());
+            String tier=DruidServer.DEFAULT_TIER;
+            if (tiers.size() > 1) {
+              tiers.remove(DruidServer.DEFAULT_TIER);
+              tier=tiers.iterator().next();
+            }
+            newRule.put("tier",tier);
+            newRule.put("replicants",((LoadRule)rule).getNumReplicants(tier));
+            return newRule;
+          }
+          return rule;
+        }
+      }
+);
+    }
+  }
+)).build();
 }
