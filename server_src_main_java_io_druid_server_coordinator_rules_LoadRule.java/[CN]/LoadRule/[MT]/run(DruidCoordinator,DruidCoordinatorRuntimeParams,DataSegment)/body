@@ -1,19 +1,24 @@
 {
   CoordinatorStats stats=new CoordinatorStats();
-  int expectedReplicants=getReplicants();
-  int totalReplicants=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier(),getTier());
-  int clusterReplicants=params.getSegmentReplicantLookup().getClusterReplicants(segment.getIdentifier(),getTier());
-  MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(getTier());
-  if (serverQueue == null) {
-    log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",getTier()).emit();
-    return stats;
+  final Map<String,Integer> loadStatus=Maps.newHashMap();
+  for (  Map.Entry<String,Integer> entry : getTieredReplicants().entrySet()) {
+    final String tier=entry.getKey();
+    final int expectedReplicants=entry.getValue();
+    int totalReplicants=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier(),tier);
+    MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(tier);
+    if (serverQueue == null) {
+      log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",tier).emit();
+      return stats;
+    }
+    final List<ServerHolder> serverHolderList=Lists.newArrayList(serverQueue);
+    final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
+    final BalancerStrategy strategy=params.getBalancerStrategyFactory().createBalancerStrategy(referenceTimestamp);
+    if (params.getAvailableSegments().contains(segment)) {
+      stats.accumulate(assign(params.getReplicationManager(),tier,expectedReplicants,totalReplicants,strategy,serverHolderList,segment));
+    }
+    int clusterReplicants=params.getSegmentReplicantLookup().getClusterReplicants(segment.getIdentifier(),tier);
+    loadStatus.put(tier,expectedReplicants - clusterReplicants);
   }
-  final List<ServerHolder> serverHolderList=new ArrayList<ServerHolder>(serverQueue);
-  final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
-  final BalancerStrategy strategy=params.getBalancerStrategyFactory().createBalancerStrategy(referenceTimestamp);
-  if (params.getAvailableSegments().contains(segment)) {
-    stats.accumulate(assign(params.getReplicationManager(),expectedReplicants,totalReplicants,strategy,serverHolderList,segment));
-  }
-  stats.accumulate(drop(expectedReplicants,clusterReplicants,segment,params));
+  stats.accumulate(drop(loadStatus,segment,params));
   return stats;
 }

@@ -1,0 +1,33 @@
+{
+  Iterator<Result<SelectResultValue>> expectedIter=expectedResults.iterator();
+  Iterator<Result<SelectResultValue>> actualIter=actualResults.iterator();
+  while (expectedIter.hasNext()) {
+    Result<SelectResultValue> expected=expectedIter.next();
+    Result<SelectResultValue> actual=actualIter.next();
+    Assert.assertEquals(expected.getTimestamp(),actual.getTimestamp());
+    for (    Map.Entry<String,Integer> entry : expected.getValue().getPagingIdentifiers().entrySet()) {
+      Assert.assertEquals(entry.getValue(),actual.getValue().getPagingIdentifiers().get(entry.getKey()));
+    }
+    Iterator<EventHolder> expectedEvts=expected.getValue().getEvents().iterator();
+    Iterator<EventHolder> actualEvts=actual.getValue().getEvents().iterator();
+    while (expectedEvts.hasNext()) {
+      EventHolder exHolder=expectedEvts.next();
+      EventHolder acHolder=actualEvts.next();
+      Assert.assertEquals(exHolder.getTimestamp(),acHolder.getTimestamp());
+      Assert.assertEquals(exHolder.getOffset(),acHolder.getOffset());
+      for (      Map.Entry<String,Object> ex : exHolder.getEvent().entrySet()) {
+        Object actVal=acHolder.getEvent().get(ex.getKey());
+        if (acHolder.getEvent().get(ex.getKey()) instanceof Double) {
+          actVal=((Double)actVal).floatValue();
+        }
+        Assert.assertEquals(ex.getValue(),actVal);
+      }
+    }
+    if (actualEvts.hasNext()) {
+      throw new ISE("This event iterator should be exhausted!");
+    }
+  }
+  if (actualIter.hasNext()) {
+    throw new ISE("This iterator should be exhausted!");
+  }
+}

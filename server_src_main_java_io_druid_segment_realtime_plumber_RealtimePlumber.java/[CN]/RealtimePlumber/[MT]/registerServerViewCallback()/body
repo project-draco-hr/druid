@@ -1,0 +1,33 @@
+{
+  serverView.registerSegmentCallback(persistExecutor,new ServerView.BaseSegmentCallback(){
+    @Override public ServerView.CallbackAction segmentAdded(    DruidServer server,    DataSegment segment){
+      if (stopped) {
+        log.info("Unregistering ServerViewCallback");
+        persistExecutor.shutdown();
+        return ServerView.CallbackAction.UNREGISTER;
+      }
+      if (server.isRealtime()) {
+        return ServerView.CallbackAction.CONTINUE;
+      }
+      log.debug("Checking segment[%s] on server[%s]",segment,server);
+      if (schema.getDataSource().equals(segment.getDataSource())) {
+        final Interval interval=segment.getInterval();
+        for (        Map.Entry<Long,Sink> entry : sinks.entrySet()) {
+          final Long sinkKey=entry.getKey();
+          if (interval.contains(sinkKey)) {
+            final Sink sink=entry.getValue();
+            log.info("Segment[%s] matches sink[%s] on server[%s]",segment,sink,server);
+            final String segmentVersion=segment.getVersion();
+            final String sinkVersion=sink.getSegment().getVersion();
+            if (segmentVersion.compareTo(sinkVersion) >= 0) {
+              log.info("Segment version[%s] >= sink version[%s]",segmentVersion,sinkVersion);
+              abandonSegment(sinkKey,sink);
+            }
+          }
+        }
+      }
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+);
+}

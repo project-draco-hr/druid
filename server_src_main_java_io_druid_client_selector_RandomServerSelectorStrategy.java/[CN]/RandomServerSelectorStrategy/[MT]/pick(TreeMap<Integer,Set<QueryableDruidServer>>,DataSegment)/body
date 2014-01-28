@@ -1,0 +1,16 @@
+{
+  final Map.Entry<Integer,Set<QueryableDruidServer>> highestPriorityServers=prioritizedServers.pollLastEntry();
+  if (highestPriorityServers == null) {
+    return null;
+  }
+  final Set<QueryableDruidServer> servers=highestPriorityServers.getValue();
+  final int size=servers.size();
+switch (size) {
+case 0:
+    throw new ISE("[%s] Something hella weird going on here. We should not be here",segment.getIdentifier());
+case 1:
+  return highestPriorityServers.getValue().iterator().next();
+default :
+return Iterators.get(servers.iterator(),random.nextInt(size));
+}
+}

@@ -1,0 +1,10 @@
+{
+  log.info("Starting job for %s",getSchema().getDataSource());
+  computeBaseDir(getSchema()).mkdirs();
+  initializeExecutors();
+  if (flushScheduledExec == null) {
+    flushScheduledExec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("flushing_scheduled_%d").build());
+  }
+  bootstrapSinksFromDisk();
+  startFlushThread();
+}

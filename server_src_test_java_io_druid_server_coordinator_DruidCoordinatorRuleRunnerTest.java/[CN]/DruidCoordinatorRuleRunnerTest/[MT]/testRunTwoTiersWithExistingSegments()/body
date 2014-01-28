@@ -4,13 +4,13 @@
   EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
   EasyMock.replay(mockPeon);
-  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),1,"hot"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),1,"normal"))).atLeastOnce();
+  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),null,1,"hot"),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),null,1,"normal"))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
-  DruidServer normServer=new DruidServer("serverNorm","hostNorm",1000,"historical","normal");
+  DruidServer normServer=new DruidServer("serverNorm","hostNorm",1000,"historical","normal",0);
   for (  DataSegment availableSegment : availableSegments) {
     normServer.addDataSegment(availableSegment.getIdentifier(),availableSegment);
   }
-  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot"),mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(normServer,mockPeon)))));
+  DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot",0),mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(normServer,mockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
   DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
