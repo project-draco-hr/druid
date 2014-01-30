@@ -1,0 +1,65 @@
+{
+  try {
+    long startTime=System.currentTimeMillis();
+    final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_cardinality_grouped-%s",config.getDataSource(),config.getIntervals()));
+    injectSystemProperties(groupByJob);
+    groupByJob.setInputFormatClass(TextInputFormat.class);
+    groupByJob.setMapperClass(DetermineCardinalityMapper.class);
+    groupByJob.setMapOutputKeyClass(LongWritable.class);
+    groupByJob.setMapOutputValueClass(BytesWritable.class);
+    groupByJob.setReducerClass(DetermineCardinalityReducer.class);
+    groupByJob.setOutputKeyClass(NullWritable.class);
+    groupByJob.setOutputValueClass(NullWritable.class);
+    groupByJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+    JobHelper.setupClasspath(config,groupByJob);
+    config.addInputPaths(groupByJob);
+    config.intoConfiguration(groupByJob);
+    FileOutputFormat.setOutputPath(groupByJob,config.makeGroupedDataDir());
+    groupByJob.submit();
+    log.info("Job %s submitted, status available at: %s",groupByJob.getJobName(),groupByJob.getTrackingURL());
+    if (!groupByJob.waitForCompletion(true)) {
+      log.error("Job failed: %s",groupByJob.getJobID());
+      return false;
+    }
+    log.info("Job completed, loading up partitions for intervals[%s].",config.getSegmentGranularIntervals());
+    FileSystem fileSystem=null;
+    Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+    for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
+      DateTime bucket=segmentGranularity.getStart();
+      final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0));
+      if (fileSystem == null) {
+        fileSystem=partitionInfoPath.getFileSystem(groupByJob.getConfiguration());
+      }
+      if (fileSystem.exists(partitionInfoPath)) {
+        Long cardinality=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
+        }
+);
+        int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
+        if (numberOfShards > MAX_SHARDS) {
+          numberOfShards=MAX_SHARDS;
+        }
+        List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
+        if (numberOfShards == 1) {
+          actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),0));
+        }
+ else {
+          int shardCount=0;
+          for (int i=0; i < numberOfShards; ++i) {
+            actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards),shardCount++));
+            log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
+          }
+          shardSpecs.put(bucket,actualSpecs);
+        }
+      }
+ else {
+        log.info("Path[%s] didn't exist!?",partitionInfoPath);
+      }
+    }
+    config.setShardSpecs(shardSpecs);
+    log.info("Determine partitions Using cardinality took %d millis",(System.currentTimeMillis() - startTime));
+    return true;
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
