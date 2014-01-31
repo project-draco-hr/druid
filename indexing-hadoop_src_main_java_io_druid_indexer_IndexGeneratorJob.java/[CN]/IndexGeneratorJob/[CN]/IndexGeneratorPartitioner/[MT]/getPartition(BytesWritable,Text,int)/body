@@ -2,7 +2,7 @@
   final ByteBuffer bytes=ByteBuffer.wrap(bytesWritable.getBytes());
   bytes.position(4);
   int shardNum=bytes.getInt();
-  if (System.getProperty("mapred.job.tracker").equals("local")) {
+  if (config.get("mapred.job.tracker").equals("local")) {
     return shardNum % numPartitions;
   }
  else {
