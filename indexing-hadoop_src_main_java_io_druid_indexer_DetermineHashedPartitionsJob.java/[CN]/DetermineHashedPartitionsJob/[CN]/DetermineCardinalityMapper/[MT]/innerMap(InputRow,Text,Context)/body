@@ -11,7 +11,7 @@
   if (determineIntervals) {
     interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
     if (!hyperLogLogs.containsKey(interval)) {
-      hyperLogLogs.put(interval,new HyperLogLog(20));
+      hyperLogLogs.put(interval,new HyperLogLog(HYPER_LOG_LOG_BIT_SIZE));
     }
   }
  else {

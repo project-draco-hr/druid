@@ -1,8 +1,8 @@
 {
   try {
     long startTime=System.currentTimeMillis();
-    final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_cardinality_grouped-%s",config.getDataSource(),config.getIntervals()));
-    injectSystemProperties(groupByJob);
+    final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_partitions_hashed-%s",config.getDataSource(),config.getIntervals()));
+    JobHelper.injectSystemProperties(groupByJob);
     groupByJob.setInputFormatClass(TextInputFormat.class);
     groupByJob.setMapperClass(DetermineCardinalityMapper.class);
     groupByJob.setMapOutputKeyClass(LongWritable.class);
@@ -37,6 +37,7 @@
       log.info("Determined Intervals for Job [%s]" + config.getSegmentGranularIntervals());
     }
     Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+    int shardCount=0;
     for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
       DateTime bucket=segmentGranularity.getStart();
       final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(segmentGranularity);
@@ -49,14 +50,13 @@
 );
         int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
         if (numberOfShards > MAX_SHARDS) {
-          numberOfShards=MAX_SHARDS;
+          throw new ISE("Number of shards [%d] exceed the maximum limit of [%d], either targetPartitionSize is too low or data volume is too high",numberOfShards,MAX_SHARDS);
         }
         List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
         if (numberOfShards == 1) {
-          actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),0));
+          actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),shardCount++));
         }
  else {
-          int shardCount=0;
           for (int i=0; i < numberOfShards; ++i) {
             actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards),shardCount++));
             log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
@@ -69,7 +69,7 @@
       }
     }
     config.setShardSpecs(shardSpecs);
-    log.info("Determine partitions Using cardinality took %d millis shardSpecs %s",(System.currentTimeMillis() - startTime),shardSpecs);
+    log.info("DetermineHashedPartitionsJob took %d millis",(System.currentTimeMillis() - startTime));
     return true;
   }
  catch (  Exception e) {
