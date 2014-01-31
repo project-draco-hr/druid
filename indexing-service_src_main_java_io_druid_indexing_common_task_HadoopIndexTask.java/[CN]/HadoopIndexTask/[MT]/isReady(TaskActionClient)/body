@@ -1,0 +1,9 @@
+{
+  if (!schema.getGranularitySpec().bucketIntervals().isEmpty()) {
+    Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(schema.getGranularitySpec().bucketIntervals()));
+    return taskActionClient.submit(new LockTryAcquireAction(interval)).isPresent();
+  }
+ else {
+    return true;
+  }
+}

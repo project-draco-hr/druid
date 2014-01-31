@@ -11,6 +11,7 @@
     groupByJob.setOutputKeyClass(NullWritable.class);
     groupByJob.setOutputValueClass(NullWritable.class);
     groupByJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+    groupByJob.setNumReduceTasks(1);
     JobHelper.setupClasspath(config,groupByJob);
     config.addInputPaths(groupByJob);
     config.intoConfiguration(groupByJob);
@@ -23,10 +24,22 @@
     }
     log.info("Job completed, loading up partitions for intervals[%s].",config.getSegmentGranularIntervals());
     FileSystem fileSystem=null;
+    if (config.getSegmentGranularIntervals().isEmpty()) {
+      final Path intervalInfoPath=config.makeIntervalInfoPath();
+      fileSystem=intervalInfoPath.getFileSystem(groupByJob.getConfiguration());
+      if (!fileSystem.exists(intervalInfoPath)) {
+        throw new ISE("Path[%s] didn't exist!?",intervalInfoPath);
+      }
+      List<Interval> intervals=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,intervalInfoPath),new TypeReference<List<Interval>>(){
+      }
+);
+      config.setGranularitySpec(new UniformGranularitySpec(config.getGranularitySpec().getGranularity(),intervals));
+      log.info("Determined Intervals for Job [%s]" + config.getSegmentGranularIntervals());
+    }
     Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
     for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
       DateTime bucket=segmentGranularity.getStart();
-      final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(new Bucket(0,bucket,0));
+      final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(segmentGranularity);
       if (fileSystem == null) {
         fileSystem=partitionInfoPath.getFileSystem(groupByJob.getConfiguration());
       }
@@ -48,15 +61,15 @@
             actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards),shardCount++));
             log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
           }
-          shardSpecs.put(bucket,actualSpecs);
         }
+        shardSpecs.put(bucket,actualSpecs);
       }
  else {
         log.info("Path[%s] didn't exist!?",partitionInfoPath);
       }
     }
     config.setShardSpecs(shardSpecs);
-    log.info("Determine partitions Using cardinality took %d millis",(System.currentTimeMillis() - startTime));
+    log.info("Determine partitions Using cardinality took %d millis shardSpecs %s",(System.currentTimeMillis() - startTime),shardSpecs);
     return true;
   }
  catch (  Exception e) {

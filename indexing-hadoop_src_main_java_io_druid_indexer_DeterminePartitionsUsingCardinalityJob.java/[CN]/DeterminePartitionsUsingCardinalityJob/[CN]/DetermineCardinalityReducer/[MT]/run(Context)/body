@@ -1,0 +1,15 @@
+{
+  super.run(context);
+  if (config.getSegmentGranularIntervals().isEmpty()) {
+    final Path outPath=config.makeIntervalInfoPath();
+    final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
+    try {
+      HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<List<Interval>>(){
+      }
+).writeValue(out,intervals);
+    }
+  finally {
+      Closeables.close(out,false);
+    }
+  }
+}

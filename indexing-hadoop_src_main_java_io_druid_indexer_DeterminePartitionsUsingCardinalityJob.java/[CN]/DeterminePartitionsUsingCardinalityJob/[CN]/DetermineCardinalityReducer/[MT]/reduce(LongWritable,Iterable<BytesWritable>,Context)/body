@@ -9,7 +9,9 @@
       e.printStackTrace();
     }
   }
-  final Path outPath=config.makeSegmentPartitionInfoPath(new Bucket(0,new DateTime(key.get()),0));
+  Interval interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(key.get()));
+  intervals.add(interval);
+  final Path outPath=config.makeSegmentPartitionInfoPath(interval);
   final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
   try {
     HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<Long>(){

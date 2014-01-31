@@ -1,9 +1,11 @@
 {
   List<Interval> granularIntervals=Lists.newArrayList();
-  for (  Interval inputInterval : inputIntervals) {
-    Iterables.addAll(granularIntervals,granularity.getIterable(inputInterval));
+  if (inputIntervals != null) {
+    for (    Interval inputInterval : inputIntervals) {
+      Iterables.addAll(granularIntervals,granularity.getIterable(inputInterval));
+    }
   }
   this.granularity=granularity;
-  this.inputIntervals=ImmutableList.copyOf(inputIntervals);
+  this.inputIntervals=inputIntervals == null ? Collections.EMPTY_LIST : ImmutableList.copyOf(inputIntervals);
   this.wrappedSpec=new ArbitraryGranularitySpec(granularIntervals);
 }

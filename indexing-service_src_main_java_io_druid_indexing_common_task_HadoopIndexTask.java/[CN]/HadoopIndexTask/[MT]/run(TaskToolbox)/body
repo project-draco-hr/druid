@@ -19,14 +19,31 @@
   System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
   final Class<?> mainClass=loader.loadClass(HadoopIndexTaskInnerProcessing.class.getName());
   final Method mainMethod=mainClass.getMethod("runTask",String[].class);
-  final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
-  log.info("Setting version to: %s",myLock.getVersion());
-  String[] args=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),myLock.getVersion(),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
+  boolean determineIntervals=schema.getGranularitySpec().bucketIntervals().isEmpty();
+  final String version;
+  if (determineIntervals) {
+    version=new DateTime().toString();
+  }
+ else {
+    Iterable<TaskLock> locks=getTaskLocks(toolbox);
+    final TaskLock myLock=Iterables.getOnlyElement(locks);
+    version=myLock.getVersion();
+    log.info("Setting version to: %s",myLock.getVersion());
+  }
+  String[] args=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),version,toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
   String segments=(String)mainMethod.invoke(null,new Object[]{args});
   if (segments != null) {
     List<DataSegment> publishedSegments=toolbox.getObjectMapper().readValue(segments,new TypeReference<List<DataSegment>>(){
     }
 );
+    if (determineIntervals) {
+      List<Interval> intervals=Lists.newArrayList();
+      for (      DataSegment segment : publishedSegments) {
+        intervals.add(segment.getInterval());
+      }
+      Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(intervals));
+      toolbox.getTaskActionClient().submit(new LockTryAcquireAction(interval));
+    }
     toolbox.pushSegments(publishedSegments);
     return TaskStatus.success(getId());
   }
