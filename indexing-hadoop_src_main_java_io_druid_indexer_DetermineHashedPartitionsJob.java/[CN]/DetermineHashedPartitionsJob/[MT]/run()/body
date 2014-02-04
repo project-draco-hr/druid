@@ -24,7 +24,7 @@
     }
     log.info("Job completed, loading up partitions for intervals[%s].",config.getSegmentGranularIntervals());
     FileSystem fileSystem=null;
-    if (config.getSegmentGranularIntervals().isEmpty()) {
+    if (!config.getSegmentGranularIntervals().isPresent()) {
       final Path intervalInfoPath=config.makeIntervalInfoPath();
       fileSystem=intervalInfoPath.getFileSystem(groupByJob.getConfiguration());
       if (!fileSystem.exists(intervalInfoPath)) {
@@ -38,7 +38,7 @@
     }
     Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
     int shardCount=0;
-    for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
+    for (    Interval segmentGranularity : config.getSegmentGranularIntervals().get()) {
       DateTime bucket=segmentGranularity.getStart();
       final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(segmentGranularity);
       if (fileSystem == null) {

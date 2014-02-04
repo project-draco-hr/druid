@@ -17,33 +17,32 @@
   jobUrls.addAll(nonHadoopURLs);
   jobUrls.addAll(extensionURLs);
   System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
-  final Class<?> mainClass=loader.loadClass(HadoopIndexTaskInnerProcessing.class.getName());
-  final Method mainMethod=mainClass.getMethod("runTask",String[].class);
-  boolean determineIntervals=schema.getGranularitySpec().bucketIntervals().isEmpty();
+  boolean determineIntervals=!schema.getGranularitySpec().bucketIntervals().isPresent();
+  final Class<?> determineConfigurationMainClass=loader.loadClass(HadoopDetermineConfigInnerProcessing.class.getName());
+  final Method determineConfigurationMainMethod=determineConfigurationMainClass.getMethod("runTask",String[].class);
+  String[] determineConfigArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
+  String config=(String)determineConfigurationMainMethod.invoke(null,new Object[]{determineConfigArgs});
+  HadoopDruidIndexerSchema indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopDruidIndexerSchema.class);
   final String version;
   if (determineIntervals) {
-    version=new DateTime().toString();
+    Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(indexerSchema.getGranularitySpec().bucketIntervals().get()));
+    TaskLock lock=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval));
+    version=lock.getVersion();
   }
  else {
     Iterable<TaskLock> locks=getTaskLocks(toolbox);
     final TaskLock myLock=Iterables.getOnlyElement(locks);
     version=myLock.getVersion();
-    log.info("Setting version to: %s",myLock.getVersion());
   }
-  String[] args=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),version,toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
-  String segments=(String)mainMethod.invoke(null,new Object[]{args});
+  log.info("Setting version to: %s",version);
+  final Class<?> indexGeneratorMainClass=loader.loadClass(HadoopIndexGeneratorInnerProcessing.class.getName());
+  final Method indexGeneratorMainMethod=indexGeneratorMainClass.getMethod("runTask",String[].class);
+  String[] indexGeneratorArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(indexerSchema),version};
+  String segments=(String)indexGeneratorMainMethod.invoke(null,new Object[]{indexGeneratorArgs});
   if (segments != null) {
     List<DataSegment> publishedSegments=toolbox.getObjectMapper().readValue(segments,new TypeReference<List<DataSegment>>(){
     }
 );
-    if (determineIntervals) {
-      List<Interval> intervals=Lists.newArrayList();
-      for (      DataSegment segment : publishedSegments) {
-        intervals.add(segment.getInterval());
-      }
-      Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(intervals));
-      toolbox.getTaskActionClient().submit(new LockTryAcquireAction(interval));
-    }
     toolbox.pushSegments(publishedSegments);
     return TaskStatus.success(getId());
   }

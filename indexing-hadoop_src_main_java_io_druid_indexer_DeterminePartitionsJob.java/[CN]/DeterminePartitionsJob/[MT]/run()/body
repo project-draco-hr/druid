@@ -1,5 +1,8 @@
 {
   try {
+    if (!(config.getPartitionsSpec() instanceof SingleDimensionPartitionsSpec)) {
+      throw new ISE("DeterminePartitionsJob can only be run for SingleDimensionPartitionsSpec, partitionSpec found [%s]",config.getPartitionsSpec());
+    }
     if (!config.getPartitionsSpec().isAssumeGrouped()) {
       final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_partitions_groupby-%s",config.getDataSource(),config.getIntervals()));
       JobHelper.injectSystemProperties(groupByJob);
@@ -47,7 +50,7 @@
     dimSelectionJob.setOutputValueClass(Text.class);
     dimSelectionJob.setOutputFormatClass(DeterminePartitionsDimSelectionOutputFormat.class);
     dimSelectionJob.setPartitionerClass(DeterminePartitionsDimSelectionPartitioner.class);
-    dimSelectionJob.setNumReduceTasks(config.getGranularitySpec().bucketIntervals().size());
+    dimSelectionJob.setNumReduceTasks(config.getGranularitySpec().bucketIntervals().get().size());
     JobHelper.setupClasspath(config,dimSelectionJob);
     config.intoConfiguration(dimSelectionJob);
     FileOutputFormat.setOutputPath(dimSelectionJob,config.makeIntermediatePath());
@@ -61,7 +64,7 @@
     FileSystem fileSystem=null;
     Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
     int shardCount=0;
-    for (    Interval segmentGranularity : config.getSegmentGranularIntervals()) {
+    for (    Interval segmentGranularity : config.getSegmentGranularIntervals().get()) {
       final Path partitionInfoPath=config.makeSegmentPartitionInfoPath(segmentGranularity);
       if (fileSystem == null) {
         fileSystem=partitionInfoPath.getFileSystem(dimSelectionJob.getConfiguration());

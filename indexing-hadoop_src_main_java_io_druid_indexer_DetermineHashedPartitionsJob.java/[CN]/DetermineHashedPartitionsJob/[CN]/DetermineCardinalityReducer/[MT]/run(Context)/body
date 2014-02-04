@@ -1,6 +1,6 @@
 {
   super.run(context);
-  if (config.getSegmentGranularIntervals().isEmpty()) {
+  if (!config.getSegmentGranularIntervals().isPresent()) {
     final Path outPath=config.makeIntervalInfoPath();
     final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
     try {

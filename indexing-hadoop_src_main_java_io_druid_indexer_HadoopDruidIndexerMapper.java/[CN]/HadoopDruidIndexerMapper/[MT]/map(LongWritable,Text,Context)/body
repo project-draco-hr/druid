@@ -13,7 +13,8 @@
         throw e;
       }
     }
-    if (config.getGranularitySpec().bucketIntervals().isEmpty() || config.getGranularitySpec().bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
+    GranularitySpec spec=config.getGranularitySpec();
+    if (!spec.bucketIntervals().isPresent() || spec.bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
       innerMap(inputRow,value,context);
     }
   }
