@@ -6,7 +6,7 @@
         persistExecutor.shutdown();
         return ServerView.CallbackAction.UNREGISTER;
       }
-      if (server.isRealtime()) {
+      if (!server.isAssignable()) {
         return ServerView.CallbackAction.CONTINUE;
       }
       log.debug("Checking segment[%s] on server[%s]",segment,server);
