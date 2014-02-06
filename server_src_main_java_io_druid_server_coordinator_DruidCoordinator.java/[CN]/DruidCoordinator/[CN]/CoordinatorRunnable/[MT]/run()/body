@@ -16,7 +16,7 @@ synchronized (lock) {
         return;
       }
     }
-    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(dynamicConfigs.get()).withEmitter(emitter).build();
+    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).build();
     for (    DruidCoordinatorHelper helper : helpers) {
       params=helper.run(params);
     }
