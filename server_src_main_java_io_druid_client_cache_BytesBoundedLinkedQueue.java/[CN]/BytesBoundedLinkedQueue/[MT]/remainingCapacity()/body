@@ -1,0 +1,15 @@
+{
+  lock.lock();
+  try {
+    if (delegate.size() == 0) {
+      return capacity;
+    }
+ else {
+      int averageByteSize=currentSize / delegate.size();
+      return (capacity - currentSize) / averageByteSize;
+    }
+  }
+  finally {
+    lock.unlock();
+  }
+}

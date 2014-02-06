@@ -1,0 +1,14 @@
+{
+  lock.lock();
+  try {
+    if (this.lastReturned == null) {
+      throw new IllegalStateException();
+    }
+    delegate.remove();
+    operationRemoved(lastReturned);
+    lastReturned=null;
+  }
+  finally {
+    lock.unlock();
+  }
+}

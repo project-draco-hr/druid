@@ -1,0 +1,14 @@
+{
+  lock.lockInterruptibly();
+  try {
+    while (delegate.size() == 0) {
+      notEmpty.await();
+    }
+    E e=delegate.remove();
+    operationRemoved(e);
+    return e;
+  }
+  finally {
+    lock.unlock();
+  }
+}

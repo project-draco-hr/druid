@@ -1,0 +1,13 @@
+{
+  lock.lock();
+  try {
+    E e=delegate.poll();
+    if (e != null) {
+      operationRemoved(e);
+    }
+    return e;
+  }
+  finally {
+    lock.unlock();
+  }
+}

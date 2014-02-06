@@ -1,0 +1,19 @@
+{
+  checkNotNull(e);
+  long nanos=unit.toNanos(timeout);
+  lock.lockInterruptibly();
+  try {
+    while (currentSize > capacity) {
+      if (nanos <= 0) {
+        return false;
+      }
+      nanos=notFull.awaitNanos(nanos);
+    }
+    delegate.add(e);
+    operationAdded(e);
+    return true;
+  }
+  finally {
+    lock.unlock();
+  }
+}

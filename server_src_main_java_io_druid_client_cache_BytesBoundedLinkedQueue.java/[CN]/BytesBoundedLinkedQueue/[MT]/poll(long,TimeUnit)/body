@@ -1,0 +1,16 @@
+{
+  long nanos=unit.toNanos(timeout);
+  lock.lockInterruptibly();
+  try {
+    while (delegate.size() == 0) {
+      if (nanos <= 0) {
+        return null;
+      }
+      nanos=notEmpty.awaitNanos(nanos);
+    }
+    return delegate.poll();
+  }
+  finally {
+    lock.unlock();
+  }
+}

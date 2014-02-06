@@ -1,0 +1,24 @@
+{
+  if (c == null) {
+    throw new NullPointerException();
+  }
+  if (c == this) {
+    throw new IllegalArgumentException();
+  }
+  lock.lock();
+  try {
+    int n=Math.min(maxElements,delegate.size());
+    if (n < 0) {
+      return 0;
+    }
+    for (int i=0; i < n; i++) {
+      E e=delegate.remove(0);
+      operationRemoved(e);
+      c.add(e);
+    }
+    return n;
+  }
+  finally {
+    lock.unlock();
+  }
+}

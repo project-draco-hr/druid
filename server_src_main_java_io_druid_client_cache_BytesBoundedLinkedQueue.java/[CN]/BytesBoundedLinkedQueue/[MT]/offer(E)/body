@@ -1,0 +1,19 @@
+{
+  checkNotNull(e);
+  lock.lock();
+  try {
+    if (currentSize > capacity) {
+      return false;
+    }
+ else {
+      boolean added=delegate.add(e);
+      if (added) {
+        operationAdded(e);
+      }
+      return added;
+    }
+  }
+  finally {
+    lock.unlock();
+  }
+}
