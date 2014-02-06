@@ -1,11 +1,13 @@
 {
   CoordinatorStats stats=new CoordinatorStats();
   final Map<String,Integer> loadStatus=Maps.newHashMap();
+  int totalReplicantsInCluster=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier());
   for (  Map.Entry<String,Integer> entry : getTieredReplicants().entrySet()) {
     final String tier=entry.getKey();
-    final int expectedReplicants=entry.getValue();
-    int totalReplicants=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier(),tier);
-    MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(tier);
+    final int expectedReplicantsInTier=entry.getValue();
+    final int totalReplicantsInTier=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier(),tier);
+    final int loadedReplicantsInTier=params.getSegmentReplicantLookup().getLoadedReplicants(segment.getIdentifier(),tier);
+    final MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(tier);
     if (serverQueue == null) {
       log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",tier).emit();
       return stats;
@@ -14,10 +16,11 @@
     final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
     final BalancerStrategy strategy=params.getBalancerStrategyFactory().createBalancerStrategy(referenceTimestamp);
     if (params.getAvailableSegments().contains(segment)) {
-      stats.accumulate(assign(params.getReplicationManager(),tier,expectedReplicants,totalReplicants,strategy,serverHolderList,segment));
+      CoordinatorStats assignStats=assign(params.getReplicationManager(),tier,totalReplicantsInCluster,expectedReplicantsInTier,totalReplicantsInTier,strategy,serverHolderList,segment);
+      stats.accumulate(assignStats);
+      totalReplicantsInCluster+=assignStats.getPerTierStats().get(assignedCount).get(tier).get();
     }
-    int clusterReplicants=params.getSegmentReplicantLookup().getClusterReplicants(segment.getIdentifier(),tier);
-    loadStatus.put(tier,expectedReplicants - clusterReplicants);
+    loadStatus.put(tier,expectedReplicantsInTier - loadedReplicantsInTier);
   }
   stats.accumulate(drop(loadStatus,segment,params));
   return stats;

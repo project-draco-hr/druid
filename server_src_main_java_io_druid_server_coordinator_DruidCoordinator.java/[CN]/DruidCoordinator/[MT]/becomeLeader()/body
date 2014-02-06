@@ -5,25 +5,26 @@ synchronized (lock) {
     }
     log.info("I am the leader of the coordinators, all must bow!");
     try {
+      leaderCounter++;
       leader=true;
       databaseSegmentManager.start();
       databaseRuleManager.start();
       serverInventoryView.start();
       serviceAnnouncer.announce(self);
       final List<Pair<? extends CoordinatorRunnable,Duration>> coordinatorRunnables=Lists.newArrayList();
-      dynamicConfigs=configManager.watch(CoordinatorDynamicConfig.CONFIG_KEY,CoordinatorDynamicConfig.class,new CoordinatorDynamicConfig.Builder().build());
       coordinatorRunnables.add(Pair.of(new CoordinatorHistoricalManagerRunnable(),config.getCoordinatorPeriod()));
       if (indexingServiceClient != null) {
         coordinatorRunnables.add(Pair.of(new CoordinatorIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(DatasourceWhitelist.CONFIG_KEY,DatasourceWhitelist.class))),config.getCoordinatorIndexingPeriod()));
       }
+      final int startingLeaderCounter=leaderCounter;
       for (      final Pair<? extends CoordinatorRunnable,Duration> coordinatorRunnable : coordinatorRunnables) {
         ScheduledExecutors.scheduleWithFixedDelay(exec,config.getCoordinatorStartDelay(),coordinatorRunnable.rhs,new Callable<ScheduledExecutors.Signal>(){
           private final CoordinatorRunnable theRunnable=coordinatorRunnable.lhs;
           @Override public ScheduledExecutors.Signal call(){
-            if (leader) {
+            if (leader && startingLeaderCounter == leaderCounter) {
               theRunnable.run();
             }
-            if (leader) {
+            if (leader && startingLeaderCounter == leaderCounter) {
               return ScheduledExecutors.Signal.REPEAT;
             }
  else {
