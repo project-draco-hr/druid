@@ -1,0 +1,23 @@
+{
+  EasyMock.reset(autoScalingStrategy);
+  EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScalingStrategy);
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create(),"h1","i1","0")));
+  Assert.assertFalse(terminatedSomething);
+  EasyMock.verify(autoScalingStrategy);
+  EasyMock.reset(autoScalingStrategy);
+  EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScalingStrategy);
+  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create())));
+  Assert.assertFalse(provisionedSomething);
+  EasyMock.verify(autoScalingStrategy);
+  workerSetupData.set(new WorkerSetupData("0",3,5,null,null,null));
+  EasyMock.reset(autoScalingStrategy);
+  EasyMock.expect(autoScalingStrategy.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.expect(autoScalingStrategy.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h3")));
+  EasyMock.expect(autoScalingStrategy.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h4")));
+  EasyMock.replay(autoScalingStrategy);
+  provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create(),"h1","i1","0")));
+  Assert.assertTrue(provisionedSomething);
+  EasyMock.verify(autoScalingStrategy);
+}
