@@ -1,13 +1,17 @@
 {
-  lock.lock();
+  E e=null;
+  takeLock.lock();
   try {
-    E e=delegate.poll();
+    e=delegate.poll();
     if (e != null) {
-      operationRemoved(e);
+      elementRemoved(e);
     }
-    return e;
   }
   finally {
-    lock.unlock();
+    takeLock.unlock();
   }
+  if (e != null) {
+    signalNotFull();
+  }
+  return e;
 }

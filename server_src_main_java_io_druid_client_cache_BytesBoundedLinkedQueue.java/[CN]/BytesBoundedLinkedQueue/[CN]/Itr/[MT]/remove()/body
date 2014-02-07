@@ -1,14 +1,15 @@
 {
-  lock.lock();
+  fullyLock();
   try {
     if (this.lastReturned == null) {
       throw new IllegalStateException();
     }
     delegate.remove();
-    operationRemoved(lastReturned);
+    elementRemoved(lastReturned);
+    signalNotFull();
     lastReturned=null;
   }
   finally {
-    lock.unlock();
+    fullyUnlock();
   }
 }

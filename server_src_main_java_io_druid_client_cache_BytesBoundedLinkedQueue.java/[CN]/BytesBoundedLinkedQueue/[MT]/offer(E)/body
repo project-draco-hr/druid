@@ -1,19 +1,23 @@
 {
   checkNotNull(e);
-  lock.lock();
+  boolean added=false;
+  putLock.lock();
   try {
-    if (currentSize > capacity) {
+    if (currentSize.get() >= capacity) {
       return false;
     }
  else {
-      boolean added=delegate.add(e);
+      added=delegate.add(e);
       if (added) {
-        operationAdded(e);
+        elementAdded(e);
       }
-      return added;
     }
   }
   finally {
-    lock.unlock();
+    putLock.unlock();
   }
+  if (added) {
+    signalNotEmpty();
+  }
+  return added;
 }

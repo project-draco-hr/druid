@@ -1,19 +1,24 @@
 {
   checkNotNull(e);
   long nanos=unit.toNanos(timeout);
-  lock.lockInterruptibly();
+  boolean added=false;
+  putLock.lockInterruptibly();
   try {
-    while (currentSize > capacity) {
+    while (currentSize.get() >= capacity) {
       if (nanos <= 0) {
-        return false;
+        break;
       }
       nanos=notFull.awaitNanos(nanos);
     }
     delegate.add(e);
-    operationAdded(e);
-    return true;
+    elementAdded(e);
+    added=true;
   }
   finally {
-    lock.unlock();
+    putLock.unlock();
   }
+  if (added) {
+    signalNotEmpty();
+  }
+  return added;
 }
