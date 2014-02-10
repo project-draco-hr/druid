@@ -15,7 +15,8 @@
     }
   }
 );
-  final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
+  IncrementalIndex index=new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]));
+  Accumulator<IncrementalIndex,Row> accumulator=new Accumulator<IncrementalIndex,Row>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    Row in){
       if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions)) > config.getMaxResults()) {
         throw new ISE("Computation exceeds maxRows limit[%s]",config.getMaxResults());
@@ -23,7 +24,13 @@
       return accumulated;
     }
   }
-);
+;
+  if (runner instanceof ParallelQueryRunner && Boolean.getBoolean("optimize")) {
+    index=(IncrementalIndex)((ParallelQueryRunner)runner).runAndAccumulate(query,index,accumulator);
+  }
+ else {
+    index=runner.run(query).accumulate(index,accumulator);
+  }
   Sequence<Row> retVal=Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
     @Override public Row apply(    Row input){
       final MapBasedRow row=(MapBasedRow)input;
