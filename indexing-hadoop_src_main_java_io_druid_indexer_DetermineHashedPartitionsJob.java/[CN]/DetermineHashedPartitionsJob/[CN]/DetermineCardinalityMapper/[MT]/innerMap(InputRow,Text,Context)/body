@@ -1,0 +1,18 @@
+{
+  final List<Object> groupKey=Rows.toGroupKey(rollupGranularity.truncate(inputRow.getTimestampFromEpoch()),inputRow);
+  Interval interval;
+  if (determineIntervals) {
+    interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
+    if (!hyperLogLogs.containsKey(interval)) {
+      hyperLogLogs.put(interval,new HyperLogLog(HYPER_LOG_LOG_BIT_SIZE));
+    }
+  }
+ else {
+    final Optional<Interval> maybeInterval=config.getGranularitySpec().bucketInterval(new DateTime(inputRow.getTimestampFromEpoch()));
+    if (!maybeInterval.isPresent()) {
+      throw new ISE("WTF?! No bucket found for timestamp: %s",inputRow.getTimestampFromEpoch());
+    }
+    interval=maybeInterval.get();
+  }
+  hyperLogLogs.get(interval).offerHashed(hashFunction.hashBytes(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)).asLong());
+}

@@ -1,0 +1,10 @@
+{
+  Optional<SortedSet<Interval>> intervals=schema.getGranularitySpec().bucketIntervals();
+  if (intervals.isPresent()) {
+    Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(intervals.get()));
+    return taskActionClient.submit(new LockTryAcquireAction(interval)).isPresent();
+  }
+ else {
+    return true;
+  }
+}
