@@ -1,0 +1,8 @@
+{
+  return dbi.withHandle(new HandleCallback<Boolean>(){
+    @Override public Boolean withHandle(    Handle handle) throws Exception {
+      return handle.getConnection().getMetaData().getDatabaseProductName().contains("PostgreSQL");
+    }
+  }
+);
+}
