@@ -1,0 +1,34 @@
+{
+  for (int i=0; i < 10; i++) {
+    LoadQueuePeonTester fromPeon=new LoadQueuePeonTester();
+    DruidServer druidServer=EasyMock.createMock(DruidServer.class);
+    EasyMock.expect(druidServer.getName()).andReturn("DruidServer_Name_" + i).anyTimes();
+    EasyMock.expect(druidServer.getCurrSize()).andReturn(3000L).anyTimes();
+    EasyMock.expect(druidServer.getMaxSize()).andReturn(10000000L).anyTimes();
+    EasyMock.expect(druidServer.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+    Map<String,DataSegment> segments=Maps.newHashMap();
+    for (int j=0; j < 100; j++) {
+      DataSegment segment=getSegment(j);
+      segments.put(segment.getIdentifier(),segment);
+      EasyMock.expect(druidServer.getSegment(segment.getIdentifier())).andReturn(segment).anyTimes();
+    }
+    EasyMock.expect(druidServer.getSegments()).andReturn(segments).anyTimes();
+    EasyMock.replay(druidServer);
+    serverHolderList.add(new ServerHolder(druidServer,fromPeon));
+  }
+  LoadQueuePeonTester fromPeon=new LoadQueuePeonTester();
+  DruidServer druidServer=EasyMock.createMock(DruidServer.class);
+  EasyMock.expect(druidServer.getName()).andReturn("BEST_SERVER").anyTimes();
+  EasyMock.expect(druidServer.getCurrSize()).andReturn(3000L).anyTimes();
+  EasyMock.expect(druidServer.getMaxSize()).andReturn(10000000L).anyTimes();
+  EasyMock.expect(druidServer.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
+  Map<String,DataSegment> segments=Maps.newHashMap();
+  for (int j=0; j < 98; j++) {
+    DataSegment segment=getSegment(j);
+    segments.put(segment.getIdentifier(),segment);
+    EasyMock.expect(druidServer.getSegment(segment.getIdentifier())).andReturn(segment).anyTimes();
+  }
+  EasyMock.expect(druidServer.getSegments()).andReturn(segments).anyTimes();
+  EasyMock.replay(druidServer);
+  serverHolderList.add(new ServerHolder(druidServer,fromPeon));
+}

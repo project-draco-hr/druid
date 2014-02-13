@@ -16,7 +16,11 @@ synchronized (lock) {
         return;
       }
     }
-    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).build();
+    BalancerStrategyFactory factory=null;
+    if (COST.equals(config.getCoordinatorBalancerStrategy()))     factory=new CostBalancerStrategyFactory();
+ else     if (RANDOM.equals(config.getCoordinatorBalancerStrategy()))     factory=new RandomBalancerStrategyFactory();
+ else     if (COST_MULTI.equals(config.getCoordinatorBalancerStrategy()))     factory=new CostBalancerMultithreadStrategyFactory();
+    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
     for (    DruidCoordinatorHelper helper : helpers) {
       params=helper.run(params);
     }
