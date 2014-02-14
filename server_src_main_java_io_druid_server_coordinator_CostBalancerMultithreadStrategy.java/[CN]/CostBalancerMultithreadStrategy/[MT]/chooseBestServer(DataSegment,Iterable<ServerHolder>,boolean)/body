@@ -1,6 +1,6 @@
 {
   Pair<Double,ServerHolder> bestServer=Pair.of(Double.POSITIVE_INFINITY,null);
-  ListeningExecutorService service=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(8));
+  ListeningExecutorService service=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threadCount));
   List<ListenableFuture<Pair<Double,ServerHolder>>> futures=Lists.newArrayList();
   for (  final ServerHolder server : serverHolders) {
     futures.add(service.submit(new Callable<Pair<Double,ServerHolder>>(){
