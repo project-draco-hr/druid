@@ -1,0 +1,17 @@
+{
+  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withSpatialDimensions(schema.getParser().getParseSpec().getDimensionsSpec().getSpatialDimensions()).withMetrics(schema.getAggregators()).build());
+  FireHydrant old;
+  if (currIndex == null) {
+    old=currIndex;
+    currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+    hydrants.add(currIndex);
+  }
+ else {
+synchronized (currIndex) {
+      old=currIndex;
+      currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+      hydrants.add(currIndex);
+    }
+  }
+  return old;
+}

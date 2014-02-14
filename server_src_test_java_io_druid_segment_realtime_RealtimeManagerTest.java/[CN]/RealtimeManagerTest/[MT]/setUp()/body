@@ -1,15 +1,22 @@
 {
   schema=new Schema("test",Lists.<SpatialDimensionSchema>newArrayList(),new AggregatorFactory[]{new CountAggregatorFactory("rows")},QueryGranularity.NONE,new NoneShardSpec());
   final List<InputRow> rows=Arrays.asList(makeRow(new DateTime("9000-01-01").getMillis()),makeRow(new DateTime().getMillis()));
-  plumber=new TestPlumber(new Sink(new Interval("0/P5000Y"),schema,new DateTime().toString()));
-  realtimeManager=new RealtimeManager(Arrays.<FireDepartment>asList(new FireDepartment(schema,new FireDepartmentConfig(1,new Period("P1Y")),new FirehoseFactory(){
+  DataSchema dataSchema=new DataSchema(schema.getDataSource(),null,null,null,schema.getAggregators(),new GranularitySpec(null,schema.getIndexGranularity()),schema.getShardSpec());
+  plumber=new TestPlumber(new Sink(new Interval("0/P5000Y"),dataSchema,new DateTime().toString()));
+  realtimeManager=new RealtimeManager(Arrays.<FireDepartment>asList(new FireDepartment(null,null,null,schema,new FireDepartmentConfig(1,new Period("P1Y")),new FirehoseFactory(){
     @Override public Firehose connect() throws IOException {
       return new TestFirehose(rows.iterator());
     }
+    @Override public ByteBufferInputRowParser getParser(){
+      throw new UnsupportedOperationException();
+    }
   }
 ,new PlumberSchool(){
-    @Override public Plumber findPlumber(    Schema schema,    FireDepartmentMetrics metrics){
+    @Override public Plumber findPlumber(    DataSchema schema,    FireDepartmentMetrics metrics){
       return plumber;
+    }
+    @Override public SegmentGranularity getSegmentGranularity(){
+      throw new UnsupportedOperationException();
     }
   }
 )),null);
