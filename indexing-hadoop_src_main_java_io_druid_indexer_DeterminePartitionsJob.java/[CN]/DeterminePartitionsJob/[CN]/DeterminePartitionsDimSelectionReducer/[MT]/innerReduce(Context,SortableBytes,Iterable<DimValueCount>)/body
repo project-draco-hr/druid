@@ -102,7 +102,7 @@
   if (maxCardinalityPartitions == null) {
     throw new ISE("No suitable partitioning dimension found!");
   }
-  final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(config.getGranularitySpec().getGranularity().bucket(bucket)),config.isOverwriteFiles());
+  final OutputStream out=Utils.makePathAndOutputStream(context,config.makeSegmentPartitionInfoPath(config.getGranularitySpec().bucketInterval(bucket).get()),config.isOverwriteFiles());
   final DimPartitions chosenPartitions=maxCardinality > HIGH_CARDINALITY_THRESHOLD ? maxCardinalityPartitions : minDistancePartitions;
   final List<ShardSpec> chosenShardSpecs=Lists.transform(chosenPartitions.partitions,new Function<DimPartition,ShardSpec>(){
     @Override public ShardSpec apply(    DimPartition dimPartition){
