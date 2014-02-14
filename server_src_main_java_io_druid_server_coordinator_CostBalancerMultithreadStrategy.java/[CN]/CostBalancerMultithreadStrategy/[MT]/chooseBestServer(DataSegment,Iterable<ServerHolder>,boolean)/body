@@ -1,23 +1,25 @@
 {
   Pair<Double,ServerHolder> bestServer=Pair.of(Double.POSITIVE_INFINITY,null);
-  ExecutorService service=Executors.newCachedThreadPool();
-  List<Future<Pair<Double,ServerHolder>>> futures=Lists.newArrayList();
+  ListeningExecutorService service=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(8));
+  List<ListenableFuture<Pair<Double,ServerHolder>>> futures=Lists.newArrayList();
   for (  final ServerHolder server : serverHolders) {
-    futures.add(service.submit(new CostCalculator(server,proposalSegment,includeCurrentServer)));
+    futures.add(service.submit(new Callable<Pair<Double,ServerHolder>>(){
+      @Override public Pair<Double,ServerHolder> call() throws Exception {
+        return Pair.of(computeCost(proposalSegment,server,includeCurrentServer),server);
+      }
+    }
+));
   }
-  for (  Future<Pair<Double,ServerHolder>> f : futures) {
-    try {
-      Pair<Double,ServerHolder> server=f.get();
+  final ListenableFuture<List<Pair<Double,ServerHolder>>> resultsFuture=Futures.allAsList(futures);
+  try {
+    for (    Pair<Double,ServerHolder> server : resultsFuture.get()) {
       if (server.lhs < bestServer.lhs) {
         bestServer=server;
       }
     }
- catch (    InterruptedException e) {
-      e.printStackTrace();
-    }
-catch (    ExecutionException e) {
-      e.printStackTrace();
-    }
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Cost Balancer Multithread strategy wasn't able to complete cost computation.").emit();
   }
   service.shutdown();
   return bestServer;

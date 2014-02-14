@@ -1,23 +1,9 @@
 {
   Pair<Double,ServerHolder> bestServer=Pair.of(Double.POSITIVE_INFINITY,null);
-  final long proposalSegmentSize=proposalSegment.getSize();
   for (  ServerHolder server : serverHolders) {
-    if (includeCurrentServer || !server.isServingSegment(proposalSegment)) {
-      if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
-        continue;
-      }
-      double cost=0f;
-      for (      DataSegment segment : server.getServer().getSegments().values()) {
-        if (!proposalSegment.equals(segment)) {
-          cost+=computeJointSegmentCosts(proposalSegment,segment);
-        }
-      }
-      for (      DataSegment segment : server.getPeon().getSegmentsToLoad()) {
-        cost+=computeJointSegmentCosts(proposalSegment,segment);
-      }
-      if (cost < bestServer.lhs) {
-        bestServer=Pair.of(cost,server);
-      }
+    double cost=computeCost(proposalSegment,server,includeCurrentServer);
+    if (cost < bestServer.lhs) {
+      bestServer=Pair.of(cost,server);
     }
   }
   return bestServer;
