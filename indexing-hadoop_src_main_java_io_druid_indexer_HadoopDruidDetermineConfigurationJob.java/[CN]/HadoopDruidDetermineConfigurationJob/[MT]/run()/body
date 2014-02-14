@@ -1,0 +1,19 @@
+{
+  List<Jobby> jobs=Lists.newArrayList();
+  JobHelper.ensurePaths(config);
+  if (config.isDeterminingPartitions()) {
+    jobs.add(config.getPartitionsSpec().getPartitionJob(config));
+  }
+ else {
+    Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+    int shardCount=0;
+    for (    Interval segmentGranularity : config.getSegmentGranularIntervals().get()) {
+      DateTime bucket=segmentGranularity.getStart();
+      final HadoopyShardSpec spec=new HadoopyShardSpec(new NoneShardSpec(),shardCount++);
+      shardSpecs.put(bucket,Lists.newArrayList(spec));
+      log.info("DateTime[%s], spec[%s]",bucket,spec);
+    }
+    config.setShardSpecs(shardSpecs);
+  }
+  return JobHelper.runJobs(jobs,config);
+}

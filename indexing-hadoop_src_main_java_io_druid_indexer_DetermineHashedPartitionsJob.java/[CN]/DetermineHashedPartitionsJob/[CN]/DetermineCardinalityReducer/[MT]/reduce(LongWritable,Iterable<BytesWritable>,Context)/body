@@ -1,0 +1,24 @@
+{
+  HyperLogLog aggregate=new HyperLogLog(HYPER_LOG_LOG_BIT_SIZE);
+  for (  BytesWritable value : values) {
+    HyperLogLog logValue=HyperLogLog.Builder.build(value.getBytes());
+    try {
+      aggregate.addAll(logValue);
+    }
+ catch (    CardinalityMergeException e) {
+      e.printStackTrace();
+    }
+  }
+  Interval interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(key.get()));
+  intervals.add(interval);
+  final Path outPath=config.makeSegmentPartitionInfoPath(interval);
+  final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
+  try {
+    HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<Long>(){
+    }
+).writeValue(out,aggregate.cardinality());
+  }
+  finally {
+    Closeables.close(out,false);
+  }
+}
