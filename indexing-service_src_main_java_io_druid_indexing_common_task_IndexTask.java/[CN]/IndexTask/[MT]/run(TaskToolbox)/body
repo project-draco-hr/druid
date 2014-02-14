@@ -1,7 +1,7 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Set<DataSegment> segments=Sets.newHashSet();
-  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals().get(),getDataIntervals());
+  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals(),getDataIntervals());
   if (validIntervals.isEmpty()) {
     throw new ISE("No valid data intervals found. Check your configs!");
   }
