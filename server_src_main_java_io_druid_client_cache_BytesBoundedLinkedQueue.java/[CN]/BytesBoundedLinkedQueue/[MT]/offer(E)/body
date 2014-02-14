@@ -1,9 +1,10 @@
 {
   checkNotNull(e);
+  checkSize(e);
   boolean added=false;
   putLock.lock();
   try {
-    if (currentSize.get() >= capacity) {
+    if (currentSize.get() + getBytesSize(e) > capacity) {
       return false;
     }
  else {
