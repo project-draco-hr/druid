@@ -2,4 +2,10 @@
   this.jsonMapper=jsonMapper;
   this.config=config;
   this.dbi=dbi;
+  if (DbConnector.isPostgreSQL(dbi)) {
+    this.statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentsTable());
+  }
+ else {
+    this.statement=String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSegmentsTable());
+  }
 }
