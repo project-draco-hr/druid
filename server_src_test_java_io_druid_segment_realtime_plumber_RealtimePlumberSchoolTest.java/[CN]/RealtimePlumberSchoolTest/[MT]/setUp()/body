@@ -1,7 +1,20 @@
 {
   final File tmpDir=Files.createTempDir();
   tmpDir.deleteOnExit();
-  final Schema schema=new Schema("test",Lists.<SpatialDimensionSchema>newArrayList(),new AggregatorFactory[]{new CountAggregatorFactory("rows")},QueryGranularity.NONE,new NoneShardSpec());
+  final DataSchema schema=new DataSchema("test",new InputRowParser(){
+    @Override public InputRow parse(    Object input) throws FormattedException {
+      return null;
+    }
+    @Override public ParseSpec getParseSpec(){
+      return new ParseSpec(new TimestampSpec("timestamp","auto"),new DimensionsSpec(null,null,null)){
+      }
+;
+    }
+    @Override public InputRowParser withParseSpec(    ParseSpec parseSpec){
+      return null;
+    }
+  }
+,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new GranularitySpec(null,QueryGranularity.NONE),new NoneShardSpec());
   RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(new Period("PT10m"),tmpDir,SegmentGranularity.HOUR);
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());

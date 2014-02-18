@@ -1,0 +1,50 @@
+{
+  final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),version,schema.getShardSpec().getPartitionNum()));
+  final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
+  final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String dataSource){
+      return toolbox.getSegmentPusher().getPathForHadoop(dataSource);
+    }
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      final DataSegment pushedSegment=toolbox.getSegmentPusher().push(file,segment);
+      pushedSegments.add(pushedSegment);
+      return pushedSegment;
+    }
+  }
+;
+  final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
+  final Firehose firehose=firehoseFactory.connect(firehoseFactory.getParser());
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,metrics);
+  final int myRowFlushBoundary=this.rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
+  try {
+    plumber.startJob();
+    while (firehose.hasMore()) {
+      final InputRow inputRow=firehose.nextRow();
+      if (shouldIndex(schema,interval,inputRow)) {
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if (sink == null) {
+          throw new NullPointerException(String.format("Was expecting non-null sink for timestamp[%s]",new DateTime(inputRow.getTimestampFromEpoch())));
+        }
+        int numRows=sink.add(inputRow);
+        metrics.incrementProcessed();
+        if (numRows >= myRowFlushBoundary) {
+          plumber.persist(firehose.commit());
+        }
+      }
+ else {
+        metrics.incrementThrownAway();
+      }
+    }
+  }
+  finally {
+    firehose.close();
+  }
+  plumber.persist(firehose.commit());
+  try {
+    plumber.finishJob();
+  }
+  finally {
+    log.info("Task[%s] interval[%s] partition[%d] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away)" + " and output %,d rows",getId(),interval,schema.getShardSpec().getPartitionNum(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
+  }
+  return Iterables.getOnlyElement(pushedSegments);
+}

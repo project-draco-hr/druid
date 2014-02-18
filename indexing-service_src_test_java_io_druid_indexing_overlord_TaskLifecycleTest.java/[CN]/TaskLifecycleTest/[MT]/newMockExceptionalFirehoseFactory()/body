@@ -1,6 +1,6 @@
 {
   return new FirehoseFactory(){
-    @Override public Firehose connect() throws IOException {
+    @Override public Firehose connect(    InputRowParser parser) throws IOException {
       return new Firehose(){
         @Override public boolean hasMore(){
           return true;
@@ -19,6 +19,9 @@
         }
       }
 ;
+    }
+    @Override public InputRowParser getParser(){
+      return null;
     }
   }
 ;

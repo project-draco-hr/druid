@@ -1,8 +1,11 @@
 {
   final Set<Interval> intervals=Sets.newTreeSet(Comparators.intervals());
-  for (  Interval segmentInterval : config.getSegmentGranularIntervals()) {
-    for (    Interval dataInterval : dataGranularity.getIterable(segmentInterval)) {
-      intervals.add(dataInterval);
+  Optional<Set<Interval>> optionalIntervals=config.getSegmentGranularIntervals();
+  if (optionalIntervals.isPresent()) {
+    for (    Interval segmentInterval : optionalIntervals.get()) {
+      for (      Interval dataInterval : dataGranularity.getIterable(segmentInterval)) {
+        intervals.add(dataInterval);
+      }
     }
   }
   Path betaInput=new Path(inputPath);

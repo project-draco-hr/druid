@@ -1,7 +1,7 @@
 {
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Set<DataSegment> segments=Sets.newHashSet();
-  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals(),getDataIntervals());
+  final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals().get(),getDataIntervals());
   if (validIntervals.isEmpty()) {
     throw new ISE("No valid data intervals found. Check your configs!");
   }
@@ -14,7 +14,7 @@
       shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
-      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),bucket,myLock.getVersion());
+      final DataSegment segment=generateSegment(toolbox,new DataSchema(getDataSource(),firehoseFactory.getParser(),aggregators,new io.druid.segment.indexing.GranularitySpec(null,indexGranularity),shardSpec),bucket,myLock.getVersion());
       segments.add(segment);
     }
   }

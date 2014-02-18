@@ -1,6 +1,6 @@
 {
   this.consumerProps=consumerProps;
   this.feed=feed;
-  this.parser=parser;
-  parser.addDimensionExclusion("feed");
+  Set<String> newDimExclus=Sets.union(parser.getParseSpec().getDimensionsSpec().getDimensionExclusions(),Sets.newHashSet("feed"));
+  this.parser=parser.withParseSpec(parser.getParseSpec().withDimensionsSpec(parser.getParseSpec().getDimensionsSpec().withDimensionExclusions(newDimExclus)));
 }
