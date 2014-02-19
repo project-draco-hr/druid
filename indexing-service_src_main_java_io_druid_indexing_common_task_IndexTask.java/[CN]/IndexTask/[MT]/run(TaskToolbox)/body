@@ -14,7 +14,7 @@
       shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
-      final DataSegment segment=generateSegment(toolbox,new DataSchema(getDataSource(),firehoseFactory.getParser(),aggregators,new io.druid.segment.indexing.GranularitySpec(null,indexGranularity),shardSpec),bucket,myLock.getVersion());
+      final DataSegment segment=generateSegment(toolbox,new DataSchema(getDataSource(),firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity),shardSpec),bucket,myLock.getVersion());
       segments.add(segment);
     }
   }

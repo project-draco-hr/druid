@@ -22,7 +22,7 @@
   final Method determineConfigurationMainMethod=determineConfigurationMainClass.getMethod("runTask",String[].class);
   String[] determineConfigArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
   String config=(String)determineConfigurationMainMethod.invoke(null,new Object[]{determineConfigArgs});
-  HadoopDruidIndexerSchema indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopDruidIndexerSchema.class);
+  HadoopIngestionSchema indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopIngestionSchema.class);
   final String version;
   if (determineIntervals) {
     Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(indexerSchema.getGranularitySpec().bucketIntervals().get()));

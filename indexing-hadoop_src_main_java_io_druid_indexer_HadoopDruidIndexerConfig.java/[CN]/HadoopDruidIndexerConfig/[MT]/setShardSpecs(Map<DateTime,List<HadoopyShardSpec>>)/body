@@ -1,3 +1,4 @@
 {
-  this.shardSpecs=Collections.unmodifiableMap(shardSpecs);
+  this.schema=schema.withDriverConfig(schema.getDriverConfig().withShardSpecs(shardSpecs));
+  this.pathSpec=jsonMapper.convertValue(schema.getIOConfig().getPathSpec(),PathSpec.class);
 }

@@ -2,7 +2,7 @@
   if (!rejectionPolicy.accept(timestamp)) {
     return null;
   }
-  final long truncatedTime=segmentGranularity.truncate(timestamp);
+  final long truncatedTime=segmentGranularity.truncate(new DateTime(timestamp)).getMillis();
   Sink retVal=sinks.get(truncatedTime);
   if (retVal == null) {
     final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));

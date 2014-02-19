@@ -1,0 +1,51 @@
+{
+  if (dataSchema != null) {
+    this.dataSchema=dataSchema;
+    this.ioConfig=ioConfig;
+    this.driverConfig=driverConfig;
+  }
+ else {
+    TimestampSpec theTimestampSpec=(timestampSpec == null) ? new TimestampSpec(timestampColumn,timestampFormat) : timestampSpec;
+    List<String> dimensionExclusions=Lists.newArrayList();
+    dimensionExclusions.add(theTimestampSpec.getTimestampColumn());
+    for (    AggregatorFactory aggregatorFactory : rollupSpec.getAggs()) {
+      dimensionExclusions.add(aggregatorFactory.getName());
+    }
+    PartitionsSpec thePartitionSpec;
+    if (partitionsSpec != null) {
+      Preconditions.checkArgument(partitionDimension == null && targetPartitionSize == null,"Cannot mix partitionsSpec with partitionDimension/targetPartitionSize");
+      thePartitionSpec=partitionsSpec;
+    }
+ else {
+      thePartitionSpec=new SingleDimensionPartitionsSpec(partitionDimension,targetPartitionSize,null,false);
+    }
+    if (dataSpec.hasCustomDimensions()) {
+      dimensionExclusions=null;
+    }
+ else {
+      dimensionExclusions=Lists.newArrayList();
+      dimensionExclusions.add(theTimestampSpec.getTimestampColumn());
+      dimensionExclusions.addAll(Lists.transform(rollupSpec.getAggs(),new Function<AggregatorFactory,String>(){
+        @Override public String apply(        AggregatorFactory aggregatorFactory){
+          return aggregatorFactory.getName();
+        }
+      }
+));
+    }
+    GranularitySpec theGranularitySpec=null;
+    if (granularitySpec != null) {
+      Preconditions.checkArgument(segmentGranularity == null && intervals == null,"Cannot mix granularitySpec with segmentGranularity/intervals");
+      theGranularitySpec=granularitySpec;
+    }
+ else {
+      if (segmentGranularity != null && intervals != null) {
+        theGranularitySpec=new UniformGranularitySpec(segmentGranularity,null,intervals,segmentGranularity);
+      }
+    }
+    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(new ParseSpec(theTimestampSpec,new DimensionsSpec(dataSpec.getDimensions(),dimensionExclusions,dataSpec.getSpatialDimensions())){
+    }
+,null,null,null,null),rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
+    this.ioConfig=new HadoopIOConfig(pathSpec,updaterJobSpec,segmentOutputPath);
+    this.driverConfig=new HadoopDriverConfig(workingPath,version,thePartitionSpec,shardSpecs,leaveIntermediate,cleanupOnFailure,overwriteFiles,ignoreInvalidRows);
+  }
+}

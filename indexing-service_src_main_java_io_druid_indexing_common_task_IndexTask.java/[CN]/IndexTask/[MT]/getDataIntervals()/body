@@ -3,7 +3,7 @@
   try (Firehose firehose=firehoseFactory.connect(firehoseFactory.getParser())){
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
-      Interval interval=granularitySpec.getGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
+      Interval interval=granularitySpec.getSegmentGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
       retVal.add(interval);
     }
   }

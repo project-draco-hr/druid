@@ -1,0 +1,9 @@
+{
+  if (schema != null) {
+    this.schema=schema;
+  }
+ else {
+    this.schema=HadoopIngestionSchema.convertLegacy(dataSource,timestampSpec,dataSpec,granularitySpec,pathSpec,workingPath,segmentOutputPath,version,partitionsSpec,leaveIntermediate,cleanupOnFailure,shardSpecs,overwriteFiles,rollupSpec,updaterJobSpec,ignoreInvalidRows,timestampColumn,timestampFormat,intervals,segmentGranularity,partitionDimension,targetPartitionSize);
+  }
+  this.pathSpec=jsonMapper.convertValue(schema.getIOConfig().getPathSpec(),PathSpec.class);
+}

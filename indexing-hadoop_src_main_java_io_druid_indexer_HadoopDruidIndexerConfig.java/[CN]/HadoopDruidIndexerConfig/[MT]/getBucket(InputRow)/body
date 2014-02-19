@@ -1,9 +1,9 @@
 {
-  final Optional<Interval> timeBucket=getGranularitySpec().bucketInterval(new DateTime(inputRow.getTimestampFromEpoch()));
+  final Optional<Interval> timeBucket=schema.getDataSchema().getGranularitySpec().bucketInterval(new DateTime(inputRow.getTimestampFromEpoch()));
   if (!timeBucket.isPresent()) {
     return Optional.absent();
   }
-  final List<HadoopyShardSpec> shards=shardSpecs.get(timeBucket.get().getStart());
+  final List<HadoopyShardSpec> shards=schema.getDriverConfig().getShardSpecs().get(timeBucket.get().getStart());
   if (shards == null || shards.isEmpty()) {
     return Optional.absent();
   }

@@ -1,6 +1,6 @@
 {
   final List<InputRow> rows=Arrays.asList(makeRow(new DateTime("9000-01-01").getMillis()),makeRow(new DateTime().getMillis()));
-  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new GranularitySpec(null,QueryGranularity.NONE),new NoneShardSpec());
+  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new GranularitySpec(Granularity.HOUR,QueryGranularity.NONE),new NoneShardSpec());
   RealtimeIOConfig ioConfig=new RealtimeIOConfig(new FirehoseFactory(){
     @Override public Firehose connect(    InputRowParser parser) throws IOException {
       return new TestFirehose(rows.iterator());
@@ -13,7 +13,7 @@
     @Override public Plumber findPlumber(    DataSchema schema,    FireDepartmentMetrics metrics){
       return plumber;
     }
-    @Override public SegmentGranularity getSegmentGranularity(){
+    @Override public Granularity getSegmentGranularity(){
       throw new UnsupportedOperationException();
     }
   }

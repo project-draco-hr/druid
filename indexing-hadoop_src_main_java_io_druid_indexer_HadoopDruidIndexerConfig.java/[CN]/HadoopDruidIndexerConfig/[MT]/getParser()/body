@@ -1,17 +1,3 @@
 {
-  final List<String> dimensionExclusions;
-  if (getDataSpec().hasCustomDimensions()) {
-    dimensionExclusions=null;
-  }
- else {
-    dimensionExclusions=Lists.newArrayList();
-    dimensionExclusions.add(timestampSpec.getTimestampColumn());
-    dimensionExclusions.addAll(Lists.transform(getRollupSpec().getAggs(),new Function<AggregatorFactory,String>(){
-      @Override public String apply(      AggregatorFactory aggregatorFactory){
-        return aggregatorFactory.getName();
-      }
-    }
-));
-  }
-  return new StringInputRowParser(null,getTimestampSpec(),getDataSpec(),dimensionExclusions,null);
+  return (StringInputRowParser)schema.getDataSchema().getParser();
 }
