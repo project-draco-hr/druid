@@ -1,7 +1,7 @@
 {
   super.setup(context);
-  rollupGranularity=getConfig().getRollupSpec().getRollupGranularity();
-  config=HadoopDruidIndexerConfigBuilder.fromConfiguration(context.getConfiguration());
+  rollupGranularity=getConfig().getGranularitySpec().getQueryGranularity();
+  config=HadoopDruidIndexerConfig.fromConfiguration(context.getConfiguration());
   Optional<Set<Interval>> intervals=config.getSegmentGranularIntervals();
   if (intervals.isPresent()) {
     determineIntervals=false;

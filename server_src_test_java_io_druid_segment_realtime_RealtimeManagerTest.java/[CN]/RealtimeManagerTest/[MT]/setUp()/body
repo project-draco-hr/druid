@@ -1,6 +1,6 @@
 {
   final List<InputRow> rows=Arrays.asList(makeRow(new DateTime("9000-01-01").getMillis()),makeRow(new DateTime().getMillis()));
-  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new GranularitySpec(Granularity.HOUR,QueryGranularity.NONE),new NoneShardSpec());
+  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null,Granularity.HOUR));
   RealtimeIOConfig ioConfig=new RealtimeIOConfig(new FirehoseFactory(){
     @Override public Firehose connect(    InputRowParser parser) throws IOException {
       return new TestFirehose(rows.iterator());
@@ -10,7 +10,7 @@
     }
   }
 ,new PlumberSchool(){
-    @Override public Plumber findPlumber(    DataSchema schema,    FireDepartmentMetrics metrics){
+    @Override public Plumber findPlumber(    DataSchema schema,    RealtimeDriverConfig config,    FireDepartmentMetrics metrics){
       return plumber;
     }
     @Override public Granularity getSegmentGranularity(){
@@ -18,6 +18,7 @@
     }
   }
 );
-  plumber=new TestPlumber(new Sink(new Interval("0/P5000Y"),schema,new DateTime().toString()));
-  realtimeManager=new RealtimeManager(Arrays.<FireDepartment>asList(new FireDepartment(schema,ioConfig,new RealtimeDriverConfig(1,new Period("P1Y")),null,null,null,null)),null);
+  RealtimeDriverConfig driverConfig=new RealtimeDriverConfig(1,new Period("P1Y"),null);
+  plumber=new TestPlumber(new Sink(new Interval("0/P5000Y"),schema,driverConfig,new DateTime().toString()));
+  realtimeManager=new RealtimeManager(Arrays.<FireDepartment>asList(new FireDepartment(schema,ioConfig,driverConfig,null,null,null,null)),null);
 }

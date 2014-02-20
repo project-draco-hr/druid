@@ -6,7 +6,7 @@
   Sink retVal=sinks.get(truncatedTime);
   if (retVal == null) {
     final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
-    retVal=new Sink(sinkInterval,schema,versioningPolicy.getVersion(sinkInterval));
+    retVal=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval));
     try {
       segmentAnnouncer.announceSegment(retVal.getSegment());
       sinks.put(truncatedTime,retVal);

@@ -2,7 +2,7 @@
   final DateTime truncatedNow=getSegmentGranularity().truncate(new DateTime());
   final long windowMillis=getWindowPeriod().toStandardDuration().getMillis();
   log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),getSegmentGranularity().increment(truncatedNow).getMillis() + windowMillis)));
-  ScheduledExecutors.scheduleAtFixedRate(flushScheduledExec,new Duration(System.currentTimeMillis(),getSegmentGranularity().increment(truncatedNow).getMillis() + windowMillis),new Duration(truncatedNow,getSegmentGranularity().increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-flusher-%d",getSchema().getDataSource(),getSchema().getShardSpec().getPartitionNum())){
+  ScheduledExecutors.scheduleAtFixedRate(flushScheduledExec,new Duration(System.currentTimeMillis(),getSegmentGranularity().increment(truncatedNow).getMillis() + windowMillis),new Duration(truncatedNow,getSegmentGranularity().increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-flusher-%d",getSchema().getDataSource(),getConfig().getShardSpec().getPartitionNum())){
     @Override public ScheduledExecutors.Signal doCall(){
       if (stopped) {
         log.info("Stopping flusher thread");

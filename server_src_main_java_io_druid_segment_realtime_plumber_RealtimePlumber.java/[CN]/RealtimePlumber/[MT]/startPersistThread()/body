@@ -2,7 +2,7 @@
   final DateTime truncatedNow=segmentGranularity.truncate(new DateTime());
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow).getMillis() + windowMillis)));
-  ScheduledExecutors.scheduleAtFixedRate(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow).getMillis() + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-overseer-%d",schema.getDataSource(),schema.getShardSpec().getPartitionNum())){
+  ScheduledExecutors.scheduleAtFixedRate(scheduledExecutor,new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow).getMillis() + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-overseer-%d",schema.getDataSource(),config.getShardSpec().getPartitionNum())){
     @Override public ScheduledExecutors.Signal doCall(){
       if (stopped) {
         log.info("Stopping merge-n-push overseer thread");

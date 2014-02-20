@@ -8,8 +8,10 @@
     TimestampSpec theTimestampSpec=(timestampSpec == null) ? new TimestampSpec(timestampColumn,timestampFormat) : timestampSpec;
     List<String> dimensionExclusions=Lists.newArrayList();
     dimensionExclusions.add(theTimestampSpec.getTimestampColumn());
-    for (    AggregatorFactory aggregatorFactory : rollupSpec.getAggs()) {
-      dimensionExclusions.add(aggregatorFactory.getName());
+    if (rollupSpec != null) {
+      for (      AggregatorFactory aggregatorFactory : rollupSpec.getAggs()) {
+        dimensionExclusions.add(aggregatorFactory.getName());
+      }
     }
     PartitionsSpec thePartitionSpec;
     if (partitionsSpec != null) {
@@ -19,33 +21,23 @@
  else {
       thePartitionSpec=new SingleDimensionPartitionsSpec(partitionDimension,targetPartitionSize,null,false);
     }
-    if (dataSpec.hasCustomDimensions()) {
-      dimensionExclusions=null;
-    }
- else {
-      dimensionExclusions=Lists.newArrayList();
-      dimensionExclusions.add(theTimestampSpec.getTimestampColumn());
-      dimensionExclusions.addAll(Lists.transform(rollupSpec.getAggs(),new Function<AggregatorFactory,String>(){
-        @Override public String apply(        AggregatorFactory aggregatorFactory){
-          return aggregatorFactory.getName();
-        }
-      }
-));
-    }
     GranularitySpec theGranularitySpec=null;
     if (granularitySpec != null) {
       Preconditions.checkArgument(segmentGranularity == null && intervals == null,"Cannot mix granularitySpec with segmentGranularity/intervals");
       theGranularitySpec=granularitySpec;
+      if (rollupSpec != null) {
+        theGranularitySpec=theGranularitySpec.withQueryGranularity(rollupSpec.rollupGranularity);
+      }
     }
  else {
       if (segmentGranularity != null && intervals != null) {
-        theGranularitySpec=new UniformGranularitySpec(segmentGranularity,null,intervals,segmentGranularity);
+        theGranularitySpec=new UniformGranularitySpec(segmentGranularity,rollupSpec == null ? null : rollupSpec.rollupGranularity,intervals,segmentGranularity);
       }
     }
-    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(new ParseSpec(theTimestampSpec,new DimensionsSpec(dataSpec.getDimensions(),dimensionExclusions,dataSpec.getSpatialDimensions())){
+    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(new ParseSpec(theTimestampSpec,new DimensionsSpec(dataSpec == null ? Lists.<String>newArrayList() : dataSpec.getDimensions(),dimensionExclusions,dataSpec == null ? Lists.<SpatialDimensionSchema>newArrayList() : dataSpec.getSpatialDimensions())){
     }
-,null,null,null,null),rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
+,null,null,null,null),rollupSpec == null ? new AggregatorFactory[]{} : rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
     this.ioConfig=new HadoopIOConfig(pathSpec,updaterJobSpec,segmentOutputPath);
-    this.driverConfig=new HadoopDriverConfig(workingPath,version,thePartitionSpec,shardSpecs,leaveIntermediate,cleanupOnFailure,overwriteFiles,ignoreInvalidRows);
+    this.driverConfig=new HadoopDriverConfig(workingPath,version,thePartitionSpec,shardSpecs,rollupSpec == null ? 50000 : rollupSpec.rowFlushBoundary,leaveIntermediate,cleanupOnFailure,overwriteFiles,ignoreInvalidRows);
   }
 }

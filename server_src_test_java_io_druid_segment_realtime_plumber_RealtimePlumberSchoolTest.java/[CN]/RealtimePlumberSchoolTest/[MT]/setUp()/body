@@ -14,7 +14,7 @@
       return null;
     }
   }
-,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new GranularitySpec(Granularity.HOUR,QueryGranularity.NONE),new NoneShardSpec());
+,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null,Granularity.HOUR));
   RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(new Period("PT10m"),tmpDir,Granularity.HOUR);
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());
@@ -35,5 +35,6 @@
   realtimePlumberSchool.setServerView(serverView);
   realtimePlumberSchool.setEmitter(emitter);
   realtimePlumberSchool.setQueryExecutorService(MoreExecutors.sameThreadExecutor());
-  plumber=realtimePlumberSchool.findPlumber(schema,new FireDepartmentMetrics());
+  RealtimeDriverConfig driverConfig=new RealtimeDriverConfig(1,new Period("P1Y"),null);
+  plumber=realtimePlumberSchool.findPlumber(schema,driverConfig,new FireDepartmentMetrics());
 }

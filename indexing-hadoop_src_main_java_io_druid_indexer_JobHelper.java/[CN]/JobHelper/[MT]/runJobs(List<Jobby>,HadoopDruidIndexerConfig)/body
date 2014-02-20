@@ -7,8 +7,8 @@
       }
     }
   }
-  if (!config.isLeaveIntermediate()) {
-    if (failedMessage == null || config.isCleanupOnFailure()) {
+  if (!config.getSchema().getDriverConfig().isLeaveIntermediate()) {
+    if (failedMessage == null || config.getSchema().getDriverConfig().isCleanupOnFailure()) {
       Path workingPath=config.makeIntermediatePath();
       log.info("Deleting path[%s]",workingPath);
       try {

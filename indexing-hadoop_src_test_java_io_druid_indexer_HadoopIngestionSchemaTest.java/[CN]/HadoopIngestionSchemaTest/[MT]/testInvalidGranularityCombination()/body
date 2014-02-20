@@ -1,0 +1,10 @@
+{
+  boolean thrown=false;
+  try {
+    final HadoopIngestionSchema schema=jsonReadWriteRead("{" + "\"segmentGranularity\":\"day\"," + "\"intervals\":[\"2012-02-01/P1D\"],"+ "\"granularitySpec\":{"+ "   \"type\":\"uniform\","+ "   \"gran\":\"hour\","+ "   \"intervals\":[\"2012-01-01/P1D\"]"+ " }"+ "}",HadoopIngestionSchema.class);
+  }
+ catch (  Exception e) {
+    thrown=true;
+  }
+  Assert.assertTrue("Exception thrown",thrown);
+}

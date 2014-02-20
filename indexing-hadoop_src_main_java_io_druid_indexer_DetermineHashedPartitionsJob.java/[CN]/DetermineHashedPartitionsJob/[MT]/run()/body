@@ -33,7 +33,7 @@
       List<Interval> intervals=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,intervalInfoPath),new TypeReference<List<Interval>>(){
       }
 );
-      config.setGranularitySpec(new UniformGranularitySpec(config.getGranularitySpec().getGranularity(),intervals));
+      config.setGranularitySpec(new UniformGranularitySpec(config.getGranularitySpec().getSegmentGranularity(),config.getGranularitySpec().getQueryGranularity(),intervals,config.getGranularitySpec().getSegmentGranularity()));
       log.info("Determined Intervals for Job [%s]" + config.getSegmentGranularIntervals());
     }
     Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
