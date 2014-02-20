@@ -1,0 +1,28 @@
+{
+  final BlockingQueue<TestObject> q=getQueue(10);
+  Thread.currentThread().interrupt();
+  try {
+    q.take();
+    Assert.fail();
+  }
+ catch (  InterruptedException success) {
+  }
+  final CountDownLatch latch=new CountDownLatch(1);
+  final TestObject object=new TestObject(4);
+  Future<TestObject> future=exec.submit(new Callable<TestObject>(){
+    @Override public TestObject call() throws Exception {
+      latch.countDown();
+      return q.take();
+    }
+  }
+);
+  latch.await();
+  try {
+    future.get(delayMS,TimeUnit.MILLISECONDS);
+    Assert.fail();
+  }
+ catch (  TimeoutException success) {
+  }
+  q.offer(object);
+  Assert.assertEquals(object,future.get());
+}

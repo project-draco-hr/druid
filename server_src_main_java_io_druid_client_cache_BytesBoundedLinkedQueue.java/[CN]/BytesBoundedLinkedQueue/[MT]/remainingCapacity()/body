@@ -1,0 +1,14 @@
+{
+  int delegateSize=delegate.size();
+  long currentByteSize=currentSize.get();
+  if (delegateSize == 0) {
+    return (int)Math.min(capacity,Integer.MAX_VALUE);
+  }
+ else   if (capacity > currentByteSize) {
+    long averageElementSize=currentByteSize / delegateSize;
+    return (int)((capacity - currentByteSize) / averageElementSize);
+  }
+ else {
+    return 0;
+  }
+}

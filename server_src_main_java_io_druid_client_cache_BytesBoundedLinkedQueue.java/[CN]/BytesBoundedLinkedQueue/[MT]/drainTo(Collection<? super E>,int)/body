@@ -1,0 +1,28 @@
+{
+  if (c == null) {
+    throw new NullPointerException();
+  }
+  if (c == this) {
+    throw new IllegalArgumentException();
+  }
+  int n=0;
+  takeLock.lock();
+  try {
+    n=Math.min(maxElements,delegate.size());
+    if (n < 0) {
+      return 0;
+    }
+    for (int i=0; i < n; i++) {
+      E e=delegate.remove(0);
+      elementRemoved(e);
+      c.add(e);
+    }
+  }
+  finally {
+    takeLock.unlock();
+  }
+  if (n > 0) {
+    signalNotFull();
+  }
+  return n;
+}
