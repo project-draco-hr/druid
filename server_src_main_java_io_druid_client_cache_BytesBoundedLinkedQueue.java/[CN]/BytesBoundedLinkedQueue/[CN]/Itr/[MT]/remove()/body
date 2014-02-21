@@ -1,0 +1,15 @@
+{
+  fullyLock();
+  try {
+    if (this.lastReturned == null) {
+      throw new IllegalStateException();
+    }
+    delegate.remove();
+    elementRemoved(lastReturned);
+    signalNotFull();
+    lastReturned=null;
+  }
+  finally {
+    fullyUnlock();
+  }
+}
