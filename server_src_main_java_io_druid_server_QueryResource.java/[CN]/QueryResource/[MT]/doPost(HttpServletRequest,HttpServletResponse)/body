@@ -10,9 +10,9 @@
   try {
     requestQuery=ByteStreams.toByteArray(req.getInputStream());
     query=objectMapper.readValue(requestQuery,Query.class);
-    queryID=QueryHelper.getQueryId(query);
+    queryID=query.getId();
     if (queryID == null) {
-      query=QueryHelper.setQueryId(query,idProvider.next());
+      query=query.withId(idProvider.next(query));
     }
     requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query));
     Sequence<?> results=query.run(texasRanger);
