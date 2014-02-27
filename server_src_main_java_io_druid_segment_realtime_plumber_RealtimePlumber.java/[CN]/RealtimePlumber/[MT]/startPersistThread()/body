@@ -1,4 +1,6 @@
 {
+  final Granularity segmentGranularity=schema.getGranularitySpec().getSegmentGranularity();
+  final Period windowPeriod=config.getWindowPeriod();
   final DateTime truncatedNow=segmentGranularity.truncate(new DateTime());
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),segmentGranularity.increment(truncatedNow).getMillis() + windowMillis)));

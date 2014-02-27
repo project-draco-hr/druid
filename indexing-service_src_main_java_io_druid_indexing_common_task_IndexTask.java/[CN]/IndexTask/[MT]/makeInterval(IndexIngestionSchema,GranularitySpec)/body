@@ -1,0 +1,10 @@
+{
+  GranularitySpec spec;
+  if (ingestionSchema != null) {
+    spec=ingestionSchema.getDataSchema().getGranularitySpec();
+  }
+ else {
+    spec=granularitySpec;
+  }
+  return new Interval(spec.bucketIntervals().get().first().getStart(),spec.bucketIntervals().get().last().getEnd());
+}

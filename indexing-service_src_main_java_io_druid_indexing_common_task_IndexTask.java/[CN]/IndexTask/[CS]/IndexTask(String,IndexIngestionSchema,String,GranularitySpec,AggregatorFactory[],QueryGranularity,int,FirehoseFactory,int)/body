@@ -1,0 +1,9 @@
+{
+  super(makeId(id,ingestionSchema,dataSource),makeDataSource(ingestionSchema,dataSource),makeInterval(ingestionSchema,granularitySpec));
+  if (ingestionSchema != null) {
+    this.ingestionSchema=ingestionSchema;
+  }
+ else {
+    this.ingestionSchema=new IndexIngestionSchema(new DataSchema(dataSource,firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity)),new IndexIOConfig(firehoseFactory),new IndexDriverConfig(targetPartitionSize,rowFlushBoundary));
+  }
+}

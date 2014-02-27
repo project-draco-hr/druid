@@ -1,4 +1,6 @@
 {
+  final FirehoseFactory firehoseFactory=ingestionSchema.getIOConfig().getFirehoseFactory();
+  final GranularitySpec granularitySpec=ingestionSchema.getDataSchema().getGranularitySpec();
   SortedSet<Interval> retVal=Sets.newTreeSet(Comparators.intervalsByStartThenEnd());
   try (Firehose firehose=firehoseFactory.connect(firehoseFactory.getParser())){
     while (firehose.hasMore()) {

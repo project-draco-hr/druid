@@ -1,11 +1,11 @@
 {
-  this.windowPeriod=windowPeriod;
-  this.basePersistDirectory=basePersistDirectory;
-  this.segmentGranularity=segmentGranularity;
+  this.windowPeriod=windowPeriod == null ? new Period("PT10M") : windowPeriod;
+  this.basePersistDirectory=basePersistDirectory == null ? Files.createTempDir() : basePersistDirectory;
+  this.segmentGranularity=segmentGranularity == null ? Granularity.HOUR : segmentGranularity;
   this.versioningPolicy=new IntervalStartVersioningPolicy();
   this.rejectionPolicyFactory=new ServerTimeRejectionPolicyFactory();
   this.maxPendingPersists=RealtimePlumberSchool.DEFAULT_MAX_PENDING_PERSISTS;
-  Preconditions.checkNotNull(windowPeriod,"RealtimePlumberSchool requires a windowPeriod.");
-  Preconditions.checkNotNull(basePersistDirectory,"RealtimePlumberSchool requires a basePersistDirectory.");
-  Preconditions.checkNotNull(segmentGranularity,"RealtimePlumberSchool requires a segmentGranularity.");
+  Preconditions.checkNotNull(this.windowPeriod,"RealtimePlumberSchool requires a windowPeriod.");
+  Preconditions.checkNotNull(this.basePersistDirectory,"RealtimePlumberSchool requires a basePersistDirectory.");
+  Preconditions.checkNotNull(this.segmentGranularity,"RealtimePlumberSchool requires a segmentGranularity.");
 }

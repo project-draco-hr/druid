@@ -1,0 +1,9 @@
+{
+  super(id == null ? makeTaskId(fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource(),fireDepartment == null ? schema.getShardSpec().getPartitionNum() : fireDepartment.getDriverConfig().getShardSpec().getPartitionNum(),new DateTime().toString()) : id,String.format("index_realtime_%s",fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource()),taskResource == null ? new TaskResource(makeTaskId(fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource(),fireDepartment == null ? schema.getShardSpec().getPartitionNum() : fireDepartment.getDriverConfig().getShardSpec().getPartitionNum(),new DateTime().toString()),1) : taskResource,(fireDepartment != null) ? fireDepartment.getDataSchema().getDataSource() : schema.getDataSource());
+  if (fireDepartment != null) {
+    this.schema=fireDepartment;
+  }
+ else {
+    this.schema=new FireDepartment(new DataSchema(schema.getDataSource(),firehoseFactory == null ? null : firehoseFactory.getParser(),schema.getAggregators(),new UniformGranularitySpec(segmentGranularity,schema.getIndexGranularity(),null,segmentGranularity)),new RealtimeIOConfig(firehoseFactory,null),new RealtimeDriverConfig(fireDepartmentConfig == null ? null : fireDepartmentConfig.getMaxRowsInMemory(),fireDepartmentConfig == null ? null : fireDepartmentConfig.getIntermediatePersistPeriod(),windowPeriod,null,null,rejectionPolicyFactory,maxPendingPersists,schema.getShardSpec()),null,null,null,null);
+  }
+}
