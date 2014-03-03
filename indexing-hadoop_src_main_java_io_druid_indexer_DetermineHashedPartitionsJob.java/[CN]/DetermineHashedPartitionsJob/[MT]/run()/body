@@ -11,7 +11,9 @@
     groupByJob.setOutputKeyClass(NullWritable.class);
     groupByJob.setOutputValueClass(NullWritable.class);
     groupByJob.setOutputFormatClass(SequenceFileOutputFormat.class);
-    groupByJob.setNumReduceTasks(1);
+    if (!config.getSegmentGranularIntervals().isPresent()) {
+      groupByJob.setNumReduceTasks(1);
+    }
     JobHelper.setupClasspath(config,groupByJob);
     config.addInputPaths(groupByJob);
     config.intoConfiguration(groupByJob);

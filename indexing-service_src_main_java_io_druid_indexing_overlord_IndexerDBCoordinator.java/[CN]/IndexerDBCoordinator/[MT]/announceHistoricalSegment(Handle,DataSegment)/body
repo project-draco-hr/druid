@@ -5,10 +5,13 @@
       return false;
     }
     try {
-      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",dbTables.getSegmentsTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
+      handle.createStatement(String.format(DbConnector.isPostgreSQL(handle) ? "INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)" : "INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",dbTables.getSegmentsTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",segment.getShardSpec().getPartitionNum()).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsString(segment)).execute();
       log.info("Published segment [%s] to DB",segment.getIdentifier());
     }
- catch (    Exception e) {
+ catch (    SQLException e) {
+      throw new IOException(e);
+    }
+catch (    Exception e) {
       if (e.getCause() instanceof SQLException && segmentExists(handle,segment)) {
         log.info("Found [%s] in DB, not updating DB",segment.getIdentifier());
       }
