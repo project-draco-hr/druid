@@ -4,6 +4,6 @@
     this.ingestionSchema=ingestionSchema;
   }
  else {
-    this.ingestionSchema=new IndexIngestionSchema(new DataSchema(dataSource,firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity)),new IndexIOConfig(firehoseFactory),new IndexDriverConfig(targetPartitionSize,rowFlushBoundary));
+    this.ingestionSchema=new IndexIngestionSchema(new DataSchema(dataSource,firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity == null ? QueryGranularity.NONE : indexGranularity)),new IndexIOConfig(firehoseFactory),new IndexDriverConfig(targetPartitionSize,rowFlushBoundary));
   }
 }

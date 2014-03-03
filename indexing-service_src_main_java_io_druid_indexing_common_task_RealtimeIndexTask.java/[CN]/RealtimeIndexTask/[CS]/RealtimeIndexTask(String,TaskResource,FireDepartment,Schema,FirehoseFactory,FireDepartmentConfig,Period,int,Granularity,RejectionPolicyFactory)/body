@@ -1,5 +1,5 @@
 {
-  super(id == null ? makeTaskId(fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource(),fireDepartment == null ? schema.getShardSpec().getPartitionNum() : fireDepartment.getDriverConfig().getShardSpec().getPartitionNum(),new DateTime().toString()) : id,String.format("index_realtime_%s",fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource()),taskResource == null ? new TaskResource(makeTaskId(fireDepartment == null ? schema.getDataSource() : fireDepartment.getDataSchema().getDataSource(),fireDepartment == null ? schema.getShardSpec().getPartitionNum() : fireDepartment.getDriverConfig().getShardSpec().getPartitionNum(),new DateTime().toString()),1) : taskResource,(fireDepartment != null) ? fireDepartment.getDataSchema().getDataSource() : schema.getDataSource());
+  super(id == null ? makeTaskId(fireDepartment,schema) : id,String.format("index_realtime_%s",makeDatasource(fireDepartment,schema)),taskResource == null ? new TaskResource(makeTaskId(fireDepartment,schema),1) : taskResource,makeDatasource(fireDepartment,schema));
   if (fireDepartment != null) {
     this.schema=fireDepartment;
   }
