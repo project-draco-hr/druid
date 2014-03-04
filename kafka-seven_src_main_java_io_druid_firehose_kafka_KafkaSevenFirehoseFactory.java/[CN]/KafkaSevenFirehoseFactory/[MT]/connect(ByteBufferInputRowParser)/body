@@ -1,4 +1,6 @@
 {
+  Set<String> newDimExclus=Sets.union(firehoseParser.getParseSpec().getDimensionsSpec().getDimensionExclusions(),Sets.newHashSet("feed"));
+  final ByteBufferInputRowParser theParser=firehoseParser.withParseSpec(firehoseParser.getParseSpec().withDimensionsSpec(firehoseParser.getParseSpec().getDimensionsSpec().withDimensionExclusions(newDimExclus)));
   final ConsumerConnector connector=Consumer.createJavaConsumerConnector(new ConsumerConfig(consumerProps));
   final Map<String,List<KafkaStream<Message>>> streams=connector.createMessageStreams(ImmutableMap.of(feed,1));
   final List<KafkaStream<Message>> streamList=streams.get(feed);
@@ -20,7 +22,7 @@
     }
     public InputRow parseMessage(    Message message) throws FormattedException {
       try {
-        return firehoseParser.parse(message.payload());
+        return theParser.parse(message.payload());
       }
  catch (      Exception e) {
         throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_ROW).withMessage(String.format("Error parsing[%s], got [%s]",message.payload(),e.toString())).build();

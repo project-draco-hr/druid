@@ -13,7 +13,6 @@
     }
   }
 ,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null,Granularity.HOUR));
-  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(new Period("PT10m"),tmpDir,Granularity.HOUR);
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().anyTimes();
@@ -24,14 +23,7 @@
   EasyMock.expectLastCall().anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
-  realtimePlumberSchool.setConglomerate(new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()));
-  realtimePlumberSchool.setSegmentAnnouncer(announcer);
-  realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
-  realtimePlumberSchool.setVersioningPolicy(new IntervalStartVersioningPolicy());
-  realtimePlumberSchool.setDataSegmentPusher(dataSegmentPusher);
-  realtimePlumberSchool.setServerView(serverView);
-  realtimePlumberSchool.setEmitter(emitter);
-  realtimePlumberSchool.setQueryExecutorService(MoreExecutors.sameThreadExecutor());
   RealtimeDriverConfig driverConfig=new RealtimeDriverConfig(1,null,null,null,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,null);
+  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),new Period("PT10m"),tmpDir,Granularity.HOUR,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),0);
   plumber=realtimePlumberSchool.findPlumber(schema,driverConfig,new FireDepartmentMetrics());
 }

@@ -3,7 +3,7 @@
   if (dataSchema != null) {
     this.dataSchema=dataSchema;
     this.ioConfig=ioConfig;
-    this.driverConfig=driverConfig;
+    this.driverConfig=driverConfig == null ? HadoopDriverConfig.makeDefaultDriverConfig() : driverConfig;
   }
  else {
     TimestampSpec theTimestampSpec=(timestampSpec == null) ? new TimestampSpec(timestampColumn,timestampFormat) : timestampSpec;

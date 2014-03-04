@@ -1,6 +1,11 @@
 {
-  this.segmentGranularity=segmentGranularity == null ? granularity : segmentGranularity;
-  this.queryGranularity=queryGranularity;
+  if (segmentGranularity == null && granularity != null) {
+    this.segmentGranularity=granularity;
+  }
+ else {
+    this.segmentGranularity=defaultSegmentGranularity;
+  }
+  this.queryGranularity=queryGranularity == null ? defaultQueryGranularity : queryGranularity;
   if (inputIntervals != null) {
     List<Interval> granularIntervals=Lists.newArrayList();
     for (    Interval inputInterval : inputIntervals) {
