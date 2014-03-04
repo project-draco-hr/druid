@@ -7,7 +7,7 @@
   final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null;
   final boolean populateCache=Boolean.parseBoolean(query.getContextValue("populateCache","true")) && strategy != null;
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
-  ImmutableMap.Builder<String,String> contextBuilder=new ImmutableMap.Builder<String,String>();
+  ImmutableMap.Builder<String,String> contextBuilder=new ImmutableMap.Builder<>();
   final String priority=query.getContextValue("priority","0");
   contextBuilder.put("priority",priority);
   if (populateCache) {
@@ -82,7 +82,7 @@
       descriptors.add(segment.rhs);
     }
   }
-  return new LazySequence<T>(new Supplier<Sequence<T>>(){
+  return new LazySequence<>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
       ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences=Lists.newArrayList();
       addSequencesFromServer(listOfSequences);
@@ -104,7 +104,7 @@
       final TypeReference<Object> cacheObjectClazz=strategy.getCacheObjectClazz();
       for (      Pair<DateTime,byte[]> cachedResultPair : cachedResults) {
         final byte[] cachedResult=cachedResultPair.rhs;
-        Sequence<Object> cachedSequence=new BaseSequence<Object,Iterator<Object>>(new BaseSequence.IteratorMaker<Object,Iterator<Object>>(){
+        Sequence<Object> cachedSequence=new BaseSequence<>(new BaseSequence.IteratorMaker<Object,Iterator<Object>>(){
           @Override public Iterator<Object> make(){
             try {
               if (cachedResult.length == 0) {
