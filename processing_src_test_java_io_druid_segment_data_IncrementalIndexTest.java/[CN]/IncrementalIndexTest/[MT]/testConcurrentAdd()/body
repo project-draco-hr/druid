@@ -1,0 +1,37 @@
+{
+  final IncrementalIndex index=new IncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")});
+  final int threadCount=10;
+  final int elementsPerThread=200;
+  final int dimensionCount=5;
+  ExecutorService executor=Executors.newFixedThreadPool(threadCount);
+  final long timestamp=System.currentTimeMillis();
+  final CountDownLatch latch=new CountDownLatch(threadCount);
+  for (int j=0; j < threadCount; j++) {
+    executor.submit(new Runnable(){
+      @Override public void run(){
+        try {
+          for (int i=0; i < elementsPerThread; i++) {
+            index.add(getRow(timestamp + i,i,dimensionCount));
+          }
+        }
+ catch (        Exception e) {
+          e.printStackTrace();
+        }
+        latch.countDown();
+      }
+    }
+);
+  }
+  Assert.assertTrue(latch.await(60,TimeUnit.SECONDS));
+  Assert.assertEquals(dimensionCount,index.getDimensions().size());
+  Assert.assertEquals(elementsPerThread,index.size());
+  Iterator<Row> iterator=index.iterator();
+  int curr=0;
+  while (iterator.hasNext()) {
+    Row row=iterator.next();
+    Assert.assertEquals(timestamp + curr,row.getTimestampFromEpoch());
+    Assert.assertEquals(Float.valueOf(threadCount),row.getFloatMetric("count"));
+    curr++;
+  }
+  Assert.assertEquals(elementsPerThread,curr);
+}

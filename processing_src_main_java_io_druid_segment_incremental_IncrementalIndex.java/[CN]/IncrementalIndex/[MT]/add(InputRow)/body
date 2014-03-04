@@ -4,30 +4,25 @@
     throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
   }
   final List<String> rowDimensions=row.getDimensions();
-  String[][] dims=new String[dimensionOrder.size()][];
+  String[][] dims;
   List<String[]> overflow=null;
-  for (  String dimension : rowDimensions) {
-    dimension=dimension.toLowerCase();
-    List<String> dimensionValues=row.getDimension(dimension);
-    Integer index=dimensionOrder.get(dimension);
-    if (index == null) {
 synchronized (dimensionOrder) {
-        index=dimensionOrder.get(dimension);
-        if (index == null) {
-          dimensionOrder.put(dimension,dimensionOrder.size());
-          dimensions.add(dimension);
-          if (overflow == null) {
-            overflow=Lists.newArrayList();
-          }
-          overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
+    dims=new String[dimensionOrder.size()][];
+    for (    String dimension : rowDimensions) {
+      dimension=dimension.toLowerCase();
+      List<String> dimensionValues=row.getDimension(dimension);
+      Integer index=dimensionOrder.get(dimension);
+      if (index == null) {
+        dimensionOrder.put(dimension,dimensionOrder.size());
+        dimensions.add(dimension);
+        if (overflow == null) {
+          overflow=Lists.newArrayList();
         }
- else {
-          dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
-        }
+        overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
       }
-    }
  else {
-      dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
+        dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
+      }
     }
   }
   if (overflow != null) {
@@ -101,7 +96,9 @@ synchronized (dimensionOrder) {
     if (prev != null) {
       aggs=prev;
     }
-    numEntries.incrementAndGet();
+ else {
+      numEntries.incrementAndGet();
+    }
   }
 synchronized (this) {
     in=row;
