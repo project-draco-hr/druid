@@ -1,0 +1,13 @@
+{
+  List<Result<SearchResultValue>> retVal=Lists.newArrayList();
+  int index=0;
+  while (index < objects.length) {
+    DateTime timestamp=(DateTime)objects[index++];
+    List values=Lists.newArrayList();
+    while (index < objects.length && !(objects[index] instanceof DateTime)) {
+      values.add(new SearchHit(TOP_DIM,objects[index++].toString()));
+    }
+    retVal.add(new Result<>(timestamp,new SearchResultValue(values)));
+  }
+  return retVal;
+}

@@ -1,0 +1,148 @@
+{
+  if (args.length % 2 != 0) {
+    throw new ISE("args.length must be divisible by two, was %d",args.length);
+  }
+  final List<Interval> queryIntervals=Lists.newArrayListWithCapacity(args.length / 2);
+  final List<List<Iterable<Result<Object>>>> expectedResults=Lists.newArrayListWithCapacity(queryIntervals.size());
+  for (int i=0; i < args.length; i+=2) {
+    final Interval interval=(Interval)args[i];
+    final Iterable<Result<Object>> results=(Iterable<Result<Object>>)args[i + 1];
+    if (queryIntervals.size() > 0 && interval.equals(queryIntervals.get(queryIntervals.size() - 1))) {
+      expectedResults.get(expectedResults.size() - 1).add(results);
+    }
+ else {
+      queryIntervals.add(interval);
+      expectedResults.add(Lists.<Iterable<Result<Object>>>newArrayList(results));
+    }
+  }
+  for (int i=0; i < queryIntervals.size(); ++i) {
+    timeline=new VersionedIntervalTimeline<>(Ordering.natural());
+    final int numTimesToQuery=3;
+    List<Object> mocks=Lists.newArrayList();
+    mocks.add(serverView);
+    final Interval actualQueryInterval=new Interval(queryIntervals.get(0).getStart(),queryIntervals.get(i).getEnd());
+    final List<Map<DruidServer,ServerExpectations>> serverExpectationList=Lists.newArrayList();
+    for (int k=0; k < i + 1; ++k) {
+      final int numChunks=expectedResults.get(k).size();
+      final TreeMap<DruidServer,ServerExpectations> serverExpectations=Maps.newTreeMap();
+      serverExpectationList.add(serverExpectations);
+      for (int j=0; j < numChunks; ++j) {
+        DruidServer lastServer=servers[random.nextInt(servers.length)];
+        if (!serverExpectations.containsKey(lastServer)) {
+          serverExpectations.put(lastServer,new ServerExpectations(lastServer,makeMock(mocks,QueryRunner.class)));
+        }
+        ServerExpectation expectation=new ServerExpectation(String.format("%s_%s",k,j),queryIntervals.get(i),makeMock(mocks,DataSegment.class),expectedResults.get(k).get(j));
+        serverExpectations.get(lastServer).addExpectation(expectation);
+        ServerSelector selector=new ServerSelector(expectation.getSegment(),new RandomServerSelectorStrategy());
+        selector.addServer(new QueryableDruidServer(lastServer,null));
+        final PartitionChunk<ServerSelector> chunk;
+        if (numChunks == 1) {
+          chunk=new SingleElementPartitionChunk<>(selector);
+        }
+ else {
+          String start=null;
+          String end=null;
+          if (j > 0) {
+            start=String.valueOf(j - 1);
+          }
+          if (j + 1 < numChunks) {
+            end=String.valueOf(j);
+          }
+          chunk=new StringPartitionChunk<>(start,end,j,selector);
+        }
+        timeline.add(queryIntervals.get(k),String.valueOf(k),chunk);
+      }
+    }
+    List<Capture> queryCaptures=Lists.newArrayList();
+    final Map<DruidServer,ServerExpectations> finalExpectation=serverExpectationList.get(serverExpectationList.size() - 1);
+    for (    Map.Entry<DruidServer,ServerExpectations> entry : finalExpectation.entrySet()) {
+      DruidServer server=entry.getKey();
+      ServerExpectations expectations=entry.getValue();
+      EasyMock.expect(serverView.getQueryRunner(server)).andReturn(expectations.getQueryRunner()).once();
+      final Capture<? extends Query> capture=new Capture();
+      queryCaptures.add(capture);
+      QueryRunner queryable=expectations.getQueryRunner();
+      if (query instanceof TimeseriesQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<TimeseriesResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTimeseriesResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof TopNQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<TopNResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTopNResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof SearchQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<SearchResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableSearchResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof TimeBoundaryQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<TimeBoundaryResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTimeBoundaryResults(segmentIds,intervals,results)).once();
+      }
+ else {
+        throw new ISE("Unknown query type[%s]",query.getClass());
+      }
+    }
+    final int expectedResultsRangeStart;
+    final int expectedResultsRangeEnd;
+    if (query instanceof TimeBoundaryQuery) {
+      expectedResultsRangeStart=i;
+      expectedResultsRangeEnd=i + 1;
+    }
+ else {
+      expectedResultsRangeStart=0;
+      expectedResultsRangeEnd=i + 1;
+    }
+    runWithMocks(new Runnable(){
+      @Override public void run(){
+        for (int i=0; i < numTimesToQuery; ++i) {
+          TestHelper.assertExpectedResults(new MergeIterable<>(Ordering.<Result<Object>>natural().nullsFirst(),FunctionalIterable.create(new RangeIterable(expectedResultsRangeStart,expectedResultsRangeEnd)).transformCat(new Function<Integer,Iterable<Iterable<Result<Object>>>>(){
+            @Override public Iterable<Iterable<Result<Object>>> apply(            @Nullable Integer input){
+              List<Iterable<Result<Object>>> retVal=Lists.newArrayList();
+              final Map<DruidServer,ServerExpectations> exps=serverExpectationList.get(input);
+              for (              ServerExpectations expectations : exps.values()) {
+                for (                ServerExpectation expectation : expectations) {
+                  retVal.add(expectation.getResults());
+                }
+              }
+              return retVal;
+            }
+          }
+)),client.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(actualQueryInterval)))));
+        }
+      }
+    }
+,mocks.toArray());
+    for (    Capture queryCapture : queryCaptures) {
+      Query capturedQuery=(Query)queryCapture.getValue();
+      Assert.assertEquals("true",capturedQuery.getContextValue("bySegment"));
+    }
+  }
+}
