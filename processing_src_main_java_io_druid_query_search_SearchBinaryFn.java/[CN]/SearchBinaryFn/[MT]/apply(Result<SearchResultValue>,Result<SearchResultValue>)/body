@@ -10,5 +10,5 @@
   TreeSet<SearchHit> results=Sets.newTreeSet(searchSortSpec.getComparator());
   results.addAll(Lists.newArrayList(arg1Vals));
   results.addAll(Lists.newArrayList(arg2Vals));
-  return (gran instanceof AllGranularity) ? new Result<SearchResultValue>(arg1.getTimestamp(),new SearchResultValue(Lists.newArrayList(results))) : new Result<SearchResultValue>(gran.toDateTime(gran.truncate(arg1.getTimestamp().getMillis())),new SearchResultValue(Lists.newArrayList(results)));
+  return (gran instanceof AllGranularity) ? new Result<SearchResultValue>(arg1.getTimestamp(),new SearchResultValue(Lists.newArrayList(Iterables.limit(results,limit)))) : new Result<SearchResultValue>(gran.toDateTime(gran.truncate(arg1.getTimestamp().getMillis())),new SearchResultValue(Lists.newArrayList(results)));
 }
