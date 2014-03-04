@@ -4,12 +4,13 @@
     throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
   }
   final List<String> rowDimensions=row.getDimensions();
-  String[][] dims=new String[dimensionOrder.size()][];
+  String[][] dims;
   List<String[]> overflow=null;
-  for (  String dimension : rowDimensions) {
-    dimension=dimension.toLowerCase();
-    List<String> dimensionValues=row.getDimension(dimension);
 synchronized (dimensionOrder) {
+    dims=new String[dimensionOrder.size()][];
+    for (    String dimension : rowDimensions) {
+      dimension=dimension.toLowerCase();
+      List<String> dimensionValues=row.getDimension(dimension);
       Integer index=dimensionOrder.get(dimension);
       if (index == null) {
         dimensionOrder.put(dimension,dimensionOrder.size());
@@ -95,7 +96,9 @@ synchronized (dimensionOrder) {
     if (prev != null) {
       aggs=prev;
     }
-    numEntries.incrementAndGet();
+ else {
+      numEntries.incrementAndGet();
+    }
   }
 synchronized (this) {
     in=row;
