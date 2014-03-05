@@ -1,0 +1,25 @@
+{
+  final int[] numValsToCheck={10,20,50,100,1000,2000};
+  for (  int numThings : numValsToCheck) {
+    HyperLogLogCollector allCombined=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector oneHalf=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector otherHalf=HyperLogLogCollector.makeLatestCollector();
+    for (int i=0; i < numThings; ++i) {
+      byte[] hashedVal=fn.hashLong(random.nextLong()).asBytes();
+      allCombined.add(hashedVal);
+      if (i % 2 == 0) {
+        oneHalf.add(hashedVal);
+      }
+ else {
+        otherHalf.add(hashedVal);
+      }
+    }
+    HyperLogLogCollector folded=HyperLogLogCollector.makeCollector(shiftedBuffer(ByteBuffer.wrap(HyperLogLogCollector.makeEmptyVersionedByteArray()).asReadOnlyBuffer(),17));
+    folded.fold(oneHalf.toByteBuffer());
+    Assert.assertEquals(oneHalf,folded);
+    Assert.assertEquals(oneHalf.estimateCardinality(),folded.estimateCardinality(),0.0d);
+    folded.fold(otherHalf.toByteBuffer());
+    Assert.assertEquals(allCombined,folded);
+    Assert.assertEquals(allCombined.estimateCardinality(),folded.estimateCardinality(),0.0d);
+  }
+}

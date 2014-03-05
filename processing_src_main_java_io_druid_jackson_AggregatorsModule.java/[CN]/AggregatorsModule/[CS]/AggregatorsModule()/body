@@ -1,5 +1,8 @@
 {
   super("AggregatorFactories");
+  if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
+    ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
+  }
   setMixInAnnotation(AggregatorFactory.class,AggregatorFactoryMixin.class);
   setMixInAnnotation(PostAggregator.class,PostAggregatorMixin.class);
 }

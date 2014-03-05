@@ -1,0 +1,9 @@
+{
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  fillBuckets(collector,(byte)0,(byte)49);
+  collector.add(new byte[]{0,0,0,0,0,0,0,0,0,0,0});
+  Assert.assertEquals(8.5089685793441677E17,collector.estimateCardinality(),1000);
+  fillBuckets(collector,(byte)0,(byte)63);
+  collector.add(new byte[]{0,0,0,0,0,0,0,0,0,0,0});
+  Assert.assertEquals(Double.MAX_VALUE,collector.estimateCardinality(),1000);
+}
