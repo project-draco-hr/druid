@@ -1,0 +1,16 @@
+{
+  ByteBuffer tmpBuffer=ByteBuffer.wrap(new byte[getNumBytesForDenseStorage()]);
+  setVersion(tmpBuffer);
+  setRegisterOffset(tmpBuffer,getRegisterOffset());
+  setNumNonZeroRegisters(tmpBuffer,getNumNonZeroRegisters());
+  setMaxOverflowValue(tmpBuffer,getMaxOverflowValue());
+  setMaxOverflowRegister(tmpBuffer,getMaxOverflowRegister());
+  storageBuffer.position(getPayloadBytePosition());
+  tmpBuffer.position(getPayloadBytePosition(tmpBuffer));
+  while (storageBuffer.hasRemaining()) {
+    tmpBuffer.put(storageBuffer.getShort(),storageBuffer.get());
+  }
+  tmpBuffer.rewind();
+  storageBuffer=tmpBuffer;
+  initPosition=0;
+}

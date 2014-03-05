@@ -1,0 +1,26 @@
+{
+  MessageDigest md=MessageDigest.getInstance("SHA-1");
+  for (int j=0; j < 1; j++) {
+    HyperLogLogCollector evenVals=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector oddVals=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector all=HyperLogLogCollector.makeLatestCollector();
+    int numThings=500000;
+    for (int i=0; i < numThings; i++) {
+      md.update(Integer.toString(random.nextInt()).getBytes());
+      byte[] hashedVal=fn.hashBytes(md.digest()).asBytes();
+      if (i % 2 == 0) {
+        evenVals.add(hashedVal);
+      }
+ else {
+        oddVals.add(hashedVal);
+      }
+      all.add(hashedVal);
+    }
+    HyperLogLogCollector folded=HyperLogLogCollector.makeLatestCollector();
+    folded.fold(evenVals);
+    folded.fold(oddVals);
+    final double expected=all.estimateCardinality();
+    Assert.assertEquals(expected,folded.estimateCardinality(),expected * 0.025);
+    Assert.assertEquals(numThings,folded.estimateCardinality(),numThings * 0.05);
+  }
+}

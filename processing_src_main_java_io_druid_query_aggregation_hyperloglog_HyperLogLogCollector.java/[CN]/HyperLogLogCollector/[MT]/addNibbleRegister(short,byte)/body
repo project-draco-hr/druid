@@ -1,0 +1,17 @@
+{
+  short numNonZeroRegs=getNumNonZeroRegisters();
+  final short position=(short)(bucket >> 1);
+  final boolean isUpperNibble=((bucket & 0x1) == 0);
+  byte shiftedPositionOf1=(isUpperNibble) ? (byte)(positionOf1 << bitsPerBucket) : positionOf1;
+  if (storageBuffer.remaining() != getNumBytesForDenseStorage()) {
+    convertToDenseStorage();
+  }
+  byte origVal=storageBuffer.get(getPayloadBytePosition() + position);
+  byte newValueMask=(isUpperNibble) ? (byte)0xf0 : (byte)0x0f;
+  byte originalValueMask=(byte)(newValueMask ^ 0xff);
+  if ((origVal & newValueMask) == 0 && shiftedPositionOf1 != 0) {
+    numNonZeroRegs++;
+  }
+  storageBuffer.put(getPayloadBytePosition() + position,(byte)(UnsignedBytes.max((byte)(origVal & newValueMask),shiftedPositionOf1) | (origVal & originalValueMask)));
+  return numNonZeroRegs;
+}

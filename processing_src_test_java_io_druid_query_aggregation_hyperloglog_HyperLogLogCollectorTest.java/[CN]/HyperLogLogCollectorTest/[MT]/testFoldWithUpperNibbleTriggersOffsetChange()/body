@@ -1,0 +1,24 @@
+{
+  byte[] arr1=new byte[HyperLogLogCollector.getLatestNumBytesForDenseStorage()];
+  Arrays.fill(arr1,(byte)0x11);
+  ByteBuffer buffer1=ByteBuffer.wrap(arr1);
+  buffer1.put(0,HLLCV1.VERSION);
+  buffer1.put(1,(byte)0);
+  buffer1.putShort(2,(short)(2047));
+  buffer1.put(HLLCV1.HEADER_NUM_BYTES,(byte)0x1);
+  byte[] arr2=new byte[HyperLogLogCollector.getLatestNumBytesForDenseStorage()];
+  Arrays.fill(arr2,(byte)0x11);
+  ByteBuffer buffer2=ByteBuffer.wrap(arr2);
+  buffer2.put(0,HLLCV1.VERSION);
+  buffer2.put(1,(byte)0);
+  buffer2.putShort(2,(short)(2048));
+  HyperLogLogCollector collector=HyperLogLogCollector.makeCollector(buffer1);
+  collector.fold(buffer2);
+  ByteBuffer outBuffer=collector.toByteBuffer();
+  Assert.assertEquals(outBuffer.get(),HLLCV1.VERSION);
+  Assert.assertEquals(outBuffer.get(),1);
+  Assert.assertEquals(outBuffer.getShort(),0);
+  outBuffer.get();
+  outBuffer.getShort();
+  Assert.assertFalse(outBuffer.hasRemaining());
+}

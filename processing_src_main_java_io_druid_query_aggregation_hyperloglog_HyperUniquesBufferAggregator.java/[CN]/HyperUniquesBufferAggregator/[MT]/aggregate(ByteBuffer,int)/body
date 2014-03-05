@@ -1,0 +1,7 @@
+{
+  HyperLogLogCollector collector=(HyperLogLogCollector)selector.get();
+  if (collector == null) {
+    return;
+  }
+  HyperLogLogCollector.makeCollector((ByteBuffer)buf.duplicate().position(position).limit(position + HyperLogLogCollector.getLatestNumBytesForDenseStorage())).fold(collector);
+}

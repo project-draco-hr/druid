@@ -1,0 +1,30 @@
+{
+  ByteBuffer biggerOffset=shiftedBuffer(makeCollectorBuffer(1,(byte)0x00,0x11),10);
+  ByteBuffer smallerOffset=shiftedBuffer(makeCollectorBuffer(0,(byte)0x20,0x00),15);
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  collector.fold(biggerOffset);
+  collector.fold(smallerOffset);
+  ByteBuffer outBuffer=collector.toByteBuffer();
+  Assert.assertEquals(outBuffer.get(),collector.getVersion());
+  Assert.assertEquals(outBuffer.get(),1);
+  Assert.assertEquals(outBuffer.getShort(),2047);
+  outBuffer.get();
+  outBuffer.getShort();
+  Assert.assertEquals(outBuffer.get(),0x10);
+  while (outBuffer.hasRemaining()) {
+    Assert.assertEquals(outBuffer.get(),0x11);
+  }
+  collector=HyperLogLogCollector.makeLatestCollector();
+  collector.fold(smallerOffset);
+  collector.fold(biggerOffset);
+  outBuffer=collector.toByteBuffer();
+  Assert.assertEquals(outBuffer.get(),collector.getVersion());
+  Assert.assertEquals(outBuffer.get(),1);
+  Assert.assertEquals(outBuffer.getShort(),2047);
+  outBuffer.get();
+  outBuffer.getShort();
+  Assert.assertEquals(outBuffer.get(),0x10);
+  while (outBuffer.hasRemaining()) {
+    Assert.assertEquals(outBuffer.get(),0x11);
+  }
+}
