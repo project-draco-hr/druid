@@ -1,0 +1,44 @@
+{
+  final int nTasks=(capacity + 1) * 3;
+  final ExecutorService blockingExecutor=Execs.newBlockingSingleThreaded("ExecsTest-Blocking-%d",capacity);
+  final CountDownLatch queueShouldBeFullSignal=new CountDownLatch(capacity + 1);
+  final CountDownLatch taskCompletedSignal=new CountDownLatch(nTasks);
+  final CountDownLatch taskStartSignal=new CountDownLatch(1);
+  final AtomicInteger producedCount=new AtomicInteger();
+  final AtomicInteger consumedCount=new AtomicInteger();
+  final ExecutorService producer=Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("ExecsTest-Producer-%d").build());
+  producer.submit(new Runnable(){
+    public void run(){
+      for (int i=0; i < nTasks; i++) {
+        final int taskID=i;
+        System.out.println("Produced task" + taskID);
+        blockingExecutor.submit(new Runnable(){
+          @Override public void run(){
+            log.info("Starting task: %s",taskID);
+            try {
+              taskStartSignal.await();
+              consumedCount.incrementAndGet();
+              taskCompletedSignal.countDown();
+            }
+ catch (            Exception e) {
+              throw Throwables.propagate(e);
+            }
+            log.info("Completed task: %s",taskID);
+          }
+        }
+);
+        producedCount.incrementAndGet();
+        queueShouldBeFullSignal.countDown();
+      }
+    }
+  }
+);
+  queueShouldBeFullSignal.await();
+  Thread.sleep(500);
+  Assert.assertEquals(capacity + 1,producedCount.get());
+  taskStartSignal.countDown();
+  taskCompletedSignal.await();
+  Assert.assertEquals(nTasks,consumedCount.get());
+  blockingExecutor.shutdown();
+  producer.shutdown();
+}

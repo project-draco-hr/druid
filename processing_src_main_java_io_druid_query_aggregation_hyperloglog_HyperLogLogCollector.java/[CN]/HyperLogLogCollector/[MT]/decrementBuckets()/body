@@ -1,0 +1,15 @@
+{
+  short count=0;
+  int startPosition=getPayloadBytePosition();
+  for (int i=startPosition; i < startPosition + NUM_BYTES_FOR_BUCKETS; i++) {
+    byte val=(byte)(storageBuffer.get(i) - 0x11);
+    if ((val & 0xf0) != 0) {
+      count++;
+    }
+    if ((val & 0x0f) != 0) {
+      count++;
+    }
+    storageBuffer.put(i,val);
+  }
+  return count;
+}

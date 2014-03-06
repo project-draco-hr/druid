@@ -1,0 +1,18 @@
+{
+  if (estimatedCardinality == null) {
+    byte registerOffset=getRegisterOffset();
+    byte overflowValue=getMaxOverflowValue();
+    short overflowRegister=getMaxOverflowRegister();
+    short overflowPosition=(short)(overflowRegister >>> 1);
+    boolean isUpperNibble=((overflowRegister & 0x1) == 0);
+    storageBuffer.position(getPayloadBytePosition());
+    if (isSparse(storageBuffer)) {
+      estimatedCardinality=estimateSparse(storageBuffer,registerOffset,overflowValue,overflowPosition,isUpperNibble);
+    }
+ else {
+      estimatedCardinality=estimateDense(storageBuffer,registerOffset,overflowValue,overflowPosition,isUpperNibble);
+    }
+    storageBuffer.position(initPosition);
+  }
+  return estimatedCardinality;
+}

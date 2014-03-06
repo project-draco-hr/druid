@@ -1,0 +1,7 @@
+{
+  final double estimatedValue=collector.estimateCardinality();
+  final double errorThisTime=Math.abs((double)numThings - estimatedValue) / numThings;
+  error+=errorThisTime;
+  System.out.printf("%,d ==? %,f in %,d millis. actual error[%,f%%], avg. error [%,f%%]%n",numThings,estimatedValue,System.currentTimeMillis() - startTime,100 * errorThisTime,(error / count) * 100);
+  return error;
+}

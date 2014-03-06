@@ -1,0 +1,23 @@
+{
+  if (storageBuffer.isReadOnly()) {
+    convertToMutableByteBuffer();
+  }
+  byte registerOffset=getRegisterOffset();
+  if (positionOf1 <= registerOffset) {
+    return;
+  }
+ else   if (positionOf1 > (registerOffset + range)) {
+    byte currMax=getMaxOverflowValue();
+    if (positionOf1 > currMax) {
+      setMaxOverflowValue(positionOf1);
+      setMaxOverflowRegister(bucket);
+    }
+    return;
+  }
+  short numNonZeroRegisters=addNibbleRegister(bucket,(byte)((0xff & positionOf1) - registerOffset));
+  setNumNonZeroRegisters(numNonZeroRegisters);
+  if (numNonZeroRegisters == NUM_BUCKETS) {
+    setRegisterOffset(++registerOffset);
+    setNumNonZeroRegisters(decrementBuckets());
+  }
+}

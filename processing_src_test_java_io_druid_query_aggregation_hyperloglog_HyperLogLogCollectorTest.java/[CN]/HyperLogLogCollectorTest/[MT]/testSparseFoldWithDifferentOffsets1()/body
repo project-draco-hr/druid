@@ -1,0 +1,24 @@
+{
+  ByteBuffer biggerOffset=makeCollectorBuffer(1,new byte[]{0x11,0x10},0x11);
+  ByteBuffer sparse=HyperLogLogCollector.makeCollector(makeCollectorBuffer(0,new byte[]{0x00,0x02},0x00)).toByteBuffer();
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  collector.fold(biggerOffset);
+  collector.fold(sparse);
+  ByteBuffer outBuffer=collector.toByteBuffer();
+  Assert.assertEquals(outBuffer.get(),collector.getVersion());
+  Assert.assertEquals(outBuffer.get(),2);
+  Assert.assertEquals(outBuffer.getShort(),0);
+  Assert.assertEquals(outBuffer.get(),0);
+  Assert.assertEquals(outBuffer.getShort(),0);
+  Assert.assertFalse(outBuffer.hasRemaining());
+  collector=HyperLogLogCollector.makeLatestCollector();
+  collector.fold(sparse);
+  collector.fold(biggerOffset);
+  outBuffer=collector.toByteBuffer();
+  Assert.assertEquals(outBuffer.get(),collector.getVersion());
+  Assert.assertEquals(outBuffer.get(),2);
+  Assert.assertEquals(outBuffer.getShort(),0);
+  Assert.assertEquals(outBuffer.get(),0);
+  Assert.assertEquals(outBuffer.getShort(),0);
+  Assert.assertFalse(outBuffer.hasRemaining());
+}

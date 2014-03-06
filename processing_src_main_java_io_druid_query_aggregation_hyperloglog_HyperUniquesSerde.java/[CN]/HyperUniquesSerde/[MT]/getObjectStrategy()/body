@@ -1,0 +1,25 @@
+{
+  return new ObjectStrategy<HyperLogLogCollector>(){
+    @Override public Class<? extends HyperLogLogCollector> getClazz(){
+      return HyperLogLogCollector.class;
+    }
+    @Override public HyperLogLogCollector fromByteBuffer(    ByteBuffer buffer,    int numBytes){
+      buffer.limit(buffer.position() + numBytes);
+      int remaining=buffer.remaining();
+      return (remaining % 3 == 0 || remaining == 1027) ? new HLLCV0(buffer) : new HLLCV1(buffer);
+    }
+    @Override public byte[] toBytes(    HyperLogLogCollector collector){
+      if (collector == null) {
+        return new byte[]{};
+      }
+      ByteBuffer val=collector.toByteBuffer();
+      byte[] retVal=new byte[val.remaining()];
+      val.asReadOnlyBuffer().get(retVal);
+      return retVal;
+    }
+    @Override public int compare(    HyperLogLogCollector o1,    HyperLogLogCollector o2){
+      return comparator.compare(o1,o2);
+    }
+  }
+;
+}

@@ -1,3 +1,9 @@
 {
-  return JodaUtils.condenseIntervals(getGranularitySpec().bucketIntervals());
+  Optional<SortedSet<Interval>> setOptional=getGranularitySpec().bucketIntervals();
+  if (setOptional.isPresent()) {
+    return Optional.of((List<Interval>)JodaUtils.condenseIntervals(setOptional.get()));
+  }
+ else {
+    return Optional.absent();
+  }
 }
