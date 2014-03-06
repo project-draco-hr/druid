@@ -1,0 +1,11 @@
+{
+  final CountingMap<String> retVal=new CountingMap<>();
+  if (segmentReplicantLookup == null) {
+    return retVal;
+  }
+  for (  DataSegment segment : getAvailableDataSegments()) {
+    int available=(segmentReplicantLookup.getTotalReplicants(segment.getIdentifier()) == 0) ? 0 : 1;
+    retVal.add(segment.getDataSource(),1 - available);
+  }
+  return retVal;
+}

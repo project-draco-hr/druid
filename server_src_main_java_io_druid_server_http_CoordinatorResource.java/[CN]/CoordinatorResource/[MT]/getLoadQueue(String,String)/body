@@ -1,0 +1,37 @@
+{
+  if (simple != null) {
+    return Response.ok(Maps.transformValues(coordinator.getLoadManagementPeons(),new Function<LoadQueuePeon,Object>(){
+      @Override public Object apply(      LoadQueuePeon input){
+        long loadSize=0;
+        for (        DataSegment dataSegment : input.getSegmentsToLoad()) {
+          loadSize+=dataSegment.getSize();
+        }
+        long dropSize=0;
+        for (        DataSegment dataSegment : input.getSegmentsToDrop()) {
+          dropSize+=dataSegment.getSize();
+        }
+        return new ImmutableMap.Builder<>().put("segmentsToLoad",input.getSegmentsToLoad().size()).put("segmentsToDrop",input.getSegmentsToDrop().size()).put("segmentsToLoadSize",loadSize).put("segmentsToDropSize",dropSize).build();
+      }
+    }
+)).build();
+  }
+  if (full != null) {
+    return Response.ok(coordinator.getLoadManagementPeons()).build();
+  }
+  return Response.ok(Maps.transformValues(coordinator.getLoadManagementPeons(),new Function<LoadQueuePeon,Object>(){
+    @Override public Object apply(    LoadQueuePeon input){
+      return new ImmutableMap.Builder<>().put("segmentsToLoad",Collections2.transform(input.getSegmentsToLoad(),new Function<DataSegment,Object>(){
+        @Override public String apply(        DataSegment segment){
+          return segment.getIdentifier();
+        }
+      }
+)).put("segmentsToDrop",Collections2.transform(input.getSegmentsToDrop(),new Function<DataSegment,Object>(){
+        @Override public String apply(        DataSegment segment){
+          return segment.getIdentifier();
+        }
+      }
+)).build();
+    }
+  }
+)).build();
+}
