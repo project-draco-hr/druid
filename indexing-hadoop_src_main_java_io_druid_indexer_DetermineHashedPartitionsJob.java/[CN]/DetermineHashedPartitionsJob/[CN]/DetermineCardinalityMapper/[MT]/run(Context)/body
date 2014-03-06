@@ -3,8 +3,8 @@
   while (context.nextKeyValue()) {
     map(context.getCurrentKey(),context.getCurrentValue(),context);
   }
-  for (  Map.Entry<Interval,HyperLogLog> entry : hyperLogLogs.entrySet()) {
-    context.write(new LongWritable(entry.getKey().getStartMillis()),new BytesWritable(entry.getValue().getBytes()));
+  for (  Map.Entry<Interval,HyperLogLogCollector> entry : hyperLogLogs.entrySet()) {
+    context.write(new LongWritable(entry.getKey().getStartMillis()),new BytesWritable(entry.getValue().toByteArray()));
   }
   cleanup(context);
 }

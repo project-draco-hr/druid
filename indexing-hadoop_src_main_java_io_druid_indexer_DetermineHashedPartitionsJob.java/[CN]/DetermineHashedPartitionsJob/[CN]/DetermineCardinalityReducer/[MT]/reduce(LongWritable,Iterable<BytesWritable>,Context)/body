@@ -1,13 +1,7 @@
 {
-  HyperLogLog aggregate=new HyperLogLog(HYPER_LOG_LOG_BIT_SIZE);
+  HyperLogLogCollector aggregate=HyperLogLogCollector.makeLatestCollector();
   for (  BytesWritable value : values) {
-    HyperLogLog logValue=HyperLogLog.Builder.build(getDataBytes(value));
-    try {
-      aggregate.addAll(logValue);
-    }
- catch (    CardinalityMergeException e) {
-      e.printStackTrace();
-    }
+    aggregate.fold(ByteBuffer.wrap(value.getBytes(),0,value.getLength()));
   }
   Interval interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(key.get()));
   intervals.add(interval);
@@ -16,7 +10,7 @@
   try {
     HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<Long>(){
     }
-).writeValue(out,aggregate.cardinality());
+).writeValue(out,new Double(aggregate.estimateCardinality()).longValue());
   }
   finally {
     Closeables.close(out,false);
