@@ -1,7 +1,9 @@
 {
   final long proposalSegmentSize=proposalSegment.getSize();
   if (includeCurrentServer || !server.isServingSegment(proposalSegment)) {
-    if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment))     return Double.POSITIVE_INFINITY;
+    if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
+      return Double.POSITIVE_INFINITY;
+    }
     double cost=0f;
     for (    DataSegment segment : server.getServer().getSegments().values()) {
       if (!proposalSegment.equals(segment)) {

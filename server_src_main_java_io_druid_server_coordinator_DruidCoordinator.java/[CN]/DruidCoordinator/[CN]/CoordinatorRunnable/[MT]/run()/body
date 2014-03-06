@@ -1,28 +1,2 @@
 {
-  try {
-synchronized (lock) {
-      final LeaderLatch latch=leaderLatch.get();
-      if (latch == null || !latch.hasLeadership()) {
-        log.info("LEGGO MY EGGO. [%s] is leader.",latch == null ? null : latch.getLeader().getId());
-        stopBeingLeader();
-        return;
-      }
-    }
-    List<Boolean> allStarted=Arrays.asList(databaseSegmentManager.isStarted(),serverInventoryView.isStarted());
-    for (    Boolean aBoolean : allStarted) {
-      if (!aBoolean) {
-        log.error("InventoryManagers not started[%s]",allStarted);
-        stopBeingLeader();
-        return;
-      }
-    }
-    BalancerStrategyFactory factory=new CostBalancerMultithreadStrategyFactory(getDynamicConfigs().getBalancerComputeThreads());
-    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
-    for (    DruidCoordinatorHelper helper : helpers) {
-      params=helper.run(params);
-    }
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Caught exception, ignoring so that schedule keeps going.").emit();
-  }
 }
