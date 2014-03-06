@@ -1,0 +1,10 @@
+{
+  if (objects.length % 5 != 0) {
+    throw new ISE("makeTimeResults must be passed arguments in groups of 5, got[%d]",objects.length);
+  }
+  List<BySegmentResultValueClass<TimeseriesResultValue>> retVal=Lists.newArrayListWithCapacity(objects.length / 5);
+  for (int i=0; i < objects.length; i+=5) {
+    retVal.add(new BySegmentResultValueClass<TimeseriesResultValue>(Lists.newArrayList(new TimeseriesResultValue(ImmutableMap.of("rows",objects[i + 1],"imps",objects[i + 2],"impers",objects[i + 2],"avg_imps_per_row",((Number)objects[i + 2]).doubleValue() / ((Number)objects[i + 1]).doubleValue()))),(String)objects[i + 3],(Interval)objects[i + 4]));
+  }
+  return retVal;
+}
