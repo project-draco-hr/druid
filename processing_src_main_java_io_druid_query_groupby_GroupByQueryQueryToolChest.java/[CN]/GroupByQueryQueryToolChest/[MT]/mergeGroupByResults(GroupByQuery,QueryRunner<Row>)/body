@@ -1,13 +1,20 @@
 {
-  final GroupByQueryConfig config=configSupplier.get();
-  Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(query,config);
-  IncrementalIndex index=runner.run(query).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
-  Sequence<Row> sequence=Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
-    @Override public Row apply(    Row input){
-      final MapBasedRow row=(MapBasedRow)input;
-      return new MapBasedRow(query.getGranularity().toDateTime(row.getTimestampFromEpoch()),row.getEvent());
+  Sequence<Row> result;
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof QueryDataSource) {
+    GroupByQuery subquery;
+    try {
+      subquery=(GroupByQuery)((QueryDataSource)dataSource).getQuery();
     }
+ catch (    ClassCastException e) {
+      throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
+    }
+    Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
+    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(subquery,subqueryResult));
+    result=engine.process(query,adapter);
   }
-);
-  return query.applyLimit(sequence);
+ else {
+    result=runner.run(query);
+  }
+  return postAggregate(query,makeIncrementalIndex(query,result));
 }

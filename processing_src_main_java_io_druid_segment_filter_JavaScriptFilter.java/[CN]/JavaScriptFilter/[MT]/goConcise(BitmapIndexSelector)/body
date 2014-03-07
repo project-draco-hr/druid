@@ -1,17 +1,24 @@
 {
   final Context cx=Context.enter();
   try {
-    ImmutableConciseSet conciseSet=ImmutableConciseSet.union(FunctionalIterable.create(selector.getDimensionValues(dimension)).filter(new Predicate<String>(){
-      @Override public boolean apply(      @Nullable String input){
-        return predicate.applyInContext(cx,input);
-      }
+    final Indexed<String> dimValues=selector.getDimensionValues(dimension);
+    ImmutableConciseSet conciseSet;
+    if (dimValues == null) {
+      conciseSet=new ImmutableConciseSet();
     }
+ else {
+      conciseSet=ImmutableConciseSet.union(FunctionalIterable.create(dimValues).filter(new Predicate<String>(){
+        @Override public boolean apply(        @Nullable String input){
+          return predicate.applyInContext(cx,input);
+        }
+      }
 ).transform(new com.google.common.base.Function<String,ImmutableConciseSet>(){
-      @Override public ImmutableConciseSet apply(      @Nullable String input){
-        return selector.getConciseInvertedIndex(dimension,input);
+        @Override public ImmutableConciseSet apply(        @Nullable String input){
+          return selector.getConciseInvertedIndex(dimension,input);
+        }
       }
-    }
 ));
+    }
     return conciseSet;
   }
   finally {

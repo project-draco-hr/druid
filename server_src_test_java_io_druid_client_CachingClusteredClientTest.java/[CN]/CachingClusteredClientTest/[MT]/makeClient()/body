@@ -2,7 +2,7 @@
   return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).build()),new TimelineServerView(){
     @Override public void registerSegmentCallback(    Executor exec,    SegmentCallback callback){
     }
-    @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    String dataSource){
+    @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    DataSource dataSource){
       return timeline;
     }
     @Override public <T>QueryRunner<T> getQueryRunner(    DruidServer server){
