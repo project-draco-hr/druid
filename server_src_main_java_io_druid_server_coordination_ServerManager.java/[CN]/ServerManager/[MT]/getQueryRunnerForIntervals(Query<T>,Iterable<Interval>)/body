@@ -4,7 +4,18 @@
     throw new ISE("Unknown query type[%s].",query.getClass());
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
-  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(query.getDataSource());
+  DataSource dataSource=query.getDataSource();
+  if (!(dataSource instanceof TableDataSource)) {
+    throw new UnsupportedOperationException("data source type '" + dataSource.getClass().getName() + "' unsupported");
+  }
+  String dataSourceName;
+  try {
+    dataSourceName=((TableDataSource)query.getDataSource()).getName();
+  }
+ catch (  ClassCastException e) {
+    throw new UnsupportedOperationException("Subqueries are only supported in the broker");
+  }
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(dataSourceName);
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
