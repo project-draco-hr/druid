@@ -10,7 +10,7 @@
  else {
       opQueueFactory=new LinkedOperationQueueFactory();
     }
-    return new MemcachedCache(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setOpQueueFactory(opQueueFactory).build(),AddrUtil.getAddresses(config.getHosts())),config.getMemcachedPrefix(),config.getTimeout(),config.getExpiration());
+    return new MemcachedCache(new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).build(),AddrUtil.getAddresses(config.getHosts())),config.getMemcachedPrefix(),config.getTimeout(),config.getExpiration());
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
