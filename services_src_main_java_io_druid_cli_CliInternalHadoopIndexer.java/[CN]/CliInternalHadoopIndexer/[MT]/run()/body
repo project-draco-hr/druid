@@ -1,7 +1,10 @@
 {
   try {
-    final HadoopDruidIndexerJob job=new HadoopDruidIndexerJob(getHadoopDruidIndexerConfig());
-    job.run();
+    HadoopDruidIndexerConfig config=getHadoopDruidIndexerConfig();
+    List<Jobby> jobs=Lists.newArrayList();
+    jobs.add(new HadoopDruidDetermineConfigurationJob(config));
+    jobs.add(new HadoopDruidIndexerJob(config));
+    JobHelper.runJobs(jobs,config);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
