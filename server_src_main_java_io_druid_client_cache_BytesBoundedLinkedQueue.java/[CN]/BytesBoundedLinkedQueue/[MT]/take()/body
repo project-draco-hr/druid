@@ -2,7 +2,7 @@
   E e;
   takeLock.lockInterruptibly();
   try {
-    while (delegate.size() == 0) {
+    while (elementCount.get() == 0) {
       notEmpty.await();
     }
     e=delegate.remove();
