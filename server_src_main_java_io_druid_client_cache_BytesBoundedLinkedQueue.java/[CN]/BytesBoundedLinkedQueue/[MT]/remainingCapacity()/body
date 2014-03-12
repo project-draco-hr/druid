@@ -1,6 +1,14 @@
 {
-  int delegateSize=delegate.size();
-  long currentByteSize=currentSize.get();
+  int delegateSize;
+  long currentByteSize;
+  fullyLock();
+  try {
+    delegateSize=elementCount.get();
+    currentByteSize=currentSize.get();
+  }
+  finally {
+    fullyUnlock();
+  }
   if (delegateSize == 0) {
     return (int)Math.min(capacity,Integer.MAX_VALUE);
   }
