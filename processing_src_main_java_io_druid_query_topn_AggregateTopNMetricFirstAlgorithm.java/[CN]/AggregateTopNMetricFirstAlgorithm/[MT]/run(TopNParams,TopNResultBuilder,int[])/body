@@ -1,6 +1,16 @@
 {
   final TopNResultBuilder singleMetricResultBuilder=makeResultBuilder(params);
-  final String metric=((NumericTopNMetricSpec)query.getTopNMetricSpec()).getMetric();
+  final String metric;
+  TopNMetricSpec spec=query.getTopNMetricSpec();
+  if (spec instanceof InvertedTopNMetricSpec && ((InvertedTopNMetricSpec)spec).getDelegate() instanceof NumericTopNMetricSpec) {
+    metric=((NumericTopNMetricSpec)((InvertedTopNMetricSpec)spec).getDelegate()).getMetric();
+  }
+ else   if (spec instanceof NumericTopNMetricSpec) {
+    metric=((NumericTopNMetricSpec)query.getTopNMetricSpec()).getMetric();
+  }
+ else {
+    throw new ISE("WTF?! We are in AggregateTopNMetricFirstAlgorithm with a [%s] spec",spec.getClass().getName());
+  }
   List<AggregatorFactory> condensedAggs=Lists.newArrayList();
   for (  AggregatorFactory aggregatorSpec : query.getAggregatorSpecs()) {
     if (aggregatorSpec.getName().equalsIgnoreCase(metric)) {
