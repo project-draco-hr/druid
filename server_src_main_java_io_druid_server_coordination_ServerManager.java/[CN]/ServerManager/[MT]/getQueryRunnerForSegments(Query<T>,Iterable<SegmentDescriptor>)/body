@@ -5,7 +5,14 @@
     return new NoopQueryRunner<T>();
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
-  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(query.getDataSource());
+  String dataSourceName;
+  try {
+    dataSourceName=((TableDataSource)query.getDataSource()).getName();
+  }
+ catch (  ClassCastException e) {
+    throw new UnsupportedOperationException("Subqueries are only supported in the broker");
+  }
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(dataSourceName);
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }

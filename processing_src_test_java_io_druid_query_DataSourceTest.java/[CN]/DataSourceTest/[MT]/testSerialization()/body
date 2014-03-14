@@ -1,0 +1,6 @@
+{
+  DataSource dataSource=new TableDataSource("somedatasource");
+  String json=jsonMapper.writeValueAsString(dataSource);
+  DataSource serdeDataSource=jsonMapper.readValue(json,DataSource.class);
+  Assert.assertEquals(dataSource,serdeDataSource);
+}

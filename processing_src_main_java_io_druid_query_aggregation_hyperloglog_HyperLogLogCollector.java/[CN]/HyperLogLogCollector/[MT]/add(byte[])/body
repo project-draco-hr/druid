@@ -1,0 +1,22 @@
+{
+  if (hashedValue.length < minBytesRequired) {
+    throw new IAE("Insufficient bytes, need[%d] got [%d]",minBytesRequired,hashedValue.length);
+  }
+  estimatedCardinality=null;
+  final ByteBuffer buffer=ByteBuffer.wrap(hashedValue);
+  short bucket=(short)(buffer.getShort(hashedValue.length - 2) & bucketMask);
+  byte positionOf1=0;
+  for (int i=0; i < 8; ++i) {
+    byte lookupVal=ByteBitLookup.lookup[UnsignedBytes.toInt(hashedValue[i])];
+switch (lookupVal) {
+case 0:
+      positionOf1+=8;
+    continue;
+default :
+  positionOf1+=lookupVal;
+i=8;
+break;
+}
+}
+add(bucket,positionOf1);
+}

@@ -1,0 +1,15 @@
+{
+  String table;
+  while (dataSource instanceof QueryDataSource) {
+    dataSource=((QueryDataSource)dataSource).getQuery().getDataSource();
+  }
+  if (dataSource instanceof TableDataSource) {
+    table=((TableDataSource)dataSource).getName();
+  }
+ else {
+    throw new UnsupportedOperationException("Unsupported data source type: " + dataSource.getClass().getSimpleName());
+  }
+synchronized (lock) {
+    return timelines.get(table);
+  }
+}
