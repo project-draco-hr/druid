@@ -2,12 +2,13 @@
   GroupByQueryConfig config=new GroupByQueryConfig();
   config.setMaxIntermediateRows(10000);
   final Supplier<GroupByQueryConfig> configSupplier=Suppliers.ofInstance(config);
-  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(new GroupByQueryEngine(configSupplier,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+  final GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(1024 * 1024);
     }
   }
-)),configSupplier,new GroupByQueryQueryToolChest(configSupplier));
+));
+  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,configSupplier,new GroupByQueryQueryToolChest(configSupplier,engine));
   final Collection<?> objects=QueryRunnerTestHelper.makeQueryRunners(factory);
   Object[][] newObjects=new Object[objects.size()][];
   int i=0;

@@ -1,0 +1,9 @@
+{
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof QueryDataSource) {
+    return run((Query<T>)((QueryDataSource)dataSource).getQuery());
+  }
+ else {
+    return baseRunner.run(query);
+  }
+}

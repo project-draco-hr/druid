@@ -1,27 +1,25 @@
 {
-  final CountingMap<String> expectedSegmentsInCluster=new CountingMap<>();
+  final Map<String,CountingMap<String>> retVal=Maps.newHashMap();
+  if (segmentReplicantLookup == null) {
+    return retVal;
+  }
   final DateTime now=new DateTime();
   for (  DataSegment segment : getAvailableDataSegments()) {
     List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
     for (    Rule rule : rules) {
       if (rule instanceof LoadRule && rule.appliesTo(segment,now)) {
-        for (        Integer numReplicants : ((LoadRule)rule).getTieredReplicants().values()) {
-          expectedSegmentsInCluster.add(segment.getDataSource(),numReplicants);
+        for (        Map.Entry<String,Integer> entry : ((LoadRule)rule).getTieredReplicants().entrySet()) {
+          CountingMap<String> dataSourceMap=retVal.get(entry.getKey());
+          if (dataSourceMap == null) {
+            dataSourceMap=new CountingMap<>();
+            retVal.put(entry.getKey(),dataSourceMap);
+          }
+          int diff=Math.max(entry.getValue() - segmentReplicantLookup.getTotalReplicants(segment.getIdentifier(),entry.getKey()),0);
+          dataSourceMap.add(segment.getDataSource(),diff);
         }
         break;
       }
     }
   }
-  CountingMap<String> segmentsInCluster=new CountingMap<>();
-  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
-    for (    DataSegment segment : druidServer.getSegments().values()) {
-      segmentsInCluster.add(segment.getDataSource(),1);
-    }
-  }
-  Map<String,Double> loadStatus=Maps.newHashMap();
-  for (  Map.Entry<String,AtomicLong> entry : expectedSegmentsInCluster.entrySet()) {
-    Long actual=segmentsInCluster.get(entry.getKey()).get();
-    loadStatus.put(entry.getKey(),100 * (actual == null ? 0.0D : (double)actual) / entry.getValue().get());
-  }
-  return loadStatus;
+  return retVal;
 }

@@ -1,0 +1,10 @@
+{
+  if (objects.length % 3 != 0) {
+    throw new ISE("makeTimeResults must be passed arguments in groups of 3, got[%d]",objects.length);
+  }
+  List<Result<TimeseriesResultValue>> retVal=Lists.newArrayListWithCapacity(objects.length / 3);
+  for (int i=0; i < objects.length; i+=3) {
+    retVal.add(new Result<>((DateTime)objects[i],new TimeseriesResultValue(ImmutableMap.of("rows",objects[i + 1],"imps",objects[i + 2],"impers",objects[i + 2],"avg_imps_per_row",((Number)objects[i + 2]).doubleValue() / ((Number)objects[i + 1]).doubleValue()))));
+  }
+  return retVal;
+}

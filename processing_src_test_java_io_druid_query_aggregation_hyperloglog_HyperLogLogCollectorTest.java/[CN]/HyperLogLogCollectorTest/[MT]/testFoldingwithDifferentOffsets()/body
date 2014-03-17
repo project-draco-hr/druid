@@ -1,0 +1,24 @@
+{
+  for (int j=0; j < 10; j++) {
+    HyperLogLogCollector smallVals=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector bigVals=HyperLogLogCollector.makeLatestCollector();
+    HyperLogLogCollector all=HyperLogLogCollector.makeLatestCollector();
+    int numThings=500000;
+    for (int i=0; i < numThings; i++) {
+      byte[] hashedVal=fn.hashLong(random.nextLong()).asBytes();
+      if (i < 1000) {
+        smallVals.add(hashedVal);
+      }
+ else {
+        bigVals.add(hashedVal);
+      }
+      all.add(hashedVal);
+    }
+    HyperLogLogCollector folded=HyperLogLogCollector.makeLatestCollector();
+    folded.fold(smallVals);
+    folded.fold(bigVals);
+    final double expected=all.estimateCardinality();
+    Assert.assertEquals(expected,folded.estimateCardinality(),expected * 0.025);
+    Assert.assertEquals(numThings,folded.estimateCardinality(),numThings * 0.05);
+  }
+}

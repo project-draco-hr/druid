@@ -1,0 +1,16 @@
+{
+  e=CORRECTION_PARAMETER / e;
+  if (e <= LOW_CORRECTION_THRESHOLD) {
+    return zeroCount == 0 ? e : NUM_BUCKETS * Math.log(NUM_BUCKETS / (double)zeroCount);
+  }
+  if (e > HIGH_CORRECTION_THRESHOLD) {
+    final double ratio=e / TWO_TO_THE_SIXTY_FOUR;
+    if (ratio >= 1) {
+      return Double.MAX_VALUE;
+    }
+ else {
+      return -TWO_TO_THE_SIXTY_FOUR * Math.log(1 - ratio);
+    }
+  }
+  return e;
+}

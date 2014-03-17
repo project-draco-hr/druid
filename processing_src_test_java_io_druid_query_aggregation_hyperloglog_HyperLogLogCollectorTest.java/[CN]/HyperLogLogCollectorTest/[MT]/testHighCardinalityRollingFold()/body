@@ -1,0 +1,24 @@
+{
+  final HyperLogLogCollector rolling=HyperLogLogCollector.makeLatestCollector();
+  final HyperLogLogCollector simple=HyperLogLogCollector.makeLatestCollector();
+  int count;
+  MessageDigest md=MessageDigest.getInstance("SHA-1");
+  HyperLogLogCollector tmp=HyperLogLogCollector.makeLatestCollector();
+  for (count=0; count < 5000000; ++count) {
+    md.update(Integer.toString(count).getBytes());
+    byte[] hashed=fn.hashBytes(md.digest()).asBytes();
+    tmp.add(hashed);
+    simple.add(hashed);
+    if (count % 100 == 0) {
+      rolling.fold(tmp);
+      tmp=HyperLogLogCollector.makeLatestCollector();
+    }
+  }
+  int n=count;
+  System.out.println("True cardinality " + n);
+  System.out.println("Rolling buffer cardinality " + rolling.estimateCardinality());
+  System.out.println("Simple  buffer cardinality " + simple.estimateCardinality());
+  System.out.println(String.format("Rolling cardinality estimate off by %4.1f%%",100 * (1 - rolling.estimateCardinality() / n)));
+  Assert.assertEquals(n,simple.estimateCardinality(),n * 0.05);
+  Assert.assertEquals(n,rolling.estimateCardinality(),n * 0.05);
+}

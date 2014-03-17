@@ -4,7 +4,7 @@
   if (determineIntervals) {
     interval=config.getGranularitySpec().getSegmentGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
     if (!hyperLogLogs.containsKey(interval)) {
-      hyperLogLogs.put(interval,new HyperLogLog(HYPER_LOG_LOG_BIT_SIZE));
+      hyperLogLogs.put(interval,HyperLogLogCollector.makeLatestCollector());
     }
   }
  else {
@@ -14,5 +14,5 @@
     }
     interval=maybeInterval.get();
   }
-  hyperLogLogs.get(interval).offerHashed(hashFunction.hashBytes(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)).asLong());
+  hyperLogLogs.get(interval).add(hashFunction.hashBytes(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)).asBytes());
 }
