@@ -12,7 +12,7 @@
  catch (  IOException e) {
     throw new RuntimeException(e);
   }
-  serverManager=new ServerManager(new CacheTestSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor());
+  serverManager=new ServerManager(new CacheTestSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor(),new DefaultObjectMapper(),new LocalCacheProvider().get());
   final DruidServerMetadata me=new DruidServerMetadata("dummyServer","dummyHost",0,"dummyType","normal",0);
   final ZkPathsConfig zkPaths=new ZkPathsConfig(){
     @Override public String getZkBasePath(){
