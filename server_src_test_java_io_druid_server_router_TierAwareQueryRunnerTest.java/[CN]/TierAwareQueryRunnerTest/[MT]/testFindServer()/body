@@ -1,0 +1,11 @@
+{
+  selector.start();
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.expect(selector.pick()).andReturn(server).once();
+  EasyMock.replay(selector);
+  EasyMock.expect(factory.createSelector(EasyMock.<String>anyObject())).andReturn(selector).atLeastOnce();
+  EasyMock.replay(factory);
+  TierAwareQueryRunner queryRunner=new TierAwareQueryRunner(null,null,null,new BrokerSelector(new CoordinatorRuleManager(null,null,null,null),config),config,factory);
+  Server server=queryRunner.findServer(new TimeBoundaryQuery(new TableDataSource("test"),new MultipleIntervalSegmentSpec(Arrays.<Interval>asList(new Interval("2011-08-31/2011-09-01"))),null));
+  Assert.assertEquals("foo",server.getHost());
+}

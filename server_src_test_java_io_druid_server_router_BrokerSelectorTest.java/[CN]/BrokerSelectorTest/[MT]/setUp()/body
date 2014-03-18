@@ -1,0 +1,11 @@
+{
+  brokerSelector=new BrokerSelector(new TestRuleManager(null,null,null,null),new TierConfig(){
+    @Override public LinkedHashMap<String,String> getTierToBrokerMap(){
+      return new LinkedHashMap<String,String>(ImmutableMap.<String,String>of("hot","hotBroker","medium","mediumBroker",DruidServer.DEFAULT_TIER,"coldBroker"));
+    }
+    @Override public String getDefaultBrokerServiceName(){
+      return "hotBroker";
+    }
+  }
+);
+}
