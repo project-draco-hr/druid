@@ -1,0 +1,18 @@
+{
+  super.setup(context);
+  rollupGranularity=getConfig().getRollupSpec().getRollupGranularity();
+  config=HadoopDruidIndexerConfigBuilder.fromConfiguration(context.getConfiguration());
+  Optional<Set<Interval>> intervals=config.getSegmentGranularIntervals();
+  if (intervals.isPresent()) {
+    determineIntervals=false;
+    final ImmutableMap.Builder<Interval,HyperLogLogCollector> builder=ImmutableMap.builder();
+    for (    final Interval bucketInterval : intervals.get()) {
+      builder.put(bucketInterval,HyperLogLogCollector.makeLatestCollector());
+    }
+    hyperLogLogs=builder.build();
+  }
+ else {
+    determineIntervals=true;
+    hyperLogLogs=Maps.newHashMap();
+  }
+}

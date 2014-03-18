@@ -3,7 +3,7 @@
     @Override public DruidCoordinatorRuntimeParams run(    DruidCoordinatorRuntimeParams params){
       Iterable<DruidServer> servers=FunctionalIterable.create(serverInventoryView.getInventory()).filter(new Predicate<DruidServer>(){
         @Override public boolean apply(        DruidServer input){
-          return !input.isRealtime();
+          return input.isAssignable();
         }
       }
 );
@@ -27,7 +27,7 @@
         }
         cluster.add(new ServerHolder(server,loadManagementPeons.get(server.getName())));
       }
-      SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
+      segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
       final Set<String> disappeared=Sets.newHashSet(loadManagementPeons.keySet());
       for (      DruidServer server : servers) {
         disappeared.remove(server.getName());
@@ -37,7 +37,7 @@
         LoadQueuePeon peon=loadManagementPeons.remove(name);
         peon.stop();
       }
-      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).withDynamicConfigs(dynamicConfigs.get()).build();
+      return params.buildFromExisting().withDruidCluster(cluster).withDatabaseRuleManager(databaseRuleManager).withLoadManagementPeons(loadManagementPeons).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(DateTime.now()).build();
     }
   }
 ,new DruidCoordinatorRuleRunner(DruidCoordinator.this),new DruidCoordinatorCleanup(DruidCoordinator.this),new DruidCoordinatorBalancer(DruidCoordinator.this),new DruidCoordinatorLogger()));

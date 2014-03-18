@@ -2,8 +2,13 @@
   final ByteBuffer bytes=ByteBuffer.wrap(bytesWritable.getBytes());
   bytes.position(4);
   final int index=bytes.getInt();
-  if (index >= numPartitions) {
-    throw new ISE("Not enough partitions, index[%,d] >= numPartitions[%,d]. Please increase the number of reducers to the index size or check your config & settings!",index,numPartitions);
+  if (config.get("mapred.job.tracker").equals("local")) {
+    return index % numPartitions;
+  }
+ else {
+    if (index >= numPartitions) {
+      throw new ISE("Not enough partitions, index[%,d] >= numPartitions[%,d]. Please increase the number of reducers to the index size or check your config & settings!",index,numPartitions);
+    }
   }
   return index;
 }

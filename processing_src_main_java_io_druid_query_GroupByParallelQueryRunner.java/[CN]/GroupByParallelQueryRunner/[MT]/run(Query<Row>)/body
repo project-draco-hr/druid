@@ -1,0 +1,38 @@
+{
+  final GroupByQuery query=(GroupByQuery)queryParam;
+  final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(query,configSupplier.get());
+  final int priority=Integer.parseInt(query.getContextValue("priority","0"));
+  if (Iterables.isEmpty(queryables)) {
+    log.warn("No queryables found.");
+  }
+  List<Future<Boolean>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<Row>,Future<Boolean>>(){
+    @Override public Future<Boolean> apply(    final QueryRunner<Row> input){
+      return exec.submit(new PrioritizedCallable<Boolean>(priority){
+        @Override public Boolean call() throws Exception {
+          try {
+            input.run(queryParam).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
+            return true;
+          }
+ catch (          Exception e) {
+            log.error(e,"Exception with one of the sequences!");
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+  }
+));
+  for (  Future<Boolean> future : futures) {
+    try {
+      future.get();
+    }
+ catch (    InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+catch (    ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  return Sequences.simple(indexAccumulatorPair.lhs.iterableWithPostAggregations(null));
+}

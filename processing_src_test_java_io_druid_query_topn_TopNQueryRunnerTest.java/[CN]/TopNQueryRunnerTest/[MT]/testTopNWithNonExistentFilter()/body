@@ -1,4 +1,4 @@
 {
-  TopNQuery query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).filters(providerDimension,"billyblank").dimension(providerDimension).metric(indexMetric).threshold(4).intervals(firstToThird).aggregators(commonAggregators).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(providerDimension,"billyblank").dimension(providerDimension).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   TestHelper.assertExpectedResults(Lists.<Result<TopNResultValue>>newArrayList(new Result<TopNResultValue>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Lists.<Map<String,Object>>newArrayList()))),runner.run(query));
 }

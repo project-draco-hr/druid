@@ -1,5 +1,5 @@
 {
-  super(id != null ? id : String.format("index_%s_%s",dataSource,new DateTime().toString()),dataSource,new Interval(granularitySpec.bucketIntervals().first().getStart(),granularitySpec.bucketIntervals().last().getEnd()));
+  super(id != null ? id : String.format("index_%s_%s",dataSource,new DateTime().toString()),dataSource,new Interval(granularitySpec.bucketIntervals().get().first().getStart(),granularitySpec.bucketIntervals().get().last().getEnd()));
   this.granularitySpec=Preconditions.checkNotNull(granularitySpec,"granularitySpec");
   this.spatialDimensions=(spatialDimensions == null) ? Lists.<SpatialDimensionSchema>newArrayList() : spatialDimensions;
   this.aggregators=aggregators;

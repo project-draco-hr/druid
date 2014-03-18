@@ -1,0 +1,6 @@
+{
+  Query query=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build();
+  String json=jsonMapper.writeValueAsString(query);
+  Query serdeQuery=jsonMapper.readValue(json,Query.class);
+  Assert.assertEquals(query,serdeQuery);
+}

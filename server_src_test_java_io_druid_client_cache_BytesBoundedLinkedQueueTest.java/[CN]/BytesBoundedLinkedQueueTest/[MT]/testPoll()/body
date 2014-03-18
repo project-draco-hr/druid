@@ -1,0 +1,17 @@
+{
+  final BlockingQueue q=getQueue(10);
+  long startTime=System.nanoTime();
+  Assert.assertNull(q.poll(delayMS,TimeUnit.MILLISECONDS));
+  Assert.assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) >= delayMS);
+  TestObject obj=new TestObject(2);
+  Assert.assertTrue(q.offer(obj,delayMS,TimeUnit.MILLISECONDS));
+  Assert.assertSame(obj,q.poll(delayMS,TimeUnit.MILLISECONDS));
+  Thread.currentThread().interrupt();
+  try {
+    q.poll(delayMS,TimeUnit.MILLISECONDS);
+    throw new ISE("FAIL");
+  }
+ catch (  InterruptedException success) {
+  }
+  Assert.assertFalse(Thread.interrupted());
+}

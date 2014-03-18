@@ -1,0 +1,18 @@
+{
+  HyperLogLogCollector aggregate=HyperLogLogCollector.makeLatestCollector();
+  for (  BytesWritable value : values) {
+    aggregate.fold(ByteBuffer.wrap(value.getBytes(),0,value.getLength()));
+  }
+  Interval interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(key.get()));
+  intervals.add(interval);
+  final Path outPath=config.makeSegmentPartitionInfoPath(interval);
+  final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
+  try {
+    HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<Long>(){
+    }
+).writeValue(out,new Double(aggregate.estimateCardinality()).longValue());
+  }
+  finally {
+    Closeables.close(out,false);
+  }
+}

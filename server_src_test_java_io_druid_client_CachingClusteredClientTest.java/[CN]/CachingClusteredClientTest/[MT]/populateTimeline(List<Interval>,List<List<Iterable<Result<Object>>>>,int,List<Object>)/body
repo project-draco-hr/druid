@@ -1,0 +1,36 @@
+{
+  timeline=new VersionedIntervalTimeline<>(Ordering.natural());
+  final List<Map<DruidServer,ServerExpectations>> serverExpectationList=Lists.newArrayList();
+  for (int k=0; k < numQueryIntervals + 1; ++k) {
+    final int numChunks=expectedResults.get(k).size();
+    final TreeMap<DruidServer,ServerExpectations> serverExpectations=Maps.newTreeMap();
+    serverExpectationList.add(serverExpectations);
+    for (int j=0; j < numChunks; ++j) {
+      DruidServer lastServer=servers[random.nextInt(servers.length)];
+      if (!serverExpectations.containsKey(lastServer)) {
+        serverExpectations.put(lastServer,new ServerExpectations(lastServer,makeMock(mocks,QueryRunner.class)));
+      }
+      ServerExpectation expectation=new ServerExpectation(String.format("%s_%s",k,j),queryIntervals.get(numQueryIntervals),makeMock(mocks,DataSegment.class),expectedResults.get(k).get(j));
+      serverExpectations.get(lastServer).addExpectation(expectation);
+      ServerSelector selector=new ServerSelector(expectation.getSegment(),new RandomServerSelectorStrategy());
+      selector.addServer(new QueryableDruidServer(lastServer,null));
+      final PartitionChunk<ServerSelector> chunk;
+      if (numChunks == 1) {
+        chunk=new SingleElementPartitionChunk<>(selector);
+      }
+ else {
+        String start=null;
+        String end=null;
+        if (j > 0) {
+          start=String.valueOf(j - 1);
+        }
+        if (j + 1 < numChunks) {
+          end=String.valueOf(j);
+        }
+        chunk=new StringPartitionChunk<>(start,end,j,selector);
+      }
+      timeline.add(queryIntervals.get(k),String.valueOf(k),chunk);
+    }
+  }
+  return serverExpectationList;
+}

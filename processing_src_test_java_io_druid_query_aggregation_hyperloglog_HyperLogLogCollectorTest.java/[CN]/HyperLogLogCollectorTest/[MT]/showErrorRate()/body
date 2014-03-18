@@ -1,0 +1,20 @@
+{
+  HashFunction fn=Hashing.murmur3_128();
+  Random random=new Random();
+  double error=0.0d;
+  int count=0;
+  final int[] valsToCheck={10,20,50,100,1000,2000,5000,10000,20000,50000,100000,1000000,2000000,10000000,Integer.MAX_VALUE};
+  for (  int numThings : valsToCheck) {
+    long startTime=System.currentTimeMillis();
+    HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+    for (int i=0; i < numThings; ++i) {
+      if (i != 0 && i % 100000000 == 0) {
+        ++count;
+        error=computeError(error,count,i,startTime,collector);
+      }
+      collector.add(fn.hashLong(random.nextLong()).asBytes());
+    }
+    ++count;
+    error=computeError(error,count,numThings,startTime,collector);
+  }
+}

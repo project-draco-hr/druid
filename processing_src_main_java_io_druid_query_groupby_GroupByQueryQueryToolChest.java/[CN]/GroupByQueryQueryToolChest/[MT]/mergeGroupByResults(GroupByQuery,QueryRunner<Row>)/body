@@ -1,35 +1,20 @@
 {
-  final GroupByQueryConfig config=configSupplier.get();
-  final QueryGranularity gran=query.getGranularity();
-  final long timeStart=query.getIntervals().get(0).getStartMillis();
-  final long granTimeStart=gran.iterable(timeStart,timeStart + 1).iterator().next();
-  final List<AggregatorFactory> aggs=Lists.transform(query.getAggregatorSpecs(),new Function<AggregatorFactory,AggregatorFactory>(){
-    @Override public AggregatorFactory apply(    @Nullable AggregatorFactory input){
-      return input.getCombiningFactory();
+  Sequence<Row> result;
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof QueryDataSource) {
+    GroupByQuery subquery;
+    try {
+      subquery=(GroupByQuery)((QueryDataSource)dataSource).getQuery();
     }
-  }
-);
-  final List<String> dimensions=Lists.transform(query.getDimensions(),new Function<DimensionSpec,String>(){
-    @Override public String apply(    @Nullable DimensionSpec input){
-      return input.getOutputName();
+ catch (    ClassCastException e) {
+      throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
     }
+    Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
+    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(subquery,subqueryResult));
+    result=engine.process(query,adapter);
   }
-);
-  final IncrementalIndex index=runner.run(query).accumulate(new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()])),new Accumulator<IncrementalIndex,Row>(){
-    @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    Row in){
-      if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions)) > config.getMaxResults()) {
-        throw new ISE("Computation exceeds maxRows limit[%s]",config.getMaxResults());
-      }
-      return accumulated;
-    }
+ else {
+    result=runner.run(query);
   }
-);
-  Sequence<Row> retVal=Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
-    @Override public Row apply(    Row input){
-      final MapBasedRow row=(MapBasedRow)input;
-      return new MapBasedRow(gran.toDateTime(row.getTimestampFromEpoch()),row.getEvent());
-    }
-  }
-);
-  return query.applyLimit(retVal);
+  return postAggregate(query,makeIncrementalIndex(query,result));
 }

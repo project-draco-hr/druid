@@ -4,7 +4,6 @@
   int numProcessed=0;
   while (numProcessed < cardinality) {
     final int numToProcess=Math.min(params.getNumValuesPerPass(),cardinality - numProcessed);
-    params.getCursor().reset();
     DimValSelector theDimValSelector;
     if (!hasDimValSelector) {
       theDimValSelector=makeDimValSelector(params,numProcessed,numToProcess);
@@ -17,5 +16,6 @@
     updateResults(params,theDimValSelector,aggregatesStore,resultBuilder);
     closeAggregators(aggregatesStore);
     numProcessed+=numToProcess;
+    params.getCursor().reset();
   }
 }

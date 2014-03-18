@@ -1,0 +1,27 @@
+{
+  final ByteBuffer copy=buf.asReadOnlyBuffer();
+  double e=0.0d;
+  int zeroCount=NUM_BUCKETS - 2 * (buf.remaining() / 3);
+  while (copy.hasRemaining()) {
+    short position=copy.getShort();
+    final int register=(int)copy.get() & 0xff;
+    if (overflowValue != 0 && position == overflowPosition) {
+      int upperNibble=((register & 0xf0) >>> bitsPerBucket) + minNum;
+      int lowerNibble=(register & 0x0f) + minNum;
+      if (isUpperNibble) {
+        upperNibble=Math.max(upperNibble,overflowValue);
+      }
+ else {
+        lowerNibble=Math.max(lowerNibble,overflowValue);
+      }
+      e+=1.0d / Math.pow(2,upperNibble) + 1.0d / Math.pow(2,lowerNibble);
+      zeroCount+=(((upperNibble & 0xf0) == 0) ? 1 : 0) + (((lowerNibble & 0x0f) == 0) ? 1 : 0);
+    }
+ else {
+      e+=minNumRegisterLookup[minNum][register];
+      zeroCount+=numZeroLookup[register];
+    }
+  }
+  e+=zeroCount;
+  return applyCorrection(e,zeroCount);
+}

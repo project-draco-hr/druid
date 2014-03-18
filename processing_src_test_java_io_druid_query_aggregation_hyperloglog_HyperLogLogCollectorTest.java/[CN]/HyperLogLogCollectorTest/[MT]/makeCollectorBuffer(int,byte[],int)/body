@@ -1,0 +1,20 @@
+{
+  short numNonZero=0;
+  for (  byte initialByte : initialBytes) {
+    numNonZero+=computeNumNonZero(initialByte);
+  }
+  final short numNonZeroInRemaining=computeNumNonZero((byte)remainingBytes);
+  numNonZero+=(HyperLogLogCollector.NUM_BYTES_FOR_BUCKETS - initialBytes.length) * numNonZeroInRemaining;
+  ByteBuffer biggerOffset=ByteBuffer.allocate(HyperLogLogCollector.getLatestNumBytesForDenseStorage());
+  biggerOffset.put(HLLCV1.VERSION);
+  biggerOffset.put((byte)offset);
+  biggerOffset.putShort(numNonZero);
+  biggerOffset.put((byte)0);
+  biggerOffset.putShort((short)0);
+  biggerOffset.put(initialBytes);
+  while (biggerOffset.hasRemaining()) {
+    biggerOffset.put((byte)remainingBytes);
+  }
+  biggerOffset.clear();
+  return biggerOffset.asReadOnlyBuffer();
+}

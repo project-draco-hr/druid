@@ -1,0 +1,18 @@
+{
+  E e;
+  takeLock.lockInterruptibly();
+  try {
+    while (elementCount.get() == 0) {
+      notEmpty.await();
+    }
+    e=delegate.remove();
+    elementRemoved(e);
+  }
+  finally {
+    takeLock.unlock();
+  }
+  if (e != null) {
+    signalNotFull();
+  }
+  return e;
+}

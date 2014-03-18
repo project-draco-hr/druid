@@ -1,0 +1,7 @@
+{
+  ByteBuffer dataCopyBuffer=ByteBuffer.allocate(HyperLogLogCollector.getLatestNumBytesForDenseStorage());
+  ByteBuffer mutationBuffer=buf.duplicate();
+  mutationBuffer.position(position);
+  mutationBuffer.get(dataCopyBuffer.array());
+  return HyperLogLogCollector.makeCollector(dataCopyBuffer);
+}
