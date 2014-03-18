@@ -1,0 +1,34 @@
+{
+  String brokerServiceName=brokerSelector.select(query);
+  if (brokerServiceName == null) {
+    log.error("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName());
+    brokerServiceName=tierConfig.getDefaultBrokerServiceName();
+  }
+  ServerDiscoverySelector selector=selectorMap.get(brokerServiceName);
+  Server server;
+  if (selector == null) {
+    log.error("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName());
+    selector=selectorMap.get(tierConfig.getDefaultBrokerServiceName());
+    if (selector != null) {
+      server=selector.pick();
+    }
+ else {
+      return null;
+    }
+  }
+ else {
+    server=selector.pick();
+  }
+  if (server == null) {
+    log.error("WTF?! No server found for brokerServiceName[%s]. Using backup",brokerServiceName);
+    server=serverBackup.get(brokerServiceName);
+    if (server == null) {
+      log.error("WTF?! No backup found for brokerServiceName[%s]. Using default[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName());
+      server=serverBackup.get(tierConfig.getDefaultBrokerServiceName());
+    }
+  }
+ else {
+    serverBackup.put(brokerServiceName,server);
+  }
+  return server;
+}

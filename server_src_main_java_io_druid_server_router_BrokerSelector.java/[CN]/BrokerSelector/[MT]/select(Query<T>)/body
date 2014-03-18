@@ -1,0 +1,31 @@
+{
+  if (!ruleManager.isStarted()) {
+    return null;
+  }
+  List<Rule> rules=ruleManager.getRulesWithDefault((query.getDataSource()).getName());
+  DateTime now=new DateTime();
+  int lastRulePosition=-1;
+  LoadRule baseRule=null;
+  for (  Interval interval : query.getIntervals()) {
+    int currRulePosition=0;
+    for (    Rule rule : rules) {
+      if (rule instanceof LoadRule && currRulePosition > lastRulePosition && rule.appliesTo(interval,now)) {
+        lastRulePosition=currRulePosition;
+        baseRule=(LoadRule)rule;
+        break;
+      }
+      currRulePosition++;
+    }
+  }
+  if (baseRule == null) {
+    return null;
+  }
+  String brokerName=null;
+  for (  Map.Entry<String,String> entry : tierConfig.getTierToBrokerMap().entrySet()) {
+    if (baseRule.getTieredReplicants().containsKey(entry.getKey())) {
+      brokerName=entry.getValue();
+      break;
+    }
+  }
+  return brokerName;
+}

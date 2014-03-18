@@ -1,0 +1,17 @@
+{
+  this.warehouse=warehouse;
+  this.objectMapper=objectMapper;
+  this.httpClient=httpClient;
+  this.brokerSelector=brokerSelector;
+  this.tierConfig=tierConfig;
+  try {
+    for (    Map.Entry<String,String> entry : tierConfig.getTierToBrokerMap().entrySet()) {
+      ServerDiscoverySelector selector=serverDiscoveryFactory.createSelector(entry.getValue());
+      selector.start();
+      selectorMap.put(entry.getValue(),selector);
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
