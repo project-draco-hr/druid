@@ -1,0 +1,47 @@
+{
+  final BlockingQueue<TestObject> q=getQueue(Integer.MAX_VALUE);
+  long duration=TimeUnit.SECONDS.toMillis(10);
+  ExecutorService executor=Executors.newCachedThreadPool();
+  final AtomicBoolean stopTest=new AtomicBoolean(false);
+  List<Future> futures=new ArrayList<>();
+  for (int i=0; i < 5; i++) {
+    futures.add(executor.submit(new Callable<Boolean>(){
+      @Override public Boolean call(){
+        while (!stopTest.get()) {
+          q.add(new TestObject(1));
+          q.add(new TestObject(2));
+        }
+        return true;
+      }
+    }
+));
+  }
+  for (int i=0; i < 10; i++) {
+    futures.add(executor.submit(new Callable<Boolean>(){
+      @Override public Boolean call() throws InterruptedException {
+        while (!stopTest.get()) {
+          q.poll(100,TimeUnit.MILLISECONDS);
+          q.offer(new TestObject(2));
+        }
+        return true;
+      }
+    }
+));
+  }
+  for (int i=0; i < 5; i++) {
+    futures.add(executor.submit(new Callable<Boolean>(){
+      @Override public Boolean call(){
+        while (!stopTest.get()) {
+          System.out.println("drained elements : " + q.drainTo(new ArrayList<TestObject>(),Integer.MAX_VALUE));
+        }
+        return true;
+      }
+    }
+));
+  }
+  Thread.sleep(duration);
+  stopTest.set(true);
+  for (  Future<Boolean> future : futures) {
+    Assert.assertTrue(future.get());
+  }
+}
