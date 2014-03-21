@@ -1,5 +1,5 @@
 {
   final QueryRunner runner=QueryRunnerTestHelper.makeQueryRunner((QueryRunnerFactory)new SegmentMetadataQueryRunnerFactory(),index);
-  final SegmentMetadataQuery query=new SegmentMetadataQuery("test",QuerySegmentSpecs.create("2011/2012"),null,null,null);
+  final SegmentMetadataQuery query=new SegmentMetadataQuery(new LegacyDataSource("test"),QuerySegmentSpecs.create("2011/2012"),null,null,null);
   return Sequences.toList(query.run(runner),Lists.<SegmentAnalysis>newArrayList());
 }
