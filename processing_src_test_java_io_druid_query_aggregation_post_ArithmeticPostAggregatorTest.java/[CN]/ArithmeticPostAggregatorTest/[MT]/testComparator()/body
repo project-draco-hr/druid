@@ -3,7 +3,7 @@
   CountAggregator agg=new CountAggregator("rows");
   Map<String,Object> metricValues=new HashMap<String,Object>();
   metricValues.put(agg.getName(),agg.get());
-  List<PostAggregator> postAggregatorList=Lists.newArrayList(new ConstantPostAggregator("roku",6),new FieldAccessPostAggregator("rows","rows"));
+  List<PostAggregator> postAggregatorList=Lists.newArrayList(new ConstantPostAggregator("roku",6,null),new FieldAccessPostAggregator("rows","rows"));
   arithmeticPostAggregator=new ArithmeticPostAggregator("add","+",postAggregatorList);
   Comparator comp=arithmeticPostAggregator.getComparator();
   Object before=arithmeticPostAggregator.compute(metricValues);
