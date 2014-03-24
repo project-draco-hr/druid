@@ -1,0 +1,8 @@
+{
+  Server server=selector.pick();
+  if (server == null) {
+    log.error("No instances found for [%s]!",config.get().getCoordinatorServiceName());
+    return null;
+  }
+  return String.format("http://%s%s",server.getHost(),config.get().getRulesEndpoint());
+}
