@@ -20,21 +20,27 @@
       }
     }
 ));
-    final List<Artifact> artifacts=aether.resolveArtifacts(dependencyRequest);
-    List<URL> urls=Lists.newArrayListWithExpectedSize(artifacts.size());
-    for (    Artifact artifact : artifacts) {
-      if (!exclusions.contains(artifact.getGroupId())) {
-        urls.add(artifact.getFile().toURI().toURL());
-      }
+    try {
+      final List<Artifact> artifacts=aether.resolveArtifacts(dependencyRequest);
+      List<URL> urls=Lists.newArrayListWithExpectedSize(artifacts.size());
+      for (      Artifact artifact : artifacts) {
+        if (!exclusions.contains(artifact.getGroupId())) {
+          urls.add(artifact.getFile().toURI().toURL());
+        }
  else {
-        log.debug("Skipped Artifact[%s]",artifact);
+          log.debug("Skipped Artifact[%s]",artifact);
+        }
       }
+      for (      URL url : urls) {
+        log.info("Added URL[%s]",url);
+      }
+      loader=new URLClassLoader(urls.toArray(new URL[urls.size()]),Initialization.class.getClassLoader());
+      loadersMap.put(coordinate,loader);
     }
-    for (    URL url : urls) {
-      log.info("Added URL[%s]",url);
+ catch (    Exception e) {
+      log.error(e,"Unable to resolve artifacts for [%s].",dependencyRequest);
+      throw Throwables.propagate(e);
     }
-    loader=new URLClassLoader(urls.toArray(new URL[urls.size()]),Initialization.class.getClassLoader());
-    loadersMap.put(coordinate,loader);
   }
   return loader;
 }
