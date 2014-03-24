@@ -1,6 +1,8 @@
 {
-  if (!ruleManager.isStarted()) {
-    return null;
+synchronized (lock) {
+    if (!ruleManager.isStarted() || !started) {
+      return null;
+    }
   }
   List<Rule> rules=ruleManager.getRulesWithDefault((query.getDataSource()).getName());
   DateTime now=new DateTime();
@@ -20,12 +22,21 @@
   if (baseRule == null) {
     return null;
   }
-  String brokerName=null;
+  String brokerServiceName=null;
   for (  Map.Entry<String,String> entry : tierConfig.getTierToBrokerMap().entrySet()) {
     if (baseRule.getTieredReplicants().containsKey(entry.getKey())) {
-      brokerName=entry.getValue();
+      brokerServiceName=entry.getValue();
       break;
     }
   }
-  return brokerName;
+  if (brokerServiceName == null) {
+    log.makeAlert("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName()).emit();
+    brokerServiceName=tierConfig.getDefaultBrokerServiceName();
+  }
+  ServerDiscoverySelector retVal=selectorMap.get(brokerServiceName);
+  if (retVal == null) {
+    log.makeAlert("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName()).emit();
+    retVal=selectorMap.get(tierConfig.getDefaultBrokerServiceName());
+  }
+  return new Pair<>(brokerServiceName,retVal);
 }
