@@ -1,0 +1,11 @@
+{
+  final HyperLogLogCollector rolling=allocateCollector(targetIsDirect,alignTarget);
+  for (int k=0; k < reps; ++k) {
+    for (int i=0; i < count; ++i) {
+      final int pos=positions[i];
+      final int size=sizes[i];
+      rolling.fold(HyperLogLogCollector.makeCollector((ByteBuffer)chunk.limit(pos + size).position(pos)));
+    }
+  }
+  return rolling.estimateCardinality();
+}

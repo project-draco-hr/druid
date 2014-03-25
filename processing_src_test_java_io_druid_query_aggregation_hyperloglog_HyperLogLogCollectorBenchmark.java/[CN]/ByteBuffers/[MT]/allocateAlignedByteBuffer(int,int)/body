@@ -1,0 +1,14 @@
+{
+  Preconditions.checkArgument(Long.bitCount(align) == 1,"Alignment must be a power of 2");
+  final ByteBuffer buf=ByteBuffer.allocateDirect(capacity + align);
+  long address=getAddress(buf);
+  if ((address & (align - 1)) == 0) {
+    buf.limit(capacity);
+  }
+ else {
+    int offset=(int)(align - (address & (align - 1)));
+    buf.position(offset);
+    buf.limit(offset + capacity);
+  }
+  return buf.slice();
+}
