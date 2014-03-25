@@ -22,7 +22,7 @@
   }
   byte myOffset=getRegisterOffset();
   short numNonZero=getNumNonZeroRegisters();
-  int offsetDiff=myOffset - otherOffset;
+  final int offsetDiff=myOffset - otherOffset;
   if (offsetDiff < 0) {
     throw new ISE("offsetDiff[%d] < 0, shouldn't happen because of swap.",offsetDiff);
   }
@@ -33,25 +33,23 @@
     while (otherBuffer.hasRemaining()) {
       final int payloadStartPosition=otherBuffer.getShort() - other.getNumHeaderBytes();
       numNonZero+=mergeAndStoreByteRegister(myPayloadStart + payloadStartPosition,offsetDiff,otherBuffer.get());
-      if (numNonZero == NUM_BUCKETS) {
-        numNonZero=decrementBuckets();
-        setRegisterOffset(++myOffset);
-        setNumNonZeroRegisters(numNonZero);
-        offsetDiff=myOffset - otherOffset;
-      }
+    }
+    if (numNonZero == NUM_BUCKETS) {
+      numNonZero=decrementBuckets();
+      setRegisterOffset(++myOffset);
+      setNumNonZeroRegisters(numNonZero);
     }
   }
  else {
     int position=getPayloadBytePosition();
     while (otherBuffer.hasRemaining()) {
       numNonZero+=mergeAndStoreByteRegister(position,offsetDiff,otherBuffer.get());
-      if (numNonZero == NUM_BUCKETS) {
-        numNonZero=decrementBuckets();
-        setRegisterOffset(++myOffset);
-        setNumNonZeroRegisters(numNonZero);
-        offsetDiff=myOffset - otherOffset;
-      }
       position++;
+    }
+    if (numNonZero == NUM_BUCKETS) {
+      numNonZero=decrementBuckets();
+      setRegisterOffset(++myOffset);
+      setNumNonZeroRegisters(numNonZero);
     }
   }
   setNumNonZeroRegisters(numNonZero);
