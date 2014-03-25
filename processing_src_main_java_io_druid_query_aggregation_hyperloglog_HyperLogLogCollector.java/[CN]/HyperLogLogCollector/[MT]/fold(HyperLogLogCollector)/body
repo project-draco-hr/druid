@@ -32,7 +32,7 @@
   if (isSparse(otherBuffer)) {
     while (otherBuffer.hasRemaining()) {
       final int payloadStartPosition=otherBuffer.getShort() - other.getNumHeaderBytes();
-      numNonZero+=mergeAndStoreByteRegister(myPayloadStart + payloadStartPosition,offsetDiff,otherBuffer.get());
+      numNonZero+=mergeAndStoreByteRegister(storageBuffer,myPayloadStart + payloadStartPosition,offsetDiff,otherBuffer.get());
     }
     if (numNonZero == NUM_BUCKETS) {
       numNonZero=decrementBuckets();
@@ -43,7 +43,7 @@
  else {
     int position=getPayloadBytePosition();
     while (otherBuffer.hasRemaining()) {
-      numNonZero+=mergeAndStoreByteRegister(position,offsetDiff,otherBuffer.get());
+      numNonZero+=mergeAndStoreByteRegister(storageBuffer,position,offsetDiff,otherBuffer.get());
       position++;
     }
     if (numNonZero == NUM_BUCKETS) {
