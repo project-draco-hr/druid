@@ -1,0 +1,28 @@
+{
+  selector=EasyMock.createMock(ServerDiscoverySelector.class);
+  brokerSelector=EasyMock.createMock(BrokerSelector.class);
+  config=new TierConfig(){
+    @Override public LinkedHashMap<String,String> getTierToBrokerMap(){
+      return new LinkedHashMap<>(ImmutableMap.<String,String>of("hot","hotBroker","medium","mediumBroker",DruidServer.DEFAULT_TIER,"coldBroker"));
+    }
+    @Override public String getDefaultBrokerServiceName(){
+      return "hotBroker";
+    }
+  }
+;
+  server=new Server(){
+    @Override public String getScheme(){
+      return null;
+    }
+    @Override public String getHost(){
+      return "foo";
+    }
+    @Override public String getAddress(){
+      return null;
+    }
+    @Override public int getPort(){
+      return 0;
+    }
+  }
+;
+}

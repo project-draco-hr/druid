@@ -2,7 +2,18 @@
   SerializingTranscoder transcoder=new SerializingTranscoder(50 * 1024 * 1024);
   transcoder.setCompressionThreshold(Integer.MAX_VALUE);
   client=new MemcachedClient(new ConnectionFactoryBuilder().setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setHashAlg(DefaultHashAlgorithm.FNV1A_64_HASH).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Retry).setTranscoder(transcoder).setShouldOptimize(true).build(),AddrUtil.getAddresses(hosts));
-  cache=new MemcachedCache(client,"druid-memcached-benchmark",30000,3600);
+  cache=new MemcachedCache(client,new MemcachedCacheConfig(){
+    @Override public String getMemcachedPrefix(){
+      return "druid-memcached-benchmark";
+    }
+    @Override public int getTimeout(){
+      return 30000;
+    }
+    @Override public int getExpiration(){
+      return 3600;
+    }
+  }
+);
   randBytes=new byte[objectSize * 1024];
   new Random(0).nextBytes(randBytes);
 }

@@ -1,0 +1,21 @@
+{
+  factory=EasyMock.createMock(ServerDiscoveryFactory.class);
+  selector=EasyMock.createMock(ServerDiscoverySelector.class);
+  brokerSelector=new BrokerSelector(new TestRuleManager(null,null,null,null),new TierConfig(){
+    @Override public LinkedHashMap<String,String> getTierToBrokerMap(){
+      return new LinkedHashMap<String,String>(ImmutableMap.<String,String>of("hot","hotBroker","medium","mediumBroker",DruidServer.DEFAULT_TIER,"coldBroker"));
+    }
+    @Override public String getDefaultBrokerServiceName(){
+      return "hotBroker";
+    }
+  }
+,factory);
+  EasyMock.expect(factory.createSelector(EasyMock.<String>anyObject())).andReturn(selector).atLeastOnce();
+  EasyMock.replay(factory);
+  selector.start();
+  EasyMock.expectLastCall().atLeastOnce();
+  selector.stop();
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.replay(selector);
+  brokerSelector.start();
+}

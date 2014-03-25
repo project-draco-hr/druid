@@ -1,0 +1,16 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    try {
+      for (      ServerDiscoverySelector selector : selectorMap.values()) {
+        selector.stop();
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
+    }
+    started=false;
+  }
+}
