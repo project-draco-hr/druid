@@ -10,6 +10,9 @@
       LifecycleModule.register(binder,QueryResource.class);
       LifecycleModule.register(binder,ZkCoordinator.class);
       LifecycleModule.register(binder,Server.class);
+      binder.bind(Cache.class).toProvider(CacheProvider.class).in(ManageLifecycle.class);
+      JsonConfigProvider.bind(binder,"druid.historical.cache",CacheProvider.class);
+      JsonConfigProvider.bind(binder,"druid.historical.cache",CacheConfig.class);
     }
   }
 );
