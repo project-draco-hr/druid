@@ -31,7 +31,7 @@
       }
       return FunctionalIterable.create(holder.getObject()).transform(new Function<PartitionChunk<ReferenceCountingSegment>,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        PartitionChunk<ReferenceCountingSegment> input){
-          return buildAndDecorateQueryRunner(factory,toolChest,input.getObject(),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),holder.getVersion(),input.getChunkNumber())));
+          return buildAndDecorateQueryRunner(factory,toolChest,input.getObject(),new SegmentDescriptor(holder.getInterval(),holder.getVersion(),input.getChunkNumber()));
         }
       }
 ).filter(Predicates.<QueryRunner<T>>notNull());

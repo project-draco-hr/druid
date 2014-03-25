@@ -1,0 +1,11 @@
+{
+synchronized (lock) {
+    if (!started) {
+      return;
+    }
+    rules.set(new ConcurrentHashMap<String,List<Rule>>());
+    started=false;
+    exec.shutdownNow();
+    exec=null;
+  }
+}

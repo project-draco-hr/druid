@@ -1,0 +1,18 @@
+{
+  final Pair<String,ServerDiscoverySelector> selected=brokerSelector.select(query);
+  final String brokerServiceName=selected.lhs;
+  final ServerDiscoverySelector selector=selected.rhs;
+  Server server=selector.pick();
+  if (server == null) {
+    log.error("WTF?! No server found for brokerServiceName[%s]. Using backup",brokerServiceName);
+    server=serverBackup.get(brokerServiceName);
+    if (server == null) {
+      log.makeAlert("WTF?! No backup found for brokerServiceName[%s]. Using default[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName()).emit();
+      server=serverBackup.get(tierConfig.getDefaultBrokerServiceName());
+    }
+  }
+ else {
+    serverBackup.put(brokerServiceName,server);
+  }
+  return server;
+}
