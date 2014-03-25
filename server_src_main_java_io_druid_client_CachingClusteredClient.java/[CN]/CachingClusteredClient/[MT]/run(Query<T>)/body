@@ -4,14 +4,14 @@
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
-  final boolean useCache=Boolean.parseBoolean(query.getContextValue("useCache","true")) && strategy != null && cacheConfig.isUseCache();
-  final boolean populateCache=Boolean.parseBoolean(query.getContextValue("populateCache","true")) && strategy != null && cacheConfig.isPopulateCache();
+  final boolean useCache=Boolean.parseBoolean(query.getContextValue(CacheConfig.USE_CACHE,"true")) && strategy != null && cacheConfig.isUseCache();
+  final boolean populateCache=Boolean.parseBoolean(query.getContextValue(CacheConfig.POPULATE_CACHE,"true")) && strategy != null && cacheConfig.isPopulateCache();
   final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
   ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
   final String priority=query.getContextValue("priority","0");
   contextBuilder.put("priority",priority);
   if (populateCache) {
-    contextBuilder.put("populateCache","false");
+    contextBuilder.put(CacheConfig.POPULATE_CACHE,"false");
     contextBuilder.put("bySegment","true");
   }
   contextBuilder.put("intermediate","true");
