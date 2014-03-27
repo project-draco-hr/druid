@@ -1,18 +1,12 @@
 {
-  if (obj == null) {
+  if (obj == null || !started) {
     return false;
   }
   final byte[] newBytes=serde.serialize(obj);
   try {
     return exec.submit(new Callable<Boolean>(){
       @Override public Boolean call() throws Exception {
-        dbi.withHandle(new HandleCallback<Void>(){
-          @Override public Void withHandle(          Handle handle) throws Exception {
-            handle.createStatement(insertStatement).bind("name",key).bind("payload",newBytes).execute();
-            return null;
-          }
-        }
-);
+        dbConnector.insertOrUpdate(configTable,"name","payload",key,newBytes);
         final ConfigHolder configHolder=watchedConfigs.get(key);
         if (configHolder != null) {
           configHolder.swapIfNew(newBytes);

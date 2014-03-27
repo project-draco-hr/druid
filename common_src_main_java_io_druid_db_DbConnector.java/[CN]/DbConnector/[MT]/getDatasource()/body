@@ -3,7 +3,9 @@
   BasicDataSource dataSource=new BasicDataSource();
   dataSource.setUsername(connectorConfig.getUser());
   dataSource.setPassword(connectorConfig.getPassword());
-  dataSource.setUrl(connectorConfig.getConnectURI());
+  String uri=connectorConfig.getConnectURI();
+  isPostgreSQL=uri.startsWith("jdbc:postgresql");
+  dataSource.setUrl(uri);
   if (connectorConfig.isUseValidationQuery()) {
     dataSource.setValidationQuery(connectorConfig.getValidationQuery());
     dataSource.setTestOnBorrow(true);

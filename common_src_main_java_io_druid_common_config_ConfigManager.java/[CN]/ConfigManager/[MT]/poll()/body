@@ -1,7 +1,7 @@
 {
   for (  Map.Entry<String,ConfigHolder> entry : watchedConfigs.entrySet()) {
     try {
-      if (entry.getValue().swapIfNew(lookup(entry.getKey()))) {
+      if (entry.getValue().swapIfNew(dbConnector.lookup(configTable,"name","payload",entry.getKey()))) {
         log.info("New value for key[%s] seen.",entry.getKey());
       }
     }

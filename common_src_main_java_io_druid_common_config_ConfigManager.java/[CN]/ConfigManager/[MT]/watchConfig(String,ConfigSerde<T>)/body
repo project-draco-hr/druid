@@ -11,7 +11,7 @@
  else {
             try {
               if (!watchedConfigs.containsKey(key)) {
-                byte[] value=lookup(key);
+                byte[] value=dbConnector.lookup(configTable,"name","payload",key);
                 ConfigHolder<T> holder=new ConfigHolder<T>(value,serde);
                 watchedConfigs.put(key,holder);
               }
