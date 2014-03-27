@@ -1,32 +1,40 @@
 {
-  boolean align=true;
-  if (offset < 0) {
-    align=false;
-    offset=0;
-  }
-  alignSource=align;
-  alignTarget=align;
-  int val=0;
-  chunk=ByteBuffers.allocateAlignedByteBuffer((HyperLogLogCollector.getLatestNumBytesForDenseStorage() + CACHE_LINE + offset) * count,CACHE_LINE);
-  int pos=0;
-  for (int i=0; i < count; ++i) {
-    HyperLogLogCollector c=HyperLogLogCollector.makeLatestCollector();
-    for (int k=0; k < 40; ++k)     c.add(fn.hashInt(++val).asBytes());
-    final ByteBuffer sparseHeapCopy=c.toByteBuffer();
-    int size=sparseHeapCopy.remaining();
-    final ByteBuffer buf;
-    if (alignSource && (pos % CACHE_LINE) != offset) {
-      pos+=(pos % CACHE_LINE) < offset ? offset - (pos % CACHE_LINE) : (CACHE_LINE + offset - pos % CACHE_LINE);
-    }
-    positions[i]=pos;
-    sizes[i]=size;
-    chunk.limit(pos + size);
-    chunk.position(pos);
-    buf=chunk.duplicate();
-    buf.mark();
-    pos+=size;
-    buf.put(sparseHeapCopy);
-    buf.reset();
-    collectors.add(HyperLogLogCollector.makeCollector(buf));
-  }
+  boolean random=false;
+  Random rand=new Random(0);
+  int defaultOffset=0;
+switch (alignment) {
+case "default":
+    alignSource=false;
+  alignTarget=false;
+break;
+case "random":
+random=true;
+break;
+default :
+defaultOffset=Integer.parseInt(alignment);
+}
+int val=0;
+chunk=ByteBuffers.allocateAlignedByteBuffer((HyperLogLogCollector.getLatestNumBytesForDenseStorage() + CACHE_LINE + CACHE_LINE) * count,CACHE_LINE);
+int pos=0;
+for (int i=0; i < count; ++i) {
+HyperLogLogCollector c=HyperLogLogCollector.makeLatestCollector();
+for (int k=0; k < 40; ++k) c.add(fn.hashInt(++val).asBytes());
+final ByteBuffer sparseHeapCopy=c.toByteBuffer();
+int size=sparseHeapCopy.remaining();
+final ByteBuffer buf;
+final int offset=random ? (int)(rand.nextDouble() * 64) : defaultOffset;
+if (alignSource && (pos % CACHE_LINE) != offset) {
+pos+=(pos % CACHE_LINE) < offset ? offset - (pos % CACHE_LINE) : (CACHE_LINE + offset - pos % CACHE_LINE);
+}
+positions[i]=pos;
+sizes[i]=size;
+chunk.limit(pos + size);
+chunk.position(pos);
+buf=chunk.duplicate();
+buf.mark();
+pos+=size;
+buf.put(sparseHeapCopy);
+buf.reset();
+collectors.add(HyperLogLogCollector.makeCollector(buf));
+}
 }
