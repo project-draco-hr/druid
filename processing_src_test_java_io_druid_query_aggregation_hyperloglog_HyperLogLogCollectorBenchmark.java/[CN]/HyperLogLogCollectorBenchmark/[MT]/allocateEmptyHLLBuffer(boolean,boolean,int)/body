@@ -1,0 +1,27 @@
+{
+  final int size=HyperLogLogCollector.getLatestNumBytesForDenseStorage();
+  final byte[] EMPTY_BYTES=HyperLogLogCollector.makeEmptyVersionedByteArray();
+  final ByteBuffer buf;
+  if (direct) {
+    if (aligned) {
+      buf=ByteBuffers.allocateAlignedByteBuffer(size + offset,CACHE_LINE);
+      buf.position(offset);
+      buf.mark();
+      buf.limit(size + offset);
+    }
+ else {
+      buf=ByteBuffer.allocateDirect(size);
+      buf.mark();
+      buf.limit(size);
+    }
+    buf.put(EMPTY_BYTES);
+    buf.reset();
+  }
+ else {
+    buf=ByteBuffer.allocate(size);
+    buf.limit(size);
+    buf.put(EMPTY_BYTES);
+    buf.rewind();
+  }
+  return buf;
+}

@@ -1,7 +1,7 @@
 {
-  List<DataSegment> matchingSegments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
+  List<DataSegment> matchingSegments=dbConnector.getDBI().withHandle(new HandleCallback<List<DataSegment>>(){
     @Override public List<DataSegment> withHandle(    Handle handle) throws IOException, SQLException {
-      return handle.createQuery(String.format(DbConnector.isPostgreSQL(handle) ? "SELECT payload FROM %s WHERE dataSource = :dataSource and start >= :start and \"end\" <= :end and used = false" : "SELECT payload FROM %s WHERE dataSource = :dataSource and start >= :start and end <= :end and used = false",dbTables.getSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).fold(Lists.<DataSegment>newArrayList(),new Folder3<List<DataSegment>,Map<String,Object>>(){
+      return handle.createQuery(String.format(dbConnector.isPostgreSQL() ? "SELECT payload FROM %s WHERE dataSource = :dataSource and start >= :start and \"end\" <= :end and used = false" : "SELECT payload FROM %s WHERE dataSource = :dataSource and start >= :start and end <= :end and used = false",dbTables.getSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).fold(Lists.<DataSegment>newArrayList(),new Folder3<List<DataSegment>,Map<String,Object>>(){
         @Override public List<DataSegment> fold(        List<DataSegment> accumulator,        Map<String,Object> stringObjectMap,        FoldController foldController,        StatementContext statementContext) throws SQLException {
           try {
             DataSegment segment=jsonMapper.readValue((String)stringObjectMap.get("payload"),DataSegment.class);

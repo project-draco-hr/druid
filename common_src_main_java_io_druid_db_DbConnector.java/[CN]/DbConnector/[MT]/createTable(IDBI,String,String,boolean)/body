@@ -1,0 +1,27 @@
+{
+  try {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        List<Map<String,Object>> table;
+        if (isPostgreSQL) {
+          table=handle.select(String.format("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename LIKE '%s'",tableName));
+        }
+ else {
+          table=handle.select(String.format("SHOW tables LIKE '%s'",tableName));
+        }
+        if (table.isEmpty()) {
+          log.info("Creating table[%s]",tableName);
+          handle.createStatement(sql).execute();
+        }
+ else {
+          log.info("Table[%s] existed: [%s]",tableName,table);
+        }
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    log.warn(e,"Exception creating table");
+  }
+}
