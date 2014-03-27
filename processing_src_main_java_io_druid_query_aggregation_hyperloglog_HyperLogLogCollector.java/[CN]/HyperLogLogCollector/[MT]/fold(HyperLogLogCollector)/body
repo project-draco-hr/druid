@@ -7,7 +7,7 @@
   }
   estimatedCardinality=null;
   if (getRegisterOffset() < other.getRegisterOffset()) {
-    ByteBuffer newStorage=ByteBuffer.allocate(other.storageBuffer.remaining());
+    ByteBuffer newStorage=ByteBuffer.allocateDirect(other.storageBuffer.remaining());
     newStorage.put(other.storageBuffer.asReadOnlyBuffer());
     newStorage.clear();
     other.storageBuffer=storageBuffer;
@@ -15,51 +15,43 @@
     storageBuffer=newStorage;
     initPosition=0;
   }
-  ByteBuffer otherBuffer=other.storageBuffer.asReadOnlyBuffer();
-  byte otherOffset=other.getRegisterOffset();
+  final ByteBuffer otherBuffer=other.storageBuffer.asReadOnlyBuffer();
+  final byte otherOffset=other.getRegisterOffset();
   if (storageBuffer.remaining() != getNumBytesForDenseStorage()) {
     convertToDenseStorage();
   }
   byte myOffset=getRegisterOffset();
   short numNonZero=getNumNonZeroRegisters();
-  int offsetDiff=myOffset - otherOffset;
+  final int offsetDiff=myOffset - otherOffset;
   if (offsetDiff < 0) {
     throw new ISE("offsetDiff[%d] < 0, shouldn't happen because of swap.",offsetDiff);
   }
-  byte otherOverflowValue=other.getMaxOverflowValue();
-  short otherOverflowRegister=other.getMaxOverflowRegister();
-  add(otherOverflowRegister,otherOverflowValue);
-  int myPayloadStart=getPayloadBytePosition();
+  add(other.getMaxOverflowRegister(),other.getMaxOverflowValue());
+  final int myPayloadStart=getPayloadBytePosition();
   otherBuffer.position(other.getPayloadBytePosition());
   if (isSparse(otherBuffer)) {
     while (otherBuffer.hasRemaining()) {
-      short position=otherBuffer.getShort();
-      int payloadStartPosition=position - other.getNumHeaderBytes();
-      numNonZero+=mergeAndStoreByteRegister(myPayloadStart + payloadStartPosition,offsetDiff,otherBuffer.get());
-      if (numNonZero == NUM_BUCKETS) {
-        myOffset+=1;
-        numNonZero=decrementBuckets();
-        setRegisterOffset(myOffset);
-        setNumNonZeroRegisters(numNonZero);
-        offsetDiff=myOffset - otherOffset;
-      }
+      final int payloadStartPosition=otherBuffer.getShort() - other.getNumHeaderBytes();
+      numNonZero+=mergeAndStoreByteRegister(storageBuffer,myPayloadStart + payloadStartPosition,offsetDiff,otherBuffer.get());
+    }
+    if (numNonZero == NUM_BUCKETS) {
+      numNonZero=decrementBuckets();
+      setRegisterOffset(++myOffset);
+      setNumNonZeroRegisters(numNonZero);
     }
   }
  else {
     int position=getPayloadBytePosition();
     while (otherBuffer.hasRemaining()) {
-      numNonZero+=mergeAndStoreByteRegister(position,offsetDiff,otherBuffer.get());
-      if (numNonZero == NUM_BUCKETS) {
-        myOffset+=1;
-        numNonZero=decrementBuckets();
-        setRegisterOffset(myOffset);
-        setNumNonZeroRegisters(numNonZero);
-        offsetDiff=myOffset - otherOffset;
-      }
+      numNonZero+=mergeAndStoreByteRegister(storageBuffer,position,offsetDiff,otherBuffer.get());
       position++;
     }
+    if (numNonZero == NUM_BUCKETS) {
+      numNonZero=decrementBuckets();
+      setRegisterOffset(++myOffset);
+      setNumNonZeroRegisters(numNonZero);
+    }
   }
-  setRegisterOffset(myOffset);
   setNumNonZeroRegisters(numNonZero);
   return this;
 }
