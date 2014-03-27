@@ -2,13 +2,13 @@
   try {
     dbi.withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
-        List<Map<String,Object>> existing=handle.createQuery(String.format("SELECT id from %s where datasource=:dataSource;",ruleTable)).bind("dataSource",defaultTier).list();
+        List<Map<String,Object>> existing=handle.createQuery(String.format("SELECT id from %s where datasource=:dataSource;",ruleTable)).bind("dataSource",defaultDatasourceName).list();
         if (!existing.isEmpty()) {
           return null;
         }
         final List<Rule> defaultRules=Arrays.<Rule>asList(new ForeverLoadRule(ImmutableMap.<String,Integer>of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS)));
         final String version=new DateTime().toString();
-        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",ruleTable)).bind("id",String.format("%s_%s",defaultTier,version)).bind("dataSource",defaultTier).bind("version",version).bind("payload",jsonMapper.writeValueAsString(defaultRules)).execute();
+        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",ruleTable)).bind("id",String.format("%s_%s",defaultDatasourceName,version)).bind("dataSource",defaultDatasourceName).bind("version",version).bind("payload",jsonMapper.writeValueAsString(defaultRules)).execute();
         return null;
       }
     }
