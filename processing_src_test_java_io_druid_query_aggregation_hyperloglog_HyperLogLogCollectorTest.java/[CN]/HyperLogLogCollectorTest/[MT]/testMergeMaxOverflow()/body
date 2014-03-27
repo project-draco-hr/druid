@@ -1,0 +1,18 @@
+{
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  collector.add((short)23,(byte)16);
+  HyperLogLogCollector other=HyperLogLogCollector.makeLatestCollector();
+  collector.add((short)56,(byte)17);
+  collector.fold(other);
+  Assert.assertEquals(56,collector.getMaxOverflowRegister());
+  Assert.assertEquals(17,collector.getMaxOverflowValue());
+  collector=HyperLogLogCollector.makeLatestCollector();
+  fillBuckets(collector,(byte)0,(byte)49);
+  collector.add((short)23,(byte)65);
+  other=HyperLogLogCollector.makeLatestCollector();
+  fillBuckets(other,(byte)0,(byte)43);
+  other.add((short)47,(byte)67);
+  collector.fold(other);
+  Assert.assertEquals(47,collector.getMaxOverflowRegister());
+  Assert.assertEquals(67,collector.getMaxOverflowValue());
+}
