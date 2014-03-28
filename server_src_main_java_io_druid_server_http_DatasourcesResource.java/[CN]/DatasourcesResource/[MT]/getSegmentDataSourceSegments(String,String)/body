@@ -1,14 +1,14 @@
 {
   DruidDataSource dataSource=getDataSource(dataSourceName.toLowerCase());
   if (dataSource == null) {
-    return Response.status(Response.Status.NOT_FOUND).build();
+    return Response.noContent().build();
   }
-  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  Response.ResponseBuilder builder=Response.ok();
   if (full != null) {
     return builder.entity(dataSource.getSegments()).build();
   }
   return builder.entity(Iterables.transform(dataSource.getSegments(),new Function<DataSegment,Object>(){
-    @Override public Object apply(    @Nullable DataSegment segment){
+    @Override public Object apply(    DataSegment segment){
       return segment.getIdentifier();
     }
   }

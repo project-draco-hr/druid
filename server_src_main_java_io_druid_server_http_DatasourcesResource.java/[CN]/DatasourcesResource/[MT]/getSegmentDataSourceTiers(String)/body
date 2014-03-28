@@ -1,0 +1,9 @@
+{
+  Set<String> retVal=Sets.newHashSet();
+  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
+    if (druidServer.getDataSource(dataSourceName) != null) {
+      retVal.add(druidServer.getTier());
+    }
+  }
+  return Response.ok(retVal).build();
+}
