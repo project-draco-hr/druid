@@ -9,7 +9,9 @@
     }
   }
 ;
-  CachePopulatingQueryRunner runner=new CachePopulatingQueryRunner("segment",new SegmentDescriptor(new Interval("2011/2012"),"version",0),new DefaultObjectMapper(),EasyMock.createMock(Cache.class),new TopNQueryQueryToolChest(new TopNQueryConfig()),new QueryRunner(){
+  Cache cache=EasyMock.createMock(Cache.class);
+  EasyMock.expect(cache.isLocal()).andReturn(false);
+  CachePopulatingQueryRunner runner=new CachePopulatingQueryRunner("segment",new SegmentDescriptor(new Interval("2011/2012"),"version",0),new DefaultObjectMapper(),cache,new TopNQueryQueryToolChest(new TopNQueryConfig()),new QueryRunner(){
     @Override public Sequence run(    Query query){
       return resultSeq;
     }
