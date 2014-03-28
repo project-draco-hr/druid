@@ -1,3 +1,4 @@
 {
-  return new ResourceClosingYielder<OutType>(baseSequence.toYielder(initValue,accumulator),segment.increment());
+  Closeable closeable=segment.increment();
+  return new ResourceClosingYielder<OutType>(baseSequence.toYielder(initValue,accumulator),closeable);
 }
