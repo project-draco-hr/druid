@@ -1,12 +1,11 @@
 {
   DruidDataSource dataSource=getDataSource(dataSourceName.toLowerCase());
   if (dataSource == null) {
-    return Response.status(Response.Status.NOT_FOUND).build();
+    return Response.noContent().build();
   }
-  for (  DataSegment segment : dataSource.getSegments()) {
-    if (segment.getIdentifier().equalsIgnoreCase(segmentId)) {
-      return Response.status(Response.Status.OK).entity(segment).build();
-    }
+  Pair<DataSegment,Set<String>> retVal=getSegment(segmentId);
+  if (retVal != null) {
+    return Response.ok(ImmutableMap.of("metadata",retVal.lhs,"servers",retVal.rhs)).build();
   }
-  return Response.status(Response.Status.NOT_FOUND).build();
+  return Response.noContent().build();
 }

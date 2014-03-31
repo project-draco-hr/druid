@@ -1,0 +1,51 @@
+{
+  final DruidDataSource dataSource=getDataSource(dataSourceName.toLowerCase());
+  final Interval theInterval=new Interval(interval.replace("_","/"));
+  if (dataSource == null || interval == null) {
+    return Response.noContent().build();
+  }
+  final Comparator<Interval> comparator=Comparators.inverse(Comparators.intervalsByStartThenEnd());
+  if (full != null) {
+    final Map<Interval,Map<String,Object>> retVal=Maps.newTreeMap(comparator);
+    for (    DataSegment dataSegment : dataSource.getSegments()) {
+      if (theInterval.contains(dataSegment.getInterval())) {
+        Map<String,Object> segments=retVal.get(dataSegment.getInterval());
+        if (segments == null) {
+          segments=Maps.newHashMap();
+          retVal.put(dataSegment.getInterval(),segments);
+        }
+        Pair<DataSegment,Set<String>> val=getSegment(dataSegment.getIdentifier());
+        segments.put("id",dataSegment.getIdentifier());
+        segments.put("metadata",val.lhs);
+        segments.put("servers",val.rhs);
+      }
+    }
+    return Response.ok(retVal).build();
+  }
+  if (simple != null) {
+    final Map<Interval,Map<String,Object>> retVal=Maps.newHashMap();
+    for (    DataSegment dataSegment : dataSource.getSegments()) {
+      if (theInterval.contains(dataSegment.getInterval())) {
+        Map<String,Object> properties=retVal.get(dataSegment.getInterval());
+        if (properties == null) {
+          properties=Maps.newHashMap();
+          properties.put("size",dataSegment.getSize());
+          properties.put("count",1);
+          retVal.put(dataSegment.getInterval(),properties);
+        }
+ else {
+          properties.put("size",MapUtils.getLong(properties,"size",0L) + dataSegment.getSize());
+          properties.put("count",MapUtils.getInt(properties,"count",0) + 1);
+        }
+      }
+    }
+    return Response.ok(retVal).build();
+  }
+  final Set<Interval> intervals=Sets.newTreeSet(comparator);
+  for (  DataSegment dataSegment : dataSource.getSegments()) {
+    if (theInterval.contains(dataSegment.getInterval())) {
+      intervals.add(dataSegment.getInterval());
+    }
+  }
+  return Response.ok(intervals).build();
+}

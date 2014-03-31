@@ -1,0 +1,14 @@
+{
+  Set<String> retVal=Sets.newHashSet();
+  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
+    if (druidServer.getTier().equalsIgnoreCase(tierName)) {
+      retVal.addAll(Lists.newArrayList(Iterables.transform(druidServer.getDataSources(),new Function<DruidDataSource,String>(){
+        @Override public String apply(        DruidDataSource input){
+          return input.getName();
+        }
+      }
+)));
+    }
+  }
+  return Response.ok(retVal).build();
+}
