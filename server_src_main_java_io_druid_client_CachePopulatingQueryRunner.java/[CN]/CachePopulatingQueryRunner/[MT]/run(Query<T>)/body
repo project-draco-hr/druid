@@ -1,10 +1,14 @@
 {
   final CacheStrategy strategy=toolChest.getCacheStrategy(query);
   final boolean populateCache=Boolean.parseBoolean(query.getContextValue(CacheConfig.POPULATE_CACHE,"true")) && strategy != null && cacheConfig.isPopulateCache() && !(cache instanceof MapCache);
-  Sequence<T> results=base.run(query);
   if (populateCache) {
+    Sequence<T> results=base.run(query);
     Cache.NamedKey key=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,strategy.computeCacheKey(query));
-    CacheUtil.populate(cache,mapper,key,Sequences.toList(Sequences.map(results,strategy.prepareForCache()),new ArrayList()));
+    ArrayList<T> resultAsList=Sequences.toList(results,new ArrayList<T>());
+    CacheUtil.populate(cache,mapper,key,Lists.transform(resultAsList,strategy.prepareForCache()));
+    return Sequences.simple(resultAsList);
   }
-  return results;
+ else {
+    return base.run(query);
+  }
 }
