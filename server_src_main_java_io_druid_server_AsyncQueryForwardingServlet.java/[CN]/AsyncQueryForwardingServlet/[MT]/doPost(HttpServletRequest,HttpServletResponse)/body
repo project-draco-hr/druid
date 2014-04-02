@@ -53,7 +53,7 @@
       @Override public ClientResponse<OutputStream> done(      ClientResponse<OutputStream> clientResponse){
         final long requestTime=System.currentTimeMillis() - start;
         log.info("Request time: %d",requestTime);
-        emitter.emit(new ServiceMetricEvent.Builder().setUser2(theQuery.getDataSource().getName()).setUser4(theQuery.getType()).setUser5(theQuery.getIntervals().get(0).toString()).setUser6(String.valueOf(theQuery.hasFilters())).setUser7(req.getRemoteAddr()).setUser9(theQuery.getDuration().toPeriod().toStandardMinutes().toString()).setUser10(theQueryId).build("request/time",requestTime));
+        emitter.emit(new ServiceMetricEvent.Builder().setUser2(theQuery.getDataSource().getName()).setUser4(theQuery.getType()).setUser5(theQuery.getIntervals().get(0).toString()).setUser6(String.valueOf(theQuery.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(theQueryId).setUser9(theQuery.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
         final OutputStream obj=clientResponse.getObj();
         try {
           resp.flushBuffer();
