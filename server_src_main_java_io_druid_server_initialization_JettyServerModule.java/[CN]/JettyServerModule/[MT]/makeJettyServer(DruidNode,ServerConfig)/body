@@ -3,9 +3,9 @@
   threadPool.setMinThreads(config.getNumThreads());
   threadPool.setMaxThreads(config.getNumThreads());
   final Server server=new Server(threadPool);
-  ServerConnector CONNECTOR=new ServerConnector(server);
-  CONNECTOR.setPort(node.getPort());
-  CONNECTOR.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
-  server.setConnectors(new Connector[]{CONNECTOR});
+  ServerConnector connector=new ServerConnector(server);
+  connector.setPort(node.getPort());
+  connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
+  server.setConnectors(new Connector[]{connector});
   return server;
 }
