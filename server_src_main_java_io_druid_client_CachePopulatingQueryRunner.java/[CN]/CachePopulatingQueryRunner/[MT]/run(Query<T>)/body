@@ -1,14 +1,19 @@
 {
   final CacheStrategy strategy=toolChest.getCacheStrategy(query);
-  final boolean populateCache=Boolean.parseBoolean(query.getContextValue(CacheConfig.POPULATE_CACHE,"true")) && strategy != null && cacheConfig.isPopulateCache() && !(cache instanceof MapCache);
+  final boolean populateCache=Boolean.parseBoolean(query.getContextValue(CacheConfig.POPULATE_CACHE,"true")) && strategy != null && cacheConfig.isPopulateCache();
+  final Sequence<T> results=base.run(query);
   if (populateCache) {
-    Sequence<T> results=base.run(query);
-    Cache.NamedKey key=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,strategy.computeCacheKey(query));
-    ArrayList<T> resultAsList=Sequences.toList(results,new ArrayList<T>());
-    CacheUtil.populate(cache,mapper,key,Lists.transform(resultAsList,strategy.prepareForCache()));
-    return Sequences.simple(resultAsList);
+    final Cache.NamedKey key=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,strategy.computeCacheKey(query));
+    final Function cacheFn=strategy.prepareForCache();
+    return Sequences.map(results,new Function<T,T>(){
+      @Nullable @Override public T apply(      @Nullable T input){
+        CacheUtil.populate(cache,mapper,key,ImmutableList.of(cacheFn.apply(input)));
+        return input;
+      }
+    }
+);
   }
  else {
-    return base.run(query);
+    return results;
   }
 }
