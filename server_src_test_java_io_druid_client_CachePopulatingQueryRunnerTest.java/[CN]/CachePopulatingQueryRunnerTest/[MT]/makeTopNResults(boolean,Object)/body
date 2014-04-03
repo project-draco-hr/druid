@@ -10,7 +10,12 @@
       }
       final double imps=((Number)objects[index + 2]).doubleValue();
       final double rows=((Number)objects[index + 1]).doubleValue();
-      values.add(ImmutableMap.of("top_dim",objects[index],"rows",rows,"imps",imps,"impers",imps,"avg_imps_per_row",imps / rows));
+      if (cachedResults) {
+        values.add(ImmutableMap.of("top_dim",objects[index],"rows",rows,"imps",imps,"impers",imps));
+      }
+ else {
+        values.add(ImmutableMap.of("top_dim",objects[index],"rows",rows,"imps",imps,"impers",imps,"avg_imps_per_row",imps / rows));
+      }
       index+=3;
     }
     retVal.add(new Result<>(timestamp,new TopNResultValue(values)));

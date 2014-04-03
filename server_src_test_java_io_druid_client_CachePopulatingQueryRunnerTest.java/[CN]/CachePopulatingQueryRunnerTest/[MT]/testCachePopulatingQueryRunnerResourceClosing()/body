@@ -1,5 +1,6 @@
 {
-  Iterable<Result<TopNResultValue>> expectedRes=makeTopNResults(new DateTime("2011-01-05"),"a",50,4994,"b",50,4993,"c",50,4992,new DateTime("2011-01-06"),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-01-07"),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-01-08"),"a",50,4988,"b",50,4987,"c",50,4986,new DateTime("2011-01-09"),"a",50,4985,"b",50,4984,"c",50,4983);
+  Object[] objects=new Object[]{new DateTime("2011-01-05"),"a",50,4994,"b",50,4993,"c",50,4992,new DateTime("2011-01-06"),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-01-07"),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-01-08"),"a",50,4988,"b",50,4987,"c",50,4986,new DateTime("2011-01-09"),"a",50,4985,"b",50,4984,"c",50,4983};
+  Iterable<Result<TopNResultValue>> expectedRes=makeTopNResults(false,objects);
   final TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(AllGranularity.ALL);
   final AssertingClosable closable=new AssertingClosable();
   final Sequence resultSeq=new ResourceClosingSequence(Sequences.simple(expectedRes),closable){
@@ -9,17 +10,30 @@
     }
   }
 ;
-  Cache cache=EasyMock.createMock(Cache.class);
-  EasyMock.expect(cache.isLocal()).andReturn(false);
-  CachePopulatingQueryRunner runner=new CachePopulatingQueryRunner("segment",new SegmentDescriptor(new Interval("2011/2012"),"version",0),new DefaultObjectMapper(),cache,new TopNQueryQueryToolChest(new TopNQueryConfig()),new QueryRunner(){
+  Cache cache=MapCache.create(1024 * 1024);
+  String segmentIdentifier="segment";
+  SegmentDescriptor segmentDescriptor=new SegmentDescriptor(new Interval("2011/2012"),"version",0);
+  TopNQueryQueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig());
+  CachePopulatingQueryRunner runner=new CachePopulatingQueryRunner(segmentIdentifier,segmentDescriptor,new DefaultObjectMapper(),cache,toolchest,new QueryRunner(){
     @Override public Sequence run(    Query query){
       return resultSeq;
     }
   }
 ,new CacheConfig());
-  Sequence res=runner.run(builder.build());
-  Assert.assertTrue(closable.isClosed());
+  TopNQuery query=builder.build();
+  CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
+  Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));
+  Sequence res=runner.run(query);
+  Assert.assertFalse("sequence must not be closed",closable.isClosed());
+  Assert.assertNull("cache must be empty",cache.get(cacheKey));
   ArrayList results=Sequences.toList(res,new ArrayList());
   Assert.assertTrue(closable.isClosed());
   Assert.assertEquals(expectedRes,results);
+  Iterable<Result<TopNResultValue>> expectedCacheRes=makeTopNResults(true,objects);
+  ObjectMapper objectMapper=new DefaultObjectMapper();
+  byte[] cacheValue=cache.get(cacheKey);
+  Assert.assertNotNull(cacheValue);
+  Function<Object,Result<TopNResultValue>> fn=cacheStrategy.pullFromCache();
+  List<Result<TopNResultValue>> cacheResults=Lists.newArrayList(Iterators.transform(objectMapper.readValues(objectMapper.getFactory().createParser(cacheValue),cacheStrategy.getCacheObjectClazz()),fn));
+  Assert.assertEquals(expectedCacheRes,cacheResults);
 }
