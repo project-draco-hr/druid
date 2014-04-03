@@ -1,9 +1,0 @@
-{
-  Server server=findServer(query);
-  if (server == null) {
-    log.makeAlert("Catastrophic failure! No servers found at all! Failing request!").emit();
-    return Sequences.empty();
-  }
-  QueryRunner<T> client=new DirectDruidClient<T>(warehouse,objectMapper,httpClient,server.getHost());
-  return client.run(query);
-}
