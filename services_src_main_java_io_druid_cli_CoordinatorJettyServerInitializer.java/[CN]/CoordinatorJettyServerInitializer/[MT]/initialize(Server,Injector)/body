@@ -3,6 +3,7 @@
   ServletHolder holderPwd=new ServletHolder("default",DefaultServlet.class);
   root.addServlet(holderPwd,"/");
   root.setResourceBase(DruidCoordinator.class.getClassLoader().getResource("static").toExternalForm());
+  root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GzipFilter.class,"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);
   root.addFilter(GuiceFilter.class,"/info/*",null);

@@ -4,6 +4,8 @@
       ConfigProvider.bind(binder,DruidCoordinatorConfig.class);
       JsonConfigProvider.bind(binder,"druid.manager.segments",DatabaseSegmentManagerConfig.class);
       JsonConfigProvider.bind(binder,"druid.manager.rules",DatabaseRuleManagerConfig.class);
+      binder.bind(RedirectFilter.class).in(LazySingleton.class);
+      binder.bind(RedirectInfo.class).to(CoordinatorRedirectInfo.class).in(LazySingleton.class);
       binder.bind(DatabaseSegmentManager.class).toProvider(DatabaseSegmentManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(DatabaseRuleManager.class).toProvider(DatabaseRuleManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
