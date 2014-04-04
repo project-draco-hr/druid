@@ -13,9 +13,7 @@
         retVal.put(dataSegment.getInterval(),segments);
       }
       Pair<DataSegment,Set<String>> val=getSegment(dataSegment.getIdentifier());
-      segments.put("id",dataSegment.getIdentifier());
-      segments.put("metadata",val.lhs);
-      segments.put("servers",val.rhs);
+      segments.put(dataSegment.getIdentifier(),ImmutableMap.of("metadata",val.lhs,"servers",val.rhs));
     }
     return Response.ok(retVal).build();
   }

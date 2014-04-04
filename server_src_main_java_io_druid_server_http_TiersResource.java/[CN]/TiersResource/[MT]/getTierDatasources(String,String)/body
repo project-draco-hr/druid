@@ -1,0 +1,31 @@
+{
+  if (simple != null) {
+    Table<String,Interval,Map<String,Object>> retVal=HashBasedTable.create();
+    for (    DruidServer druidServer : serverInventoryView.getInventory()) {
+      if (druidServer.getTier().equalsIgnoreCase(tierName)) {
+        for (        DataSegment dataSegment : druidServer.getSegments().values()) {
+          Map<String,Object> properties=retVal.get(dataSegment.getDataSource(),dataSegment.getInterval());
+          if (properties == null) {
+            properties=Maps.newHashMap();
+            retVal.put(dataSegment.getDataSource(),dataSegment.getInterval(),properties);
+          }
+          properties.put("size",MapUtils.getLong(properties,"size",0L) + dataSegment.getSize());
+          properties.put("count",MapUtils.getInt(properties,"count",0) + 1);
+        }
+      }
+    }
+    return Response.ok(retVal.rowMap()).build();
+  }
+  Set<String> retVal=Sets.newHashSet();
+  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
+    if (druidServer.getTier().equalsIgnoreCase(tierName)) {
+      retVal.addAll(Lists.newArrayList(Iterables.transform(druidServer.getDataSources(),new Function<DruidDataSource,String>(){
+        @Override public String apply(        DruidDataSource input){
+          return input.getName();
+        }
+      }
+)));
+    }
+  }
+  return Response.ok(retVal).build();
+}

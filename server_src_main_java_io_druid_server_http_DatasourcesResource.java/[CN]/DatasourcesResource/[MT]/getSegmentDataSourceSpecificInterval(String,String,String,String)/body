@@ -15,9 +15,7 @@
           retVal.put(dataSegment.getInterval(),segments);
         }
         Pair<DataSegment,Set<String>> val=getSegment(dataSegment.getIdentifier());
-        segments.put("id",dataSegment.getIdentifier());
-        segments.put("metadata",val.lhs);
-        segments.put("servers",val.rhs);
+        segments.put(dataSegment.getIdentifier(),ImmutableMap.of("metadata",val.lhs,"servers",val.rhs));
       }
     }
     return Response.ok(retVal).build();
@@ -41,11 +39,11 @@
     }
     return Response.ok(retVal).build();
   }
-  final Set<Interval> intervals=Sets.newTreeSet(comparator);
+  final Set<String> retVal=Sets.newTreeSet(Comparators.inverse(String.CASE_INSENSITIVE_ORDER));
   for (  DataSegment dataSegment : dataSource.getSegments()) {
     if (theInterval.contains(dataSegment.getInterval())) {
-      intervals.add(dataSegment.getInterval());
+      retVal.add(dataSegment.getIdentifier());
     }
   }
-  return Response.ok(intervals).build();
+  return Response.ok(retVal).build();
 }

@@ -15,6 +15,9 @@
   long maxTime=Long.MIN_VALUE;
   for (  DruidServer druidServer : serverInventoryView.getInventory()) {
     DruidDataSource druidDataSource=druidServer.getDataSource(dataSourceName);
+    if (druidDataSource == null) {
+      continue;
+    }
     long dataSourceSegmentSize=0;
     for (    DataSegment dataSegment : druidDataSource.getSegments()) {
       dataSourceSegmentSize+=dataSegment.getSize();
