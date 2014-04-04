@@ -1,0 +1,22 @@
+{
+  final ListenableFuture<FinalType> future;
+  final String url=String.format("http://%s/druid/v2/",host);
+  try {
+    log.debug("Querying url[%s]",url);
+    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(responseHandler);
+    openConnections.getAndIncrement();
+    Futures.addCallback(future,new FutureCallback<FinalType>(){
+      @Override public void onSuccess(      FinalType result){
+        openConnections.getAndDecrement();
+      }
+      @Override public void onFailure(      Throwable t){
+        openConnections.getAndDecrement();
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  return future;
+}

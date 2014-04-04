@@ -1,0 +1,19 @@
+{
+  List<Result<TopNResultValue>> retVal=Lists.newArrayList();
+  int index=0;
+  while (index < objects.length) {
+    DateTime timestamp=(DateTime)objects[index++];
+    List<Map<String,Object>> values=Lists.newArrayList();
+    while (index < objects.length && !(objects[index] instanceof DateTime)) {
+      if (objects.length - index < 3) {
+        throw new ISE("expect 3 values for each entry in the top list, had %d values left.",objects.length - index);
+      }
+      final double imps=((Number)objects[index + 2]).doubleValue();
+      final double rows=((Number)objects[index + 1]).doubleValue();
+      values.add(ImmutableMap.of("top_dim",objects[index],"rows",rows,"imps",imps,"impers",imps,"avg_imps_per_row",imps / rows));
+      index+=3;
+    }
+    retVal.add(new Result<>(timestamp,new TopNResultValue(values)));
+  }
+  return retVal;
+}

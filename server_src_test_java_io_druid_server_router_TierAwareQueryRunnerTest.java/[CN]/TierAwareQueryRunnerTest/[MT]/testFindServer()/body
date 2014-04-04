@@ -1,9 +1,0 @@
-{
-  EasyMock.expect(brokerSelector.select(EasyMock.<Query>anyObject())).andReturn(new Pair("hotBroker",selector));
-  EasyMock.replay(brokerSelector);
-  EasyMock.expect(selector.pick()).andReturn(server).once();
-  EasyMock.replay(selector);
-  TierAwareQueryRunner queryRunner=new TierAwareQueryRunner(null,null,null,brokerSelector,config);
-  Server server=queryRunner.findServer(new TimeBoundaryQuery(new TableDataSource("test"),new MultipleIntervalSegmentSpec(Arrays.<Interval>asList(new Interval("2011-08-31/2011-09-01"))),null));
-  Assert.assertEquals("foo",server.getHost());
-}
