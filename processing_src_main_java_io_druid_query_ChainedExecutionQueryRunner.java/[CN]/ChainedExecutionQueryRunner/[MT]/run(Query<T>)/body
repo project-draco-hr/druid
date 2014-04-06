@@ -1,5 +1,5 @@
 {
-  final int priority=Integer.parseInt((String)query.getContextValue("priority","0"));
+  final int priority=query.getContextValue("priority",0);
   return new BaseSequence<T,Iterator<T>>(new BaseSequence.IteratorMaker<T,Iterator<T>>(){
     @Override public Iterator<T> make(){
       List<Future<List<T>>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,Future<List<T>>>(){

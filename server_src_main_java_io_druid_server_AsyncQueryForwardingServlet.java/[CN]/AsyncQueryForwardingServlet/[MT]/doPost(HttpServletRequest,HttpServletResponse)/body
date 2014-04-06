@@ -11,8 +11,6 @@
       return;
     }
     req.setAttribute(DISPATCHED,true);
-    resp.setStatus(200);
-    resp.setContentType("application/x-javascript");
     query=objectMapper.readValue(req.getInputStream(),Query.class);
     queryId=query.getId();
     if (queryId == null) {
@@ -27,6 +25,8 @@
     final String theQueryId=queryId;
     final HttpResponseHandler<OutputStream,OutputStream> responseHandler=new HttpResponseHandler<OutputStream,OutputStream>(){
       @Override public ClientResponse<OutputStream> handleResponse(      HttpResponse response){
+        resp.setStatus(response.getStatus().getCode());
+        resp.setContentType("application/x-javascript");
         byte[] bytes=getContentBytes(response.getContent());
         if (bytes.length > 0) {
           try {
