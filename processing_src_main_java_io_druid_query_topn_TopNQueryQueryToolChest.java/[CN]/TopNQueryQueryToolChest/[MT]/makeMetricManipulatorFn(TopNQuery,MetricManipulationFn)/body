@@ -11,7 +11,7 @@
           for (          PostAggregator postAgg : query.getPostAggregatorSpecs()) {
             Object calculatedPostAgg=input.getMetric(postAgg.getName());
             if (calculatedPostAgg != null) {
-              values.put(postAgg.getName(),input.getMetric(postAgg.getName()));
+              values.put(postAgg.getName(),calculatedPostAgg);
             }
  else {
               values.put(postAgg.getName(),postAgg.compute(values));
