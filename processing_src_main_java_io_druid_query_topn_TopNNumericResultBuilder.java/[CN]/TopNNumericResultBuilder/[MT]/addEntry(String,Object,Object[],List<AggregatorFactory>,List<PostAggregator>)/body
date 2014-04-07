@@ -6,7 +6,10 @@
     metricValues.put(aggFactoryIter.next().getName(),metricVal);
   }
   for (  PostAggregator postAgg : postAggs) {
-    metricValues.put(postAgg.getName(),postAgg.compute(metricValues));
+    if (postAgg.getName().equals(metricName)) {
+      metricValues.put(postAgg.getName(),postAgg.compute(metricValues));
+      break;
+    }
   }
   Object topNMetricVal=metricValues.get(metricName);
   pQueue.add(new DimValHolder.Builder().withTopNMetricVal(topNMetricVal).withDirName(dimName).withDimValIndex(dimValIndex).withMetricValues(metricValues).build());

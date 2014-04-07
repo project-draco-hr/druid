@@ -9,7 +9,13 @@
             values.put(agg.getName(),fn.manipulate(agg,input.getMetric(agg.getName())));
           }
           for (          PostAggregator postAgg : query.getPostAggregatorSpecs()) {
-            values.put(postAgg.getName(),input.getMetric(postAgg.getName()));
+            Object calculatedPostAgg=input.getMetric(postAgg.getName());
+            if (calculatedPostAgg != null) {
+              values.put(postAgg.getName(),input.getMetric(postAgg.getName()));
+            }
+ else {
+              values.put(postAgg.getName(),postAgg.compute(values));
+            }
           }
           values.put(dimension,input.getDimensionValue(dimension));
           return values;
