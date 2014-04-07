@@ -1,6 +1,5 @@
 {
   final ListenableFuture<FinalType> future;
-  final String url=String.format("http://%s/druid/v2/",host);
   try {
     log.debug("Querying url[%s]",url);
     future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(responseHandler);

@@ -8,7 +8,11 @@
           }
  else {
             log.info("Moving file[s3://%s/%s] to [s3://%s/%s]",s3Bucket,s3Path,targetS3Bucket,targetS3Path);
-            s3Client.moveObject(s3Bucket,s3Path,targetS3Bucket,new S3Object(targetS3Path),false);
+            final S3Object target=new S3Object(targetS3Path);
+            if (!config.getDisableAcl()) {
+              target.setAcl(GSAccessControlList.REST_CANNED_BUCKET_OWNER_FULL_CONTROL);
+            }
+            s3Client.moveObject(s3Bucket,s3Path,targetS3Bucket,target,false);
           }
         }
  else {
