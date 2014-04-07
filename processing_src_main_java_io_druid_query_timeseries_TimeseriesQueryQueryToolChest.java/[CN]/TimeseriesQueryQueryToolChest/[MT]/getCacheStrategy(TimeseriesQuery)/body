@@ -1,7 +1,6 @@
 {
   return new CacheStrategy<Result<TimeseriesResultValue>,Object,TimeseriesQuery>(){
     private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
-    private final List<PostAggregator> postAggs=query.getPostAggregatorSpecs();
     @Override public byte[] computeCacheKey(    TimeseriesQuery query){
       final DimFilter dimFilter=query.getDimensionsFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
@@ -38,9 +37,6 @@
           while (aggsIter.hasNext() && resultIter.hasNext()) {
             final AggregatorFactory factory=aggsIter.next();
             retVal.put(factory.getName(),factory.deserialize(resultIter.next()));
-          }
-          for (          PostAggregator postAgg : postAggs) {
-            retVal.put(postAgg.getName(),postAgg.compute(retVal));
           }
           return new Result<TimeseriesResultValue>(timestamp,new TimeseriesResultValue(retVal));
         }

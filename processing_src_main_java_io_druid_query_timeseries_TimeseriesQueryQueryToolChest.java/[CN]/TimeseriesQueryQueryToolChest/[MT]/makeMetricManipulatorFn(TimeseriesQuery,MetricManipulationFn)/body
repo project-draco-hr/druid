@@ -7,7 +7,13 @@
         values.put(agg.getName(),fn.manipulate(agg,holder.getMetric(agg.getName())));
       }
       for (      PostAggregator postAgg : query.getPostAggregatorSpecs()) {
-        values.put(postAgg.getName(),holder.getMetric(postAgg.getName()));
+        Object computedPostAggValue=holder.getMetric(postAgg.getName());
+        if (computedPostAggValue != null) {
+          values.put(postAgg.getName(),computedPostAggValue);
+        }
+ else {
+          values.put(postAgg.getName(),postAgg.compute(values));
+        }
       }
       return new Result<TimeseriesResultValue>(result.getTimestamp(),new TimeseriesResultValue(values));
     }
