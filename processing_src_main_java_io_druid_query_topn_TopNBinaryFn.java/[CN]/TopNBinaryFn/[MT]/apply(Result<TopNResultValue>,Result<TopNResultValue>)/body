@@ -24,7 +24,7 @@
         retVal.put(metricName,factory.combine(arg1Val.getMetric(metricName),arg2Val.getMetric(metricName)));
       }
       for (      PostAggregator postAgg : postAggregations) {
-        if (postAgg.getName().equals(topNMetricName)) {
+        if (postAgg.getName().equalsIgnoreCase(topNMetricName)) {
           retVal.put(postAgg.getName(),postAgg.compute(retVal));
         }
       }
