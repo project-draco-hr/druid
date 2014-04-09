@@ -35,12 +35,12 @@ synchronized (lock) {
     }
   }
   if (brokerServiceName == null) {
-    log.makeAlert("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName()).emit();
+    log.error("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName());
     brokerServiceName=tierConfig.getDefaultBrokerServiceName();
   }
   ServerDiscoverySelector retVal=selectorMap.get(brokerServiceName);
   if (retVal == null) {
-    log.makeAlert("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName()).emit();
+    log.error("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName());
     retVal=selectorMap.get(tierConfig.getDefaultBrokerServiceName());
   }
   return new Pair<>(brokerServiceName,retVal);
