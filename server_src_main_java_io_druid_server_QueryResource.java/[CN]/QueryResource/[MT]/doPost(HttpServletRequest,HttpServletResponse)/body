@@ -24,6 +24,7 @@
     }
     resp.setStatus(200);
     resp.setContentType("application/x-javascript");
+    resp.setHeader("X-Druid-Query-Id",query.getId());
     out=resp.getOutputStream();
     jsonWriter.writeValue(out,results);
     long requestTime=System.currentTimeMillis() - start;

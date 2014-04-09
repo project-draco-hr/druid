@@ -1,3 +1,7 @@
 {
-  return new SelectQueryRunnerFactory(new SelectQueryQueryToolChest(new QueryConfig(),jsonMapper),new SelectQueryEngine());
+  return new SelectQueryRunnerFactory(new SelectQueryQueryToolChest(new QueryConfig(),jsonMapper),new SelectQueryEngine(),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+);
 }

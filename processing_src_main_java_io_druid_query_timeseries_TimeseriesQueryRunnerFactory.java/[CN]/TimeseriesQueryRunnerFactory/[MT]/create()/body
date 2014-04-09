@@ -1,3 +1,7 @@
 {
-  return new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new QueryConfig()),new TimeseriesQueryEngine());
+  return new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new QueryConfig()),new TimeseriesQueryEngine(),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+);
 }

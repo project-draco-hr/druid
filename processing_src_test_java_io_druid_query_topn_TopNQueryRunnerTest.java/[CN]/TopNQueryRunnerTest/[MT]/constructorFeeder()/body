@@ -1,11 +1,19 @@
 {
   List<Object> retVal=Lists.newArrayList();
-  retVal.addAll(QueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig()))));
+  retVal.addAll(QueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig()),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+)));
   retVal.addAll(QueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(2000);
     }
   }
-),new TopNQueryQueryToolChest(new TopNQueryConfig()))));
+),new TopNQueryQueryToolChest(new TopNQueryConfig()),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+)));
   return retVal;
 }

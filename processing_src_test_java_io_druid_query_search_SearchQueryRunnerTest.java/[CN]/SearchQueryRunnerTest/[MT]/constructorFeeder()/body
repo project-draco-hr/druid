@@ -1,3 +1,7 @@
 {
-  return QueryRunnerTestHelper.makeQueryRunners(new SearchQueryRunnerFactory(new SearchQueryQueryToolChest(new SearchQueryConfig())));
+  return QueryRunnerTestHelper.makeQueryRunners(new SearchQueryRunnerFactory(new SearchQueryQueryToolChest(new SearchQueryConfig()),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+));
 }

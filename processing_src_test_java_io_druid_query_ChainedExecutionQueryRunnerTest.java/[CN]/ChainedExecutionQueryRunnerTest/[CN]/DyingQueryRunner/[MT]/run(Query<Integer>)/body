@@ -1,0 +1,17 @@
+{
+  latch.countDown();
+  int i=0;
+  while (i >= 0) {
+    if (Thread.interrupted()) {
+      throw new QueryInterruptedException("I got killed");
+    }
+    try {
+      Thread.sleep(100);
+    }
+ catch (    InterruptedException e) {
+      throw new QueryInterruptedException("I got killed");
+    }
+    ++i;
+  }
+  return Sequences.simple(Lists.newArrayList(i));
+}

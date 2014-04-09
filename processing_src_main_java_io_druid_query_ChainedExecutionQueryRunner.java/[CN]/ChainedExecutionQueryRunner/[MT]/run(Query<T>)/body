@@ -2,10 +2,10 @@
   final int priority=query.getContextPriority(0);
   return new BaseSequence<T,Iterator<T>>(new BaseSequence.IteratorMaker<T,Iterator<T>>(){
     @Override public Iterator<T> make(){
-      List<Future<List<T>>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,Future<List<T>>>(){
-        @Override public Future<List<T>> apply(        final QueryRunner<T> input){
-          return exec.submit(new AbstractPrioritizedCallable<List<T>>(priority){
-            @Override public List<T> call() throws Exception {
+      ListenableFuture<List<Iterable<T>>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,ListenableFuture<Iterable<T>>>(){
+        @Override public ListenableFuture<Iterable<T>> apply(        final QueryRunner<T> input){
+          return exec.submit(new AbstractPrioritizedCallable<Iterable<T>>(priority){
+            @Override public Iterable<T> call() throws Exception {
               try {
                 if (input == null) {
                   throw new ISE("Input is null?! How is this possible?!");
@@ -29,21 +29,19 @@
 );
         }
       }
-));
-      return new MergeIterable<T>(ordering.nullsFirst(),Iterables.transform(futures,new Function<Future<List<T>>,Iterable<T>>(){
-        @Override public Iterable<T> apply(        Future<List<T>> input){
-          try {
-            return input.get();
-          }
- catch (          InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-catch (          ExecutionException e) {
-            throw new RuntimeException(e);
-          }
-        }
+)));
+      queryWatcher.registerQuery(query,futures);
+      try {
+        return new MergeIterable<>(ordering.nullsFirst(),futures.get()).iterator();
       }
-)).iterator();
+ catch (      InterruptedException e) {
+        log.warn(e,"Query interrupted, cancelling pending results, query id [%s]",query.getId());
+        futures.cancel(true);
+        throw new QueryInterruptedException(e);
+      }
+catch (      ExecutionException e) {
+        throw Throwables.propagate(e.getCause());
+      }
     }
     @Override public void cleanup(    Iterator<T> tIterator){
     }
