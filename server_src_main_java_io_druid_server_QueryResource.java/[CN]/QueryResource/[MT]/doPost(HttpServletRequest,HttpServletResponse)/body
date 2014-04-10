@@ -15,6 +15,9 @@
       queryId=UUID.randomUUID().toString();
       query=query.withId(queryId);
     }
+    if (log.isDebugEnabled()) {
+      log.debug("Got query [%s]",query);
+    }
     Sequence<?> results=query.run(texasRanger);
     if (results == null) {
       results=Sequences.empty();
@@ -44,7 +47,7 @@
       requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
     }
  catch (    Exception e2) {
-      log.error(e2,"Unable to log quer!");
+      log.error(e2,"Unable to log query [%s]!",queryString);
     }
     emitter.emit(new AlertEvent.Builder().build("Exception handling request",ImmutableMap.<String,Object>builder().put("exception",e.toString()).put("query",queryString).put("peer",req.getRemoteAddr()).build()));
   }

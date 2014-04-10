@@ -96,7 +96,7 @@
       requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
     }
  catch (    Exception e2) {
-      log.error(e2,"Unable to log query!");
+      log.error(e2,"Unable to log query [%s]!",query);
     }
     log.makeAlert(e,"Exception handling request").addData("query",query).addData("peer",req.getRemoteAddr()).emit();
   }
