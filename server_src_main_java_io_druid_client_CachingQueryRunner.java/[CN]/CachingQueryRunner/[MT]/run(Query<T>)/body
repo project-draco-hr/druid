@@ -2,7 +2,13 @@
   final CacheStrategy strategy=toolChest.getCacheStrategy(query);
   final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache();
   final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isPopulateCache();
-  final Cache.NamedKey key=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,strategy.computeCacheKey(query));
+  final Cache.NamedKey key;
+  if (strategy != null && (useCache || populateCache)) {
+    key=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,strategy.computeCacheKey(query));
+  }
+ else {
+    key=null;
+  }
   if (useCache) {
     final Function cacheFn=strategy.pullFromCache();
     final byte[] cachedResult=cache.get(key);
