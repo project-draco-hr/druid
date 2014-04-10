@@ -12,10 +12,9 @@
     query=objectMapper.readValue(requestQuery,Query.class);
     queryId=query.getId();
     if (queryId == null) {
-      queryId=idProvider.next(query);
+      queryId=UUID.randomUUID().toString();
       query=query.withId(queryId);
     }
-    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query));
     Sequence<?> results=query.run(texasRanger);
     if (results == null) {
       results=Sequences.empty();
@@ -25,7 +24,8 @@
     out=resp.getOutputStream();
     jsonWriter.writeValue(out,results);
     long requestTime=System.currentTimeMillis() - start;
-    emitter.emit(new ServiceMetricEvent.Builder().setUser2(query.getDataSource().toString()).setUser4(query.getType()).setUser5(query.getIntervals().get(0).toString()).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(queryId).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
+    emitter.emit(new ServiceMetricEvent.Builder().setUser2(query.getDataSource().toString()).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(queryId).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
+    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
   }
  catch (  Exception e) {
     final String queryString=query == null ? (isSmile ? "smile_unknown" : new String(requestQuery,Charsets.UTF_8)) : query.toString();
@@ -40,6 +40,12 @@
       out.write("\n".getBytes(UTF8));
     }
     resp.flushBuffer();
+    try {
+      requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
+    }
+ catch (    Exception e2) {
+      log.error(e2,"Unable to log quer!");
+    }
     emitter.emit(new AlertEvent.Builder().build("Exception handling request",ImmutableMap.<String,Object>builder().put("exception",e.toString()).put("query",queryString).put("peer",req.getRemoteAddr()).build()));
   }
  finally {
