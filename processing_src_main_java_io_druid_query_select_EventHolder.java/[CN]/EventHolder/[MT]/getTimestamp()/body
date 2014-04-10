@@ -1,3 +1,12 @@
 {
-  return (DateTime)event.get(timestampKey);
+  Object retVal=event.get(timestampKey);
+  if (retVal instanceof String) {
+    return new DateTime(retVal);
+  }
+ else   if (retVal instanceof DateTime) {
+    return (DateTime)retVal;
+  }
+ else {
+    throw new ISE("Do not understand format [%s]",retVal.getClass());
+  }
 }
