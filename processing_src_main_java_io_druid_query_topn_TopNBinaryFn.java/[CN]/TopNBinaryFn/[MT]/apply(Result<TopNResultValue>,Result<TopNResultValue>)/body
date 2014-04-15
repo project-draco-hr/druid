@@ -24,9 +24,7 @@
         retVal.put(metricName,factory.combine(arg1Val.getMetric(metricName),arg2Val.getMetric(metricName)));
       }
       for (      PostAggregator postAgg : postAggregations) {
-        if (postAgg.getName().equalsIgnoreCase(topNMetricName)) {
-          retVal.put(postAgg.getName(),postAgg.compute(retVal));
-        }
+        retVal.put(postAgg.getName(),postAgg.compute(retVal));
       }
       retVals.put(dimensionValue,new DimensionAndMetricValueExtractor(retVal));
     }
@@ -41,7 +39,7 @@
  else {
     timestamp=gran.toDateTime(gran.truncate(arg1.getTimestamp().getMillis()));
   }
-  TopNResultBuilder bob=topNMetricSpec.getResultBuilder(timestamp,dimSpec,threshold,comparator);
+  TopNResultBuilder bob=topNMetricSpec.getResultBuilder(timestamp,dimSpec,threshold,comparator,aggregations,postAggregations);
   for (  DimensionAndMetricValueExtractor extractor : retVals.values()) {
     bob.addEntry(extractor);
   }

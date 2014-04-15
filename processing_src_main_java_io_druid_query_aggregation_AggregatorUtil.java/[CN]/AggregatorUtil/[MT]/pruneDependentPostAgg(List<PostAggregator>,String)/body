@@ -1,0 +1,14 @@
+{
+  LinkedList<PostAggregator> rv=Lists.newLinkedList();
+  Set<String> deps=new HashSet<>();
+  deps.add(postAggName);
+  for (int i=postAggregatorList.size() - 1; i >= 0; i--) {
+    PostAggregator agg=postAggregatorList.get(i);
+    if (deps.contains(agg.getName())) {
+      rv.addFirst(agg);
+      deps.remove(agg.getName());
+      deps.addAll(agg.getDependentFields());
+    }
+  }
+  return rv;
+}
