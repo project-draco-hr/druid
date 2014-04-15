@@ -1,6 +1,6 @@
 {
   final String threadName=String.format("%s-%s-persist-n-merge",schema.getDataSource(),new DateTime(truncatedTime));
-  persistExecutor.execute(new ThreadRenamingRunnable(threadName){
+  mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
     @Override public void doRun(){
       final Interval interval=sink.getInterval();
       for (      FireHydrant hydrant : sink) {
