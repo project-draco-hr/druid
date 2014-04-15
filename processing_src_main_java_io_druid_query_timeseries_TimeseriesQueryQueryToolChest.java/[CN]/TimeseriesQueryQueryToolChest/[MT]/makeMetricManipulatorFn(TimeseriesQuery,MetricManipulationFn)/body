@@ -7,7 +7,7 @@
         values.put(agg.getName(),fn.manipulate(agg,holder.getMetric(agg.getName())));
       }
       for (      PostAggregator postAgg : query.getPostAggregatorSpecs()) {
-        values.put(postAgg.getName(),holder.getMetric(postAgg.getName()));
+        values.put(postAgg.getName(),postAgg.compute(values));
       }
       return new Result<TimeseriesResultValue>(result.getTimestamp(),new TimeseriesResultValue(values));
     }
