@@ -30,28 +30,24 @@
       @Override public ClientResponse<OutputStream> handleResponse(      HttpResponse response){
         resp.setStatus(response.getStatus().getCode());
         resp.setContentType("application/x-javascript");
-        byte[] bytes=getContentBytes(response.getContent());
-        if (bytes.length > 0) {
-          try {
-            outputStream.write(bytes);
-          }
- catch (          Exception e) {
-            asyncContext.complete();
-            throw Throwables.propagate(e);
-          }
+        try {
+          ChannelBuffer buf=response.getContent();
+          buf.readBytes(outputStream,buf.readableBytes());
+        }
+ catch (        Exception e) {
+          asyncContext.complete();
+          throw Throwables.propagate(e);
         }
         return ClientResponse.finished(outputStream);
       }
       @Override public ClientResponse<OutputStream> handleChunk(      ClientResponse<OutputStream> clientResponse,      HttpChunk chunk){
-        byte[] bytes=getContentBytes(chunk.getContent());
-        if (bytes.length > 0) {
-          try {
-            clientResponse.getObj().write(bytes);
-          }
- catch (          Exception e) {
-            asyncContext.complete();
-            throw Throwables.propagate(e);
-          }
+        try {
+          ChannelBuffer buf=chunk.getContent();
+          buf.readBytes(outputStream,buf.readableBytes());
+        }
+ catch (        Exception e) {
+          asyncContext.complete();
+          throw Throwables.propagate(e);
         }
         return clientResponse;
       }
