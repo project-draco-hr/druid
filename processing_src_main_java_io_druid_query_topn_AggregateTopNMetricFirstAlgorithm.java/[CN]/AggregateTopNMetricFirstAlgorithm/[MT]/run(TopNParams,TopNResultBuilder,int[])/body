@@ -1,5 +1,4 @@
 {
-  final TopNResultBuilder singleMetricResultBuilder=makeResultBuilder(params);
   final String metric;
   TopNMetricSpec spec=query.getTopNMetricSpec();
   if (spec instanceof InvertedTopNMetricSpec && ((InvertedTopNMetricSpec)spec).getDelegate() instanceof NumericTopNMetricSpec) {
@@ -36,6 +35,7 @@
     throw new ISE("WTF! Can't find the metric to do topN over?");
   }
   TopNQuery singleMetricQuery=new TopNQueryBuilder().copy(query).aggregators(condensedAggs).postAggregators(condensedPostAggs).build();
+  final TopNResultBuilder singleMetricResultBuilder=makeResultBuilder(params,singleMetricQuery);
   PooledTopNAlgorithm singleMetricAlgo=new PooledTopNAlgorithm(capabilities,singleMetricQuery,bufferPool);
   PooledTopNAlgorithm.PooledTopNParams singleMetricParam=null;
   int[] dimValSelector=null;
