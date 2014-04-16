@@ -1,41 +1,11 @@
 {
-  final String metric;
-  TopNMetricSpec spec=query.getTopNMetricSpec();
-  if (spec instanceof InvertedTopNMetricSpec && ((InvertedTopNMetricSpec)spec).getDelegate() instanceof NumericTopNMetricSpec) {
-    metric=((NumericTopNMetricSpec)((InvertedTopNMetricSpec)spec).getDelegate()).getMetric();
-  }
- else   if (spec instanceof NumericTopNMetricSpec) {
-    metric=((NumericTopNMetricSpec)query.getTopNMetricSpec()).getMetric();
-  }
- else {
-    throw new ISE("WTF?! We are in AggregateTopNMetricFirstAlgorithm with a [%s] spec",spec.getClass().getName());
-  }
-  List<AggregatorFactory> condensedAggs=Lists.newArrayList();
-  for (  AggregatorFactory aggregatorSpec : query.getAggregatorSpecs()) {
-    if (aggregatorSpec.getName().equalsIgnoreCase(metric)) {
-      condensedAggs.add(aggregatorSpec);
-      break;
-    }
-  }
-  List<PostAggregator> condensedPostAggs=Lists.newArrayList();
-  if (condensedAggs.isEmpty()) {
-    for (    PostAggregator postAggregator : query.getPostAggregatorSpecs()) {
-      if (postAggregator.getName().equalsIgnoreCase(metric)) {
-        condensedPostAggs.add(postAggregator);
-        for (        AggregatorFactory aggregatorSpec : query.getAggregatorSpecs()) {
-          if (postAggregator.getDependentFields().contains(aggregatorSpec.getName())) {
-            condensedAggs.add(aggregatorSpec);
-          }
-        }
-        break;
-      }
-    }
-  }
-  if (condensedAggs.isEmpty() && condensedPostAggs.isEmpty()) {
+  final String metric=query.getTopNMetricSpec().getMetricName(query.getDimensionSpec());
+  Pair<List<AggregatorFactory>,List<PostAggregator>> condensedAggPostAggPair=AggregatorUtil.condensedAggregators(query.getAggregatorSpecs(),query.getPostAggregatorSpecs(),metric);
+  if (condensedAggPostAggPair.lhs.isEmpty() && condensedAggPostAggPair.rhs.isEmpty()) {
     throw new ISE("WTF! Can't find the metric to do topN over?");
   }
-  TopNQuery singleMetricQuery=new TopNQueryBuilder().copy(query).aggregators(condensedAggs).postAggregators(condensedPostAggs).build();
-  final TopNResultBuilder singleMetricResultBuilder=makeResultBuilder(params,singleMetricQuery);
+  TopNQuery singleMetricQuery=new TopNQueryBuilder().copy(query).aggregators(condensedAggPostAggPair.lhs).postAggregators(condensedAggPostAggPair.rhs).build();
+  final TopNResultBuilder singleMetricResultBuilder=BaseTopNAlgorithm.makeResultBuilder(params,singleMetricQuery);
   PooledTopNAlgorithm singleMetricAlgo=new PooledTopNAlgorithm(capabilities,singleMetricQuery,bufferPool);
   PooledTopNAlgorithm.PooledTopNParams singleMetricParam=null;
   int[] dimValSelector=null;
