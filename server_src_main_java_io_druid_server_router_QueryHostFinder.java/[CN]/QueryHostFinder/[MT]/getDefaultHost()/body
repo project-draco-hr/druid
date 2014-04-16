@@ -1,9 +1,8 @@
 {
-  Server server=findServer(query);
+  Server server=findDefaultServer();
   if (server == null) {
     log.makeAlert("Catastrophic failure! No servers found at all! Failing request!").emit();
-    throw new ISE("No server found for query[%s]",query);
+    throw new ISE("No default server found!");
   }
-  log.debug("Selected [%s]",server.getHost());
   return server.getHost();
 }
