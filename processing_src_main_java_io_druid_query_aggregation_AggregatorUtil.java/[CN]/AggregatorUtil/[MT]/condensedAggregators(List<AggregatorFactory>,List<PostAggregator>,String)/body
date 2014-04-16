@@ -1,0 +1,15 @@
+{
+  List<PostAggregator> condensedPostAggs=AggregatorUtil.pruneDependentPostAgg(postAggList,metric);
+  Set<String> dependencySet=new HashSet<>();
+  dependencySet.add(metric);
+  for (  PostAggregator postAggregator : condensedPostAggs) {
+    dependencySet.addAll(postAggregator.getDependentFields());
+  }
+  List<AggregatorFactory> condensedAggs=Lists.newArrayList();
+  for (  AggregatorFactory aggregatorSpec : aggList) {
+    if (dependencySet.contains(aggregatorSpec.getName())) {
+      condensedAggs.add(aggregatorSpec);
+    }
+  }
+  return new Pair(condensedAggs,condensedPostAggs);
+}

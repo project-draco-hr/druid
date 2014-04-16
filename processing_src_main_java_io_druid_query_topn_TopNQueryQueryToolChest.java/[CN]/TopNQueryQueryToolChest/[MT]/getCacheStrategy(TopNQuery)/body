@@ -51,9 +51,6 @@
               final AggregatorFactory factory=aggIter.next();
               vals.put(factory.getName(),factory.deserialize(resultIter.next()));
             }
-            for (            PostAggregator postAgg : postAggs) {
-              vals.put(postAgg.getName(),postAgg.compute(vals));
-            }
             retVal.add(vals);
           }
           return new Result<TopNResultValue>(timestamp,new TopNResultValue(retVal));
