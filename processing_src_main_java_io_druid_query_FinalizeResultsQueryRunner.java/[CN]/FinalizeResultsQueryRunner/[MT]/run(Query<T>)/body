@@ -1,11 +1,11 @@
 {
   final boolean isBySegment=query.getContextBySegment(false);
   final boolean shouldFinalize=query.getContextFinalize(true);
+  Function<T,T> finalizerFn;
   if (shouldFinalize) {
-    Function<T,T> finalizerFn;
     if (isBySegment) {
       finalizerFn=new Function<T,T>(){
-        final Function<T,T> baseFinalizer=toolChest.makeMetricManipulatorFn(query,new MetricManipulationFn(){
+        final Function<T,T> baseFinalizer=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
           @Override public Object manipulate(          AggregatorFactory factory,          Object object){
             return factory.finalizeComputation(factory.deserialize(object));
           }
@@ -20,14 +20,21 @@
 ;
     }
  else {
-      finalizerFn=toolChest.makeMetricManipulatorFn(query,new MetricManipulationFn(){
+      finalizerFn=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
         @Override public Object manipulate(        AggregatorFactory factory,        Object object){
           return factory.finalizeComputation(object);
         }
       }
 );
     }
-    return Sequences.map(baseRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false))),finalizerFn);
   }
-  return baseRunner.run(query);
+ else {
+    finalizerFn=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
+      @Override public Object manipulate(      AggregatorFactory factory,      Object object){
+        return object;
+      }
+    }
+);
+  }
+  return Sequences.map(baseRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false))),finalizerFn);
 }
