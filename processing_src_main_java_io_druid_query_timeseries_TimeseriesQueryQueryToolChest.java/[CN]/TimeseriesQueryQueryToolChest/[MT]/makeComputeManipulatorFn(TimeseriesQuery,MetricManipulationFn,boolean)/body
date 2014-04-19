@@ -3,11 +3,13 @@
     @Override public Result<TimeseriesResultValue> apply(    Result<TimeseriesResultValue> result){
       final Map<String,Object> values=Maps.newHashMap();
       final TimeseriesResultValue holder=result.getValue();
+      if (calculatePostAggs) {
+        for (        PostAggregator postAgg : query.getPostAggregatorSpecs()) {
+          values.put(postAgg.getName(),postAgg.compute(holder.getBaseObject()));
+        }
+      }
       for (      AggregatorFactory agg : query.getAggregatorSpecs()) {
         values.put(agg.getName(),fn.manipulate(agg,holder.getMetric(agg.getName())));
-      }
-      for (      PostAggregator postAgg : query.getPostAggregatorSpecs()) {
-        values.put(postAgg.getName(),postAgg.compute(values));
       }
       return new Result<TimeseriesResultValue>(result.getTimestamp(),new TimeseriesResultValue(values));
     }

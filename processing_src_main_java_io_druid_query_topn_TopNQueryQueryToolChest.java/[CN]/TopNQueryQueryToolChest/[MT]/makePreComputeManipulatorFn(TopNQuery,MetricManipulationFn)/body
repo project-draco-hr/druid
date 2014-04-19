@@ -1,14 +1,14 @@
 {
   return new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     private String dimension=query.getDimensionSpec().getOutputName();
-    @Override public Result<TopNResultValue> apply(    @Nullable Result<TopNResultValue> result){
+    @Override public Result<TopNResultValue> apply(    Result<TopNResultValue> result){
       List<Map<String,Object>> serializedValues=Lists.newArrayList(Iterables.transform(result.getValue(),new Function<DimensionAndMetricValueExtractor,Map<String,Object>>(){
-        @Override public Map<String,Object> apply(        @Nullable DimensionAndMetricValueExtractor input){
+        @Override public Map<String,Object> apply(        DimensionAndMetricValueExtractor input){
           final Map<String,Object> values=Maps.newHashMap();
           for (          AggregatorFactory agg : query.getAggregatorSpecs()) {
             values.put(agg.getName(),fn.manipulate(agg,input.getMetric(agg.getName())));
           }
-          for (          PostAggregator postAgg : query.getPostAggregatorSpecs()) {
+          for (          PostAggregator postAgg : prunePostAggregators(query)) {
             Object calculatedPostAgg=input.getMetric(postAgg.getName());
             if (calculatedPostAgg != null) {
               values.put(postAgg.getName(),calculatedPostAgg);
