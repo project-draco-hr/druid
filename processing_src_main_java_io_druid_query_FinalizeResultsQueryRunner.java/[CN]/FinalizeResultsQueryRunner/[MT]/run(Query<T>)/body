@@ -7,12 +7,7 @@
     queryToRun=query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false));
     if (isBySegment) {
       finalizerFn=new Function<T,T>(){
-        final Function<T,T> baseFinalizer=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
-          @Override public Object manipulate(          AggregatorFactory factory,          Object object){
-            return factory.finalizeComputation(factory.deserialize(object));
-          }
-        }
-);
+        final Function<T,T> baseFinalizer=toolChest.makePostComputeManipulatorFn(query,new FinalizeMetricManipulationFn());
         @Override @SuppressWarnings("unchecked") public T apply(        @Nullable T input){
           Result<BySegmentResultValueClass<T>> result=(Result<BySegmentResultValueClass<T>>)input;
           BySegmentResultValueClass<T> resultsClass=result.getValue();
@@ -22,22 +17,12 @@
 ;
     }
  else {
-      finalizerFn=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
-        @Override public Object manipulate(        AggregatorFactory factory,        Object object){
-          return factory.finalizeComputation(object);
-        }
-      }
-);
+      finalizerFn=toolChest.makePostComputeManipulatorFn(query,new FinalizeMetricManipulationFn());
     }
   }
  else {
     queryToRun=query;
-    finalizerFn=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
-      @Override public Object manipulate(      AggregatorFactory factory,      Object object){
-        return object;
-      }
-    }
-);
+    finalizerFn=toolChest.makePostComputeManipulatorFn(query,new IdentityMetricManipulationFn());
   }
   return Sequences.map(baseRunner.run(queryToRun),finalizerFn);
 }
