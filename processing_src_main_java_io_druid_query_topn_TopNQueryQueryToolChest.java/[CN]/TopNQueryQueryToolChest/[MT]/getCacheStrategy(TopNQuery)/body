@@ -1,7 +1,6 @@
 {
   return new CacheStrategy<Result<TopNResultValue>,Object,TopNQuery>(){
     private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
-    private final List<PostAggregator> postAggs=query.getPostAggregatorSpecs();
     @Override public byte[] computeCacheKey(    TopNQuery query){
       final byte[] dimensionSpecBytes=query.getDimensionSpec().getCacheKey();
       final byte[] metricSpecBytes=query.getTopNMetricSpec().getCacheKey();
@@ -16,7 +15,7 @@
     }
     @Override public Function<Result<TopNResultValue>,Object> prepareForCache(){
       return new Function<Result<TopNResultValue>,Object>(){
-        @Override public Object apply(        @Nullable final Result<TopNResultValue> input){
+        @Override public Object apply(        final Result<TopNResultValue> input){
           List<DimensionAndMetricValueExtractor> results=Lists.newArrayList(input.getValue());
           final List<Object> retVal=Lists.newArrayListWithCapacity(results.size() + 1);
           retVal.add(input.getTimestamp().getMillis());
@@ -36,7 +35,7 @@
     @Override public Function<Object,Result<TopNResultValue>> pullFromCache(){
       return new Function<Object,Result<TopNResultValue>>(){
         private final QueryGranularity granularity=query.getGranularity();
-        @Override public Result<TopNResultValue> apply(        @Nullable Object input){
+        @Override public Result<TopNResultValue> apply(        Object input){
           List<Object> results=(List<Object>)input;
           List<Map<String,Object>> retVal=Lists.newArrayListWithCapacity(results.size());
           Iterator<Object> inputIter=results.iterator();

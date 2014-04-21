@@ -1,20 +1,20 @@
 {
   final boolean isBySegment=query.getContextBySegment(false);
   final boolean shouldFinalize=query.getContextFinalize(true);
-  Function<T,T> finalizerFn;
+  final Query<T> queryToRun;
+  final Function<T,T> finalizerFn;
+  final MetricManipulationFn metricManipulationFn;
+  if (shouldFinalize) {
+    queryToRun=query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false));
+    metricManipulationFn=new FinalizeMetricManipulationFn();
+  }
+ else {
+    queryToRun=query;
+    metricManipulationFn=new IdentityMetricManipulationFn();
+  }
   if (isBySegment) {
     finalizerFn=new Function<T,T>(){
-      final Function<T,T> baseFinalizer=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
-        @Override public Object manipulate(        AggregatorFactory factory,        Object object){
-          if (shouldFinalize) {
-            return factory.finalizeComputation(factory.deserialize(object));
-          }
- else {
-            return object;
-          }
-        }
-      }
-);
+      final Function<T,T> baseFinalizer=toolChest.makePostComputeManipulatorFn(query,metricManipulationFn);
       @Override @SuppressWarnings("unchecked") public T apply(      @Nullable T input){
         Result<BySegmentResultValueClass<T>> result=(Result<BySegmentResultValueClass<T>>)input;
         BySegmentResultValueClass<T> resultsClass=result.getValue();
@@ -24,17 +24,7 @@
 ;
   }
  else {
-    finalizerFn=toolChest.makePostComputeManipulatorFn(query,new MetricManipulationFn(){
-      @Override public Object manipulate(      AggregatorFactory factory,      Object object){
-        if (shouldFinalize) {
-          return factory.finalizeComputation(factory.deserialize(object));
-        }
- else {
-          return object;
-        }
-      }
-    }
-);
+    finalizerFn=toolChest.makePostComputeManipulatorFn(query,metricManipulationFn);
   }
-  return Sequences.map(baseRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false))),finalizerFn);
+  return Sequences.map(baseRunner.run(queryToRun),finalizerFn);
 }
