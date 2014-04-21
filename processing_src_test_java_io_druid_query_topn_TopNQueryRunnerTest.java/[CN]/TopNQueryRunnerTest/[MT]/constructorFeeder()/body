@@ -1,7 +1,7 @@
 {
   List<Object> retVal=Lists.newArrayList();
-  retVal.addAll(TopNQueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig()))));
-  retVal.addAll(TopNQueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+  retVal.addAll(QueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig()))));
+  retVal.addAll(QueryRunnerTestHelper.makeQueryRunners(new TopNQueryRunnerFactory(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(2000);
     }
