@@ -6,7 +6,7 @@
         @Override public Map<String,Object> apply(        DimensionAndMetricValueExtractor input){
           final Map<String,Object> values=Maps.newHashMap();
           for (          AggregatorFactory agg : query.getAggregatorSpecs()) {
-            values.put(agg.getName(),fn.manipulate(agg,input.getMetric(agg.getName())));
+            values.put(agg.getName(),input.getMetric(agg.getName()));
           }
           for (          PostAggregator postAgg : query.getPostAggregatorSpecs()) {
             Object calculatedPostAgg=input.getMetric(postAgg.getName());
