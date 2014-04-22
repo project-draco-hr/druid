@@ -49,7 +49,7 @@
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",queryString);
     }
-    emitter.emit(new AlertEvent.Builder().build("Exception handling request",ImmutableMap.<String,Object>builder().put("exception",e.toString()).put("query",queryString).put("peer",req.getRemoteAddr()).build()));
+    log.makeAlert(e,"Exception handling request").addData("exception",e.toString()).addData("query",queryString).addData("peer",req.getRemoteAddr()).emit();
   }
  finally {
     resp.flushBuffer();
