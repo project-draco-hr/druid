@@ -5,7 +5,7 @@
   this.topNMetricSpec=topNMetricSpec;
   this.threshold=threshold;
   this.aggregations=aggregatorSpecs;
-  this.dimensionSpec=dimSpec;
-  this.postAggregations=AggregatorUtil.pruneDependentPostAgg(postAggregatorSpecs,this.topNMetricSpec.getMetricName(this.dimensionSpec));
+  this.postAggregations=AggregatorUtil.pruneDependentPostAgg(postAggregatorSpecs,topNMetricSpec.getMetricName(dimSpec));
+  this.dimension=dimSpec.getOutputName();
   this.comparator=topNMetricSpec.getComparator(aggregatorSpecs,postAggregatorSpecs);
 }
