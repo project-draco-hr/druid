@@ -2,6 +2,9 @@
   return new BaseSequence<>(new BaseSequence.IteratorMaker<Result<SelectResultValue>,Iterator<Result<SelectResultValue>>>(){
     @Override public Iterator<Result<SelectResultValue>> make(){
       final StorageAdapter adapter=segment.asStorageAdapter();
+      if (adapter == null) {
+        throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
+      }
       final Iterable<String> dims;
       if (query.getDimensions() == null || query.getDimensions().isEmpty()) {
         dims=adapter.getAvailableDimensions();
