@@ -1,7 +1,7 @@
 {
   final HadoopDruidIndexerConfig cfg;
   try {
-    cfg=jsonReadWriteRead("{" + "\"partitionsSpec\":{" + "   \"type\":\"hashed\","+ "   \"shardCount\":2"+ " }"+ "}",HadoopDruidIndexerConfig.class);
+    cfg=jsonReadWriteRead("{" + "\"partitionsSpec\":{" + "   \"type\":\"hashed\","+ "   \"numShards\":2"+ " }"+ "}",HadoopDruidIndexerConfig.class);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
@@ -10,6 +10,6 @@
   Assert.assertEquals("isDeterminingPartitions",partitionsSpec.isDeterminingPartitions(),false);
   Assert.assertEquals("getTargetPartitionSize",partitionsSpec.getTargetPartitionSize(),-1);
   Assert.assertEquals("getMaxPartitionSize",partitionsSpec.getMaxPartitionSize(),-1);
-  Assert.assertEquals("shardCount",partitionsSpec.getShardCount(),2);
+  Assert.assertEquals("shardCount",partitionsSpec.getNumShards(),2);
   Assert.assertTrue("partitionsSpec",partitionsSpec instanceof HashedPartitionsSpec);
 }

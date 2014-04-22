@@ -11,6 +11,7 @@
     groupByJob.setOutputKeyClass(NullWritable.class);
     groupByJob.setOutputValueClass(NullWritable.class);
     groupByJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+    groupByJob.setPartitionerClass(DetermineHashedPartitionsPartitioner.class);
     if (!config.getSegmentGranularIntervals().isPresent()) {
       groupByJob.setNumReduceTasks(1);
     }
@@ -50,9 +51,6 @@
       }
 );
       int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
-      if (numberOfShards > MAX_SHARDS) {
-        throw new ISE("Number of shards [%d] exceed the maximum limit of [%d], either targetPartitionSize is too low or data volume is too high",numberOfShards,MAX_SHARDS);
-      }
       List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
       if (numberOfShards == 1) {
         actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),shardCount++));
