@@ -20,7 +20,12 @@
     retVal=Ints.compare(lhsVals.length,rhsVals.length);
     int valsIndex=0;
     while (retVal == 0 && valsIndex < lhsVals.length) {
-      retVal=lhsVals[valsIndex].compareTo(rhsVals[valsIndex]);
+      final String lhsVal=lhsVals[valsIndex];
+      final String rhsVal=rhsVals[valsIndex];
+      if (lhsVal == null && rhsVal == null)       return 0;
+ else       if (lhsVal == null)       return -1;
+ else       if (rhsVal == null)       return 1;
+ else       retVal=lhsVal.compareTo(rhsVal);
       ++valsIndex;
     }
     ++index;
