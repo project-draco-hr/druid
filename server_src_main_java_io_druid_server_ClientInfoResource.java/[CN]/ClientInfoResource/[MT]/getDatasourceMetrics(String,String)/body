@@ -1,5 +1,9 @@
 {
-  List<DataSegment> segments=getSegmentsForDatasources().get(dataSourceName);
+  final List<DataSegment> segments=getSegmentsForDatasources().get(dataSourceName);
+  final Set<String> metrics=Sets.newHashSet();
+  if (segments == null || segments.isEmpty()) {
+    return metrics;
+  }
   Interval theInterval;
   if (interval == null || interval.isEmpty()) {
     DateTime now=new DateTime();
@@ -8,7 +12,6 @@
  else {
     theInterval=new Interval(interval);
   }
-  Set<String> metrics=Sets.newHashSet();
   for (  DataSegment segment : segments) {
     if (theInterval.overlaps(segment.getInterval())) {
       metrics.addAll(segment.getMetrics());
