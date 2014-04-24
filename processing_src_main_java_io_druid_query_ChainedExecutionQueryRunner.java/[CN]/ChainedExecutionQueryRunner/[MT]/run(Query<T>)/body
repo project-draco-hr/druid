@@ -14,7 +14,11 @@
                 if (result == null) {
                   throw new ISE("Got a null result! Segments are missing!");
                 }
-                return Sequences.toList(result,Lists.<T>newArrayList());
+                List<T> retVal=Sequences.toList(result,Lists.<T>newArrayList());
+                if (retVal == null) {
+                  throw new ISE("Got a null list of results! WTF?!");
+                }
+                return retVal;
               }
  catch (              Exception e) {
                 log.error(e,"Exception with one of the sequences!");
