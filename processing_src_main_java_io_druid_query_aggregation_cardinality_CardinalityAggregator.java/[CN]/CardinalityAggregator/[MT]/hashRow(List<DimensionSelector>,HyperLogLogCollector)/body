@@ -11,9 +11,7 @@
       final String value=selector.lookupName(row.get(0));
       hasher.putString(value != null ? value : NULL_STRING);
     }
- else     if (size == 0) {
-    }
- else {
+ else     if (size != 0) {
       final String[] values=new String[size];
       for (int i=0; i < size; ++i) {
         final String value=selector.lookupName(row.get(i));
@@ -24,8 +22,7 @@
         if (i != 0) {
           hasher.putChar(SEPARATOR);
         }
-        final String value=values[i];
-        hasher.putString(value);
+        hasher.putString(values[i]);
       }
     }
   }
