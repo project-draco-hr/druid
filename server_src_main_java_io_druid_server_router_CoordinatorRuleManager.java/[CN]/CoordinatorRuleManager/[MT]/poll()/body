@@ -1,0 +1,17 @@
+{
+  try {
+    String url=getRuleURL();
+    if (url == null) {
+      return;
+    }
+    StatusResponseHolder response=httpClient.get(new URL(url)).go(responseHandler).get();
+    ConcurrentHashMap<String,List<Rule>> newRules=new ConcurrentHashMap<String,List<Rule>>((Map<String,List<Rule>>)jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,List<Rule>>>(){
+    }
+));
+    log.info("Got [%,d] rules",newRules.keySet().size());
+    rules.set(newRules);
+  }
+ catch (  Exception e) {
+    log.error(e,"Exception while polling for rules");
+  }
+}

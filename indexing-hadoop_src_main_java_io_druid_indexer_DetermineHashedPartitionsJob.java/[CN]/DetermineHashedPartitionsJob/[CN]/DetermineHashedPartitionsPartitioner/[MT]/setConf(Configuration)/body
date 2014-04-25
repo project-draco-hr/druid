@@ -1,0 +1,16 @@
+{
+  this.config=config;
+  HadoopDruidIndexerConfig hadoopConfig=HadoopDruidIndexerConfig.fromConfiguration(config);
+  if (hadoopConfig.getSegmentGranularIntervals().isPresent()) {
+    determineIntervals=false;
+    int reducerNumber=0;
+    ImmutableMap.Builder<LongWritable,Integer> builder=ImmutableMap.builder();
+    for (    Interval interval : hadoopConfig.getSegmentGranularIntervals().get()) {
+      builder.put(new LongWritable(interval.getStartMillis()),reducerNumber++);
+    }
+    reducerLookup=builder.build();
+  }
+ else {
+    determineIntervals=true;
+  }
+}

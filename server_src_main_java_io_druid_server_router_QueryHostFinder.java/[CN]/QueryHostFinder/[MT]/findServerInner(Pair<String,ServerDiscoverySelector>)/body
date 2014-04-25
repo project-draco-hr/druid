@@ -1,0 +1,20 @@
+{
+  if (selected == null) {
+    log.error("Danger, Will Robinson! Unable to find any brokers!");
+  }
+  final String serviceName=selected == null ? hostSelector.getDefaultServiceName() : selected.lhs;
+  final ServerDiscoverySelector selector=selected == null ? null : selected.rhs;
+  Server server=selector == null ? null : selector.pick();
+  if (server == null) {
+    log.error("WTF?! No server found for serviceName[%s]. Using backup",serviceName);
+    server=serverBackup.get(serviceName);
+    if (server == null) {
+      log.error("WTF?! No backup found for serviceName[%s]. Using default[%s]",serviceName,hostSelector.getDefaultServiceName());
+      server=serverBackup.get(hostSelector.getDefaultServiceName());
+    }
+  }
+  if (server != null) {
+    serverBackup.put(serviceName,server);
+  }
+  return server;
+}

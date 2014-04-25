@@ -2,12 +2,10 @@
   final QueuedThreadPool threadPool=new QueuedThreadPool();
   threadPool.setMinThreads(config.getNumThreads());
   threadPool.setMaxThreads(config.getNumThreads());
-  final Server server=new Server();
-  server.setThreadPool(threadPool);
-  SelectChannelConnector connector=new SelectChannelConnector();
+  final Server server=new Server(threadPool);
+  ServerConnector connector=new ServerConnector(server);
   connector.setPort(node.getPort());
-  connector.setMaxIdleTime(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
-  connector.setStatsOn(true);
+  connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
   server.setConnectors(new Connector[]{connector});
   return server;
 }

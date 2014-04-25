@@ -1,0 +1,21 @@
+{
+  return new Function<Result<TimeseriesResultValue>,Result<TimeseriesResultValue>>(){
+    @Override public Result<TimeseriesResultValue> apply(    Result<TimeseriesResultValue> result){
+      final Map<String,Object> values=Maps.newHashMap();
+      final TimeseriesResultValue holder=result.getValue();
+      if (calculatePostAggs) {
+        for (        AggregatorFactory agg : query.getAggregatorSpecs()) {
+          values.put(agg.getName(),holder.getMetric(agg.getName()));
+        }
+        for (        PostAggregator postAgg : query.getPostAggregatorSpecs()) {
+          values.put(postAgg.getName(),postAgg.compute(values));
+        }
+      }
+      for (      AggregatorFactory agg : query.getAggregatorSpecs()) {
+        values.put(agg.getName(),fn.manipulate(agg,holder.getMetric(agg.getName())));
+      }
+      return new Result<TimeseriesResultValue>(result.getTimestamp(),new TimeseriesResultValue(values));
+    }
+  }
+;
+}

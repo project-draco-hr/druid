@@ -1,6 +1,6 @@
 {
   QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
-  boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
+  boolean isBySegment=query.getContextBySegment(false);
   Pair<JavaType,JavaType> types=typesMap.get(query.getClass());
   if (types == null) {
     final TypeFactory typeFactory=objectMapper.getTypeFactory();
@@ -57,7 +57,7 @@
   }
   Sequence<T> retVal=new BaseSequence<T,JsonParserIterator<T>>(new BaseSequence.IteratorMaker<T,JsonParserIterator<T>>(){
     @Override public JsonParserIterator<T> make(){
-      return new JsonParserIterator<T>(typeRef,future);
+      return new JsonParserIterator<T>(typeRef,future,url);
     }
     @Override public void cleanup(    JsonParserIterator<T> iterFromMake){
       Closeables.closeQuietly(iterFromMake);
@@ -65,7 +65,7 @@
   }
 );
   if (!isBySegment) {
-    retVal=Sequences.map(retVal,toolChest.makeMetricManipulatorFn(query,new MetricManipulationFn(){
+    retVal=Sequences.map(retVal,toolChest.makePreComputeManipulatorFn(query,new MetricManipulationFn(){
       @Override public Object manipulate(      AggregatorFactory factory,      Object object){
         return factory.deserialize(object);
       }

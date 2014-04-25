@@ -1,0 +1,15 @@
+{
+  DataSegment theSegment=null;
+  Set<String> servers=Sets.newHashSet();
+  for (  DruidServer druidServer : serverInventoryView.getInventory()) {
+    DataSegment currSegment=druidServer.getSegments().get(segmentId);
+    if (currSegment != null) {
+      theSegment=currSegment;
+      servers.add(druidServer.getHost());
+    }
+  }
+  if (theSegment == null) {
+    return null;
+  }
+  return new Pair<>(theSegment,servers);
+}

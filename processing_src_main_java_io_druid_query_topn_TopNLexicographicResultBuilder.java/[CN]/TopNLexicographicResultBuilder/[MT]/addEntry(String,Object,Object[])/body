@@ -1,0 +1,12 @@
+{
+  Map<String,Object> metricValues=Maps.newLinkedHashMap();
+  if (dimName.compareTo(previousStop) > 0) {
+    metricValues.put(dimSpec.getOutputName(),dimName);
+    Iterator<AggregatorFactory> aggsIter=aggFactories.iterator();
+    for (    Object metricVal : metricVals) {
+      metricValues.put(aggsIter.next().getName(),metricVal);
+    }
+    pQueue.add(new DimValHolder.Builder().withDirName(dimName).withMetricValues(metricValues).build());
+  }
+  return this;
+}

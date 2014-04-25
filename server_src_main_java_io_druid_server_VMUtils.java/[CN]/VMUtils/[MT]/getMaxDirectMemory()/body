@@ -1,0 +1,24 @@
+{
+  try {
+    Class<?> vmClass=Class.forName("sun.misc.VM");
+    Object maxDirectMemoryObj=vmClass.getMethod("maxDirectMemory").invoke(null);
+    if (maxDirectMemoryObj == null || !(maxDirectMemoryObj instanceof Number)) {
+      throw new UnsupportedOperationException(String.format("Cannot determine maxDirectMemory from [%s]",maxDirectMemoryObj));
+    }
+ else {
+      return ((Number)maxDirectMemoryObj).longValue();
+    }
+  }
+ catch (  ClassNotFoundException e) {
+    throw new UnsupportedOperationException("No VM class, cannot do memory check.",e);
+  }
+catch (  NoSuchMethodException e) {
+    throw new UnsupportedOperationException("VM.maxDirectMemory doesn't exist, cannot do memory check.",e);
+  }
+catch (  InvocationTargetException e) {
+    throw new RuntimeException("static method shouldn't throw this",e);
+  }
+catch (  IllegalAccessException e) {
+    throw new RuntimeException("public method, shouldn't throw this",e);
+  }
+}

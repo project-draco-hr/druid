@@ -6,13 +6,13 @@
   if (query.getThreshold() > minTopNThreshold) {
     return runner.run(query);
   }
-  final boolean isBySegment=Boolean.parseBoolean(query.getContextValue("bySegment","false"));
+  final boolean isBySegment=query.getContextBySegment(false);
   return Sequences.map(runner.run(query.withThreshold(minTopNThreshold)),new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     @Override public Result<TopNResultValue> apply(    Result<TopNResultValue> input){
       if (isBySegment) {
         BySegmentTopNResultValue value=(BySegmentTopNResultValue)input.getValue();
         return new Result<TopNResultValue>(input.getTimestamp(),new BySegmentTopNResultValue(Lists.transform(value.getResults(),new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
-          @Override public Result<TopNResultValue> apply(          @Nullable Result<TopNResultValue> input){
+          @Override public Result<TopNResultValue> apply(          Result<TopNResultValue> input){
             return new Result<TopNResultValue>(input.getTimestamp(),new TopNResultValue(Lists.<Object>newArrayList(Iterables.limit(input.getValue(),query.getThreshold()))));
           }
         }

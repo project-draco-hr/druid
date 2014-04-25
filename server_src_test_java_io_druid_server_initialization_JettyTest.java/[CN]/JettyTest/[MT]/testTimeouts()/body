@@ -1,0 +1,46 @@
+{
+  setProperties();
+  Injector injector=Initialization.makeInjectorWithModules(Initialization.makeStartupInjector(),Lists.<Object>newArrayList(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(JettyServerInitializer.class).to(JettyServerInit.class).in(LazySingleton.class);
+      Jerseys.addResource(binder,SlowResource.class);
+    }
+  }
+));
+  Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+  injector.getInstance(Server.class);
+  lifecycle.start();
+  ClientHolder holder=injector.getInstance(ClientHolder.class);
+  final HttpClient client=holder.getClient();
+  final Executor executor=Executors.newFixedThreadPool(100);
+  final AtomicLong count=new AtomicLong(0);
+  final CountDownLatch latch=new CountDownLatch(1000);
+  for (int i=0; i < 10000; i++) {
+    executor.execute(new Runnable(){
+      @Override public void run(){
+        executor.execute(new Runnable(){
+          @Override public void run(){
+            long startTime=System.currentTimeMillis();
+            long startTime2=0;
+            try {
+              ListenableFuture<StatusResponseHolder> go=client.get(new URL("http://localhost:9999/slow/hello")).go(new StatusResponseHandler(Charset.defaultCharset()));
+              startTime2=System.currentTimeMillis();
+              go.get();
+            }
+ catch (            Exception e) {
+              e.printStackTrace();
+            }
+ finally {
+              System.out.println("Response time client" + (System.currentTimeMillis() - startTime) + "time taken for getting future"+ (System.currentTimeMillis() - startTime2)+ "Counter "+ count.incrementAndGet());
+              latch.countDown();
+            }
+          }
+        }
+);
+      }
+    }
+);
+  }
+  latch.await();
+  lifecycle.stop();
+}

@@ -1,9 +1,9 @@
 {
-  this.urlString=urlString;
+  Preconditions.checkState(urlValidator.isValid(urlString));
   try {
     this.url=new URL(urlString);
   }
  catch (  Exception e) {
-    log.error(e,"Malformed url");
+    throw Throwables.propagate(e);
   }
 }

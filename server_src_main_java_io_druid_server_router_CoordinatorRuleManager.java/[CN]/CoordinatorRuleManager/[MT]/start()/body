@@ -1,0 +1,15 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    this.exec=Execs.scheduledSingleThreaded("CoordinatorRuleManager-Exec--%d");
+    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollPeriod().toStandardDuration(),new Runnable(){
+      @Override public void run(){
+        poll();
+      }
+    }
+);
+    started=true;
+  }
+}

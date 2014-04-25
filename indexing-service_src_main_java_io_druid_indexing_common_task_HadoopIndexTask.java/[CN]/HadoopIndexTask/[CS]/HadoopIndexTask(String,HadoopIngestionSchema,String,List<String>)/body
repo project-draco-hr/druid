@@ -1,0 +1,8 @@
+{
+  super(id != null ? id : String.format("index_hadoop_%s_%s",schema.getDataSchema().getDataSource(),new DateTime()),schema.getDataSchema().getDataSource());
+  Preconditions.checkArgument(schema.getIOConfig().getSegmentOutputPath() == null,"segmentOutputPath must be absent");
+  Preconditions.checkArgument(schema.getDriverConfig().getWorkingPath() == null,"workingPath must be absent");
+  Preconditions.checkArgument(schema.getIOConfig().getMetadataUpdateSpec() == null,"updaterJobSpec must be absent");
+  this.schema=schema;
+  this.hadoopDependencyCoordinates=hadoopDependencyCoordinates == null ? Arrays.<String>asList(hadoopCoordinates == null ? DEFAULT_HADOOP_COORDINATES : hadoopCoordinates) : hadoopDependencyCoordinates;
+}

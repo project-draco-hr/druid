@@ -1,6 +1,5 @@
 {
   final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
-  final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopCoordinates);
   final List<URL> extensionURLs=Lists.newArrayList();
   for (  String coordinate : extensionsConfig.getCoordinates()) {
     final ClassLoader coordinateLoader=Initialization.getClassLoaderForCoordinates(aetherClient,coordinate);
@@ -10,7 +9,10 @@
   nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)HadoopIndexTask.class.getClassLoader()).getURLs()));
   final List<URL> driverURLs=Lists.newArrayList();
   driverURLs.addAll(nonHadoopURLs);
-  driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
+  for (  String hadoopDependencyCoordinate : hadoopDependencyCoordinates) {
+    final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopDependencyCoordinate);
+    driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
+  }
   final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);
   Thread.currentThread().setContextClassLoader(loader);
   final List<URL> jobUrls=Lists.newArrayList();
