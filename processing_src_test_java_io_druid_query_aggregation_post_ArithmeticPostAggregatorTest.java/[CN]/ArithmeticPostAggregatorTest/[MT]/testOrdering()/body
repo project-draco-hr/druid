@@ -1,0 +1,7 @@
+{
+  List<PostAggregator> postAggregatorList=Lists.newArrayList((PostAggregator)new ConstantPostAggregator("size",6,null),new ConstantPostAggregator("zero",0,null));
+  ArithmeticPostAggregator divideNumericFirst=new ArithmeticPostAggregator("divide","/",postAggregatorList,ArithmeticPostAggregator.Ordering.numericFirst.name(),null);
+  Assert.assertTrue(divideNumericFirst.getComparator().compare(Double.POSITIVE_INFINITY,0.0) < 0);
+  Assert.assertTrue(divideNumericFirst.getComparator().compare(Double.NEGATIVE_INFINITY,0.0) < 0);
+  Assert.assertTrue(divideNumericFirst.getComparator().compare(Double.NaN,0.0) < 0);
+}

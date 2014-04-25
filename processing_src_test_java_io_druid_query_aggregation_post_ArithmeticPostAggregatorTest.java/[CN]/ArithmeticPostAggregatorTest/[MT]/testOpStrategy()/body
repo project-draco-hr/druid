@@ -1,0 +1,9 @@
+{
+  List<PostAggregator> postAggregatorList=Lists.newArrayList((PostAggregator)new ConstantPostAggregator("size",6,null),new ConstantPostAggregator("zero",0,null));
+  ArithmeticPostAggregator divByZeroNaN=new ArithmeticPostAggregator("divide","/",postAggregatorList,null,ArithmeticPostAggregator.OpStrategy.nanDivisionByZero.name());
+  Assert.assertEquals(divByZeroNaN.compute(ImmutableMap.of("dummy",(Object)0.0)),Double.NaN);
+  ArithmeticPostAggregator divByZeroZero=new ArithmeticPostAggregator("divide","/",postAggregatorList,null,ArithmeticPostAggregator.OpStrategy.zeroDivisionByZero.name());
+  Assert.assertEquals(divByZeroZero.compute(ImmutableMap.of("dummy",(Object)0.0)),0.0);
+  ArithmeticPostAggregator _default=new ArithmeticPostAggregator("divide","/",postAggregatorList,null,null);
+  Assert.assertEquals(_default.compute(ImmutableMap.of("dummy",(Object)0.0)),0.0);
+}
