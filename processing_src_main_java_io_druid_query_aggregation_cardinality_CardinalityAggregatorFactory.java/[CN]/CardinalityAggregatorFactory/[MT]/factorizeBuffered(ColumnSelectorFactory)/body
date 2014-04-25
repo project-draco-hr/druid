@@ -1,0 +1,7 @@
+{
+  List<DimensionSelector> selectors=makeDimensionSelectors(columnFactory);
+  if (selectors.isEmpty()) {
+    return new NoopBufferAggregator();
+  }
+  return new CardinalityBufferAggregator(selectors,byRow);
+}

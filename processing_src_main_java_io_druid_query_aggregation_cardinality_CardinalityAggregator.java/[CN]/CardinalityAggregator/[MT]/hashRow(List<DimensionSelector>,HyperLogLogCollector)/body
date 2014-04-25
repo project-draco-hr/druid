@@ -1,0 +1,33 @@
+{
+  final Hasher hasher=hashFn.newHasher();
+  for (int k=0; k < selectorList.size(); ++k) {
+    if (k != 0) {
+      hasher.putByte((byte)0);
+    }
+    final DimensionSelector selector=selectorList.get(k);
+    final IndexedInts row=selector.getRow();
+    final int size=row.size();
+    if (size == 1) {
+      final String value=selector.lookupName(row.get(0));
+      hasher.putString(value != null ? value : NULL_STRING);
+    }
+ else     if (size == 0) {
+    }
+ else {
+      final String[] values=new String[size];
+      for (int i=0; i < size; ++i) {
+        final String value=selector.lookupName(row.get(i));
+        values[i]=value != null ? value : NULL_STRING;
+      }
+      Arrays.sort(values);
+      for (int i=0; i < size; ++i) {
+        if (i != 0) {
+          hasher.putChar(SEPARATOR);
+        }
+        final String value=values[i];
+        hasher.putString(value);
+      }
+    }
+  }
+  collector.add(hasher.hash().asBytes());
+}
