@@ -6,11 +6,11 @@
   final MetricManipulationFn metricManipulationFn;
   if (shouldFinalize) {
     queryToRun=query.withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false));
-    metricManipulationFn=new FinalizeMetricManipulationFn();
+    metricManipulationFn=MetricManipulatorFns.finalizing();
   }
  else {
     queryToRun=query;
-    metricManipulationFn=new IdentityMetricManipulationFn();
+    metricManipulationFn=MetricManipulatorFns.identity();
   }
   if (isBySegment) {
     finalizerFn=new Function<T,T>(){
