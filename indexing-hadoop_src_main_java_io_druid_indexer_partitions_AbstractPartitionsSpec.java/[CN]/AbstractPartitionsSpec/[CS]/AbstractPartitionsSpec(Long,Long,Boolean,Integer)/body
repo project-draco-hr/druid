@@ -1,0 +1,7 @@
+{
+  this.targetPartitionSize=targetPartitionSize == null ? -1 : targetPartitionSize;
+  this.maxPartitionSize=maxPartitionSize == null ? (long)(this.targetPartitionSize * DEFAULT_OVERSIZE_THRESHOLD) : maxPartitionSize;
+  this.assumeGrouped=assumeGrouped == null ? false : assumeGrouped;
+  this.numShards=numShards == null ? -1 : numShards;
+  Preconditions.checkArgument(this.targetPartitionSize == -1 || this.numShards == -1,"targetPartitionsSize and shardCount both cannot be set");
+}

@@ -12,9 +12,5 @@
     final String metricName=factory.getName();
     retVal.put(metricName,factory.combine(arg1Val.getMetric(metricName),arg2Val.getMetric(metricName)));
   }
-  for (  PostAggregator pf : postAggregations) {
-    final String metricName=pf.getName();
-    retVal.put(metricName,pf.compute(retVal));
-  }
   return (gran instanceof AllGranularity) ? new Result<TimeseriesResultValue>(arg1.getTimestamp(),new TimeseriesResultValue(retVal)) : new Result<TimeseriesResultValue>(gran.toDateTime(gran.truncate(arg1.getTimestamp().getMillis())),new TimeseriesResultValue(retVal));
 }

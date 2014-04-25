@@ -1,5 +1,8 @@
 {
-  final byte[] retVal=baseMap.get(computeKey(getNamespaceId(key.namespace),key.key));
+  final byte[] retVal;
+synchronized (clearLock) {
+    retVal=baseMap.get(computeKey(getNamespaceId(key.namespace),key.key));
+  }
   if (retVal == null) {
     missCount.incrementAndGet();
   }

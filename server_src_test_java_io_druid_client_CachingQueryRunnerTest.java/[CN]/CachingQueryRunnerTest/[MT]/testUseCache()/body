@@ -1,0 +1,21 @@
+{
+  DefaultObjectMapper objectMapper=new DefaultObjectMapper();
+  Iterable<Result<TopNResultValue>> expectedResults=makeTopNResults(true,objects);
+  String segmentIdentifier="segment";
+  SegmentDescriptor segmentDescriptor=new SegmentDescriptor(new Interval("2011/2012"),"version",0);
+  TopNQueryQueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig());
+  final TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(AllGranularity.ALL);
+  final TopNQuery query=builder.build();
+  CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
+  Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));
+  Cache cache=MapCache.create(1024 * 1024);
+  CacheUtil.populate(cache,objectMapper,cacheKey,Iterables.transform(expectedResults,cacheStrategy.prepareForCache()));
+  CachingQueryRunner runner=new CachingQueryRunner(segmentIdentifier,segmentDescriptor,objectMapper,cache,toolchest,new QueryRunner(){
+    @Override public Sequence run(    Query query){
+      return Sequences.empty();
+    }
+  }
+,new CacheConfig());
+  List<Object> results=Sequences.toList(runner.run(query),new ArrayList());
+  Assert.assertEquals(expectedResults,results);
+}

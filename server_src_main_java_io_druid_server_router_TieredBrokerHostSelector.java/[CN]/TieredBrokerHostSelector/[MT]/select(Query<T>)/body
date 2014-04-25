@@ -1,7 +1,7 @@
 {
 synchronized (lock) {
     if (!ruleManager.isStarted() || !started) {
-      return null;
+      return getDefaultLookup();
     }
   }
   String brokerServiceName=null;
@@ -25,7 +25,7 @@ synchronized (lock) {
       }
     }
     if (baseRule == null) {
-      return null;
+      return getDefaultLookup();
     }
     for (    Map.Entry<String,String> entry : tierConfig.getTierToBrokerMap().entrySet()) {
       if (baseRule.getTieredReplicants().containsKey(entry.getKey())) {
@@ -35,12 +35,12 @@ synchronized (lock) {
     }
   }
   if (brokerServiceName == null) {
-    log.makeAlert("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName()).emit();
+    log.error("WTF?! No brokerServiceName found for datasource[%s], intervals[%s]. Using default[%s].",query.getDataSource(),query.getIntervals(),tierConfig.getDefaultBrokerServiceName());
     brokerServiceName=tierConfig.getDefaultBrokerServiceName();
   }
   ServerDiscoverySelector retVal=selectorMap.get(brokerServiceName);
   if (retVal == null) {
-    log.makeAlert("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName()).emit();
+    log.error("WTF?! No selector found for brokerServiceName[%s]. Using default selector for[%s]",brokerServiceName,tierConfig.getDefaultBrokerServiceName());
     retVal=selectorMap.get(tierConfig.getDefaultBrokerServiceName());
   }
   return new Pair<>(brokerServiceName,retVal);

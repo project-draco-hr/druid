@@ -1,5 +1,6 @@
 {
-  QueryToolChest<Row,GroupByQuery> toolChest=factory.getToolchest();
-  Sequence<Row> queryResult=toolChest.mergeResults(toolChest.preMergeQueryDecoration(runner)).run(query);
+  QueryToolChest toolChest=factory.getToolchest();
+  QueryRunner theRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(toolChest.preMergeQueryDecoration(runner)),toolChest);
+  Sequence<Row> queryResult=theRunner.run(query);
   return Sequences.toList(queryResult,Lists.<Row>newArrayList());
 }
