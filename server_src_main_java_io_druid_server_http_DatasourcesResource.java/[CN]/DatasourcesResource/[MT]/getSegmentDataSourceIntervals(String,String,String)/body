@@ -18,7 +18,7 @@
     return Response.ok(retVal).build();
   }
   if (simple != null) {
-    final Map<Interval,Map<String,Object>> retVal=Maps.newHashMap();
+    final Map<Interval,Map<String,Object>> retVal=Maps.newTreeMap(comparator);
     for (    DataSegment dataSegment : dataSource.getSegments()) {
       Map<String,Object> properties=retVal.get(dataSegment.getInterval());
       if (properties == null) {
