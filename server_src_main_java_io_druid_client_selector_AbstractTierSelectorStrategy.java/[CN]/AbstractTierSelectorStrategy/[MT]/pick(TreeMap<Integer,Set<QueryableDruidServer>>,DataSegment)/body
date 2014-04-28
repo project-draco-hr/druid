@@ -1,0 +1,15 @@
+{
+  final Map.Entry<Integer,Set<QueryableDruidServer>> priorityServers=getServers(prioritizedServers);
+  if (priorityServers == null) {
+    return null;
+  }
+  final Set<QueryableDruidServer> servers=priorityServers.getValue();
+switch (servers.size()) {
+case 0:
+    throw new ISE("[%s] Something hella weird going on here. We should not be here",segment.getIdentifier());
+case 1:
+  return priorityServers.getValue().iterator().next();
+default :
+return serverSelectorStrategy.pick(servers,segment);
+}
+}
