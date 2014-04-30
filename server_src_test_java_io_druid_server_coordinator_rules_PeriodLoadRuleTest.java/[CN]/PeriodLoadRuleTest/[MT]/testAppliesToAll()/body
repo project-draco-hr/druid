@@ -3,5 +3,5 @@
   PeriodLoadRule rule=new PeriodLoadRule(new Period("P5000Y"),null,0,"");
   Assert.assertTrue(rule.appliesTo(builder.interval(new Interval("2012-01-01/2012-12-31")).build(),now));
   Assert.assertTrue(rule.appliesTo(builder.interval(new Interval("1000-01-01/2012-12-31")).build(),now));
-  Assert.assertTrue(rule.appliesTo(builder.interval(new Interval("0500-01-01/2100-12-31")).build(),now));
+  Assert.assertFalse(rule.appliesTo(builder.interval(new Interval("0500-01-01/2100-12-31")).build(),now));
 }
