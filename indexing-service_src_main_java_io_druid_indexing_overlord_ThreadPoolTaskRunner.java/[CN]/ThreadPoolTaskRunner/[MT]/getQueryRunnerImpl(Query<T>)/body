@@ -1,12 +1,6 @@
 {
   QueryRunner<T> queryRunner=null;
-  String queryDataSource;
-  try {
-    queryDataSource=((TableDataSource)query.getDataSource()).getName();
-  }
- catch (  ClassCastException e) {
-    throw new IllegalArgumentException("Subqueries are not welcome here");
-  }
+  final String queryDataSource=Iterables.getOnlyElement(query.getDataSource().getNames());
   for (  final ThreadPoolTaskRunnerWorkItem taskRunnerWorkItem : ImmutableList.copyOf(runningItems)) {
     final Task task=taskRunnerWorkItem.getTask();
     if (task.getDataSource().equals(queryDataSource)) {

@@ -1,14 +1,3 @@
 {
-  DataSource dataSource=query.getDataSource();
-  if (!(dataSource instanceof TableDataSource)) {
-    throw new UnsupportedOperationException("data source type '" + dataSource.getClass().getName() + "' unsupported");
-  }
-  String dataSourceName;
-  try {
-    dataSourceName=((TableDataSource)query.getDataSource()).getName();
-  }
- catch (  ClassCastException e) {
-    throw new UnsupportedOperationException("Subqueries are only supported in the broker");
-  }
-  return dataSourceName;
+  return Iterables.getOnlyElement(query.getDataSource().getNames());
 }

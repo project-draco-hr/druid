@@ -9,7 +9,7 @@ synchronized (lock) {
     brokerServiceName=Iterables.getFirst(tierConfig.getTierToBrokerMap().values(),tierConfig.getDefaultBrokerServiceName());
   }
   if (brokerServiceName == null) {
-    List<Rule> rules=ruleManager.getRulesWithDefault((query.getDataSource()).getName());
+    List<Rule> rules=ruleManager.getRulesWithDefault(Iterables.getFirst(query.getDataSource().getNames(),null));
     DateTime now=new DateTime();
     int lastRulePosition=-1;
     LoadRule baseRule=null;
