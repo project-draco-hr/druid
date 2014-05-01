@@ -33,6 +33,9 @@
     if (!config.getSegmentGranularIntervals().isPresent()) {
       final Path intervalInfoPath=config.makeIntervalInfoPath();
       fileSystem=intervalInfoPath.getFileSystem(groupByJob.getConfiguration());
+      if (!fileSystem.exists(intervalInfoPath)) {
+        throw new ISE("Path[%s] didn't exist!?",intervalInfoPath);
+      }
       List<Interval> intervals=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,intervalInfoPath),new TypeReference<List<Interval>>(){
       }
 );
@@ -47,21 +50,26 @@
       if (fileSystem == null) {
         fileSystem=partitionInfoPath.getFileSystem(groupByJob.getConfiguration());
       }
-      final Long cardinality=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
-      }
+      if (fileSystem.exists(partitionInfoPath)) {
+        Long cardinality=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
+        }
 );
-      final int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
-      List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
-      if (numberOfShards == 1) {
-        actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),shardCount++));
+        final int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
+        List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
+        if (numberOfShards == 1) {
+          actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),shardCount++));
+        }
+ else {
+          for (int i=0; i < numberOfShards; ++i) {
+            actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards),shardCount++));
+            log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
+          }
+        }
+        shardSpecs.put(bucket,actualSpecs);
       }
  else {
-        for (int i=0; i < numberOfShards; ++i) {
-          actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards),shardCount++));
-          log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
-        }
+        log.info("Path[%s] didn't exist!?",partitionInfoPath);
       }
-      shardSpecs.put(bucket,actualSpecs);
     }
     config.setShardSpecs(shardSpecs);
     log.info("DetermineHashedPartitionsJob took %d millis",(System.currentTimeMillis() - startTime));
