@@ -1,3 +1,4 @@
 {
-  this.threadPoolExecutor=threadPoolExecutor;
+  this.delegate=MoreExecutors.listeningDecorator(Preconditions.checkNotNull(threadPoolExecutor));
+  this.delegateQueue=threadPoolExecutor.getQueue();
 }

@@ -7,7 +7,7 @@
   }
   List<Future<Boolean>> futures=Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<Row>,Future<Boolean>>(){
     @Override public Future<Boolean> apply(    final QueryRunner<Row> input){
-      return exec.submit(new PrioritizedCallable<Boolean>(priority){
+      return exec.submit(new AbstractPrioritizedCallable<Boolean>(priority){
         @Override public Boolean call() throws Exception {
           try {
             input.run(queryParam).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
