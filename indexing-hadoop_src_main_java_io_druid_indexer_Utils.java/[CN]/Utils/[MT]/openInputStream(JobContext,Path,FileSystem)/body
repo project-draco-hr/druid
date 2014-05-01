@@ -1,0 +1,11 @@
+{
+  if (!FileOutputFormat.getCompressOutput(job)) {
+    return fileSystem.open(inputPath);
+  }
+ else {
+    Class<? extends CompressionCodec> codecClass=FileOutputFormat.getOutputCompressorClass(job,GzipCodec.class);
+    CompressionCodec codec=ReflectionUtils.newInstance(codecClass,job.getConfiguration());
+    inputPath=new Path(inputPath.toString() + codec.getDefaultExtension());
+    return codec.createInputStream(fileSystem.open(inputPath));
+  }
+}
