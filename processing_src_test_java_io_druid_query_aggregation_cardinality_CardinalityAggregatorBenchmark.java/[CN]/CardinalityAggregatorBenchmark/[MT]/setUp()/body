@@ -1,0 +1,27 @@
+{
+  Iterable<String[]> values=FluentIterable.from(ContiguousSet.create(Range.closedOpen(0,500),DiscreteDomain.integers())).transform(new Function<Integer,String[]>(){
+    @Override public String[] apply(    Integer input){
+      if (multivaluedSized == 1) {
+        return new String[]{input.toString()};
+      }
+ else {
+        String[] res=new String[multivaluedSized];
+        String value=input.toString();
+        for (int i=0; i < multivaluedSized; ++i) {
+          res[i]=value + i;
+        }
+        return res;
+      }
+    }
+  }
+).cycle().limit(MAX);
+  final CardinalityAggregatorTest.TestDimensionSelector dim1=new CardinalityAggregatorTest.TestDimensionSelector(values);
+  selectorList=Lists.newArrayList((DimensionSelector)dim1);
+  agg=new CardinalityBufferAggregator(selectorList,byRow);
+  CardinalityAggregatorFactory factory=new CardinalityAggregatorFactory("billy",Lists.newArrayList("dim1"),byRow);
+  int maxSize=factory.getMaxIntermediateSize();
+  buf=ByteBuffer.allocate(maxSize + 64);
+  pos=10;
+  buf.limit(pos + maxSize);
+  agg.init(buf,pos);
+}

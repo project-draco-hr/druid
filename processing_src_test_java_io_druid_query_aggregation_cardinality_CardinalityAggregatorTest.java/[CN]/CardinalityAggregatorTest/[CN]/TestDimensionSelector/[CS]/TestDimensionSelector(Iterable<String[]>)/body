@@ -1,0 +1,25 @@
+{
+  this.lookup=Maps.newHashMap();
+  this.ids=Maps.newHashMap();
+  int index=0;
+  for (  String[] multiValue : values) {
+    for (    String value : multiValue) {
+      if (!ids.containsKey(value)) {
+        ids.put(value,index);
+        lookup.put(index,value);
+        index++;
+      }
+    }
+  }
+  this.column=Lists.newArrayList(Iterables.transform(values,new Function<String[],Integer[]>(){
+    @Nullable @Override public Integer[] apply(    @Nullable String[] input){
+      return Iterators.toArray(Iterators.transform(Iterators.forArray(input),new Function<String,Integer>(){
+        @Nullable @Override public Integer apply(        @Nullable String input){
+          return ids.get(input);
+        }
+      }
+),Integer.class);
+    }
+  }
+));
+}

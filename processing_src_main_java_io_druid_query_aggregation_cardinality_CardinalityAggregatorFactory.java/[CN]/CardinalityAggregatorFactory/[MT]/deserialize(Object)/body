@@ -1,0 +1,12 @@
+{
+  if (object instanceof byte[]) {
+    return HyperLogLogCollector.makeCollector(ByteBuffer.wrap((byte[])object));
+  }
+ else   if (object instanceof ByteBuffer) {
+    return HyperLogLogCollector.makeCollector((ByteBuffer)object);
+  }
+ else   if (object instanceof String) {
+    return HyperLogLogCollector.makeCollector(ByteBuffer.wrap(Base64.decodeBase64(((String)object).getBytes(Charsets.UTF_8))));
+  }
+  return object;
+}
