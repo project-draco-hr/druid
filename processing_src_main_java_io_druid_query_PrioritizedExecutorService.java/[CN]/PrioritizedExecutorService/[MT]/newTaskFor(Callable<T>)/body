@@ -1,3 +1,4 @@
 {
-  return PrioritizedListenableFutureTask.create(ListenableFutureTask.create(callable),callable instanceof PrioritizedCallable ? ((PrioritizedCallable)callable).getPriority() : DEFAULT_PRIORITY);
+  Preconditions.checkArgument(allowRegularTasks || callable instanceof PrioritizedCallable,"task does not implement PrioritizedCallable");
+  return PrioritizedListenableFutureTask.create(ListenableFutureTask.create(callable),callable instanceof PrioritizedCallable ? ((PrioritizedCallable)callable).getPriority() : defaultPriority);
 }
