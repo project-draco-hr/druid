@@ -4,7 +4,7 @@ synchronized (lock) {
     log.debug("Adding segment[%s] for server[%s]",segment,server);
     ServerSelector selector=selectors.get(segmentId);
     if (selector == null) {
-      selector=new ServerSelector(segment,serverSelectorStrategy);
+      selector=new ServerSelector(segment,tierSelectorStrategy);
       VersionedIntervalTimeline<String,ServerSelector> timeline=timelines.get(segment.getDataSource());
       if (timeline == null) {
         timeline=new VersionedIntervalTimeline<String,ServerSelector>(Ordering.natural());
