@@ -1,24 +1,26 @@
 {
   Pair<Double,ServerHolder> bestServer=Pair.of(Double.POSITIVE_INFINITY,null);
-  final long proposalSegmentSize=proposalSegment.getSize();
-  for (  ServerHolder server : serverHolders) {
-    if (includeCurrentServer || !server.isServingSegment(proposalSegment)) {
-      if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
-        continue;
+  ListeningExecutorService service=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threadCount));
+  List<ListenableFuture<Pair<Double,ServerHolder>>> futures=Lists.newArrayList();
+  for (  final ServerHolder server : serverHolders) {
+    futures.add(service.submit(new Callable<Pair<Double,ServerHolder>>(){
+      @Override public Pair<Double,ServerHolder> call() throws Exception {
+        return Pair.of(computeCost(proposalSegment,server,includeCurrentServer),server);
       }
-      double cost=0f;
-      for (      DataSegment segment : server.getServer().getSegments().values()) {
-        if (!proposalSegment.equals(segment)) {
-          cost+=computeJointSegmentCosts(proposalSegment,segment);
-        }
-      }
-      for (      DataSegment segment : server.getPeon().getSegmentsToLoad()) {
-        cost+=computeJointSegmentCosts(proposalSegment,segment);
-      }
-      if (cost < bestServer.lhs) {
-        bestServer=Pair.of(cost,server);
+    }
+));
+  }
+  final ListenableFuture<List<Pair<Double,ServerHolder>>> resultsFuture=Futures.allAsList(futures);
+  try {
+    for (    Pair<Double,ServerHolder> server : resultsFuture.get()) {
+      if (server.lhs < bestServer.lhs) {
+        bestServer=server;
       }
     }
   }
+ catch (  Exception e) {
+    log.makeAlert(e,"Cost Balancer Multithread strategy wasn't able to complete cost computation.").emit();
+  }
+  service.shutdown();
   return bestServer;
 }
