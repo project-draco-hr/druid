@@ -6,10 +6,8 @@
     toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
   }
   boolean normalExit=true;
-  final Period intermediatePersistPeriod=fireDepartmentConfig.getIntermediatePersistPeriod();
-  final Firehose firehose=firehoseFactory.connect();
-  final RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(windowPeriod,new File(toolbox.getTaskWorkDir(),"persist"),segmentGranularity);
-  realtimePlumberSchool.setDefaultMaxPendingPersists(maxPendingPersists);
+  final Period intermediatePersistPeriod=spec.getTuningConfig().getIntermediatePersistPeriod();
+  final Firehose firehose=spec.getIOConfig().getFirehoseFactory().connect(spec.getDataSchema().getParser());
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final DataSegmentAnnouncer lockingSegmentAnnouncer=new DataSegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {
@@ -54,21 +52,14 @@
     }
   }
 ;
-  realtimePlumberSchool.setDataSegmentPusher(toolbox.getSegmentPusher());
-  realtimePlumberSchool.setConglomerate(toolbox.getQueryRunnerFactoryConglomerate());
-  realtimePlumberSchool.setQueryExecutorService(toolbox.getQueryExecutorService());
-  realtimePlumberSchool.setVersioningPolicy(versioningPolicy);
-  realtimePlumberSchool.setSegmentAnnouncer(lockingSegmentAnnouncer);
-  realtimePlumberSchool.setSegmentPublisher(segmentPublisher);
-  realtimePlumberSchool.setServerView(toolbox.getNewSegmentServerView());
-  realtimePlumberSchool.setEmitter(toolbox.getEmitter());
-  if (this.rejectionPolicyFactory != null) {
-    realtimePlumberSchool.setRejectionPolicyFactory(rejectionPolicyFactory);
-  }
-  final FireDepartment fireDepartment=new FireDepartment(schema,fireDepartmentConfig,null,null);
+  DataSchema dataSchema=spec.getDataSchema();
+  RealtimeIOConfig realtimeIOConfig=spec.getIOConfig();
+  RealtimeTuningConfig tuningConfig=spec.getTuningConfig().withBasePersistDirectory(new File(toolbox.getTaskWorkDir(),"persist")).withVersioningPolicy(versioningPolicy);
+  final FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,tuningConfig,null,null,null,null);
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
-  this.plumber=realtimePlumberSchool.findPlumber(schema,fireDepartment.getMetrics());
+  final RealtimePlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService(),null,null,null,null,null,0);
+  this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
   try {
     plumber.startJob();
     toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
@@ -95,7 +86,7 @@
         }
         int currCount=sink.add(inputRow);
         fireDepartment.getMetrics().incrementProcessed();
-        if (currCount >= fireDepartmentConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+        if (currCount >= tuningConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
         }
@@ -108,7 +99,7 @@
   }
  catch (  Throwable e) {
     normalExit=false;
-    log.makeAlert(e,"Exception aborted realtime processing[%s]",schema.getDataSource()).emit();
+    log.makeAlert(e,"Exception aborted realtime processing[%s]",dataSchema.getDataSource()).emit();
     throw e;
   }
  finally {

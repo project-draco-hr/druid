@@ -1,5 +1,5 @@
 {
-  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),5,IndexGranularity.HOUR,null);
+  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),null,new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),1,Granularity.HOUR,null);
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
@@ -7,15 +7,13 @@
   Assert.assertEquals("foo",task.getDataSource());
   Assert.assertEquals(2,task.getTaskResource().getRequiredCapacity());
   Assert.assertEquals("rofl",task.getTaskResource().getAvailabilityGroup());
-  Assert.assertEquals(new Period("PT10M"),task.getWindowPeriod());
-  Assert.assertEquals(IndexGranularity.HOUR,task.getSegmentGranularity());
-  Assert.assertEquals(5,task.getMaxPendingPersists());
+  Assert.assertEquals(new Period("PT10M"),task.getRealtimeIngestionSchema().getTuningConfig().getWindowPeriod());
+  Assert.assertEquals(Granularity.HOUR,task.getRealtimeIngestionSchema().getDataSchema().getGranularitySpec().getSegmentGranularity());
   Assert.assertEquals(task.getId(),task2.getId());
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
   Assert.assertEquals(task.getTaskResource().getRequiredCapacity(),task2.getTaskResource().getRequiredCapacity());
   Assert.assertEquals(task.getTaskResource().getAvailabilityGroup(),task2.getTaskResource().getAvailabilityGroup());
-  Assert.assertEquals(task.getWindowPeriod(),task2.getWindowPeriod());
-  Assert.assertEquals(task.getSegmentGranularity(),task2.getSegmentGranularity());
-  Assert.assertEquals(task.getMaxPendingPersists(),task2.getMaxPendingPersists());
+  Assert.assertEquals(task.getRealtimeIngestionSchema().getTuningConfig().getWindowPeriod(),task2.getRealtimeIngestionSchema().getTuningConfig().getWindowPeriod());
+  Assert.assertEquals(task.getRealtimeIngestionSchema().getDataSchema().getGranularitySpec().getSegmentGranularity(),task2.getRealtimeIngestionSchema().getDataSchema().getGranularitySpec().getSegmentGranularity());
 }

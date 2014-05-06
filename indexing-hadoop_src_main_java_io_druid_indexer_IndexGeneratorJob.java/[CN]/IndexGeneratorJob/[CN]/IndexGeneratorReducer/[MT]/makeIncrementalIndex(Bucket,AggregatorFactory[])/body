@@ -1,3 +1,4 @@
 {
-  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withSpatialDimensions(config.getDataSpec().getSpatialDimensions()).withQueryGranularity(config.getRollupSpec().getRollupGranularity()).withMetrics(aggs).build());
+  List<SpatialDimensionSchema> spatialDimensionSchemas=config.getSchema().getDataSchema().getParser() == null ? Lists.<SpatialDimensionSchema>newArrayList() : config.getSchema().getDataSchema().getParser().getParseSpec().getDimensionsSpec().getSpatialDimensions();
+  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withSpatialDimensions(spatialDimensionSchemas).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build());
 }

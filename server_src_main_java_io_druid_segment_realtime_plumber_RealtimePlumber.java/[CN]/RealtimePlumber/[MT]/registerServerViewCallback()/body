@@ -10,7 +10,7 @@
         return ServerView.CallbackAction.CONTINUE;
       }
       log.debug("Checking segment[%s] on server[%s]",segment,server);
-      if (schema.getDataSource().equals(segment.getDataSource()) && schema.getShardSpec().getPartitionNum() == segment.getShardSpec().getPartitionNum()) {
+      if (schema.getDataSource().equals(segment.getDataSource()) && config.getShardSpec().getPartitionNum() == segment.getShardSpec().getPartitionNum()) {
         final Interval interval=segment.getInterval();
         for (        Map.Entry<Long,Sink> entry : sinks.entrySet()) {
           final Long sinkKey=entry.getKey();

@@ -1,0 +1,15 @@
+{
+  final HadoopIngestionSpec schema;
+  try {
+    schema=jsonReadWriteRead("{" + "\"targetPartitionSize\":100," + "\"partitionDimension\":\"foo\""+ "}",HadoopIngestionSpec.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  final PartitionsSpec partitionsSpec=schema.getTuningConfig().getPartitionsSpec();
+  Assert.assertEquals("isDeterminingPartitions",partitionsSpec.isDeterminingPartitions(),true);
+  Assert.assertEquals("getTargetPartitionSize",partitionsSpec.getTargetPartitionSize(),100);
+  Assert.assertEquals("getMaxPartitionSize",partitionsSpec.getMaxPartitionSize(),150);
+  Assert.assertTrue("partitionsSpec",partitionsSpec instanceof SingleDimensionPartitionsSpec);
+  Assert.assertEquals("getPartitionDimension",((SingleDimensionPartitionsSpec)partitionsSpec).getPartitionDimension(),"foo");
+}

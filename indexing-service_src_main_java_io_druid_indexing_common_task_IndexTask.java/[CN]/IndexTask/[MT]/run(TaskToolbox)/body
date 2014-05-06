@@ -1,4 +1,6 @@
 {
+  final GranularitySpec granularitySpec=ingestionSchema.getDataSchema().getGranularitySpec();
+  final int targetPartitionSize=ingestionSchema.getTuningConfig().getTargetPartitionSize();
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Set<DataSegment> segments=Sets.newHashSet();
   final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals().get(),getDataIntervals());
@@ -14,7 +16,7 @@
       shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
-      final DataSegment segment=generateSegment(toolbox,new Schema(getDataSource(),spatialDimensions,aggregators,indexGranularity,shardSpec),bucket,myLock.getVersion());
+      final DataSegment segment=generateSegment(toolbox,ingestionSchema.getDataSchema(),shardSpec,bucket,myLock.getVersion());
       segments.add(segment);
     }
   }

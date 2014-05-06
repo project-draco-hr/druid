@@ -2,7 +2,7 @@
   final List<Object> groupKey=Rows.toGroupKey(rollupGranularity.truncate(inputRow.getTimestampFromEpoch()),inputRow);
   Interval interval;
   if (determineIntervals) {
-    interval=config.getGranularitySpec().getGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
+    interval=config.getGranularitySpec().getSegmentGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
     if (!hyperLogLogs.containsKey(interval)) {
       hyperLogLogs.put(interval,HyperLogLogCollector.makeLatestCollector());
     }

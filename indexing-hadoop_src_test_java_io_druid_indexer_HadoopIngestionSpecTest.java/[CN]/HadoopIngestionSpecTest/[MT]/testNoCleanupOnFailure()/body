@@ -1,0 +1,10 @@
+{
+  final HadoopIngestionSpec schema;
+  try {
+    schema=jsonReadWriteRead("{\"cleanupOnFailure\":false}",HadoopIngestionSpec.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  Assert.assertEquals("cleanupOnFailure",schema.getTuningConfig().isCleanupOnFailure(),false);
+}

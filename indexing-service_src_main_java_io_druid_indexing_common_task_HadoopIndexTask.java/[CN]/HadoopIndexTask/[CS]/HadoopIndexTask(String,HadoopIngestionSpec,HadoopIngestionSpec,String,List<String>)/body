@@ -1,0 +1,8 @@
+{
+  super(id != null ? id : String.format("index_hadoop_%s_%s",getTheDataSource(spec,config),new DateTime()),getTheDataSource(spec,config));
+  this.spec=spec == null ? config : spec;
+  Preconditions.checkArgument(this.spec.getIOConfig().getSegmentOutputPath() == null,"segmentOutputPath must be absent");
+  Preconditions.checkArgument(this.spec.getTuningConfig().getWorkingPath() == null,"workingPath must be absent");
+  Preconditions.checkArgument(this.spec.getIOConfig().getMetadataUpdateSpec() == null,"updaterJobSpec must be absent");
+  this.hadoopDependencyCoordinates=hadoopDependencyCoordinates == null ? Arrays.<String>asList(hadoopCoordinates == null ? DEFAULT_HADOOP_COORDINATES : hadoopCoordinates) : hadoopDependencyCoordinates;
+}

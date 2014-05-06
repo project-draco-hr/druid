@@ -1,0 +1,18 @@
+{
+  List<SpatialDimensionSchema> spatialDimensionSchemas=schema.getParser() == null ? Lists.<SpatialDimensionSchema>newArrayList() : schema.getParser().getParseSpec().getDimensionsSpec().getSpatialDimensions();
+  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withSpatialDimensions(spatialDimensionSchemas).withMetrics(schema.getAggregators()).build());
+  FireHydrant old;
+  if (currIndex == null) {
+    old=currIndex;
+    currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+    hydrants.add(currIndex);
+  }
+ else {
+synchronized (currIndex) {
+      old=currIndex;
+      currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+      hydrants.add(currIndex);
+    }
+  }
+  return old;
+}

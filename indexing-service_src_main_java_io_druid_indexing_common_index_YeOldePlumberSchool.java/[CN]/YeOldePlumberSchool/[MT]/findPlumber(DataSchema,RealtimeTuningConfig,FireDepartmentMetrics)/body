@@ -1,0 +1,85 @@
+{
+  final Sink theSink=new Sink(interval,schema,config,version);
+  final File persistDir=new File(tmpSegmentDir,theSink.getSegment().getIdentifier());
+  final Set<File> spilled=Sets.newHashSet();
+  return new Plumber(){
+    @Override public void startJob(){
+    }
+    @Override public Sink getSink(    long timestamp){
+      if (theSink.getInterval().contains(timestamp)) {
+        return theSink;
+      }
+ else {
+        return null;
+      }
+    }
+    @Override public <T>QueryRunner<T> getQueryRunner(    Query<T> query){
+      throw new UnsupportedOperationException("Don't query me, bro.");
+    }
+    @Override public void persist(    Runnable commitRunnable){
+      spillIfSwappable();
+      commitRunnable.run();
+    }
+    @Override public void finishJob(){
+      File fileToUpload=null;
+      try {
+        Preconditions.checkState(!theSink.swappable(),"All data must be persisted before fininshing the job!");
+        if (spilled.size() == 0) {
+          throw new IllegalStateException("Nothing indexed?");
+        }
+ else         if (spilled.size() == 1) {
+          fileToUpload=Iterables.getOnlyElement(spilled);
+        }
+ else {
+          List<QueryableIndex> indexes=Lists.newArrayList();
+          for (          final File oneSpill : spilled) {
+            indexes.add(IndexIO.loadIndex(oneSpill));
+          }
+          fileToUpload=new File(tmpSegmentDir,"merged");
+          IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload);
+        }
+        final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
+        final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withBinaryVersion(SegmentUtils.getVersionFromDir(fileToUpload));
+        dataSegmentPusher.push(fileToUpload,segmentToUpload);
+        log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
+      }
+ catch (      Exception e) {
+        log.warn(e,"Failed to merge and upload");
+        throw Throwables.propagate(e);
+      }
+ finally {
+        try {
+          if (fileToUpload != null) {
+            log.info("Deleting Index File[%s]",fileToUpload);
+            FileUtils.deleteDirectory(fileToUpload);
+          }
+        }
+ catch (        IOException e) {
+          log.warn(e,"Error deleting directory[%s]",fileToUpload);
+        }
+      }
+    }
+    private void spillIfSwappable(){
+      if (theSink.swappable()) {
+        final FireHydrant indexToPersist=theSink.swap();
+        final int rowsToPersist=indexToPersist.getIndex().size();
+        final File dirToPersist=getSpillDir(indexToPersist.getCount());
+        log.info("Spilling index[%d] with rows[%d] to: %s",indexToPersist.getCount(),rowsToPersist,dirToPersist);
+        try {
+          IndexMerger.persist(indexToPersist.getIndex(),dirToPersist);
+          indexToPersist.swapSegment(null);
+          metrics.incrementRowOutputCount(rowsToPersist);
+          spilled.add(dirToPersist);
+        }
+ catch (        Exception e) {
+          log.warn(e,"Failed to spill index[%d]",indexToPersist.getCount());
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+    private File getSpillDir(    final int n){
+      return new File(persistDir,String.format("spill%d",n));
+    }
+  }
+;
+}

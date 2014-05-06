@@ -44,7 +44,7 @@
  else {
     throw new ISE("Unknown file system[%s]",outputFS.getClass());
   }
-  DataSegment segment=new DataSegment(config.getDataSource(),interval,config.getVersion(),loadSpec,dimensionNames,metricNames,config.getShardSpec(bucket).getActualSpec(),SegmentUtils.getVersionFromDir(mergedBase),size);
+  DataSegment segment=new DataSegment(config.getDataSource(),interval,config.getSchema().getTuningConfig().getVersion(),loadSpec,dimensionNames,metricNames,config.getShardSpec(bucket).getActualSpec(),SegmentUtils.getVersionFromDir(mergedBase),size);
   boolean success=false;
   for (int i=0; i < 6; i++) {
     if (renameIndexFiles(infoFS,outputFS,indexBasePath,indexZipFilePath,finalIndexZipFilePath,segment)) {

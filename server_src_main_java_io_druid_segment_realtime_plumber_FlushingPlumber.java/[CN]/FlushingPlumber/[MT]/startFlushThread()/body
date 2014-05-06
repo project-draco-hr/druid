@@ -1,14 +1,15 @@
 {
-  final long truncatedNow=getSegmentGranularity().truncate(new DateTime()).getMillis();
-  final long windowMillis=getWindowPeriod().toStandardDuration().getMillis();
-  log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),getSegmentGranularity().increment(truncatedNow) + windowMillis)));
-  ScheduledExecutors.scheduleAtFixedRate(flushScheduledExec,new Duration(System.currentTimeMillis(),getSegmentGranularity().increment(truncatedNow) + windowMillis),new Duration(truncatedNow,getSegmentGranularity().increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-flusher-%d",getSchema().getDataSource(),getSchema().getShardSpec().getPartitionNum())){
+  final Granularity segmentGranularity=schema.getGranularitySpec().getSegmentGranularity();
+  final DateTime truncatedNow=segmentGranularity.truncate(new DateTime());
+  final long windowMillis=config.getWindowPeriod().toStandardDuration().getMillis();
+  log.info("Expect to run at [%s]",new DateTime().plus(new Duration(System.currentTimeMillis(),schema.getGranularitySpec().getSegmentGranularity().increment(truncatedNow).getMillis() + windowMillis)));
+  ScheduledExecutors.scheduleAtFixedRate(flushScheduledExec,new Duration(System.currentTimeMillis(),schema.getGranularitySpec().getSegmentGranularity().increment(truncatedNow).getMillis() + windowMillis),new Duration(truncatedNow,segmentGranularity.increment(truncatedNow)),new ThreadRenamingCallable<ScheduledExecutors.Signal>(String.format("%s-flusher-%d",getSchema().getDataSource(),getConfig().getShardSpec().getPartitionNum())){
     @Override public ScheduledExecutors.Signal doCall(){
       if (stopped) {
         log.info("Stopping flusher thread");
         return ScheduledExecutors.Signal.STOP;
       }
-      long minTimestamp=getSegmentGranularity().truncate(getRejectionPolicy().getCurrMaxTime().minus(windowMillis)).getMillis();
+      long minTimestamp=segmentGranularity.truncate(getRejectionPolicy().getCurrMaxTime().minus(windowMillis)).getMillis();
       List<Map.Entry<Long,Sink>> sinksToPush=Lists.newArrayList();
       for (      Map.Entry<Long,Sink> entry : getSinks().entrySet()) {
         final Long intervalStart=entry.getKey();

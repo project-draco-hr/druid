@@ -1,0 +1,28 @@
+{
+  Preconditions.checkNotNull(s3Client,"null s3Client");
+  final LinkedList<URI> objectQueue=Lists.newLinkedList(uris);
+  return new FileIteratingFirehose(new Iterator<LineIterator>(){
+    @Override public boolean hasNext(){
+      return !objectQueue.isEmpty();
+    }
+    @Override public LineIterator next(){
+      final URI nextURI=objectQueue.poll();
+      final String s3Bucket=nextURI.getAuthority();
+      final S3Object s3Object=new S3Object(nextURI.getPath().startsWith("/") ? nextURI.getPath().substring(1) : nextURI.getPath());
+      log.info("Reading from bucket[%s] object[%s] (%s)",s3Bucket,s3Object.getKey(),nextURI);
+      try {
+        final InputStream innerInputStream=s3Client.getObject(new S3Bucket(s3Bucket),s3Object.getKey()).getDataInputStream();
+        final InputStream outerInputStream=s3Object.getKey().endsWith(".gz") ? new GZIPInputStream(innerInputStream) : innerInputStream;
+        return IOUtils.lineIterator(new BufferedReader(new InputStreamReader(outerInputStream,Charsets.UTF_8)));
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception reading from bucket[%s] object[%s]",s3Bucket,s3Object.getKey());
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+,(StringInputRowParser)firehoseParser);
+}

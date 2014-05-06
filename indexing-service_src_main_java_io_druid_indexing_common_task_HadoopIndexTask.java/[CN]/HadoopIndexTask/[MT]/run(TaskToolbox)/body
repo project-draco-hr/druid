@@ -19,15 +19,15 @@
   jobUrls.addAll(nonHadoopURLs);
   jobUrls.addAll(extensionURLs);
   System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
-  boolean determineIntervals=!schema.getGranularitySpec().bucketIntervals().isPresent();
+  boolean determineIntervals=!spec.getDataSchema().getGranularitySpec().bucketIntervals().isPresent();
   final Class<?> determineConfigurationMainClass=loader.loadClass(HadoopDetermineConfigInnerProcessing.class.getName());
   final Method determineConfigurationMainMethod=determineConfigurationMainClass.getMethod("runTask",String[].class);
-  String[] determineConfigArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(schema),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
+  String[] determineConfigArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(spec),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
   String config=(String)determineConfigurationMainMethod.invoke(null,new Object[]{determineConfigArgs});
-  HadoopDruidIndexerSchema indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopDruidIndexerSchema.class);
+  HadoopIngestionSpec indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopIngestionSpec.class);
   final String version;
   if (determineIntervals) {
-    Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(indexerSchema.getGranularitySpec().bucketIntervals().get()));
+    Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(indexerSchema.getDataSchema().getGranularitySpec().bucketIntervals().get()));
     TaskLock lock=toolbox.getTaskActionClient().submit(new LockAcquireAction(interval));
     version=lock.getVersion();
   }

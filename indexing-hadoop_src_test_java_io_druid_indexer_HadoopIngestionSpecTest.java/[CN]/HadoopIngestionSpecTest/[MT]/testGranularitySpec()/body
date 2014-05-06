@@ -1,0 +1,12 @@
+{
+  final HadoopIngestionSpec schema;
+  try {
+    schema=jsonReadWriteRead("{" + " \"granularitySpec\":{" + "   \"type\":\"uniform\","+ "   \"gran\":\"hour\","+ "   \"intervals\":[\"2012-01-01/P1D\"]"+ " }"+ "}",HadoopIngestionSpec.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  final UniformGranularitySpec granularitySpec=(UniformGranularitySpec)schema.getDataSchema().getGranularitySpec();
+  Assert.assertEquals("getIntervals",Lists.newArrayList(new Interval("2012-01-01/P1D")),granularitySpec.getIntervals().get());
+  Assert.assertEquals("getSegmentGranularity","HOUR",granularitySpec.getSegmentGranularity().toString());
+}

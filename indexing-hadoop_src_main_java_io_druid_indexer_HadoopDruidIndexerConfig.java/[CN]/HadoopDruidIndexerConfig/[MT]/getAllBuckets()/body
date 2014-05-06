@@ -4,7 +4,7 @@
     return Optional.of((Iterable<Bucket>)FunctionalIterable.create(intervals.get()).transformCat(new Function<Interval,Iterable<Bucket>>(){
       @Override public Iterable<Bucket> apply(      Interval input){
         final DateTime bucketTime=input.getStart();
-        final List<HadoopyShardSpec> specs=shardSpecs.get(bucketTime);
+        final List<HadoopyShardSpec> specs=schema.getTuningConfig().getShardSpecs().get(bucketTime);
         if (specs == null) {
           return ImmutableList.of();
         }

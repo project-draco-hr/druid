@@ -2,8 +2,7 @@
   SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
   Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
-  final DataRollupSpec rollupSpec=config.getRollupSpec();
-  final AggregatorFactory[] aggs=rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]);
+  final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
   IncrementalIndex index=makeIncrementalIndex(bucket,aggs);
   File baseFlushFile=File.createTempFile("base","flush");
   baseFlushFile.delete();
@@ -20,7 +19,7 @@
     allDimensionNames.addAll(inputRow.getDimensions());
     int numRows=index.add(inputRow);
     ++lineCount;
-    if (numRows >= rollupSpec.rowFlushBoundary) {
+    if (numRows >= config.getSchema().getTuningConfig().getRowFlushBoundary()) {
       log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
       runningTotalLineCount=lineCount;
       final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
