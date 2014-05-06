@@ -1,0 +1,15 @@
+{
+  List<DimensionSelector> selector1=Lists.newArrayList((DimensionSelector)dim1);
+  List<DimensionSelector> selector2=Lists.newArrayList((DimensionSelector)dim2);
+  CardinalityAggregator agg1=new CardinalityAggregator("billy",selector1,true);
+  CardinalityAggregator agg2=new CardinalityAggregator("billy",selector2,true);
+  for (int i=0; i < values1.size(); ++i) {
+    aggregate(selector1,agg1);
+  }
+  for (int i=0; i < values2.size(); ++i) {
+    aggregate(selector2,agg2);
+  }
+  Assert.assertEquals(4.0,(Double)rowAggregatorFactory.finalizeComputation(agg1.get()),0.05);
+  Assert.assertEquals(8.0,(Double)rowAggregatorFactory.finalizeComputation(agg2.get()),0.05);
+  Assert.assertEquals(9.0,(Double)rowAggregatorFactory.finalizeComputation(rowAggregatorFactory.combine(agg1.get(),agg2.get())),0.05);
+}

@@ -1,0 +1,14 @@
+{
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof UnionDataSource) {
+    return Sequences.concat(Iterables.transform(((UnionDataSource)dataSource).getDataSources(),new Function<DataSource,Sequence<T>>(){
+      @Override public Sequence<T> apply(      DataSource singleSource){
+        return baseRunner.run(query.withDataSource(singleSource));
+      }
+    }
+));
+  }
+ else {
+    return baseRunner.run(query);
+  }
+}

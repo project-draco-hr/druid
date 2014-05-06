@@ -1,3 +1,10 @@
 {
-  return value == null ? null : poorMansInterning.get(value);
+  final String retVal;
+  if (value == null) {
+    retVal=poorMansInterning.get(NULL_STRING);
+  }
+ else {
+    retVal=poorMansInterning.get(value);
+  }
+  return retVal == null ? null : (retVal.equals(NULL_STRING) ? null : retVal);
 }

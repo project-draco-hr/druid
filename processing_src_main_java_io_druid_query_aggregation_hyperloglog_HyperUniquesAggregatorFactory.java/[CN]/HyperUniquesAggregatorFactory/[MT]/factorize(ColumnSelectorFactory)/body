@@ -1,7 +1,7 @@
 {
   ObjectColumnSelector selector=metricFactory.makeObjectColumnSelector(fieldName);
   if (selector == null) {
-    return new NoopAggregator(name);
+    return Aggregators.noopAggregator();
   }
   if (HyperLogLogCollector.class.isAssignableFrom(selector.classOfObject())) {
     return new HyperUniquesAggregator(name,selector);

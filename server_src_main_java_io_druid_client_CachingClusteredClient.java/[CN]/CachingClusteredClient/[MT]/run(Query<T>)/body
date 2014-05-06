@@ -152,12 +152,7 @@
                   return input;
                 }
               }
-),toolChest.makePreComputeManipulatorFn(rewrittenQuery,new MetricManipulationFn(){
-                @Override public Object manipulate(                AggregatorFactory factory,                Object object){
-                  return factory.deserialize(object);
-                }
-              }
-)),new Runnable(){
+),toolChest.makePreComputeManipulatorFn(rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
                 @Override public void run(){
                   CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
                   if (cachePopulator != null) {

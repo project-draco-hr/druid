@@ -1,0 +1,24 @@
+{
+  log.debug("Adding %,d events to firehose: %s",events.size(),serviceName);
+  final List<InputRow> rows=Lists.newArrayList();
+  for (  final Map<String,Object> event : events) {
+    InputRow row=parser.parse(event);
+    rows.add(Rows.toCaseInsensitiveInputRow(row,row.getDimensions()));
+  }
+  try {
+    for (    final InputRow row : rows) {
+      boolean added=false;
+      while (!closed && !added) {
+        added=buffer.offer(row,500,TimeUnit.MILLISECONDS);
+      }
+      if (!added) {
+        throw new IllegalStateException("Cannot add events to closed firehose!");
+      }
+    }
+    return Response.ok().entity(ImmutableMap.of("eventCount",events.size())).build();
+  }
+ catch (  InterruptedException e) {
+    Thread.currentThread().interrupt();
+    throw Throwables.propagate(e);
+  }
+}

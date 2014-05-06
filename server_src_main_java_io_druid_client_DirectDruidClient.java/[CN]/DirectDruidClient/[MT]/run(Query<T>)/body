@@ -65,12 +65,7 @@
   }
 );
   if (!isBySegment) {
-    retVal=Sequences.map(retVal,toolChest.makePreComputeManipulatorFn(query,new MetricManipulationFn(){
-      @Override public Object manipulate(      AggregatorFactory factory,      Object object){
-        return factory.deserialize(object);
-      }
-    }
-));
+    retVal=Sequences.map(retVal,toolChest.makePreComputeManipulatorFn(query,MetricManipulatorFns.deserializing()));
   }
   return retVal;
 }

@@ -54,7 +54,7 @@
       @Override public ClientResponse<OutputStream> done(      ClientResponse<OutputStream> clientResponse){
         final long requestTime=System.currentTimeMillis() - start;
         log.debug("Request time: %d",requestTime);
-        emitter.emit(new ServiceMetricEvent.Builder().setUser2(theQuery.getDataSource().getName()).setUser4(theQuery.getType()).setUser5(COMMA_JOIN.join(theQuery.getIntervals())).setUser6(String.valueOf(theQuery.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(theQueryId).setUser9(theQuery.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
+        emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(theQuery.getDataSource())).setUser4(theQuery.getType()).setUser5(COMMA_JOIN.join(theQuery.getIntervals())).setUser6(String.valueOf(theQuery.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(theQueryId).setUser9(theQuery.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
         final OutputStream obj=clientResponse.getObj();
         try {
           requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));

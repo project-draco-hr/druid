@@ -1,16 +1,16 @@
 {
-  serverView.registerSegmentCallback(persistExecutor,new ServerView.BaseSegmentCallback(){
+  serverView.registerSegmentCallback(mergeExecutor,new ServerView.BaseSegmentCallback(){
     @Override public ServerView.CallbackAction segmentAdded(    DruidServer server,    DataSegment segment){
       if (stopped) {
         log.info("Unregistering ServerViewCallback");
-        persistExecutor.shutdown();
+        mergeExecutor.shutdown();
         return ServerView.CallbackAction.UNREGISTER;
       }
       if (!server.isAssignable()) {
         return ServerView.CallbackAction.CONTINUE;
       }
       log.debug("Checking segment[%s] on server[%s]",segment,server);
-      if (schema.getDataSource().equals(segment.getDataSource())) {
+      if (schema.getDataSource().equals(segment.getDataSource()) && config.getShardSpec().getPartitionNum() == segment.getShardSpec().getPartitionNum()) {
         final Interval interval=segment.getInterval();
         for (        Map.Entry<Long,Sink> entry : sinks.entrySet()) {
           final Long sinkKey=entry.getKey();

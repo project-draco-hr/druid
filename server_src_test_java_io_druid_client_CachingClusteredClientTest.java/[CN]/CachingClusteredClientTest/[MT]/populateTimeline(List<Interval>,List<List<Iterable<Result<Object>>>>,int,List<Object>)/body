@@ -12,7 +12,7 @@
       }
       ServerExpectation expectation=new ServerExpectation(String.format("%s_%s",k,j),queryIntervals.get(numQueryIntervals),makeMock(mocks,DataSegment.class),expectedResults.get(k).get(j));
       serverExpectations.get(lastServer).addExpectation(expectation);
-      ServerSelector selector=new ServerSelector(expectation.getSegment(),new RandomServerSelectorStrategy());
+      ServerSelector selector=new ServerSelector(expectation.getSegment(),new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()));
       selector.addServer(new QueryableDruidServer(lastServer,null));
       final PartitionChunk<ServerSelector> chunk;
       if (numChunks == 1) {
