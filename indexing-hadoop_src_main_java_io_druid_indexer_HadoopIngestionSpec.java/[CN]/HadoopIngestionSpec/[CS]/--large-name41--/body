@@ -1,0 +1,42 @@
+{
+  super(dataSchema,ioConfig,tuningConfig);
+  if (dataSchema != null) {
+    this.dataSchema=dataSchema;
+    this.ioConfig=ioConfig;
+    this.tuningConfig=tuningConfig == null ? HadoopTuningConfig.makeDefaultTuningConfig() : tuningConfig;
+  }
+ else {
+    TimestampSpec theTimestampSpec=(timestampSpec == null) ? new TimestampSpec(timestampColumn,timestampFormat) : timestampSpec;
+    List<String> dimensionExclusions=Lists.newArrayList();
+    dimensionExclusions.add(theTimestampSpec.getTimestampColumn());
+    if (rollupSpec != null) {
+      for (      AggregatorFactory aggregatorFactory : rollupSpec.getAggs()) {
+        dimensionExclusions.add(aggregatorFactory.getName());
+      }
+    }
+    PartitionsSpec thePartitionSpec;
+    if (partitionsSpec != null) {
+      Preconditions.checkArgument(partitionDimension == null && targetPartitionSize == null,"Cannot mix partitionsSpec with partitionDimension/targetPartitionSize");
+      thePartitionSpec=partitionsSpec;
+    }
+ else {
+      thePartitionSpec=new SingleDimensionPartitionsSpec(partitionDimension,targetPartitionSize,null,false);
+    }
+    GranularitySpec theGranularitySpec=null;
+    if (granularitySpec != null) {
+      Preconditions.checkArgument(segmentGranularity == null && intervals == null,"Cannot mix granularitySpec with segmentGranularity/intervals");
+      theGranularitySpec=granularitySpec;
+      if (rollupSpec != null) {
+        theGranularitySpec=theGranularitySpec.withQueryGranularity(rollupSpec.rollupGranularity);
+      }
+    }
+ else {
+      if (segmentGranularity != null && intervals != null) {
+        theGranularitySpec=new UniformGranularitySpec(segmentGranularity,rollupSpec == null ? null : rollupSpec.rollupGranularity,intervals,segmentGranularity);
+      }
+    }
+    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(dataSpec == null ? null : dataSpec.toParseSpec(timestampSpec,dimensionExclusions),null,null,null),rollupSpec == null ? new AggregatorFactory[]{} : rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
+    this.ioConfig=new HadoopIOConfig(pathSpec,updaterJobSpec,segmentOutputPath);
+    this.tuningConfig=new HadoopTuningConfig(workingPath,version,thePartitionSpec,shardSpecs,rollupSpec == null ? 50000 : rollupSpec.rowFlushBoundary,leaveIntermediate,cleanupOnFailure,overwriteFiles,ignoreInvalidRows,jobProperties);
+  }
+}

@@ -1,0 +1,12 @@
+{
+  final HadoopIngestionSpec schema;
+  try {
+    schema=jsonReadWriteRead("{}",HadoopIngestionSpec.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  Assert.assertEquals("cleanupOnFailure",schema.getTuningConfig().isCleanupOnFailure(),true);
+  Assert.assertEquals("overwriteFiles",schema.getTuningConfig().isOverwriteFiles(),false);
+  Assert.assertEquals("isDeterminingPartitions",schema.getTuningConfig().getPartitionsSpec().isDeterminingPartitions(),false);
+}

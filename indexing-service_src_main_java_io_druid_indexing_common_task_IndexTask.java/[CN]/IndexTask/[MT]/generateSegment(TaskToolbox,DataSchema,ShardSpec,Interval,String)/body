@@ -1,7 +1,7 @@
 {
   final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),version,shardSpec.getPartitionNum()));
   final FirehoseFactory firehoseFactory=ingestionSchema.getIOConfig().getFirehoseFactory();
-  final int rowFlushBoundary=ingestionSchema.getDriverConfig().getRowFlushBoundary();
+  final int rowFlushBoundary=ingestionSchema.getTuningConfig().getRowFlushBoundary();
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
@@ -16,7 +16,7 @@
 ;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeDriverConfig(null,null,null,null,null,null,null,shardSpec),metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeTuningConfig(null,null,null,null,null,null,null,shardSpec),metrics);
   final int myRowFlushBoundary=rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
   try {
     plumber.startJob();

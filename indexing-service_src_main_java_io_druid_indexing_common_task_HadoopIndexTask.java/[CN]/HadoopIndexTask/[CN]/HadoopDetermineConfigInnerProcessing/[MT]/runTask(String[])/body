@@ -2,8 +2,8 @@
   final String schema=args[0];
   final String workingPath=args[1];
   final String segmentOutputPath=args[2];
-  final HadoopIngestionSchema theSchema=HadoopDruidIndexerConfig.jsonMapper.readValue(schema,HadoopIngestionSchema.class);
-  final HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSchema(theSchema.withIOConfig(theSchema.getIOConfig().withSegmentOutputPath(segmentOutputPath)).withDriverConfig(theSchema.getDriverConfig().withWorkingPath(workingPath)));
+  final HadoopIngestionSpec theSchema=HadoopDruidIndexerConfig.jsonMapper.readValue(schema,HadoopIngestionSpec.class);
+  final HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSchema(theSchema.withIOConfig(theSchema.getIOConfig().withSegmentOutputPath(segmentOutputPath)).withTuningConfig(theSchema.getTuningConfig().withWorkingPath(workingPath)));
   Jobby job=new HadoopDruidDetermineConfigurationJob(config);
   log.info("Starting a hadoop determine configuration job...");
   if (job.run()) {

@@ -3,7 +3,7 @@
   if (!timeBucket.isPresent()) {
     return Optional.absent();
   }
-  final List<HadoopyShardSpec> shards=schema.getDriverConfig().getShardSpecs().get(timeBucket.get().getStart());
+  final List<HadoopyShardSpec> shards=schema.getTuningConfig().getShardSpecs().get(timeBucket.get().getStart());
   if (shards == null || shards.isEmpty()) {
     return Optional.absent();
   }

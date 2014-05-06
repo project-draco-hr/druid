@@ -1,6 +1,6 @@
 {
   final GranularitySpec granularitySpec=ingestionSchema.getDataSchema().getGranularitySpec();
-  final int targetPartitionSize=ingestionSchema.getDriverConfig().getTargetPartitionSize();
+  final int targetPartitionSize=ingestionSchema.getTuningConfig().getTargetPartitionSize();
   final TaskLock myLock=Iterables.getOnlyElement(getTaskLocks(toolbox));
   final Set<DataSegment> segments=Sets.newHashSet();
   final Set<Interval> validIntervals=Sets.intersection(granularitySpec.bucketIntervals().get(),getDataIntervals());
