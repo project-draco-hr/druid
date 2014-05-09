@@ -49,6 +49,9 @@
         }
         return ClientResponse.finished(obj);
       }
+      @Override public void exceptionCaught(      ClientResponse<OutputStream> clientResponse,      Throwable e){
+        handleException(resp,asyncContext,e);
+      }
     }
 ;
     asyncContext.start(new Runnable(){
@@ -61,18 +64,6 @@
     req.setAttribute(DISPATCHED,true);
   }
  catch (  Exception e) {
-    if (!resp.isCommitted()) {
-      resp.setStatus(500);
-      resp.resetBuffer();
-      if (out == null) {
-        out=resp.getOutputStream();
-      }
-      if (ctx != null) {
-        ctx.complete();
-      }
-      out.write((e.getMessage() == null) ? "Exception null".getBytes(UTF8) : e.getMessage().getBytes(UTF8));
-      out.write("\n".getBytes(UTF8));
-    }
-    resp.flushBuffer();
+    handleException(resp,ctx,e);
   }
 }

@@ -1,0 +1,18 @@
+{
+  try {
+    final ServletOutputStream out=resp.getOutputStream();
+    if (!resp.isCommitted()) {
+      resp.setStatus(500);
+      resp.resetBuffer();
+      out.write((e.getMessage() == null) ? "Exception null".getBytes(UTF8) : e.getMessage().getBytes(UTF8));
+      out.write("\n".getBytes(UTF8));
+    }
+    if (ctx != null) {
+      ctx.complete();
+    }
+    resp.flushBuffer();
+  }
+ catch (  IOException e1) {
+    Throwables.propagate(e1);
+  }
+}
