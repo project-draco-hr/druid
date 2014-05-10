@@ -18,6 +18,9 @@
           return myBucket;
         }
         @Override public void advance(){
+          if (Thread.interrupted()) {
+            throw new QueryInterruptedException();
+          }
           ++currRow;
         }
         @Override public void advanceTo(        int offset){
