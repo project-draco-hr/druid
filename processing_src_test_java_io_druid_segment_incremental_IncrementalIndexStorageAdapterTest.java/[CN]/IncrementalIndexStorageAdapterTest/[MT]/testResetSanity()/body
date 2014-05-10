@@ -5,8 +5,8 @@
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","bo")));
   IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(index);
-  Iterable<Cursor> cursorIterable=adapter.makeCursors(new SelectorFilter("sally","bo"),interval,QueryGranularity.NONE);
-  Cursor cursor=cursorIterable.iterator().next();
+  Sequence<Cursor> cursorSequence=adapter.makeCursors(new SelectorFilter("sally","bo"),interval,QueryGranularity.NONE);
+  Cursor cursor=Sequences.toList(Sequences.limit(cursorSequence,1),Lists.<Cursor>newArrayList()).get(0);
   DimensionSelector dimSelector;
   dimSelector=cursor.makeDimensionSelector("sally");
   Assert.assertEquals("bo",dimSelector.lookupName(dimSelector.getRow().get(0)));
