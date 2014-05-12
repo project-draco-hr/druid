@@ -1,0 +1,9 @@
+{
+  Preconditions.checkNotNull(parser,"parser");
+  Preconditions.checkNotNull(serviceName,"serviceName");
+  this.serviceName=serviceName;
+  this.bufferSize=bufferSize == null || bufferSize <= 0 ? DEFAULT_BUFFER_SIZE : bufferSize;
+  parser.put("type","map");
+  this.parser=jsonMapper.convertValue(parser,MapInputRowParser.class);
+  this.chatHandlerProvider=Optional.fromNullable(chatHandlerProvider);
+}
