@@ -14,21 +14,34 @@
   List<Pair<Integer,Integer>> merged=Sequences.toList(seq,Lists.<Pair<Integer,Integer>>newArrayList());
   Assert.assertEquals(expected,merged);
   Yielder<Pair<Integer,Integer>> yielder=seq.toYielder(null,new YieldingAccumulator<Pair<Integer,Integer>,Pair<Integer,Integer>>(){
+    int count=0;
     @Override public Pair<Integer,Integer> accumulate(    Pair<Integer,Integer> lhs,    Pair<Integer,Integer> rhs){
-      yield();
+      count++;
+      if (count % yieldEvery == 0)       yield();
       return rhs;
     }
   }
 );
-  Iterator<Pair<Integer,Integer>> expectedVals=expected.iterator();
+  Iterator<Pair<Integer,Integer>> expectedVals=Iterators.filter(expected.iterator(),new Predicate<Pair<Integer,Integer>>(){
+    int count=0;
+    @Override public boolean apply(    @Nullable Pair<Integer,Integer> input){
+      count++;
+      if (count % yieldEvery == 0) {
+        return true;
+      }
+      return false;
+    }
+  }
+);
   if (expectedVals.hasNext()) {
     while (!yielder.isDone()) {
-      final Pair<Integer,Integer> nextVal=expectedVals.next();
-      Assert.assertEquals(nextVal,yielder.get());
-      yielder=yielder.next(null);
+      final Pair<Integer,Integer> expectedVal=expectedVals.next();
+      final Pair<Integer,Integer> actual=yielder.get();
+      Assert.assertEquals(expectedVal,actual);
+      yielder=yielder.next(actual);
     }
-    Assert.assertEquals(expectedVals.next(),yielder.get());
   }
   Assert.assertTrue(yielder.isDone());
+  Assert.assertFalse(expectedVals.hasNext());
   yielder.close();
 }

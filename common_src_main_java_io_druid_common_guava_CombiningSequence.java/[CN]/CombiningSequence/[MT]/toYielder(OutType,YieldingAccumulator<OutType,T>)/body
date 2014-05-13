@@ -1,8 +1,6 @@
 {
   final CombiningYieldingAccumulator<OutType,T> combiningAccumulator=new CombiningYieldingAccumulator<OutType,T>(ordering,mergeFn,accumulator);
+  combiningAccumulator.setRetVal(initValue);
   Yielder<T> baseYielder=baseSequence.toYielder(null,combiningAccumulator);
-  if (baseYielder.isDone()) {
-    return Yielders.done(initValue,baseYielder);
-  }
-  return makeYielder(baseYielder,combiningAccumulator);
+  return makeYielder(baseYielder,combiningAccumulator,false);
 }

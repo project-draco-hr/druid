@@ -1,10 +1,16 @@
 {
+  if (!accumulatedSomething) {
+    accumulatedSomething=true;
+  }
   if (prevValue == null) {
-    return mergeFn.apply(t,null);
+    lastMergedVal=mergeFn.apply(t,null);
+    return lastMergedVal;
   }
   if (ordering.compare(prevValue,t) == 0) {
-    return mergeFn.apply(prevValue,t);
+    lastMergedVal=mergeFn.apply(prevValue,t);
+    return lastMergedVal;
   }
+  lastMergedVal=t;
   retVal=accumulator.accumulate(retVal,prevValue);
   return t;
 }
