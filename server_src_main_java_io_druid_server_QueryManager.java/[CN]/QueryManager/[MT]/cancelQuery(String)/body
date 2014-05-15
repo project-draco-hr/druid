@@ -1,6 +1,8 @@
 {
-  Future future=queries.get(id);
-  if (future != null) {
-    future.cancel(true);
+  Set<ListenableFuture> futures=queries.removeAll(id);
+  boolean success=true;
+  for (  ListenableFuture future : futures) {
+    success=success && future.cancel(true);
   }
+  return success;
 }

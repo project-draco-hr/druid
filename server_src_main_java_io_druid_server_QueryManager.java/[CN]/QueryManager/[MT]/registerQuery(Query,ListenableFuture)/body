@@ -1,3 +1,10 @@
 {
-  queries.put(query.getId(),future);
+  final String id=query.getId();
+  queries.put(id,future);
+  future.addListener(new Runnable(){
+    @Override public void run(){
+      queries.remove(id,future);
+    }
+  }
+,MoreExecutors.sameThreadExecutor());
 }
