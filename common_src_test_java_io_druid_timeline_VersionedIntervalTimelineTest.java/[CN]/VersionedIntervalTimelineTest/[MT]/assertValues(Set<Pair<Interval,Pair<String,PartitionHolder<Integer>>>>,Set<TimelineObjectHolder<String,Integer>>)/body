@@ -1,0 +1,10 @@
+{
+  Assert.assertEquals("Sizes did not match.",expected.size(),actual.size());
+  Set<Pair<Interval,Pair<String,PartitionHolder<Integer>>>> actualSet=Sets.newHashSet(Iterables.transform(actual,new Function<TimelineObjectHolder<String,Integer>,Pair<Interval,Pair<String,PartitionHolder<Integer>>>>(){
+    @Override public Pair<Interval,Pair<String,PartitionHolder<Integer>>> apply(    TimelineObjectHolder<String,Integer> input){
+      return new Pair<>(input.getInterval(),new Pair<>(input.getVersion(),input.getObject()));
+    }
+  }
+));
+  Assert.assertEquals(expected,actualSet);
+}
