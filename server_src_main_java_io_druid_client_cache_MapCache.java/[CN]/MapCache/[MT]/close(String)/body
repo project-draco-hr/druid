@@ -9,11 +9,15 @@ synchronized (namespaceId) {
   }
 synchronized (clearLock) {
     Iterator<ByteBuffer> iter=baseMap.keySet().iterator();
+    List<ByteBuffer> toRemove=Lists.newLinkedList();
     while (iter.hasNext()) {
       ByteBuffer next=iter.next();
       if (next.get(0) == idBytes[0] && next.get(1) == idBytes[1] && next.get(2) == idBytes[2] && next.get(3) == idBytes[3]) {
-        iter.remove();
+        toRemove.add(next);
       }
+    }
+    for (    ByteBuffer key : toRemove) {
+      baseMap.remove(key);
     }
   }
 }
