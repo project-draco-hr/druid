@@ -3,7 +3,6 @@
   Preconditions.checkNotNull(serviceName,"serviceName");
   this.serviceName=serviceName;
   this.bufferSize=bufferSize == null || bufferSize <= 0 ? DEFAULT_BUFFER_SIZE : bufferSize;
-  parser.put("type","map");
-  this.parser=jsonMapper.convertValue(parser,MapInputRowParser.class);
+  this.parser=new MapInputRowParser(parser.getParseSpec(),null,null,null,null);
   this.chatHandlerProvider=Optional.fromNullable(chatHandlerProvider);
 }
