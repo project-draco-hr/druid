@@ -12,6 +12,7 @@
       Context cx=Context.getCurrentContext();
       if (cx == null) {
         cx=contextFactory.enterContext();
+        cx.getWrapFactory().setJavaPrimitiveWrap(false);
       }
       final int size=selectorList.length;
       final Object[] args=new Object[size + 1];
@@ -19,7 +20,17 @@
       for (int i=0; i < size; i++) {
         final ObjectColumnSelector selector=selectorList[i];
         if (selector != null) {
-          args[i + 1]=selector.get();
+          final Object arg=selector.get();
+          if (arg != null && arg.getClass().isArray()) {
+            final Object[] arrayAsObjectArray=new Object[Array.getLength(arg)];
+            for (int j=0; j < Array.getLength(arg); j++) {
+              arrayAsObjectArray[j]=Array.get(arg,j);
+            }
+            args[i + 1]=cx.newArray(scope,arrayAsObjectArray);
+          }
+ else {
+            args[i + 1]=Context.javaToJS(arg,scope);
+          }
         }
       }
       final Object res=fnAggregate.call(cx,scope,scope,args);
