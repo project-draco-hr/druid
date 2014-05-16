@@ -1,0 +1,20 @@
+{
+  final CountDownLatch latch=new CountDownLatch(1);
+  Executors.newSingleThreadExecutor().execute(new Runnable(){
+    @Override public void run(){
+      try {
+        ListenableFuture<InputStream> go=client.get(new URL("http://localhost:9999/exception/exception")).go(new InputStreamResponseHandler());
+        StringWriter writer=new StringWriter();
+        IOUtils.copy(go.get(),writer,"utf-8");
+      }
+ catch (      IOException e) {
+      }
+catch (      Throwable t) {
+        Throwables.propagate(t);
+      }
+      latch.countDown();
+    }
+  }
+);
+  latch.await(5,TimeUnit.SECONDS);
+}
