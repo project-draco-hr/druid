@@ -1,12 +1,4 @@
 {
-  Callable<T> theCallable=tCallable;
-  if (!(tCallable instanceof PrioritizedCallable)) {
-    theCallable=new PrioritizedCallable<T>(DEFAULT_PRIORITY){
-      @Override public T call() throws Exception {
-        return tCallable.call();
-      }
-    }
-;
-  }
-  return new PrioritizedFuture<T>((PrioritizedCallable)theCallable);
+  Preconditions.checkArgument(allowRegularTasks || callable instanceof PrioritizedCallable,"task does not implement PrioritizedCallable");
+  return PrioritizedListenableFutureTask.create(ListenableFutureTask.create(callable),callable instanceof PrioritizedCallable ? ((PrioritizedCallable)callable).getPriority() : defaultPriority);
 }
