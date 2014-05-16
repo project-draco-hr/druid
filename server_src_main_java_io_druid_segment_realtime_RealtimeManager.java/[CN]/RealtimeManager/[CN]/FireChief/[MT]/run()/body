@@ -15,8 +15,8 @@
           metrics.incrementUnparseable();
           continue;
         }
-        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
-        if (sink == null) {
+        int currCount=plumber.add(inputRow);
+        if (currCount == -1) {
           metrics.incrementThrownAway();
           log.debug("Throwing away event[%s]",inputRow);
           if (System.currentTimeMillis() > nextFlush) {
@@ -25,7 +25,6 @@
           }
           continue;
         }
-        int currCount=sink.add(inputRow);
         if (currCount >= config.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();

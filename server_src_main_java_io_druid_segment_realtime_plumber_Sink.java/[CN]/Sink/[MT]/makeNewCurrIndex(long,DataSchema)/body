@@ -2,16 +2,16 @@
   List<SpatialDimensionSchema> spatialDimensionSchemas=schema.getParser() == null ? Lists.<SpatialDimensionSchema>newArrayList() : schema.getParser().getParseSpec().getDimensionsSpec().getSpatialDimensions();
   IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withSpatialDimensions(spatialDimensionSchemas).withMetrics(schema.getAggregators()).build());
   FireHydrant old;
-  if (currIndex == null) {
-    old=currIndex;
-    currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
-    hydrants.add(currIndex);
+  if (currHydrant == null) {
+    old=currHydrant;
+    currHydrant=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+    hydrants.add(currHydrant);
   }
  else {
-synchronized (currIndex) {
-      old=currIndex;
-      currIndex=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
-      hydrants.add(currIndex);
+synchronized (currHydrant) {
+      old=currHydrant;
+      currHydrant=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+      hydrants.add(currHydrant);
     }
   }
   return old;
