@@ -121,9 +121,6 @@
             Column holder=index.getColumn(columnName);
             if (holder != null) {
               final ColumnCapabilities capabilities=holder.getCapabilities();
-              if (capabilities.hasMultipleValues()) {
-                throw new UnsupportedOperationException("makeObjectColumnSelector does not support multivalued columns");
-              }
               if (capabilities.isDictionaryEncoded()) {
                 cachedColumnVals=holder.getDictionaryEncoding();
               }
@@ -144,6 +141,9 @@
           if (cachedColumnVals instanceof GenericColumn) {
             final GenericColumn columnVals=(GenericColumn)cachedColumnVals;
             final ValueType type=columnVals.getType();
+            if (columnVals.hasMultipleValues()) {
+              throw new UnsupportedOperationException("makeObjectColumnSelector does not support multivalued GenericColumns");
+            }
             if (type == ValueType.FLOAT) {
               return new ObjectColumnSelector<Float>(){
                 @Override public Class classOfObject(){
@@ -180,15 +180,33 @@
           }
           if (cachedColumnVals instanceof DictionaryEncodedColumn) {
             final DictionaryEncodedColumn columnVals=(DictionaryEncodedColumn)cachedColumnVals;
-            return new ObjectColumnSelector<String>(){
-              @Override public Class classOfObject(){
-                return String.class;
+            if (columnVals.hasMultipleValues()) {
+              return new ObjectColumnSelector<String[]>(){
+                @Override public Class classOfObject(){
+                  return String[].class;
+                }
+                @Override public String[] get(){
+                  final IndexedInts multiValueRow=columnVals.getMultiValueRow(cursorOffset.getOffset());
+                  final String[] strings=new String[multiValueRow.size()];
+                  for (int i=0; i < multiValueRow.size(); i++) {
+                    strings[i]=columnVals.lookupName(multiValueRow.get(i));
+                  }
+                  return strings;
+                }
               }
-              @Override public String get(){
-                return columnVals.lookupName(columnVals.getSingleValueRow(cursorOffset.getOffset()));
-              }
-            }
 ;
+            }
+ else {
+              return new ObjectColumnSelector<String>(){
+                @Override public Class classOfObject(){
+                  return String.class;
+                }
+                @Override public String get(){
+                  return columnVals.lookupName(columnVals.getSingleValueRow(cursorOffset.getOffset()));
+                }
+              }
+;
+            }
           }
           final ComplexColumn columnVals=(ComplexColumn)cachedColumnVals;
           return new ObjectColumnSelector(){
