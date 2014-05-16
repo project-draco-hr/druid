@@ -1,71 +1,66 @@
 {
-  final Offset baseOffset=offset.clone();
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
   final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
-  final FunctionalIterator<Cursor> retVal=FunctionalIterator.create(gran.iterable(interval.getStartMillis(),interval.getEndMillis()).iterator()).transform(new Function<Long,Cursor>(){
+  return Sequences.withBaggage(Sequences.map(Sequences.simple(gran.iterable(interval.getStartMillis(),interval.getEndMillis())),new Function<Long,Cursor>(){
+    private int currRow=0;
     @Override public Cursor apply(    final Long input){
       final long timeStart=Math.max(interval.getStartMillis(),input);
-      while (baseOffset.withinBounds() && timestamps.getLongSingleValueRow(baseOffset.getOffset()) < timeStart) {
-        baseOffset.increment();
+      while (currRow < timestamps.length() && timestamps.getLongSingleValueRow(currRow) < timeStart) {
+        ++currRow;
       }
-      final Offset offset=new TimestampCheckingOffset(baseOffset,timestamps,Math.min(interval.getEndMillis(),gran.next(input)));
       return new Cursor(){
-        private final Offset initOffset=offset.clone();
         private final DateTime myBucket=gran.toDateTime(input);
-        private Offset cursorOffset=offset;
+        private final long nextBucket=Math.min(gran.next(myBucket.getMillis()),interval.getEndMillis());
+        private final int initRow=currRow;
         @Override public DateTime getTime(){
           return myBucket;
         }
         @Override public void advance(){
-          cursorOffset.increment();
+          ++currRow;
         }
         @Override public void advanceTo(        int offset){
-          int count=0;
-          while (count < offset && !isDone()) {
-            advance();
-            count++;
-          }
+          currRow+=offset;
         }
         @Override public boolean isDone(){
-          return !cursorOffset.withinBounds();
+          return currRow >= timestamps.length() || timestamps.getLongSingleValueRow(currRow) >= nextBucket;
         }
         @Override public void reset(){
-          cursorOffset=initOffset.clone();
+          currRow=initRow;
         }
         @Override public TimestampColumnSelector makeTimestampColumnSelector(){
           return new TimestampColumnSelector(){
             @Override public long getTimestamp(){
-              return timestamps.getLongSingleValueRow(cursorOffset.getOffset());
+              return timestamps.getLongSingleValueRow(currRow);
             }
           }
 ;
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
-          final Column columnDesc=index.getColumn(dimensionName);
-          if (columnDesc == null) {
-            return null;
-          }
-          final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
+          final Column column=index.getColumn(dimensionName);
           if (column == null) {
             return null;
           }
- else           if (columnDesc.getCapabilities().hasMultipleValues()) {
+          final DictionaryEncodedColumn dict=column.getDictionaryEncoding();
+          if (dict == null) {
+            return null;
+          }
+ else           if (column.getCapabilities().hasMultipleValues()) {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return column.getMultiValueRow(cursorOffset.getOffset());
+                return dict.getMultiValueRow(currRow);
               }
               @Override public int getValueCardinality(){
-                return column.getCardinality();
+                return dict.getCardinality();
               }
               @Override public String lookupName(              int id){
-                final String retVal=column.lookupName(id);
+                final String retVal=dict.lookupName(id);
                 return retVal == null ? "" : retVal;
               }
               @Override public int lookupId(              String name){
-                return column.lookupId(name);
+                return dict.lookupId(name);
               }
             }
 ;
@@ -73,16 +68,16 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return new SingleIndexedInts(column.getSingleValueRow(cursorOffset.getOffset()));
+                return new SingleIndexedInts(dict.getSingleValueRow(currRow));
               }
               @Override public int getValueCardinality(){
-                return column.getCardinality();
+                return dict.getCardinality();
               }
               @Override public String lookupName(              int id){
-                return column.lookupName(id);
+                return dict.lookupName(id);
               }
               @Override public int lookupId(              String name){
-                return column.lookupId(name);
+                return dict.lookupId(name);
               }
             }
 ;
@@ -109,7 +104,7 @@
           final GenericColumn metricVals=cachedMetricVals;
           return new FloatColumnSelector(){
             @Override public float get(){
-              return metricVals.getFloatSingleValueRow(cursorOffset.getOffset());
+              return metricVals.getFloatSingleValueRow(currRow);
             }
           }
 ;
@@ -120,11 +115,11 @@
           if (cachedColumnVals == null) {
             Column holder=index.getColumn(columnName);
             if (holder != null) {
-              final ColumnCapabilities capabilities=holder.getCapabilities();
-              if (capabilities.isDictionaryEncoded()) {
+              final ValueType type=holder.getCapabilities().getType();
+              if (holder.getCapabilities().isDictionaryEncoded()) {
                 cachedColumnVals=holder.getDictionaryEncoding();
               }
- else               if (capabilities.getType() == ValueType.COMPLEX) {
+ else               if (type == ValueType.COMPLEX) {
                 cachedColumnVals=holder.getComplexColumn();
               }
  else {
@@ -150,7 +145,7 @@
                   return Float.TYPE;
                 }
                 @Override public Float get(){
-                  return columnVals.getFloatSingleValueRow(cursorOffset.getOffset());
+                  return columnVals.getFloatSingleValueRow(currRow);
                 }
               }
 ;
@@ -161,7 +156,7 @@
                   return Long.TYPE;
                 }
                 @Override public Long get(){
-                  return columnVals.getLongSingleValueRow(cursorOffset.getOffset());
+                  return columnVals.getLongSingleValueRow(currRow);
                 }
               }
 ;
@@ -172,7 +167,7 @@
                   return String.class;
                 }
                 @Override public String get(){
-                  return columnVals.getStringSingleValueRow(cursorOffset.getOffset());
+                  return columnVals.getStringSingleValueRow(currRow);
                 }
               }
 ;
@@ -186,7 +181,7 @@
                   return Object.class;
                 }
                 @Override public Object get(){
-                  final IndexedInts multiValueRow=columnVals.getMultiValueRow(cursorOffset.getOffset());
+                  final IndexedInts multiValueRow=columnVals.getMultiValueRow(currRow);
                   if (multiValueRow.size() == 0) {
                     return null;
                   }
@@ -210,7 +205,7 @@
                   return String.class;
                 }
                 @Override public String get(){
-                  return columnVals.lookupName(columnVals.getSingleValueRow(cursorOffset.getOffset()));
+                  return columnVals.lookupName(columnVals.getSingleValueRow(currRow));
                 }
               }
 ;
@@ -222,7 +217,7 @@
               return columnVals.getClazz();
             }
             @Override public Object get(){
-              return columnVals.getRowValue(cursorOffset.getOffset());
+              return columnVals.getRowValue(currRow);
             }
           }
 ;
@@ -231,9 +226,8 @@
 ;
     }
   }
-);
-  return MoreIterators.after(retVal,new Runnable(){
-    @Override public void run(){
+),new Closeable(){
+    @Override public void close() throws IOException {
       Closeables.closeQuietly(timestamps);
       for (      GenericColumn column : genericColumnCache.values()) {
         Closeables.closeQuietly(column);

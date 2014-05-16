@@ -2,7 +2,7 @@
   Interval actualInterval=interval;
   final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(getMaxTime().getMillis()));
   if (!actualInterval.overlaps(dataInterval)) {
-    return ImmutableList.of();
+    return Sequences.empty();
   }
   if (actualInterval.getStart().isBefore(dataInterval.getStart())) {
     actualInterval=actualInterval.withStart(dataInterval.getStart());
@@ -10,13 +10,13 @@
   if (actualInterval.getEnd().isAfter(dataInterval.getEnd())) {
     actualInterval=actualInterval.withEnd(dataInterval.getEnd());
   }
-  final Iterable<Cursor> iterable;
+  final Sequence<Cursor> sequence;
   if (filter == null) {
-    iterable=new NoFilterCursorIterable(index,actualInterval,gran);
+    sequence=new NoFilterCursorSequenceBuilder(index,actualInterval,gran).build();
   }
  else {
     Offset offset=new ConciseOffset(filter.goConcise(new ColumnSelectorBitmapIndexSelector(index)));
-    iterable=new CursorIterable(index,actualInterval,gran,offset);
+    sequence=new CursorSequenceBuilder(index,actualInterval,gran,offset).build();
   }
-  return FunctionalIterable.create(iterable).keep(Functions.<Cursor>identity());
+  return Sequences.filter(sequence,Predicates.<Cursor>notNull());
 }

@@ -2,36 +2,26 @@
   if (adapter == null) {
     throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
   }
-  return new BaseSequence<Result<TimeseriesResultValue>,Iterator<Result<TimeseriesResultValue>>>(new BaseSequence.IteratorMaker<Result<TimeseriesResultValue>,Iterator<Result<TimeseriesResultValue>>>(){
-    @Override public Iterator<Result<TimeseriesResultValue>> make(){
-      return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
-        private final List<AggregatorFactory> aggregatorSpecs=query.getAggregatorSpecs();
-        private final List<PostAggregator> postAggregatorSpecs=query.getPostAggregatorSpecs();
-        @Override public Result<TimeseriesResultValue> apply(        Cursor cursor){
-          Aggregator[] aggregators=QueryRunnerHelper.makeAggregators(cursor,aggregatorSpecs);
-          while (!cursor.isDone()) {
-            for (            Aggregator aggregator : aggregators) {
-              aggregator.aggregate();
-            }
-            cursor.advance();
-          }
-          TimeseriesResultBuilder bob=new TimeseriesResultBuilder(cursor.getTime());
-          for (          Aggregator aggregator : aggregators) {
-            bob.addMetric(aggregator);
-          }
-          Result<TimeseriesResultValue> retVal=bob.build();
-          for (          Aggregator agg : aggregators) {
-            agg.close();
-          }
-          return retVal;
+  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
+    private final List<AggregatorFactory> aggregatorSpecs=query.getAggregatorSpecs();
+    private final List<PostAggregator> postAggregatorSpecs=query.getPostAggregatorSpecs();
+    @Override public Result<TimeseriesResultValue> apply(    Cursor cursor){
+      Aggregator[] aggregators=QueryRunnerHelper.makeAggregators(cursor,aggregatorSpecs);
+      while (!cursor.isDone()) {
+        for (        Aggregator aggregator : aggregators) {
+          aggregator.aggregate();
         }
+        cursor.advance();
       }
-).iterator();
-    }
-    @Override public void cleanup(    Iterator<Result<TimeseriesResultValue>> toClean){
-      while (toClean.hasNext()) {
-        toClean.next();
+      TimeseriesResultBuilder bob=new TimeseriesResultBuilder(cursor.getTime());
+      for (      Aggregator aggregator : aggregators) {
+        bob.addMetric(aggregator);
       }
+      Result<TimeseriesResultValue> retVal=bob.build();
+      for (      Aggregator agg : aggregators) {
+        agg.close();
+      }
+      return retVal;
     }
   }
 );
