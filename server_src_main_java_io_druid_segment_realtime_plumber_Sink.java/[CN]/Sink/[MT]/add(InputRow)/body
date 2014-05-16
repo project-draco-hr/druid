@@ -1,8 +1,12 @@
 {
-  if (currIndex == null) {
-    throw new IAE("No currIndex but given row[%s]",row);
+  if (currHydrant == null) {
+    throw new IAE("No currHydrant but given row[%s]",row);
   }
-synchronized (currIndex) {
-    return currIndex.getIndex().add(row);
+synchronized (currHydrant) {
+    IncrementalIndex index=currHydrant.getIndex();
+    if (index == null) {
+      return -1;
+    }
+    return index.add(row);
   }
 }
