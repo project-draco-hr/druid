@@ -1,24 +1,29 @@
 {
   super(ImmutableList.of(new DruidCoordinatorSegmentInfoLoader(DruidCoordinator.this),new DruidCoordinatorHelper(){
     @Override public DruidCoordinatorRuntimeParams run(    DruidCoordinatorRuntimeParams params){
-      Iterable<DruidServer> servers=FunctionalIterable.create(serverInventoryView.getInventory()).filter(new Predicate<DruidServer>(){
+      Iterable<ImmutableDruidServer> servers=FunctionalIterable.create(serverInventoryView.getInventory()).filter(new Predicate<DruidServer>(){
         @Override public boolean apply(        DruidServer input){
           return input.isAssignable();
+        }
+      }
+).transform(new Function<DruidServer,ImmutableDruidServer>(){
+        @Override public ImmutableDruidServer apply(        DruidServer input){
+          return input.toImmutableDruidServer();
         }
       }
 );
       if (log.isDebugEnabled()) {
         log.debug("Servers");
-        for (        DruidServer druidServer : servers) {
+        for (        ImmutableDruidServer druidServer : servers) {
           log.debug("  %s",druidServer);
           log.debug("    -- DataSources");
-          for (          DruidDataSource druidDataSource : druidServer.getDataSources()) {
+          for (          ImmutableDruidDataSource druidDataSource : druidServer.getDataSources()) {
             log.debug("    %s",druidDataSource);
           }
         }
       }
       final DruidCluster cluster=new DruidCluster();
-      for (      DruidServer server : servers) {
+      for (      ImmutableDruidServer server : servers) {
         if (!loadManagementPeons.containsKey(server.getName())) {
           String basePath=ZKPaths.makePath(zkPaths.getLoadQueuePath(),server.getName());
           LoadQueuePeon loadQueuePeon=taskMaster.giveMePeon(basePath);
@@ -29,7 +34,7 @@
       }
       segmentReplicantLookup=SegmentReplicantLookup.make(cluster);
       final Set<String> disappeared=Sets.newHashSet(loadManagementPeons.keySet());
-      for (      DruidServer server : servers) {
+      for (      ImmutableDruidServer server : servers) {
         disappeared.remove(server.getName());
       }
       for (      String name : disappeared) {
