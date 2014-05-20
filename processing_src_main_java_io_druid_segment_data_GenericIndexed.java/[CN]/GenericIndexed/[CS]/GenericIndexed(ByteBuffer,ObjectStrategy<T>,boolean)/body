@@ -5,5 +5,11 @@
   size=theBuffer.getInt();
   indexOffset=theBuffer.position();
   valuesOffset=theBuffer.position() + (size << 2);
+  this.cachedBuffer=new ThreadLocal<ByteBuffer>(){
+    @Override protected ByteBuffer initialValue(){
+      return theBuffer.asReadOnlyBuffer();
+    }
+  }
+;
   this.cacheable=strategy instanceof CacheableObjectStrategy;
 }
