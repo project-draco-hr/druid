@@ -1,7 +1,7 @@
 {
   try {
     lock.readLock().lock();
-    List<TimelineObjectHolder<VersionType,ObjectType>> retVal=new ArrayList<TimelineObjectHolder<VersionType,ObjectType>>();
+    Set<TimelineObjectHolder<VersionType,ObjectType>> retVal=Sets.newHashSet();
     Map<Interval,Map<VersionType,TimelineEntry>> overShadowed=Maps.newHashMap();
     for (    Map.Entry<Interval,TreeMap<VersionType,TimelineEntry>> versionEntry : allTimelineEntries.entrySet()) {
       Map<VersionType,TimelineEntry> versionCopy=Maps.newHashMap();
