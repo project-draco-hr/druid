@@ -26,7 +26,7 @@
   EasyMock.expect(druidServer4.getSegments()).andReturn(new HashMap<String,DataSegment>()).anyTimes();
   EasyMock.expect(druidServer4.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
   EasyMock.replay(druidServer4);
-  coordinator.moveSegment(EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
+  coordinator.moveSegment(EasyMock.<ImmutableDruidServer>anyObject(),EasyMock.<ImmutableDruidServer>anyObject(),EasyMock.<String>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(coordinator);
   LoadQueuePeonTester peon1=new LoadQueuePeonTester();

@@ -1,11 +1,10 @@
 {
-  final String toServerName=toServer.getName();
-  final LoadQueuePeon toPeon=params.getLoadManagementPeons().get(toServerName);
-  final String fromServerName=segment.getFromServer().getName();
+  final LoadQueuePeon toPeon=params.getLoadManagementPeons().get(toServer.getName());
+  final ImmutableDruidServer fromServer=segment.getFromServer();
   final DataSegment segmentToMove=segment.getSegment();
   final String segmentName=segmentToMove.getIdentifier();
   if (!toPeon.getSegmentsToLoad().contains(segmentToMove) && (toServer.getSegment(segmentName) == null) && new ServerHolder(toServer,toPeon).getAvailableSize() > segmentToMove.getSize()) {
-    log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServerName,toServerName);
+    log.info("Moving [%s] from [%s] to [%s]",segmentName,fromServer.getName(),toServer.getName());
     LoadPeonCallback callback=null;
     try {
       currentlyMovingSegments.get(toServer.getTier()).put(segmentName,segment);
@@ -18,7 +17,7 @@
         }
       }
 ;
-      coordinator.moveSegment(fromServerName,toServerName,segmentToMove.getIdentifier(),callback);
+      coordinator.moveSegment(fromServer,toServer,segmentToMove.getIdentifier(),callback);
     }
  catch (    Exception e) {
       log.makeAlert(e,String.format("[%s] : Moving exception",segmentName)).emit();
