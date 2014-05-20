@@ -76,7 +76,18 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return new SingleIndexedInts(column.getSingleValueRow(cursorOffset.getOffset()));
+                return new IndexedInts(){
+                  @Override public int size(){
+                    return 1;
+                  }
+                  @Override public int get(                  int index){
+                    return column.getSingleValueRow(cursorOffset.getOffset());
+                  }
+                  @Override public Iterator<Integer> iterator(){
+                    return Iterators.singletonIterator(column.getSingleValueRow(cursorOffset.getOffset()));
+                  }
+                }
+;
               }
               @Override public int getValueCardinality(){
                 return column.getCardinality();
