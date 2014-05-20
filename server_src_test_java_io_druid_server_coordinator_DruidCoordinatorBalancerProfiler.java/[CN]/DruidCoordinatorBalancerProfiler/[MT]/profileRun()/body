@@ -15,7 +15,7 @@
   EasyMock.expect(druidServer2.getSegments()).andReturn(new HashMap<String,DataSegment>()).anyTimes();
   EasyMock.expect(druidServer2.getSegment(EasyMock.<String>anyObject())).andReturn(null).anyTimes();
   EasyMock.replay(druidServer2);
-  coordinator.moveSegment(EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<String>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
+  coordinator.moveSegment(EasyMock.<ImmutableDruidServer>anyObject(),EasyMock.<ImmutableDruidServer>anyObject(),EasyMock.<String>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(coordinator);
   DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidCoordinatorBalancerTester.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,fromPeon),new ServerHolder(druidServer2,toPeon)))))).withLoadManagementPeons(ImmutableMap.<String,LoadQueuePeon>of("from",fromPeon,"to",toPeon)).withAvailableSegments(segments.values()).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).build()).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();

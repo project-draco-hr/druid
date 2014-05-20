@@ -1,0 +1,8 @@
+{
+  return new ImmutableDruidServer(metadata,currSize,ImmutableMap.copyOf(Maps.transformValues(dataSources,new Function<DruidDataSource,ImmutableDruidDataSource>(){
+    @Override public ImmutableDruidDataSource apply(    DruidDataSource input){
+      return input.toImmutableDruidDataSource();
+    }
+  }
+)),ImmutableMap.copyOf(segments));
+}

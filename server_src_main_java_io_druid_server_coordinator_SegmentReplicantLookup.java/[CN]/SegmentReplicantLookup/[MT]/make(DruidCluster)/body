@@ -3,7 +3,7 @@
   final Table<String,String,Integer> loadingSegments=HashBasedTable.create();
   for (  MinMaxPriorityQueue<ServerHolder> serversByType : cluster.getSortedServersByTier()) {
     for (    ServerHolder serverHolder : serversByType) {
-      DruidServer server=serverHolder.getServer();
+      ImmutableDruidServer server=serverHolder.getServer();
       for (      DataSegment segment : server.getSegments().values()) {
         Integer numReplicants=segmentsInCluster.get(segment.getIdentifier(),server.getTier());
         if (numReplicants == null) {

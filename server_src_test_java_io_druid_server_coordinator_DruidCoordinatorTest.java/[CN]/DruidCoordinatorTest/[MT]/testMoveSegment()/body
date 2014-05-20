@@ -1,15 +1,9 @@
 {
-  EasyMock.expect(druidServer.getSegment("dummySegment")).andReturn(segment);
-  EasyMock.expect(druidServer.getMaxSize()).andReturn(new Long(5));
-  EasyMock.expect(druidServer.getCurrSize()).andReturn(new Long(1)).atLeastOnce();
-  EasyMock.expect(druidServer.getName()).andReturn("blah");
+  EasyMock.expect(druidServer.toImmutableDruidServer()).andReturn(new ImmutableDruidServer(new DruidServerMetadata("blah",null,5L,null,null,0),1L,null,ImmutableMap.of("dummySegment",segment))).atLeastOnce();
   EasyMock.replay(druidServer);
-  loadManagementPeons.put("to",loadQueuePeon);
-  loadManagementPeons.put("from",loadQueuePeon);
+  loadManagementPeons.put("blah",loadQueuePeon);
   EasyMock.expect(loadQueuePeon.getLoadQueueSize()).andReturn(new Long(1));
   EasyMock.replay(loadQueuePeon);
-  EasyMock.expect(serverInventoryView.getInventoryValue("from")).andReturn(druidServer);
-  EasyMock.expect(serverInventoryView.getInventoryValue("to")).andReturn(druidServer);
   EasyMock.expect(serverInventoryView.getInventoryManagerConfig()).andReturn(new InventoryManagerConfig(){
     @Override public String getContainerPath(){
       return "";
@@ -20,5 +14,5 @@
   }
 );
   EasyMock.replay(serverInventoryView);
-  coordinator.moveSegment("from","to","dummySegment",null);
+  coordinator.moveSegment(druidServer.toImmutableDruidServer(),druidServer.toImmutableDruidServer(),"dummySegment",null);
 }

@@ -1,7 +1,7 @@
 {
   for (int i=0; i < serverCount; i++) {
     LoadQueuePeonTester fromPeon=new LoadQueuePeonTester();
-    DruidServer druidServer=EasyMock.createMock(DruidServer.class);
+    ImmutableDruidServer druidServer=EasyMock.createMock(ImmutableDruidServer.class);
     EasyMock.expect(druidServer.getName()).andReturn("DruidServer_Name_" + i).anyTimes();
     EasyMock.expect(druidServer.getCurrSize()).andReturn(3000L).anyTimes();
     EasyMock.expect(druidServer.getMaxSize()).andReturn(10000000L).anyTimes();
@@ -17,7 +17,7 @@
     serverHolderList.add(new ServerHolder(druidServer,fromPeon));
   }
   LoadQueuePeonTester fromPeon=new LoadQueuePeonTester();
-  DruidServer druidServer=EasyMock.createMock(DruidServer.class);
+  ImmutableDruidServer druidServer=EasyMock.createMock(ImmutableDruidServer.class);
   EasyMock.expect(druidServer.getName()).andReturn("BEST_SERVER").anyTimes();
   EasyMock.expect(druidServer.getCurrSize()).andReturn(3000L).anyTimes();
   EasyMock.expect(druidServer.getMaxSize()).andReturn(10000000L).anyTimes();
