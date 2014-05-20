@@ -9,11 +9,6 @@ synchronized (lock) {
         }
       }
 );
-      ConcurrentHashMap<String,List<Rule>> existingRules=rules.get();
-      if (existingRules == null) {
-        existingRules=new ConcurrentHashMap<String,List<Rule>>();
-      }
-      existingRules.put(dataSource,newRules);
     }
  catch (    Exception e) {
       log.error(e,String.format("Exception while overriding rule for %s",dataSource));
