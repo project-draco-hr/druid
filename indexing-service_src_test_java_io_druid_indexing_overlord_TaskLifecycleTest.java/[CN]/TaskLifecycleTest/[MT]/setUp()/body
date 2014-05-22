@@ -40,7 +40,12 @@
       return Lists.newArrayList();
     }
   }
-)),new DefaultObjectMapper());
+)),new DefaultObjectMapper(),new ColumnConfig(){
+    @Override public int columnCacheSizeBytes(){
+      return 1024 * 1024;
+    }
+  }
+);
   tr=new ThreadPoolTaskRunner(tb);
   tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
   tq.start();

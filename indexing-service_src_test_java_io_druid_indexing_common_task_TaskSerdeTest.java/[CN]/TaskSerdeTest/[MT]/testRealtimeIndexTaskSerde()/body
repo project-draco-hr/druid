@@ -1,6 +1,5 @@
 {
-  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),null,new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),1,Granularity.HOUR,null);
-  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),null,new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),1,Granularity.HOUR,null,null);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final RealtimeIndexTask task2=(RealtimeIndexTask)jsonMapper.readValue(json,Task.class);

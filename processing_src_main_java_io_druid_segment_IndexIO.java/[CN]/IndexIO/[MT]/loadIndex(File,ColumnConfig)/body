@@ -1,0 +1,11 @@
+{
+  init();
+  final int version=SegmentUtils.getVersionFromDir(inDir);
+  final IndexLoader loader=indexLoaders.get(version);
+  if (loader != null) {
+    return loader.load(inDir,columnConfig);
+  }
+ else {
+    throw new ISE("Unknown index version[%s]",version);
+  }
+}

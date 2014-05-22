@@ -19,7 +19,7 @@ synchronized (log) {
       mergedFile.deleteOnExit();
       IndexMerger.persist(top,DATA_INTERVAL,topFile);
       IndexMerger.persist(bottom,DATA_INTERVAL,bottomFile);
-      mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(topFile),IndexIO.loadIndex(bottomFile)),METRIC_AGGS,mergedFile));
+      mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(topFile,columnConfig),IndexIO.loadIndex(bottomFile,columnConfig)),METRIC_AGGS,mergedFile),columnConfig);
       return mergedRealtime;
     }
  catch (    IOException e) {

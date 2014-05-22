@@ -3,6 +3,6 @@
     return HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopDruidIndexerConfig.class);
   }
  else {
-    return new HadoopDruidIndexerConfig(HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopIngestionSpec.class));
+    return new HadoopDruidIndexerConfig(injector.getInstance(ColumnConfig.class),HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopIngestionSpec.class));
   }
 }
