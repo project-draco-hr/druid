@@ -1,5 +1,6 @@
 {
   final Offset baseOffset=offset.clone();
+  final Map<String,DictionaryEncodedColumn> dictionaryColumnCache=Maps.newHashMap();
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
@@ -47,11 +48,13 @@
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
+          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimensionName);
           final Column columnDesc=index.getColumn(dimensionName);
-          if (columnDesc == null) {
-            return null;
+          if (cachedColumn == null && columnDesc != null) {
+            cachedColumn=columnDesc.getDictionaryEncoding();
+            dictionaryColumnCache.put(dimensionName,cachedColumn);
           }
-          final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
+          final DictionaryEncodedColumn column=cachedColumn;
           if (column == null) {
             return null;
           }
@@ -248,6 +251,9 @@
 ),new Closeable(){
     @Override public void close() throws IOException {
       CloseQuietly.close(timestamps);
+      for (      DictionaryEncodedColumn column : dictionaryColumnCache.values()) {
+        CloseQuietly.close(column);
+      }
       for (      GenericColumn column : genericColumnCache.values()) {
         CloseQuietly.close(column);
       }
