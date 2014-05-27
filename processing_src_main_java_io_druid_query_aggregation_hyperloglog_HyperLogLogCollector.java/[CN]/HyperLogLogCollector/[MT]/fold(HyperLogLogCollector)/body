@@ -24,7 +24,6 @@
   if (offsetDiff < 0) {
     throw new ISE("offsetDiff[%d] < 0, shouldn't happen because of swap.",offsetDiff);
   }
-  add(other.getMaxOverflowRegister(),other.getMaxOverflowValue());
   final int myPayloadStart=getPayloadBytePosition();
   otherBuffer.position(other.getPayloadBytePosition());
   if (isSparse(otherBuffer)) {
@@ -51,5 +50,6 @@
     }
   }
   setNumNonZeroRegisters(numNonZero);
+  add(other.getMaxOverflowRegister(),other.getMaxOverflowValue());
   return this;
 }
