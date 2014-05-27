@@ -7,8 +7,11 @@
     return;
   }
  else   if (positionOf1 > (registerOffset + range)) {
-    byte currMax=getMaxOverflowValue();
+    final byte currMax=getMaxOverflowValue();
     if (positionOf1 > currMax) {
+      if (currMax <= (registerOffset + range)) {
+        add(getMaxOverflowRegister(),currMax);
+      }
       setMaxOverflowValue(positionOf1);
       setMaxOverflowRegister(bucket);
     }
