@@ -1,3 +1,14 @@
 {
-  return Comparators.inverse(delegate.getComparator(aggregatorSpecs,postAggregatorSpecs));
+  return Comparators.inverse(new Comparator(){
+    @Override public int compare(    Object o1,    Object o2){
+      if (o1 == null) {
+        return 1;
+      }
+      if (o2 == null) {
+        return -1;
+      }
+      return delegate.getComparator(aggregatorSpecs,postAggregatorSpecs).compare(o1,o2);
+    }
+  }
+);
 }
