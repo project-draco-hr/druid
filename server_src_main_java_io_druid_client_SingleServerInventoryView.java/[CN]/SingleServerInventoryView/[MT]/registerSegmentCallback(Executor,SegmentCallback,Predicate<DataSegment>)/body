@@ -1,0 +1,20 @@
+{
+  segmentPredicates.put(callback,filter);
+  registerSegmentCallback(exec,new SegmentCallback(){
+    @Override public CallbackAction segmentAdded(    DruidServerMetadata server,    DataSegment segment){
+      final CallbackAction action=callback.segmentAdded(server,segment);
+      if (action.equals(CallbackAction.UNREGISTER)) {
+        segmentPredicates.remove(callback);
+      }
+      return action;
+    }
+    @Override public CallbackAction segmentRemoved(    DruidServerMetadata server,    DataSegment segment){
+      final CallbackAction action=callback.segmentRemoved(server,segment);
+      if (action.equals(CallbackAction.UNREGISTER)) {
+        segmentPredicates.remove(callback);
+      }
+      return action;
+    }
+  }
+);
+}

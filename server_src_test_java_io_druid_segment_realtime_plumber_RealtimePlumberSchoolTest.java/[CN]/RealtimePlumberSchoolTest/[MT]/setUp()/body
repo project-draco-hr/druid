@@ -18,8 +18,8 @@
   EasyMock.expectLastCall().anyTimes();
   segmentPublisher=EasyMock.createMock(SegmentPublisher.class);
   dataSegmentPusher=EasyMock.createMock(DataSegmentPusher.class);
-  serverView=EasyMock.createMock(ServerView.class);
-  serverView.registerSegmentCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.SegmentCallback>anyObject());
+  serverView=EasyMock.createMock(FilteredServerView.class);
+  serverView.registerSegmentCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.SegmentCallback>anyObject(),EasyMock.<Predicate<DataSegment>>anyObject());
   EasyMock.expectLastCall().anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
