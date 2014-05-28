@@ -1,6 +1,5 @@
 {
-  List<SpatialDimensionSchema> spatialDimensionSchemas=schema.getParser() == null ? Lists.<SpatialDimensionSchema>newArrayList() : schema.getParser().getParseSpec().getDimensionsSpec().getSpatialDimensions();
-  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withSpatialDimensions(spatialDimensionSchemas).withMetrics(schema.getAggregators()).build());
+  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withSpatialDimensions(schema.getParser()).withMetrics(schema.getAggregators()).build());
   FireHydrant old;
   if (currHydrant == null) {
     old=currHydrant;
