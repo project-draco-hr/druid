@@ -1,6 +1,6 @@
 {
   segmentAnnouncer.announceSegments(testSegments);
-  waitForSync();
+  waitForSync(batchServerInventoryView,testSegments);
   DruidServer server=Iterables.get(batchServerInventoryView.getInventory(),0);
   Set<DataSegment> segments=Sets.newHashSet(server.getSegments().values());
   Assert.assertEquals(testSegments,segments);
@@ -10,12 +10,12 @@
   segmentAnnouncer.announceSegment(segment2);
   testSegments.add(segment1);
   testSegments.add(segment2);
-  waitForSync();
+  waitForSync(batchServerInventoryView,testSegments);
   Assert.assertEquals(testSegments,Sets.newHashSet(server.getSegments().values()));
   segmentAnnouncer.unannounceSegment(segment1);
   segmentAnnouncer.unannounceSegment(segment2);
   testSegments.remove(segment1);
   testSegments.remove(segment2);
-  waitForSync();
+  waitForSync(batchServerInventoryView,testSegments);
   Assert.assertEquals(testSegments,Sets.newHashSet(server.getSegments().values()));
 }
