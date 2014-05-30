@@ -52,10 +52,12 @@
         fileSystem=partitionInfoPath.getFileSystem(groupByJob.getConfiguration());
       }
       if (Utils.exists(groupByJob,fileSystem,partitionInfoPath)) {
-        Long cardinality=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
+        final Long numRows=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
         }
 );
-        final int numberOfShards=(int)Math.ceil((double)cardinality / config.getTargetPartitionSize());
+        log.info("Found approximately [%,d] rows in data.",numRows);
+        final int numberOfShards=(int)Math.ceil((double)numRows / config.getTargetPartitionSize());
+        log.info("Creating [%,d] shards",numberOfShards);
         List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(numberOfShards);
         if (numberOfShards == 1) {
           actualSpecs.add(new HadoopyShardSpec(new NoneShardSpec(),shardCount++));
