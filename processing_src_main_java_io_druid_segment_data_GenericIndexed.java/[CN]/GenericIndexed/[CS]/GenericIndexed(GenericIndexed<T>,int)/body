@@ -8,7 +8,7 @@
   this.cachedBuffer=other.cachedBuffer;
   this.cachedValues=new ThreadLocal<SizedLRUMap<Integer,T>>(){
     @Override protected SizedLRUMap<Integer,T> initialValue(){
-      return cache;
+      return new SizedLRUMap<>(INITIAL_CACHE_CAPACITY,maxBytes);
     }
   }
 ;
