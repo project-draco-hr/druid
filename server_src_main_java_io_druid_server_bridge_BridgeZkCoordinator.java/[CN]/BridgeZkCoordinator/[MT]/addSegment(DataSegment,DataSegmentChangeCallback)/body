@@ -3,7 +3,7 @@
     log.info("Publishing segment %s",segment.getIdentifier());
     dbSegmentPublisher.publishSegment(segment);
     serverView.registerSegmentCallback(exec,new ServerView.BaseSegmentCallback(){
-      @Override public ServerView.CallbackAction segmentAdded(      DruidServer server,      DataSegment theSegment){
+      @Override public ServerView.CallbackAction segmentAdded(      DruidServerMetadata server,      DataSegment theSegment){
         if (theSegment.equals(segment)) {
           callback.execute();
         }

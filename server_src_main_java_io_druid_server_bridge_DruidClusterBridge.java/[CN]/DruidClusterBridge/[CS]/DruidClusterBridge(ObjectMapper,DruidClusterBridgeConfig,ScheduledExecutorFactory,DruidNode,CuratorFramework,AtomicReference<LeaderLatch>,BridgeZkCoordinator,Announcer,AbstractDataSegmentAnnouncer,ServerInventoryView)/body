@@ -10,7 +10,7 @@
   this.self=self;
   ExecutorService serverInventoryViewExec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DruidClusterBridge-ServerInventoryView-%d").build());
   serverInventoryView.registerSegmentCallback(serverInventoryViewExec,new ServerView.BaseSegmentCallback(){
-    @Override public ServerView.CallbackAction segmentAdded(    DruidServer server,    DataSegment segment){
+    @Override public ServerView.CallbackAction segmentAdded(    DruidServerMetadata server,    DataSegment segment){
       try {
 synchronized (lock) {
           Integer count=segments.get(segment);
@@ -28,7 +28,7 @@ synchronized (lock) {
       }
       return ServerView.CallbackAction.CONTINUE;
     }
-    @Override public ServerView.CallbackAction segmentRemoved(    DruidServer server,    DataSegment segment){
+    @Override public ServerView.CallbackAction segmentRemoved(    DruidServerMetadata server,    DataSegment segment){
       try {
 synchronized (lock) {
           serverRemovedSegment(dataSegmentAnnouncer,segment,server);
@@ -45,7 +45,7 @@ synchronized (lock) {
     @Override public ServerView.CallbackAction serverRemoved(    DruidServer server){
       try {
         for (        DataSegment dataSegment : server.getSegments().values()) {
-          serverRemovedSegment(dataSegmentAnnouncer,dataSegment,server);
+          serverRemovedSegment(dataSegmentAnnouncer,dataSegment,server.getMetadata());
         }
       }
  catch (      Exception e) {

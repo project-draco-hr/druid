@@ -20,7 +20,7 @@
 ,announcer,jsonMapper);
   segmentAnnouncer.start();
   testSegments=Sets.newHashSet();
-  for (int i=0; i < 100; i++) {
+  for (int i=0; i < INITIAL_SEGMENTS; i++) {
     testSegments.add(makeSegment(i));
   }
   batchServerInventoryView=new BatchServerInventoryView(new ZkPathsConfig(){
@@ -28,6 +28,18 @@
       return testBasePath;
     }
   }
-,cf,jsonMapper);
+,cf,jsonMapper,Predicates.<DataSegment>alwaysTrue());
   batchServerInventoryView.start();
+  filteredBatchServerInventoryView=new BatchServerInventoryView(new ZkPathsConfig(){
+    @Override public String getZkBasePath(){
+      return testBasePath;
+    }
+  }
+,cf,jsonMapper,new Predicate<DataSegment>(){
+    @Override public boolean apply(    @Nullable DataSegment dataSegment){
+      return dataSegment.getInterval().getStart().isBefore(SEGMENT_INTERVAL_START.plusDays(INITIAL_SEGMENTS));
+    }
+  }
+);
+  filteredBatchServerInventoryView.start();
 }
