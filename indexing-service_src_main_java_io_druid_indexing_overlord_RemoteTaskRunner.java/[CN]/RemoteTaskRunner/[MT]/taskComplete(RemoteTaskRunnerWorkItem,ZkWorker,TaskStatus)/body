@@ -1,9 +1,13 @@
 {
   Preconditions.checkNotNull(taskRunnerWorkItem,"taskRunnerWorkItem");
-  Preconditions.checkNotNull(zkWorker,"zkWorker");
   Preconditions.checkNotNull(taskStatus,"taskStatus");
-  log.info("Worker[%s] completed task[%s] with status[%s]",zkWorker.getWorker().getHost(),taskStatus.getId(),taskStatus.getStatusCode());
-  zkWorker.setLastCompletedTaskTime(new DateTime());
+  if (zkWorker != null) {
+    log.info("Worker[%s] completed task[%s] with status[%s]",zkWorker.getWorker().getHost(),taskStatus.getId(),taskStatus.getStatusCode());
+    zkWorker.setLastCompletedTaskTime(new DateTime());
+  }
+ else {
+    log.info("No worker run task[%s] with status[%s]",taskStatus.getId(),taskStatus.getStatusCode());
+  }
   completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
   runningTasks.remove(taskStatus.getId());
   final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();

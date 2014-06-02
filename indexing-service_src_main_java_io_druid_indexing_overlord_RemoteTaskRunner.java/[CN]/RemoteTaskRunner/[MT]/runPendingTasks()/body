@@ -13,9 +13,7 @@
  catch (          Exception e) {
             log.makeAlert(e,"Exception while trying to assign task").addData("taskId",taskRunnerWorkItem.getTaskId()).emit();
             RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(taskId);
-            if (workItem != null) {
-              workItem.setResult(TaskStatus.failure(taskId));
-            }
+            taskComplete(workItem,null,TaskStatus.failure(taskId));
           }
         }
       }
