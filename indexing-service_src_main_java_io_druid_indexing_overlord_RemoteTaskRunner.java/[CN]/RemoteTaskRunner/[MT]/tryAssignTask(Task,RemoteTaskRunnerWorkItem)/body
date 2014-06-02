@@ -1,25 +1,19 @@
 {
-  try {
-    Preconditions.checkNotNull(task,"task");
-    Preconditions.checkNotNull(taskRunnerWorkItem,"taskRunnerWorkItem");
-    Preconditions.checkArgument(task.getId().equals(taskRunnerWorkItem.getTaskId()),"task id != workItem id");
-    if (runningTasks.containsKey(task.getId()) || findWorkerRunningTask(task.getId()) != null) {
-      log.info("Task[%s] already running.",task.getId());
+  Preconditions.checkNotNull(task,"task");
+  Preconditions.checkNotNull(taskRunnerWorkItem,"taskRunnerWorkItem");
+  Preconditions.checkArgument(task.getId().equals(taskRunnerWorkItem.getTaskId()),"task id != workItem id");
+  if (runningTasks.containsKey(task.getId()) || findWorkerRunningTask(task.getId()) != null) {
+    log.info("Task[%s] already running.",task.getId());
+    return true;
+  }
+ else {
+    ZkWorker zkWorker=findWorkerForTask(task);
+    if (zkWorker != null) {
+      announceTask(task,zkWorker,taskRunnerWorkItem);
       return true;
     }
  else {
-      ZkWorker zkWorker=findWorkerForTask(task);
-      if (zkWorker != null) {
-        announceTask(task,zkWorker,taskRunnerWorkItem);
-        return true;
-      }
- else {
-        return false;
-      }
+      return false;
     }
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Exception while trying to run task").addData("taskId",taskRunnerWorkItem.getTaskId()).emit();
-    return false;
   }
 }
