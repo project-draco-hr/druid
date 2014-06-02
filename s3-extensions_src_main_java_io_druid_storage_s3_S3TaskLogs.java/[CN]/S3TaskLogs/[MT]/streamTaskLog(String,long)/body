@@ -26,7 +26,7 @@
 );
   }
  catch (  ServiceException e) {
-    if (e.getErrorCode() != null && (e.getErrorCode().equals("NoSuchKey") || e.getErrorCode().equals("NoSuchBucket"))) {
+    if (404 == e.getResponseCode() || "NoSuchKey".equals(e.getErrorCode()) || "NoSuchBucket".equals(e.getErrorCode())) {
       return Optional.absent();
     }
  else {
