@@ -15,14 +15,11 @@
         objectCodec=jp.getCodec();
       }
     }
- catch (    IOException e) {
+ catch (    IOException|InterruptedException|ExecutionException e) {
       throw new RE(e,"Failure getting results from[%s]",url);
     }
-catch (    InterruptedException e) {
-      throw new RE(e,"Failure getting results from[%s]",url);
-    }
-catch (    ExecutionException e) {
-      throw new RE(e,"Failure getting results from[%s]",url);
+catch (    CancellationException e) {
+      throw new QueryInterruptedException();
     }
   }
 }

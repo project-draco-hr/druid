@@ -1,0 +1,21 @@
+{
+  HttpClient httpClient=EasyMock.createStrictMock(HttpClient.class);
+  EasyMock.expect(httpClient.post(EasyMock.<URL>anyObject())).andReturn(new RequestBuilder(httpClient,HttpMethod.POST,new URL("http://foo.com"))).once();
+  ListenableFuture<Object> cancelledFuture=Futures.immediateCancelledFuture();
+  EasyMock.expect(httpClient.go(EasyMock.<Request>anyObject())).andReturn(cancelledFuture).once();
+  EasyMock.expect(httpClient.delete(EasyMock.<URL>anyObject())).andReturn(new RequestBuilder(httpClient,HttpMethod.DELETE,new URL("http://foo.com/delete"))).once();
+  SettableFuture<Object> cancellationFuture=SettableFuture.create();
+  EasyMock.expect(httpClient.go(EasyMock.<Request>anyObject())).andReturn(cancellationFuture).once();
+  EasyMock.replay(httpClient);
+  final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,0L),new HighestPriorityTierSelectorStrategy(new ConnectionCountServerSelectorStrategy()));
+  DirectDruidClient client1=new DirectDruidClient(new ReflectionQueryToolChestWarehouse(),DUMMY_WATCHER,new DefaultObjectMapper(),httpClient,"foo");
+  QueryableDruidServer queryableDruidServer1=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client1);
+  serverSelector.addServer(queryableDruidServer1);
+  TimeBoundaryQuery query=Druids.newTimeBoundaryQueryBuilder().dataSource("test").build();
+  cancellationFuture.set(new StatusResponseHolder(HttpResponseStatus.OK,new StringBuilder("cancelled")));
+  Sequence results=client1.run(query);
+  Assert.assertEquals(0,client1.getNumOpenConnections());
+  thrown.expect(QueryInterruptedException.class);
+  Assert.assertTrue(Sequences.toList(results,Lists.newArrayList()).isEmpty());
+  EasyMock.verify(httpClient);
+}
