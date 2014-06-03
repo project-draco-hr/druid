@@ -5,7 +5,7 @@
     plumber.startJob();
     long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
     while (firehose.hasMore()) {
-      final InputRow inputRow;
+      InputRow inputRow=null;
       try {
         try {
           inputRow=firehose.nextRow();
@@ -31,8 +31,10 @@
         }
         metrics.incrementProcessed();
       }
- catch (      FormattedException e) {
-        log.info(e,"unparseable line: %s",e.getDetails());
+ catch (      Exception e) {
+        if (inputRow != null) {
+          log.error(e,"unparseable line: %s",inputRow);
+        }
         metrics.incrementUnparseable();
         continue;
       }
@@ -49,7 +51,7 @@ catch (  Error e) {
     throw e;
   }
  finally {
-    Closeables.closeQuietly(firehose);
+    CloseQuietly.close(firehose);
     if (normalExit) {
       plumber.finishJob();
       plumber=null;

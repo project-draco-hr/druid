@@ -13,7 +13,7 @@
     @Override public boolean hasMore(){
       return iter.hasNext();
     }
-    @Override public InputRow nextRow() throws FormattedException {
+    @Override public InputRow nextRow(){
       final byte[] message=iter.next().message();
       if (message == null) {
         return null;
@@ -22,7 +22,8 @@
         return theParser.parse(ByteBuffer.wrap(message));
       }
  catch (      Exception e) {
-        throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_ROW).withMessage(String.format("Error parsing[%s], got [%s]",ByteBuffer.wrap(message),e.toString())).build();
+        log.error("Unparseable row! Error parsing[%s]",ByteBuffer.wrap(message));
+        throw Throwables.propagate(e);
       }
     }
     @Override public Runnable commit(){

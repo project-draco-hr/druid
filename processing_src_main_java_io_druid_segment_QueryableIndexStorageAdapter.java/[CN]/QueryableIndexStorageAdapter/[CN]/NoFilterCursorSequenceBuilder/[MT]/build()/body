@@ -228,16 +228,16 @@
   }
 ),new Closeable(){
     @Override public void close() throws IOException {
-      Closeables.closeQuietly(timestamps);
+      CloseQuietly.close(timestamps);
       for (      GenericColumn column : genericColumnCache.values()) {
-        Closeables.closeQuietly(column);
+        CloseQuietly.close(column);
       }
       for (      ComplexColumn complexColumn : complexColumnCache.values()) {
-        Closeables.closeQuietly(complexColumn);
+        CloseQuietly.close(complexColumn);
       }
       for (      Object column : objectColumnCache.values()) {
         if (column instanceof Closeable) {
-          Closeables.closeQuietly((Closeable)column);
+          CloseQuietly.close((Closeable)column);
         }
       }
     }
