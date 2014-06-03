@@ -15,7 +15,13 @@
   cancellationFuture.set(new StatusResponseHolder(HttpResponseStatus.OK,new StringBuilder("cancelled")));
   Sequence results=client1.run(query);
   Assert.assertEquals(0,client1.getNumOpenConnections());
-  thrown.expect(QueryInterruptedException.class);
-  Assert.assertTrue(Sequences.toList(results,Lists.newArrayList()).isEmpty());
+  QueryInterruptedException exception=null;
+  try {
+    Sequences.toList(results,Lists.newArrayList());
+  }
+ catch (  QueryInterruptedException e) {
+    exception=e;
+  }
+  Assert.assertNotNull(exception);
   EasyMock.verify(httpClient);
 }
