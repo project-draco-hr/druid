@@ -1,3 +1,8 @@
 {
-  return HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopDruidIndexerConfig.class);
+  if (argSpec.containsKey("schema")) {
+    return HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopDruidIndexerConfig.class);
+  }
+ else {
+    return new HadoopDruidIndexerConfig(HadoopDruidIndexerConfig.jsonMapper.convertValue(argSpec,HadoopIngestionSpec.class));
+  }
 }

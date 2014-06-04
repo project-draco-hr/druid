@@ -35,7 +35,7 @@
         theGranularitySpec=new UniformGranularitySpec(segmentGranularity,rollupSpec == null ? null : rollupSpec.rollupGranularity,intervals,segmentGranularity);
       }
     }
-    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(dataSpec == null ? null : dataSpec.toParseSpec(timestampSpec,dimensionExclusions),null,null,null,null),rollupSpec == null ? new AggregatorFactory[]{} : rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
+    this.dataSchema=new DataSchema(dataSource,new StringInputRowParser(dataSpec == null ? null : dataSpec.toParseSpec(theTimestampSpec,dimensionExclusions),null,null,null,null),rollupSpec == null ? new AggregatorFactory[]{} : rollupSpec.getAggs().toArray(new AggregatorFactory[rollupSpec.getAggs().size()]),theGranularitySpec);
     this.ioConfig=new HadoopIOConfig(pathSpec,updaterJobSpec,segmentOutputPath);
     this.tuningConfig=new HadoopTuningConfig(workingPath,version,thePartitionSpec,shardSpecs,rollupSpec == null ? 50000 : rollupSpec.rowFlushBoundary,leaveIntermediate,cleanupOnFailure,overwriteFiles,ignoreInvalidRows,jobProperties);
   }
