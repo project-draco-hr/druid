@@ -1,11 +1,13 @@
 {
   try {
+    HadoopIngestionSpec spec;
     if (argumentSpec.startsWith("{")) {
-      return HadoopDruidIndexerConfig.fromString(argumentSpec);
+      spec=HadoopDruidIndexerConfig.jsonMapper.readValue(argumentSpec,HadoopIngestionSpec.class);
     }
  else {
-      return HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+      spec=HadoopDruidIndexerConfig.jsonMapper.readValue(new File(argumentSpec),HadoopIngestionSpec.class);
     }
+    return HadoopDruidIndexerConfig.fromSchema(spec);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
