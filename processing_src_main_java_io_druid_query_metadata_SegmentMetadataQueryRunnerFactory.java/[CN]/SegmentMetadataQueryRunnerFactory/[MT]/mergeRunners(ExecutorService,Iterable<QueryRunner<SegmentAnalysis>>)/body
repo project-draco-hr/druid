@@ -3,9 +3,10 @@
     @Override public QueryRunner<SegmentAnalysis> apply(    final QueryRunner<SegmentAnalysis> input){
       return new QueryRunner<SegmentAnalysis>(){
         @Override public Sequence<SegmentAnalysis> run(        final Query<SegmentAnalysis> query){
-          Future<Sequence<SegmentAnalysis>> future=queryExecutor.submit(new Callable<Sequence<SegmentAnalysis>>(){
+          final int priority=query.getContextPriority(0);
+          Future<Sequence<SegmentAnalysis>> future=queryExecutor.submit(new AbstractPrioritizedCallable<Sequence<SegmentAnalysis>>(priority){
             @Override public Sequence<SegmentAnalysis> call() throws Exception {
-              return new ExecutorExecutingSequence<SegmentAnalysis>(input.run(query),queryExecutor);
+              return input.run(query);
             }
           }
 );
