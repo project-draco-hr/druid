@@ -16,5 +16,6 @@
  else {
     result=runner.run(query);
   }
-  return postAggregate(query,makeIncrementalIndex(query,result));
+  final IncrementalIndex index=makeIncrementalIndex(query,result);
+  return new ResourceClosingSequence<Row>(postAggregate(query,index),index);
 }

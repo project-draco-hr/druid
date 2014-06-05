@@ -34,5 +34,5 @@ catch (    ExecutionException e) {
       throw new RuntimeException(e);
     }
   }
-  return Sequences.simple(indexAccumulatorPair.lhs.iterableWithPostAggregations(null));
+  return new ResourceClosingSequence<Row>(Sequences.simple(indexAccumulatorPair.lhs.iterableWithPostAggregations(null)),indexAccumulatorPair.lhs);
 }
