@@ -1,3 +1,3 @@
 {
-  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withSpatialDimensions(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build());
+  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withSpatialDimensions(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build(),new OffheapBufferPool(1024 * 1024 * 1024));
 }

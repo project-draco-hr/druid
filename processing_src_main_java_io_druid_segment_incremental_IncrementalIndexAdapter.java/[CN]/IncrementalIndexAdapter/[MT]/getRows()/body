@@ -1,10 +1,10 @@
 {
-  return FunctionalIterable.create(index.getFacts().entrySet()).transform(new Function<Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]>,Rowboat>(){
+  return FunctionalIterable.create(index.getFacts().entrySet()).transform(new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
     int count=0;
-    @Override public Rowboat apply(    @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]> input){
+    @Override public Rowboat apply(    @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Integer> input){
       final IncrementalIndex.TimeAndDims timeAndDims=input.getKey();
       final String[][] dimValues=timeAndDims.getDims();
-      final Aggregator[] aggs=input.getValue();
+      final int rowOffset=input.getValue();
       int[][] dims=new int[dimValues.length][];
       for (      String dimension : index.getDimensions()) {
         int dimIndex=index.getDimensionIndex(dimension);
@@ -21,9 +21,9 @@
           dims[dimIndex][i]=dimDim.getSortedId(dimValues[dimIndex][i]);
         }
       }
-      Object[] metrics=new Object[aggs.length];
-      for (int i=0; i < aggs.length; i++) {
-        metrics[i]=aggs[i].get();
+      Object[] metrics=new Object[index.getMetricAggs().length];
+      for (int i=0; i < metrics.length; i++) {
+        metrics[i]=index.getAggregator(i).get(index.getMetricBuffer(),index.getMetricPosition(rowOffset,i));
       }
       Map<String,String> description=Maps.newHashMap();
       for (      SpatialDimensionSchema spatialDimensionSchema : index.getSpatialDimensions()) {

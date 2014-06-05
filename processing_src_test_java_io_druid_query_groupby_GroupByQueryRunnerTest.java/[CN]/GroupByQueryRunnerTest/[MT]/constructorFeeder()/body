@@ -8,7 +8,7 @@
     }
   }
 ));
-  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,configSupplier,new GroupByQueryQueryToolChest(configSupplier,engine));
+  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,configSupplier,new GroupByQueryQueryToolChest(configSupplier,engine,TestQueryRunners.pool),TestQueryRunners.pool);
   return Lists.newArrayList(Iterables.transform(QueryRunnerTestHelper.makeQueryRunners(factory),new Function<Object,Object>(){
     @Override public Object apply(    @Nullable Object input){
       return new Object[]{factory,((Object[])input)[0]};

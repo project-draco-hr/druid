@@ -1,0 +1,15 @@
+{
+  this.schema=schema;
+  this.config=config;
+  this.interval=interval;
+  this.version=version;
+  this.bufferPool=bufferPool;
+  for (int i=0; i < hydrants.size(); ++i) {
+    final FireHydrant hydrant=hydrants.get(i);
+    if (hydrant.getCount() != i) {
+      throw new ISE("hydrant[%s] not the right count[%s]",hydrant,i);
+    }
+  }
+  this.hydrants.addAll(hydrants);
+  makeNewCurrIndex(interval.getStartMillis(),schema);
+}

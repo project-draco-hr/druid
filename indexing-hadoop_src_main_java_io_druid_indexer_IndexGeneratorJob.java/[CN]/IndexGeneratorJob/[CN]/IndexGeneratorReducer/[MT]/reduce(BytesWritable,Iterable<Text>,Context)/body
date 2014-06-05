@@ -31,6 +31,7 @@
         }
       }
 );
+      index.close();
       index=makeIncrementalIndex(bucket,aggs);
       startTime=System.currentTimeMillis();
       ++indexCount;
@@ -72,6 +73,7 @@
     }
 );
   }
+  index.close();
   serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
   for (  File file : toMerge) {
     FileUtils.deleteDirectory(file);

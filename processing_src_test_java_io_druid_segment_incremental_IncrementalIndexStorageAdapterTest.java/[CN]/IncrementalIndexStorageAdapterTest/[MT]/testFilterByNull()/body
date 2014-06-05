@@ -1,5 +1,5 @@
 {
-  IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")});
+  IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},TestQueryRunners.pool);
   index.add(new MapBasedInputRow(new DateTime().minus(1).getMillis(),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));
   index.add(new MapBasedInputRow(new DateTime().minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","bo")));
   GroupByQueryEngine engine=new GroupByQueryEngine(Suppliers.<GroupByQueryConfig>ofInstance(new GroupByQueryConfig(){

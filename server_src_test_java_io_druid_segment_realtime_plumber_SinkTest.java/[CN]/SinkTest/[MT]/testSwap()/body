@@ -3,7 +3,7 @@
   final Interval interval=new Interval("2013-01-01/2013-01-02");
   final String version=new DateTime().toString();
   RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(1,new Period("P1Y"),null,null,null,null,null,null);
-  final Sink sink=new Sink(interval,schema,tuningConfig,version);
+  final Sink sink=new Sink(interval,schema,tuningConfig,version,TestQueryRunners.pool);
   sink.add(new InputRow(){
     @Override public List<String> getDimensions(){
       return Lists.newArrayList();

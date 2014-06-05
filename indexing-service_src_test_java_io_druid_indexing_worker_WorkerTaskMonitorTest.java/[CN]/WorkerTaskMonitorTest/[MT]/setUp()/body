@@ -18,7 +18,7 @@
       return Lists.newArrayList();
     }
   }
-)),jsonMapper)),new WorkerConfig().setCapacity(1));
+)),jsonMapper,new OffheapBufferPool(1024 * 1024))),new WorkerConfig().setCapacity(1));
   jsonMapper.registerSubtypes(new NamedType(TestMergeTask.class,"test"));
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();
