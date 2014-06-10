@@ -10,7 +10,11 @@
       throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
     }
     Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
-    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(subquery,subqueryResult));
+    final GroupByQuery.Builder builder=new GroupByQuery.Builder(subquery);
+    for (    PostAggregator postAggregator : subquery.getPostAggregatorSpecs()) {
+      builder.addAggregator(new DoubleSumAggregatorFactory(postAggregator.getName(),postAggregator.getName()));
+    }
+    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(builder.build(),subqueryResult));
     result=engine.process(query,adapter);
   }
  else {
