@@ -1,6 +1,6 @@
 {
   Sequence<Row> result;
-  DataSource dataSource=query.getDataSource();
+  final DataSource dataSource=query.getDataSource();
   if (dataSource instanceof QueryDataSource) {
     GroupByQuery subquery;
     try {
@@ -9,16 +9,17 @@
  catch (    ClassCastException e) {
       throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
     }
-    Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
-    final GroupByQuery.Builder builder=new GroupByQuery.Builder(subquery);
-    for (    PostAggregator postAggregator : subquery.getPostAggregatorSpecs()) {
-      builder.addAggregator(new DoubleSumAggregatorFactory(postAggregator.getName(),postAggregator.getName()));
+    final Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
+    final List<AggregatorFactory> aggs=Lists.newArrayList();
+    for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+      aggs.addAll(aggregatorFactory.getBaseFactories());
     }
-    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(builder.build(),subqueryResult));
-    result=engine.process(query,adapter);
+    final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
+    final IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(innerQuery,subqueryResult));
+    return engine.process(query,adapter);
   }
  else {
     result=runner.run(query);
+    return postAggregate(query,makeIncrementalIndex(query,result));
   }
-  return postAggregate(query,makeIncrementalIndex(query,result));
 }
