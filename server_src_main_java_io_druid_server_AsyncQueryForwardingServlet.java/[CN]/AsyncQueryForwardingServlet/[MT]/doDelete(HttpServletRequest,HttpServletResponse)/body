@@ -5,7 +5,7 @@
       try {
         final HttpResponseHandler<OutputStream,OutputStream> responseHandler=new PassthroughHttpResponseHandler(asyncContext,jsonMapper);
         final String host=hostFinder.getDefaultHost();
-        routingDruidClient.get(makeUrl(host,(HttpServletRequest)asyncContext.getRequest()),responseHandler);
+        routingDruidClient.delete(makeUrl(host,(HttpServletRequest)asyncContext.getRequest()),responseHandler);
       }
  catch (      Exception e) {
         handleException(jsonMapper,asyncContext,e);
