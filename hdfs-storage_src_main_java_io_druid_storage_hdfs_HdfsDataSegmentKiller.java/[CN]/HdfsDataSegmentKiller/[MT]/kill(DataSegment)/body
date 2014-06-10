@@ -1,0 +1,10 @@
+{
+  final Path path=getPath(segment);
+  final FileSystem fs=checkPathAndGetFilesystem(path);
+  try {
+    fs.delete(path,true);
+  }
+ catch (  IOException e) {
+    throw new SegmentLoadingException(e,"Unable to kill segment");
+  }
+}
