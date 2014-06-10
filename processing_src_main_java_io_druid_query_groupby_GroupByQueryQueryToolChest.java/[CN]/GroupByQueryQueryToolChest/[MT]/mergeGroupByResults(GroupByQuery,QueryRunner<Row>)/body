@@ -1,5 +1,4 @@
 {
-  Sequence<Row> result;
   final DataSource dataSource=query.getDataSource();
   if (dataSource instanceof QueryDataSource) {
     GroupByQuery subquery;
@@ -15,11 +14,11 @@
       aggs.addAll(aggregatorFactory.getBaseFactories());
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
+    final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
     final IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(innerQuery,subqueryResult));
-    return engine.process(query,adapter);
+    return outerQuery.applyLimit(engine.process(outerQuery,adapter));
   }
  else {
-    result=runner.run(query);
-    return postAggregate(query,makeIncrementalIndex(query,result));
+    return query.applyLimit(postAggregate(query,makeIncrementalIndex(query,runner.run(query))));
   }
 }
