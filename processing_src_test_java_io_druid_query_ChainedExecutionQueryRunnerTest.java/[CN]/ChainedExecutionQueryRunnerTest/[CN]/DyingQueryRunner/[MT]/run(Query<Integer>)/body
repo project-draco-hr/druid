@@ -1,0 +1,15 @@
+{
+  hasStarted=true;
+  latch.countDown();
+  if (Thread.interrupted()) {
+    throw new QueryInterruptedException("I got killed");
+  }
+  try {
+    Thread.sleep(500);
+  }
+ catch (  InterruptedException e) {
+    throw new QueryInterruptedException("I got killed");
+  }
+  hasCompleted=true;
+  return Sequences.simple(Lists.newArrayList(123));
+}
