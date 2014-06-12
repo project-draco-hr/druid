@@ -62,7 +62,7 @@ synchronized (dimensionOrder) {
           final String columnName=column.toLowerCase();
           if (typeName.equals("float")) {
             return new ObjectColumnSelector<Float>(){
-              @Override public Class classOfObject(){
+              @Override public Class<Float> classOfObject(){
                 return Float.TYPE;
               }
               @Override public Float get(){
@@ -71,14 +71,13 @@ synchronized (dimensionOrder) {
             }
 ;
           }
-          final List<String> dimensionValues=in.getDimension(columnName);
-          if (dimensionValues != null) {
+          if (getDimension(columnName) != null) {
             return new ObjectColumnSelector<Object>(){
-              @Override public Class classOfObject(){
+              @Override public Class<Object> classOfObject(){
                 return Object.class;
               }
               @Override public Object get(){
-                final String[] dimVals=dimensionValues.toArray(new String[]{});
+                final String[] dimVals=in.getDimension(columnName).toArray(new String[]{});
                 if (dimVals.length == 1) {
                   return dimVals[0];
                 }
