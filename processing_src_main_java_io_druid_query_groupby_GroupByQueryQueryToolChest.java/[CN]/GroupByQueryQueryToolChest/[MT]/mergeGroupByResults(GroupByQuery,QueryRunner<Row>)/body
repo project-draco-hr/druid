@@ -11,7 +11,7 @@
     final Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner);
     final List<AggregatorFactory> aggs=Lists.newArrayList();
     for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
-      aggs.addAll(aggregatorFactory.getBaseFactories());
+      aggs.addAll(aggregatorFactory.getRequiredColumns());
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
