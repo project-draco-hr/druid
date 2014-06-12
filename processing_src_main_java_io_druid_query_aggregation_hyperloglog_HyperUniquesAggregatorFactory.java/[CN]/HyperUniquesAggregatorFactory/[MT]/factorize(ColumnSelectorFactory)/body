@@ -3,8 +3,9 @@
   if (selector == null) {
     return Aggregators.noopAggregator();
   }
-  if (HyperLogLogCollector.class.isAssignableFrom(selector.classOfObject())) {
+  final Class classOfObject=selector.classOfObject();
+  if (classOfObject.equals(Object.class) || HyperLogLogCollector.class.isAssignableFrom(classOfObject)) {
     return new HyperUniquesAggregator(name,selector);
   }
-  throw new IAE("Incompatible type for metric[%s], expected a HyperUnique, got a %s",fieldName,selector.classOfObject());
+  throw new IAE("Incompatible type for metric[%s], expected a HyperUnique, got a %s",fieldName,classOfObject);
 }
