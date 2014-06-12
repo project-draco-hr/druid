@@ -1,0 +1,15 @@
+{
+  final Path path=getPath(segment);
+  final FileSystem fs=checkPathAndGetFilesystem(path);
+  try {
+    if (path.getName().endsWith(".zip")) {
+      fs.delete(path.getParent(),true);
+    }
+ else {
+      throw new SegmentLoadingException("Unknown file type[%s]",path);
+    }
+  }
+ catch (  IOException e) {
+    throw new SegmentLoadingException(e,"Unable to kill segment");
+  }
+}

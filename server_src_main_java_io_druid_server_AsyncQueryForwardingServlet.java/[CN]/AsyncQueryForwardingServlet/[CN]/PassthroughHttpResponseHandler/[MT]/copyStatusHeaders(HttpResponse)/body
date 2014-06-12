@@ -1,0 +1,17 @@
+{
+  final HttpServletResponse response=(HttpServletResponse)asyncContext.getResponse();
+  response.setStatus(clientResponse.getStatus().getCode());
+  response.setContentType(clientResponse.headers().get(HttpHeaders.Names.CONTENT_TYPE));
+  FluentIterable.from(clientResponse.headers().entries()).filter(new Predicate<Map.Entry<String,String>>(){
+    @Override public boolean apply(    @Nullable Map.Entry<String,String> input){
+      return input.getKey().startsWith("X-Druid");
+    }
+  }
+).transform(new Function<Map.Entry<String,String>,Object>(){
+    @Nullable @Override public Object apply(    @Nullable Map.Entry<String,String> input){
+      response.setHeader(input.getKey(),input.getValue());
+      return null;
+    }
+  }
+).allMatch(Predicates.alwaysTrue());
+}

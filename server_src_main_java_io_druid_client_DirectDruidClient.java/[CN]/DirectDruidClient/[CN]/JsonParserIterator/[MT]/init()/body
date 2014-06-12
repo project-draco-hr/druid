@@ -2,7 +2,12 @@
   if (jp == null) {
     try {
       jp=objectMapper.getFactory().createParser(future.get());
-      if (jp.nextToken() != JsonToken.START_ARRAY) {
+      final JsonToken nextToken=jp.nextToken();
+      if (nextToken == JsonToken.START_OBJECT) {
+        QueryInterruptedException e=jp.getCodec().readValue(jp,QueryInterruptedException.class);
+        throw e;
+      }
+ else       if (nextToken != JsonToken.START_ARRAY) {
         throw new IAE("Next token wasn't a START_ARRAY, was[%s] from url [%s]",jp.getCurrentToken(),url);
       }
  else {
@@ -10,14 +15,11 @@
         objectCodec=jp.getCodec();
       }
     }
- catch (    IOException e) {
+ catch (    IOException|InterruptedException|ExecutionException e) {
       throw new RE(e,"Failure getting results from[%s]",url);
     }
-catch (    InterruptedException e) {
-      throw new RE(e,"Failure getting results from[%s]",url);
-    }
-catch (    ExecutionException e) {
-      throw new RE(e,"Failure getting results from[%s]",url);
+catch (    CancellationException e) {
+      throw new QueryInterruptedException("Query cancelled");
     }
   }
 }

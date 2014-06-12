@@ -1,22 +1,36 @@
 {
+  final ListeningExecutorService queryExecutor=MoreExecutors.listeningDecorator(exec);
   return new ConcatQueryRunner<SegmentAnalysis>(Sequences.map(Sequences.simple(queryRunners),new Function<QueryRunner<SegmentAnalysis>,QueryRunner<SegmentAnalysis>>(){
     @Override public QueryRunner<SegmentAnalysis> apply(    final QueryRunner<SegmentAnalysis> input){
       return new QueryRunner<SegmentAnalysis>(){
         @Override public Sequence<SegmentAnalysis> run(        final Query<SegmentAnalysis> query){
-          Future<Sequence<SegmentAnalysis>> future=queryExecutor.submit(new Callable<Sequence<SegmentAnalysis>>(){
+          final int priority=query.getContextPriority(0);
+          ListenableFuture<Sequence<SegmentAnalysis>> future=queryExecutor.submit(new AbstractPrioritizedCallable<Sequence<SegmentAnalysis>>(priority){
             @Override public Sequence<SegmentAnalysis> call() throws Exception {
-              return new ExecutorExecutingSequence<SegmentAnalysis>(input.run(query),queryExecutor);
+              return input.run(query);
             }
           }
 );
           try {
-            return future.get();
+            queryWatcher.registerQuery(query,future);
+            final Number timeout=query.getContextValue("timeout",(Number)null);
+            return timeout == null ? future.get() : future.get(timeout.longValue(),TimeUnit.MILLISECONDS);
           }
  catch (          InterruptedException e) {
-            throw Throwables.propagate(e);
+            log.warn(e,"Query interrupted, cancelling pending results, query id [%s]",query.getId());
+            future.cancel(true);
+            throw new QueryInterruptedException("Query interrupted");
+          }
+catch (          CancellationException e) {
+            throw new QueryInterruptedException("Query cancelled");
+          }
+catch (          TimeoutException e) {
+            log.info("Query timeout, cancelling pending results for query id [%s]",query.getId());
+            future.cancel(true);
+            throw new QueryInterruptedException("Query timeout");
           }
 catch (          ExecutionException e) {
-            throw Throwables.propagate(e);
+            throw Throwables.propagate(e.getCause());
           }
         }
       }
