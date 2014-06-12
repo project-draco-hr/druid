@@ -37,7 +37,7 @@
         }
         hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),config.getShardSpec()),IndexIO.loadIndex(segmentDir)),Integer.parseInt(segmentDir.getName())));
       }
-      Sink currSink=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval),hydrants,bufferPool);
+      Sink currSink=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval),hydrants);
       sinks.put(sinkInterval.getStartMillis(),currSink);
       sinkTimeline.add(currSink.getInterval(),currSink.getVersion(),new SingleElementPartitionChunk<Sink>(currSink));
       segmentAnnouncer.announceSegment(currSink.getSegment());
