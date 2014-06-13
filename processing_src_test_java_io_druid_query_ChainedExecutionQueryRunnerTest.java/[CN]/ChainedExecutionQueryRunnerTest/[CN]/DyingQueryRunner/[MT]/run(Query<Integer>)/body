@@ -2,12 +2,14 @@
   hasStarted=true;
   latch.countDown();
   if (Thread.interrupted()) {
+    interrupted=true;
     throw new QueryInterruptedException("I got killed");
   }
   try {
     Thread.sleep(500);
   }
  catch (  InterruptedException e) {
+    interrupted=true;
     throw new QueryInterruptedException("I got killed");
   }
   hasCompleted=true;
