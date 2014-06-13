@@ -21,13 +21,7 @@
       return parseMessage(message);
     }
     public InputRow parseMessage(    Message message){
-      try {
-        return theParser.parse(message.payload());
-      }
- catch (      Exception e) {
-        log.error("Unparseable row! Error parsing[%s]",message.payload());
-        throw Throwables.propagate(e);
-      }
+      return theParser.parse(message.payload());
     }
     @Override public Runnable commit(){
       return new Runnable(){

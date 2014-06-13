@@ -18,13 +18,7 @@
       if (message == null) {
         return null;
       }
-      try {
-        return theParser.parse(ByteBuffer.wrap(message));
-      }
- catch (      Exception e) {
-        log.error("Unparseable row! Error parsing[%s]",ByteBuffer.wrap(message));
-        throw Throwables.propagate(e);
-      }
+      return theParser.parse(ByteBuffer.wrap(message));
     }
     @Override public Runnable commit(){
       return new Runnable(){
