@@ -18,6 +18,7 @@
   }
   final ListenableFuture<InputStream> future;
   final String url=String.format("http://%s/druid/v2/",host);
+  final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
   try {
     log.debug("Querying url[%s]",url);
     future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new InputStreamResponseHandler(){
@@ -41,6 +42,7 @@
       }
     }
 );
+    queryWatcher.registerQuery(query,future);
     openConnections.getAndIncrement();
     Futures.addCallback(future,new FutureCallback<InputStream>(){
       @Override public void onSuccess(      InputStream result){
@@ -48,6 +50,17 @@
       }
       @Override public void onFailure(      Throwable t){
         openConnections.getAndDecrement();
+        if (future.isCancelled()) {
+          try {
+            StatusResponseHolder res=httpClient.delete(new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new StatusResponseHandler(Charsets.UTF_8)).get();
+            if (res.getStatus().getCode() >= 500) {
+              throw new RE("Error cancelling query[%s]: queriable node returned status[%d] [%s].",res.getStatus().getCode(),res.getStatus().getReasonPhrase());
+            }
+          }
+ catch (          IOException|ExecutionException|InterruptedException e) {
+            Throwables.propagate(e);
+          }
+        }
       }
     }
 );
@@ -55,7 +68,7 @@
  catch (  IOException e) {
     throw Throwables.propagate(e);
   }
-  Sequence<T> retVal=new BaseSequence<T,JsonParserIterator<T>>(new BaseSequence.IteratorMaker<T,JsonParserIterator<T>>(){
+  Sequence<T> retVal=new BaseSequence<>(new BaseSequence.IteratorMaker<T,JsonParserIterator<T>>(){
     @Override public JsonParserIterator<T> make(){
       return new JsonParserIterator<T>(typeRef,future,url);
     }

@@ -1,6 +1,6 @@
 {
   Predicate<DataSegment> predicate=Predicates.or(defaultFilter,Predicates.or(segmentPredicates.values()));
-  Set<DataSegment> filteredInventory=Sets.filter(inventory,predicate);
+  Set<DataSegment> filteredInventory=Sets.newHashSet(Iterables.filter(inventory,predicate));
   Set<DataSegment> existing=zNodes.get(inventoryKey);
   if (existing == null) {
     throw new ISE("Trying to update an inventoryKey[%s] that didn't exist?!",inventoryKey);
