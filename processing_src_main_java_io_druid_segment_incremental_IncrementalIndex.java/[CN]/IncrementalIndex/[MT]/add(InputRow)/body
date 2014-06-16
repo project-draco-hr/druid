@@ -33,7 +33,7 @@ synchronized (dimensionOrder) {
     }
     dims=newDims;
   }
-  TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
+  final TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
 synchronized (this) {
     if (!facts.containsKey(key)) {
       int rowOffset=totalAggSize * numEntries.getAndIncrement();
