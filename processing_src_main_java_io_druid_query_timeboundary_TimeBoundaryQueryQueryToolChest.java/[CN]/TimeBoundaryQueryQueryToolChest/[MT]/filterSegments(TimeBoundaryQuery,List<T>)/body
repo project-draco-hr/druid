@@ -4,30 +4,10 @@
   }
   final T min=segments.get(0);
   final T max=segments.get(segments.size() - 1);
-  final Predicate<T> filterPredicate;
-  if (query.getBound().equalsIgnoreCase(TimeBoundaryQuery.MIN_TIME)) {
-    filterPredicate=new Predicate<T>(){
-      @Override public boolean apply(      T input){
-        return input.getInterval().overlaps(min.getInterval());
-      }
+  return Lists.newArrayList(Iterables.filter(segments,new Predicate<T>(){
+    @Override public boolean apply(    T input){
+      return (min != null && input.getInterval().overlaps(min.getInterval())) || (max != null && input.getInterval().overlaps(max.getInterval()));
     }
-;
   }
- else   if (query.getBound().equalsIgnoreCase(TimeBoundaryQuery.MAX_TIME)) {
-    filterPredicate=new Predicate<T>(){
-      @Override public boolean apply(      T input){
-        return input.getInterval().overlaps(max.getInterval());
-      }
-    }
-;
-  }
- else {
-    filterPredicate=new Predicate<T>(){
-      @Override public boolean apply(      T input){
-        return input.getInterval().overlaps(min.getInterval()) || input.getInterval().overlaps(max.getInterval());
-      }
-    }
-;
-  }
-  return Lists.newArrayList(Iterables.filter(segments,filterPredicate));
+));
 }

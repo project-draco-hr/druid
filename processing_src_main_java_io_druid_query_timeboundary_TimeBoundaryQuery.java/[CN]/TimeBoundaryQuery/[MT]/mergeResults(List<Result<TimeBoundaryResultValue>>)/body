@@ -6,17 +6,13 @@
   DateTime max=new DateTime(Long.MIN_VALUE);
   for (  Result<TimeBoundaryResultValue> result : results) {
     TimeBoundaryResultValue val=result.getValue();
-    if (!bound.equalsIgnoreCase(MAX_TIME)) {
-      DateTime currMinTime=val.getMinTime();
-      if (currMinTime.isBefore(min)) {
-        min=currMinTime;
-      }
+    DateTime currMinTime=val.getMinTime();
+    if (currMinTime != null && currMinTime.isBefore(min)) {
+      min=currMinTime;
     }
-    if (!bound.equalsIgnoreCase(MIN_TIME)) {
-      DateTime currMaxTime=val.getMaxTime();
-      if (currMaxTime.isAfter(max)) {
-        max=currMaxTime;
-      }
+    DateTime currMaxTime=val.getMaxTime();
+    if (currMaxTime != null && currMaxTime.isAfter(max)) {
+      max=currMaxTime;
     }
   }
   final ImmutableMap.Builder<String,Object> builder=new ImmutableMap.Builder<>();
