@@ -1,0 +1,17 @@
+{
+  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>builder().put("provider","spot").put("rows",3L).put("index",300.0D).put("addRowsIndexConstant",304.0D).put("uniques",0.0D).put("maxIndex",100.0).put("minIndex",100.0).build(),new HashMap<String,Object>(){
+{
+      put("provider",null);
+      put("rows",3L);
+      put("index",200.0D);
+      put("addRowsIndexConstant",204.0D);
+      put("uniques",0.0D);
+      put("maxIndex",100.0);
+      put("minIndex",0.0);
+    }
+  }
+,ImmutableMap.<String,Object>builder().put("provider","total_market").put("rows",2L).put("index",200.0D).put("addRowsIndexConstant",203.0D).put("uniques",1.0002442201269182D).put("maxIndex",100.0D).put("minIndex",100.0D).build()))));
+  TopNQuery query=makeTopNQuery();
+  QueryRunner runner=TestQueryRunners.makeTopNQueryRunner(segment);
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query));
+}

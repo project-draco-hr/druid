@@ -1,0 +1,25 @@
+{
+  URL resource=TestIndex.class.getClassLoader().getResource(resourceFilename);
+  log.info("Realtime loading resource[%s]",resource);
+  String filename=resource.getFile();
+  log.info("Realtime loading index file[%s]",filename);
+  final IncrementalIndex retVal=new IncrementalIndex(new DateTime("2011-01-12T00:00:00.000Z").getMillis(),QueryGranularity.MINUTE,aggs);
+  try {
+    final List<Object> events=jsonMapper.readValue(new File(filename),List.class);
+    for (    Object obj : events) {
+      final Map<String,Object> event=jsonMapper.convertValue(obj,Map.class);
+      final List<String> dims=Lists.newArrayList();
+      for (      Map.Entry<String,Object> entry : event.entrySet()) {
+        if (!entry.getKey().equalsIgnoreCase(TIMESTAMP) && !METRICS.contains(entry.getKey())) {
+          dims.add(entry.getKey());
+        }
+      }
+      retVal.add(new MapBasedInputRow(new DateTime(event.get(TIMESTAMP)).getMillis(),dims,event));
+    }
+  }
+ catch (  IOException e) {
+    index=null;
+    throw Throwables.propagate(e);
+  }
+  return retVal;
+}
