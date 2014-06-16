@@ -73,7 +73,6 @@
         final File dirToPersist=getSpillDir(indexToPersist.getCount());
         log.info("Spilling index[%d] with rows[%d] to: %s",indexToPersist.getCount(),rowsToPersist,dirToPersist);
         try {
-          final IncrementalIndex index=indexToPersist.getIndex();
           IndexMerger.persist(indexToPersist.getIndex(),dirToPersist);
           indexToPersist.swapSegment(null);
           metrics.incrementRowOutputCount(rowsToPersist);
