@@ -15,20 +15,23 @@
       max=currMaxTime;
     }
   }
-  final ImmutableMap.Builder<String,Object> builder=new ImmutableMap.Builder<>();
   final DateTime ts;
+  final DateTime minTime;
+  final DateTime maxTime;
   if (bound.equalsIgnoreCase(MIN_TIME)) {
     ts=min;
-    builder.put(MIN_TIME,max);
+    minTime=min;
+    maxTime=null;
   }
  else   if (bound.equalsIgnoreCase(MAX_TIME)) {
     ts=max;
-    builder.put(MAX_TIME,min);
+    minTime=null;
+    maxTime=max;
   }
  else {
     ts=min;
-    builder.put(MIN_TIME,min);
-    builder.put(MAX_TIME,max);
+    minTime=min;
+    maxTime=max;
   }
-  return Arrays.asList(new Result<>(ts,new TimeBoundaryResultValue(builder.build())));
+  return buildResult(ts,minTime,maxTime);
 }
