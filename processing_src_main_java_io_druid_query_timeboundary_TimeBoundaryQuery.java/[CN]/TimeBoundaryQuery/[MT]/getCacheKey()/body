@@ -1,3 +1,4 @@
 {
-  return ByteBuffer.allocate(1).put(CACHE_TYPE_ID).array();
+  final byte[] excludeBytes=exclude.getBytes();
+  return ByteBuffer.allocate(1 + excludeBytes.length).put(CACHE_TYPE_ID).put(excludeBytes).array();
 }
