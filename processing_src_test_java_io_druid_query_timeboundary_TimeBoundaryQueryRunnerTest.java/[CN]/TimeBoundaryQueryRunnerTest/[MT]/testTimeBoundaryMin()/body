@@ -1,5 +1,5 @@
 {
-  TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").exclude(TimeBoundaryQuery.MAX_TIME).build();
+  TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").bound(TimeBoundaryQuery.MIN_TIME).build();
   Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(runner.run(timeBoundaryQuery),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
   TimeBoundaryResultValue val=results.iterator().next().getValue();
   DateTime minTime=val.getMinTime();

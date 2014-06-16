@@ -6,13 +6,13 @@
   DateTime max=new DateTime(Long.MIN_VALUE);
   for (  Result<TimeBoundaryResultValue> result : results) {
     TimeBoundaryResultValue val=result.getValue();
-    if (!exclude.equalsIgnoreCase(MIN_TIME)) {
+    if (!bound.equalsIgnoreCase(MAX_TIME)) {
       DateTime currMinTime=val.getMinTime();
       if (currMinTime.isBefore(min)) {
         min=currMinTime;
       }
     }
-    if (!exclude.equalsIgnoreCase(MAX_TIME)) {
+    if (!bound.equalsIgnoreCase(MIN_TIME)) {
       DateTime currMaxTime=val.getMaxTime();
       if (currMaxTime.isAfter(max)) {
         max=currMaxTime;
@@ -21,18 +21,18 @@
   }
   final ImmutableMap.Builder<String,Object> builder=new ImmutableMap.Builder<>();
   final DateTime ts;
-  if (exclude.equalsIgnoreCase(MIN_TIME)) {
-    ts=max;
-    builder.put(MAX_TIME,max);
-  }
- else   if (exclude.equalsIgnoreCase(MAX_TIME)) {
+  if (bound.equalsIgnoreCase(MIN_TIME)) {
     ts=min;
-    builder.put(MIN_TIME,min);
+    builder.put(MIN_TIME,max);
+  }
+ else   if (bound.equalsIgnoreCase(MAX_TIME)) {
+    ts=max;
+    builder.put(MAX_TIME,min);
   }
  else {
     ts=min;
-    builder.put(MAX_TIME,max);
     builder.put(MIN_TIME,min);
+    builder.put(MAX_TIME,max);
   }
   return Arrays.asList(new Result<>(ts,new TimeBoundaryResultValue(builder.build())));
 }
