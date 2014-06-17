@@ -74,4 +74,10 @@
   DruidServerMetadata announced=jsonMapper.readValue(remoteCf.getData().forPath(path),DruidServerMetadata.class);
   Assert.assertEquals(118,announced.getMaxSize());
   EasyMock.verify(batchServerInventoryView);
+  announcer.stop();
+  bridge.stop();
+  remoteCf.close();
+  remoteCluster.close();
+  localCf.close();
+  localCluster.close();
 }
