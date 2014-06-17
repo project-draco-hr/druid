@@ -51,6 +51,8 @@
   EasyMock.expectLastCall();
   batchServerInventoryView.start();
   EasyMock.expectLastCall();
+  batchServerInventoryView.stop();
+  EasyMock.expectLastCall();
   EasyMock.replay(batchServerInventoryView);
   DruidClusterBridge bridge=new DruidClusterBridge(jsonMapper,config,factory,me,localCf,leaderLatch,bridgeZkCoordinator,announcer,batchDataSegmentAnnouncer,batchServerInventoryView);
   bridge.start();
@@ -73,9 +75,9 @@
   }
   DruidServerMetadata announced=jsonMapper.readValue(remoteCf.getData().forPath(path),DruidServerMetadata.class);
   Assert.assertEquals(118,announced.getMaxSize());
+  bridge.stop();
   EasyMock.verify(batchServerInventoryView);
   announcer.stop();
-  bridge.stop();
   remoteCf.close();
   remoteCluster.close();
   localCf.close();
