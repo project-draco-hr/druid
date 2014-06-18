@@ -5,5 +5,5 @@
   reservation=EasyMock.createMock(Reservation.class);
   workerSetupData=new AtomicReference<WorkerSetupData>(null);
   instance=new Instance().withInstanceId(INSTANCE_ID).withLaunchTime(new Date()).withImageId(AMI_ID).withPrivateIpAddress(IP);
-  strategy=new EC2AutoScalingStrategy(new DefaultObjectMapper(),amazonEC2Client,new SimpleResourceManagementConfig().setWorkerPort(8080).setWorkerVersion(""),DSuppliers.of(workerSetupData));
+  strategy=new EC2AutoScalingStrategy(amazonEC2Client,new SimpleResourceManagementConfig().setWorkerPort(8080).setWorkerVersion(""),DSuppliers.of(workerSetupData));
 }

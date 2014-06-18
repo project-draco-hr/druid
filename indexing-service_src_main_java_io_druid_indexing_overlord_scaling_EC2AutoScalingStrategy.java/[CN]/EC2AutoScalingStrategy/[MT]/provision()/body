@@ -1,13 +1,16 @@
 {
   try {
-    WorkerSetupData setupData=workerSetupDataRef.get();
-    EC2NodeData workerConfig=setupData.getNodeData();
-    GalaxyUserData userData=setupData.getUserData();
-    if (config.getWorkerVersion() != null) {
-      userData=userData.withVersion(config.getWorkerVersion());
+    final WorkerSetupData setupData=workerSetupDataRef.get();
+    final EC2NodeData workerConfig=setupData.getNodeData();
+    final EC2UserData userData;
+    if (config.getWorkerVersion() == null) {
+      userData=setupData.getUserData();
     }
-    RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withPlacement(new Placement(setupData.getAvailabilityZone())).withKeyName(workerConfig.getKeyName()).withUserData(Base64.encodeBase64String(jsonMapper.writeValueAsBytes(userData))));
-    List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
+ else {
+      userData=setupData.getUserData().withVersion(config.getWorkerVersion());
+    }
+    final RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withPlacement(new Placement(setupData.getAvailabilityZone())).withKeyName(workerConfig.getKeyName()).withUserData(userData.getUserDataBase64()));
+    final List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
       @Override public String apply(      Instance input){
         return input.getInstanceId();
       }
