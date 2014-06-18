@@ -9,7 +9,7 @@
     final int size=row.size();
     if (size == 1) {
       final String value=selector.lookupName(row.get(0));
-      hasher.putString(value != null ? value : NULL_STRING);
+      hasher.putUnencodedChars(value != null ? value : NULL_STRING);
     }
  else     if (size != 0) {
       final String[] values=new String[size];
@@ -22,7 +22,7 @@
         if (i != 0) {
           hasher.putChar(SEPARATOR);
         }
-        hasher.putString(values[i]);
+        hasher.putUnencodedChars(values[i]);
       }
     }
   }

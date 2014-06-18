@@ -18,7 +18,7 @@
   RemoteTaskRunnerWorkItem newWorkItem=workItem.withWorker(theWorker);
   runningTasks.put(task.getId(),newWorkItem);
   log.info("Task %s switched from pending to running (on [%s])",task.getId(),newWorkItem.getWorker().getHost());
-  Stopwatch timeoutStopwatch=new Stopwatch();
+  Stopwatch timeoutStopwatch=Stopwatch.createUnstarted();
   timeoutStopwatch.start();
 synchronized (statusLock) {
     while (!isWorkerRunningTask(theWorker,task.getId())) {

@@ -13,20 +13,15 @@
     @Override public boolean hasMore(){
       return iter.hasNext();
     }
-    @Override public InputRow nextRow() throws FormattedException {
+    @Override public InputRow nextRow(){
       final Message message=iter.next().message();
       if (message == null) {
         return null;
       }
       return parseMessage(message);
     }
-    public InputRow parseMessage(    Message message) throws FormattedException {
-      try {
-        return theParser.parse(message.payload());
-      }
- catch (      Exception e) {
-        throw new FormattedException.Builder().withErrorCode(FormattedException.ErrorCode.UNPARSABLE_ROW).withMessage(String.format("Error parsing[%s], got [%s]",message.payload(),e.toString())).build();
-      }
+    public InputRow parseMessage(    Message message){
+      return theParser.parse(message.payload());
     }
     @Override public Runnable commit(){
       return new Runnable(){
