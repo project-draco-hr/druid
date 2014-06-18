@@ -3,7 +3,7 @@
   IncrementalIndex toPersist=IncrementalIndexTest.createCaseInsensitiveIndex(timestamp);
   final File tempDir=Files.createTempDir();
   try {
-    QueryableIndex index=IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir),columnConfig);
+    QueryableIndex index=IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir));
     Assert.assertEquals(2,index.getTimeColumn().getLength());
     Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
     Assert.assertEquals(2,index.getColumnNames().size());

@@ -3,7 +3,6 @@
   Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
   final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
-  final ColumnConfig columnConfig=config.getColumnConfig();
   IncrementalIndex index=makeIncrementalIndex(bucket,aggs);
   File baseFlushFile=File.createTempFile("base","flush");
   baseFlushFile.delete();
@@ -64,7 +63,7 @@
       toMerge.add(finalFile);
     }
     for (    File file : toMerge) {
-      indexes.add(IndexIO.loadIndex(file,columnConfig));
+      indexes.add(IndexIO.loadIndex(file));
     }
     mergedBase=IndexMerger.mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),new IndexMerger.ProgressIndicator(){
       @Override public void progress(){

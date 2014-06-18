@@ -40,12 +40,12 @@
  else {
           List<QueryableIndex> indexes=Lists.newArrayList();
           for (          final File oneSpill : spilled) {
-            indexes.add(IndexIO.loadIndex(oneSpill,columnConfig));
+            indexes.add(IndexIO.loadIndex(oneSpill));
           }
           fileToUpload=new File(tmpSegmentDir,"merged");
           IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload);
         }
-        final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload,columnConfig);
+        final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
         final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withBinaryVersion(SegmentUtils.getVersionFromDir(fileToUpload));
         dataSegmentPusher.push(fileToUpload,segmentToUpload);
         log.info("Uploaded segment[%s]",segmentToUpload.getIdentifier());
