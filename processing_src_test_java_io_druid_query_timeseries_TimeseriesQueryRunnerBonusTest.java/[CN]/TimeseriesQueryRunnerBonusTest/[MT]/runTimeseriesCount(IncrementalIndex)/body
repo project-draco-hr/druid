@@ -2,5 +2,6 @@
   final QueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new QueryConfig()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
   final QueryRunner<Result<TimeseriesResultValue>> runner=makeQueryRunner(factory,new IncrementalIndexSegment(index,null));
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).build();
-  return Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,List> metadata=new HashMap<String,List>();
+  return Sequences.toList(runner.run(query,metadata),Lists.<Result<TimeseriesResultValue>>newArrayList());
 }

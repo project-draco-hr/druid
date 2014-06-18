@@ -1,0 +1,18 @@
+{
+  if (query.getContextBySegment(false)) {
+    final Sequence<T> baseSequence=base.run(query,metadata);
+    return new Sequence<T>(){
+      @Override public <OutType>OutType accumulate(      OutType initValue,      Accumulator<OutType,T> accumulator){
+        List<T> results=Sequences.toList(baseSequence,Lists.<T>newArrayList());
+        return accumulator.accumulate(initValue,(T)new Result<BySegmentResultValueClass<T>>(timestamp,new BySegmentResultValueClass<T>(results,segmentIdentifier,query.getIntervals().get(0))));
+      }
+      @Override public <OutType>Yielder<OutType> toYielder(      OutType initValue,      YieldingAccumulator<OutType,T> accumulator){
+        List<T> results=Sequences.toList(baseSequence,Lists.<T>newArrayList());
+        final OutType retVal=accumulator.accumulate(initValue,(T)new Result<BySegmentResultValueClass<T>>(timestamp,new BySegmentResultValueClass<T>(results,segmentIdentifier,query.getIntervals().get(0))));
+        return Yielders.done(retVal,null);
+      }
+    }
+;
+  }
+  return base.run(query,metadata);
+}

@@ -2,7 +2,8 @@
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))).build();
   DateTime expectedEarliest=new DateTime("2011-01-12");
   DateTime expectedLast=new DateTime("2011-04-15");
-  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,List> metadata=new HashMap<String,List>();
+  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,metadata),Lists.<Result<TimeseriesResultValue>>newArrayList());
   Result<TimeseriesResultValue> result=results.iterator().next();
   Assert.assertEquals(expectedEarliest,result.getTimestamp());
   Assert.assertFalse(String.format("Timestamp[%s] > expectedLast[%s]",result.getTimestamp(),expectedLast),result.getTimestamp().isAfter(expectedLast));

@@ -8,6 +8,7 @@
     }
   }
 ));
+  HashMap<String,List> metadata=new HashMap<String,List>();
   QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,engine).mergeResults(runner);
-  TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query),"no-limit");
+  TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query,metadata),"no-limit");
 }

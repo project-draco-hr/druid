@@ -1,8 +1,8 @@
 {
   return new BySegmentSkippingQueryRunner<Result<TimeBoundaryResultValue>>(runner){
-    @Override protected Sequence<Result<TimeBoundaryResultValue>> doRun(    QueryRunner<Result<TimeBoundaryResultValue>> baseRunner,    Query<Result<TimeBoundaryResultValue>> input){
+    @Override protected Sequence<Result<TimeBoundaryResultValue>> doRun(    QueryRunner<Result<TimeBoundaryResultValue>> baseRunner,    Query<Result<TimeBoundaryResultValue>> input,    Map<String,List> metadata){
       TimeBoundaryQuery query=(TimeBoundaryQuery)input;
-      return Sequences.simple(query.mergeResults(Sequences.toList(baseRunner.run(query),Lists.<Result<TimeBoundaryResultValue>>newArrayList())));
+      return Sequences.simple(query.mergeResults(Sequences.toList(baseRunner.run(query,metadata),Lists.<Result<TimeBoundaryResultValue>>newArrayList())));
     }
   }
 ;

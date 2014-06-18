@@ -1,0 +1,10 @@
+{
+  Sequence<T> returningSeq=baseRunner.run(query,metadata);
+  for (int i=RetryQueryRunnerConfig.numTries(); i > 0; i--) {
+    for (int j=metadata.get("missingSegments").size(); j > 0; j--) {
+      QuerySegmentSpec segmentSpec=new SpecificSegmentSpec((SegmentDescriptor)metadata.get("missingSegments").remove(0));
+      returningSeq=toolChest.mergeSequences(Sequences.simple(Arrays.asList(returningSeq,baseRunner.run(query.withQuerySegmentSpec(segmentSpec),metadata))));
+    }
+  }
+  return returningSeq;
+}

@@ -1,5 +1,6 @@
 {
-  Iterable<Result<SearchResultValue>> results=Sequences.toList(runner.run(searchQuery),Lists.<Result<SearchResultValue>>newArrayList());
+  HashMap<String,List> metadata=new HashMap<String,List>();
+  Iterable<Result<SearchResultValue>> results=Sequences.toList(runner.run(searchQuery,metadata),Lists.<Result<SearchResultValue>>newArrayList());
   for (  Result<SearchResultValue> result : results) {
     Assert.assertEquals(new DateTime("2011-01-12T00:00:00.000Z"),result.getTimestamp());
     Assert.assertTrue(result.getValue() instanceof Iterable);

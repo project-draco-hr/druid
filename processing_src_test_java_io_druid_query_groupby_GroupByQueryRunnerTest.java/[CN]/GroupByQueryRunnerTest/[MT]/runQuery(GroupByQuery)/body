@@ -1,6 +1,7 @@
 {
   QueryToolChest toolChest=factory.getToolchest();
   QueryRunner theRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(toolChest.preMergeQueryDecoration(runner)),toolChest);
-  Sequence<Row> queryResult=theRunner.run(query);
+  HashMap<String,List> metadata=new HashMap<String,List>();
+  Sequence<Row> queryResult=theRunner.run(query,metadata);
   return Sequences.toList(queryResult,Lists.<Row>newArrayList());
 }
