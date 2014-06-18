@@ -1,0 +1,8 @@
+{
+  final String json="{\"impl\":\"string\",\"data\":\"hey :ver:\",\"versionReplacementString\":\":ver:\",\"version\":\"1234\"}";
+  final StringEC2UserData userData=(StringEC2UserData)TestUtils.MAPPER.readValue(json,EC2UserData.class);
+  Assert.assertEquals("hey :ver:",userData.getData());
+  Assert.assertEquals("1234",userData.getVersion());
+  Assert.assertEquals(Base64.encodeBase64String("hey 1234".getBytes(Charsets.UTF_8)),userData.getUserDataBase64());
+  Assert.assertEquals(Base64.encodeBase64String("hey xyz".getBytes(Charsets.UTF_8)),userData.withVersion("xyz").getUserDataBase64());
+}
