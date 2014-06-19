@@ -28,18 +28,18 @@
         log.debug("Initial response from url[%s]",url);
         startTime=System.currentTimeMillis();
         byteCount+=response.getContent().readableBytes();
-        if (!response.getHeader("Missing-Segments").equals("")) {
-          LinkedList missingSegments=new LinkedList();
-          try {
-            missingSegments=objectMapper.readValue(response.getHeader("Missing-Segments"),LinkedList.class);
-            for (int i=missingSegments.size(); i > 0; i--) {
-              missingSegments.add(objectMapper.convertValue(missingSegments.remove(0),SegmentDescriptor.class));
-            }
+        List missingSegments=new ArrayList();
+        try {
+          Map<String,Object> headerContext=objectMapper.readValue(response.getHeader("Context"),Map.class);
+          missingSegments=(List)headerContext.get(RetryQueryRunner.missingSegments);
+          for (int i=missingSegments.size(); i > 0; i--) {
+            missingSegments.add(objectMapper.convertValue(missingSegments.remove(0),SegmentDescriptor.class));
           }
- catch (          IOException e) {
-          }
-          ((List)context.get("missingSegments")).addAll(missingSegments);
         }
+ catch (        IOException e) {
+          e.printStackTrace();
+        }
+        ((List)context.get("missingSegments")).addAll(missingSegments);
         return super.handleResponse(response);
       }
       @Override public ClientResponse<AppendableByteArrayInputStream> handleChunk(      ClientResponse<AppendableByteArrayInputStream> clientResponse,      HttpChunk chunk){
