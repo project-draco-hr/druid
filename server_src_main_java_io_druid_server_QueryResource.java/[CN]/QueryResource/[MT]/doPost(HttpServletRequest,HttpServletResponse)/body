@@ -17,8 +17,8 @@
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
     }
-    HashMap<String,Object> context=new HashMap<String,Object>();
-    context.put("missingSegments",new LinkedList());
+    Map<String,Object> context=new MapMaker().makeMap();
+    context.put("missingSegments",Lists.newArrayList());
     Sequence results=query.run(texasRanger,context);
     if (results == null) {
       results=Sequences.empty();

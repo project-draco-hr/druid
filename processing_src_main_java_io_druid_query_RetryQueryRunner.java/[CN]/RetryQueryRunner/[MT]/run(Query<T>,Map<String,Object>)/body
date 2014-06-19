@@ -1,10 +1,16 @@
 {
   Sequence<T> returningSeq=baseRunner.run(query,context);
-  for (int i=config.numTries(); i > 0; i--) {
-    for (int j=((List)context.get("missingSegments")).size(); j > 0; j--) {
-      QuerySegmentSpec segmentSpec=new SpecificSegmentSpec((SegmentDescriptor)((List)context.get("missingSegments")).remove(0));
-      returningSeq=toolChest.mergeSequences(Sequences.simple(Arrays.asList(returningSeq,baseRunner.run(query.withQuerySegmentSpec(segmentSpec),context))));
+  for (int i=config.numTries(); i > 0 && !((List)context.get(missingSegments)).isEmpty(); i--) {
+    List<SegmentDescriptor> segList=(List<SegmentDescriptor>)context.get(missingSegments);
+    ((List)context.get(missingSegments)).clear();
+    returningSeq=toolChest.mergeSequences(Sequences.simple(Arrays.asList(returningSeq,baseRunner.run(query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(segList)),context))));
+  }
+  if (!config.returnPartialResults() && !((List)context.get(missingSegments)).isEmpty()) {
+    String failedSegments="";
+    for (    SegmentDescriptor segment : (List<SegmentDescriptor>)context.get("missingSegments")) {
+      failedSegments=failedSegments + segment.toString() + " ";
     }
+    throw new SegmentMissingException("The following segments are missing: " + failedSegments);
   }
   return returningSeq;
 }
