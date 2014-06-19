@@ -1,11 +1,21 @@
 {
   try {
-    serverManager.dropSegment(segment);
     File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
     if (!segmentInfoCacheFile.delete()) {
       log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
     }
     announcer.unannounceSegment(segment);
+    exec.schedule(new Runnable(){
+      @Override public void run(){
+        try {
+          serverManager.dropSegment(segment);
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+,config.getDropSegmentDelayMillis(),TimeUnit.MILLISECONDS);
   }
  catch (  Exception e) {
     log.makeAlert(e,"Failed to remove segment").addData("segment",segment).emit();
