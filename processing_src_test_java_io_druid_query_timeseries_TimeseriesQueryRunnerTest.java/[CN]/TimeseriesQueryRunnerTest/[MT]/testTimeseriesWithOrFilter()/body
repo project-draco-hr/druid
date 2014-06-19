@@ -1,7 +1,7 @@
 {
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters(QueryRunnerTestHelper.providerDimension,"spot","upfront","total_market").intervals(QueryRunnerTestHelper.firstToThird).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.indexLongSum,QueryRunnerTestHelper.qualityUniques)).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-04-01"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"index",6619L,"addRowsIndexConstant",6633.0,"uniques",QueryRunnerTestHelper.UNIQUES_9))),new Result<TimeseriesResultValue>(new DateTime("2011-04-02"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"index",5827L,"addRowsIndexConstant",5841.0,"uniques",QueryRunnerTestHelper.UNIQUES_9))));
-  HashMap<String,List> metadata=new HashMap<String,List>();
-  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,metadata),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,results);
 }

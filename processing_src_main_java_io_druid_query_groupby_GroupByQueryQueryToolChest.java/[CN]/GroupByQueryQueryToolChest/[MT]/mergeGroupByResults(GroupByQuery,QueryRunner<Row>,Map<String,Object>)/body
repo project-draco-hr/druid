@@ -1,0 +1,20 @@
+{
+  Sequence<Row> result;
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof QueryDataSource) {
+    GroupByQuery subquery;
+    try {
+      subquery=(GroupByQuery)((QueryDataSource)dataSource).getQuery();
+    }
+ catch (    ClassCastException e) {
+      throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
+    }
+    Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner,context);
+    IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(subquery,subqueryResult));
+    result=engine.process(query,adapter);
+  }
+ else {
+    result=runner.run(query,context);
+  }
+  return postAggregate(query,makeIncrementalIndex(query,result));
+}

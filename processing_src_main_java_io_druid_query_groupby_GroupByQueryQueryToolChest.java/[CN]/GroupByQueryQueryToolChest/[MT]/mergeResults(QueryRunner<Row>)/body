@@ -1,11 +1,11 @@
 {
   return new QueryRunner<Row>(){
-    @Override public Sequence<Row> run(    Query<Row> input,    Map<String,List> metadata){
+    @Override public Sequence<Row> run(    Query<Row> input,    Map<String,Object> context){
       if (Boolean.valueOf((String)input.getContextValue(GROUP_BY_MERGE_KEY,"true"))) {
-        return mergeGroupByResults(((GroupByQuery)input).withOverriddenContext(NO_MERGE_CONTEXT),runner,metadata);
+        return mergeGroupByResults(((GroupByQuery)input).withOverriddenContext(NO_MERGE_CONTEXT),runner,context);
       }
  else {
-        return runner.run(input,metadata);
+        return runner.run(input,context);
       }
     }
   }

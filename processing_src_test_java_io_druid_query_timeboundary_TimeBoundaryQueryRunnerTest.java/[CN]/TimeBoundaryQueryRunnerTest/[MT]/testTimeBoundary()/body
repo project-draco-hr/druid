@@ -1,7 +1,7 @@
 {
   TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").build();
-  HashMap<String,List> metadata=new HashMap<String,List>();
-  Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(runner.run(timeBoundaryQuery,metadata),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(runner.run(timeBoundaryQuery,context),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
   TimeBoundaryResultValue val=results.iterator().next().getValue();
   DateTime minTime=val.getMinTime();
   DateTime maxTime=val.getMaxTime();

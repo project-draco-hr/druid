@@ -1,7 +1,7 @@
 {
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters(QueryRunnerTestHelper.placementishDimension,"preferred").intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
-  HashMap<String,List> metadata=new HashMap<String,List>();
-  Iterable<Result<TimeseriesResultValue>> expectedResults=Sequences.toList(runner.run(Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build(),metadata),Lists.<Result<TimeseriesResultValue>>newArrayList());
-  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,metadata),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeseriesResultValue>> expectedResults=Sequences.toList(runner.run(Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build(),context),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,actualResults);
 }

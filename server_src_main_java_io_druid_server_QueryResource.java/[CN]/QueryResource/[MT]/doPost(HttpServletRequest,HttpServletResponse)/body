@@ -17,9 +17,9 @@
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
     }
-    HashMap<String,List> metadata=new HashMap<String,List>();
-    metadata.put("missingSegments",new LinkedList());
-    Sequence results=query.run(texasRanger,metadata);
+    HashMap<String,Object> context=new HashMap<String,Object>();
+    context.put("missingSegments",new LinkedList());
+    Sequence results=query.run(texasRanger,context);
     if (results == null) {
       results=Sequences.empty();
     }
@@ -31,8 +31,8 @@
     }
 )){
       String missingSegments="";
-      if (!metadata.get("missingSegments").isEmpty()) {
-        missingSegments=jsonMapper.writeValueAsString(metadata.get("missingSegments"));
+      if (!((List)context.get("missingSegments")).isEmpty()) {
+        missingSegments=jsonMapper.writeValueAsString(context.get("missingSegments"));
       }
       long requestTime=System.currentTimeMillis() - start;
       emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(queryId).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
