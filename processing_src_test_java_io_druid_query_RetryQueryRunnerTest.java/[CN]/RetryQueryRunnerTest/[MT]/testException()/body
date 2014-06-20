@@ -28,8 +28,8 @@
     }
   }
 ,new RetryQueryRunnerConfig(){
-    private int numTries=0;
-    private boolean returnPartialResults=true;
+    private int numTries=1;
+    private boolean returnPartialResults=false;
     public int numTries(){
       return numTries;
     }
@@ -40,5 +40,4 @@
 );
   Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
   Assert.assertTrue("Should have one entry in the list of missing segments",((List)context.get(RetryQueryRunner.missingSegments)).size() == 1);
-  Assert.assertTrue("Should return an empty sequence as a result",((List)actualResults).size() == 0);
 }
