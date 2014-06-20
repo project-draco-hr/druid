@@ -1,7 +1,7 @@
 {
   Map<String,Object> context=new MapMaker().makeMap();
   context.put("count",0);
-  context.put("missingSegments",Lists.newArrayList());
+  context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
   RetryQueryRunner runner=new RetryQueryRunner(new QueryRunner(){
     @Override public Sequence run(    Query query,    Map context){
       if (context.get("count") == 0) {

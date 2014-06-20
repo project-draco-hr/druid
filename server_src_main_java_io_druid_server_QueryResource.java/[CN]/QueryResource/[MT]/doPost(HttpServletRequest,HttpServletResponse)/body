@@ -18,7 +18,7 @@
       log.debug("Got query [%s]",query);
     }
     Map<String,Object> context=new MapMaker().makeMap();
-    context.put("missingSegments",Lists.newArrayList());
+    context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
     Sequence results=query.run(texasRanger,context);
     if (results == null) {
       results=Sequences.empty();
@@ -31,7 +31,7 @@
     }
 )){
       String headerContext="";
-      if (!((List)context.get("missingSegments")).isEmpty()) {
+      if (!((List)context.get(RetryQueryRunner.missingSegments)).isEmpty()) {
         headerContext=jsonMapper.writeValueAsString(context);
       }
       long requestTime=System.currentTimeMillis() - start;

@@ -15,7 +15,7 @@
       }
       if (!config.returnPartialResults() && !((List)context.get(missingSegments)).isEmpty()) {
         String failedSegments="";
-        for (        SegmentDescriptor segment : (List<SegmentDescriptor>)context.get("missingSegments")) {
+        for (        SegmentDescriptor segment : (List<SegmentDescriptor>)context.get(RetryQueryRunner.missingSegments)) {
           failedSegments=failedSegments + segment.toString() + " ";
         }
         throw new SegmentMissingException("The following segments are missing: " + failedSegments);

@@ -1,6 +1,6 @@
 {
   Map<String,Object> context=new MapMaker().makeMap();
-  context.put("missingSegments",Lists.newArrayList());
+  context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
   RetryQueryRunner runner=new RetryQueryRunner(new QueryRunner(){
     @Override public Sequence run(    Query query,    Map context){
       ((List)context.get(RetryQueryRunner.missingSegments)).add(new SegmentDescriptor(new Interval(178888,1999999),"test",1));
