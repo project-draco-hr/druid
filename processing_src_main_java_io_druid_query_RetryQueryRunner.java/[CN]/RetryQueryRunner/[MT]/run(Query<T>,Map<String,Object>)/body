@@ -1,16 +1,27 @@
 {
-  Sequence<T> returningSeq=baseRunner.run(query,context);
-  for (int i=config.numTries(); i > 0 && !((List)context.get(missingSegments)).isEmpty(); i--) {
-    List<SegmentDescriptor> segList=(List<SegmentDescriptor>)context.get(missingSegments);
-    ((List)context.get(missingSegments)).clear();
-    returningSeq=toolChest.mergeSequences(Sequences.simple(Arrays.asList(returningSeq,baseRunner.run(query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(segList)),context))));
-  }
-  if (!config.returnPartialResults() && !((List)context.get(missingSegments)).isEmpty()) {
-    String failedSegments="";
-    for (    SegmentDescriptor segment : (List<SegmentDescriptor>)context.get("missingSegments")) {
-      failedSegments=failedSegments + segment.toString() + " ";
+  final Sequence<T> returningSeq=baseRunner.run(query,context);
+  return new YieldingSequenceBase<T>(){
+    @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
+      Yielder<OutType> yielder=returningSeq.toYielder(initValue,accumulator);
+      if (((List)context.get(missingSegments)).isEmpty()) {
+        return yielder;
+      }
+      for (int i=config.numTries(); i > 0 && !((List)context.get(missingSegments)).isEmpty(); i--) {
+        ((List)context.get(missingSegments)).clear();
+        yielder=baseRunner.run(query,context).toYielder(initValue,accumulator);
+        if (((List)context.get(missingSegments)).isEmpty()) {
+          break;
+        }
+      }
+      if (!config.returnPartialResults() && !((List)context.get(missingSegments)).isEmpty()) {
+        String failedSegments="";
+        for (        SegmentDescriptor segment : (List<SegmentDescriptor>)context.get("missingSegments")) {
+          failedSegments=failedSegments + segment.toString() + " ";
+        }
+        throw new SegmentMissingException("The following segments are missing: " + failedSegments);
+      }
+      return yielder;
     }
-    throw new SegmentMissingException("The following segments are missing: " + failedSegments);
   }
-  return returningSeq;
+;
 }
