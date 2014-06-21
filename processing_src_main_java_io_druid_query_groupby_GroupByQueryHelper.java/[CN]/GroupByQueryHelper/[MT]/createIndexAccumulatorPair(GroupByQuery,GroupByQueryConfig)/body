@@ -3,13 +3,13 @@
   final long timeStart=query.getIntervals().get(0).getStartMillis();
   final long granTimeStart=gran.iterable(timeStart,timeStart + 1).iterator().next();
   final List<AggregatorFactory> aggs=Lists.transform(query.getAggregatorSpecs(),new Function<AggregatorFactory,AggregatorFactory>(){
-    @Override public AggregatorFactory apply(    @Nullable AggregatorFactory input){
+    @Override public AggregatorFactory apply(    AggregatorFactory input){
       return input.getCombiningFactory();
     }
   }
 );
   final List<String> dimensions=Lists.transform(query.getDimensions(),new Function<DimensionSpec,String>(){
-    @Override public String apply(    @Nullable DimensionSpec input){
+    @Override public String apply(    DimensionSpec input){
       return input.getOutputName();
     }
   }
@@ -17,12 +17,12 @@
   IncrementalIndex index=new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]));
   Accumulator<IncrementalIndex,Row> accumulator=new Accumulator<IncrementalIndex,Row>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    Row in){
-      if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions)) > config.getMaxResults()) {
+      if (accumulated.add(Rows.toCaseInsensitiveInputRow(in,dimensions),false) > config.getMaxResults()) {
         throw new ISE("Computation exceeds maxRows limit[%s]",config.getMaxResults());
       }
       return accumulated;
     }
   }
 ;
-  return new Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>>(index,accumulator);
+  return new Pair<>(index,accumulator);
 }

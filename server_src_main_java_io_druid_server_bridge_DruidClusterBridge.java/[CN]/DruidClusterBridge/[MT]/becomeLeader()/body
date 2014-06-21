@@ -49,7 +49,7 @@ synchronized (lock) {
  catch (    Exception e) {
       log.makeAlert(e,"Exception becoming leader").emit();
       final LeaderLatch oldLatch=createNewLeaderLatch();
-      Closeables.closeQuietly(oldLatch);
+      CloseQuietly.close(oldLatch);
       try {
         leaderLatch.get().start();
       }

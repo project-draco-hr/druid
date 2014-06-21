@@ -1,5 +1,5 @@
 {
-  workerSetupData.set(new WorkerSetupData("0",0,1,"",new EC2NodeData(AMI_ID,INSTANCE_ID,1,1,Lists.<String>newArrayList(),"foo"),new GalaxyUserData("env","version","type")));
+  workerSetupData.set(new WorkerSetupData("0",0,1,"",new EC2NodeData(AMI_ID,INSTANCE_ID,1,1,Lists.<String>newArrayList(),"foo"),new GalaxyEC2UserData(new DefaultObjectMapper(),"env","version","type")));
   EasyMock.expect(amazonEC2Client.runInstances(EasyMock.anyObject(RunInstancesRequest.class))).andReturn(runInstancesResult);
   EasyMock.expect(amazonEC2Client.describeInstances(EasyMock.anyObject(DescribeInstancesRequest.class))).andReturn(describeInstancesResult);
   EasyMock.expect(amazonEC2Client.terminateInstances(EasyMock.anyObject(TerminateInstancesRequest.class))).andReturn(null);

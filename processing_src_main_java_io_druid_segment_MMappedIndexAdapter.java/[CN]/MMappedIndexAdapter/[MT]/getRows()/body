@@ -27,9 +27,9 @@
         @Override public boolean hasNext(){
           final boolean hasNext=currRow < numRows;
           if (!hasNext && !done) {
-            Closeables.closeQuietly(timestamps);
+            CloseQuietly.close(timestamps);
             for (            IndexedFloats floatMetric : floatMetrics) {
-              Closeables.closeQuietly(floatMetric);
+              CloseQuietly.close(floatMetric);
             }
             done=true;
           }
