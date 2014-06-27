@@ -1,0 +1,24 @@
+{
+  if (object instanceof byte[]) {
+    final ApproximateHistogram ah=ApproximateHistogram.fromBytes((byte[])object);
+    ah.setLowerLimit(lowerLimit);
+    ah.setUpperLimit(upperLimit);
+    return ah;
+  }
+ else   if (object instanceof ByteBuffer) {
+    final ApproximateHistogram ah=ApproximateHistogram.fromBytes((ByteBuffer)object);
+    ah.setLowerLimit(lowerLimit);
+    ah.setUpperLimit(upperLimit);
+    return ah;
+  }
+ else   if (object instanceof String) {
+    byte[] bytes=Base64.decodeBase64(((String)object).getBytes(Charsets.UTF_8));
+    final ApproximateHistogram ah=ApproximateHistogram.fromBytes(bytes);
+    ah.setLowerLimit(lowerLimit);
+    ah.setUpperLimit(upperLimit);
+    return ah;
+  }
+ else {
+    return object;
+  }
+}

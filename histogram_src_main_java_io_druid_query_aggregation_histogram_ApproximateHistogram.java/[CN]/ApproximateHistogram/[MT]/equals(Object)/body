@@ -1,0 +1,32 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  ApproximateHistogram that=(ApproximateHistogram)o;
+  if (size != that.size) {
+    return false;
+  }
+  if (binCount != that.binCount) {
+    return false;
+  }
+  if (Float.compare(that.max,max) != 0) {
+    return false;
+  }
+  if (Float.compare(that.min,min) != 0) {
+    return false;
+  }
+  for (int i=0; i < binCount; ++i) {
+    if (positions[i] != that.positions[i]) {
+      return false;
+    }
+  }
+  for (int i=0; i < binCount; ++i) {
+    if (bins[i] != that.bins[i]) {
+      return false;
+    }
+  }
+  return true;
+}

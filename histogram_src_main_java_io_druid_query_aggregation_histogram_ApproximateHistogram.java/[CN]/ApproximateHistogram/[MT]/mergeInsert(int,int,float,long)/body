@@ -1,0 +1,24 @@
+{
+  final long k0=(bins[mergeAt] & COUNT_BITS);
+  final long k1=(bins[mergeAt + 1] & COUNT_BITS);
+  final long sum=k0 + k1;
+  positions[mergeAt]=(float)(((double)positions[mergeAt] * k0 + (double)positions[mergeAt + 1] * k1) / sum);
+  bins[mergeAt]=sum | APPROX_FLAG_BIT;
+  final int unusedIndex=mergeAt + 1;
+  if (insertAt >= 0) {
+    if (insertAt < unusedIndex) {
+      shiftRight(insertAt,unusedIndex);
+    }
+ else     if (insertAt >= unusedIndex) {
+      shiftLeft(unusedIndex,insertAt - 1);
+      insertAt--;
+    }
+    positions[insertAt]=v;
+    bins[insertAt]=c;
+    count++;
+  }
+ else {
+    shiftLeft(unusedIndex,binCount - 1);
+    binCount--;
+  }
+}

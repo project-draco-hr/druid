@@ -1,0 +1,19 @@
+{
+  ApproximateHistogram h=buildHistogram(5,VALUES);
+  Assert.assertEquals(0.0f,h.sum(0),0.01);
+  Assert.assertEquals(1.0f,h.sum(2),0.01);
+  Assert.assertEquals(1.16f,h.sum(5),0.01);
+  Assert.assertEquals(3.28f,h.sum(15),0.01);
+  Assert.assertEquals(VALUES.length,h.sum(45),0.01);
+  Assert.assertEquals(VALUES.length,h.sum(46),0.01);
+  ApproximateHistogram h2=buildHistogram(5,VALUES2);
+  Assert.assertEquals(0.0f,h2.sum(0),0.01);
+  Assert.assertEquals(0.0f,h2.sum(1f),0.01);
+  Assert.assertEquals(1.0f,h2.sum(1.5f),0.01);
+  Assert.assertEquals(1.125f,h2.sum(2f),0.001);
+  Assert.assertEquals(2.0625f,h2.sum(5.75f),0.001);
+  Assert.assertEquals(3.0f,h2.sum(9.5f),0.01);
+  Assert.assertEquals(11.0f,h2.sum(45.5f),0.01);
+  Assert.assertEquals(12.0f,h2.sum(46f),0.01);
+  Assert.assertEquals(12.0f,h2.sum(47f),0.01);
+}

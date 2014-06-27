@@ -1,0 +1,10 @@
+{
+  final double[] approximateBins=new double[breaks.length - 1];
+  double prev=sum(breaks[0]);
+  for (int i=1; i < breaks.length; ++i) {
+    double s=sum(breaks[i]);
+    approximateBins[i - 1]=(float)(s - prev);
+    prev=s;
+  }
+  return new Histogram(breaks,approximateBins);
+}

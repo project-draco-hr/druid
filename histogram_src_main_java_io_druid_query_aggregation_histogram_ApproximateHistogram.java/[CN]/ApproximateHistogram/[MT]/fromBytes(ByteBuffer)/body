@@ -1,0 +1,15 @@
+{
+  ByteBuffer copy=buf.asReadOnlyBuffer();
+  if (copy.getShort(buf.position()) < 0) {
+    return fromBytesCompact(buf);
+  }
+ else {
+    copy.getInt();
+    if (copy.getInt() < 0) {
+      return fromBytesSparse(buf);
+    }
+ else {
+      return fromBytesDense(buf);
+    }
+  }
+}

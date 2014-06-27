@@ -1,0 +1,70 @@
+{
+  final int numValues=numHists * numPerHist;
+  final float[] values=new float[numValues];
+  for (int i=0; i < numValues; ++i) {
+    values[i]=(float)rand.nextGaussian();
+  }
+  float min=Floats.min(values);
+  min=(float)(min < 0 ? 1.02 : .98) * min;
+  float max=Floats.max(values);
+  max=(float)(max < 0 ? .98 : 1.02) * max;
+  final float stride=(max - min) / numBuckets;
+  final float[] breaks=new float[numBreaks];
+  for (int i=0; i < numBreaks; i++) {
+    breaks[i]=min + stride * i;
+  }
+  Histogram h=new Histogram(breaks);
+  for (  float v : values) {
+    h.offer(v);
+  }
+  double[] hcounts=h.asVisual().counts;
+  ApproximateHistogram ah1=new ApproximateHistogram(resolution);
+  ApproximateHistogram ah2=new ApproximateHistogram(combinedResolution);
+  ApproximateHistogram tmp=new ApproximateHistogram(resolution);
+  for (int i=0; i < numValues; ++i) {
+    tmp.offer(values[i]);
+    if ((i + 1) % numPerHist == 0) {
+      ah1.fold(tmp);
+      ah2.foldRule(tmp,null,null);
+      tmp=new ApproximateHistogram(resolution);
+    }
+  }
+  double[] ahcounts1=ah1.toHistogram(breaks).getCounts();
+  double[] ahcounts2=ah2.toHistogram(breaks).getCounts();
+  float err1=0;
+  float err2=0;
+  for (int j=0; j < hcounts.length; j++) {
+    err1+=Math.abs((hcounts[j] - ahcounts1[j]) / numValues);
+    err2+=Math.abs((hcounts[j] - ahcounts2[j]) / numValues);
+  }
+  if (debug) {
+    float sum=0;
+    for (    double v : hcounts) {
+      sum+=v;
+    }
+    System.out.println("Exact Histogram Sum:");
+    System.out.println(sum);
+    sum=0;
+    for (    double v : ahcounts1) {
+      sum+=v;
+    }
+    System.out.println("Approximate Histogram Sum:");
+    System.out.println(sum);
+    sum=0;
+    for (    double v : ahcounts2) {
+      sum+=v;
+    }
+    System.out.println("Approximate Histogram Rule Fold Sum:");
+    System.out.println(sum);
+    System.out.println("Exact Histogram:");
+    System.out.println(h.asVisual());
+    System.out.println("Approximate Histogram:");
+    System.out.println(ah1.toHistogram(breaks));
+    System.out.println("Approximate Histogram Rule Fold:");
+    System.out.println(ah2.toHistogram(breaks));
+    System.out.format("Error for approximate histogram: %s \n",err1);
+    System.out.format("Error for approximate histogram, ruleFold: %s \n",err2);
+    System.out.format("Error ratio for AHRF: %s \n",err2 / err1);
+  }
+  return new float[]{err1,err2,err2 / err1};
+}

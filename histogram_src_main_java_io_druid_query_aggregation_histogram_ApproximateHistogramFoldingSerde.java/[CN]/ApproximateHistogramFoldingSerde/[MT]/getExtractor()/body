@@ -1,0 +1,23 @@
+{
+  return new ComplexMetricExtractor(){
+    @Override public Class<ApproximateHistogram> extractedClass(){
+      return ApproximateHistogram.class;
+    }
+    @Override public ApproximateHistogram extractValue(    InputRow inputRow,    String metricName){
+      List<String> dimValues=inputRow.getDimension(metricName);
+      if (dimValues != null && dimValues.size() > 0) {
+        Iterator<String> values=dimValues.iterator();
+        ApproximateHistogram h=new ApproximateHistogram();
+        while (values.hasNext()) {
+          float value=Float.parseFloat(values.next());
+          h.offer(value);
+        }
+        return h;
+      }
+ else {
+        return new ApproximateHistogram(0);
+      }
+    }
+  }
+;
+}

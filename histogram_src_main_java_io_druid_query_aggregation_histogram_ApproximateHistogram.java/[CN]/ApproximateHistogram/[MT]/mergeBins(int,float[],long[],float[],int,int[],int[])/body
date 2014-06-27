@@ -1,0 +1,57 @@
+{
+  int lastValidIndex=mergedBinCount - 1;
+  for (int i=0; i < mergedBinCount; ++i) {
+    next[i]=i + 1;
+  }
+  for (int i=0; i < mergedBinCount; ++i) {
+    prev[i]=i - 1;
+  }
+  int heapSize=mergedBinCount - 1;
+  int[] heap=new int[heapSize];
+  int[] reverseIndex=new int[heapSize];
+  for (int i=0; i < heapSize; ++i) {
+    heap[i]=i;
+  }
+  for (int i=0; i < heapSize; ++i) {
+    reverseIndex[i]=i;
+  }
+  heapify(heap,reverseIndex,heapSize,deltas);
+{
+    int i=0;
+    while (i < numMerge) {
+      int currentIndex=heap[0];
+      final int nextIndex=next[currentIndex];
+      final int prevIndex=prev[currentIndex];
+      final long k0=mergedBins[currentIndex] & COUNT_BITS;
+      final long k1=mergedBins[nextIndex] & COUNT_BITS;
+      final float m0=mergedPositions[currentIndex];
+      final float m1=mergedPositions[nextIndex];
+      final float d1=deltas[nextIndex];
+      final long sum=k0 + k1;
+      final float w=(float)k0 / (float)sum;
+      final float mm0=(m0 - m1) * w + m1;
+      mergedPositions[currentIndex]=mm0;
+      mergedBins[currentIndex]=sum | APPROX_FLAG_BIT;
+      if (nextIndex == lastValidIndex) {
+        heapSize=heapDelete(heap,reverseIndex,heapSize,reverseIndex[currentIndex],deltas);
+      }
+ else {
+        heapSize=heapDelete(heap,reverseIndex,heapSize,reverseIndex[nextIndex],deltas);
+        deltas[currentIndex]=m1 - mm0 + d1;
+        siftDown(heap,reverseIndex,reverseIndex[currentIndex],heapSize - 1,deltas);
+      }
+      if (prevIndex >= 0) {
+        deltas[prevIndex]=mm0 - mergedPositions[prevIndex];
+        siftDown(heap,reverseIndex,reverseIndex[prevIndex],heapSize - 1,deltas);
+      }
+      if (nextIndex == lastValidIndex) {
+        lastValidIndex=currentIndex;
+      }
+      next[currentIndex]=next[nextIndex];
+      if (nextIndex < lastValidIndex) {
+        prev[next[nextIndex]]=currentIndex;
+      }
+      ++i;
+    }
+  }
+}
