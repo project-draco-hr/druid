@@ -1,0 +1,11 @@
+{
+  Preconditions.checkArgument(size > 1,"histogram size must be greater than 1");
+  float[] breaks=new float[size + 1];
+  float delta=(max - min) / (size - 1);
+  breaks[0]=min - delta;
+  for (int i=1; i < breaks.length - 1; ++i) {
+    breaks[i]=breaks[i - 1] + delta;
+  }
+  breaks[breaks.length - 1]=max;
+  return toHistogram(breaks);
+}

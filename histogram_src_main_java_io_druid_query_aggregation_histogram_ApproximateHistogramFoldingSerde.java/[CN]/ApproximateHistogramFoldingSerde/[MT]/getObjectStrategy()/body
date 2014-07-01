@@ -1,0 +1,22 @@
+{
+  return new ObjectStrategy<ApproximateHistogram>(){
+    @Override public Class<? extends ApproximateHistogram> getClazz(){
+      return ApproximateHistogram.class;
+    }
+    @Override public ApproximateHistogram fromByteBuffer(    ByteBuffer buffer,    int numBytes){
+      final ByteBuffer readOnlyBuffer=buffer.asReadOnlyBuffer();
+      readOnlyBuffer.limit(readOnlyBuffer.position() + numBytes);
+      return ApproximateHistogram.fromBytes(readOnlyBuffer);
+    }
+    @Override public byte[] toBytes(    ApproximateHistogram h){
+      if (h == null) {
+        return new byte[]{};
+      }
+      return h.toBytes();
+    }
+    @Override public int compare(    ApproximateHistogram o1,    ApproximateHistogram o2){
+      return comparator.compare(o1,o2);
+    }
+  }
+;
+}

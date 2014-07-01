@@ -1,0 +1,17 @@
+{
+  while (minIndex < maxIndex) {
+    int currIndex=(minIndex + maxIndex - 1) >>> 1;
+    double currValue=buf.get(currIndex);
+    int comparison=Double.compare(currValue,value);
+    if (comparison == 0) {
+      return currIndex;
+    }
+    if (comparison < 0) {
+      minIndex=currIndex + 1;
+    }
+ else {
+      maxIndex=currIndex;
+    }
+  }
+  return -(minIndex + 1);
+}

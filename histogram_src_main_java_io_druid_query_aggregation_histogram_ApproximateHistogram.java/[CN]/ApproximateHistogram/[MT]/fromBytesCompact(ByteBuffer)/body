@@ -1,0 +1,57 @@
+{
+  short size=(short)(-1 * buf.getShort());
+  byte count=buf.get();
+  if (count >= 0) {
+    ApproximateHistogram histogram=new ApproximateHistogram(size);
+    for (int i=0; i < count; ++i) {
+      histogram.offer(buf.getFloat());
+    }
+    return histogram;
+  }
+ else {
+    byte approxCount=(byte)(-1 * count);
+    Map<Float,Long> approx=Maps.newHashMap();
+    for (int i=0; i < approxCount; ++i) {
+      final float value=buf.getFloat();
+      if (approx.containsKey(value)) {
+        approx.put(value,approx.get(value) + 1);
+      }
+ else {
+        approx.put(value,1L);
+      }
+    }
+    float min=buf.getFloat();
+    float max=buf.getFloat();
+    byte exactCount=buf.get();
+    Map<Float,Long> exact=Maps.newHashMap();
+    for (int i=0; i < exactCount; ++i) {
+      final float value=buf.getFloat();
+      if (exact.containsKey(value)) {
+        exact.put(value,exact.get(value) + 1);
+      }
+ else {
+        exact.put(value,1L);
+      }
+    }
+    int binCount=exact.size() + approx.size();
+    List<Float> pos=Lists.newArrayList();
+    pos.addAll(exact.keySet());
+    pos.addAll(approx.keySet());
+    Collections.sort(pos);
+    float[] positions=new float[size];
+    long[] bins=new long[size];
+    for (int i=0; i < pos.size(); ++i) {
+      positions[i]=pos.get(i);
+    }
+    for (int i=0; i < pos.size(); ++i) {
+      final float value=pos.get(i);
+      if (exact.containsKey(value)) {
+        bins[i]=exact.get(value);
+      }
+ else {
+        bins[i]=approx.get(value) | APPROX_FLAG_BIT;
+      }
+    }
+    return new ApproximateHistogram(binCount,positions,bins,min,max);
+  }
+}
