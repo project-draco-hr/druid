@@ -1,0 +1,31 @@
+{
+synchronized (log) {
+    if (rowPersistedIndexes.isEmpty()) {
+      makeRowPersistedIndexes();
+    }
+    Map<Integer,QueryableIndex> entry=mergedIndexes.get(index1);
+    if (entry != null) {
+      QueryableIndex index=entry.get(index2);
+      if (index != null) {
+        return index;
+      }
+    }
+ else {
+      entry=Maps.<Integer,QueryableIndex>newHashMap();
+      mergedIndexes.put(index1,entry);
+    }
+    try {
+      File tmpFile=File.createTempFile("yay","who");
+      tmpFile.delete();
+      File mergedFile=new File(tmpFile,"merged");
+      mergedFile.mkdirs();
+      mergedFile.deleteOnExit();
+      QueryableIndex index=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(rowPersistedIndexes.get(index1),rowPersistedIndexes.get(index2)),METRIC_AGGS,mergedFile));
+      entry.put(index2,index);
+      return index;
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

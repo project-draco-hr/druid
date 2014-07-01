@@ -1,0 +1,12 @@
+{
+  List<File> filesToMap=Lists.newArrayList();
+  for (  Pair<String,AggregatorFactory[]> file : files) {
+    IncrementalIndex index=makeIncrementalIndex(file.lhs,file.rhs);
+    File theFile=new File(tmpFile,file.lhs);
+    theFile.mkdirs();
+    theFile.deleteOnExit();
+    filesToMap.add(theFile);
+    IndexMerger.persist(index,theFile);
+  }
+  return filesToMap;
+}

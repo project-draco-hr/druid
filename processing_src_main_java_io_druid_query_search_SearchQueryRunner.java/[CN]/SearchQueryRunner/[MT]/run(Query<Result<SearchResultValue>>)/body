@@ -19,14 +19,7 @@
     }
     final ImmutableConciseSet baseFilter;
     if (filter == null) {
-      if (index.getNumRows() == 1) {
-        ConciseSet set=new ConciseSet();
-        set.add(0);
-        baseFilter=ImmutableConciseSet.newImmutableFromMutable(set);
-      }
- else {
-        baseFilter=ImmutableConciseSet.complement(new ImmutableConciseSet(),index.getNumRows());
-      }
+      baseFilter=ImmutableConciseSet.complement(new ImmutableConciseSet(),index.getNumRows());
     }
  else {
       baseFilter=filter.goConcise(new ColumnSelectorBitmapIndexSelector(index));
