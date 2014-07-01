@@ -38,7 +38,7 @@ synchronized (lock) {
  catch (    Exception e) {
       log.makeAlert(e,"Unable to become leader").emit();
       final LeaderLatch oldLatch=createNewLeaderLatch();
-      Closeables.closeQuietly(oldLatch);
+      CloseQuietly.close(oldLatch);
       try {
         leaderLatch.get().start();
       }

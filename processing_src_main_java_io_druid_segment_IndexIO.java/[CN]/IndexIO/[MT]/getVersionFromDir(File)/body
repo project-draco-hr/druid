@@ -4,14 +4,9 @@
     return Ints.fromByteArray(Files.toByteArray(versionFile));
   }
   final File indexFile=new File(inDir,"index.drd");
-  InputStream in=null;
   int version;
-  try {
-    in=new FileInputStream(indexFile);
+  try (InputStream in=new FileInputStream(indexFile)){
     version=in.read();
   }
-  finally {
-    Closeables.closeQuietly(in);
-  }
-  return version;
+   return version;
 }
