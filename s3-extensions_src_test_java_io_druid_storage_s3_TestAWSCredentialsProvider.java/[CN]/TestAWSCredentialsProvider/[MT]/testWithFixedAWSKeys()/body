@@ -1,8 +1,9 @@
 {
   S3StorageDruidModule module=new S3StorageDruidModule();
-  AWSCredentialsConfig config=mock(AWSCredentialsConfig.class);
-  doReturn("accessKeySample").when(config).getAccessKey();
-  doReturn("secretKeySample").when(config).getSecretKey();
+  AWSCredentialsConfig config=EasyMock.createMock(AWSCredentialsConfig.class);
+  EasyMock.expect(config.getAccessKey()).andReturn("accessKeySample").atLeastOnce();
+  EasyMock.expect(config.getSecretKey()).andReturn("secretKeySample").atLeastOnce();
+  EasyMock.replay(config);
   AWSCredentialsProvider provider=module.getAWSCredentialsProvider(config);
   AWSCredentials credentials=provider.getCredentials();
   assertEquals(credentials.getAWSAccessKeyId(),"accessKeySample");

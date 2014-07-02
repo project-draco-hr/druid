@@ -1,3 +1,8 @@
 {
-  return new RestS3Service(new AWSSessionCredentialsAdapter(credentialsProvider));
+  if (provider.getCredentials() instanceof com.amazonaws.auth.AWSSessionCredentials) {
+    return new RestS3Service(new AWSSessionCredentialsAdapter(provider));
+  }
+ else {
+    return new RestS3Service(new AWSCredentials(provider.getCredentials().getAWSAccessKeyId(),provider.getCredentials().getAWSSecretKey()));
+  }
 }

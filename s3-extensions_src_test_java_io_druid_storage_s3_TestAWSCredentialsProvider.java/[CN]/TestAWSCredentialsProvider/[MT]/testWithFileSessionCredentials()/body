@@ -1,13 +1,14 @@
 {
   S3StorageDruidModule module=new S3StorageDruidModule();
-  AWSCredentialsConfig config=mock(AWSCredentialsConfig.class);
-  doReturn("").when(config).getAccessKey();
-  doReturn("").when(config).getSecretKey();
+  AWSCredentialsConfig config=EasyMock.createMock(AWSCredentialsConfig.class);
+  EasyMock.expect(config.getAccessKey()).andReturn("");
+  EasyMock.expect(config.getSecretKey()).andReturn("");
   File file=folder.newFile();
   PrintWriter out=new PrintWriter(file.getAbsolutePath());
   out.println("sessionToken=sessionTokenSample\nsecretKey=secretKeySample\naccessKey=accessKeySample");
   out.close();
-  doReturn(file.getAbsolutePath()).when(config).getFileSessionCredentials();
+  EasyMock.expect(config.getFileSessionCredentials()).andReturn(file.getAbsolutePath()).atLeastOnce();
+  EasyMock.replay(config);
   AWSCredentialsProvider provider=module.getAWSCredentialsProvider(config);
   AWSCredentials credentials=provider.getCredentials();
   assertTrue(credentials instanceof AWSSessionCredentials);
