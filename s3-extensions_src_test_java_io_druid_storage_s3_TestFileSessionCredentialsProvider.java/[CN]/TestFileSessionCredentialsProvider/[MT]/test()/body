@@ -1,0 +1,11 @@
+{
+  File file=folder.newFile();
+  PrintWriter out=new PrintWriter(file.getAbsolutePath());
+  out.println("sessionToken=sessionTokenSample\nsecretKey=secretKeySample\naccessKey=accessKeySample");
+  out.close();
+  FileSessionCredentialsProvider provider=new FileSessionCredentialsProvider(file.getAbsolutePath());
+  AWSSessionCredentials sessionCredentials=(AWSSessionCredentials)provider.getCredentials();
+  assertEquals(sessionCredentials.getSessionToken(),"sessionTokenSample");
+  assertEquals(sessionCredentials.getAWSAccessKeyId(),"accessKeySample");
+  assertEquals(sessionCredentials.getAWSSecretKey(),"secretKeySample");
+}

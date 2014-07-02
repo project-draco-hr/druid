@@ -1,0 +1,16 @@
+{
+  try {
+    List<String> lines=Files.readAllLines(Paths.get(sessionCredentials),Charset.defaultCharset());
+    Properties props=new Properties();
+    for (    String line : lines) {
+      String[] tokens=line.split("=");
+      props.put(tokens[0],tokens[1]);
+    }
+    sessionToken=props.getProperty("sessionToken");
+    accessKey=props.getProperty("accessKey");
+    secretKey=props.getProperty("secretKey");
+  }
+ catch (  IOException e) {
+    throw new RuntimeException("cannot refresh AWS credentials",e);
+  }
+}

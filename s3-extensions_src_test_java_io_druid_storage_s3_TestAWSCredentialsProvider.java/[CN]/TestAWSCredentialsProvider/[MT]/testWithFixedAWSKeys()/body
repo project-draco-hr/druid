@@ -1,0 +1,11 @@
+{
+  S3StorageDruidModule module=new S3StorageDruidModule();
+  AWSCredentialsConfig config=mock(AWSCredentialsConfig.class);
+  doReturn("accessKeySample").when(config).getAccessKey();
+  doReturn("secretKeySample").when(config).getSecretKey();
+  AWSCredentialsProvider provider=module.getAWSCredentialsProvider(config);
+  AWSCredentials credentials=provider.getCredentials();
+  assertEquals(credentials.getAWSAccessKeyId(),"accessKeySample");
+  assertEquals(credentials.getAWSSecretKey(),"secretKeySample");
+  module.getRestS3Service(provider);
+}
