@@ -1,0 +1,54 @@
+{
+  log.info("Connecting firehose: DruidFirehose[%s,%s]",dataSource,interval);
+  final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new NoopTask("druid-firehose",0,0,null,null));
+  try {
+    final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
+    final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
+    VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural().nullsFirst());
+    for (    DataSegment segment : usedSegments) {
+      timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+    }
+    List<String> dims;
+    if (dimensions != null) {
+      dims=dimensions;
+    }
+ else {
+      Set<String> dimSet=new HashSet<>();
+      for (      DataSegment segment : usedSegments) {
+        dimSet.addAll(segment.getDimensions());
+      }
+      dims=Lists.newArrayList(dimSet);
+    }
+    List<String> metricsList;
+    if (metrics != null) {
+      metricsList=metrics;
+    }
+ else {
+      Set<String> metricsSet=new HashSet<>();
+      for (      DataSegment segment : usedSegments) {
+        metricsSet.addAll(segment.getMetrics());
+      }
+      metricsList=Lists.newArrayList(metricsSet);
+    }
+    final List<StorageAdapter> adapters=Lists.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<String,DataSegment>,StorageAdapter>(){
+      @Override public StorageAdapter apply(      TimelineObjectHolder<String,DataSegment> input){
+        final DataSegment segment=input.getObject().getChunk(0).getObject();
+        final File file=Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier());
+        try {
+          return new QueryableIndexStorageAdapter((IndexIO.loadIndex(file)));
+        }
+ catch (        IOException e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
+    return new DruidFirehose(adapters,dims,metricsList);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  SegmentLoadingException e) {
+    throw Throwables.propagate(e);
+  }
+}
