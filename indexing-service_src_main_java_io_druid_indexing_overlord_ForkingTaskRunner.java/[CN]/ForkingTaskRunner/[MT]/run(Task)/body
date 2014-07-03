@@ -7,6 +7,7 @@ synchronized (tasks) {
           final File taskDir=new File(config.getTaskDir(),task.getId());
           final File attemptDir=new File(taskDir,attemptUUID);
           final ProcessHolder processHolder;
+          final int childPort=portFinder.findUnusedPort();
           try {
             final Closer closer=Closer.create();
             try {
@@ -30,7 +31,6 @@ synchronized (tasks) {
                   throw new ISE("TaskInfo already has processHolder for task[%s]!",task.getId());
                 }
                 final List<String> command=Lists.newArrayList();
-                final int childPort=findUnusedPort();
                 final String childHost=String.format("%s:%d",node.getHostNoPort(),childPort);
                 command.add(config.getJavaCommand());
                 command.add("-cp");
@@ -105,6 +105,7 @@ synchronized (tasks) {
                   taskWorkItem.processHolder.process.destroy();
                 }
               }
+              portFinder.markPortUnused(childPort);
               log.info("Removing temporary directory: %s",attemptDir);
               FileUtils.deleteDirectory(attemptDir);
             }

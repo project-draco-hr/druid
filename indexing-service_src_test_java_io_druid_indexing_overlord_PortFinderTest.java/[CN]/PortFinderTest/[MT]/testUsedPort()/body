@@ -1,0 +1,13 @@
+{
+  final int port1=finder.findUnusedPort();
+  ServerSocket socket1=new ServerSocket(port1);
+  finder.markPortUnused(port1);
+  final int port2=finder.findUnusedPort();
+  Assert.assertNotEquals("Used port is not reallocated",port1,port2);
+  ServerSocket socket2=new ServerSocket(port2);
+  socket1.close();
+  Assert.assertEquals(port1,finder.findUnusedPort());
+  socket2.close();
+  finder.markPortUnused(port1);
+  finder.markPortUnused(port2);
+}
