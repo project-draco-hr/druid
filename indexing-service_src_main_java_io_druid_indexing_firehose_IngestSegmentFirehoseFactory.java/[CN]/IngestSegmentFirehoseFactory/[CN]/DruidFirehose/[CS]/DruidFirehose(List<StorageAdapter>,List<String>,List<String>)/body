@@ -1,21 +1,21 @@
 {
   Sequence<InputRow> rows=Sequences.concat(Iterables.transform(adapters,new Function<StorageAdapter,Sequence<InputRow>>(){
-    @Nullable @Override public Sequence<InputRow> apply(    @Nullable StorageAdapter input){
-      return Sequences.concat(Sequences.map(input.makeCursors(Filters.convertDimensionFilters(dimFilter),interval,QueryGranularity.ALL),new Function<Cursor,Sequence<InputRow>>(){
-        @Nullable @Override public Sequence<InputRow> apply(        @Nullable Cursor input){
-          TimestampColumnSelector timestampColumnSelector=input.makeTimestampColumnSelector();
+    @Nullable @Override public Sequence<InputRow> apply(    @Nullable StorageAdapter adapter){
+      return Sequences.concat(Sequences.map(adapter.makeCursors(Filters.convertDimensionFilters(dimFilter),interval,QueryGranularity.ALL),new Function<Cursor,Sequence<InputRow>>(){
+        @Nullable @Override public Sequence<InputRow> apply(        @Nullable Cursor cursor){
+          TimestampColumnSelector timestampColumnSelector=cursor.makeTimestampColumnSelector();
           Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
           for (          String dim : dims) {
-            final DimensionSelector dimSelector=input.makeDimensionSelector(dim);
+            final DimensionSelector dimSelector=cursor.makeDimensionSelector(dim);
             dimSelectors.put(dim,dimSelector);
           }
           Map<String,ObjectColumnSelector> metSelectors=Maps.newHashMap();
           for (          String metric : metrics) {
-            final ObjectColumnSelector metricSelector=input.makeObjectColumnSelector(metric);
+            final ObjectColumnSelector metricSelector=cursor.makeObjectColumnSelector(metric);
             metSelectors.put(metric,metricSelector);
           }
           List<InputRow> rowList=Lists.newArrayList();
-          while (!input.isDone()) {
+          while (!cursor.isDone()) {
             final Map<String,Object> theEvent=Maps.newLinkedHashMap();
             final long timestamp=timestampColumnSelector.getTimestamp();
             theEvent.put(EventHolder.timestampKey,new DateTime(timestamp));
@@ -41,7 +41,7 @@
               theEvent.put(metric,selector.get());
             }
             rowList.add(new MapBasedInputRow(timestamp,dims,theEvent));
-            input.advance();
+            cursor.advance();
           }
           return Sequences.simple(rowList);
         }

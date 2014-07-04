@@ -5,6 +5,7 @@
     final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
     final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
     VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural().nullsFirst());
+    final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(interval);
     for (    DataSegment segment : usedSegments) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
     }
@@ -14,8 +15,8 @@
     }
  else {
       Set<String> dimSet=new HashSet<>();
-      for (      DataSegment segment : usedSegments) {
-        dimSet.addAll(segment.getDimensions());
+      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
+        dimSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getDimensions());
       }
       dims=Lists.newArrayList(dimSet);
     }
@@ -25,12 +26,12 @@
     }
  else {
       Set<String> metricsSet=new HashSet<>();
-      for (      DataSegment segment : usedSegments) {
-        metricsSet.addAll(segment.getMetrics());
+      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
+        metricsSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getDimensions());
       }
       metricsList=Lists.newArrayList(metricsSet);
     }
-    final List<StorageAdapter> adapters=Lists.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<String,DataSegment>,StorageAdapter>(){
+    final List<StorageAdapter> adapters=Lists.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,StorageAdapter>(){
       @Override public StorageAdapter apply(      TimelineObjectHolder<String,DataSegment> input){
         final DataSegment segment=input.getObject().getChunk(0).getObject();
         final File file=Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier());
