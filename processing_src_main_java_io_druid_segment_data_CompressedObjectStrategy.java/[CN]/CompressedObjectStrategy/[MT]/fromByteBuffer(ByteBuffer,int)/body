@@ -11,7 +11,7 @@
     int numDecompressedBytes=LZFDecoder.decode(bytes,outputBytes);
     buf.put(outputBytes,0,numDecompressedBytes);
     buf.flip();
-    Closeables.closeQuietly(outputBytesHolder);
+    CloseQuietly.close(outputBytesHolder);
     return new ResourceHolder<T>(){
       @Override public T get(){
         return converter.convert(buf);

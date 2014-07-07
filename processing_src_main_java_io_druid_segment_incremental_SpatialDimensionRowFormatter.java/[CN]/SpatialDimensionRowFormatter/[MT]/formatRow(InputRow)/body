@@ -26,7 +26,12 @@
       return row.getRaw(dimension);
     }
     @Override public float getFloatMetric(    String metric){
-      return row.getFloatMetric(metric);
+      try {
+        return row.getFloatMetric(metric);
+      }
+ catch (      ParseException e) {
+        throw Throwables.propagate(e);
+      }
     }
     @Override public String toString(){
       return row.toString();

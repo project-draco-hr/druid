@@ -2,7 +2,7 @@
   for (  final DimensionSelector selector : selectors) {
     for (    final Integer index : selector.getRow()) {
       final String value=selector.lookupName(index);
-      collector.add(hashFn.hashString(value == null ? NULL_STRING : value).asBytes());
+      collector.add(hashFn.hashUnencodedChars(value == null ? NULL_STRING : value).asBytes());
     }
   }
 }

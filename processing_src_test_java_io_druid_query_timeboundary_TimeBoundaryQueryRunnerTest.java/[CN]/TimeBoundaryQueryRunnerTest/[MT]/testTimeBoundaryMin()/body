@@ -1,0 +1,11 @@
+{
+  TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").bound(TimeBoundaryQuery.MIN_TIME).build();
+  Map<String,Object> context=new MapMaker().makeMap();
+  context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
+  Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(runner.run(timeBoundaryQuery,context),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
+  TimeBoundaryResultValue val=results.iterator().next().getValue();
+  DateTime minTime=val.getMinTime();
+  DateTime maxTime=val.getMaxTime();
+  Assert.assertEquals(new DateTime("2011-01-12T00:00:00.000Z"),minTime);
+  Assert.assertNull(maxTime);
+}

@@ -7,13 +7,31 @@
   for (  Result<TimeBoundaryResultValue> result : results) {
     TimeBoundaryResultValue val=result.getValue();
     DateTime currMinTime=val.getMinTime();
-    if (currMinTime.isBefore(min)) {
+    if (currMinTime != null && currMinTime.isBefore(min)) {
       min=currMinTime;
     }
     DateTime currMaxTime=val.getMaxTime();
-    if (currMaxTime.isAfter(max)) {
+    if (currMaxTime != null && currMaxTime.isAfter(max)) {
       max=currMaxTime;
     }
   }
-  return Arrays.asList(new Result<TimeBoundaryResultValue>(min,new TimeBoundaryResultValue(ImmutableMap.<String,Object>of(TimeBoundaryQuery.MIN_TIME,min,TimeBoundaryQuery.MAX_TIME,max))));
+  final DateTime ts;
+  final DateTime minTime;
+  final DateTime maxTime;
+  if (bound.equalsIgnoreCase(MIN_TIME)) {
+    ts=min;
+    minTime=min;
+    maxTime=null;
+  }
+ else   if (bound.equalsIgnoreCase(MAX_TIME)) {
+    ts=max;
+    minTime=null;
+    maxTime=max;
+  }
+ else {
+    ts=min;
+    minTime=min;
+    maxTime=max;
+  }
+  return buildResult(ts,minTime,maxTime);
 }

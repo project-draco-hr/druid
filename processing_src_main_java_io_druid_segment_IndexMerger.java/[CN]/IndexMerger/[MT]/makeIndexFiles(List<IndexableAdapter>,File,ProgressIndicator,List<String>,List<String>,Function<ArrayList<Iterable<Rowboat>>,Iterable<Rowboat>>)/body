@@ -29,9 +29,9 @@
     serializerUtils.writeString(channel,String.format("%s/%s",minTime,maxTime));
   }
   finally {
-    Closeables.closeQuietly(channel);
+    CloseQuietly.close(channel);
     channel=null;
-    Closeables.closeQuietly(fileOutputStream);
+    CloseQuietly.close(fileOutputStream);
     fileOutputStream=null;
   }
   IndexIO.checkFileSize(indexFile);

@@ -17,9 +17,7 @@
         S3Object s3Obj=null;
         try {
           s3Obj=s3Client.getObject(s3Coords.bucket,s3Coords.path);
-          InputStream in=null;
-          try {
-            in=s3Obj.getDataInputStream();
+          try (InputStream in=s3Obj.getDataInputStream()){
             final String key=s3Obj.getKey();
             if (key.endsWith(".zip")) {
               CompressionUtils.unzip(in,outDir);
@@ -36,9 +34,6 @@
           }
  catch (          IOException e) {
             throw new IOException(String.format("Problem decompressing object[%s]",s3Obj),e);
-          }
- finally {
-            Closeables.closeQuietly(in);
           }
         }
   finally {

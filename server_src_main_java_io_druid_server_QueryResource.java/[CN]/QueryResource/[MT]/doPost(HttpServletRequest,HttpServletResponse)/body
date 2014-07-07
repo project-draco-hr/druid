@@ -19,17 +19,22 @@
     }
     Map<String,Object> context=new MapMaker().makeMap();
     context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
-    Sequence results=query.run(texasRanger,context);
-    if (results == null) {
+    Sequence res=query.run(texasRanger,context);
+    final Sequence results;
+    if (res == null) {
       results=Sequences.empty();
     }
-    try (final Yielder yielder=results.toYielder(null,new YieldingAccumulator(){
+ else {
+      results=res;
+    }
+    final Yielder yielder=results.toYielder(null,new YieldingAccumulator(){
       @Override public Object accumulate(      Object accumulated,      Object in){
         yield();
         return in;
       }
     }
-)){
+);
+    try {
       String headerContext="";
       if (!((List)context.get(RetryQueryRunner.missingSegments)).isEmpty()) {
         headerContext=jsonMapper.writeValueAsString(context);
@@ -45,7 +50,13 @@
       }
 ,isSmile ? APPLICATION_JSON : APPLICATION_SMILE).header("X-Druid-Query-Id",queryId).header("Context",headerContext).build();
     }
-   }
+ catch (    Exception e) {
+      yielder.close();
+      throw Throwables.propagate(e);
+    }
+ finally {
+    }
+  }
  catch (  QueryInterruptedException e) {
     try {
       log.info("%s [%s]",e.getMessage(),queryId);

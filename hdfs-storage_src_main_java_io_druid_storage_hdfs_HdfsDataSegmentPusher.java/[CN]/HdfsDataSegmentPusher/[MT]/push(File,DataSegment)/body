@@ -4,15 +4,9 @@
   FileSystem fs=outFile.getFileSystem(hadoopConfig);
   fs.mkdirs(outFile.getParent());
   log.info("Compressing files from[%s] to [%s]",inDir,outFile);
-  FSDataOutputStream out=null;
   long size;
-  try {
-    out=fs.create(outFile);
+  try (FSDataOutputStream out=fs.create(outFile)){
     size=CompressionUtils.zip(inDir,out);
-    out.close();
   }
-  finally {
-    Closeables.closeQuietly(out);
-  }
-  return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outFile)).withSize(size).withBinaryVersion(SegmentUtils.getVersionFromDir(inDir)),outFile.getParent(),fs);
+   return createDescriptorFile(segment.withLoadSpec(makeLoadSpec(outFile)).withSize(size).withBinaryVersion(SegmentUtils.getVersionFromDir(inDir)),outFile.getParent(),fs);
 }
