@@ -1,0 +1,13 @@
+{
+  final ImmutableMap.Builder<Integer,ShardSpec> shardSpecsMapBuilder=ImmutableMap.builder();
+  for (  ShardSpec spec : shardSpecs) {
+    shardSpecsMapBuilder.put(spec.getPartitionNum(),spec);
+  }
+  final Map<Integer,ShardSpec> shardSpecMap=shardSpecsMapBuilder.build();
+  return new ShardSpecLookup(){
+    @Override public ShardSpec getShardSpec(    InputRow row){
+      return shardSpecMap.get((long)hash(row) % getPartitions());
+    }
+  }
+;
+}
