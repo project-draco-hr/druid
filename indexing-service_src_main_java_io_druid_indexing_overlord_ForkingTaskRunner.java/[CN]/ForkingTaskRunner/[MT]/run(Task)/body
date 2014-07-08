@@ -4,7 +4,7 @@ synchronized (tasks) {
       tasks.put(task.getId(),new ForkingTaskRunnerWorkItem(task.getId(),exec.submit(new Callable<TaskStatus>(){
         @Override public TaskStatus call(){
           final String attemptUUID=UUID.randomUUID().toString();
-          final File taskDir=new File(config.getTaskDir(),task.getId());
+          final File taskDir=new File(taskConfig.getBaseTaskDir(),task.getId());
           final File attemptDir=new File(taskDir,attemptUUID);
           final ProcessHolder processHolder;
           final int childPort=portFinder.findUnusedPort();
