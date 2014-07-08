@@ -1,0 +1,13 @@
+{
+  if (firehoseFactoryIterator.hasNext()) {
+    try {
+      if (currentFirehose != null) {
+        currentFirehose.close();
+      }
+      currentFirehose=firehoseFactoryIterator.next().connect(parser);
+    }
+ catch (    IOException e) {
+      Throwables.propagate(e);
+    }
+  }
+}
