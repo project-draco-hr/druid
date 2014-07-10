@@ -1,13 +1,7 @@
 {
-  Collections.sort(shardSpecs,new Comparator<ShardSpec>(){
-    @Override public int compare(    ShardSpec o1,    ShardSpec o2){
-      return Integer.compare(o1.getPartitionNum(),o2.getPartitionNum());
-    }
-  }
-);
   return new ShardSpecLookup(){
     @Override public ShardSpec getShardSpec(    InputRow row){
-      int index=(int)((long)hash(row)) % getPartitions();
+      int index=Math.abs(hash(row) % getPartitions());
       return shardSpecs.get(index);
     }
   }
