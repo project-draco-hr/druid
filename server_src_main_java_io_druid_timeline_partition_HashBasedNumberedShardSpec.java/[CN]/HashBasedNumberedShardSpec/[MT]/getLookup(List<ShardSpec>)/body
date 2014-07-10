@@ -1,12 +1,14 @@
 {
-  final ImmutableMap.Builder<Integer,ShardSpec> shardSpecsMapBuilder=ImmutableMap.builder();
-  for (  ShardSpec spec : shardSpecs) {
-    shardSpecsMapBuilder.put(spec.getPartitionNum(),spec);
+  Collections.sort(shardSpecs,new Comparator<ShardSpec>(){
+    @Override public int compare(    ShardSpec o1,    ShardSpec o2){
+      return Integer.compare(o1.getPartitionNum(),o2.getPartitionNum());
+    }
   }
-  final Map<Integer,ShardSpec> shardSpecMap=shardSpecsMapBuilder.build();
+);
   return new ShardSpecLookup(){
     @Override public ShardSpec getShardSpec(    InputRow row){
-      return shardSpecMap.get((long)hash(row) % getPartitions());
+      int index=(int)((long)hash(row)) % getPartitions();
+      return shardSpecs.get(index);
     }
   }
 ;
