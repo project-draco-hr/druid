@@ -25,11 +25,7 @@
       for (int i=0; i < metrics.length; i++) {
         metrics[i]=index.getAggregator(i).get(index.getMetricBuffer(),index.getMetricPosition(rowOffset,i));
       }
-      Map<String,String> description=Maps.newHashMap();
-      for (      SpatialDimensionSchema spatialDimensionSchema : index.getSpatialDimensions()) {
-        description.put(spatialDimensionSchema.getDimName(),"spatial");
-      }
-      return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++,description);
+      return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++);
     }
   }
 );

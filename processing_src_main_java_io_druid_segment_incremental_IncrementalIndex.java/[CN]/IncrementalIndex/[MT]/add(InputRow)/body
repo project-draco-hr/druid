@@ -1,5 +1,5 @@
 {
-  row=spatialDimensionRowFormatter.formatRow(row);
+  row=formatRow(row);
   if (row.getTimestampFromEpoch() < minTimestamp) {
     throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
   }
@@ -11,6 +11,15 @@ synchronized (dimensionOrder) {
     for (    String dimension : rowDimensions) {
       dimension=dimension.toLowerCase();
       List<String> dimensionValues=row.getDimension(dimension);
+      ColumnCapabilitiesImpl capabilities=columnCapabilities.get(dimension);
+      if (capabilities == null) {
+        capabilities=new ColumnCapabilitiesImpl();
+        capabilities.setType(ValueType.STRING);
+        columnCapabilities.put(dimension,capabilities);
+      }
+      if (dimensionValues.size() > 1) {
+        capabilities.setHasMultipleValues(true);
+      }
       Integer index=dimensionOrder.get(dimension);
       if (index == null) {
         dimensionOrder.put(dimension,dimensionOrder.size());

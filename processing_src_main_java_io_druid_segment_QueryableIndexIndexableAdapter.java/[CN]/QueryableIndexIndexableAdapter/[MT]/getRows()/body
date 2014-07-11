@@ -5,15 +5,15 @@
         final GenericColumn timestamps=input.getTimeColumn().getGenericColumn();
         final Object[] metrics;
         final Map<String,DictionaryEncodedColumn> dimensions;
-        final int numMetrics=getAvailableMetrics().size();
+        final int numMetrics=getMetricNames().size();
         int currRow=0;
         boolean done=false;
 {
           dimensions=Maps.newLinkedHashMap();
-          for (          String dim : getAvailableDimensions()) {
+          for (          String dim : getDimensionNames()) {
             dimensions.put(dim,input.getColumn(dim).getDictionaryEncoding());
           }
-          final Indexed<String> availableMetrics=getAvailableMetrics();
+          final Indexed<String> availableMetrics=getMetricNames();
           metrics=new Object[availableMetrics.size()];
           for (int i=0; i < metrics.length; ++i) {
             final Column column=input.getColumn(availableMetrics.get(i));
@@ -73,13 +73,7 @@ for (int i=0; i < metricArray.length; ++i) {
     metricArray[i]=((ComplexColumn)metrics[i]).getRowValue(currRow);
   }
 }
-Map<String,String> descriptions=Maps.newHashMap();
-for (String columnName : input.getColumnNames()) {
-  if (input.getColumn(columnName).getSpatialIndex() != null) {
-    descriptions.put(columnName,"spatial");
-  }
-}
-final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow,descriptions);
+final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow);
 ++currRow;
 return retVal;
 }

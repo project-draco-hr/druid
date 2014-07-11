@@ -26,7 +26,7 @@ synchronized (hydrant) {
           log.info("Adding hydrant[%s]",fireHydrant);
           indexes.add(queryableIndex);
         }
-        mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);
