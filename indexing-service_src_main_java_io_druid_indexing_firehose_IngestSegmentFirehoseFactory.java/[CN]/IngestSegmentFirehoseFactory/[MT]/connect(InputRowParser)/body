@@ -1,5 +1,5 @@
 {
-  log.info("Connecting firehose: DruidFirehose[%s,%s]",dataSource,interval);
+  log.info("Connecting firehose: IngestSegmentFirehose[%s,%s]",dataSource,interval);
   final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new IngestTask("Ingest-Task-Id",dataSource));
   try {
     final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
@@ -44,7 +44,7 @@
       }
     }
 );
-    return new DruidFirehose(adapters,dims,metricsList);
+    return new IngestSegmentFirehose(adapters,dims,metricsList);
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
