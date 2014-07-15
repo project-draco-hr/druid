@@ -3,6 +3,9 @@
     @Override public boolean eval(    Row row){
       return (row.getFloatMetric("idx_subpostagg") < 3800);
     }
+    @Override public byte[] getCacheKey(){
+      return new byte[0];
+    }
   }
 ).addOrderByColumn("alias").setGranularity(QueryRunnerTestHelper.dayGran).build();
   final GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("alias","alias"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("rows","rows"),new LongSumAggregatorFactory("idx","idx_subpostagg"))).setPostAggregatorSpecs(Arrays.<PostAggregator>asList(new ArithmeticPostAggregator("idx","+",Arrays.asList(new FieldAccessPostAggregator("the_idx_agg","idx"),new ConstantPostAggregator("ten_thousand",10000,10000))))).setGranularity(QueryRunnerTestHelper.dayGran).build();

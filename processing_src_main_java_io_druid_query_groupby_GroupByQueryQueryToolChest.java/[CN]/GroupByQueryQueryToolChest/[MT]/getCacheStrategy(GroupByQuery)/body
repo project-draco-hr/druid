@@ -1,0 +1,63 @@
+{
+  return new CacheStrategy<Row,Object,GroupByQuery>(){
+    @Override public byte[] computeCacheKey(    GroupByQuery query){
+      final DimFilter dimFilter=query.getDimFilter();
+      final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
+      final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
+      final byte[] granularityBytes=query.getGranularity().cacheKey();
+      final byte[][] dimensionsBytes=new byte[query.getDimensions().size()][];
+      int dimensionsBytesSize=0;
+      int index=0;
+      for (      DimensionSpec dimension : query.getDimensions()) {
+        dimensionsBytes[index]=dimension.getCacheKey();
+        dimensionsBytesSize+=dimensionsBytes[index].length;
+        ++index;
+      }
+      final byte[] havingBytes=query.getHavingSpec() == null ? new byte[]{} : query.getHavingSpec().getCacheKey();
+      final byte[] limitBytes=query.getLimitSpec().getCacheKey();
+      ByteBuffer buffer=ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length+ dimensionsBytesSize+ havingBytes.length+ limitBytes.length).put(GROUPBY_QUERY).put(granularityBytes).put(filterBytes).put(aggregatorBytes);
+      for (      byte[] dimensionsByte : dimensionsBytes) {
+        buffer.put(dimensionsByte);
+      }
+      return buffer.put(havingBytes).put(limitBytes).array();
+    }
+    @Override public TypeReference<Object> getCacheObjectClazz(){
+      return OBJECT_TYPE_REFERENCE;
+    }
+    @Override public Function<Row,Object> prepareForCache(){
+      return new Function<Row,Object>(){
+        @Override public Object apply(        Row input){
+          if (input instanceof MapBasedRow) {
+            final MapBasedRow row=(MapBasedRow)input;
+            final List<Object> retVal=Lists.newArrayListWithCapacity(2);
+            retVal.add(row.getTimestamp().getMillis());
+            retVal.add(row.getEvent());
+            return retVal;
+          }
+          throw new ISE("Don't know how to cache input rows of type[%s]",input.getClass());
+        }
+      }
+;
+    }
+    @Override public Function<Object,Row> pullFromCache(){
+      return new Function<Object,Row>(){
+        private final QueryGranularity granularity=query.getGranularity();
+        @Override public Row apply(        Object input){
+          Iterator<Object> results=((List<Object>)input).iterator();
+          DateTime timestamp=granularity.toDateTime(((Number)results.next()).longValue());
+          return new MapBasedRow(timestamp,(Map<String,Object>)jsonMapper.convertValue(results.next(),new TypeReference<Map<String,Object>>(){
+          }
+));
+        }
+      }
+;
+    }
+    @Override public int getCacheLimit(){
+      return configSupplier.get().getMaxResultsToCache();
+    }
+    @Override public Sequence<Row> mergeSequences(    Sequence<Sequence<Row>> seqOfSequences){
+      return new MergeSequence<>(Ordering.<Row>natural().nullsFirst(),seqOfSequences);
+    }
+  }
+;
+}

@@ -64,6 +64,9 @@ catch (    GeoIp2Exception e) {
     @Override public long getTimestampFromEpoch(){
       return timestamp.getMillis();
     }
+    @Override public DateTime getTimestamp(){
+      return timestamp;
+    }
     @Override public List<String> getDimension(    String dimension){
       final String value=dimensions.get(dimension);
       if (value != null) {
@@ -78,6 +81,9 @@ catch (    GeoIp2Exception e) {
     }
     @Override public float getFloatMetric(    String metric){
       return metrics.get(metric);
+    }
+    @Override public int compareTo(    Row o){
+      return timestamp.compareTo(o.getTimestamp());
     }
     @Override public String toString(){
       return "WikipediaRow{" + "timestamp=" + timestamp + ", dimensions="+ dimensions+ ", metrics="+ metrics+ '}';
