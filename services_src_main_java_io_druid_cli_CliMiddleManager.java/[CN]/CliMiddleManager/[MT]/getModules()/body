@@ -2,6 +2,7 @@
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
       IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
+      JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
       binder.bind(TaskRunner.class).to(ForkingTaskRunner.class);
       binder.bind(ForkingTaskRunner.class).in(LazySingleton.class);
