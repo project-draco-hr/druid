@@ -2,4 +2,19 @@
   this.columnConfig=columnConfig;
   this.schema=schema;
   this.pathSpec=jsonMapper.convertValue(schema.getIOConfig().getPathSpec(),PathSpec.class);
+  for (  Map.Entry<DateTime,List<HadoopyShardSpec>> entry : schema.getTuningConfig().getShardSpecs().entrySet()) {
+    if (entry.getValue() == null || entry.getValue().isEmpty()) {
+      continue;
+    }
+    final ShardSpec actualSpec=entry.getValue().get(0).getActualSpec();
+    shardSpecLookups.put(entry.getKey(),actualSpec.getLookup(Lists.transform(entry.getValue(),new Function<HadoopyShardSpec,ShardSpec>(){
+      @Override public ShardSpec apply(      HadoopyShardSpec input){
+        return input.getActualSpec();
+      }
+    }
+)));
+    for (    HadoopyShardSpec hadoopyShardSpec : entry.getValue()) {
+      hadoopShardSpecLookup.put(hadoopyShardSpec.getActualSpec(),hadoopyShardSpec);
+    }
+  }
 }

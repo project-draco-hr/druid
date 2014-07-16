@@ -3,15 +3,7 @@
   if (!timeBucket.isPresent()) {
     return Optional.absent();
   }
-  final List<HadoopyShardSpec> shards=schema.getTuningConfig().getShardSpecs().get(timeBucket.get().getStart());
-  if (shards == null || shards.isEmpty()) {
-    return Optional.absent();
-  }
-  for (  final HadoopyShardSpec hadoopyShardSpec : shards) {
-    final ShardSpec actualSpec=hadoopyShardSpec.getActualSpec();
-    if (actualSpec.isInChunk(inputRow)) {
-      return Optional.of(new Bucket(hadoopyShardSpec.getShardNum(),timeBucket.get().getStart(),actualSpec.getPartitionNum()));
-    }
-  }
-  throw new ISE("row[%s] doesn't fit in any shard[%s]",inputRow,shards);
+  final ShardSpec actualSpec=shardSpecLookups.get(timeBucket.get().getStart()).getShardSpec(inputRow);
+  final HadoopyShardSpec hadoopyShardSpec=hadoopShardSpecLookup.get(actualSpec);
+  return Optional.of(new Bucket(hadoopyShardSpec.getShardNum(),timeBucket.get().getStart(),actualSpec.getPartitionNum()));
 }

@@ -1,0 +1,12 @@
+{
+  try {
+    if (isObjectInBucket(bucketName,objectKey)) {
+      final S3Object object=new S3Object(objectKey);
+      object.setStorageClass(S3Object.STORAGE_CLASS_STANDARD);
+      return new S3Object[]{object};
+    }
+  }
+ catch (  ServiceException e) {
+  }
+  return new S3Object[]{};
+}
