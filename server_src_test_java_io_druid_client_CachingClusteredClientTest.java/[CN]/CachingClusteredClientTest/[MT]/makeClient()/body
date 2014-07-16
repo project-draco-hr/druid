@@ -1,6 +1,6 @@
 {
   final Supplier<GroupByQueryConfig> groupByQueryConfigSupplier=Suppliers.ofInstance(new GroupByQueryConfig());
-  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).put(SelectQuery.class,new SelectQueryQueryToolChest(new SelectQueryConfig(),jsonMapper)).put(GroupByQuery.class,new GroupByQueryQueryToolChest(groupByQueryConfigSupplier,jsonMapper,new GroupByQueryEngine(groupByQueryConfigSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
+  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).put(SelectQuery.class,new SelectQueryQueryToolChest(new QueryConfig(),jsonMapper)).put(GroupByQuery.class,new GroupByQueryQueryToolChest(groupByQueryConfigSupplier,jsonMapper,new GroupByQueryEngine(groupByQueryConfigSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(1024 * 1024);
     }
