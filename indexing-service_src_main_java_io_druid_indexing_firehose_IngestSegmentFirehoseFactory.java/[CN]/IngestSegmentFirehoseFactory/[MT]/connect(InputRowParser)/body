@@ -1,6 +1,6 @@
 {
-  log.info("Connecting firehose: IngestSegmentFirehose[%s,%s]",dataSource,interval);
-  final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new IngestTask("Ingest-Task-Id",dataSource));
+  log.info("Connecting firehose: dataSource[%s], interval[%s]",dataSource,interval);
+  final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new ReIngestTask("Ingest-Task-Id",dataSource));
   try {
     final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
     final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);

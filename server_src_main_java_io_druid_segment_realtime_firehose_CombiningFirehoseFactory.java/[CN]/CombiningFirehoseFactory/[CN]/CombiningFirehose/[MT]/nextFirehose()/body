@@ -7,7 +7,16 @@
       currentFirehose=firehoseFactoryIterator.next().connect(parser);
     }
  catch (    IOException e) {
-      Throwables.propagate(e);
+      if (currentFirehose != null) {
+        try {
+          currentFirehose.close();
+        }
+ catch (        IOException e2) {
+          log.error(e,"Unable to close currentFirehose!");
+          throw Throwables.propagate(e2);
+        }
+      }
+      throw Throwables.propagate(e);
     }
   }
 }
