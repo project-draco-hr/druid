@@ -1,0 +1,9 @@
+{
+synchronized (lock) {
+    if (!started) {
+      log.error("Cannot update worker! Not Started!");
+      return;
+    }
+    announcer.update(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(newWorker));
+  }
+}
