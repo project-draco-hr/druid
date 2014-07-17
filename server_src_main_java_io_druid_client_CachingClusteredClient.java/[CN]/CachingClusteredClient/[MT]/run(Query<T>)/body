@@ -4,8 +4,8 @@
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
-  final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache();
-  final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache();
+  final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
+  final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
   final boolean isBySegment=query.getContextBySegment(false);
   ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
   final int priority=query.getContextPriority(0);
@@ -81,6 +81,7 @@
         serverSegments.put(server,descriptors);
       }
       descriptors.add(segment.rhs);
+      System.out.println(String.format("Server %s has %s_%s_%s",server.getHost(),segment.rhs.getInterval(),segment.rhs.getPartitionNumber(),segment.rhs.getVersion()));
     }
   }
   return new LazySequence<>(new Supplier<Sequence<T>>(){

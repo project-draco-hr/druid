@@ -1,0 +1,8 @@
+{
+  return Sequences.simple(FunctionalIterable.create(segmentIds).trinaryTransform(intervals,results,new TrinaryFn<String,Interval,Iterable<Result<SelectResultValue>>,Result<SelectResultValue>>(){
+    @Override @SuppressWarnings("unchecked") public Result<SelectResultValue> apply(    final String segmentId,    final Interval interval,    final Iterable<Result<SelectResultValue>> results){
+      return new Result(results.iterator().next().getTimestamp(),new BySegmentResultValueClass(Lists.newArrayList(results),segmentId,interval));
+    }
+  }
+));
+}
