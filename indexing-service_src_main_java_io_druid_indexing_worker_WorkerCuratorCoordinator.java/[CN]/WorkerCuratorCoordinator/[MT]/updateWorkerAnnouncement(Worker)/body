@@ -1,9 +1,9 @@
 {
 synchronized (lock) {
     if (!started) {
-      log.error("Cannot update worker! Not Started!");
-      return;
+      throw new ISE("Cannot update worker! Not Started!");
     }
+    this.worker=newWorker;
     announcer.update(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(newWorker));
   }
 }

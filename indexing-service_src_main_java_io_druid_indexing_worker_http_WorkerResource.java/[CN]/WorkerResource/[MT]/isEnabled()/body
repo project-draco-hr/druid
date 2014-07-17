@@ -1,0 +1,10 @@
+{
+  try {
+    final Worker theWorker=curatorCoordinator.getWorker();
+    final boolean disabled=theWorker.getVersion().equalsIgnoreCase(DISABLED_VERSION);
+    return Response.ok(ImmutableMap.of(theWorker.getHost(),disabled)).build();
+  }
+ catch (  Exception e) {
+    return Response.serverError().build();
+  }
+}

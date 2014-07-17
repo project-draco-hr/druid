@@ -1,9 +1,7 @@
 {
-  final Worker worker=curatorCoordinator.getWorker();
-  final Worker newWorker=new Worker(worker.getHost(),worker.getIp(),worker.getCapacity(),"");
   try {
-    curatorCoordinator.updateWorkerAnnouncement(newWorker);
-    return Response.ok(ImmutableMap.of(worker.getHost(),"disabled")).build();
+    curatorCoordinator.updateWorkerAnnouncement(disabledWorker);
+    return Response.ok(ImmutableMap.of(disabledWorker.getHost(),"disabled")).build();
   }
  catch (  Exception e) {
     return Response.serverError().build();
