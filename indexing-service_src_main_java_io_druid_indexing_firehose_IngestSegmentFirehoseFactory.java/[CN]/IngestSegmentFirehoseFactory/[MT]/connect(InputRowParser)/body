@@ -5,10 +5,10 @@
     final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
     final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
     VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural().nullsFirst());
-    final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(interval);
     for (    DataSegment segment : usedSegments) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
     }
+    final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(interval);
     List<String> dims;
     if (dimensions != null) {
       dims=dimensions;
