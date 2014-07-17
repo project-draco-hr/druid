@@ -3,7 +3,7 @@
     @Override public Row apply(    Row input){
       if (input instanceof MapBasedRow) {
         final MapBasedRow inputRow=(MapBasedRow)input;
-        final Map<String,Object> values=Maps.newHashMap(((MapBasedRow)input).getEvent());
+        final Map<String,Object> values=Maps.newHashMap(inputRow.getEvent());
         for (        AggregatorFactory agg : query.getAggregatorSpecs()) {
           values.put(agg.getName(),fn.manipulate(agg,inputRow.getEvent().get(agg.getName())));
         }
