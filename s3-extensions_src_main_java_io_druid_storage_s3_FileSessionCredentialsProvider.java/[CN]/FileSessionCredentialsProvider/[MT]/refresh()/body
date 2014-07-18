@@ -1,11 +1,9 @@
 {
   try {
-    List<String> lines=Files.readAllLines(Paths.get(sessionCredentials),Charsets.UTF_8);
     Properties props=new Properties();
-    for (    String line : lines) {
-      String[] tokens=line.split("=");
-      props.put(tokens[0],tokens[1]);
-    }
+    InputStream is=new FileInputStream(new File(sessionCredentials));
+    props.load(is);
+    is.close();
     sessionToken=props.getProperty("sessionToken");
     accessKey=props.getProperty("accessKey");
     secretKey=props.getProperty("secretKey");
