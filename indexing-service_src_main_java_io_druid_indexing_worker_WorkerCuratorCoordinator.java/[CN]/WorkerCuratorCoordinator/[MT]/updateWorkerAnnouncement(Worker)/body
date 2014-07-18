@@ -1,0 +1,9 @@
+{
+synchronized (lock) {
+    if (!started) {
+      throw new ISE("Cannot update worker! Not Started!");
+    }
+    this.worker=newWorker;
+    announcer.update(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(newWorker));
+  }
+}
