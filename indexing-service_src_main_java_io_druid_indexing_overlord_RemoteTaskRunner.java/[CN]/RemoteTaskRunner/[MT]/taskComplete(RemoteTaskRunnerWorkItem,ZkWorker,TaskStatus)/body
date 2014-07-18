@@ -6,12 +6,9 @@
     zkWorker.setLastCompletedTaskTime(new DateTime());
   }
  else {
-    log.info("No worker run task[%s] with status[%s]",taskStatus.getId(),taskStatus.getStatusCode());
+    log.info("Workerless task[%s] completed with status[%s]",taskStatus.getId(),taskStatus.getStatusCode());
   }
   completeTasks.put(taskStatus.getId(),taskRunnerWorkItem);
   runningTasks.remove(taskStatus.getId());
-  final ListenableFuture<TaskStatus> result=taskRunnerWorkItem.getResult();
-  if (result != null) {
-    ((SettableFuture<TaskStatus>)result).set(taskStatus);
-  }
+  taskRunnerWorkItem.setResult(taskStatus);
 }
