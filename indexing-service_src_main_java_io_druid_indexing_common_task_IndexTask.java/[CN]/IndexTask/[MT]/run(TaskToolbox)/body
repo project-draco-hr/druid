@@ -13,7 +13,16 @@
       shardSpecs=determinePartitions(bucket,targetPartitionSize);
     }
  else {
-      shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
+      int numShards=ingestionSchema.getTuningConfig().getNumShards();
+      if (numShards > 0) {
+        shardSpecs=Lists.newArrayList();
+        for (int i=0; i < numShards; i++) {
+          shardSpecs.add(new HashBasedNumberedShardSpec(i,numShards,jsonMapper));
+        }
+      }
+ else {
+        shardSpecs=ImmutableList.<ShardSpec>of(new NoneShardSpec());
+      }
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
       final DataSegment segment=generateSegment(toolbox,ingestionSchema.getDataSchema(),shardSpec,bucket,myLock.getVersion());
