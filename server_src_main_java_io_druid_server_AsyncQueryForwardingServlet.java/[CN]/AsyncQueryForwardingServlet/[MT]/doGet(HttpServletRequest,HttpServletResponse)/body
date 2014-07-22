@@ -1,5 +1,6 @@
 {
   final AsyncContext asyncContext=req.startAsync(req,res);
+  asyncContext.setTimeout(config.getMaxIdleTime().toStandardDuration().getMillis());
   asyncContext.start(new Runnable(){
     @Override public void run(){
       try {
