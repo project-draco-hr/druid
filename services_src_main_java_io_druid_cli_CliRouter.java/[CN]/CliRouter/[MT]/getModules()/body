@@ -7,6 +7,9 @@
       binder.bind(TieredBrokerHostSelector.class).in(ManageLifecycle.class);
       binder.bind(QueryHostFinder.class).in(LazySingleton.class);
       binder.bind(RoutingDruidClient.class).in(LazySingleton.class);
+      binder.bind(new TypeLiteral<List<TieredBrokerSelectorStrategy>>(){
+      }
+).toProvider(TieredBrokerSelectorStrategiesProvider.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).to(RouterJettyServerInitializer.class).in(LazySingleton.class);
       LifecycleModule.register(binder,Server.class);
       DiscoveryModule.register(binder,Self.class);
