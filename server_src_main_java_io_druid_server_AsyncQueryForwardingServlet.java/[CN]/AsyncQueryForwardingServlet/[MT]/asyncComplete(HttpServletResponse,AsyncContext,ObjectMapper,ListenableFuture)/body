@@ -1,0 +1,18 @@
+{
+  Futures.addCallback(future,new FutureCallback<Object>(){
+    @Override public void onSuccess(    @Nullable Object o){
+      asyncContext.complete();
+    }
+    @Override public void onFailure(    Throwable throwable){
+      log.error(throwable,"Error processing query response");
+      try {
+        handleException(res,objectMapper,throwable);
+      }
+ catch (      Exception err) {
+        log.error(err,"Unable to handle exception response");
+      }
+      asyncContext.complete();
+    }
+  }
+);
+}

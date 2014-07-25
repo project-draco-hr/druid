@@ -1,17 +1,7 @@
 {
-  final AsyncContext asyncContext=req.startAsync(req,res);
-  asyncContext.setTimeout(config.getMaxIdleTime().toStandardDuration().getMillis());
-  asyncContext.start(new Runnable(){
-    @Override public void run(){
-      try {
-        final HttpResponseHandler<OutputStream,OutputStream> responseHandler=new PassthroughHttpResponseHandler(asyncContext,jsonMapper);
-        final String host=hostFinder.getDefaultHost();
-        routingDruidClient.get(makeUrl(host,(HttpServletRequest)asyncContext.getRequest()),responseHandler);
-      }
- catch (      Exception e) {
-        handleException(jsonMapper,asyncContext,e);
-      }
-    }
-  }
-);
+  final AsyncContext asyncContext=req.startAsync();
+  asyncContext.setTimeout(0);
+  final HttpResponseHandler<ServletOutputStream,ServletOutputStream> responseHandler=new PassthroughHttpResponseHandler(res);
+  final URI uri=rewriteURI(hostFinder.getDefaultHost(),req);
+  asyncComplete(res,asyncContext,jsonMapper,routingDruidClient.get(uri,responseHandler));
 }

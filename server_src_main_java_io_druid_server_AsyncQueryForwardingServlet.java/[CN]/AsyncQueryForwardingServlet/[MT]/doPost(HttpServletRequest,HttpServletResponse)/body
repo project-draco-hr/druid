@@ -1,49 +1,56 @@
 {
   final long start=System.currentTimeMillis();
-  final AsyncContext asyncContext=req.startAsync(req,res);
-  asyncContext.start(new Runnable(){
-    @Override public void run(){
-      final HttpServletRequest request=(HttpServletRequest)asyncContext.getRequest();
-      final boolean isSmile=QueryResource.APPLICATION_SMILE.equals(request.getContentType());
-      final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
-      Query inputQuery=null;
-      try {
-        inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
-        if (inputQuery.getId() == null) {
-          inputQuery=inputQuery.withId(UUID.randomUUID().toString());
-        }
-        final Query query=inputQuery;
-        if (log.isDebugEnabled()) {
-          log.debug("Got query [%s]",inputQuery);
-        }
-        final HttpResponseHandler<OutputStream,OutputStream> responseHandler=new PassthroughHttpResponseHandler(asyncContext,objectMapper){
-          @Override public ClientResponse<OutputStream> done(          ClientResponse<OutputStream> clientResponse){
-            final long requestTime=System.currentTimeMillis() - start;
-            log.debug("Request time: %d",requestTime);
-            emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser3(String.valueOf(query.getContextPriority(0))).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(request.getRemoteAddr()).setUser8(query.getId()).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
-            try {
-              requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
-            }
- catch (            Exception e) {
-              throw Throwables.propagate(e);
-            }
-            return super.done(clientResponse);
-          }
-        }
-;
-        routingDruidClient.postQuery(makeUrl(hostFinder.getHost(inputQuery),request),inputQuery,responseHandler);
-      }
- catch (      Exception e) {
-        handleException(objectMapper,asyncContext,e);
+  final boolean isSmile=QueryResource.APPLICATION_SMILE.equals(req.getContentType());
+  final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
+  try {
+    final Query inputQuery=objectMapper.readValue(req.getInputStream(),Query.class);
+    if (log.isDebugEnabled()) {
+      log.debug("Got query [%s]",inputQuery);
+    }
+    final Query query;
+    if (inputQuery.getId() == null) {
+      query=inputQuery.withId(UUID.randomUUID().toString());
+    }
+ else {
+      query=inputQuery;
+    }
+    URI rewrittenURI=rewriteURI(hostFinder.getHost(query),req);
+    final AsyncContext asyncContext=req.startAsync();
+    asyncContext.setTimeout(0);
+    ListenableFuture future=routingDruidClient.postQuery(rewrittenURI,query,new PassthroughHttpResponseHandler(res));
+    Futures.addCallback(future,new FutureCallback(){
+      @Override public void onSuccess(      @Nullable Object o){
+        final long requestTime=System.currentTimeMillis() - start;
+        emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser3(String.valueOf(query.getContextPriority(0))).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(query.getId()).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
         try {
-          requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),inputQuery,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
+          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
         }
- catch (        Exception logError) {
-          log.error(logError,"Unable to log query [%s]!",inputQuery);
+ catch (        Exception e) {
+          log.error(e,"Unable to log query [%s]!",query);
         }
-        log.makeAlert(e,"Exception handling request").addData("query",inputQuery).addData("peer",request.getRemoteAddr()).emit();
+      }
+      @Override public void onFailure(      Throwable throwable){
+        try {
+          final String errorMessage=throwable.getMessage();
+          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage == null ? "no message" : errorMessage))));
+        }
+ catch (        IOException logError) {
+          log.error(logError,"Unable to log query [%s]!",query);
+        }
+        log.makeAlert(throwable,"Exception handling request [%s]",query.getId()).addData("query",query).addData("peer",req.getRemoteAddr()).emit();
       }
     }
-  }
 );
+    asyncComplete(res,asyncContext,objectMapper,future);
+  }
+ catch (  IOException e) {
+    log.warn(e,"Exception parsing query");
+    final String errorMessage=e.getMessage() == null ? "no error message" : e.getMessage();
+    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
+    res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    objectMapper.writeValue(res.getOutputStream(),ImmutableMap.of("error",errorMessage));
+  }
+catch (  Exception e) {
+    handleException(res,objectMapper,e);
+  }
 }

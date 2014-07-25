@@ -1,11 +1,12 @@
 {
   copyStatusHeaders(clientResponse);
   try {
+    final ServletOutputStream outputStream=response.getOutputStream();
     ChannelBuffer buf=clientResponse.getContent();
     buf.readBytes(outputStream,buf.readableBytes());
+    return ClientResponse.unfinished(outputStream);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
   }
-  return ClientResponse.finished(outputStream);
 }
