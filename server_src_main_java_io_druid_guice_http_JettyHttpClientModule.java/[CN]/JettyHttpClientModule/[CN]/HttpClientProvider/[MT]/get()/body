@@ -1,0 +1,35 @@
+{
+  final DruidHttpClientConfig config=getConfigProvider().get().get();
+  final HttpClient httpClient;
+  if (getSslContextBinding() != null) {
+    final SslContextFactory sslContextFactory=new SslContextFactory();
+    sslContextFactory.setSslContext(getSslContextBinding().getProvider().get());
+    httpClient=new HttpClient(sslContextFactory);
+  }
+ else {
+    httpClient=new HttpClient();
+  }
+  httpClient.setIdleTimeout(config.getReadTimeout().getMillis());
+  httpClient.setMaxConnectionsPerDestination(config.getNumConnections());
+  final Lifecycle lifecycle=getLifecycleProvider().get();
+  try {
+    lifecycle.addMaybeStartHandler(new Lifecycle.Handler(){
+      @Override public void start() throws Exception {
+        httpClient.start();
+      }
+      @Override public void stop(){
+        try {
+          httpClient.stop();
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return httpClient;
+}
