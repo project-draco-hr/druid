@@ -19,6 +19,7 @@
       requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
+      throw e;
     }
 catch (    Exception e) {
       handleException(response,objectMapper,e);
