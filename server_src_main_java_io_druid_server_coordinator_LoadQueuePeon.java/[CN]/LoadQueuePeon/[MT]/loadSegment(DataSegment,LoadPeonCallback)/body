@@ -1,8 +1,8 @@
 {
 synchronized (lock) {
-    if ((currentlyLoading != null) && currentlyLoading.getSegmentIdentifier().equals(segment.getIdentifier())) {
+    if ((currentlyProcessing != null) && currentlyProcessing.getSegmentIdentifier().equals(segment.getIdentifier())) {
       if (callback != null) {
-        currentlyLoading.addCallback(callback);
+        currentlyProcessing.addCallback(callback);
       }
       return;
     }
@@ -11,12 +11,12 @@ synchronized (lock) {
 synchronized (lock) {
     if (segmentsToLoad.contains(holder)) {
       if ((callback != null)) {
-        currentlyLoading.addCallback(callback);
+        currentlyProcessing.addCallback(callback);
       }
       return;
     }
   }
-  log.info("Asking server peon[%s] to load segment[%s]",basePath,segment);
+  log.info("Asking server peon[%s] to load segment[%s]",basePath,segment.getIdentifier());
   queuedSize.addAndGet(segment.getSize());
   segmentsToLoad.add(holder);
   doNext();
