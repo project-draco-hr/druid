@@ -18,11 +18,13 @@
       final String errorMessage=e.getMessage() == null ? "no error message" : e.getMessage();
       requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      response.setContentType(QueryResource.APPLICATION_JSON);
       objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
-      throw e;
+      return;
     }
 catch (    Exception e) {
       handleException(response,objectMapper,e);
+      return;
     }
   }
   URI rewrittenURI=rewriteURI(host,request);
