@@ -3,21 +3,25 @@
   final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   String host=hostFinder.getDefaultHost();
   Query inputQuery=null;
-  try {
-    inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
-    if (inputQuery != null) {
-      host=hostFinder.getHost(inputQuery);
+  boolean hasContent=request.getContentLength() > 0 || request.getContentType() != null;
+  long startTime=System.currentTimeMillis();
+  if (request.getMethod().equalsIgnoreCase(HttpMethod.POST.asString())) {
+    try {
+      inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
+      if (inputQuery != null) {
+        host=hostFinder.getHost(inputQuery);
+      }
     }
-  }
- catch (  IOException e) {
-    log.warn(e,"Exception parsing query");
-    final String errorMessage=e.getMessage() == null ? "no error message" : e.getMessage();
-    requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
-    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
-  }
-catch (  Exception e) {
-    handleException(response,objectMapper,e);
+ catch (    IOException e) {
+      log.warn(e,"Exception parsing query");
+      final String errorMessage=e.getMessage() == null ? "no error message" : e.getMessage();
+      requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
+    }
+catch (    Exception e) {
+      handleException(response,objectMapper,e);
+    }
   }
   final int requestId=getRequestId(request);
   URI rewrittenURI=rewriteURI(host,request);
@@ -35,7 +39,6 @@ catch (  Exception e) {
     return;
   }
   final Request proxyRequest=getHttpClient().newRequest(rewrittenURI).method(request.getMethod()).version(HttpVersion.fromString(request.getProtocol()));
-  boolean hasContent=request.getContentLength() > 0 || request.getContentType() != null;
   for (Enumeration<String> headerNames=request.getHeaderNames(); headerNames.hasMoreElements(); ) {
     String headerName=headerNames.nextElement();
     if (HttpHeader.TRANSFER_ENCODING.is(headerName)) {
@@ -53,8 +56,13 @@ catch (  Exception e) {
   final AsyncContext asyncContext=request.startAsync();
   asyncContext.setTimeout(0);
   proxyRequest.timeout(getTimeout(),TimeUnit.MILLISECONDS);
-  if (hasContent && inputQuery != null) {
-    proxyRequest.content(new BytesContentProvider(jsonMapper.writeValueAsBytes(inputQuery)));
+  if (hasContent) {
+    if (inputQuery != null) {
+      proxyRequest.content(new BytesContentProvider(jsonMapper.writeValueAsBytes(inputQuery)));
+    }
+ else {
+      proxyRequest.content(proxyRequestContent(proxyRequest,request));
+    }
   }
   customizeProxyRequest(proxyRequest,request);
   if (_log.isDebugEnabled()) {
