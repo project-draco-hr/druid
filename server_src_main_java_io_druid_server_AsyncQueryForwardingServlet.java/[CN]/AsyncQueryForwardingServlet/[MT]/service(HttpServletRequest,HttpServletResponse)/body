@@ -4,8 +4,9 @@
   String host=hostFinder.getDefaultHost();
   Query inputQuery=null;
   boolean hasContent=request.getContentLength() > 0 || request.getContentType() != null;
+  boolean isQuery=request.getMethod().equalsIgnoreCase(HttpMethod.POST.asString());
   long startTime=System.currentTimeMillis();
-  if (request.getMethod().equalsIgnoreCase(HttpMethod.POST.asString())) {
+  if (isQuery) {
     try {
       inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
       if (inputQuery != null) {
@@ -90,5 +91,10 @@ catch (    Exception e) {
     builder.append("\r\n");
     _log.debug("{} proxying to upstream:{}{}{}{}",requestId,System.lineSeparator(),builder,proxyRequest,System.lineSeparator(),proxyRequest.getHeaders().toString().trim());
   }
-  proxyRequest.send(newProxyResponseListener(request,response));
+  if (isQuery) {
+    proxyRequest.send(newMetricsEmittingProxyResponseListener(request,response,inputQuery,startTime));
+  }
+ else {
+    proxyRequest.send(newProxyResponseListener(request,response));
+  }
 }
