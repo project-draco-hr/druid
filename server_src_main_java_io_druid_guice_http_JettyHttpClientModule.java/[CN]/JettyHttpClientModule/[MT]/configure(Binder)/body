@@ -1,0 +1,14 @@
+{
+  if (annotation != null) {
+    JsonConfigProvider.bind(binder,propertyPrefix,DruidHttpClientConfig.class,annotation);
+    binder.bind(HttpClient.class).annotatedWith(annotation).toProvider(new HttpClientProvider(annotation)).in(LazySingleton.class);
+  }
+ else   if (annotationClazz != null) {
+    JsonConfigProvider.bind(binder,propertyPrefix,DruidHttpClientConfig.class,annotationClazz);
+    binder.bind(HttpClient.class).annotatedWith(annotationClazz).toProvider(new HttpClientProvider(annotationClazz)).in(LazySingleton.class);
+  }
+ else {
+    JsonConfigProvider.bind(binder,propertyPrefix,DruidHttpClientConfig.class);
+    binder.bind(HttpClient.class).toProvider(new HttpClientProvider()).in(LazySingleton.class);
+  }
+}

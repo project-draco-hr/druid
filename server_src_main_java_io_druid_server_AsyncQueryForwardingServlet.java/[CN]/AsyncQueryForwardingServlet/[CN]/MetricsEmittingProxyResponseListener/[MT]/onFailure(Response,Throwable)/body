@@ -1,0 +1,11 @@
+{
+  try {
+    final String errorMessage=failure.getMessage();
+    requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage == null ? "no message" : errorMessage))));
+  }
+ catch (  IOException logError) {
+    log.error(logError,"Unable to log query [%s]!",query);
+  }
+  log.makeAlert(failure,"Exception handling request").addData("exception",failure.toString()).addData("query",query).addData("peer",req.getRemoteAddr()).emit();
+  super.onFailure(response,failure);
+}
