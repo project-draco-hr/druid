@@ -11,6 +11,9 @@
       inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
       if (inputQuery != null) {
         host=hostFinder.getHost(inputQuery);
+        if (inputQuery.getId() == null) {
+          inputQuery=inputQuery.withId(UUID.randomUUID().toString());
+        }
       }
     }
  catch (    IOException e) {
