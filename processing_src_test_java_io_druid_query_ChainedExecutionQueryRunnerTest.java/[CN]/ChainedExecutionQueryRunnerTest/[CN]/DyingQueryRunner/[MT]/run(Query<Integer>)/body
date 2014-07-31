@@ -1,8 +1,9 @@
 {
   hasStarted=true;
-  latch.countDown();
+  start.countDown();
   if (Thread.interrupted()) {
     interrupted=true;
+    stop.countDown();
     throw new QueryInterruptedException("I got killed");
   }
   try {
@@ -10,8 +11,10 @@
   }
  catch (  InterruptedException e) {
     interrupted=true;
+    stop.countDown();
     throw new QueryInterruptedException("I got killed");
   }
   hasCompleted=true;
+  stop.countDown();
   return Sequences.simple(Lists.newArrayList(123));
 }

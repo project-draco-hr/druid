@@ -87,7 +87,7 @@
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
         }
       }
- catch (      FormattedException e) {
+ catch (      ParseException e) {
         log.warn(e,"unparseable line");
         fireDepartment.getMetrics().incrementUnparseable();
       }
@@ -108,7 +108,7 @@
         log.makeAlert(e,"Failed to finish realtime task").emit();
       }
  finally {
-        Closeables.closeQuietly(firehose);
+        CloseQuietly.close(firehose);
         toolbox.getMonitorScheduler().removeMonitor(metricsMonitor);
       }
     }

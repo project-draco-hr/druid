@@ -12,4 +12,7 @@
   }
   binder.bind(Configuration.class).toInstance(conf);
   JsonConfigProvider.bind(binder,"druid.storage",HdfsDataSegmentPusherConfig.class);
+  Binders.taskLogsBinder(binder).addBinding("hdfs").to(HdfsTaskLogs.class);
+  JsonConfigProvider.bind(binder,"druid.indexer.logs",HdfsTaskLogsConfig.class);
+  binder.bind(HdfsTaskLogs.class).in(LazySingleton.class);
 }

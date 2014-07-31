@@ -1,0 +1,10 @@
+{
+  buf.putInt(size);
+  buf.putInt(binCount);
+  buf.asFloatBuffer().put(positions);
+  buf.position(buf.position() + Floats.BYTES * positions.length);
+  buf.asLongBuffer().put(bins);
+  buf.position(buf.position() + Longs.BYTES * bins.length);
+  buf.putFloat(min);
+  buf.putFloat(max);
+}

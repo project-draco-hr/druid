@@ -1,0 +1,41 @@
+{
+synchronized (log) {
+    if (events.isEmpty()) {
+      makeEvents();
+    }
+    Map<Integer,QueryableIndex> entry=incrementalIndexes.get(index1);
+    if (entry != null) {
+      QueryableIndex index=entry.get(index2);
+      if (index != null) {
+        return index;
+      }
+    }
+ else {
+      entry=Maps.<Integer,QueryableIndex>newHashMap();
+      incrementalIndexes.put(index1,entry);
+    }
+    IncrementalIndex theIndex=null;
+    int count=0;
+    for (    final Map<String,Object> event : events) {
+      if (count != index1 && count != index2) {
+        count++;
+        continue;
+      }
+      final long timestamp=new DateTime(event.get(TIMESTAMP)).getMillis();
+      if (theIndex == null) {
+        theIndex=new IncrementalIndex(timestamp,QueryGranularity.MINUTE,METRIC_AGGS);
+      }
+      final List<String> dims=Lists.newArrayList();
+      for (      final Map.Entry<String,Object> val : event.entrySet()) {
+        if (!val.getKey().equalsIgnoreCase(TIMESTAMP) && !METRICS.contains(val.getKey())) {
+          dims.add(val.getKey());
+        }
+      }
+      theIndex.add(new MapBasedInputRow(timestamp,dims,event));
+      count++;
+    }
+    QueryableIndex retVal=TestIndex.persistRealtimeAndLoadMMapped(theIndex);
+    entry.put(index2,retVal);
+    return retVal;
+  }
+}

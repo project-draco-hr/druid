@@ -15,7 +15,7 @@
           return new RowIterator(query,cursor,bufferHolder.get(),config.get());
         }
         @Override public void cleanup(        RowIterator iterFromMake){
-          Closeables.closeQuietly(iterFromMake);
+          CloseQuietly.close(iterFromMake);
         }
       }
 );
@@ -23,7 +23,7 @@
   }
 ),new Closeable(){
     @Override public void close() throws IOException {
-      Closeables.closeQuietly(bufferHolder);
+      CloseQuietly.close(bufferHolder);
     }
   }
 ));

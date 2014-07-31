@@ -1,4 +1,5 @@
 {
+  final Map<String,DictionaryEncodedColumn> dictionaryColumnCache=Maps.newHashMap();
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
@@ -42,28 +43,30 @@
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
-          final Column column=index.getColumn(dimensionName);
+          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimensionName);
+          final Column columnDesc=index.getColumn(dimensionName);
+          if (cachedColumn == null && columnDesc != null) {
+            cachedColumn=columnDesc.getDictionaryEncoding();
+            dictionaryColumnCache.put(dimensionName,cachedColumn);
+          }
+          final DictionaryEncodedColumn column=cachedColumn;
           if (column == null) {
             return null;
           }
-          final DictionaryEncodedColumn dict=column.getDictionaryEncoding();
-          if (dict == null) {
-            return null;
-          }
- else           if (column.getCapabilities().hasMultipleValues()) {
+ else           if (columnDesc.getCapabilities().hasMultipleValues()) {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return dict.getMultiValueRow(currRow);
+                return column.getMultiValueRow(currRow);
               }
               @Override public int getValueCardinality(){
-                return dict.getCardinality();
+                return column.getCardinality();
               }
               @Override public String lookupName(              int id){
-                final String retVal=dict.lookupName(id);
+                final String retVal=column.lookupName(id);
                 return retVal == null ? "" : retVal;
               }
               @Override public int lookupId(              String name){
-                return dict.lookupId(name);
+                return column.lookupId(name);
               }
             }
 ;
@@ -71,16 +74,27 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return new SingleIndexedInts(dict.getSingleValueRow(currRow));
+                return new IndexedInts(){
+                  @Override public int size(){
+                    return 1;
+                  }
+                  @Override public int get(                  int index){
+                    return column.getSingleValueRow(currRow);
+                  }
+                  @Override public Iterator<Integer> iterator(){
+                    return Iterators.singletonIterator(column.getSingleValueRow(currRow));
+                  }
+                }
+;
               }
               @Override public int getValueCardinality(){
-                return dict.getCardinality();
+                return column.getCardinality();
               }
               @Override public String lookupName(              int id){
-                return dict.lookupName(id);
+                return column.lookupName(id);
               }
               @Override public int lookupId(              String name){
-                return dict.lookupId(name);
+                return column.lookupId(name);
               }
             }
 ;
@@ -231,16 +245,19 @@
   }
 ),new Closeable(){
     @Override public void close() throws IOException {
-      Closeables.closeQuietly(timestamps);
+      CloseQuietly.close(timestamps);
+      for (      DictionaryEncodedColumn column : dictionaryColumnCache.values()) {
+        CloseQuietly.close(column);
+      }
       for (      GenericColumn column : genericColumnCache.values()) {
-        Closeables.closeQuietly(column);
+        CloseQuietly.close(column);
       }
       for (      ComplexColumn complexColumn : complexColumnCache.values()) {
-        Closeables.closeQuietly(complexColumn);
+        CloseQuietly.close(complexColumn);
       }
       for (      Object column : objectColumnCache.values()) {
         if (column instanceof Closeable) {
-          Closeables.closeQuietly((Closeable)column);
+          CloseQuietly.close((Closeable)column);
         }
       }
     }

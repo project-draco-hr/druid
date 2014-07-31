@@ -33,10 +33,10 @@ default :
 @Override public boolean hasNext(){
 final boolean hasNext=currRow < numRows;
 if (!hasNext && !done) {
-  Closeables.closeQuietly(timestamps);
+  CloseQuietly.close(timestamps);
   for (  Object metric : metrics) {
     if (metric instanceof Closeable) {
-      Closeables.closeQuietly((Closeable)metric);
+      CloseQuietly.close((Closeable)metric);
     }
   }
   done=true;

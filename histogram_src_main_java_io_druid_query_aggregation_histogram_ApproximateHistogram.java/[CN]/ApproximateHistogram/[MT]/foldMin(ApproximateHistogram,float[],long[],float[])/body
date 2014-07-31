@@ -1,0 +1,40 @@
+{
+  float mergedMin=this.min < h.min ? this.min : h.min;
+  float mergedMax=this.max > h.max ? this.max : h.max;
+  long mergedCount=this.count + h.count;
+  int maxSize=this.binCount + h.binCount;
+  int[] next=new int[maxSize];
+  int[] prev=new int[maxSize];
+  if (mergedPositions == null || mergedBins == null || deltas == null) {
+    mergedPositions=new float[maxSize];
+    mergedBins=new long[maxSize];
+    deltas=new float[maxSize];
+  }
+ else {
+    Preconditions.checkArgument(mergedPositions.length >= maxSize,"temp buffer [mergedPositions] too small: length must be at least [%d], got [%d]",maxSize,mergedPositions.length);
+    Preconditions.checkArgument(mergedBins.length >= maxSize,"temp buffer [mergedBins] too small: length must be at least [%d], got [%d]",maxSize,mergedPositions.length);
+    Preconditions.checkArgument(deltas.length >= maxSize,"temp buffer [deltas] too small: length must be at least [%d], got [%d]",maxSize,mergedPositions.length);
+  }
+  int mergedBinCount=combineBins(this.binCount,this.positions,this.bins,h.binCount,h.positions,h.bins,mergedPositions,mergedBins,deltas);
+  if (mergedBinCount == 0) {
+    return this;
+  }
+  int numMerge=mergedBinCount - this.size;
+  if (numMerge < 0) {
+    numMerge=0;
+  }
+  mergeBins(mergedBinCount,mergedPositions,mergedBins,deltas,numMerge,next,prev);
+  int i=0;
+  int k=0;
+  while (i < mergedBinCount) {
+    this.positions[k]=mergedPositions[i];
+    this.bins[k]=mergedBins[i];
+    ++k;
+    i=next[i];
+  }
+  this.binCount=mergedBinCount - numMerge;
+  this.min=mergedMin;
+  this.max=mergedMax;
+  this.count=mergedCount;
+  return this;
+}

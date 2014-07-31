@@ -1,0 +1,16 @@
+{
+  this.theBuffer=other.theBuffer;
+  this.strategy=other.strategy;
+  this.allowReverseLookup=other.allowReverseLookup;
+  this.size=other.size;
+  this.indexOffset=other.indexOffset;
+  this.valuesOffset=other.valuesOffset;
+  this.cachedBuffer=other.cachedBuffer;
+  this.cachedValues=new ThreadLocal<SizedLRUMap<Integer,T>>(){
+    @Override protected SizedLRUMap<Integer,T> initialValue(){
+      return new SizedLRUMap<>(INITIAL_CACHE_CAPACITY,maxBytes);
+    }
+  }
+;
+  this.cacheable=strategy instanceof CacheableObjectStrategy;
+}

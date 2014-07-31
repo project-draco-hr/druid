@@ -1,0 +1,6 @@
+{
+  ApproximateHistogram h=buildHistogram(5,VALUES);
+  ByteBuffer buf=ByteBuffer.allocate(h.getDenseStorageSize());
+  h.toBytesDense(buf);
+  Assert.assertEquals(h,ApproximateHistogram.fromBytes(buf.array()));
+}

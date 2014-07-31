@@ -1,5 +1,5 @@
 {
-  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).build()),new TimelineServerView(){
+  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).put(TimeBoundaryQuery.class,new TimeBoundaryQueryQueryToolChest()).build()),new TimelineServerView(){
     @Override public void registerSegmentCallback(    Executor exec,    SegmentCallback callback){
     }
     @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    DataSource dataSource){

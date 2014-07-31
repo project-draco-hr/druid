@@ -1,0 +1,6 @@
+{
+  List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",4L).put("index",400.0D).put("addRowsIndexConstant",405.0D).put("uniques",0.0D).put("maxIndex",100.0D).put("minIndex",100.0D).build())));
+  TimeseriesQuery query=makeFilteredTimeseriesQuery();
+  QueryRunner runner=TestQueryRunners.makeTimeSeriesQueryRunner(segment2);
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query));
+}

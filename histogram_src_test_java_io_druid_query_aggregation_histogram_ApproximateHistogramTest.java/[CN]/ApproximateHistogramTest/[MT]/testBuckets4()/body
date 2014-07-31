@@ -1,0 +1,7 @@
+{
+  final float[] values=new float[]{0f,0f,0.01f,0.51f,0.6f,0.8f};
+  ApproximateHistogram h=buildHistogram(50,values,0.5f,1f);
+  Histogram h3=h.toHistogram(0.2f,0);
+  Assert.assertArrayEquals("Expected counts match actual counts",new double[]{3f,2f,1f},h3.getCounts(),0.1f);
+  Assert.assertArrayEquals("expected breaks match actual breaks",new double[]{-0.2f,0.5f,0.7f,0.9f},h3.getBreaks(),0.1f);
+}
