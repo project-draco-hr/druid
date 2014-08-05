@@ -22,7 +22,7 @@ catch (      Error e) {
       }
  finally {
         long timeTaken=System.currentTimeMillis() - startTime;
-        emitter.emit(builder.build("query/time",timeTaken));
+        emitter.emit(builder.build(metricName,timeTaken));
         if (creationTime > 0) {
           emitter.emit(builder.build("query/wait",startTime - creationTime));
         }
@@ -72,7 +72,7 @@ catch (          Error e) {
               builder.setUser10("short");
             }
             long timeTaken=System.currentTimeMillis() - startTime;
-            emitter.emit(builder.build("query/time",timeTaken));
+            emitter.emit(builder.build(metricName,timeTaken));
             if (creationTime > 0) {
               emitter.emit(builder.build("query/wait",startTime - creationTime));
             }
