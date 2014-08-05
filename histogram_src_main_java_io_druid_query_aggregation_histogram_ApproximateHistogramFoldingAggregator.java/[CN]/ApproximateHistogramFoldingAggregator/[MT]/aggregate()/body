@@ -1,0 +1,12 @@
+{
+  ApproximateHistogram h=selector.get();
+  if (h == null) {
+    return;
+  }
+  if (h.binCount() + histogram.binCount() <= tmpBufferB.length) {
+    histogram.foldFast(h,tmpBufferP,tmpBufferB);
+  }
+ else {
+    histogram.foldFast(h);
+  }
+}

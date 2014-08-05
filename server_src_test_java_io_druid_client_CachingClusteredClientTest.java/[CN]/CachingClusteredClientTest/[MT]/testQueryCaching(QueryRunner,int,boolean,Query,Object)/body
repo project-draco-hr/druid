@@ -63,6 +63,28 @@
         }
         EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableSearchResults(segmentIds,intervals,results)).once();
       }
+ else       if (query instanceof SelectQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<SelectResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableSelectResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof GroupByQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Row>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableGroupByResults(segmentIds,intervals,results)).once();
+      }
  else       if (query instanceof TimeBoundaryQuery) {
         List<String> segmentIds=Lists.newArrayList();
         List<Interval> intervals=Lists.newArrayList();

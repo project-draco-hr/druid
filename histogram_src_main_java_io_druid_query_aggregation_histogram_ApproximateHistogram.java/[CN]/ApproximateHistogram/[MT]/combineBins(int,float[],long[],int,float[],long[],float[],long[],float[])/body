@@ -1,0 +1,28 @@
+{
+  int i=0;
+  int j=0;
+  int k=0;
+  while (j < leftBinCount || k < rightBinCount) {
+    if (j < leftBinCount && (k == rightBinCount || leftPositions[j] < rightPositions[k])) {
+      mergedPositions[i]=leftPositions[j];
+      mergedBins[i]=leftBins[j];
+      ++j;
+    }
+ else     if (k < rightBinCount && (j == leftBinCount || leftPositions[j] > rightPositions[k])) {
+      mergedPositions[i]=rightPositions[k];
+      mergedBins[i]=rightBins[k];
+      ++k;
+    }
+ else {
+      mergedPositions[i]=leftPositions[j];
+      mergedBins[i]=leftBins[j] + rightBins[k];
+      ++j;
+      ++k;
+    }
+    if (deltas != null && i > 0) {
+      deltas[i - 1]=mergedPositions[i] - mergedPositions[i - 1];
+    }
+    ++i;
+  }
+  return i;
+}

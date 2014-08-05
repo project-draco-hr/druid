@@ -1,0 +1,16 @@
+{
+  ApproximateHistogramErrorBenchmark approxHist=new ApproximateHistogramErrorBenchmark();
+  System.out.println(Arrays.toString(approxHist.setDebug(true).setNumPerHist(50).setNumHists(10000).setResolution(50).setCombinedResolution(100).getErrors()));
+  ApproximateHistogramErrorBenchmark approxHist2=new ApproximateHistogramErrorBenchmark();
+  int[] numHistsArray=new int[]{10,100,1000,10000,100000};
+  float[] errs1=new float[numHistsArray.length];
+  float[] errs2=new float[numHistsArray.length];
+  for (int i=0; i < numHistsArray.length; ++i) {
+    float[] tmp=approxHist2.setDebug(false).setNumHists(numHistsArray[i]).setCombinedResolution(100).getErrors();
+    errs1[i]=tmp[0];
+    errs2[i]=tmp[1];
+  }
+  System.out.format("Number of histograms for folding                           : %s \n",Arrays.toString(numHistsArray));
+  System.out.format("Errors for approximate histogram                           : %s \n",Arrays.toString(errs1));
+  System.out.format("Errors for approximate histogram, ruleFold                 : %s \n",Arrays.toString(errs2));
+}

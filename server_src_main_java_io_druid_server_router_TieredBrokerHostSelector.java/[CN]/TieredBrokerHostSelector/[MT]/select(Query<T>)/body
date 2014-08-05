@@ -5,8 +5,12 @@ synchronized (lock) {
     }
   }
   String brokerServiceName=null;
-  if (query instanceof TimeBoundaryQuery) {
-    brokerServiceName=Iterables.getFirst(tierConfig.getTierToBrokerMap().values(),tierConfig.getDefaultBrokerServiceName());
+  for (  TieredBrokerSelectorStrategy strategy : strategies) {
+    final Optional<String> optionalName=strategy.getBrokerServiceName(tierConfig,query);
+    if (optionalName.isPresent()) {
+      brokerServiceName=optionalName.get();
+      break;
+    }
   }
   if (brokerServiceName == null) {
     List<Rule> rules=ruleManager.getRulesWithDefault(Iterables.getFirst(query.getDataSource().getNames(),null));

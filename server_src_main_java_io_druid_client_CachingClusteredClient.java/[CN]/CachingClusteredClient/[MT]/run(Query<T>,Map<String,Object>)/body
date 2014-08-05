@@ -4,8 +4,8 @@
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
-  final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache();
-  final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache();
+  final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
+  final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
   final boolean isBySegment=query.getContextBySegment(false);
   ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
   final int priority=query.getContextPriority(0);
@@ -71,7 +71,7 @@
   for (  Pair<ServerSelector,SegmentDescriptor> segment : segments) {
     final QueryableDruidServer queryableDruidServer=segment.lhs.pick();
     if (queryableDruidServer == null) {
-      log.error("No servers found for %s?! How can this be?!",segment.rhs);
+      log.makeAlert("No servers found for %s?! How can this be?!",segment.rhs).emit();
     }
  else {
       final DruidServer server=queryableDruidServer.getServer();

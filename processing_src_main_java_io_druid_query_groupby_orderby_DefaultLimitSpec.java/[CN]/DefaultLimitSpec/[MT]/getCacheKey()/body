@@ -1,0 +1,16 @@
+{
+  final byte[][] columnBytes=new byte[columns.size()][];
+  int columnsBytesSize=0;
+  int index=0;
+  for (  OrderByColumnSpec column : columns) {
+    columnBytes[index]=column.getCacheKey();
+    columnsBytesSize+=columnBytes[index].length;
+    ++index;
+  }
+  ByteBuffer buffer=ByteBuffer.allocate(1 + columnsBytesSize + 4).put(CACHE_KEY);
+  for (  byte[] columnByte : columnBytes) {
+    buffer.put(columnByte);
+  }
+  buffer.put(Ints.toByteArray(limit));
+  return buffer.array();
+}

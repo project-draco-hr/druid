@@ -1,0 +1,139 @@
+{
+  final float cutoff;
+  if (this.upperLimit != Float.POSITIVE_INFINITY && this.lowerLimit != Float.NEGATIVE_INFINITY) {
+    cutoff=(this.upperLimit - this.lowerLimit) / (size - 2 - 1);
+  }
+ else {
+    if (this.upperLimit != Float.POSITIVE_INFINITY) {
+      cutoff=(this.upperLimit - this.min) / (size - 2);
+    }
+ else     if (this.lowerLimit != Float.NEGATIVE_INFINITY) {
+      cutoff=(this.max - this.lowerLimit) / (size - 2);
+    }
+ else {
+      cutoff=(this.max - this.min) / (size - 1);
+    }
+  }
+  float lowerPosition=0f;
+  long lowerBin=0;
+  float upperPosition=0f;
+  long upperBin=0;
+  int j=0;
+  int k=0;
+  int pos=0;
+  while (j != leftBinCount) {
+    final float m1=leftPositions[j];
+    if (m1 < lowerLimit) {
+      final long k1=leftBins[j] & COUNT_BITS;
+      float delta=(m1 - lowerPosition);
+      final long k0=lowerBin & COUNT_BITS;
+      final long sum=k0 + k1;
+      final float w=(float)k0 / (float)sum;
+      lowerPosition=-delta * w + m1;
+      lowerBin=sum | APPROX_FLAG_BIT;
+      ++j;
+    }
+ else {
+      break;
+    }
+  }
+  while (k != rightBinCount) {
+    final float m1=rightPositions[k];
+    if (m1 < lowerLimit) {
+      final long k1=rightBins[k] & COUNT_BITS;
+      float delta=(m1 - lowerPosition);
+      final long k0=lowerBin & COUNT_BITS;
+      final long sum=k0 + k1;
+      final float w=(float)k0 / (float)sum;
+      lowerPosition=-delta * w + m1;
+      lowerBin=sum | APPROX_FLAG_BIT;
+      ++k;
+    }
+ else {
+      break;
+    }
+  }
+  if ((lowerBin & COUNT_BITS) > 0) {
+    mergedPositions[0]=lowerPosition;
+    mergedBins[0]=lowerBin;
+    pos=1;
+  }
+  while (j != leftBinCount || k != rightBinCount) {
+    if (j != leftBinCount && (k == rightBinCount || leftPositions[j] < rightPositions[k])) {
+      mergedPositions[pos]=leftPositions[j];
+      mergedBins[pos]=leftBins[j];
+      ++j;
+      break;
+    }
+ else {
+      mergedPositions[pos]=rightPositions[k];
+      mergedBins[pos]=rightBins[k];
+      ++k;
+      break;
+    }
+  }
+  while (j != leftBinCount || k != rightBinCount) {
+    if (j != leftBinCount && (k == rightBinCount || leftPositions[j] < rightPositions[k])) {
+      final float m1=leftPositions[j];
+      final long k1=leftBins[j] & COUNT_BITS;
+      if (m1 > upperLimit) {
+        float delta=(m1 - upperPosition);
+        final long k0=upperBin & COUNT_BITS;
+        final long sum=k0 + k1;
+        final float w=(float)k0 / (float)sum;
+        upperPosition=-delta * w + m1;
+        upperBin=sum | APPROX_FLAG_BIT;
+        ++j;
+        continue;
+      }
+      final float delta=(m1 - mergedPositions[pos]);
+      if (delta <= cutoff) {
+        final long k0=mergedBins[pos] & COUNT_BITS;
+        final long sum=k0 + k1;
+        final float w=(float)k0 / (float)sum;
+        mergedPositions[pos]=-delta * w + m1;
+        mergedBins[pos]=sum | APPROX_FLAG_BIT;
+      }
+ else {
+        ++pos;
+        mergedPositions[pos]=m1;
+        mergedBins[pos]=k1;
+      }
+      ++j;
+    }
+ else {
+      final float m1=rightPositions[k];
+      final long k1=rightBins[k] & COUNT_BITS;
+      if (m1 > upperLimit) {
+        float delta=(m1 - upperPosition);
+        final long k0=upperBin & COUNT_BITS;
+        final long sum=k0 + k1;
+        final float w=(float)k0 / (float)sum;
+        upperPosition=-delta * w + m1;
+        upperBin=sum | APPROX_FLAG_BIT;
+        ++k;
+        continue;
+      }
+      final float delta=(m1 - mergedPositions[pos]);
+      if (delta <= cutoff) {
+        final long k0=mergedBins[pos] & COUNT_BITS;
+        final long sum=k0 + k1;
+        final float w=(float)k0 / (float)sum;
+        mergedPositions[pos]=-delta * w + m1;
+        mergedBins[pos]=sum | APPROX_FLAG_BIT;
+      }
+ else {
+        ++pos;
+        mergedPositions[pos]=m1;
+        mergedBins[pos]=k1;
+      }
+      ++k;
+    }
+  }
+  if ((upperBin & COUNT_BITS) > 0) {
+    ++pos;
+    mergedPositions[pos]=upperPosition;
+    mergedBins[pos]=upperBin;
+  }
+  return pos + 1;
+}

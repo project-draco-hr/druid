@@ -1,0 +1,13 @@
+{
+  return new ShardSpecLookup(){
+    @Override public ShardSpec getShardSpec(    InputRow row){
+      for (      ShardSpec spec : shardSpecs) {
+        if (spec.isInChunk(row)) {
+          return spec;
+        }
+      }
+      throw new ISE("row[%s] doesn't fit in any shard[%s]",row,shardSpecs);
+    }
+  }
+;
+}

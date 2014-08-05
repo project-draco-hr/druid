@@ -1,0 +1,7 @@
+{
+  List<Result<TimeBoundaryResultValue>> expectedResults=Arrays.asList(new Result<TimeBoundaryResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeBoundaryResultValue(ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,new DateTime("2011-01-12T00:00:00.000Z"),TimeBoundaryQuery.MAX_TIME,new DateTime("2011-01-15T00:00:00.000Z")))));
+  TimeBoundaryQuery query=Druids.newTimeBoundaryQueryBuilder().dataSource(dataSource).build();
+  QueryRunner runner=TestQueryRunners.makeTimeBoundaryQueryRunner(segment2);
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+}

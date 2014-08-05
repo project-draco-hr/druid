@@ -1,0 +1,13 @@
+{
+  int size=buf.getInt();
+  int binCount=buf.getInt();
+  float[] positions=new float[size];
+  long[] bins=new long[size];
+  buf.asFloatBuffer().get(positions);
+  buf.position(buf.position() + Floats.BYTES * positions.length);
+  buf.asLongBuffer().get(bins);
+  buf.position(buf.position() + Longs.BYTES * bins.length);
+  float min=buf.getFloat();
+  float max=buf.getFloat();
+  return new ApproximateHistogram(binCount,positions,bins,min,max);
+}

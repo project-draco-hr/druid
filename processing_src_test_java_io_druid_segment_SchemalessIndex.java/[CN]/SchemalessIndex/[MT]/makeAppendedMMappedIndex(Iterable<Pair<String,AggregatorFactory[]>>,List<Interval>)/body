@@ -1,0 +1,34 @@
+{
+  try {
+    File tmpFile=File.createTempFile("yay","boo");
+    tmpFile.delete();
+    File mergedFile=new File(tmpFile,"merged");
+    mergedFile.mkdirs();
+    mergedFile.deleteOnExit();
+    List<File> filesToMap=makeFilesToMap(tmpFile,files);
+    List<IndexableAdapter> adapters=Lists.newArrayList();
+    VersionedIntervalTimeline<Integer,File> timeline=new VersionedIntervalTimeline<Integer,File>(Ordering.natural().nullsFirst());
+    ShardSpec noneShardSpec=new NoneShardSpec();
+    for (int i=0; i < intervals.size(); i++) {
+      timeline.add(intervals.get(i),i,noneShardSpec.createChunk(filesToMap.get(i)));
+    }
+    List<Pair<File,Interval>> intervalsToMerge=Lists.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<Integer,File>,Pair<File,Interval>>(){
+      @Override public Pair<File,Interval> apply(      @Nullable TimelineObjectHolder<Integer,File> input){
+        return new Pair<File,Interval>(input.getObject().getChunk(0).getObject(),input.getInterval());
+      }
+    }
+);
+    for (    final Pair<File,Interval> pair : intervalsToMerge) {
+      adapters.add(new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(pair.lhs)),new Predicate<Rowboat>(){
+        @Override public boolean apply(        @Nullable Rowboat input){
+          return pair.rhs.contains(input.getTimestamp());
+        }
+      }
+));
+    }
+    return IndexIO.loadIndex(IndexMerger.append(adapters,mergedFile));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

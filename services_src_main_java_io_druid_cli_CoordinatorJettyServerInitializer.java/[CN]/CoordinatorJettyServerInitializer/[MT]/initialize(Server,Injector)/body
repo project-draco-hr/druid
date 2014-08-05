@@ -2,7 +2,12 @@
   final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
   ServletHolder holderPwd=new ServletHolder("default",DefaultServlet.class);
   root.addServlet(holderPwd,"/");
-  root.setResourceBase(DruidCoordinator.class.getClassLoader().getResource("static").toExternalForm());
+  if (config.getConsoleStatic() == null) {
+    root.setBaseResource(Resource.newClassPathResource("static"));
+  }
+ else {
+    root.setResourceBase(config.getConsoleStatic());
+  }
   root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GzipFilter.class,"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);

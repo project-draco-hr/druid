@@ -18,6 +18,9 @@
     @Override public long getTimestampFromEpoch(){
       return row.getTimestampFromEpoch();
     }
+    @Override public DateTime getTimestamp(){
+      return row.getTimestamp();
+    }
     @Override public List<String> getDimension(    String dimension){
       List<String> retVal=spatialLookup.get(dimension);
       return (retVal == null) ? row.getDimension(dimension) : retVal;
@@ -35,6 +38,9 @@
     }
     @Override public String toString(){
       return row.toString();
+    }
+    @Override public int compareTo(    Row o){
+      return getTimestamp().compareTo(o.getTimestamp());
     }
   }
 ;

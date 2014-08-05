@@ -1,0 +1,21 @@
+{
+  ApproximateHistogram h1=new ApproximateHistogram(10);
+  ApproximateHistogram h1Fast=new ApproximateHistogram(10);
+  ApproximateHistogram h2=new ApproximateHistogram(10);
+  ApproximateHistogram h3=new ApproximateHistogram(10);
+  ApproximateHistogram h4=new ApproximateHistogram(10);
+  ApproximateHistogram h4Fast=new ApproximateHistogram(10);
+  for (  float v : VALUES3) {
+    h3.offer(v);
+    h4.offer(v);
+    h4Fast.offer(v);
+  }
+  h1.fold(h3);
+  h4.fold(h2);
+  h1Fast.foldFast(h3);
+  h4Fast.foldFast(h2);
+  Assert.assertEquals(h3,h1);
+  Assert.assertEquals(h4,h3);
+  Assert.assertEquals(h3,h1Fast);
+  Assert.assertEquals(h3,h4Fast);
+}

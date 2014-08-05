@@ -1,0 +1,22 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  Quantiles quantiles1=(Quantiles)o;
+  if (Float.compare(quantiles1.max,max) != 0) {
+    return false;
+  }
+  if (Float.compare(quantiles1.min,min) != 0) {
+    return false;
+  }
+  if (!Arrays.equals(probabilities,quantiles1.probabilities)) {
+    return false;
+  }
+  if (!Arrays.equals(quantiles,quantiles1.quantiles)) {
+    return false;
+  }
+  return true;
+}

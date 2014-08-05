@@ -1,0 +1,28 @@
+{
+  if (h.binCount == 0) {
+    return this;
+  }
+  float mergedMin=this.min < h.min ? this.min : h.min;
+  float mergedMax=this.max > h.max ? this.max : h.max;
+  long mergedCount=this.count + h.count;
+  this.min=mergedMin;
+  this.max=mergedMax;
+  if (mergedPositions == null) {
+    mergedPositions=new float[this.size];
+    mergedBins=new long[this.size];
+  }
+  int mergedBinCount;
+  if (this.binCount + h.binCount <= this.size) {
+    mergedBinCount=combineBins(this.binCount,this.positions,this.bins,h.binCount,h.positions,h.bins,mergedPositions,mergedBins,null);
+  }
+ else {
+    mergedBinCount=ruleCombineBins(this.binCount,this.positions,this.bins,h.binCount,h.positions,h.bins,mergedPositions,mergedBins);
+  }
+  for (int i=0; i < mergedBinCount; ++i) {
+    this.positions[i]=mergedPositions[i];
+    this.bins[i]=mergedBins[i];
+  }
+  this.binCount=mergedBinCount;
+  this.count=mergedCount;
+  return this;
+}

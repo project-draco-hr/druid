@@ -1,8 +1,0 @@
-{
-  final DruidHttpClientConfig config=configProvider.get().get();
-  final HttpClientConfig.Builder builder=HttpClientConfig.builder().withNumConnections(config.getNumConnections()).withReadTimeout(config.getReadTimeout());
-  if (sslContextBinding != null) {
-    builder.withSslContext(sslContextBinding.getProvider().get());
-  }
-  return HttpClientInit.createClient(builder.build(),lifecycleProvider.get());
-}

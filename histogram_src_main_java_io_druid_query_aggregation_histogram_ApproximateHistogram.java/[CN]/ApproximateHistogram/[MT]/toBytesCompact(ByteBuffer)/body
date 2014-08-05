@@ -1,0 +1,25 @@
+{
+  Preconditions.checkState(canStoreCompact(),"Approximate histogram cannot be stored in compact form");
+  buf.putShort((short)(-1 * size));
+  final long exactCount=getExactCount();
+  if (exactCount != count) {
+    buf.put((byte)(-1 * (count - exactCount)));
+    for (int i=0; i < binCount; ++i) {
+      if ((bins[i] & APPROX_FLAG_BIT) != 0) {
+        for (int k=0; k < (bins[i] & COUNT_BITS); ++k) {
+          buf.putFloat(positions[i]);
+        }
+      }
+    }
+    buf.putFloat(min);
+    buf.putFloat(max);
+  }
+  buf.put((byte)exactCount);
+  for (int i=0; i < binCount; ++i) {
+    if ((bins[i] & APPROX_FLAG_BIT) == 0) {
+      for (int k=0; k < (bins[i] & COUNT_BITS); ++k) {
+        buf.putFloat(positions[i]);
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",8L).put("index",700.0D).put("addRowsIndexConstant",709.0D).put("uniques",1.0002442201269182D).put("maxIndex",100.0D).put("minIndex",0.0D).build())));
+  TimeseriesQuery query=makeTimeseriesQuery();
+  QueryRunner runner=TestQueryRunners.makeTimeSeriesQueryRunner(segment);
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+}

@@ -1,0 +1,7 @@
+{
+  List<Result<SearchResultValue>> expectedResults=Arrays.asList(new Result<SearchResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new SearchResultValue(Arrays.<SearchHit>asList(new SearchHit(placementishDimension,"a"),new SearchHit(placementDimension,"mezzanine"),new SearchHit(providerDimension,"total_market")))));
+  SearchQuery query=makeFilteredSearchQuery();
+  QueryRunner runner=TestQueryRunners.makeSearchQueryRunner(segment2);
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+}

@@ -1,0 +1,23 @@
+{
+  if (!Strings.isNullOrEmpty(config.getAccessKey()) && !Strings.isNullOrEmpty(config.getSecretKey())) {
+    return new AWSCredentialsProvider(){
+      @Override public com.amazonaws.auth.AWSCredentials getCredentials(){
+        return new com.amazonaws.auth.AWSCredentials(){
+          @Override public String getAWSAccessKeyId(){
+            return config.getAccessKey();
+          }
+          @Override public String getAWSSecretKey(){
+            return config.getSecretKey();
+          }
+        }
+;
+      }
+      @Override public void refresh(){
+      }
+    }
+;
+  }
+ else {
+    return new FileSessionCredentialsProvider(config.getFileSessionCredentials());
+  }
+}

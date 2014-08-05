@@ -1,0 +1,24 @@
+{
+  try {
+    File tmpFile=File.createTempFile("yay","who");
+    tmpFile.delete();
+    File mergedFile=new File(tmpFile,"merged");
+    mergedFile.mkdirs();
+    mergedFile.deleteOnExit();
+    List<File> filesToMap=makeFilesToMap(tmpFile,files);
+    return IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Lists.newArrayList(Iterables.transform(filesToMap,new Function<File,QueryableIndex>(){
+      @Override public QueryableIndex apply(      @Nullable File input){
+        try {
+          return IndexIO.loadIndex(input);
+        }
+ catch (        IOException e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+)),METRIC_AGGS,mergedFile));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

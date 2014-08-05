@@ -1,0 +1,20 @@
+{
+  S3StorageDruidModule module=new S3StorageDruidModule();
+  AWSCredentialsConfig config=EasyMock.createMock(AWSCredentialsConfig.class);
+  EasyMock.expect(config.getAccessKey()).andReturn("");
+  EasyMock.expect(config.getSecretKey()).andReturn("");
+  File file=folder.newFile();
+  PrintWriter out=new PrintWriter(file.getAbsolutePath());
+  out.println("sessionToken=sessionTokenSample\nsecretKey=secretKeySample\naccessKey=accessKeySample");
+  out.close();
+  EasyMock.expect(config.getFileSessionCredentials()).andReturn(file.getAbsolutePath()).atLeastOnce();
+  EasyMock.replay(config);
+  AWSCredentialsProvider provider=module.getAWSCredentialsProvider(config);
+  AWSCredentials credentials=provider.getCredentials();
+  assertTrue(credentials instanceof AWSSessionCredentials);
+  AWSSessionCredentials sessionCredentials=(AWSSessionCredentials)credentials;
+  assertEquals(sessionCredentials.getAWSAccessKeyId(),"accessKeySample");
+  assertEquals(sessionCredentials.getAWSSecretKey(),"secretKeySample");
+  assertEquals(sessionCredentials.getSessionToken(),"sessionTokenSample");
+  module.getRestS3Service(provider);
+}

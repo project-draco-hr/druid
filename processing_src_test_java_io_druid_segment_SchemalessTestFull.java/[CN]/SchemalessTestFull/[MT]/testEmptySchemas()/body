@@ -1,0 +1,10 @@
+{
+  List<Result<TimeseriesResultValue>> expectedTimeseriesResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("index",0.0D).put("addRowsIndexConstant",2.0D).put("uniques",0.0D).put("maxIndex",0.0D).put("minIndex",0.0D).build())));
+  List<Result<TimeseriesResultValue>> expectedFilteredTimeSeriesResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",0L).put("index",0.0D).put("addRowsIndexConstant",1.0D).put("uniques",0.0D).put("maxIndex",Double.NEGATIVE_INFINITY).put("minIndex",Double.POSITIVE_INFINITY).build())));
+  List<Result<TopNResultValue>> expectedTopNResults=Arrays.asList();
+  List<Result<TopNResultValue>> expectedFilteredTopNResults=Arrays.asList();
+  List<Result<SearchResultValue>> expectedSearchResults=Arrays.asList(new Result<SearchResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new SearchResultValue(Arrays.<SearchHit>asList())));
+  List<Result<SearchResultValue>> expectedFilteredSearchResults=expectedSearchResults;
+  List<Result<TimeBoundaryResultValue>> expectedTimeBoundaryResults=Arrays.asList(new Result<TimeBoundaryResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeBoundaryResultValue(ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,new DateTime("2011-01-12T00:00:00.000Z"),TimeBoundaryQuery.MAX_TIME,new DateTime("2011-01-12T00:00:00.000Z")))));
+  runTests(new QueryableIndexSegment(null,SchemalessIndex.getMergedIncrementalIndex(0,0)),expectedTimeseriesResults,expectedFilteredTimeSeriesResults,expectedTopNResults,expectedFilteredTopNResults,expectedSearchResults,expectedFilteredSearchResults,expectedTimeBoundaryResults,"Failed: MII[0, 0]");
+}
