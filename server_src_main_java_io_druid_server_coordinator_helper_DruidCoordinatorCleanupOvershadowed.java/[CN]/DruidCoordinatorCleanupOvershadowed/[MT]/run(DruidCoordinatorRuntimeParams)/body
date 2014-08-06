@@ -1,30 +1,7 @@
 {
   CoordinatorStats stats=new CoordinatorStats();
-  Set<DataSegment> availableSegments=params.getAvailableSegments();
-  DruidCluster cluster=params.getDruidCluster();
-  if (!availableSegments.isEmpty()) {
-    for (    MinMaxPriorityQueue<ServerHolder> serverHolders : cluster.getSortedServersByTier()) {
-      for (      ServerHolder serverHolder : serverHolders) {
-        ImmutableDruidServer server=serverHolder.getServer();
-        for (        ImmutableDruidDataSource dataSource : server.getDataSources()) {
-          for (          DataSegment segment : dataSource.getSegments()) {
-            if (!availableSegments.contains(segment)) {
-              LoadQueuePeon queuePeon=params.getLoadManagementPeons().get(server.getName());
-              if (!queuePeon.getSegmentsToDrop().contains(segment)) {
-                queuePeon.dropSegment(segment,new LoadPeonCallback(){
-                  @Override public void execute(){
-                  }
-                }
-);
-                stats.addToTieredStat("unneededCount",server.getTier(),1);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
   if (params.hasDeletionWaitTimeElapsed()) {
+    DruidCluster cluster=params.getDruidCluster();
     Map<String,VersionedIntervalTimeline<String,DataSegment>> timelines=Maps.newHashMap();
     for (    MinMaxPriorityQueue<ServerHolder> serverHolders : cluster.getSortedServersByTier()) {
       for (      ServerHolder serverHolder : serverHolders) {
@@ -32,7 +9,7 @@
         for (        ImmutableDruidDataSource dataSource : server.getDataSources()) {
           VersionedIntervalTimeline<String,DataSegment> timeline=timelines.get(dataSource.getName());
           if (timeline == null) {
-            timeline=new VersionedIntervalTimeline<String,DataSegment>(Comparators.comparable());
+            timeline=new VersionedIntervalTimeline<>(Comparators.comparable());
             timelines.put(dataSource.getName(),timeline);
           }
           for (          DataSegment segment : dataSource.getSegments()) {
