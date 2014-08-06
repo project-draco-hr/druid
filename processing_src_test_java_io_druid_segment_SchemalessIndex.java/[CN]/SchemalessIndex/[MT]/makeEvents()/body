@@ -1,0 +1,14 @@
+{
+  URL resource=TestIndex.class.getClassLoader().getResource(testFile);
+  String filename=resource.getFile();
+  log.info("Realtime loading index file[%s]",filename);
+  try {
+    for (    Object obj : jsonMapper.readValue(new File(filename),List.class)) {
+      final Map<String,Object> event=jsonMapper.convertValue(obj,Map.class);
+      events.add(event);
+    }
+  }
+ catch (  Exception e) {
+    Throwables.propagate(e);
+  }
+}

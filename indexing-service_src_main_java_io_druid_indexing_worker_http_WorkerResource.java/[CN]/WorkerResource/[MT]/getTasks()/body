@@ -1,0 +1,13 @@
+{
+  try {
+    return Response.ok(Lists.newArrayList(Collections2.transform(taskRunner.getKnownTasks(),new Function<TaskRunnerWorkItem,String>(){
+      @Override public String apply(      TaskRunnerWorkItem input){
+        return input.getTaskId();
+      }
+    }
+))).build();
+  }
+ catch (  Exception e) {
+    return Response.serverError().build();
+  }
+}

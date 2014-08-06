@@ -4,6 +4,6 @@
   converter.combine(buf,val);
   final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder();
   LZFChunk chunk=encoder.get().encodeChunk(buf.array(),0,buf.array().length);
-  Closeables.closeQuietly(encoder);
+  CloseQuietly.close(encoder);
   return chunk.getData();
 }

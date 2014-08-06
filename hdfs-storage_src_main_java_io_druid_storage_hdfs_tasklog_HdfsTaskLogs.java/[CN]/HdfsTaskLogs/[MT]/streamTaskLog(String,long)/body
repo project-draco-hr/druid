@@ -1,0 +1,19 @@
+{
+  final Path path=getTaskLogFileFromId(taskId);
+  final FileSystem fs=FileSystem.get(new Configuration());
+  if (fs.exists(path)) {
+    return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
+      @Override public InputStream getInput() throws IOException {
+        log.info("reading task log from: %s",path);
+        final InputStream inputStream=fs.open(path);
+        ByteStreams.skipFully(inputStream,offset);
+        log.info("read task log from: %s",path);
+        return inputStream;
+      }
+    }
+);
+  }
+ else {
+    return Optional.absent();
+  }
+}

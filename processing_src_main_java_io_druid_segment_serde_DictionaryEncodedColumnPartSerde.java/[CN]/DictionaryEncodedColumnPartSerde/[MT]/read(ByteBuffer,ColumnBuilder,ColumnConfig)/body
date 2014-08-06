@@ -1,0 +1,25 @@
+{
+  final boolean isSingleValued=buffer.get() == 0x0;
+  final GenericIndexed<String> dictionary=GenericIndexed.read(buffer,GenericIndexed.stringStrategy);
+  final VSizeIndexedInts singleValuedColumn;
+  final VSizeIndexed multiValuedColumn;
+  builder.setType(ValueType.STRING);
+  if (isSingleValued) {
+    singleValuedColumn=VSizeIndexedInts.readFromByteBuffer(buffer);
+    multiValuedColumn=null;
+    builder.setHasMultipleValues(false).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(dictionary,singleValuedColumn,null,columnConfig.columnCacheSizeBytes()));
+  }
+ else {
+    singleValuedColumn=null;
+    multiValuedColumn=VSizeIndexed.readFromByteBuffer(buffer);
+    builder.setHasMultipleValues(true).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(dictionary,null,multiValuedColumn,columnConfig.columnCacheSizeBytes()));
+  }
+  GenericIndexed<ImmutableConciseSet> bitmaps=GenericIndexed.read(buffer,ConciseCompressedIndexedInts.objectStrategy);
+  builder.setBitmapIndex(new BitmapIndexColumnPartSupplier(bitmaps,dictionary));
+  ImmutableRTree spatialIndex=null;
+  if (buffer.hasRemaining()) {
+    spatialIndex=ByteBufferSerializer.read(buffer,IndexedRTree.objectStrategy);
+    builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(spatialIndex));
+  }
+  return new DictionaryEncodedColumnPartSerde(dictionary,singleValuedColumn,multiValuedColumn,bitmaps,spatialIndex);
+}

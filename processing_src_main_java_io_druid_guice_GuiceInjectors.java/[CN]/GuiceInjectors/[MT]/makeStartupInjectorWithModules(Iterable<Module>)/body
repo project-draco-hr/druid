@@ -1,0 +1,18 @@
+{
+  List<Module> theModules=Lists.newArrayList();
+  theModules.add(new DruidGuiceExtensions());
+  theModules.add(new JacksonModule());
+  theModules.add(new PropertiesModule(Arrays.asList("global.runtime.properties","runtime.properties")));
+  theModules.add(new ConfigModule());
+  theModules.add(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(DruidSecondaryModule.class);
+      JsonConfigProvider.bind(binder,"druid.extensions",ExtensionsConfig.class);
+    }
+  }
+);
+  for (  Module theModule : modules) {
+    theModules.add(theModule);
+  }
+  return Guice.createInjector(theModules);
+}

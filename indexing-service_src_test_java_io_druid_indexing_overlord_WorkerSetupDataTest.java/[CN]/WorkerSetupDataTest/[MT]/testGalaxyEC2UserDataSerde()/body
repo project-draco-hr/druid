@@ -1,0 +1,8 @@
+{
+  final String json="{\"env\":\"druid\",\"version\":null,\"type\":\"typical\"}";
+  final GalaxyEC2UserData userData=(GalaxyEC2UserData)TestUtils.MAPPER.readValue(json,EC2UserData.class);
+  Assert.assertEquals("druid",userData.getEnv());
+  Assert.assertEquals("typical",userData.getType());
+  Assert.assertNull(userData.getVersion());
+  Assert.assertEquals("1234",userData.withVersion("1234").getVersion());
+}

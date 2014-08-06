@@ -1,0 +1,9 @@
+{
+  return new ShardSpecLookup(){
+    @Override public ShardSpec getShardSpec(    InputRow row){
+      int index=Math.abs(hash(row) % getPartitions());
+      return shardSpecs.get(index);
+    }
+  }
+;
+}

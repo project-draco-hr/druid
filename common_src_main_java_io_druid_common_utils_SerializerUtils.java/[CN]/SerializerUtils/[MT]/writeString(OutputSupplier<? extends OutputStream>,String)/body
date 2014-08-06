@@ -1,10 +1,5 @@
 {
-  OutputStream out=null;
-  try {
-    out=supplier.getOutput();
+  try (OutputStream out=supplier.getOutput()){
     writeString(out,name);
   }
-  finally {
-    Closeables.closeQuietly(out);
-  }
-}
+ }

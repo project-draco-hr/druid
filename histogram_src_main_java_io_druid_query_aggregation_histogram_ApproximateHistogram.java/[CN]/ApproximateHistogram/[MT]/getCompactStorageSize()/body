@@ -1,0 +1,10 @@
+{
+  Preconditions.checkState(canStoreCompact(),"Approximate histogram cannot be stored in compact form");
+  final long exactCount=getExactCount();
+  if (exactCount == count) {
+    return Shorts.BYTES + 1 + Floats.BYTES * (int)exactCount;
+  }
+ else {
+    return Shorts.BYTES + 1 + Floats.BYTES * (int)exactCount + 1 + Floats.BYTES * (int)(count - exactCount) + Floats.BYTES * 2;
+  }
+}

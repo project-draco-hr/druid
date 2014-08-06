@@ -2,6 +2,7 @@
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.queue",TaskQueueConfig.class);
+      JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
       binder.bind(TaskLogStreamer.class).to(SwitchingTaskLogStreamer.class).in(LazySingleton.class);
       binder.bind(new TypeLiteral<List<TaskLogStreamer>>(){

@@ -1,0 +1,18 @@
+{
+  ObjectColumnSelector selector=metricFactory.makeObjectColumnSelector(fieldName);
+  if (selector == null) {
+    selector=new ObjectColumnSelector<ApproximateHistogram>(){
+      @Override public Class<ApproximateHistogram> classOfObject(){
+        return ApproximateHistogram.class;
+      }
+      @Override public ApproximateHistogram get(){
+        return new ApproximateHistogram(0);
+      }
+    }
+;
+  }
+  if (ApproximateHistogram.class.isAssignableFrom(selector.classOfObject())) {
+    return new ApproximateHistogramFoldingAggregator(name,selector,resolution,lowerLimit,upperLimit);
+  }
+  throw new IAE("Incompatible type for metric[%s], expected a ApproximateHistogram, got a %s",fieldName,selector.classOfObject());
+}

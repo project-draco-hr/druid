@@ -1,0 +1,55 @@
+{
+  log.info("Connecting firehose: dataSource[%s], interval[%s]",dataSource,interval);
+  final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new NoopTask("reingest",0,0,null,null));
+  try {
+    final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
+    final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
+    VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural().nullsFirst());
+    for (    DataSegment segment : usedSegments) {
+      timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+    }
+    final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(interval);
+    List<String> dims;
+    if (dimensions != null) {
+      dims=dimensions;
+    }
+ else {
+      Set<String> dimSet=new HashSet<>();
+      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
+        dimSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getDimensions());
+      }
+      dims=Lists.newArrayList(dimSet);
+    }
+    List<String> metricsList;
+    if (metrics != null) {
+      metricsList=metrics;
+    }
+ else {
+      Set<String> metricsSet=new HashSet<>();
+      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
+        metricsSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getDimensions());
+      }
+      metricsList=Lists.newArrayList(metricsSet);
+    }
+    final List<StorageAdapter> adapters=Lists.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,StorageAdapter>(){
+      @Override public StorageAdapter apply(      TimelineObjectHolder<String,DataSegment> input){
+        final DataSegment segment=input.getObject().getChunk(0).getObject();
+        final File file=Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier());
+        try {
+          return new QueryableIndexStorageAdapter((IndexIO.loadIndex(file)));
+        }
+ catch (        IOException e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
+    return new IngestSegmentFirehose(adapters,dims,metricsList);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+catch (  SegmentLoadingException e) {
+    throw Throwables.propagate(e);
+  }
+}

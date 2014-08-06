@@ -1,0 +1,34 @@
+{
+  final float minFloor=(float)Math.floor((min() - offset) / bucketSize) * bucketSize + offset;
+  final float lowerLimitFloor=(float)Math.floor((lowerLimit - offset) / bucketSize) * bucketSize + offset;
+  final float firstBreak=Math.max(minFloor,lowerLimitFloor);
+  final float maxCeil=(float)Math.ceil((max() - offset) / bucketSize) * bucketSize + offset;
+  final float upperLimitCeil=(float)Math.ceil((upperLimit - offset) / bucketSize) * bucketSize + offset;
+  final float lastBreak=Math.min(maxCeil,upperLimitCeil);
+  final float cutoff=0.1f;
+  final ArrayList<Float> breaks=new ArrayList<Float>();
+  final float bottomBreak=minFloor - bucketSize;
+  if (bottomBreak != firstBreak && (sum(firstBreak) - sum(bottomBreak) > cutoff)) {
+    breaks.add(bottomBreak);
+  }
+  float left=firstBreak;
+  boolean leftSet=false;
+  while (left + bucketSize <= lastBreak + (bucketSize / 10)) {
+    final float right=left + bucketSize;
+    if (sum(right) - sum(left) > cutoff) {
+      if (!leftSet) {
+        breaks.add(left);
+      }
+      breaks.add(right);
+      leftSet=true;
+    }
+ else {
+      leftSet=false;
+    }
+    left=right;
+  }
+  if (breaks.get(breaks.size() - 1) != maxCeil && (sum(maxCeil) - sum(breaks.get(breaks.size() - 1)) > cutoff)) {
+    breaks.add(maxCeil);
+  }
+  return toHistogram(Floats.toArray(breaks));
+}

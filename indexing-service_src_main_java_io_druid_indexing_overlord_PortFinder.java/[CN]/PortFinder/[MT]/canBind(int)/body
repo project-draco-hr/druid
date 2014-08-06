@@ -1,0 +1,26 @@
+{
+  ServerSocket ss=null;
+  boolean isFree=false;
+  try {
+    ss=new ServerSocket(portNum);
+    isFree=true;
+  }
+ catch (  BindException be) {
+    isFree=false;
+  }
+catch (  IOException e) {
+    throw new RuntimeException(e);
+  }
+ finally {
+    if (ss != null) {
+      while (!ss.isClosed()) {
+        try {
+          ss.close();
+        }
+ catch (        IOException e) {
+        }
+      }
+    }
+  }
+  return isFree;
+}

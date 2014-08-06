@@ -1,0 +1,17 @@
+{
+  final Iterator<InputRow> iterator=rows.iterator();
+  return new Firehose(){
+    @Override public boolean hasMore(){
+      return iterator.hasNext();
+    }
+    @Override public InputRow nextRow(){
+      return iterator.next();
+    }
+    @Override public Runnable commit(){
+      return Runnables.getNoopRunnable();
+    }
+    @Override public void close() throws IOException {
+    }
+  }
+;
+}

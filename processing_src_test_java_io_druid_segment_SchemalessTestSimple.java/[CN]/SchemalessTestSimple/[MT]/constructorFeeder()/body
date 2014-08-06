@@ -1,0 +1,6 @@
+{
+  final IncrementalIndex incrementalIndex=SchemalessIndex.getIncrementalIndex();
+  final QueryableIndex persistedIncrementalIndex=TestIndex.persistRealtimeAndLoadMMapped(incrementalIndex);
+  final QueryableIndex mergedIncrementalIndex=SchemalessIndex.getMergedIncrementalIndex();
+  return Arrays.asList(new Object[][]{{new IncrementalIndexSegment(incrementalIndex,null)},{new QueryableIndexSegment(null,persistedIncrementalIndex)},{new QueryableIndexSegment(null,mergedIncrementalIndex)}});
+}

@@ -1,0 +1,54 @@
+{
+  if (value < min) {
+    min=value;
+  }
+  if (value > max) {
+    max=value;
+  }
+  if (binCount == 0) {
+    positions[0]=value;
+    bins[0]=1;
+    count++;
+    binCount++;
+    return;
+  }
+  final int index=Arrays.binarySearch(positions,0,binCount,value);
+  if (index >= 0) {
+    bins[index]=(bins[index] & APPROX_FLAG_BIT) | ((bins[index] & COUNT_BITS) + 1);
+    count++;
+    return;
+  }
+  final int insertAt=-(index + 1);
+  if (binCount < size) {
+    shiftRight(insertAt,binCount);
+    positions[insertAt]=value;
+    bins[insertAt]=1;
+    count++;
+    binCount++;
+    return;
+  }
+  int minPos=minDeltaIndex();
+  float minDelta=minPos >= 0 ? positions[minPos + 1] - positions[minPos] : Float.MAX_VALUE;
+  final float deltaRight=insertAt < binCount ? positions[insertAt] - value : Float.MAX_VALUE;
+  final float deltaLeft=insertAt > 0 ? value - positions[insertAt - 1] : Float.MAX_VALUE;
+  boolean mergeValue=false;
+  if (deltaRight < minDelta) {
+    minDelta=deltaRight;
+    minPos=insertAt;
+    mergeValue=true;
+  }
+  if (deltaLeft < minDelta) {
+    minDelta=deltaLeft;
+    minPos=insertAt - 1;
+    mergeValue=true;
+  }
+  if (mergeValue) {
+    final long k=bins[minPos] & COUNT_BITS;
+    positions[minPos]=(positions[minPos] * k + value) / (k + 1);
+    bins[minPos]=(k + 1) | APPROX_FLAG_BIT;
+    count++;
+  }
+ else {
+    mergeInsert(minPos,insertAt,value,1);
+  }
+}

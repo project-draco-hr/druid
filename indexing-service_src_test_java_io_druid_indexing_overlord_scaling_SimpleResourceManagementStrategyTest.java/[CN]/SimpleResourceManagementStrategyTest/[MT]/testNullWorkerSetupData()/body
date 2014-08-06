@@ -1,8 +1,8 @@
 {
   workerSetupData.set(null);
   EasyMock.replay(autoScalingStrategy);
-  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
-  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
+  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
   Assert.assertFalse(terminatedSomething);
   Assert.assertFalse(provisionedSomething);
   EasyMock.verify(autoScalingStrategy);

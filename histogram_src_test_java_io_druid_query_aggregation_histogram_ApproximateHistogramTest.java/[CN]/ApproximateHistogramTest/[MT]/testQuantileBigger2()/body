@@ -1,0 +1,11 @@
+{
+  float[] thousand=new float[1000];
+  for (int i=1; i <= 1000; ++i) {
+    thousand[i - 1]=i;
+  }
+  ApproximateHistogram h=buildHistogram(100,thousand);
+  Assert.assertArrayEquals("expected quantiles match actual quantiles",new float[]{493.5f},h.getQuantiles(new float[]{.5f}),0.1f);
+  Assert.assertArrayEquals("expected quantiles match actual quantiles",new float[]{327.5f,662f},h.getQuantiles(new float[]{.333f,.666f}),0.1f);
+  Assert.assertArrayEquals("expected quantiles match actual quantiles",new float[]{244.5f,493.5f,746f},h.getQuantiles(new float[]{.25f,.5f,.75f}),0.1f);
+  Assert.assertArrayEquals("expected quantiles match actual quantiles",new float[]{96.5f,196.53f,294.5f,395.5f,493.5f,597f,696f,795f,895.25f},h.getQuantiles(new float[]{.1f,.2f,.3f,.4f,.5f,.6f,.7f,.8f,.9f}),0.1f);
+}

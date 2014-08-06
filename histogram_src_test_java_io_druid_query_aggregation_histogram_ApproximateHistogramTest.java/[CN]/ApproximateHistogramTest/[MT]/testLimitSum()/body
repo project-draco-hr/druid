@@ -1,0 +1,15 @@
+{
+  final float lowerLimit=0f;
+  final float upperLimit=10f;
+  ApproximateHistogram h=buildHistogram(15,VALUES6,lowerLimit,upperLimit);
+  for (int i=1; i <= 20; ++i) {
+    ApproximateHistogram hLow=new ApproximateHistogram(5);
+    ApproximateHistogram hHigh=new ApproximateHistogram(5);
+    hLow.offer(lowerLimit - i);
+    hHigh.offer(upperLimit + i);
+    h.foldFast(hLow);
+    h.foldFast(hHigh);
+  }
+  Assert.assertEquals(20f,h.sum(lowerLimit),.7f);
+  Assert.assertEquals(VALUES6.length + 20f,h.sum(upperLimit),0.01);
+}

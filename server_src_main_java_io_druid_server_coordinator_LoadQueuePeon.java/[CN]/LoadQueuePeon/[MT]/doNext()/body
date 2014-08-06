@@ -1,13 +1,13 @@
 {
 synchronized (lock) {
-    if (currentlyLoading == null) {
+    if (currentlyProcessing == null) {
       if (!segmentsToDrop.isEmpty()) {
-        currentlyLoading=segmentsToDrop.first();
-        log.info("Server[%s] dropping [%s]",basePath,currentlyLoading);
+        currentlyProcessing=segmentsToDrop.first();
+        log.info("Server[%s] dropping [%s]",basePath,currentlyProcessing.getSegmentIdentifier());
       }
  else       if (!segmentsToLoad.isEmpty()) {
-        currentlyLoading=segmentsToLoad.first();
-        log.info("Server[%s] loading [%s]",basePath,currentlyLoading);
+        currentlyProcessing=segmentsToLoad.first();
+        log.info("Server[%s] loading [%s]",basePath,currentlyProcessing.getSegmentIdentifier());
       }
  else {
         return;
@@ -16,21 +16,21 @@ synchronized (lock) {
         @Override public void run(){
 synchronized (lock) {
             try {
-              if (currentlyLoading == null) {
+              if (currentlyProcessing == null) {
                 log.makeAlert("Crazy race condition! server[%s]",basePath).emit();
                 actionCompleted();
                 doNext();
                 return;
               }
-              log.info("Server[%s] adding segment[%s]",basePath,currentlyLoading.getSegmentIdentifier());
-              final String path=ZKPaths.makePath(basePath,currentlyLoading.getSegmentIdentifier());
-              final byte[] payload=jsonMapper.writeValueAsBytes(currentlyLoading.getChangeRequest());
+              log.info("Server[%s] processing segment[%s]",basePath,currentlyProcessing.getSegmentIdentifier());
+              final String path=ZKPaths.makePath(basePath,currentlyProcessing.getSegmentIdentifier());
+              final byte[] payload=jsonMapper.writeValueAsBytes(currentlyProcessing.getChangeRequest());
               curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,payload);
               zkWritingExecutor.schedule(new Runnable(){
                 @Override public void run(){
                   try {
                     if (curator.checkExists().forPath(path) != null) {
-                      failAssign(new ISE("%s was never removed! Failing this assign!",path));
+                      failAssign(new ISE("%s was never removed! Failing this operation!",path));
                     }
                   }
  catch (                  Exception e) {
@@ -63,7 +63,7 @@ case NodeDeleted:
 );
   }
  else {
-    log.info("Server[%s] skipping doNext() because something is currently loading[%s].",basePath,currentlyLoading);
+    log.info("Server[%s] skipping doNext() because something is currently loading[%s].",basePath,currentlyProcessing.getSegmentIdentifier());
   }
 }
 }

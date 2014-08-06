@@ -1,5 +1,7 @@
 {
   super.configure(binder);
+  binder.bind(QueryWatcher.class).to(QueryManager.class).in(LazySingleton.class);
+  binder.bind(QueryManager.class).in(LazySingleton.class);
   final MapBinder<Class<? extends Query>,QueryRunnerFactory> queryFactoryBinder=DruidBinders.queryRunnerFactoryBinder(binder);
   for (  Map.Entry<Class<? extends Query>,Class<? extends QueryRunnerFactory>> entry : mappings.entrySet()) {
     queryFactoryBinder.addBinding(entry.getKey()).to(entry.getValue());

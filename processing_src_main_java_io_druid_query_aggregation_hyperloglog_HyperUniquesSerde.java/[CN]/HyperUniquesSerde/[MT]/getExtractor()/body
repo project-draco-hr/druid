@@ -6,7 +6,7 @@
     @Override public HyperLogLogCollector extractValue(    InputRow inputRow,    String metricName){
       Object rawValue=inputRow.getRaw(metricName);
       if (rawValue instanceof HyperLogLogCollector) {
-        return (HyperLogLogCollector)inputRow.getRaw(metricName);
+        return (HyperLogLogCollector)rawValue;
       }
  else {
         HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();

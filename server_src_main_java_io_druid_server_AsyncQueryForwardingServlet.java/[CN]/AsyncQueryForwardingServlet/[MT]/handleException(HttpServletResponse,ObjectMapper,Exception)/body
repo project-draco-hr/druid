@@ -1,0 +1,9 @@
+{
+  if (!response.isCommitted()) {
+    final String errorMessage=exception.getMessage() == null ? "null exception" : exception.getMessage();
+    response.resetBuffer();
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
+  }
+  response.flushBuffer();
+}

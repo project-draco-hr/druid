@@ -4,5 +4,13 @@
   Preconditions.checkArgument(this.spec.getIOConfig().getSegmentOutputPath() == null,"segmentOutputPath must be absent");
   Preconditions.checkArgument(this.spec.getTuningConfig().getWorkingPath() == null,"workingPath must be absent");
   Preconditions.checkArgument(this.spec.getIOConfig().getMetadataUpdateSpec() == null,"updaterJobSpec must be absent");
-  this.hadoopDependencyCoordinates=hadoopDependencyCoordinates == null ? Arrays.<String>asList(hadoopCoordinates == null ? DEFAULT_HADOOP_COORDINATES : hadoopCoordinates) : hadoopDependencyCoordinates;
+  if (hadoopDependencyCoordinates != null) {
+    this.hadoopDependencyCoordinates=hadoopDependencyCoordinates;
+  }
+ else   if (hadoopCoordinates != null) {
+    this.hadoopDependencyCoordinates=ImmutableList.of(hadoopCoordinates);
+  }
+ else {
+    this.hadoopDependencyCoordinates=null;
+  }
 }

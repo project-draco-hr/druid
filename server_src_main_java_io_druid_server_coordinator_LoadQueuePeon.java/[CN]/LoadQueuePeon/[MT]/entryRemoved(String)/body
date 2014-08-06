@@ -1,11 +1,11 @@
 {
 synchronized (lock) {
-    if (currentlyLoading == null) {
+    if (currentlyProcessing == null) {
       log.warn("Server[%s] an entry[%s] was removed even though it wasn't loading!?",basePath,path);
       return;
     }
-    if (!ZKPaths.getNodeFromPath(path).equals(currentlyLoading.getSegmentIdentifier())) {
-      log.warn("Server[%s] entry [%s] was removed even though it's not what is currently loading[%s]",basePath,path,currentlyLoading);
+    if (!ZKPaths.getNodeFromPath(path).equals(currentlyProcessing.getSegmentIdentifier())) {
+      log.warn("Server[%s] entry [%s] was removed even though it's not what is currently loading[%s]",basePath,path,currentlyProcessing);
       return;
     }
     actionCompleted();

@@ -1,5 +1,6 @@
 {
   final Offset baseOffset=offset.clone();
+  final Map<String,DictionaryEncodedColumn> dictionaryColumnCache=Maps.newHashMap();
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
@@ -19,6 +20,9 @@
           return myBucket;
         }
         @Override public void advance(){
+          if (Thread.interrupted()) {
+            throw new QueryInterruptedException();
+          }
           cursorOffset.increment();
         }
         @Override public void advanceTo(        int offset){
@@ -44,11 +48,13 @@
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
+          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimensionName);
           final Column columnDesc=index.getColumn(dimensionName);
-          if (columnDesc == null) {
-            return null;
+          if (cachedColumn == null && columnDesc != null) {
+            cachedColumn=columnDesc.getDictionaryEncoding();
+            dictionaryColumnCache.put(dimensionName,cachedColumn);
           }
-          final DictionaryEncodedColumn column=columnDesc.getDictionaryEncoding();
+          final DictionaryEncodedColumn column=cachedColumn;
           if (column == null) {
             return null;
           }
@@ -73,7 +79,18 @@
  else {
             return new DimensionSelector(){
               @Override public IndexedInts getRow(){
-                return new SingleIndexedInts(column.getSingleValueRow(cursorOffset.getOffset()));
+                return new IndexedInts(){
+                  @Override public int size(){
+                    return 1;
+                  }
+                  @Override public int get(                  int index){
+                    return column.getSingleValueRow(cursorOffset.getOffset());
+                  }
+                  @Override public Iterator<Integer> iterator(){
+                    return Iterators.singletonIterator(column.getSingleValueRow(cursorOffset.getOffset()));
+                  }
+                }
+;
               }
               @Override public int getValueCardinality(){
                 return column.getCardinality();
@@ -191,7 +208,7 @@
                     return null;
                   }
  else                   if (multiValueRow.size() == 1) {
-                    return columnVals.lookupName(multiValueRow.get(1));
+                    return columnVals.lookupName(multiValueRow.get(0));
                   }
  else {
                     final String[] strings=new String[multiValueRow.size()];
@@ -233,16 +250,19 @@
   }
 ),new Closeable(){
     @Override public void close() throws IOException {
-      Closeables.closeQuietly(timestamps);
+      CloseQuietly.close(timestamps);
+      for (      DictionaryEncodedColumn column : dictionaryColumnCache.values()) {
+        CloseQuietly.close(column);
+      }
       for (      GenericColumn column : genericColumnCache.values()) {
-        Closeables.closeQuietly(column);
+        CloseQuietly.close(column);
       }
       for (      ComplexColumn complexColumn : complexColumnCache.values()) {
-        Closeables.closeQuietly(complexColumn);
+        CloseQuietly.close(complexColumn);
       }
       for (      Object column : objectColumnCache.values()) {
         if (column instanceof Closeable) {
-          Closeables.closeQuietly((Closeable)column);
+          CloseQuietly.close((Closeable)column);
         }
       }
     }

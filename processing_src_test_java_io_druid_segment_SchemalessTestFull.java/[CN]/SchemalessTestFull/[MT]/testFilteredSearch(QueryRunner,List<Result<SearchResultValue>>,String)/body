@@ -1,0 +1,6 @@
+{
+  SearchQuery query=Druids.newSearchQueryBuilder().dataSource(dataSource).granularity(allGran).filters(providerDimension,"spot").intervals(fullOnInterval).query("a").build();
+  failMsg+=" filtered search ";
+  Iterable<Result<SearchResultValue>> actualResults=Sequences.toList(runner.run(query),Lists.<Result<SearchResultValue>>newArrayList());
+  TestHelper.assertExpectedResults(expectedResults,actualResults,failMsg);
+}
