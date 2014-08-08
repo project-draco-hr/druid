@@ -32,7 +32,7 @@ synchronized (hydrant) {
       }
  catch (      Exception e) {
         log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
-        if (!shuttingDown) {
+        if (shuttingDown) {
           abandonSegment(truncatedTime,sink);
         }
  else {
