@@ -2,11 +2,11 @@
 synchronized (lock) {
     if (currentlyProcessing == null) {
       if (!segmentsToDrop.isEmpty()) {
-        currentlyProcessing=segmentsToDrop.firstKey();
+        currentlyProcessing=segmentsToDrop.firstEntry().getValue();
         log.info("Server[%s] dropping [%s]",basePath,currentlyProcessing.getSegmentIdentifier());
       }
  else       if (!segmentsToLoad.isEmpty()) {
-        currentlyProcessing=segmentsToLoad.firstKey();
+        currentlyProcessing=segmentsToLoad.firstEntry().getValue();
         log.info("Server[%s] loading [%s]",basePath,currentlyProcessing.getSegmentIdentifier());
       }
  else {

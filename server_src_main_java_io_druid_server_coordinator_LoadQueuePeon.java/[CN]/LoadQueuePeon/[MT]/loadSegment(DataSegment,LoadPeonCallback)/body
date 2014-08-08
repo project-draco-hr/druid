@@ -9,7 +9,7 @@ synchronized (lock) {
   }
   final SegmentHolder holder=new SegmentHolder(segment,LOAD,Arrays.asList(callback));
 synchronized (lock) {
-    final SegmentHolder existingHolder=segmentsToLoad.get(holder);
+    final SegmentHolder existingHolder=segmentsToLoad.get(segment);
     if (existingHolder != null) {
       if ((callback != null)) {
         existingHolder.addCallback(callback);
@@ -19,6 +19,6 @@ synchronized (lock) {
   }
   log.info("Asking server peon[%s] to load segment[%s]",basePath,segment.getIdentifier());
   queuedSize.addAndGet(segment.getSize());
-  segmentsToLoad.put(holder,holder);
+  segmentsToLoad.put(segment,holder);
   doNext();
 }
