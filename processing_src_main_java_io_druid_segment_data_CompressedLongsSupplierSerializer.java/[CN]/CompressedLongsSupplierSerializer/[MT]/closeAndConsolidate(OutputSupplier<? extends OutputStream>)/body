@@ -8,6 +8,7 @@
     out.write(CompressedLongsIndexedSupplier.version);
     out.write(Ints.toByteArray(numInserted));
     out.write(Ints.toByteArray(sizePer));
+    out.write(new byte[]{compression.getId()});
     ByteStreams.copy(flattener.combineStreams(),out);
   }
  }
