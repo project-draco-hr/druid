@@ -11,7 +11,12 @@ break;
 default :
 throw new UnsupportedOperationException();
 }
+callBackExecutor.execute(new Runnable(){
+@Override public void run(){
 currentlyProcessing.executeCallbacks();
 currentlyProcessing=null;
+}
+}
+);
 }
 }
