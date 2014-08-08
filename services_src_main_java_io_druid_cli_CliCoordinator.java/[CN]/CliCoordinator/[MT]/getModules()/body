@@ -25,7 +25,7 @@
       LifecycleModule.register(binder,Server.class);
     }
     @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
-      return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),config);
+      return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),Executors.newSingleThreadExecutor(),config);
     }
   }
 );
