@@ -17,7 +17,6 @@ synchronized (hydrant) {
         log.info("Skipping already-merged sink: %s",sink);
         return;
       }
-      File mergedFile=null;
       try {
         List<QueryableIndex> indexes=Lists.newArrayList();
         for (        FireHydrant fireHydrant : sink) {
@@ -26,24 +25,18 @@ synchronized (hydrant) {
           log.info("Adding hydrant[%s]",fireHydrant);
           indexes.add(queryableIndex);
         }
-        mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        final File mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);
       }
- catch (      IOException e) {
+ catch (      Exception e) {
         log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
         if (shuttingDown) {
           abandonSegment(truncatedTime,sink);
         }
-      }
-      if (mergedFile != null) {
-        try {
-          log.info("Deleting Index File[%s]",mergedFile);
-          FileUtils.deleteDirectory(mergedFile);
-        }
- catch (        IOException e) {
-          log.warn(e,"Error deleting directory[%s]",mergedFile);
+ else {
+          removeMergedSegment(sink);
         }
       }
     }
