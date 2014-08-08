@@ -5,13 +5,13 @@ synchronized (lock) {
       currentlyProcessing=null;
     }
     if (!segmentsToDrop.isEmpty()) {
-      for (      SegmentHolder holder : segmentsToDrop) {
+      for (      SegmentHolder holder : segmentsToDrop.keySet()) {
         holder.executeCallbacks();
       }
     }
     segmentsToDrop.clear();
     if (!segmentsToLoad.isEmpty()) {
-      for (      SegmentHolder holder : segmentsToLoad) {
+      for (      SegmentHolder holder : segmentsToLoad.keySet()) {
         holder.executeCallbacks();
       }
     }
