@@ -11,10 +11,11 @@ break;
 default :
 throw new UnsupportedOperationException();
 }
+final List<LoadPeonCallback> callbacks=currentlyProcessing.getCallbacks();
+currentlyProcessing=null;
 callBackExecutor.execute(new Runnable(){
 @Override public void run(){
-currentlyProcessing.executeCallbacks();
-currentlyProcessing=null;
+executeCallbacks(callbacks);
 }
 }
 );

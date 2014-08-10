@@ -7,7 +7,6 @@ synchronized (lock) {
       return;
     }
   }
-  SegmentHolder holder=new SegmentHolder(segment,DROP,Arrays.asList(callback));
 synchronized (lock) {
     final SegmentHolder existingHolder=segmentsToDrop.get(segment);
     if (existingHolder != null) {
@@ -18,6 +17,6 @@ synchronized (lock) {
     }
   }
   log.info("Asking server peon[%s] to drop segment[%s]",basePath,segment.getIdentifier());
-  segmentsToDrop.put(segment,holder);
+  segmentsToDrop.put(segment,new SegmentHolder(segment,DROP,Arrays.asList(callback)));
   doNext();
 }
