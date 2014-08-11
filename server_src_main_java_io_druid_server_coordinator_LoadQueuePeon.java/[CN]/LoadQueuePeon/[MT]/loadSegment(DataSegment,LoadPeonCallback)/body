@@ -7,17 +7,17 @@ synchronized (lock) {
       return;
     }
   }
-  SegmentHolder holder=new SegmentHolder(segment,LOAD,Arrays.asList(callback));
 synchronized (lock) {
-    if (segmentsToLoad.contains(holder)) {
+    final SegmentHolder existingHolder=segmentsToLoad.get(segment);
+    if (existingHolder != null) {
       if ((callback != null)) {
-        currentlyProcessing.addCallback(callback);
+        existingHolder.addCallback(callback);
       }
       return;
     }
   }
   log.info("Asking server peon[%s] to load segment[%s]",basePath,segment.getIdentifier());
   queuedSize.addAndGet(segment.getSize());
-  segmentsToLoad.add(holder);
+  segmentsToLoad.put(segment,new SegmentHolder(segment,LOAD,Arrays.asList(callback)));
   doNext();
 }
