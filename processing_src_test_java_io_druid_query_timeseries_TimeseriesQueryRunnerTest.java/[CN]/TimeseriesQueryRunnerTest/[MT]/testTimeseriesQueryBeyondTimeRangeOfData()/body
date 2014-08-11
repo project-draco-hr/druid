@@ -1,6 +1,7 @@
 {
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).intervals(new MultipleIntervalSegmentSpec(Arrays.asList(new Interval("2015-01-01/2015-01-10")))).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).build();
   List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList();
-  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,results);
 }

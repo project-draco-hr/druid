@@ -1,6 +1,6 @@
 {
   if (adapter == null) {
-    throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
+    throw new SegmentMissingException("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
   }
   return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
     private final List<AggregatorFactory> aggregatorSpecs=query.getAggregatorSpecs();

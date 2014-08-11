@@ -1,0 +1,96 @@
+{
+  QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
+  boolean isBySegment=query.getContextBySegment(false);
+  Pair<JavaType,JavaType> types=typesMap.get(query.getClass());
+  if (types == null) {
+    final TypeFactory typeFactory=objectMapper.getTypeFactory();
+    JavaType baseType=typeFactory.constructType(toolChest.getResultTypeReference());
+    JavaType bySegmentType=typeFactory.constructParametricType(Result.class,typeFactory.constructParametricType(BySegmentResultValueClass.class,baseType));
+    types=Pair.of(baseType,bySegmentType);
+    typesMap.put(query.getClass(),types);
+  }
+  final JavaType typeRef;
+  if (isBySegment) {
+    typeRef=types.rhs;
+  }
+ else {
+    typeRef=types.lhs;
+  }
+  final ListenableFuture<InputStream> future;
+  final String url=String.format("http://%s/druid/v2/",host);
+  final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
+  try {
+    log.debug("Querying url[%s]",url);
+    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new InputStreamResponseHandler(){
+      long startTime;
+      long byteCount=0;
+      @Override public ClientResponse<AppendableByteArrayInputStream> handleResponse(      HttpResponse response){
+        log.debug("Initial response from url[%s]",url);
+        startTime=System.currentTimeMillis();
+        byteCount+=response.getContent().readableBytes();
+        List missingSegments=new ArrayList();
+        try {
+          Map<String,Object> headerContext=objectMapper.readValue(response.getHeader("Context"),Map.class);
+          missingSegments=(List)headerContext.get(RetryQueryRunner.missingSegments);
+          for (int i=missingSegments.size(); i > 0; i--) {
+            missingSegments.add(objectMapper.convertValue(missingSegments.remove(0),SegmentDescriptor.class));
+          }
+        }
+ catch (        IOException e) {
+          e.printStackTrace();
+        }
+        ((List)context.get(RetryQueryRunner.missingSegments)).addAll(missingSegments);
+        return super.handleResponse(response);
+      }
+      @Override public ClientResponse<AppendableByteArrayInputStream> handleChunk(      ClientResponse<AppendableByteArrayInputStream> clientResponse,      HttpChunk chunk){
+        final int bytes=chunk.getContent().readableBytes();
+        byteCount+=bytes;
+        return super.handleChunk(clientResponse,chunk);
+      }
+      @Override public ClientResponse<InputStream> done(      ClientResponse<AppendableByteArrayInputStream> clientResponse){
+        long stopTime=System.currentTimeMillis();
+        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount,stopTime - startTime,byteCount / (0.0001 * (stopTime - startTime)));
+        return super.done(clientResponse);
+      }
+    }
+);
+    queryWatcher.registerQuery(query,future);
+    openConnections.getAndIncrement();
+    Futures.addCallback(future,new FutureCallback<InputStream>(){
+      @Override public void onSuccess(      InputStream result){
+        openConnections.getAndDecrement();
+      }
+      @Override public void onFailure(      Throwable t){
+        openConnections.getAndDecrement();
+        if (future.isCancelled()) {
+          try {
+            StatusResponseHolder res=httpClient.delete(new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new StatusResponseHandler(Charsets.UTF_8)).get();
+            if (res.getStatus().getCode() >= 500) {
+              throw new RE("Error cancelling query[%s]: queriable node returned status[%d] [%s].",res.getStatus().getCode(),res.getStatus().getReasonPhrase());
+            }
+          }
+ catch (          IOException|ExecutionException|InterruptedException e) {
+            Throwables.propagate(e);
+          }
+        }
+      }
+    }
+);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  Sequence<T> retVal=new BaseSequence<>(new BaseSequence.IteratorMaker<T,JsonParserIterator<T>>(){
+    @Override public JsonParserIterator<T> make(){
+      return new JsonParserIterator<T>(typeRef,future,url);
+    }
+    @Override public void cleanup(    JsonParserIterator<T> iterFromMake){
+      CloseQuietly.close(iterFromMake);
+    }
+  }
+);
+  if (!isBySegment) {
+    retVal=Sequences.map(retVal,toolChest.makePreComputeManipulatorFn(query,MetricManipulatorFns.deserializing()));
+  }
+  return retVal;
+}
