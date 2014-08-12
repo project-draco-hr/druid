@@ -39,8 +39,11 @@
   boolean bumpDictionary=false;
   if (hasMultipleValues) {
     List<List<Integer>> vals=((MultiValColumnDictionaryEntryStore)adder).get();
-    multiValCol=VSizeIndexed.fromIterable(Iterables.transform(vals,new Function<List<Integer>,VSizeIndexedInts>(){
+    multiValCol=VSizeIndexed.fromIterable(FunctionalIterable.create(vals).transform(new Function<List<Integer>,VSizeIndexedInts>(){
       @Override public VSizeIndexedInts apply(      List<Integer> input){
+        if (input == null) {
+          return VSizeIndexedInts.empty();
+        }
         return VSizeIndexedInts.fromList(input,Collections.max(input));
       }
     }
