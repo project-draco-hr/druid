@@ -1,0 +1,44 @@
+{
+  Map<String,Object> context=new MapMaker().makeMap();
+  context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
+  RetryQueryRunner runner=new RetryQueryRunner(new QueryRunner(){
+    @Override public Sequence run(    Query query,    Map context){
+      ((List)context.get(RetryQueryRunner.missingSegments)).add(new SegmentDescriptor(new Interval(178888,1999999),"test",1));
+      return Sequences.empty();
+    }
+  }
+,new QueryToolChest(){
+    @Override public QueryRunner mergeResults(    QueryRunner runner){
+      return null;
+    }
+    @Override public Sequence mergeSequences(    Sequence seqOfSequences){
+      return new OrderedMergeSequence<Result<TimeseriesResultValue>>(getOrdering(),seqOfSequences);
+    }
+    @Override public ServiceMetricEvent.Builder makeMetricBuilder(    Query query){
+      return null;
+    }
+    @Override public Function makePreComputeManipulatorFn(    Query query,    MetricManipulationFn fn){
+      return null;
+    }
+    @Override public TypeReference getResultTypeReference(){
+      return null;
+    }
+    public Ordering<Result<TimeseriesResultValue>> getOrdering(){
+      return Ordering.natural();
+    }
+  }
+,new RetryQueryRunnerConfig(){
+    private int numTries=0;
+    private boolean returnPartialResults=true;
+    public int numTries(){
+      return numTries;
+    }
+    public boolean returnPartialResults(){
+      return returnPartialResults;
+    }
+  }
+);
+  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  Assert.assertTrue("Should have one entry in the list of missing segments",((List)context.get(RetryQueryRunner.missingSegments)).size() == 1);
+  Assert.assertTrue("Should return an empty sequence as a result",((List)actualResults).size() == 0);
+}

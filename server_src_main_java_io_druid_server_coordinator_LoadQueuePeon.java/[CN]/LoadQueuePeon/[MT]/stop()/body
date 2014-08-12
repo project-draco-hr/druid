@@ -1,18 +1,18 @@
 {
 synchronized (lock) {
-    if (currentlyLoading != null) {
-      currentlyLoading.executeCallbacks();
-      currentlyLoading=null;
+    if (currentlyProcessing != null) {
+      executeCallbacks(currentlyProcessing.getCallbacks());
+      currentlyProcessing=null;
     }
     if (!segmentsToDrop.isEmpty()) {
-      for (      SegmentHolder holder : segmentsToDrop) {
-        holder.executeCallbacks();
+      for (      SegmentHolder holder : segmentsToDrop.values()) {
+        executeCallbacks(holder.getCallbacks());
       }
     }
     segmentsToDrop.clear();
     if (!segmentsToLoad.isEmpty()) {
-      for (      SegmentHolder holder : segmentsToLoad) {
-        holder.executeCallbacks();
+      for (      SegmentHolder holder : segmentsToLoad.values()) {
+        executeCallbacks(holder.getCallbacks());
       }
     }
     segmentsToLoad.clear();

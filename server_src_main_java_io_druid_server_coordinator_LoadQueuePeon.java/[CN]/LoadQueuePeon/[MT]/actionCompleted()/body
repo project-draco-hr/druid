@@ -1,17 +1,23 @@
 {
-  if (currentlyLoading != null) {
-switch (currentlyLoading.getType()) {
+  if (currentlyProcessing != null) {
+switch (currentlyProcessing.getType()) {
 case LOAD:
-      segmentsToLoad.remove(currentlyLoading);
-    queuedSize.addAndGet(-currentlyLoading.getSegmentSize());
+      segmentsToLoad.remove(currentlyProcessing.getSegment());
+    queuedSize.addAndGet(-currentlyProcessing.getSegmentSize());
   break;
 case DROP:
-segmentsToDrop.remove(currentlyLoading);
+segmentsToDrop.remove(currentlyProcessing.getSegment());
 break;
 default :
 throw new UnsupportedOperationException();
 }
-currentlyLoading.executeCallbacks();
-currentlyLoading=null;
+final List<LoadPeonCallback> callbacks=currentlyProcessing.getCallbacks();
+currentlyProcessing=null;
+callBackExecutor.execute(new Runnable(){
+@Override public void run(){
+executeCallbacks(callbacks);
+}
+}
+);
 }
 }

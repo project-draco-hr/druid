@@ -1,20 +1,36 @@
 {
   final ListeningExecutorService queryExecutor=MoreExecutors.listeningDecorator(exec);
   if (config.get().isSingleThreaded()) {
-    return new ConcatQueryRunner<Row>(Sequences.map(Sequences.simple(queryRunners),new Function<QueryRunner<Row>,QueryRunner<Row>>(){
+    return new ConcatQueryRunner<>(Sequences.map(Sequences.simple(queryRunners),new Function<QueryRunner<Row>,QueryRunner<Row>>(){
       @Override public QueryRunner<Row> apply(      final QueryRunner<Row> input){
         return new QueryRunner<Row>(){
-          @Override public Sequence<Row> run(          final Query<Row> query){
-            ListenableFuture<Sequence<Row>> future=queryExecutor.submit(new Callable<Sequence<Row>>(){
-              @Override public Sequence<Row> call() throws Exception {
-                return new ExecutorExecutingSequence<Row>(input.run(query),queryExecutor);
+          @Override public Sequence<Row> run(          final Query<Row> query,          final Map<String,Object> context){
+            final GroupByQuery queryParam=(GroupByQuery)query;
+            final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get(),computationBufferPool);
+            final Pair<List,Accumulator<List,Row>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
+            final int priority=query.getContextPriority(0);
+            final boolean bySegment=query.getContextBySegment(false);
+            final ListenableFuture<Void> future=queryExecutor.submit(new AbstractPrioritizedCallable<Void>(priority){
+              @Override public Void call() throws Exception {
+                if (bySegment) {
+                  input.run(queryParam,context).accumulate(bySegmentAccumulatorPair.lhs,bySegmentAccumulatorPair.rhs);
+                }
+ else {
+                  input.run(query,context).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
+                }
+                return null;
               }
             }
 );
             try {
               queryWatcher.registerQuery(query,future);
               final Number timeout=query.getContextValue("timeout",(Number)null);
-              return timeout == null ? future.get() : future.get(timeout.longValue(),TimeUnit.MILLISECONDS);
+              if (timeout == null) {
+                future.get();
+              }
+ else {
+                future.get(timeout.longValue(),TimeUnit.MILLISECONDS);
+              }
             }
  catch (            InterruptedException e) {
               log.warn(e,"Query interrupted, cancelling pending results, query id [%s]",query.getId());
@@ -32,6 +48,10 @@ catch (            TimeoutException e) {
 catch (            ExecutionException e) {
               throw Throwables.propagate(e.getCause());
             }
+            if (bySegment) {
+              return Sequences.simple(bySegmentAccumulatorPair.lhs);
+            }
+            return Sequences.simple(indexAccumulatorPair.lhs.iterableWithPostAggregations(null));
           }
         }
 ;
@@ -40,6 +60,6 @@ catch (            ExecutionException e) {
 ));
   }
  else {
-    return new GroupByParallelQueryRunner(queryExecutor,new RowOrdering(),config,queryWatcher,computationBufferPool,queryRunners);
+    return new GroupByParallelQueryRunner(queryExecutor,config,queryWatcher,computationBufferPool,queryRunners);
   }
 }

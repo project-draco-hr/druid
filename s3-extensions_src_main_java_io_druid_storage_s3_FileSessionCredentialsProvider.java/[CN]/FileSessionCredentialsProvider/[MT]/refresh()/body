@@ -1,0 +1,14 @@
+{
+  try {
+    Properties props=new Properties();
+    InputStream is=new FileInputStream(new File(sessionCredentials));
+    props.load(is);
+    is.close();
+    sessionToken=props.getProperty("sessionToken");
+    accessKey=props.getProperty("accessKey");
+    secretKey=props.getProperty("secretKey");
+  }
+ catch (  IOException e) {
+    throw new RuntimeException("cannot refresh AWS credentials",e);
+  }
+}

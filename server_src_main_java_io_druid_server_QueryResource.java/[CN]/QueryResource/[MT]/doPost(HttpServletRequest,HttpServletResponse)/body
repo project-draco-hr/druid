@@ -14,10 +14,15 @@
       queryId=UUID.randomUUID().toString();
       query=query.withId(queryId);
     }
+    if (query.getContextValue("timeout") == null) {
+      query=query.withOverriddenContext(ImmutableMap.of("timeout",config.getMaxIdleTime().toStandardDuration().getMillis()));
+    }
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
     }
-    Sequence res=query.run(texasRanger);
+    Map<String,Object> context=new MapMaker().makeMap();
+    context.put(RetryQueryRunner.missingSegments,Lists.newArrayList());
+    Sequence res=query.run(texasRanger,context);
     final Sequence results;
     if (res == null) {
       results=Sequences.empty();
@@ -33,8 +38,12 @@
     }
 );
     try {
+      String headerContext="";
+      if (!((List)context.get(RetryQueryRunner.missingSegments)).isEmpty()) {
+        headerContext=jsonMapper.writeValueAsString(context);
+      }
       long requestTime=System.currentTimeMillis() - start;
-      emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(queryId).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
+      emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser3(jsonMapper.writeValueAsString(query.getContext() == null ? ImmutableMap.of() : query.getContext())).setUser4(query.getType()).setUser5(COMMA_JOIN.join(query.getIntervals())).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(queryId).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
       requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
       return Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
@@ -42,7 +51,7 @@
           outputStream.close();
         }
       }
-,isSmile ? APPLICATION_JSON : APPLICATION_SMILE).header("X-Druid-Query-Id",queryId).build();
+,isSmile ? APPLICATION_JSON : APPLICATION_SMILE).header("X-Druid-Query-Id",queryId).header("Context",headerContext).build();
     }
  catch (    Exception e) {
       yielder.close();

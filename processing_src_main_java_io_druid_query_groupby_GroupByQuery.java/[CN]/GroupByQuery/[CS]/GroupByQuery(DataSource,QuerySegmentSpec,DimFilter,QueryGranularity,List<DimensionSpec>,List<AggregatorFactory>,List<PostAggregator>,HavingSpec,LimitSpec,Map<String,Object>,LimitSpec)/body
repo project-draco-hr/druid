@@ -13,9 +13,9 @@
   Function<Sequence<Row>,Sequence<Row>> postProcFn=this.limitSpec.build(this.dimensions,this.aggregatorSpecs,this.postAggregatorSpecs);
   if (havingSpec != null) {
     postProcFn=Functions.compose(new Function<Sequence<Row>,Sequence<Row>>(){
-      @Override public Sequence<Row> apply(      @Nullable Sequence<Row> input){
+      @Override public Sequence<Row> apply(      Sequence<Row> input){
         return Sequences.filter(input,new Predicate<Row>(){
-          @Override public boolean apply(          @Nullable Row input){
+          @Override public boolean apply(          Row input){
             return GroupByQuery.this.havingSpec.eval(input);
           }
         }

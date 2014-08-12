@@ -8,7 +8,7 @@
     }
   }
 ));
-  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,QueryRunnerTestHelper.NOOP_QUERYWATCHER,configSupplier,new GroupByQueryQueryToolChest(configSupplier,engine,TestQueryRunners.pool),TestQueryRunners.pool);
+  final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,QueryRunnerTestHelper.NOOP_QUERYWATCHER,configSupplier,new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool),TestQueryRunners.pool);
   final Collection<?> objects=QueryRunnerTestHelper.makeQueryRunners(factory);
   Object[][] newObjects=new Object[objects.size()][];
   int i=0;
@@ -19,9 +19,9 @@
       Preconditions.checkState(queryRunnerArray[0] instanceof QueryRunner);
       final QueryRunner groupByRunner=(QueryRunner)queryRunnerArray[0];
       QueryRunner timeseriesRunner=new QueryRunner(){
-        @Override public Sequence run(        Query query){
+        @Override public Sequence run(        Query query,        Map metadata){
           TimeseriesQuery tsQuery=(TimeseriesQuery)query;
-          return Sequences.map(groupByRunner.run(GroupByQuery.builder().setDataSource(tsQuery.getDataSource()).setQuerySegmentSpec(tsQuery.getQuerySegmentSpec()).setGranularity(tsQuery.getGranularity()).setDimFilter(tsQuery.getDimensionsFilter()).setAggregatorSpecs(tsQuery.getAggregatorSpecs()).setPostAggregatorSpecs(tsQuery.getPostAggregatorSpecs()).build()),new Function<Row,Result<TimeseriesResultValue>>(){
+          return Sequences.map(groupByRunner.run(GroupByQuery.builder().setDataSource(tsQuery.getDataSource()).setQuerySegmentSpec(tsQuery.getQuerySegmentSpec()).setGranularity(tsQuery.getGranularity()).setDimFilter(tsQuery.getDimensionsFilter()).setAggregatorSpecs(tsQuery.getAggregatorSpecs()).setPostAggregatorSpecs(tsQuery.getPostAggregatorSpecs()).build(),metadata),new Function<Row,Result<TimeseriesResultValue>>(){
             @Override public Result<TimeseriesResultValue> apply(            final Row input){
               MapBasedRow row=(MapBasedRow)input;
               return new Result<TimeseriesResultValue>(row.getTimestamp(),new TimeseriesResultValue(row.getEvent()));

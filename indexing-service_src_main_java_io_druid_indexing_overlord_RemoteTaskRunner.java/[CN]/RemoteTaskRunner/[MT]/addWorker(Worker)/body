@@ -23,9 +23,15 @@ case CHILD_UPDATED:
       taskRunnerWorkItem=tmp;
     }
  else {
-      log.warn("Worker[%s] announced a status for a task I didn't know about, adding to runningTasks: %s",zkWorker.getWorker().getHost(),taskId);
-      taskRunnerWorkItem=new RemoteTaskRunnerWorkItem(taskId,SettableFuture.<TaskStatus>create(),zkWorker.getWorker());
-      runningTasks.put(taskId,taskRunnerWorkItem.withWorker(zkWorker.getWorker()));
+      final RemoteTaskRunnerWorkItem newTaskRunnerWorkItem=new RemoteTaskRunnerWorkItem(taskId,zkWorker.getWorker());
+      final RemoteTaskRunnerWorkItem existingItem=runningTasks.putIfAbsent(taskId,newTaskRunnerWorkItem);
+      if (existingItem == null) {
+        log.warn("Worker[%s] announced a status for a task I didn't know about, adding to runningTasks: %s",zkWorker.getWorker().getHost(),taskId);
+        taskRunnerWorkItem=newTaskRunnerWorkItem;
+      }
+ else {
+        taskRunnerWorkItem=existingItem;
+      }
     }
   if (taskStatus.isComplete()) {
     taskComplete(taskRunnerWorkItem,zkWorker,taskStatus);

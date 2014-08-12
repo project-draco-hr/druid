@@ -1,0 +1,10 @@
+{
+  Response res=workerResource.doDisable();
+  Assert.assertEquals(Response.Status.OK.getStatusCode(),res.getStatus());
+  Worker theWorker=jsonMapper.readValue(cf.getData().forPath(announcementsPath),Worker.class);
+  Assert.assertTrue(theWorker.getVersion().isEmpty());
+  res=workerResource.doEnable();
+  Assert.assertEquals(Response.Status.OK.getStatusCode(),res.getStatus());
+  theWorker=jsonMapper.readValue(cf.getData().forPath(announcementsPath),Worker.class);
+  Assert.assertEquals("v1",theWorker.getVersion());
+}

@@ -27,6 +27,7 @@
       ServerExpectations expectations=entry.getValue();
       EasyMock.expect(serverView.getQueryRunner(server)).andReturn(expectations.getQueryRunner()).once();
       final Capture<? extends Query> capture=new Capture();
+      final Capture<? extends Map> context=new Capture();
       queryCaptures.add(capture);
       QueryRunner queryable=expectations.getQueryRunner();
       if (query instanceof TimeseriesQuery) {
@@ -38,7 +39,7 @@
           intervals.add(expectation.getInterval());
           results.add(expectation.getResults());
         }
-        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTimeseriesResults(expectBySegment,segmentIds,intervals,results)).once();
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableTimeseriesResults(expectBySegment,segmentIds,intervals,results)).once();
       }
  else       if (query instanceof TopNQuery) {
         List<String> segmentIds=Lists.newArrayList();
@@ -49,7 +50,7 @@
           intervals.add(expectation.getInterval());
           results.add(expectation.getResults());
         }
-        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTopNResults(segmentIds,intervals,results)).once();
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableTopNResults(segmentIds,intervals,results)).once();
       }
  else       if (query instanceof SearchQuery) {
         List<String> segmentIds=Lists.newArrayList();
@@ -60,7 +61,29 @@
           intervals.add(expectation.getInterval());
           results.add(expectation.getResults());
         }
-        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableSearchResults(segmentIds,intervals,results)).once();
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableSearchResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof SelectQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Result<SelectResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableSelectResults(segmentIds,intervals,results)).once();
+      }
+ else       if (query instanceof GroupByQuery) {
+        List<String> segmentIds=Lists.newArrayList();
+        List<Interval> intervals=Lists.newArrayList();
+        List<Iterable<Row>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          intervals.add(expectation.getInterval());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableGroupByResults(segmentIds,intervals,results)).once();
       }
  else       if (query instanceof TimeBoundaryQuery) {
         List<String> segmentIds=Lists.newArrayList();
@@ -71,7 +94,7 @@
           intervals.add(expectation.getInterval());
           results.add(expectation.getResults());
         }
-        EasyMock.expect(queryable.run(EasyMock.capture(capture))).andReturn(toQueryableTimeBoundaryResults(segmentIds,intervals,results)).once();
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andReturn(toQueryableTimeBoundaryResults(segmentIds,intervals,results)).once();
       }
  else {
         throw new ISE("Unknown query type[%s]",query.getClass());
@@ -89,6 +112,7 @@
     }
     runWithMocks(new Runnable(){
       @Override public void run(){
+        HashMap<String,List> context=new HashMap<String,List>();
         for (int i=0; i < numTimesToQuery; ++i) {
           TestHelper.assertExpectedResults(new MergeIterable<>(Ordering.<Result<Object>>natural().nullsFirst(),FunctionalIterable.create(new RangeIterable(expectedResultsRangeStart,expectedResultsRangeEnd)).transformCat(new Function<Integer,Iterable<Iterable<Result<Object>>>>(){
             @Override public Iterable<Iterable<Result<Object>>> apply(            @Nullable Integer input){
@@ -102,7 +126,7 @@
               return retVal;
             }
           }
-)),runner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(actualQueryInterval)))));
+)),runner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(actualQueryInterval))),context));
         }
       }
     }

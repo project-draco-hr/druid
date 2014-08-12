@@ -8,6 +8,7 @@
     }
   }
 ));
-  QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,engine,TestQueryRunners.pool).mergeResults(runner);
-  TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query),"no-limit");
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool).mergeResults(runner);
+  TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query,context),"no-limit");
 }

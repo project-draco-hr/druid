@@ -1,0 +1,15 @@
+{
+  final byte[][] havingBytes=new byte[havingSpecs.size()][];
+  int havingBytesSize=0;
+  int index=0;
+  for (  HavingSpec havingSpec : havingSpecs) {
+    havingBytes[index]=havingSpec.getCacheKey();
+    havingBytesSize+=havingBytes[index].length;
+    ++index;
+  }
+  ByteBuffer buffer=ByteBuffer.allocate(1 + havingBytesSize).put(CACHE_KEY);
+  for (  byte[] havingByte : havingBytes) {
+    buffer.put(havingByte);
+  }
+  return buffer.array();
+}

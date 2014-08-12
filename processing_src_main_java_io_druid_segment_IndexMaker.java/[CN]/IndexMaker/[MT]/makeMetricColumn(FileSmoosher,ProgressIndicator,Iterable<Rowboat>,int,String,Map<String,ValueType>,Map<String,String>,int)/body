@@ -12,7 +12,7 @@ for (Rowboat theRow : theRows) {
 Object obj=theRow.getMetrics()[metricIndex];
 arr[rowNum++]=(obj == null) ? 0 : ((Number)obj).floatValue();
 }
-CompressedFloatsIndexedSupplier compressedFloats=CompressedFloatsIndexedSupplier.fromFloatBuffer(FloatBuffer.wrap(arr),IndexIO.BYTE_ORDER);
+CompressedFloatsIndexedSupplier compressedFloats=CompressedFloatsIndexedSupplier.fromFloatBuffer(FloatBuffer.wrap(arr),IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
 writeColumn(v9Smoosher,new FloatGenericColumnPartSerde(compressedFloats,IndexIO.BYTE_ORDER),metBuilder,metric);
 break;
 case COMPLEX:

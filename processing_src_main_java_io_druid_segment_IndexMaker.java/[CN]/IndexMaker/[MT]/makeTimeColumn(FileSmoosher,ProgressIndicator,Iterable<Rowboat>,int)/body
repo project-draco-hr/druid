@@ -6,7 +6,7 @@
   for (  Rowboat theRow : theRows) {
     longs[rowNum++]=theRow.getTimestamp();
   }
-  CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromLongBuffer(LongBuffer.wrap(longs),IndexIO.BYTE_ORDER);
+  CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromLongBuffer(LongBuffer.wrap(longs),IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
   final ColumnDescriptor.Builder timeBuilder=ColumnDescriptor.builder();
   timeBuilder.setValueType(ValueType.LONG);
   writeColumn(v9Smoosher,new LongGenericColumnPartSerde(timestamps,IndexIO.BYTE_ORDER),timeBuilder,"__time");

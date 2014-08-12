@@ -1,0 +1,10 @@
+{
+  final int priority=query.getContextPriority(0);
+  if (priority < minPriority) {
+    return Optional.of(Iterables.getLast(tierConfig.getTierToBrokerMap().values(),tierConfig.getDefaultBrokerServiceName()));
+  }
+ else   if (priority >= maxPriority) {
+    return Optional.of(Iterables.getFirst(tierConfig.getTierToBrokerMap().values(),tierConfig.getDefaultBrokerServiceName()));
+  }
+  return Optional.absent();
+}

@@ -1,11 +1,10 @@
 {
   final ServletContextHandler queries=new ServletContextHandler(ServletContextHandler.SESSIONS);
-  queries.addServlet(new ServletHolder(new AsyncQueryForwardingServlet(jsonMapper,smileMapper,hostFinder,routingDruidClient,emitter,requestLogger)),"/druid/v2/*");
-  queries.addFilter(GzipFilter.class,"/druid/v2/*",null);
+  queries.addServlet(new ServletHolder(new AsyncQueryForwardingServlet(jsonMapper,smileMapper,hostFinder,httpClient,emitter,requestLogger)),"/druid/v2/*");
+  queries.addFilter(AsyncGzipFilter.class,"/druid/v2/*",null);
   queries.addFilter(GuiceFilter.class,"/status/*",null);
   final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
-  root.addFilter(GzipFilter.class,"/*",null);
   root.addFilter(GuiceFilter.class,"/*",null);
   final HandlerList handlerList=new HandlerList();
   handlerList.setHandlers(new Handler[]{queries,root,new DefaultHandler()});
