@@ -86,9 +86,9 @@
           }
           done=!foundMatched && (cursorMap.size() == 0 || !baseIter.hasNext());
         }
-        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-          return new TimestampColumnSelector(){
-            @Override public long getTimestamp(){
+        @Override public LongColumnSelector makeTimestampColumnSelector(){
+          return new LongColumnSelector(){
+            @Override public long get(){
               return currEntry.getKey().getTimestamp();
             }
           }
@@ -157,6 +157,26 @@
           return new FloatColumnSelector(){
             @Override public float get(){
               return agg.getFloat(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
+            }
+          }
+;
+        }
+        @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
+          final String metricName=columnName.toLowerCase();
+          final Integer metricIndexInt=index.getMetricIndex(metricName);
+          if (metricIndexInt == null) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return 0L;
+              }
+            }
+;
+          }
+          final int metricIndex=metricIndexInt;
+          final BufferAggregator agg=index.getAggregator(metricIndex);
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return agg.getLong(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
             }
           }
 ;

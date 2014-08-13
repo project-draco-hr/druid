@@ -33,9 +33,9 @@
         @Override public void reset(){
           currRow=initRow;
         }
-        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-          return new TimestampColumnSelector(){
-            @Override public long getTimestamp(){
+        @Override public LongColumnSelector makeTimestampColumnSelector(){
+          return new LongColumnSelector(){
+            @Override public long get(){
               return timestamps.getLongSingleValueRow(currRow);
             }
           }
@@ -122,6 +122,32 @@
           return new FloatColumnSelector(){
             @Override public float get(){
               return metricVals.getFloatSingleValueRow(currRow);
+            }
+          }
+;
+        }
+        @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
+          final String metricName=columnName.toLowerCase();
+          GenericColumn cachedMetricVals=genericColumnCache.get(metricName);
+          if (cachedMetricVals == null) {
+            Column holder=index.getColumn(metricName);
+            if (holder != null && holder.getCapabilities().getType() == ValueType.LONG) {
+              cachedMetricVals=holder.getGenericColumn();
+              genericColumnCache.put(metricName,cachedMetricVals);
+            }
+          }
+          if (cachedMetricVals == null) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return 0L;
+              }
+            }
+;
+          }
+          final GenericColumn metricVals=cachedMetricVals;
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return metricVals.getLongSingleValueRow(currRow);
             }
           }
 ;
