@@ -1,7 +1,7 @@
 {
   try {
     segmentAnnouncer.unannounceSegment(sink.getSegment());
-    removeMergedSegment(sink);
+    removeSegment(sink,computePersistDir(schema,sink.getInterval()));
     log.info("Removing sinkKey %d for segment %s",truncatedTime,sink.getSegment().getIdentifier());
     sinks.remove(truncatedTime);
     sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<>(sink));
