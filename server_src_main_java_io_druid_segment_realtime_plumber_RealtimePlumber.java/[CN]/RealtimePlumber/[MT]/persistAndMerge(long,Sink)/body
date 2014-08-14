@@ -3,6 +3,10 @@
   mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
     @Override public void doRun(){
       final Interval interval=sink.getInterval();
+      final File marker=new File(computePersistDir(schema,sink.getInterval()),"marker");
+      if (marker.exists()) {
+        removeMergedSegment(sink);
+      }
       for (      FireHydrant hydrant : sink) {
 synchronized (hydrant) {
           if (!hydrant.hasSwapped()) {
@@ -26,8 +30,14 @@ synchronized (hydrant) {
           indexes.add(queryableIndex);
         }
         final File mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        if (!marker.createNewFile()) {
+          log.makeAlert("Unable to make marker file[%s]! WTF?!",marker).emit();
+        }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
+        if (!marker.delete()) {
+          log.makeAlert("Unable to remove merged marker",marker).emit();
+        }
         segmentPublisher.publishSegment(segment);
       }
  catch (      Exception e) {

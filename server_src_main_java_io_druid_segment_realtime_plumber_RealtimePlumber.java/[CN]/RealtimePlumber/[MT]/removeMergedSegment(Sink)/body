@@ -1,12 +1,4 @@
 {
   final File mergedTarget=new File(computePersistDir(schema,sink.getInterval()),"merged");
-  if (mergedTarget.exists()) {
-    try {
-      log.info("Deleting Index File[%s]",mergedTarget);
-      FileUtils.deleteDirectory(mergedTarget);
-    }
- catch (    Exception e) {
-      log.makeAlert(e,"Unable to remove merged segment for dataSource[%s]",schema.getDataSource()).addData("interval",sink.getInterval()).emit();
-    }
-  }
+  removeSegment(sink,mergedTarget);
 }
