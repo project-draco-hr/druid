@@ -10,7 +10,7 @@
         removeSegment(sink,mergedTarget);
       }
  else {
-        log.info("Skipping already-merged sink: %s",sink);
+        log.info("Already pushed sink[%s]",sink);
         return;
       }
       for (      FireHydrant hydrant : sink) {
@@ -35,7 +35,7 @@ synchronized (hydrant) {
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);
         if (!isPushedMarker.createNewFile()) {
-          log.makeAlert("Unable to make marker file! WTF?!").addData("marker",isPushedMarker).emit();
+          log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
         }
       }
  catch (      Exception e) {
