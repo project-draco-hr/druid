@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/bridge");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8081);
       ConfigProvider.bind(binder,BridgeCuratorConfig.class);
       binder.bind(BridgeZkCoordinator.class).in(ManageLifecycle.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig("bridge"));
