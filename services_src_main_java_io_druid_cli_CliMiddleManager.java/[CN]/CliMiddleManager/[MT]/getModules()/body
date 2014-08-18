@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/middlemanager");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8091);
       IndexingServiceModuleHelper.configureTaskRunnerConfigs(binder);
       JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
