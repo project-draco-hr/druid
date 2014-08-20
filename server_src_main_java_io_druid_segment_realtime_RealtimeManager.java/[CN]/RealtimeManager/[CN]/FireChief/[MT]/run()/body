@@ -25,7 +25,8 @@
           }
           continue;
         }
-        if (currCount >= config.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if ((sink != null && sink.isFull()) || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
         }
