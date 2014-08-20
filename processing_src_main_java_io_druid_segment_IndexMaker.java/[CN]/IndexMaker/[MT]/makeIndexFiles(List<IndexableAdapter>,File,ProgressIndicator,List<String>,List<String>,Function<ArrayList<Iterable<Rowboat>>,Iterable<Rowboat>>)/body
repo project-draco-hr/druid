@@ -29,13 +29,12 @@
   final FileSmoosher v9Smoosher=new FileSmoosher(outDir);
   ByteStreams.write(Ints.toByteArray(IndexIO.V9_VERSION),Files.newOutputStreamSupplier(new File(outDir,"version.bin")));
   final Map<String,Integer> dimIndexes=Maps.newHashMap();
-  final Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
   final Map<String,Iterable<String>> dimensionValuesLookup=Maps.newHashMap();
   final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(adapters.size());
   final Set<String> skippedDimensions=Sets.newHashSet();
   final List<IntBuffer> rowNumConversions=Lists.newArrayListWithCapacity(adapters.size());
   progress.progress();
-  setupDimConversion(adapters,progress,mergedDimensions,dimConversions,dimIndexes,skippedDimensions,dimensionCardinalities,dimensionValuesLookup);
+  setupDimConversion(adapters,progress,mergedDimensions,dimConversions,dimIndexes,skippedDimensions,dimensionValuesLookup);
   progress.progress();
   final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,rowMergerFn);
   progress.progress();
@@ -43,7 +42,7 @@
   progress.progress();
   makeTimeColumn(v9Smoosher,progress,theRows,rowCount);
   progress.progress();
-  makeDimColumns(v9Smoosher,adapters,progress,mergedDimensions,skippedDimensions,theRows,columnCapabilities,dimensionCardinalities,dimensionValuesLookup,rowNumConversions);
+  makeDimColumns(v9Smoosher,adapters,progress,mergedDimensions,skippedDimensions,theRows,columnCapabilities,dimensionValuesLookup,rowNumConversions);
   progress.progress();
   makeMetricColumns(v9Smoosher,progress,theRows,mergedMetrics,valueTypes,metricTypeNames,rowCount);
   progress.progress();
