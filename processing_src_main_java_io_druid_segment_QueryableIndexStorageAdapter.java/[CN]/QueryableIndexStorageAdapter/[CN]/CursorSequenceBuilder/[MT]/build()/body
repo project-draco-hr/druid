@@ -4,7 +4,7 @@
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
-  final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
+  final GenericColumn timestamps=index.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
   return Sequences.withBaggage(Sequences.map(Sequences.simple(gran.iterable(interval.getStartMillis(),interval.getEndMillis())),new Function<Long,Cursor>(){
     @Override public Cursor apply(    final Long input){
       final long timeStart=Math.max(interval.getStartMillis(),input);
@@ -37,14 +37,6 @@
         }
         @Override public void reset(){
           cursorOffset=initOffset.clone();
-        }
-        @Override public LongColumnSelector makeTimestampColumnSelector(){
-          return new LongColumnSelector(){
-            @Override public long get(){
-              return timestamps.getLongSingleValueRow(cursorOffset.getOffset());
-            }
-          }
-;
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();

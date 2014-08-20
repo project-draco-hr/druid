@@ -86,14 +86,6 @@
           }
           done=!foundMatched && (cursorMap.size() == 0 || !baseIter.hasNext());
         }
-        @Override public LongColumnSelector makeTimestampColumnSelector(){
-          return new LongColumnSelector(){
-            @Override public long get(){
-              return currEntry.getKey().getTimestamp();
-            }
-          }
-;
-        }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
           final IncrementalIndex.DimDim dimValLookup=index.getDimension(dimensionName);
@@ -163,6 +155,14 @@
         }
         @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
           final String metricName=columnName.toLowerCase();
+          if (metricName.equals(Column.TIME_COLUMN_NAME)) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return currEntry.getKey().getTimestamp();
+              }
+            }
+;
+          }
           final Integer metricIndexInt=index.getMetricIndex(metricName);
           if (metricIndexInt == null) {
             return new LongColumnSelector(){
