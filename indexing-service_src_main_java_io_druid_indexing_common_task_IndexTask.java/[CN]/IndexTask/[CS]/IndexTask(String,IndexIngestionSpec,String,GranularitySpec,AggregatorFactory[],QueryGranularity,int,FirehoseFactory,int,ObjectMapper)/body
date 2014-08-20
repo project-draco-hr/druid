@@ -4,7 +4,7 @@
     this.ingestionSchema=ingestionSchema;
   }
  else {
-    this.ingestionSchema=new IndexIngestionSpec(new DataSchema(dataSource,firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity == null ? QueryGranularity.NONE : indexGranularity)),new IndexIOConfig(firehoseFactory),new IndexTuningConfig(targetPartitionSize,rowFlushBoundary,null));
+    this.ingestionSchema=new IndexIngestionSpec(new DataSchema(dataSource,firehoseFactory.getParser(),aggregators,granularitySpec.withQueryGranularity(indexGranularity == null ? QueryGranularity.NONE : indexGranularity)),new IndexIOConfig(firehoseFactory),new IndexTuningConfig(targetPartitionSize,null,null));
   }
   this.jsonMapper=jsonMapper;
 }
