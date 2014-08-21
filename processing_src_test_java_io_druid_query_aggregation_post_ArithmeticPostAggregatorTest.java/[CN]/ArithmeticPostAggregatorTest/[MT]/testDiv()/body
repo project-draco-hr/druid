@@ -1,0 +1,7 @@
+{
+  ArithmeticPostAggregator agg=new ArithmeticPostAggregator(null,"/",ImmutableList.of(new FieldAccessPostAggregator("numerator","value"),new ConstantPostAggregator("denomiator",0)));
+  Assert.assertEquals(0.0,agg.compute(ImmutableMap.<String,Object>of("value",0)));
+  Assert.assertEquals(0.0,agg.compute(ImmutableMap.<String,Object>of("value",Double.NaN)));
+  Assert.assertEquals(0.0,agg.compute(ImmutableMap.<String,Object>of("value",1)));
+  Assert.assertEquals(0.0,agg.compute(ImmutableMap.<String,Object>of("value",-1)));
+}
