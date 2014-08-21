@@ -11,7 +11,7 @@
   int currAggSize=0;
   for (int i=0; i < metrics.length; i++) {
     final AggregatorFactory agg=metrics[i];
-    aggs[i]=new ThreadSafeAggregator(agg.factorizeBuffered(new ColumnSelectorFactory(){
+    aggs[i]=agg.factorizeBuffered(new ColumnSelectorFactory(){
       @Override public TimestampColumnSelector makeTimestampColumnSelector(){
         return new TimestampColumnSelector(){
           @Override public long getTimestamp(){
@@ -101,7 +101,7 @@
 ;
       }
     }
-));
+);
     aggPositionOffsets[i]=currAggSize;
     currAggSize+=agg.getMaxIntermediateSize();
     final String metricName=metrics[i].getName().toLowerCase();
