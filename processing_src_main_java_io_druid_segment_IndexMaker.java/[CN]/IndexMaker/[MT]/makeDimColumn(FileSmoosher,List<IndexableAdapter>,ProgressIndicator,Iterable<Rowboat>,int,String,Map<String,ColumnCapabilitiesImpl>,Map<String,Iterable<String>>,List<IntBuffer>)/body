@@ -219,6 +219,7 @@
   if (hasSpatialIndexes) {
     spatialIndex=ImmutableRTree.newImmutableFromMutable(tree);
   }
+  log.info("Completed dimension[%s] with cardinality[%,d]. Starting write.",dimension,dictionary.size());
   writeColumn(v9Smoosher,new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmaps,spatialIndex),dimBuilder,dimension);
   progress.stopSection(section);
 }
