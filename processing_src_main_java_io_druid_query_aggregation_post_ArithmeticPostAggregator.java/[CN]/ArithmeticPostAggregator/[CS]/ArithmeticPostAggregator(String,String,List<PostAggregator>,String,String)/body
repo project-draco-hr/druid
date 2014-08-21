@@ -1,0 +1,21 @@
+{
+  this.name=name;
+  this.fnName=fnName;
+  this.fields=fields;
+  if (fields.size() <= 1) {
+    throw new IAE("Illegal number of fields[%s], must be > 1",fields.size());
+  }
+  Ops baseOp=Ops.lookup(fnName);
+  if (baseOp == null) {
+    throw new IAE("Unknown operation[%s], known operations[%s]",fnName,Ops.getFns());
+  }
+  this.ordering=ordering;
+  this.comparator=ordering == null ? DEFAULT_COMPARATOR : Ordering.valueOf(ordering);
+  this.opStrategy=opStrategy == null && baseOp.equals(Ops.DIV) ? OpStrategy.zeroDivisionByZero.name() : opStrategy;
+  if (this.opStrategy != null) {
+    this.op=Ops.withStrategy(baseOp,OpStrategy.valueOf(this.opStrategy));
+  }
+ else {
+    this.op=baseOp;
+  }
+}
