@@ -3,7 +3,13 @@
   final Period windowPeriod=config.getWindowPeriod();
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   log.info("Starting merge and push.");
-  DateTime minTimestampAsDate=segmentGranularity.truncate(rejectionPolicy.getCurrMaxTime().minus(windowMillis));
+  DateTime minTimestampAsDate;
+  try {
+    minTimestampAsDate=segmentGranularity.truncate(rejectionPolicy.getCurrMaxTime().minus(windowMillis));
+  }
+ catch (  ArithmeticException e) {
+    minTimestampAsDate=segmentGranularity.truncate(rejectionPolicy.getCurrMaxTime());
+  }
   long minTimestamp=minTimestampAsDate.getMillis();
   log.info("Found [%,d] sinks. minTimestamp [%s]",sinks.size(),minTimestampAsDate);
   List<Map.Entry<Long,Sink>> sinksToPush=Lists.newArrayList();
