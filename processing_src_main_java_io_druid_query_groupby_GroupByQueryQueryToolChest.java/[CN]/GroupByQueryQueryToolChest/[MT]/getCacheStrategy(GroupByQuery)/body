@@ -1,5 +1,6 @@
 {
   return new CacheStrategy<Row,Object,GroupByQuery>(){
+    private final List<AggregatorFactory> aggs=query.getAggregatorSpecs();
     @Override public byte[] computeCacheKey(    GroupByQuery query){
       final DimFilter dimFilter=query.getDimFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
@@ -45,9 +46,18 @@
         @Override public Row apply(        Object input){
           Iterator<Object> results=((List<Object>)input).iterator();
           DateTime timestamp=granularity.toDateTime(((Number)results.next()).longValue());
-          return new MapBasedRow(timestamp,(Map<String,Object>)jsonMapper.convertValue(results.next(),new TypeReference<Map<String,Object>>(){
+          Iterator<AggregatorFactory> aggsIter=aggs.iterator();
+          Map<String,Object> event=jsonMapper.convertValue(results.next(),new TypeReference<Map<String,Object>>(){
           }
-));
+);
+          while (aggsIter.hasNext()) {
+            final AggregatorFactory factory=aggsIter.next();
+            Object agg=event.remove(factory.getName());
+            if (agg != null) {
+              event.put(factory.getName(),factory.deserialize(agg));
+            }
+          }
+          return new MapBasedRow(timestamp,event);
         }
       }
 ;
