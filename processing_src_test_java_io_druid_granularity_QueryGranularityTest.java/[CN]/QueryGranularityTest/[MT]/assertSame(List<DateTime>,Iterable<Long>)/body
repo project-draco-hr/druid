@@ -4,7 +4,7 @@
   Iterator<DateTime> expectedIter=expected.iterator();
   while (actualIter.hasNext() && expectedIter.hasNext()) {
     long a=actualIter.next().longValue();
-    Assert.assertEquals(expectedIter.next().getMillis(),a);
+    Assert.assertEquals(expectedIter.next(),new DateTime(a));
   }
   Assert.assertFalse("actualIter not exhausted!?",actualIter.hasNext());
   Assert.assertFalse("expectedIter not exhausted!?",expectedIter.hasNext());
