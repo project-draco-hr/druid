@@ -34,7 +34,7 @@ synchronized (tasks) {
                 final String childHost=String.format("%s:%d",node.getHostNoPort(),childPort);
                 final String taskClasspath;
                 if (task.getClasspathPrefix() != null && !task.getClasspathPrefix().isEmpty()) {
-                  taskClasspath=Joiner.on(":").join(task.getClasspathPrefix(),config.getClasspath());
+                  taskClasspath=Joiner.on(File.pathSeparator).join(task.getClasspathPrefix(),config.getClasspath());
                 }
  else {
                   taskClasspath=config.getClasspath();
