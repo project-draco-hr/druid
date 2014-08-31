@@ -1,10 +1,10 @@
 {
   return new QueryRunner<T>(){
-    @Override public Sequence<T> run(    final Query<T> query){
+    @Override public Sequence<T> run(    final Query<T> query,    final Map<String,Object> context){
       final long offset=computeOffset(now);
       final Interval interval=query.getIntervals().get(0);
       final Interval modifiedInterval=new Interval(interval.getStartMillis() + offset,Math.min(interval.getEndMillis() + offset,now + offset));
-      return Sequences.map(baseRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(modifiedInterval)))),new Function<T,T>(){
+      return Sequences.map(baseRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(modifiedInterval))),context),new Function<T,T>(){
         @Override public T apply(        T input){
           if (input instanceof Result) {
             Result res=(Result)input;
