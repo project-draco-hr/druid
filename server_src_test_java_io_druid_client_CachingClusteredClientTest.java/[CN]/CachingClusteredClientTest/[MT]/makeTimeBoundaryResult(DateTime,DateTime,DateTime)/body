@@ -1,3 +1,13 @@
 {
-  return Arrays.asList(new Result<>(timestamp,new TimeBoundaryResultValue(ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,minTime.toString(),TimeBoundaryQuery.MAX_TIME,maxTime.toString()))));
+  final Object value;
+  if (minTime != null && maxTime != null) {
+    value=ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,minTime.toString(),TimeBoundaryQuery.MAX_TIME,maxTime.toString());
+  }
+ else   if (maxTime != null) {
+    value=ImmutableMap.of(TimeBoundaryQuery.MAX_TIME,maxTime.toString());
+  }
+ else {
+    value=ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,minTime.toString());
+  }
+  return Arrays.asList(new Result<>(timestamp,new TimeBoundaryResultValue(value)));
 }

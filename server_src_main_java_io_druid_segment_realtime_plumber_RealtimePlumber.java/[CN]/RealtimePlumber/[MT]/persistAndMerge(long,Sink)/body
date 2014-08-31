@@ -3,6 +3,20 @@
   mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
     @Override public void doRun(){
       final Interval interval=sink.getInterval();
+      final File persistDir=computePersistDir(schema,interval);
+      final File mergedTarget=new File(persistDir,"merged");
+      final File isPushedMarker=new File(persistDir,"isPushedMarker");
+      if (!isPushedMarker.exists()) {
+        removeSegment(sink,mergedTarget);
+        if (mergedTarget.exists()) {
+          log.wtf("Merged target[%s] exists?!",mergedTarget);
+          return;
+        }
+      }
+ else {
+        log.info("Already pushed sink[%s]",sink);
+        return;
+      }
       for (      FireHydrant hydrant : sink) {
 synchronized (hydrant) {
           if (!hydrant.hasSwapped()) {
@@ -11,11 +25,6 @@ synchronized (hydrant) {
             metrics.incrementRowOutputCount(rowCount);
           }
         }
-      }
-      final File mergedTarget=new File(computePersistDir(schema,interval),"merged");
-      if (mergedTarget.exists()) {
-        log.info("Skipping already-merged sink: %s",sink);
-        return;
       }
       try {
         List<QueryableIndex> indexes=Lists.newArrayList();
@@ -29,14 +38,14 @@ synchronized (hydrant) {
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);
+        if (!isPushedMarker.createNewFile()) {
+          log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
+        }
       }
  catch (      Exception e) {
         log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
         if (shuttingDown) {
           abandonSegment(truncatedTime,sink);
-        }
- else {
-          removeMergedSegment(sink);
         }
       }
     }
