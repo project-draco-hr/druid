@@ -91,7 +91,7 @@
       Collections.sort(listOfSequences,Ordering.natural().onResultOf(Pair.<DateTime,Sequence<T>>lhsFn()));
       final Sequence<Sequence<T>> seq=Sequences.simple(Iterables.transform(listOfSequences,Pair.<DateTime,Sequence<T>>rhsFn()));
       if (strategy == null) {
-        return toolChest.mergeSequences(seq,true);
+        return toolChest.mergeSequences(seq);
       }
  else {
         return strategy.mergeSequences(seq);
@@ -163,7 +163,7 @@
 ,MoreExecutors.sameThreadExecutor());
             }
           }
-),true);
+));
         }
         listOfSequences.add(Pair.of(intervals.get(0).getStart(),resultSeqToAdd));
       }
