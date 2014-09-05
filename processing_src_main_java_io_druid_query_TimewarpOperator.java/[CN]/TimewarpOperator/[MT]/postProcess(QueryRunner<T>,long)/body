@@ -3,7 +3,7 @@
     @Override public Sequence<T> run(    final Query<T> query){
       final long offset=computeOffset(now);
       final Interval interval=query.getIntervals().get(0);
-      final Interval modifiedInterval=new Interval(interval.getStartMillis() + offset,Math.min(interval.getEndMillis() + offset,now + offset));
+      final Interval modifiedInterval=new Interval(Math.min(interval.getStartMillis() + offset,now + offset),Math.min(interval.getEndMillis() + offset,now + offset));
       return Sequences.map(baseRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(modifiedInterval)))),new Function<T,T>(){
         @Override public T apply(        T input){
           if (input instanceof Result) {
