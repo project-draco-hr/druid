@@ -5,7 +5,23 @@
         config=HadoopDruidIndexerConfig.fromString(argumentSpec);
       }
  else {
-        config=HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+        File localConfigFile=null;
+        try {
+          final URI argumentSpecUri=new URI(argumentSpec);
+          final String argumentSpecScheme=argumentSpecUri.getScheme();
+          if (argumentSpecScheme == null || argumentSpecScheme.equals("file")) {
+            localConfigFile=new File(argumentSpecUri.getPath());
+          }
+        }
+ catch (        URISyntaxException e) {
+          localConfigFile=new File(argumentSpec);
+        }
+        if (localConfigFile != null) {
+          config=HadoopDruidIndexerConfig.fromFile(localConfigFile);
+        }
+ else {
+          config=HadoopDruidIndexerConfig.fromDistributedFileSystem(argumentSpec);
+        }
       }
     }
  catch (    Exception e) {

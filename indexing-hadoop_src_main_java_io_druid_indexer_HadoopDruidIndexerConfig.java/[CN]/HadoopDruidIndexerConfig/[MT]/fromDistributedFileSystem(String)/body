@@ -1,0 +1,13 @@
+{
+  try {
+    Path pt=new Path(path);
+    FileSystem fs=pt.getFileSystem(new Configuration());
+    Reader reader=new InputStreamReader(fs.open(pt));
+    return fromMap((Map<String,Object>)HadoopDruidIndexerConfig.jsonMapper.readValue(reader,new TypeReference<Map<String,Object>>(){
+    }
+));
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
