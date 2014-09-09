@@ -145,5 +145,6 @@
   }
   this.bufferHolder=bufferPool.take();
   this.dimValues=new DimensionHolder();
-  this.facts=new ConcurrentSkipListMap<>();
+  db=DBMaker.newMemoryDirectDB().transactionDisable().cacheWeakRefEnable().make();
+  this.facts=db.createTreeMap("facts").make();
 }
