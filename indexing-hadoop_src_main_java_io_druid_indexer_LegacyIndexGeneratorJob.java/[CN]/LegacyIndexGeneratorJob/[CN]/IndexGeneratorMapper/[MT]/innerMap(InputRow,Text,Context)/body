@@ -1,7 +1,0 @@
-{
-  final Optional<Bucket> bucket=getConfig().getBucket(inputRow);
-  if (!bucket.isPresent()) {
-    throw new ISE("WTF?! No bucket found for row: %s",inputRow);
-  }
-  context.write(new SortableBytes(bucket.get().toGroupKey(),Longs.toByteArray(inputRow.getTimestampFromEpoch())).toBytesWritable(),text);
-}

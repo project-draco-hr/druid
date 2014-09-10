@@ -15,7 +15,7 @@
 ;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeTuningConfig(ingestionSchema.getTuningConfig().getBufferSize(),null,null,null,null,null,null,shardSpec),metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeTuningConfig(ingestionSchema.getTuningConfig().getBufferSize(),null,null,null,null,null,null,shardSpec,null),metrics);
   try {
     plumber.startJob();
     while (firehose.hasMore()) {
