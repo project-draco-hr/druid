@@ -1,7 +1,12 @@
 {
   List<Jobby> jobs=Lists.newArrayList();
   JobHelper.ensurePaths(config);
-  indexJob=new IndexGeneratorJob(config);
+  if (config.isLegacy()) {
+    indexJob=new LegacyIndexGeneratorJob(config);
+  }
+ else {
+    indexJob=new IndexGeneratorJob(config);
+  }
   jobs.add(indexJob);
   if (dbUpdaterJob != null) {
     jobs.add(dbUpdaterJob);

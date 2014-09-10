@@ -1,5 +1,5 @@
 {
-  final HadoopIndexTask task=new HadoopIndexTask(null,null,new HadoopIngestionSpec(null,null,null,"foo",new TimestampSpec("timestamp","auto"),new JSONDataSpec(ImmutableList.of("foo"),null),new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P1D")),Granularity.DAY),ImmutableMap.<String,Object>of("paths","bar"),null,null,null,null,false,true,null,false,null,null,false,ImmutableMap.of("foo","bar"),false,null,null,null,null,null,null),null,null);
+  final HadoopIndexTask task=new HadoopIndexTask(null,null,new HadoopIngestionSpec(null,null,null,false,"foo",new TimestampSpec("timestamp","auto"),new JSONDataSpec(ImmutableList.of("foo"),null),new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P1D")),Granularity.DAY),ImmutableMap.<String,Object>of("paths","bar"),null,null,null,null,false,true,null,false,null,null,false,ImmutableMap.of("foo","bar"),false,null,null,null,null,null,null),null,null);
   final String json=jsonMapper.writeValueAsString(task);
   final HadoopIndexTask task2=(HadoopIndexTask)jsonMapper.readValue(json,Task.class);
   Assert.assertEquals("foo",task.getDataSource());
