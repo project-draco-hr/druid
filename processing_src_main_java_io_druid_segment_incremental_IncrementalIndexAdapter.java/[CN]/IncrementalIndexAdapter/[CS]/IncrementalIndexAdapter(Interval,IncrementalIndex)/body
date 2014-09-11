@@ -7,7 +7,7 @@
   }
   int rowNum=0;
   for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
-    final String[][] dims=timeAndDims.getDims();
+    final int[][] dims=timeAndDims.getDims();
     for (    String dimension : index.getDimensions()) {
       int dimIndex=index.getDimensionIndex(dimension);
       Map<String,ConciseSet> conciseSets=invertedIndexes.get(dimension);
@@ -18,7 +18,8 @@
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         continue;
       }
-      for (      String dimValue : dims[dimIndex]) {
+      final String[] dimValues=index.getDimValues(index.getDimension(dimension),dims[dimIndex]);
+      for (      String dimValue : dimValues) {
         ConciseSet conciseSet=conciseSets.get(dimValue);
         if (conciseSet == null) {
           conciseSet=new ConciseSet();

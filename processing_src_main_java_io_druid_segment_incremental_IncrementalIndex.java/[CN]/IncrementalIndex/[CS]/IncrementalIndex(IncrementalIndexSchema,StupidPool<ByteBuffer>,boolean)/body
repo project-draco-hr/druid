@@ -145,6 +145,6 @@
   }
   this.bufferHolder=bufferPool.take();
   this.dimValues=new DimensionHolder();
-  db=DBMaker.newMemoryDirectDB().transactionDisable().cacheWeakRefEnable().make();
-  this.facts=db.createTreeMap("__facts" + UUID.randomUUID()).make();
+  db=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheSoftRefEnable().make();
+  this.facts=db.createTreeMap("__facts" + UUID.randomUUID()).comparator(new TimeAndDimsComparator(this)).make();
 }

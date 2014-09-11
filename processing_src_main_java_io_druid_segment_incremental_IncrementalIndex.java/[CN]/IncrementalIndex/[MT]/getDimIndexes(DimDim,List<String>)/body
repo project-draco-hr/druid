@@ -1,0 +1,15 @@
+{
+  final int[] retVal=new int[dimValues.size()];
+  int count=0;
+  final String[] vals=dimValues.toArray(new String[0]);
+  Arrays.sort(vals);
+  for (  String dimValue : vals) {
+    int id=dimLookup.getId(dimValue);
+    if (id == -1) {
+      id=dimLookup.add(dimValue);
+    }
+    retVal[count]=id;
+    count++;
+  }
+  return retVal;
+}
