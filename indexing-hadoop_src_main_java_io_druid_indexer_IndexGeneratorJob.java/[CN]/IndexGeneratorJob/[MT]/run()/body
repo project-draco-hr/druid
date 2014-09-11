@@ -14,7 +14,7 @@
     SortableBytes.useSortableBytesAsMapOutputKey(job);
     job.setNumReduceTasks(Iterables.size(config.getAllBuckets().get()));
     job.setPartitionerClass(IndexGeneratorPartitioner.class);
-    job.setReducerClass(IndexGeneratorReducer.class);
+    setReducerClass(job);
     job.setOutputKeyClass(BytesWritable.class);
     job.setOutputValueClass(Text.class);
     job.setOutputFormatClass(IndexGeneratorOutputFormat.class);

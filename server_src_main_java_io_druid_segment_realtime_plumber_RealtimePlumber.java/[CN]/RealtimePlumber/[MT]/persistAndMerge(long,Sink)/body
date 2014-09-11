@@ -25,7 +25,13 @@ synchronized (hydrant) {
           log.info("Adding hydrant[%s]",fireHydrant);
           indexes.add(queryableIndex);
         }
-        final File mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        final File mergedFile;
+        if (config.isPersistInHeap()) {
+          mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        }
+ else {
+          mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);

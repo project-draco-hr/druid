@@ -14,12 +14,7 @@
     int runningTotalLineCount=0;
     long startTime=System.currentTimeMillis();
     Set<String> allDimensionNames=Sets.newHashSet();
-    final ProgressIndicator progressIndicator=new LoggingProgressIndicator("IndexGeneratorJob"){
-      @Override public void progress(){
-        context.progress();
-      }
-    }
-;
+    final ProgressIndicator progressIndicator=makeProgressIndicator(context);
     for (    final Text value : values) {
       context.progress();
       final InputRow inputRow=index.formatRow(parser.parse(value.toString()));
@@ -32,7 +27,7 @@
         final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
         toMerge.add(file);
         context.progress();
-        IndexMaker.persist(index,interval,file,progressIndicator);
+        persist(index,interval,file,progressIndicator);
         index.close();
         index=makeIncrementalIndex(bucket,aggs);
         startTime=System.currentTimeMillis();
@@ -47,18 +42,18 @@
         throw new IAE("If you try to persist empty indexes you are going to have a bad time");
       }
       mergedBase=new File(baseFlushFile,"merged");
-      IndexMaker.persist(index,interval,mergedBase,progressIndicator);
+      persist(index,interval,mergedBase,progressIndicator);
     }
  else {
       if (!index.isEmpty()) {
         final File finalFile=new File(baseFlushFile,"final");
-        IndexMaker.persist(index,interval,finalFile,progressIndicator);
+        persist(index,interval,finalFile,progressIndicator);
         toMerge.add(finalFile);
       }
       for (      File file : toMerge) {
         indexes.add(IndexIO.loadIndex(file));
       }
-      mergedBase=IndexMaker.mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),progressIndicator);
+      mergedBase=mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),progressIndicator);
     }
     serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
     for (    File file : toMerge) {

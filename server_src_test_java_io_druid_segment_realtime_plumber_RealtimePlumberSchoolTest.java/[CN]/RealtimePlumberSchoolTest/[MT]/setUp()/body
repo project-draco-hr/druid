@@ -23,7 +23,7 @@
   EasyMock.expectLastCall().anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
-  RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,null);
+  RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,null,null);
   RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),new Period("PT10m"),tmpDir,Granularity.HOUR,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,0);
   plumber=realtimePlumberSchool.findPlumber(schema,tuningConfig,new FireDepartmentMetrics());
 }
