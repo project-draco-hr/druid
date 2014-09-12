@@ -1,12 +1,10 @@
 {
-  if (sortedIds == null) {
-    sortedIds=db.createHashMap(dimName + "sorted").make();
-    sortedIdsReverse=db.createHashMap(dimName + "sortedInverse").make();
-    int i=0;
+  if (sortedVals == null) {
+    sortedVals=new String[falseIds.size()];
+    int index=0;
     for (    String value : falseIds.keySet()) {
-      int sortedIndex=i++;
-      sortedIds.put(value,sortedIndex);
-      sortedIdsReverse.put(sortedIndex,value);
+      sortedVals[index++]=value;
     }
+    Arrays.sort(sortedVals);
   }
 }
