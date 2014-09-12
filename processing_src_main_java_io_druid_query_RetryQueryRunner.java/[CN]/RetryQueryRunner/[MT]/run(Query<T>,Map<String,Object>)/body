@@ -9,7 +9,8 @@
       }
       for (int i=0; i < config.numTries(); i++) {
         context.put(MISSING_SEGMENTS_KEY,Lists.newArrayList());
-        yielder=baseRunner.run(query,context).toYielder(initValue,accumulator);
+        final Query<T> retryQuery=query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(missingSegments));
+        yielder=baseRunner.run(retryQuery,context).toYielder(initValue,accumulator);
         if (getMissingSegments(context).isEmpty()) {
           break;
         }
