@@ -4,7 +4,7 @@
     MutableDateTime mutableDateTime=new DateTime().toMutableDateTime();
     mutableDateTime.setMillisOfDay(0);
     currentDay=mutableDateTime.toDateTime();
-    fileWriter=new FileWriter(new File(baseDir,currentDay.toString("yyyy-MM-dd'.log'")),true);
+    fileWriter=new OutputStreamWriter(new FileOutputStream(new File(baseDir,currentDay.toString("yyyy-MM-dd'.log'")),true),Charsets.UTF_8);
     long nextDay=currentDay.plusDays(1).getMillis();
     Duration delay=new Duration(nextDay - new DateTime().getMillis());
     ScheduledExecutors.scheduleWithFixedDelay(exec,delay,Duration.standardDays(1),new Callable<ScheduledExecutors.Signal>(){
@@ -13,7 +13,7 @@
         try {
 synchronized (lock) {
             CloseQuietly.close(fileWriter);
-            fileWriter=new FileWriter(new File(baseDir,currentDay.toString()),true);
+            fileWriter=new OutputStreamWriter(new FileOutputStream(new File(baseDir,currentDay.toString()),true),Charsets.UTF_8);
           }
         }
  catch (        Exception e) {
