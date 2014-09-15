@@ -1,5 +1,5 @@
 {
-  final byte[] aggBytes=aggregationName.getBytes();
+  final byte[] aggBytes=aggregationName.getBytes(Charsets.UTF_8);
   final byte[] valBytes=Bytes.toArray(Arrays.asList(value));
   return ByteBuffer.allocate(1 + aggBytes.length + valBytes.length).put(CACHE_KEY).put(aggBytes).put(valBytes).array();
 }

@@ -7,12 +7,12 @@
   }
 );
   iterOfIterators=Iterators.peekingIterator(FunctionalIterator.create(iterators).filter(new Predicate<Iterator<T>>(){
-    @Override public boolean apply(    @Nullable Iterator<T> input){
+    @Override public boolean apply(    Iterator<T> input){
       return input.hasNext();
     }
   }
 ).transform(new Function<Iterator<T>,PeekingIterator<T>>(){
-    @Override public PeekingIterator<T> apply(    @Nullable Iterator<T> input){
+    @Override public PeekingIterator<T> apply(    Iterator<T> input){
       return Iterators.peekingIterator(input);
     }
   }
