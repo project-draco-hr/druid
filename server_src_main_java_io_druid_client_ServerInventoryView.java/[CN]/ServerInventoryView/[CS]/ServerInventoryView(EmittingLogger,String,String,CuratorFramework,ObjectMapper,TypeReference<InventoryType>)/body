@@ -60,6 +60,15 @@
     @Override public DruidServer removeInventory(    final DruidServer container,    String inventoryKey){
       return removeInnerInventory(container,inventoryKey);
     }
+    @Override public void inventoryInitialized(){
+      log.info("Inventory Initialized");
+      runSegmentCallbacks(new Function<SegmentCallback,CallbackAction>(){
+        @Override public CallbackAction apply(        SegmentCallback input){
+          return input.segmentViewInitialized();
+        }
+      }
+);
+    }
   }
 );
 }
