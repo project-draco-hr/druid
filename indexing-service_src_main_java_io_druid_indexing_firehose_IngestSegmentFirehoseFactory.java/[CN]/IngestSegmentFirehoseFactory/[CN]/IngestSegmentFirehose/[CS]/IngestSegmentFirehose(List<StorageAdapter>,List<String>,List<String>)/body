@@ -7,12 +7,16 @@
           final Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
           for (          String dim : dims) {
             final DimensionSelector dimSelector=cursor.makeDimensionSelector(dim);
-            dimSelectors.put(dim,dimSelector);
+            if (dimSelector != null) {
+              dimSelectors.put(dim,dimSelector);
+            }
           }
           final Map<String,ObjectColumnSelector> metSelectors=Maps.newHashMap();
           for (          String metric : metrics) {
             final ObjectColumnSelector metricSelector=cursor.makeObjectColumnSelector(metric);
-            metSelectors.put(metric,metricSelector);
+            if (metricSelector != null) {
+              metSelectors.put(metric,metricSelector);
+            }
           }
           return Sequences.simple(new Iterable<InputRow>(){
             @Override public Iterator<InputRow> iterator(){
