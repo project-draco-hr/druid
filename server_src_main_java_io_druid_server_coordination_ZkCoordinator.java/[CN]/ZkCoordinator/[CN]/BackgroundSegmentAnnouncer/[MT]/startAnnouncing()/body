@@ -1,0 +1,30 @@
+{
+  if (intervalMillis <= 0) {
+    return;
+  }
+  log.info("Starting background segment announcing task");
+  nextAnnoucement=startedAnnouncing=exec.schedule(new Runnable(){
+    @Override public void run(){
+      try {
+        if (!(finished && queue.isEmpty())) {
+          List<DataSegment> segments=Lists.newLinkedList();
+          queue.drainTo(segments);
+          try {
+            announcer.announceSegments(segments);
+            nextAnnoucement=exec.schedule(this,intervalMillis,TimeUnit.MILLISECONDS);
+          }
+ catch (          IOException e) {
+            doneAnnouncing.setException(new SegmentLoadingException(e,"Failed to announce segments[%s]",segments));
+          }
+        }
+ else {
+          doneAnnouncing.set(true);
+        }
+      }
+ catch (      Exception e) {
+        doneAnnouncing.setException(e);
+      }
+    }
+  }
+,intervalMillis,TimeUnit.MILLISECONDS);
+}

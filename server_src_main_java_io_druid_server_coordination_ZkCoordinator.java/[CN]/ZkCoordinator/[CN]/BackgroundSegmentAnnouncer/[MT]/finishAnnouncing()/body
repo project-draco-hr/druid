@@ -1,0 +1,24 @@
+{
+  finished=true;
+  if (startedAnnouncing != null && (startedAnnouncing.isDone() || !startedAnnouncing.cancel(false))) {
+    log.info("Waiting for background segment announcing task to complete");
+    try {
+      doneAnnouncing.get();
+    }
+ catch (    InterruptedException e) {
+      throw new SegmentLoadingException(e,"Loading Interrupted");
+    }
+catch (    ExecutionException e) {
+      throw new SegmentLoadingException(e.getCause(),"Background Announcing Task Failed");
+    }
+  }
+ else {
+    try {
+      announcer.announceSegments(queue);
+    }
+ catch (    Exception e) {
+      throw new SegmentLoadingException(e,"Failed to announce segments[%s]",queue);
+    }
+  }
+  log.info("Completed background segment announcing");
+}

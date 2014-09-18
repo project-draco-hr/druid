@@ -1,7 +1,7 @@
 {
-  try {
+  try (final BackgroundSegmentAnnouncer backgroundSegmentAnnouncer=new BackgroundSegmentAnnouncer(announcer,exec,config.getAnnounceIntervalMillis())){
+    backgroundSegmentAnnouncer.startAnnouncing();
     final List<String> segmentFailures=Lists.newArrayList();
-    final List<DataSegment> validSegments=Lists.newArrayList();
     for (    DataSegment segment : segments) {
       log.info("Loading segment %s",segment.getIdentifier());
       final boolean loaded;
@@ -27,14 +27,13 @@
             continue;
           }
         }
-        validSegments.add(segment);
+        try {
+          backgroundSegmentAnnouncer.announceSegment(segment);
+        }
+ catch (        InterruptedException e) {
+          throw new SegmentLoadingException(e,"Loading Interrupted");
+        }
       }
-    }
-    try {
-      announcer.announceSegments(validSegments);
-    }
- catch (    IOException e) {
-      throw new SegmentLoadingException(e,"Failed to announce segments[%s]",segments);
     }
     if (!segmentFailures.isEmpty()) {
       for (      String segmentFailure : segmentFailures) {
@@ -42,9 +41,10 @@
       }
       throw new SegmentLoadingException("%,d errors seen while loading segments",segmentFailures.size());
     }
+    backgroundSegmentAnnouncer.finishAnnouncing();
   }
  catch (  SegmentLoadingException e) {
-    log.makeAlert(e,"Failed to load segments for dataSource").addData("segments",segments).emit();
+    log.makeAlert(e,"Failed to load segments").addData("segments",segments).emit();
   }
  finally {
     callback.execute();
