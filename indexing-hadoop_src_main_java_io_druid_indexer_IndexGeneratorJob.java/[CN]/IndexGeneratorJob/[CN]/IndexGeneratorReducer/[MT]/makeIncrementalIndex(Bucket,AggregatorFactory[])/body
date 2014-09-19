@@ -1,3 +1,8 @@
 {
-  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build(),new OffheapBufferPool(config.getSchema().getTuningConfig().getBufferSize()));
+  int aggsSize=0;
+  for (  AggregatorFactory agg : aggs) {
+    aggsSize+=agg.getMaxIntermediateSize();
+  }
+  int bufferSize=aggsSize * config.getSchema().getTuningConfig().getRowFlushBoundary();
+  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build(),new OffheapBufferPool(bufferSize));
 }
