@@ -29,7 +29,7 @@
         int numAdvanced=-1;
         boolean done;
 {
-          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new int[][]{}),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new int[][]{}));
+          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new String[][]{}),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new String[][]{}));
           time=gran.toDateTime(input);
           reset();
         }
@@ -106,11 +106,12 @@
             @Override public IndexedInts getRow(){
               final ArrayList<Integer> vals=Lists.newArrayList();
               if (dimIndex < currEntry.getKey().getDims().length) {
-                final int[] dimVals=currEntry.getKey().getDims()[dimIndex];
+                final String[] dimVals=currEntry.getKey().getDims()[dimIndex];
                 if (dimVals != null) {
-                  for (                  int dimVal : dimVals) {
-                    if (dimVal < maxId) {
-                      vals.add(dimVal);
+                  for (                  String dimVal : dimVals) {
+                    int id=dimValLookup.getId(dimVal);
+                    if (id < maxId) {
+                      vals.add(id);
                     }
                   }
                 }
@@ -179,14 +180,13 @@
           }
           final Integer dimensionIndexInt=index.getDimensionIndex(columnName);
           if (dimensionIndexInt != null) {
-            final IncrementalIndex.DimDim dimDim=index.getDimension(columnName);
             final int dimensionIndex=dimensionIndexInt;
             return new ObjectColumnSelector<Object>(){
               @Override public Class classOfObject(){
                 return Object.class;
               }
               @Override public Object get(){
-                final String[] dimVals=index.getDimValues(dimDim,currEntry.getKey().getDims()[dimensionIndex]);
+                final String[] dimVals=currEntry.getKey().getDims()[dimensionIndex];
                 if (dimVals.length == 1) {
                   return dimVals[0];
                 }

@@ -1,15 +1,14 @@
 {
-  final String value=valueParam == null ? "" : valueParam;
   Integer dimIndexObject=index.getDimensionIndex(dimension.toLowerCase());
   if (dimIndexObject == null) {
     return new BooleanValueMatcher(false);
   }
   if (!index.getDimension(dimension.toLowerCase()).contains(value)) {
-    if ("".equals(value)) {
+    if (value == null || "".equals(value)) {
       final int dimIndex=dimIndexObject;
       return new ValueMatcher(){
         @Override public boolean matches(){
-          int[][] dims=holder.getKey().getDims();
+          String[][] dims=holder.getKey().getDims();
           if (dimIndex >= dims.length || dims[dimIndex] == null) {
             return true;
           }
@@ -21,14 +20,13 @@
     return new BooleanValueMatcher(false);
   }
   final int dimIndex=dimIndexObject;
-  final IncrementalIndex.DimDim dimDim=index.getDimension(dimension.toLowerCase());
   return new ValueMatcher(){
     @Override public boolean matches(){
-      int[][] dims=holder.getKey().getDims();
+      String[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         return false;
       }
-      for (      String dimVal : index.getDimValues(dimDim,dims[dimIndex])) {
+      for (      String dimVal : dims[dimIndex]) {
         if (value.equals(dimVal)) {
           return true;
         }

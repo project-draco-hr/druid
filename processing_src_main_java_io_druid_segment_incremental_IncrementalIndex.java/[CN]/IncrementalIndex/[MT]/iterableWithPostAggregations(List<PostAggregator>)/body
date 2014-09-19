@@ -5,10 +5,10 @@
         @Override public Row apply(        final Map.Entry<TimeAndDims,Integer> input){
           final TimeAndDims timeAndDims=input.getKey();
           final int rowOffset=input.getValue();
-          int[][] theDims=timeAndDims.getDims();
+          String[][] theDims=timeAndDims.getDims();
           Map<String,Object> theVals=Maps.newLinkedHashMap();
           for (int i=0; i < theDims.length; ++i) {
-            String[] dim=getDimValues(dimValues.get(dimensions.get(i)),theDims[i]);
+            String[] dim=theDims[i];
             if (dim != null && dim.length != 0) {
               theVals.put(dimensions.get(i),dim.length == 1 ? dim[0] : Arrays.asList(dim));
             }

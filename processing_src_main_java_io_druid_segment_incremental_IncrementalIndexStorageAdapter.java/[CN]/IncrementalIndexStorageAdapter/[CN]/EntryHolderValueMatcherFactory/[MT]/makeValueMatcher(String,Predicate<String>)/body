@@ -4,14 +4,13 @@
     return new BooleanValueMatcher(false);
   }
   final int dimIndex=dimIndexObject;
-  final IncrementalIndex.DimDim dimDim=index.getDimension(dimension.toLowerCase());
   return new ValueMatcher(){
     @Override public boolean matches(){
-      int[][] dims=holder.getKey().getDims();
+      String[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         return false;
       }
-      for (      String dimVal : index.getDimValues(dimDim,dims[dimIndex])) {
+      for (      String dimVal : dims[dimIndex]) {
         if (predicate.apply(dimVal)) {
           return true;
         }

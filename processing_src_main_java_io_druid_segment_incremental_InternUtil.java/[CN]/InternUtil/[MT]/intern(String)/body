@@ -1,0 +1,11 @@
+{
+  final WeakReference<String> cached=cache.get(str);
+  if (cached != null) {
+    final String value=cached.get();
+    if (value != null) {
+      return value;
+    }
+  }
+  cache.put(str,new WeakReference<String>(str));
+  return str;
+}

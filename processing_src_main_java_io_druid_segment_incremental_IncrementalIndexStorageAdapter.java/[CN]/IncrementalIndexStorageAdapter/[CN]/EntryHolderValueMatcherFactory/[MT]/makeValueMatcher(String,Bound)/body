@@ -6,12 +6,11 @@
   final int dimIndex=dimIndexObject;
   return new ValueMatcher(){
     @Override public boolean matches(){
-      int[][] dims=holder.getKey().getDims();
+      String[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         return false;
       }
-      final IncrementalIndex.DimDim dimDim=index.getDimension(dimension.toLowerCase());
-      for (      String dimVal : index.getDimValues(dimDim,dims[dimIndex])) {
+      for (      String dimVal : dims[dimIndex]) {
         List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
         float[] coords=new float[stringCoords.size()];
         for (int j=0; j < coords.length; j++) {
