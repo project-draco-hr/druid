@@ -1,16 +1,7 @@
 {
   final List<DataSegment> segments=IndexGeneratorJob.getPublishedSegments(config);
-  dbi.withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      final PreparedBatch batch=handle.prepareBatch(String.format(dbConnector.isPostgreSQL() ? "INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)" : "INSERT INTO %s (id, dataSource, created_date, start, end, partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",config.getSchema().getIOConfig().getMetadataUpdateSpec().getSegmentTable()));
-      for (      final DataSegment segment : segments) {
-        batch.add(new ImmutableMap.Builder<String,Object>().put("id",segment.getIdentifier()).put("dataSource",segment.getDataSource()).put("created_date",new DateTime().toString()).put("start",segment.getInterval().getStart().toString()).put("end",segment.getInterval().getEnd().toString()).put("partitioned",(segment.getShardSpec() instanceof NoneShardSpec) ? 0 : 1).put("version",segment.getVersion()).put("used",true).put("payload",HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(segment)).build());
-        log.info("Published %s",segment.getIdentifier());
-      }
-      batch.execute();
-      return null;
-    }
-  }
-);
+  final String segmentTable=config.getSchema().getIOConfig().getMetadataUpdateSpec().getSegmentTable();
+  final ObjectMapper mapper=HadoopDruidIndexerConfig.jsonMapper;
+  handler.publishSegments(segmentTable,segments,mapper);
   return true;
 }

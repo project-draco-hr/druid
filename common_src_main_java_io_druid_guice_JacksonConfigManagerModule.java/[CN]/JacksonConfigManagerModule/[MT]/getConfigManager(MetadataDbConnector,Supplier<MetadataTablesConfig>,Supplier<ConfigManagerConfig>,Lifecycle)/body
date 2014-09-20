@@ -1,0 +1,11 @@
+{
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      metadataDbConnector.createConfigTable();
+    }
+    @Override public void stop(){
+    }
+  }
+);
+  return new ConfigManager(metadataDbConnector,dbTables,config);
+}

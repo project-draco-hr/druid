@@ -1,6 +1,6 @@
 {
-  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),null,0,"normal"))).atLeastOnce();
-  EasyMock.replay(databaseRuleManager);
+  EasyMock.expect(metadataRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),null,0,"normal"))).atLeastOnce();
+  EasyMock.replay(metadataRuleManager);
   DruidServer server1=new DruidServer("server1","host1",1000,"historical","normal",0);
   server1.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));
   DruidServer server2=new DruidServer("serverNorm2","hostNorm2",1000,"historical","normal",0);
@@ -19,7 +19,7 @@
   EasyMock.replay(anotherMockPeon);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1.toImmutableDruidServer(),mockPeon),new ServerHolder(server2.toImmutableDruidServer(),anotherMockPeon),new ServerHolder(server3.toImmutableDruidServer(),anotherMockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMillisToWaitBeforeDeleting(0L).build()).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMillisToWaitBeforeDeleting(0L).build()).withAvailableSegments(availableSegments).withDatabaseRuleManager(metadataRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
   CoordinatorStats stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("droppedCount").get("normal").get() == 1);

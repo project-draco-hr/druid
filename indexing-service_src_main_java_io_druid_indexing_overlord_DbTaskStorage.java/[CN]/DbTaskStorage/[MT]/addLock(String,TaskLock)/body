@@ -2,10 +2,10 @@
   Preconditions.checkNotNull(taskid,"taskid");
   Preconditions.checkNotNull(taskLock,"taskLock");
   log.info("Adding lock on interval[%s] version[%s] for task: %s",taskLock.getInterval(),taskLock.getVersion(),taskid);
-  retryingHandle(new HandleCallback<Integer>(){
-    @Override public Integer withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("INSERT INTO %s (task_id, lock_payload) VALUES (:task_id, :lock_payload)",dbTables.getTaskLockTable())).bind("task_id",taskid).bind("lock_payload",jsonMapper.writeValueAsBytes(taskLock)).execute();
-    }
+  try {
+    handler.addLock(dbTables.getTaskLockTable(),taskid,jsonMapper.writeValueAsBytes(taskLock));
   }
-);
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
 }

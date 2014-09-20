@@ -4,21 +4,15 @@
   Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
   log.info("Inserting task %s with status: %s",task.getId(),status);
   try {
-    retryingHandle(new HandleCallback<Void>(){
-      @Override public Void withHandle(      Handle handle) throws Exception {
-        handle.createStatement(String.format("INSERT INTO %s (id, created_date, datasource, payload, active, status_payload) VALUES (:id, :created_date, :datasource, :payload, :active, :status_payload)",dbTables.getTasksTable())).bind("id",task.getId()).bind("created_date",new DateTime().toString()).bind("datasource",task.getDataSource()).bind("payload",jsonMapper.writeValueAsBytes(task)).bind("active",status.isRunnable() ? 1 : 0).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute();
-        return null;
-      }
-    }
-);
+    handler.insert(dbTables.getTasksTable(),task.getId(),new DateTime().toString(),task.getDataSource(),jsonMapper.writeValueAsBytes(task),status.isRunnable() ? 1 : 0,jsonMapper.writeValueAsBytes(status));
   }
  catch (  Exception e) {
-    final boolean isStatementException=e instanceof StatementException || (e instanceof CallbackFailedException && e.getCause() instanceof StatementException);
+    final boolean isStatementException=handler.isStatementException(e);
     if (isStatementException && getTask(task.getId()).isPresent()) {
       throw new TaskExistsException(task.getId(),e);
     }
  else {
-      throw e;
+      throw Throwables.propagate(e);
     }
   }
 }

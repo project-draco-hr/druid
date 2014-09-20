@@ -1,0 +1,10 @@
+{
+  try {
+    NetworkServerControl server=new NetworkServerControl(InetAddress.getByName("localhost"),1527);
+    server.start(null);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return new DerbyConnectionFactory(dbName);
+}

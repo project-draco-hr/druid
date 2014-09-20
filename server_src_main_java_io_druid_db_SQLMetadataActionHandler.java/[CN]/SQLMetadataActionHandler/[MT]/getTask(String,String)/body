@@ -1,0 +1,8 @@
+{
+  return retryingHandle(new HandleCallback<List<Map<String,Object>>>(){
+    @Override public List<Map<String,Object>> withHandle(    Handle handle) throws Exception {
+      return handle.createQuery(String.format("SELECT payload FROM %s WHERE id = :id",tableName)).bind("id",Id).list();
+    }
+  }
+);
+}

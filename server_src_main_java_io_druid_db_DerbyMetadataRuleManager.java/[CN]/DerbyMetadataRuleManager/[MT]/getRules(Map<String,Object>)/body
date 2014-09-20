@@ -1,0 +1,13 @@
+{
+  List<Rule> rules=null;
+  try {
+    java.sql.Clob payload=(java.sql.Clob)stringObjectMap.get("payload");
+    rules=jsonMapper.readValue(payload.getSubString(1,(int)payload.length()),new TypeReference<List<Rule>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return rules;
+}

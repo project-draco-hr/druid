@@ -1,0 +1,4 @@
+{
+  createTable(dbi,tableName,String.format("CREATE TABLE %s (id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1), " + "task_id VARCHAR(255) DEFAULT NULL, log_payload CLOB, PRIMARY KEY (id)); " + "CREATE INDEX task_log_task_id ON %1$s(task_id)",tableName));
+  createIndex(dbi,tableName,"task_log_task_id","task_id");
+}

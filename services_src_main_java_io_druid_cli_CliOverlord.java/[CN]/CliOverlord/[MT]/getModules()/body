@@ -10,7 +10,7 @@
 ).toProvider(new ListProvider<TaskLogStreamer>().add(TaskRunnerTaskLogStreamer.class).add(TaskLogs.class)).in(LazySingleton.class);
       binder.bind(TaskActionClientFactory.class).to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
-      binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
+      binder.bind(IndexerMetadataCoordinator.class).to(IndexerSQLMetadataCoordinator.class).in(LazySingleton.class);
       binder.bind(TaskLockbox.class).in(LazySingleton.class);
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
       binder.bind(ResourceManagementSchedulerFactory.class).to(ResourceManagementSchedulerFactoryImpl.class).in(LazySingleton.class);

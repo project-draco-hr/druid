@@ -1,0 +1,28 @@
+{
+  try {
+    ImmutableMap<String,List<Rule>> newRules=ImmutableMap.copyOf(dbi.withHandle(new HandleCallback<Map<String,List<Rule>>>(){
+      @Override public Map<String,List<Rule>> withHandle(      Handle handle) throws Exception {
+        return handle.createQuery(String.format("SELECT r.dataSource, r.payload " + "FROM %1$s r " + "INNER JOIN(SELECT dataSource, max(version) as version FROM %1$s GROUP BY dataSource) ds "+ "ON r.datasource = ds.datasource and r.version = ds.version",getRulesTable())).fold(Maps.<String,List<Rule>>newHashMap(),new Folder3<Map<String,List<Rule>>,Map<String,Object>>(){
+          @Override public Map<String,List<Rule>> fold(          Map<String,List<Rule>> retVal,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
+            try {
+              String dataSource=MapUtils.getString(stringObjectMap,"dataSource");
+              List<Rule> rules=getRules(stringObjectMap);
+              retVal.put(dataSource,rules);
+              return retVal;
+            }
+ catch (            Exception e) {
+              throw Throwables.propagate(e);
+            }
+          }
+        }
+);
+      }
+    }
+));
+    log.info("Polled and found rules for %,d datasource(s)",newRules.size());
+    rules.set(newRules);
+  }
+ catch (  Exception e) {
+    log.error(e,"Exception while polling for rules");
+  }
+}

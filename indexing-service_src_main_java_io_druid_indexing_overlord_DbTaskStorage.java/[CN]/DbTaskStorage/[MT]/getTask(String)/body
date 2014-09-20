@@ -1,15 +1,15 @@
 {
-  return retryingHandle(new HandleCallback<Optional<Task>>(){
-    @Override public Optional<Task> withHandle(    Handle handle) throws Exception {
-      final List<Map<String,Object>> dbTasks=handle.createQuery(String.format("SELECT payload FROM %s WHERE id = :id",dbTables.getTasksTable())).bind("id",taskid).list();
-      if (dbTasks.size() == 0) {
-        return Optional.absent();
-      }
+  try {
+    final List<Map<String,Object>> dbTasks=handler.getTask(dbTables.getTasksTable(),taskid);
+    if (dbTasks.size() == 0) {
+      return Optional.absent();
+    }
  else {
-        final Map<String,Object> dbStatus=Iterables.getOnlyElement(dbTasks);
-        return Optional.of(jsonMapper.readValue((byte[])dbStatus.get("payload"),Task.class));
-      }
+      final Map<String,Object> dbStatus=Iterables.getOnlyElement(dbTasks);
+      return Optional.of(jsonMapper.readValue((byte[])dbStatus.get("payload"),Task.class));
     }
   }
-);
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
 }

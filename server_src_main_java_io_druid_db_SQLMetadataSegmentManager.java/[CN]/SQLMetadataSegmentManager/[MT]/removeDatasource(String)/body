@@ -1,0 +1,22 @@
+{
+  try {
+    ConcurrentHashMap<String,DruidDataSource> dataSourceMap=dataSources.get();
+    if (!dataSourceMap.containsKey(ds)) {
+      log.warn("Cannot delete datasource %s, does not exist",ds);
+      return false;
+    }
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",getSegmentsTable())).bind("dataSource",ds).execute();
+        return null;
+      }
+    }
+);
+    dataSourceMap.remove(ds);
+  }
+ catch (  Exception e) {
+    log.error(e,"Error removing datasource %s",ds);
+    return false;
+  }
+  return true;
+}

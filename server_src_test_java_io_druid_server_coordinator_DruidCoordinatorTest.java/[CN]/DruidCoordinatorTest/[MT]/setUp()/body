@@ -5,8 +5,8 @@
   loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
   loadManagementPeons=new MapMaker().makeMap();
   serverInventoryView=EasyMock.createMock(SingleServerInventoryView.class);
-  databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
-  EasyMock.replay(databaseSegmentManager);
+  metadataSegmentManager=EasyMock.createNiceMock(MetadataSegmentManager.class);
+  EasyMock.replay(metadataSegmentManager);
   scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
   EasyMock.replay(scheduledExecutorFactory);
   coordinator=new DruidCoordinator(new DruidCoordinatorConfig(){
@@ -28,5 +28,5 @@
       return "";
     }
   }
-,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,new NoopServiceAnnouncer(),new DruidNode("hey","what",1234),loadManagementPeons);
+,null,metadataSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,new NoopServiceAnnouncer(),new DruidNode("hey","what",1234),loadManagementPeons);
 }

@@ -1,0 +1,30 @@
+{
+  try {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        List<Map<String,Object>> tables=handle.select("select * from SYS.SYSTABLES");
+        boolean tableExists=false;
+        String existingTableName="";
+        String tableNameUpper=tableName.toUpperCase();
+        for (        Map<String,Object> t : tables) {
+          if (t.get("tablename").equals(tableNameUpper)) {
+            tableExists=true;
+            existingTableName=(String)t.get("tablename");
+          }
+        }
+        if (!tableExists) {
+          log.info("Creating table[%s]",tableName);
+          handle.createStatement(sql).execute();
+        }
+ else {
+          log.info("Table[%s] existed: [%s]",tableName,existingTableName);
+        }
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    log.warn(e,"Exception creating table");
+  }
+}
