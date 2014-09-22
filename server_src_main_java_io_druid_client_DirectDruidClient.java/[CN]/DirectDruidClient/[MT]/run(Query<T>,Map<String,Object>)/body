@@ -28,18 +28,15 @@
         log.debug("Initial response from url[%s]",url);
         startTime=System.currentTimeMillis();
         byteCount+=response.getContent().readableBytes();
-        List missingSegments=new ArrayList();
         try {
-          Map<String,Object> headerContext=objectMapper.readValue(response.getHeader("Context"),Map.class);
-          missingSegments=(List)headerContext.get(RetryQueryRunner.missingSegments);
-          for (int i=missingSegments.size(); i > 0; i--) {
-            missingSegments.add(objectMapper.convertValue(missingSegments.remove(0),SegmentDescriptor.class));
+          final Map<String,Object> responseContext=objectMapper.readValue(response.headers().get("X-Druid-Response-Context"),new TypeReference<Map<String,Object>>(){
           }
+);
+          context.putAll(responseContext);
         }
  catch (        IOException e) {
           e.printStackTrace();
         }
-        ((List)context.get(RetryQueryRunner.missingSegments)).addAll(missingSegments);
         return super.handleResponse(response);
       }
       @Override public ClientResponse<AppendableByteArrayInputStream> handleChunk(      ClientResponse<AppendableByteArrayInputStream> clientResponse,      HttpChunk chunk){

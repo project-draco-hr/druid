@@ -5,9 +5,26 @@
   if (o == null || getClass() != o.getClass()) {
     return false;
   }
-  HyperLogLogCollector collector=(HyperLogLogCollector)o;
-  if (storageBuffer != null ? !storageBuffer.equals(collector.storageBuffer) : collector.storageBuffer != null) {
+  ByteBuffer otherBuffer=((HyperLogLogCollector)o).storageBuffer;
+  if (storageBuffer != null ? false : otherBuffer != null) {
     return false;
   }
-  return true;
+  if (storageBuffer == null && otherBuffer == null) {
+    return true;
+  }
+  final ByteBuffer denseStorageBuffer;
+  if (storageBuffer.remaining() != getNumBytesForDenseStorage()) {
+    HyperLogLogCollector denseCollector=HyperLogLogCollector.makeCollector(storageBuffer);
+    denseCollector.convertToDenseStorage();
+    denseStorageBuffer=denseCollector.storageBuffer;
+  }
+ else {
+    denseStorageBuffer=storageBuffer;
+  }
+  if (otherBuffer.remaining() != getNumBytesForDenseStorage()) {
+    HyperLogLogCollector otherCollector=HyperLogLogCollector.makeCollector(otherBuffer);
+    otherCollector.convertToDenseStorage();
+    otherBuffer=otherCollector.storageBuffer;
+  }
+  return denseStorageBuffer.equals(otherBuffer);
 }

@@ -1,7 +1,7 @@
 {
   final File tmpDir=Files.createTempDir();
   tmpDir.deleteOnExit();
-  final DataSchema schema=new DataSchema("test",new InputRowParser(){
+  schema=new DataSchema("test",new InputRowParser(){
     @Override public InputRow parse(    Object input){
       return null;
     }
@@ -16,14 +16,14 @@
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().anyTimes();
-  segmentPublisher=EasyMock.createMock(SegmentPublisher.class);
-  dataSegmentPusher=EasyMock.createMock(DataSegmentPusher.class);
+  segmentPublisher=EasyMock.createNiceMock(SegmentPublisher.class);
+  dataSegmentPusher=EasyMock.createNiceMock(DataSegmentPusher.class);
   serverView=EasyMock.createMock(FilteredServerView.class);
   serverView.registerSegmentCallback(EasyMock.<Executor>anyObject(),EasyMock.<ServerView.SegmentCallback>anyObject(),EasyMock.<Predicate<DataSegment>>anyObject());
   EasyMock.expectLastCall().anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
-  RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,null,null);
-  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),new Period("PT10m"),tmpDir,Granularity.HOUR,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,0);
-  plumber=realtimePlumberSchool.findPlumber(schema,tuningConfig,new FireDepartmentMetrics());
+  tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null);
+  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),new Period("PT10m"),tmpDir,Granularity.HOUR,new IntervalStartVersioningPolicy(),rejectionPolicy,null,0);
+  plumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema,tuningConfig,new FireDepartmentMetrics());
 }
