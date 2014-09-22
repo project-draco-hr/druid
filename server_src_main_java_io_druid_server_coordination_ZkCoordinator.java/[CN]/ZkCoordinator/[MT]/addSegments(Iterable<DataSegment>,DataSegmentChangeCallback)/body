@@ -1,45 +1,47 @@
 {
   try (final BackgroundSegmentAnnouncer backgroundSegmentAnnouncer=new BackgroundSegmentAnnouncer(announcer,exec,config.getAnnounceIntervalMillis())){
     backgroundSegmentAnnouncer.startAnnouncing();
-    final List<String> segmentFailures=Lists.newArrayList();
-    for (    DataSegment segment : segments) {
-      log.info("Loading segment %s",segment.getIdentifier());
-      final boolean loaded;
-      try {
-        loaded=serverManager.loadSegment(segment);
-      }
- catch (      Exception e) {
-        log.error(e,"Exception loading segment[%s]",segment.getIdentifier());
-        removeSegment(segment,callback);
-        segmentFailures.add(segment.getIdentifier());
-        continue;
-      }
-      if (loaded) {
-        File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
-        if (!segmentInfoCacheFile.exists()) {
+    final List<ListenableFuture<Boolean>> segmentLoading=Lists.newArrayList();
+    for (    final DataSegment segment : segments) {
+      segmentLoading.add(getLoadingExecutor().submit(new Callable<Boolean>(){
+        @Override public Boolean call() throws SegmentLoadingException {
           try {
-            jsonMapper.writeValue(segmentInfoCacheFile,segment);
+            log.info("Loading segment %s",segment.getIdentifier());
+            final boolean loaded=loadSegment(segment,callback);
+            if (loaded) {
+              try {
+                backgroundSegmentAnnouncer.announceSegment(segment);
+              }
+ catch (              InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new SegmentLoadingException(e,"Loading Interrupted");
+              }
+            }
+            return loaded;
           }
- catch (          IOException e) {
-            log.error(e,"Failed to write to disk segment info cache file[%s]",segmentInfoCacheFile);
-            removeSegment(segment,callback);
-            segmentFailures.add(segment.getIdentifier());
-            continue;
+ catch (          SegmentLoadingException e) {
+            log.error(e,"[%s] failed to load",segment.getIdentifier());
+            throw e;
           }
         }
-        try {
-          backgroundSegmentAnnouncer.announceSegment(segment);
-        }
- catch (        InterruptedException e) {
-          throw new SegmentLoadingException(e,"Loading Interrupted");
-        }
+      }
+));
+    }
+    int failed=0;
+    for (    ListenableFuture future : segmentLoading) {
+      try {
+        future.get();
+      }
+ catch (      InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new SegmentLoadingException(e,"Loading Interrupted");
+      }
+catch (      ExecutionException e) {
+        failed++;
       }
     }
-    if (!segmentFailures.isEmpty()) {
-      for (      String segmentFailure : segmentFailures) {
-        log.error("%s failed to load",segmentFailure);
-      }
-      throw new SegmentLoadingException("%,d errors seen while loading segments",segmentFailures.size());
+    if (failed > 0) {
+      throw new SegmentLoadingException("%,d errors seen while loading segments",failed);
     }
     backgroundSegmentAnnouncer.finishAnnouncing();
   }
