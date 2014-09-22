@@ -1,4 +1,13 @@
 {
-  falseIds=db.createHashMap(dimName).keySerializer(Serializer.STRING).valueSerializer(Serializer.INTEGER).make();
-  falseIdsReverse=db.createHashMap(dimName + "_inverse").keySerializer(Serializer.INTEGER).valueSerializer(Serializer.STRING).make();
+  if (useOffheap) {
+    falseIds=db.createHashMap(dimName).keySerializer(Serializer.STRING).valueSerializer(Serializer.INTEGER).make();
+    falseIdsReverse=db.createHashMap(dimName + "_inverse").keySerializer(Serializer.INTEGER).valueSerializer(Serializer.STRING).make();
+    interner=new WeakInterner();
+  }
+ else {
+    BiMap<String,Integer> biMap=Maps.synchronizedBiMap(HashBiMap.<String,Integer>create());
+    falseIds=biMap;
+    falseIdsReverse=biMap.inverse();
+    interner=new StrongInterner();
+  }
 }

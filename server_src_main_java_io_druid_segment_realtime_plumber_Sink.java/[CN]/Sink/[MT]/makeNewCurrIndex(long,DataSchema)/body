@@ -4,7 +4,7 @@
     aggsSize+=agg.getMaxIntermediateSize();
   }
   int bufferSize=aggsSize * config.getMaxRowsInMemory();
-  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withDimensionsSpec(schema.getParser()).withMetrics(schema.getAggregators()).build(),new OffheapBufferPool(bufferSize));
+  IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withDimensionsSpec(schema.getParser()).withMetrics(schema.getAggregators()).build(),new OffheapBufferPool(bufferSize),false);
   FireHydrant old;
   if (currHydrant == null) {
     old=currHydrant;
