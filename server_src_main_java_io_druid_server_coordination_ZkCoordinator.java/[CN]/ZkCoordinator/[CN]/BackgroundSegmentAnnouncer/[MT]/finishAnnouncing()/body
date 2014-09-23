@@ -1,9 +1,21 @@
 {
-  finished=true;
-  if (startedAnnouncing != null && (startedAnnouncing.isDone() || !startedAnnouncing.cancel(false))) {
-    log.info("Waiting for background segment announcing task to complete");
+synchronized (lock) {
+    finished=true;
     try {
-      doneAnnouncing.get();
+      final List<DataSegment> segments=Lists.newLinkedList();
+      queue.drainTo(segments);
+      announcer.announceSegments(segments);
+    }
+ catch (    Exception e) {
+      throw new SegmentLoadingException(e,"Failed to announce segments[%s]",queue);
+    }
+    try {
+      if (startedAnnouncing != null) {
+        startedAnnouncing.cancel(false);
+      }
+      if (doneAnnouncing.isDone()) {
+        doneAnnouncing.get();
+      }
     }
  catch (    InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -11,14 +23,6 @@
     }
 catch (    ExecutionException e) {
       throw new SegmentLoadingException(e.getCause(),"Background Announcing Task Failed");
-    }
-  }
- else {
-    try {
-      announcer.announceSegments(queue);
-    }
- catch (    Exception e) {
-      throw new SegmentLoadingException(e,"Failed to announce segments[%s]",queue);
     }
   }
   log.info("Completed background segment announcing");

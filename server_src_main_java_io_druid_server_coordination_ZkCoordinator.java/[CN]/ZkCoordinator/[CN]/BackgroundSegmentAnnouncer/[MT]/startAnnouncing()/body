@@ -5,24 +5,26 @@
   log.info("Starting background segment announcing task");
   nextAnnoucement=startedAnnouncing=exec.schedule(new Runnable(){
     @Override public void run(){
-      try {
-        if (!(finished && queue.isEmpty())) {
-          List<DataSegment> segments=Lists.newLinkedList();
-          queue.drainTo(segments);
-          try {
-            announcer.announceSegments(segments);
-            nextAnnoucement=exec.schedule(this,intervalMillis,TimeUnit.MILLISECONDS);
+synchronized (lock) {
+        try {
+          if (!(finished && queue.isEmpty())) {
+            final List<DataSegment> segments=Lists.newLinkedList();
+            queue.drainTo(segments);
+            try {
+              announcer.announceSegments(segments);
+              nextAnnoucement=exec.schedule(this,intervalMillis,TimeUnit.MILLISECONDS);
+            }
+ catch (            IOException e) {
+              doneAnnouncing.setException(new SegmentLoadingException(e,"Failed to announce segments[%s]",segments));
+            }
           }
- catch (          IOException e) {
-            doneAnnouncing.setException(new SegmentLoadingException(e,"Failed to announce segments[%s]",segments));
-          }
-        }
  else {
-          doneAnnouncing.set(true);
+            doneAnnouncing.set(true);
+          }
         }
-      }
- catch (      Exception e) {
-        doneAnnouncing.setException(e);
+ catch (        Exception e) {
+          doneAnnouncing.setException(e);
+        }
       }
     }
   }

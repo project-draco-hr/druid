@@ -1,10 +1,10 @@
 {
   try (final BackgroundSegmentAnnouncer backgroundSegmentAnnouncer=new BackgroundSegmentAnnouncer(announcer,exec,config.getAnnounceIntervalMillis())){
     backgroundSegmentAnnouncer.startAnnouncing();
-    final List<ListenableFuture<Boolean>> segmentLoading=Lists.newArrayList();
+    final List<ListenableFuture> segmentLoading=Lists.newArrayList();
     for (    final DataSegment segment : segments) {
-      segmentLoading.add(getLoadingExecutor().submit(new Callable<Boolean>(){
-        @Override public Boolean call() throws SegmentLoadingException {
+      segmentLoading.add(getLoadingExecutor().submit(new Callable<Void>(){
+        @Override public Void call() throws SegmentLoadingException {
           try {
             log.info("Loading segment %s",segment.getIdentifier());
             final boolean loaded=loadSegment(segment,callback);
@@ -17,7 +17,7 @@
                 throw new SegmentLoadingException(e,"Loading Interrupted");
               }
             }
-            return loaded;
+            return null;
           }
  catch (          SegmentLoadingException e) {
             log.error(e,"[%s] failed to load",segment.getIdentifier());
