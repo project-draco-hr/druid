@@ -20,10 +20,36 @@
     }
   }
 ;
-  announcer=new SingleDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
+  announceCount=new AtomicInteger(0);
+  announcer=new DataSegmentAnnouncer(){
+    private final DataSegmentAnnouncer delegate=new SingleDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
+    @Override public void announceSegment(    DataSegment segment) throws IOException {
+      announceCount.incrementAndGet();
+      delegate.announceSegment(segment);
+    }
+    @Override public void unannounceSegment(    DataSegment segment) throws IOException {
+      announceCount.decrementAndGet();
+      delegate.unannounceSegment(segment);
+    }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+      announceCount.addAndGet(Iterables.size(segments));
+      delegate.announceSegments(segments);
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+      announceCount.addAndGet(-Iterables.size(segments));
+      delegate.unannounceSegments(segments);
+    }
+  }
+;
   zkCoordinator=new ZkCoordinator(jsonMapper,new SegmentLoaderConfig(){
     @Override public File getInfoDir(){
       return infoDir;
+    }
+    @Override public int getNumLoadingThreads(){
+      return 5;
+    }
+    @Override public int getAnnounceIntervalMillis(){
+      return 50;
     }
   }
 ,zkPaths,me,announcer,curator,serverManager,ScheduledExecutors.createFactory(new Lifecycle()));
