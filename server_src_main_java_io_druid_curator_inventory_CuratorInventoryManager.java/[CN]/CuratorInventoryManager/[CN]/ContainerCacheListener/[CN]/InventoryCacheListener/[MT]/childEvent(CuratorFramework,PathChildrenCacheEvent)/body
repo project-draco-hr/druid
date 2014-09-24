@@ -1,29 +1,43 @@
 {
-  final ChildData child=event.getData();
-  if (child == null) {
-    return;
-  }
   final ContainerHolder holder=containers.get(containerKey);
   if (holder == null) {
     return;
   }
-  final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
 switch (event.getType()) {
 case CHILD_ADDED:
-    final InventoryClass addedInventory=strategy.deserializeInventory(child.getData());
+{
+      final ChildData child=event.getData();
+      final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
+      final InventoryClass addedInventory=strategy.deserializeInventory(child.getData());
 synchronized (holder) {
-    holder.setContainer(strategy.addInventory(holder.getContainer(),inventoryKey,addedInventory));
-  }
-break;
+        holder.setContainer(strategy.addInventory(holder.getContainer(),inventoryKey,addedInventory));
+      }
+      break;
+    }
 case CHILD_UPDATED:
-final InventoryClass updatedInventory=strategy.deserializeInventory(child.getData());
+{
+    final ChildData child=event.getData();
+    final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
+    final InventoryClass updatedInventory=strategy.deserializeInventory(child.getData());
 synchronized (holder) {
-holder.setContainer(strategy.updateInventory(holder.getContainer(),inventoryKey,updatedInventory));
-}
-break;
+      holder.setContainer(strategy.updateInventory(holder.getContainer(),inventoryKey,updatedInventory));
+    }
+    break;
+  }
 case CHILD_REMOVED:
+{
+  final ChildData child=event.getData();
+  final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
 synchronized (holder) {
-holder.setContainer(strategy.removeInventory(holder.getContainer(),inventoryKey));
+    holder.setContainer(strategy.removeInventory(holder.getContainer(),inventoryKey));
+  }
+  break;
+}
+case INITIALIZED:
+synchronized (lock) {
+synchronized (holder) {
+  markInventoryInitialized(holder);
+}
 }
 break;
 }
