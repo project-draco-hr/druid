@@ -42,7 +42,7 @@
   EasyMock.replay(metadataSegmentManager);
   ServerView serverView=EasyMock.createMock(ServerView.class);
   EasyMock.replay(serverView);
-  BridgeZkCoordinator bridgeZkCoordinator=new BridgeZkCoordinator(jsonMapper,zkPathsConfig,metadata,remoteCf,dbSegmentPublisher,metadataSegmentManager,serverView);
+  BridgeZkCoordinator bridgeZkCoordinator=new BridgeZkCoordinator(jsonMapper,zkPathsConfig,new SegmentLoaderConfig(),metadata,remoteCf,dbSegmentPublisher,metadataSegmentManager,serverView);
   Announcer announcer=new Announcer(remoteCf,Executors.newSingleThreadExecutor());
   announcer.start();
   announcer.announce(zkPathsConfig.getAnnouncementsPath() + "/" + me.getHost(),jsonMapper.writeValueAsBytes(me));
