@@ -132,7 +132,7 @@
 ),mergedDimensions,dimConversions.get(i),i));
   }
   Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
-  CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER);
+  CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
   timeWriter.open();
   ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
   for (  String dimension : mergedDimensions) {

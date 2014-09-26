@@ -1,7 +1,7 @@
 {
   final TopNQueryEngine queryEngine=new TopNQueryEngine(computationBufferPool);
   return new QueryRunner<Result<TopNResultValue>>(){
-    @Override public Sequence<Result<TopNResultValue>> run(    Query<Result<TopNResultValue>> input){
+    @Override public Sequence<Result<TopNResultValue>> run(    Query<Result<TopNResultValue>> input,    Map<String,Object> context){
       if (!(input instanceof TopNQuery)) {
         throw new ISE("Got a [%s] which isn't a %s",input.getClass(),TopNQuery.class);
       }
