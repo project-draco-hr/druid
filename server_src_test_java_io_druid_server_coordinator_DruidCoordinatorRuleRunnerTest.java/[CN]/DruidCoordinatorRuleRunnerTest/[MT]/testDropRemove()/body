@@ -1,12 +1,10 @@
 {
+  mockCoordinator();
   mockPeon.dropSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
   EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
   EasyMock.expect(mockPeon.getLoadQueueSize()).andReturn(0L).atLeastOnce();
   EasyMock.replay(mockPeon);
-  coordinator.removeSegment(EasyMock.<DataSegment>anyObject());
-  EasyMock.expectLastCall().atLeastOnce();
-  EasyMock.replay(coordinator);
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),null,1,"normal"),new IntervalDropRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z")))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
   DruidServer server=new DruidServer("serverNorm","hostNorm",1000,"historical","normal",0);
