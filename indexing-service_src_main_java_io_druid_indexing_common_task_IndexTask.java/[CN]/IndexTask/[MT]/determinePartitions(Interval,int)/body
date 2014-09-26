@@ -3,8 +3,6 @@
   final FirehoseFactory firehoseFactory=ingestionSchema.getIOConfig().getFirehoseFactory();
   final Set<String> unusableDimensions=com.google.common.collect.Sets.newHashSet();
   final Map<String,TreeMultiset<String>> dimensionValueMultisets=Maps.newHashMap();
-  System.out.println("PARSER IS");
-  System.out.println(ingestionSchema.getDataSchema().getParser());
   try (Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser())){
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();

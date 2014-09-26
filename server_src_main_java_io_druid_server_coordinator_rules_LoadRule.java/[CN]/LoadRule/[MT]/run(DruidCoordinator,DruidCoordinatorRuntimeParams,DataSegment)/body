@@ -1,5 +1,6 @@
 {
-  CoordinatorStats stats=new CoordinatorStats();
+  final CoordinatorStats stats=new CoordinatorStats();
+  final Set<DataSegment> availableSegments=params.getAvailableSegments();
   final Map<String,Integer> loadStatus=Maps.newHashMap();
   int totalReplicantsInCluster=params.getSegmentReplicantLookup().getTotalReplicants(segment.getIdentifier());
   for (  Map.Entry<String,Integer> entry : getTieredReplicants().entrySet()) {
@@ -15,7 +16,7 @@
     final List<ServerHolder> serverHolderList=Lists.newArrayList(serverQueue);
     final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();
     final BalancerStrategy strategy=params.getBalancerStrategyFactory().createBalancerStrategy(referenceTimestamp);
-    if (params.getAvailableSegments().contains(segment)) {
+    if (availableSegments.contains(segment)) {
       CoordinatorStats assignStats=assign(params.getReplicationManager(),tier,totalReplicantsInCluster,expectedReplicantsInTier,totalReplicantsInTier,strategy,serverHolderList,segment);
       stats.accumulate(assignStats);
       totalReplicantsInCluster+=assignStats.getPerTierStats().get(assignedCount).get(tier).get();

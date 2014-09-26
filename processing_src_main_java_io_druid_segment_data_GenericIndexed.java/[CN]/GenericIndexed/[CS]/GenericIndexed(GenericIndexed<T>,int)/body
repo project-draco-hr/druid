@@ -8,6 +8,7 @@
   this.cachedBuffer=other.cachedBuffer;
   this.cachedValues=new ThreadLocal<SizedLRUMap<Integer,T>>(){
     @Override protected SizedLRUMap<Integer,T> initialValue(){
+      log.debug("Allocating column cache of max size[%d]",maxBytes);
       return new SizedLRUMap<>(INITIAL_CACHE_CAPACITY,maxBytes);
     }
   }

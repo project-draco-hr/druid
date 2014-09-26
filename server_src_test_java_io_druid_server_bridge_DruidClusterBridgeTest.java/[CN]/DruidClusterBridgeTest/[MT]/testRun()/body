@@ -38,11 +38,11 @@
   DruidServerMetadata metadata=new DruidServerMetadata("test","localhost",1000,"bridge",DruidServer.DEFAULT_TIER,0);
   DbSegmentPublisher dbSegmentPublisher=EasyMock.createMock(DbSegmentPublisher.class);
   EasyMock.replay(dbSegmentPublisher);
-  MetadataSegmentManager metadataSegmentManager=EasyMock.createMock(MetadataSegmentManager.class);
-  EasyMock.replay(metadataSegmentManager);
+  MetadataSegmentManager databaseSegmentManager=EasyMock.createMock(MetadataSegmentManager.class);
+  EasyMock.replay(databaseSegmentManager);
   ServerView serverView=EasyMock.createMock(ServerView.class);
   EasyMock.replay(serverView);
-  BridgeZkCoordinator bridgeZkCoordinator=new BridgeZkCoordinator(jsonMapper,zkPathsConfig,new SegmentLoaderConfig(),metadata,remoteCf,dbSegmentPublisher,metadataSegmentManager,serverView);
+  BridgeZkCoordinator bridgeZkCoordinator=new BridgeZkCoordinator(jsonMapper,zkPathsConfig,new SegmentLoaderConfig(),metadata,remoteCf,dbSegmentPublisher,databaseSegmentManager,serverView);
   Announcer announcer=new Announcer(remoteCf,Executors.newSingleThreadExecutor());
   announcer.start();
   announcer.announce(zkPathsConfig.getAnnouncementsPath() + "/" + me.getHost(),jsonMapper.writeValueAsBytes(me));
@@ -94,6 +94,6 @@
   localCluster.close();
   EasyMock.verify(batchServerInventoryView);
   EasyMock.verify(dbSegmentPublisher);
-  EasyMock.verify(metadataSegmentManager);
+  EasyMock.verify(databaseSegmentManager);
   EasyMock.verify(serverView);
 }

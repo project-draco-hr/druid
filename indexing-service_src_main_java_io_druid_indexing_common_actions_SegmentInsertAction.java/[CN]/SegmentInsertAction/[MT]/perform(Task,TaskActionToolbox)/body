@@ -1,6 +1,6 @@
 {
   toolbox.verifyTaskLocksAndSinglePartitionSettitude(task,segments,true);
-  final Set<DataSegment> retVal=toolbox.getIndexerMetadataCoordinator().announceHistoricalSegments(segments);
+  final Set<DataSegment> retVal=toolbox.getIndexerDBCoordinator().announceHistoricalSegments(segments);
   final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType());
   for (  DataSegment segment : segments) {
     metricBuilder.setUser5(segment.getInterval().toString());

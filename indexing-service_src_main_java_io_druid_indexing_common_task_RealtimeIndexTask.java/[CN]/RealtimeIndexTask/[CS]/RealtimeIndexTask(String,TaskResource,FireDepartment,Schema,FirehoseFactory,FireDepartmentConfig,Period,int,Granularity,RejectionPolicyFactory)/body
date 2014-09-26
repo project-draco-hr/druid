@@ -1,9 +1,0 @@
-{
-  super(id == null ? makeTaskId(fireDepartment,spec) : id,String.format("index_realtime_%s",makeDatasource(fireDepartment,spec)),taskResource == null ? new TaskResource(makeTaskId(fireDepartment,spec),1) : taskResource,makeDatasource(fireDepartment,spec));
-  if (fireDepartment != null) {
-    this.spec=fireDepartment;
-  }
- else {
-    this.spec=new FireDepartment(new DataSchema(spec.getDataSource(),firehoseFactory == null ? null : firehoseFactory.getParser(),spec.getAggregators(),new UniformGranularitySpec(segmentGranularity,spec.getIndexGranularity(),null,segmentGranularity)),new RealtimeIOConfig(firehoseFactory,null),new RealtimeTuningConfig(fireDepartmentConfig == null ? null : fireDepartmentConfig.getMaxRowsInMemory(),fireDepartmentConfig == null ? null : fireDepartmentConfig.getIntermediatePersistPeriod(),windowPeriod,null,null,rejectionPolicyFactory,maxPendingPersists,spec.getShardSpec()),null,null,null,null);
-  }
-}

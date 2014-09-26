@@ -1,0 +1,28 @@
+{
+  CoordinatorStats stats=new CoordinatorStats();
+  Set<DataSegment> availableSegments=params.getAvailableSegments();
+  DruidCluster cluster=params.getDruidCluster();
+  if (!availableSegments.isEmpty()) {
+    for (    MinMaxPriorityQueue<ServerHolder> serverHolders : cluster.getSortedServersByTier()) {
+      for (      ServerHolder serverHolder : serverHolders) {
+        ImmutableDruidServer server=serverHolder.getServer();
+        for (        ImmutableDruidDataSource dataSource : server.getDataSources()) {
+          for (          DataSegment segment : dataSource.getSegments()) {
+            if (!availableSegments.contains(segment)) {
+              LoadQueuePeon queuePeon=params.getLoadManagementPeons().get(server.getName());
+              if (!queuePeon.getSegmentsToDrop().contains(segment)) {
+                queuePeon.dropSegment(segment,new LoadPeonCallback(){
+                  @Override public void execute(){
+                  }
+                }
+);
+                stats.addToTieredStat("unneededCount",server.getTier(),1);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return params.buildFromExisting().withCoordinatorStats(stats).build();
+}

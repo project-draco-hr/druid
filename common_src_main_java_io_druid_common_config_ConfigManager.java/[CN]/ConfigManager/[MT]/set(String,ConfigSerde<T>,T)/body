@@ -6,7 +6,7 @@
   try {
     return exec.submit(new Callable<Boolean>(){
       @Override public Boolean call() throws Exception {
-        metadataDbConnector.insertOrUpdate(configTable,"name","payload",key,newBytes);
+        dbConnector.insertOrUpdate(configTable,"name","payload",key,newBytes);
         final ConfigHolder configHolder=watchedConfigs.get(key);
         if (configHolder != null) {
           configHolder.swapIfNew(newBytes);
