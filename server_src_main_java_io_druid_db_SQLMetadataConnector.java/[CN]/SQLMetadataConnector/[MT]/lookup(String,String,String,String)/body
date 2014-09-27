@@ -1,5 +1,5 @@
 {
-  final String selectStatement=String.format("SELECT %s FROM %s WHERE %s = :key",valueColumn,storageName,keyColumn);
+  final String selectStatement=String.format("SELECT %s FROM %s WHERE %s = :key",valueColumn,tableName,keyColumn);
   return getDBI().withHandle(new HandleCallback<byte[]>(){
     @Override public byte[] withHandle(    Handle handle) throws Exception {
       List<byte[]> matched=handle.createQuery(selectStatement).bind("key",key).map(new ResultSetMapper<byte[]>(){

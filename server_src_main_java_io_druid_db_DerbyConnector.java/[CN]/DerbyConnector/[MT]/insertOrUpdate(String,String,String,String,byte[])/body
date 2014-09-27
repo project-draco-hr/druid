@@ -4,12 +4,12 @@
       Connection conn=getDBI().open().getConnection();
       handle.begin();
       conn.setAutoCommit(false);
-      List<Map<String,Object>> entry=handle.createQuery(String.format("SELECT * FROM %1$s WHERE %2$s=:key",storageName,keyColumn)).list();
+      List<Map<String,Object>> entry=handle.createQuery(String.format("SELECT * FROM %1$s WHERE %2$s=:key",tableName,keyColumn)).list();
       if (entry == null || entry.isEmpty()) {
-        handle.createStatement(String.format("INSERT INTO %1$s (%2$s, %3$s) VALUES (:key, :value)",storageName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
+        handle.createStatement(String.format("INSERT INTO %1$s (%2$s, %3$s) VALUES (:key, :value)",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
       }
  else {
-        handle.createStatement(String.format("UPDATE %1$s SET %3$s=:value WHERE %2$s=:key",storageName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
+        handle.createStatement(String.format("UPDATE %1$s SET %3$s=:value WHERE %2$s=:key",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
       }
       conn.setAutoCommit(true);
       handle.commit();
