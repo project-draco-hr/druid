@@ -145,14 +145,17 @@
   }
   this.bufferHolder=bufferPool.take();
   this.dimValues=new DimensionHolder();
-  this.useOffheap=useOffheap;
-  if (useOffheap) {
-    db=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheLRUEnable().cacheSize(Integer.getInteger("cacheSize",CC.DEFAULT_CACHE_SIZE)).make();
+  this.useOffheap=true;
+  if (this.useOffheap) {
+    final DBMaker dbMaker=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheSoftRefEnable();
+    db=dbMaker.make();
+    factsDb=dbMaker.make();
     final TimeAndDimsSerializer timeAndDimsSerializer=new TimeAndDimsSerializer(this);
-    this.facts=db.createTreeMap("__facts" + UUID.randomUUID()).keySerializer(timeAndDimsSerializer).comparator(timeAndDimsSerializer.getComparator()).valueSerializer(Serializer.INTEGER).make();
+    this.facts=factsDb.createTreeMap("__facts" + UUID.randomUUID()).keySerializer(timeAndDimsSerializer).comparator(timeAndDimsSerializer.getComparator()).valueSerializer(Serializer.INTEGER).make();
   }
  else {
     db=null;
+    factsDb=null;
     this.facts=new ConcurrentSkipListMap<>();
   }
 }
