@@ -1,4 +1,8 @@
 {
+  EasyMock.expect(coordinator.getDynamicConfigs()).andReturn(new CoordinatorDynamicConfig(0,0,0,0,1,7,0,false)).atLeastOnce();
+  coordinator.removeSegment(EasyMock.<DataSegment>anyObject());
+  EasyMock.expectLastCall().anyTimes();
+  EasyMock.replay(coordinator);
   mockPeon.loadSegment(EasyMock.<DataSegment>anyObject(),EasyMock.<LoadPeonCallback>anyObject());
   EasyMock.expectLastCall().atLeastOnce();
   EasyMock.expect(mockPeon.getSegmentsToLoad()).andReturn(Sets.<DataSegment>newHashSet()).atLeastOnce();
