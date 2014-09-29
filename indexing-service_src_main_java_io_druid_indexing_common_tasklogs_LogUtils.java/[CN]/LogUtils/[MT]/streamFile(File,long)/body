@@ -1,0 +1,11 @@
+{
+  final RandomAccessFile raf=new RandomAccessFile(file,"r");
+  final long rafLength=raf.length();
+  if (offset > 0) {
+    raf.seek(offset);
+  }
+ else   if (offset < 0 && offset < rafLength) {
+    raf.seek(Math.max(0,rafLength + offset));
+  }
+  return Channels.newInputStream(raf.getChannel());
+}
