@@ -1,0 +1,9 @@
+{
+  if (consumer == null) {
+    while (leaderBroker == null) {
+      leaderBroker=findNewLeader(leader);
+    }
+    log.info("making SimpleConsumer[%s][%s], leader broker[%s:%s]",topic,partitionId,leaderBroker.host(),leaderBroker.port());
+    consumer=new SimpleConsumer(leaderBroker.host(),leaderBroker.port(),SO_TIMEOUT,BUFFER_SIZE,clientId);
+  }
+}

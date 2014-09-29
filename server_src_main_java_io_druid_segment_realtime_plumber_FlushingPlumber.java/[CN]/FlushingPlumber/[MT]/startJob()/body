@@ -5,6 +5,7 @@
   if (flushScheduledExec == null) {
     flushScheduledExec=Execs.scheduledSingleThreaded("flushing_scheduled_%d");
   }
-  bootstrapSinksFromDisk();
+  Object retVal=bootstrapSinksFromDisk();
   startFlushThread();
+  return retVal;
 }

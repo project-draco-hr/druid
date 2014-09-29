@@ -1,0 +1,26 @@
+{
+  long retryCnt=0;
+  while (true) {
+    PartitionMetadata metadata=findLeader();
+    if (metadata != null) {
+      replicaBrokers.clear();
+      for (      Broker replica : metadata.replicas()) {
+        replicaBrokers.add(new KafkaBroker(replica.host(),replica.port()));
+      }
+      log.debug("Got new Kafka leader metadata : [%s], previous leader : [%s]",metadata,oldLeader);
+      Broker newLeader=metadata.leader();
+      if (newLeader != null) {
+        if (oldLeader == null || isValidNewLeader(newLeader) || retryCnt != 0) {
+          return newLeader;
+        }
+      }
+    }
+    Thread.sleep(RETRY_INTERVAL);
+    retryCnt++;
+    if (retryCnt >= 3 && (retryCnt - 3) % 5 == 0) {
+      log.warn("cannot find leader for [%s] - [%s] after [%s] retries",topic,partitionId,retryCnt);
+      replicaBrokers.clear();
+      replicaBrokers.addAll(allBrokers);
+    }
+  }
+}

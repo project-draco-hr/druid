@@ -1,0 +1,14 @@
+{
+  if (consumer != null) {
+    try {
+      consumer.close();
+      log.info("stop consumer[%s][%s], leaderBroker[%s]",topic,partitionId,leaderBroker);
+    }
+ catch (    Exception e) {
+      log.warn(e,"stop consumer[%s][%s] failed",topic,partitionId);
+    }
+ finally {
+      consumer=null;
+    }
+  }
+}

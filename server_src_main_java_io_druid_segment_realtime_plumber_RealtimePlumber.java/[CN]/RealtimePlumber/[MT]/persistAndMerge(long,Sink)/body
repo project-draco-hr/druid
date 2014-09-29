@@ -25,7 +25,7 @@
 synchronized (hydrant) {
           if (!hydrant.hasSwapped()) {
             log.info("Hydrant[%s] hasn't swapped yet, swapping. Sink[%s]",hydrant,sink);
-            final int rowCount=persistHydrant(hydrant,schema,interval);
+            final int rowCount=persistHydrant(hydrant,schema,interval,null);
             metrics.incrementRowOutputCount(rowCount);
           }
         }
@@ -46,10 +46,18 @@ synchronized (hydrant) {
           mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
-        DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
-        segmentPublisher.publishSegment(segment);
-        if (!isPushedMarker.createNewFile()) {
-          log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
+        log.info("Pushing [%s] to deep storage",sink.getSegment().getIdentifier());
+        try {
+          DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
+          log.info("Inserting [%s] to the metadata store",sink.getSegment().getIdentifier());
+          segmentPublisher.publishSegment(segment);
+          if (!isPushedMarker.createNewFile()) {
+            log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
+          }
+        }
+ catch (        Throwable e) {
+          log.info("Exception happen when pushing to deep storage");
+          log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
         }
       }
  catch (      Exception e) {

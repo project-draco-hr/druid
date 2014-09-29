@@ -1,0 +1,26 @@
+{
+  log.info("Searching for all [%s] in and beneath [%s]",filter,baseDir.getAbsoluteFile());
+  Collection<File> foundFiles=FileUtils.listFiles(baseDir.getAbsoluteFile(),new WildcardFileFilter(filter),TrueFileFilter.INSTANCE);
+  if (foundFiles == null || foundFiles.isEmpty()) {
+    throw new ISE("Found no files to ingest! Check your schema.");
+  }
+  log.info("Found files: " + foundFiles);
+  final LinkedList<File> files=Lists.newLinkedList(foundFiles);
+  return new FileIteratingFirehoseV2(new Iterator<LineIterator>(){
+    @Override public boolean hasNext(){
+      return !files.isEmpty();
+    }
+    @Override public LineIterator next(){
+      try {
+        return FileUtils.lineIterator(files.poll());
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+,firehoseParser);
+}

@@ -1,0 +1,21 @@
+{
+  TopicAndPartition topicAndPartition=new TopicAndPartition(topic,partitionId);
+  Map<TopicAndPartition,PartitionOffsetRequestInfo> requestInfo=new HashMap<TopicAndPartition,PartitionOffsetRequestInfo>();
+  requestInfo.put(topicAndPartition,new PartitionOffsetRequestInfo(earliest ? kafka.api.OffsetRequest.EarliestTime() : kafka.api.OffsetRequest.LatestTime(),1));
+  OffsetRequest request=new OffsetRequest(requestInfo,kafka.api.OffsetRequest.CurrentVersion(),clientId);
+  OffsetResponse response=null;
+  try {
+    response=consumer.getOffsetsBefore(request);
+  }
+ catch (  Exception e) {
+    ensureNotInterrupted(e);
+    log.error(e,"caught exception in getOffsetsBefore [%s] - [%s]",topic,partitionId);
+    return -1;
+  }
+  if (response.hasError()) {
+    log.error("error fetching data Offset from the Broker [%s]. reason: [%s]",leaderBroker.host(),response.errorCode(topic,partitionId));
+    return -1;
+  }
+  long[] offsets=response.offsets(topic,partitionId);
+  return earliest ? offsets[0] : offsets[offsets.length - 1];
+}

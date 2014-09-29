@@ -1,0 +1,26 @@
+{
+  List<KafkaBroker> brokerList=new ArrayList<KafkaBroker>();
+  for (  String broker : brokers) {
+    String[] tokens=broker.split(":");
+    if (tokens.length != 2) {
+      log.warn("wrong broker name [%s], its format should be host:port",broker);
+      continue;
+    }
+    try {
+      brokerList.add(new KafkaBroker(tokens[0],Integer.parseInt(tokens[1])));
+    }
+ catch (    NumberFormatException e) {
+      log.warn("wrong broker name [%s], its format should be host:port",broker);
+      continue;
+    }
+  }
+  this.allBrokers=Collections.unmodifiableList(brokerList);
+  this.topic=topic;
+  this.partitionId=partitionId;
+  this.clientId=String.format("%s_%d_%s",topic,partitionId,clientId);
+  this.leaderLookupClientId=clientId + "leaderLookup";
+  this.replicaBrokers=new ArrayList<>();
+  this.replicaBrokers.addAll(this.allBrokers);
+  this.earliest=earliest;
+  log.info("KafkaSimpleConsumer initialized with clientId [%s] for message consumption and clientId [%s] for leader lookup",this.clientId,this.leaderLookupClientId);
+}

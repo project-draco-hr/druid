@@ -3,7 +3,8 @@
   final File persistDir=new File(tmpSegmentDir,theSink.getSegment().getIdentifier());
   final Set<File> spilled=Sets.newHashSet();
   return new Plumber(){
-    @Override public void startJob(){
+    @Override public Object startJob(){
+      return null;
     }
     @Override public int add(    InputRow row) throws IndexSizeExceededException {
       Sink sink=getSink(row.getTimestampFromEpoch());
@@ -86,6 +87,9 @@
     }
     private File getSpillDir(    final int n){
       return new File(persistDir,String.format("spill%d",n));
+    }
+    @Override public void persist(    Committer commitRunnable){
+      persist(commitRunnable);
     }
   }
 ;

@@ -1,0 +1,30 @@
+{
+  for (  KafkaBroker broker : replicaBrokers) {
+    SimpleConsumer consumer=null;
+    try {
+      log.info("Finding new leader from Kafka brokers, try broker %s:%s",broker.host,broker.port);
+      consumer=new SimpleConsumer(broker.host,broker.port,SO_TIMEOUT,BUFFER_SIZE,leaderLookupClientId);
+      TopicMetadataResponse resp=consumer.send(new TopicMetadataRequest(Collections.singletonList(topic)));
+      List<TopicMetadata> metaData=resp.topicsMetadata();
+      for (      TopicMetadata item : metaData) {
+        if (topic.equals(item.topic())) {
+          for (          PartitionMetadata part : item.partitionsMetadata()) {
+            if (part.partitionId() == partitionId) {
+              return part;
+            }
+          }
+        }
+      }
+    }
+ catch (    Exception e) {
+      ensureNotInterrupted(e);
+      log.warn(e,"error communicating with Kafka Broker [%s] to find leader for [%s] - [%s]",broker,topic,partitionId);
+    }
+ finally {
+      if (consumer != null) {
+        consumer.close();
+      }
+    }
+  }
+  return null;
+}

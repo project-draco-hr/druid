@@ -1,0 +1,53 @@
+{
+  final Period intermediatePersistPeriod=config.getIntermediatePersistPeriod();
+  long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+  while (firehose.hasMore()) {
+    InputRow inputRow=null;
+    try {
+      try {
+        inputRow=firehose.nextRow();
+        if (inputRow == null) {
+          log.debug("thrown away null input row, considering unparseable");
+          log.info("thrown away null input row, considering unparseable");
+          metrics.incrementUnparseable();
+          continue;
+        }
+      }
+ catch (      Exception e) {
+        log.debug(e,"thrown away line due to exception, considering unparseable");
+        metrics.incrementUnparseable();
+        continue;
+      }
+      boolean lateEvent=false;
+      boolean indexLimitExceeded=false;
+      try {
+        lateEvent=plumber.add(inputRow) == -1;
+      }
+ catch (      IndexSizeExceededException e) {
+        log.info("Index limit exceeded: %s",e.getMessage());
+        indexLimitExceeded=true;
+      }
+      if (indexLimitExceeded || lateEvent) {
+        metrics.incrementThrownAway();
+        log.debug("Throwing away event[%s]",inputRow);
+        if (indexLimitExceeded || System.currentTimeMillis() > nextFlush) {
+          plumber.persist(firehose.commit());
+          nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+        }
+        continue;
+      }
+      final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+      if ((sink != null && !sink.canAppendRow()) || System.currentTimeMillis() > nextFlush) {
+        plumber.persist(firehose.commit());
+        nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+      }
+      metrics.incrementProcessed();
+    }
+ catch (    ParseException e) {
+      if (inputRow != null) {
+        log.error(e,"unparseable line: %s",inputRow);
+      }
+      metrics.incrementUnparseable();
+    }
+  }
+}

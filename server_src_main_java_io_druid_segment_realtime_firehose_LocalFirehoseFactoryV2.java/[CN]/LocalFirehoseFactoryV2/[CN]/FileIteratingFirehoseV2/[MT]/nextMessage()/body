@@ -1,0 +1,18 @@
+{
+  while ((lineIterator == null || !lineIterator.hasNext()) && lineIterators.hasNext()) {
+    lineIterator=lineIterators.next();
+  }
+  stop=!(lineIterator != null && lineIterator.hasNext());
+  try {
+    if (lineIterator == null || !lineIterator.hasNext()) {
+      if (lineIterator != null) {
+        lineIterator.close();
+      }
+      lineIterator=lineIterators.next();
+    }
+    row=parser.parse((String)lineIterator.next());
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
