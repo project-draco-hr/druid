@@ -13,9 +13,9 @@
   final String minWorkerVer=config.getMinWorkerVersion();
   for (  ZkWorker zkWorker : sortedWorkers) {
     if (zkWorker.canRunTask(task) && zkWorker.isValidVersion(minWorkerVer)) {
-      return zkWorker;
+      return Optional.of(zkWorker);
     }
   }
   log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
-  return null;
+  return Optional.absent();
 }

@@ -7,9 +7,9 @@
     return true;
   }
  else {
-    ZkWorker zkWorker=findWorkerForTask(task);
-    if (zkWorker != null) {
-      announceTask(task,zkWorker,taskRunnerWorkItem);
+    Optional<ZkWorker> zkWorker=strategy.findWorkerForTask(zkWorkers,task);
+    if (zkWorker.isPresent()) {
+      announceTask(task,zkWorker.get(),taskRunnerWorkItem);
       return true;
     }
  else {
