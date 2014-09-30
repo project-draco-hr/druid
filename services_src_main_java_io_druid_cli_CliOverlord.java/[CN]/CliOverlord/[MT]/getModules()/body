@@ -42,6 +42,10 @@
       binder.bind(ForkingTaskRunnerFactory.class).in(LazySingleton.class);
       biddy.addBinding("remote").to(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
       binder.bind(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
+      PolyBind.createChoice(binder,"druid.indexer.runner.workerSelectStrategy.type",Key.get(WorkerSelectStrategy.class),Key.get(FillCapacityWorkerSelectStrategy.class));
+      final MapBinder<String,WorkerSelectStrategy> stratBinder=PolyBind.optionBinder(binder,Key.get(WorkerSelectStrategy.class));
+      stratBinder.addBinding("fillCapacity").to(FillCapacityWorkerSelectStrategy.class);
+      binder.bind(FillCapacityWorkerSelectStrategy.class).in(LazySingleton.class);
     }
     private void configureAutoscale(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",ResourceManagementSchedulerConfig.class);
