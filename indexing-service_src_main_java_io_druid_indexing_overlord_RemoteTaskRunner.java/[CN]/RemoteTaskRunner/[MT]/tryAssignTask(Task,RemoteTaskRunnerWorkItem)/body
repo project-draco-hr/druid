@@ -7,7 +7,12 @@
     return true;
   }
  else {
-    Optional<ZkWorker> zkWorker=strategy.findWorkerForTask(zkWorkers,task);
+    Optional<ZkWorker> zkWorker=strategy.findWorkerForTask(ImmutableMap.copyOf(Maps.transformEntries(zkWorkers,new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
+      @Override public ImmutableZkWorker transformEntry(      String key,      ZkWorker value){
+        return value.toImmutable();
+      }
+    }
+)),task);
     if (zkWorker.isPresent()) {
       announceTask(task,zkWorker.get(),taskRunnerWorkItem);
       return true;
