@@ -6,6 +6,7 @@
   ServerConnector connector=new ServerConnector(server);
   connector.setPort(node.getPort());
   connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
+  connector.setAcceptorPriorityDelta(-1);
   server.setConnectors(new Connector[]{connector});
   return server;
 }
