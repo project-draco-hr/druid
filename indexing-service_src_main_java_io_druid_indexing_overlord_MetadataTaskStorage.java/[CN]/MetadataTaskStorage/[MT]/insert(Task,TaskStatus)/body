@@ -7,7 +7,7 @@
     handler.insert(dbTables.getTasksTable(),task.getId(),new DateTime().toString(),task.getDataSource(),jsonMapper.writeValueAsBytes(task),status.isRunnable() ? 1 : 0,jsonMapper.writeValueAsBytes(status));
   }
  catch (  Exception e) {
-    final boolean isStatementException=handler.isStatementException(e);
+    final boolean isStatementException=e instanceof StatementException || (e instanceof CallbackFailedException && e.getCause() instanceof StatementException);
     if (isStatementException && getTask(task.getId()).isPresent()) {
       throw new TaskExistsException(task.getId(),e);
     }
