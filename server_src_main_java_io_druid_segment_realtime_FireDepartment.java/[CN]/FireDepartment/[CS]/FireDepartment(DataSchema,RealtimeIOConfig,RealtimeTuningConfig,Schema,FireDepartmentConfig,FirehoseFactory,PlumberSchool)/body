@@ -7,7 +7,7 @@
     Preconditions.checkNotNull(plumberSchool,"plumberSchool");
     this.dataSchema=new DataSchema(schema.getDataSource(),firehoseFactory.getParser(),schema.getAggregators(),new UniformGranularitySpec(plumberSchool.getSegmentGranularity(),schema.getIndexGranularity(),Lists.<Interval>newArrayList(),plumberSchool.getSegmentGranularity()));
     this.ioConfig=new RealtimeIOConfig(firehoseFactory,plumberSchool);
-    this.tuningConfig=new RealtimeTuningConfig(config.getMaxRowsInMemory(),config.getIntermediatePersistPeriod(),((RealtimePlumberSchool)plumberSchool).getWindowPeriod(),((RealtimePlumberSchool)plumberSchool).getBasePersistDirectory(),((RealtimePlumberSchool)plumberSchool).getVersioningPolicy(),((RealtimePlumberSchool)plumberSchool).getRejectionPolicyFactory(),((RealtimePlumberSchool)plumberSchool).getMaxPendingPersists(),schema.getShardSpec(),false);
+    this.tuningConfig=new RealtimeTuningConfig(config.getMaxRowsInMemory(),config.getIntermediatePersistPeriod(),((RealtimePlumberSchool)plumberSchool).getWindowPeriod(),((RealtimePlumberSchool)plumberSchool).getBasePersistDirectory(),((RealtimePlumberSchool)plumberSchool).getVersioningPolicy(),((RealtimePlumberSchool)plumberSchool).getRejectionPolicyFactory(),((RealtimePlumberSchool)plumberSchool).getMaxPendingPersists(),schema.getShardSpec(),false,false);
   }
  else {
     Preconditions.checkNotNull(dataSchema,"dataSchema");
