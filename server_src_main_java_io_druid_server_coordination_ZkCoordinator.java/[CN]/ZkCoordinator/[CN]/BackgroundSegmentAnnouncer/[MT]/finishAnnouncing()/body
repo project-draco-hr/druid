@@ -1,0 +1,29 @@
+{
+synchronized (lock) {
+    finished=true;
+    try {
+      final List<DataSegment> segments=Lists.newLinkedList();
+      queue.drainTo(segments);
+      announcer.announceSegments(segments);
+    }
+ catch (    Exception e) {
+      throw new SegmentLoadingException(e,"Failed to announce segments[%s]",queue);
+    }
+    try {
+      if (startedAnnouncing != null) {
+        startedAnnouncing.cancel(false);
+      }
+      if (doneAnnouncing.isDone()) {
+        doneAnnouncing.get();
+      }
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new SegmentLoadingException(e,"Loading Interrupted");
+    }
+catch (    ExecutionException e) {
+      throw new SegmentLoadingException(e.getCause(),"Background Announcing Task Failed");
+    }
+  }
+  log.info("Completed background segment announcing");
+}

@@ -1,14 +1,10 @@
 {
-  final ChildData child=event.getData();
-  if (child == null) {
-    return;
-  }
-  final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
-  final ContainerClass container;
 switch (event.getType()) {
 case CHILD_ADDED:
 synchronized (lock) {
-      container=strategy.deserializeContainer(child.getData());
+      final ChildData child=event.getData();
+      final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
+      final ContainerClass container=strategy.deserializeContainer(child.getData());
       if (containers.containsKey(containerKey)) {
         log.error("New node[%s] but there was already one.  That's not good, ignoring new one.",child.getPath());
       }
@@ -18,13 +14,15 @@ synchronized (lock) {
         inventoryCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
         containers.put(containerKey,new ContainerHolder(container,inventoryCache));
         log.info("Starting inventory cache for %s, inventoryPath %s",containerKey,inventoryPath);
-        inventoryCache.start();
+        inventoryCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
         strategy.newContainer(container);
       }
       break;
     }
 case CHILD_REMOVED:
 synchronized (lock) {
+    final ChildData child=event.getData();
+    final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
     final ContainerHolder removed=containers.remove(containerKey);
     if (removed == null) {
       log.warn("Container[%s] removed that wasn't a container!?",child.getPath());
@@ -34,11 +32,16 @@ synchronized (lock) {
     removed.getCache().getListenable().clear();
     removed.getCache().close();
     strategy.deadContainer(removed.getContainer());
+synchronized (removed) {
+      markInventoryInitialized(removed);
+    }
     break;
   }
 case CHILD_UPDATED:
 synchronized (lock) {
-  container=strategy.deserializeContainer(child.getData());
+  final ChildData child=event.getData();
+  final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
+  final ContainerClass container=strategy.deserializeContainer(child.getData());
   ContainerHolder oldContainer=containers.get(containerKey);
   if (oldContainer == null) {
     log.warn("Container update[%s], but the old container didn't exist!?  Ignoring.",child.getPath());
@@ -49,6 +52,19 @@ synchronized (oldContainer) {
     }
   }
   break;
+}
+case INITIALIZED:
+synchronized (lock) {
+for (ContainerHolder holder : containers.values()) {
+synchronized (holder) {
+    if (!holder.initialized) {
+      uninitializedInventory.add(holder);
+    }
+  }
+}
+containersInitialized=true;
+maybeDoneInitializing();
+break;
 }
 }
 }

@@ -1,0 +1,13 @@
+{
+  return new GroupByQueryEngine(Suppliers.<GroupByQueryConfig>ofInstance(new GroupByQueryConfig(){
+    @Override public int getMaxIntermediateRows(){
+      return 5;
+    }
+  }
+),new StupidPool(new Supplier<ByteBuffer>(){
+    @Override public ByteBuffer get(){
+      return ByteBuffer.allocate(50000);
+    }
+  }
+));
+}
