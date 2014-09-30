@@ -3,7 +3,7 @@
   for (  Interval interval : query.getIntervals()) {
     numMinutes+=Minutes.minutesIn(interval).getMinutes();
   }
-  return new ServiceMetricEvent.Builder().setUser2(query.getDataSource().getNames().toArray(new String[query.getDataSource().getNames().size()])).setUser4(query.getType()).setUser5(Lists.transform(query.getIntervals(),new Function<Interval,String>(){
+  return new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser4(query.getType()).setUser5(Lists.transform(query.getIntervals(),new Function<Interval,String>(){
     @Override public String apply(    Interval input){
       return input.toString();
     }
