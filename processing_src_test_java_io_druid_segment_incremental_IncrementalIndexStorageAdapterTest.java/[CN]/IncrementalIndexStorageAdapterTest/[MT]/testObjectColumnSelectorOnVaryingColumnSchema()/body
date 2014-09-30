@@ -1,0 +1,13 @@
+{
+  IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},TestQueryRunners.pool);
+  index.add(new MapBasedInputRow(new DateTime("2014-09-01T00:00:00"),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));
+  index.add(new MapBasedInputRow(new DateTime("2014-09-01T01:00:00"),Lists.newArrayList("billy","sally"),ImmutableMap.<String,Object>of("billy","hip","sally","hop")));
+  GroupByQueryEngine engine=makeGroupByQueryEngine();
+  final Sequence<Row> rows=engine.process(GroupByQuery.builder().setDataSource("test").setGranularity(QueryGranularity.ALL).setInterval(new Interval(0,new DateTime().getMillis())).addDimension("billy").addDimension("sally").addAggregator(new LongSumAggregatorFactory("cnt","cnt")).addAggregator(new JavaScriptAggregatorFactory("fieldLength",Arrays.asList("sally","billy"),"function(current, s, b) { return current + (s == null ? 0 : s.length) + (b == null ? 0 : b.length); }","function() { return 0; }","function(a,b) { return a + b; }")).build(),new IncrementalIndexStorageAdapter(index));
+  final ArrayList<Row> results=Sequences.toList(rows,Lists.<Row>newArrayList());
+  Assert.assertEquals(2,results.size());
+  MapBasedRow row=(MapBasedRow)results.get(0);
+  Assert.assertEquals(ImmutableMap.of("billy","hi","cnt",1l,"fieldLength",2.0),row.getEvent());
+  row=(MapBasedRow)results.get(1);
+  Assert.assertEquals(ImmutableMap.of("billy","hip","sally","hop","cnt",1l,"fieldLength",6.0),row.getEvent());
+}

@@ -5,18 +5,11 @@
   }
   int bufferSize=aggsSize * config.getMaxRowsInMemory();
   IncrementalIndex newIndex=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withDimensionsSpec(schema.getParser()).withMetrics(schema.getAggregators()).build(),new OffheapBufferPool(bufferSize),config.isIngestOffheap());
-  FireHydrant old;
-  if (currHydrant == null) {
+  final FireHydrant old;
+synchronized (hydrantLock) {
     old=currHydrant;
     currHydrant=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
     hydrants.add(currHydrant);
-  }
- else {
-synchronized (currHydrant) {
-      old=currHydrant;
-      currHydrant=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
-      hydrants.add(currHydrant);
-    }
   }
   return old;
 }
