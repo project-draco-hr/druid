@@ -3,8 +3,8 @@
   if (dimIndexObject == null) {
     return new BooleanValueMatcher(false);
   }
-  String idObject=index.getDimension(dimension.toLowerCase()).get(value);
-  if (idObject == null) {
+  final IncrementalIndex.DimDim dimDim=index.getDimension(dimension.toLowerCase());
+  if (!dimDim.contains(value)) {
     if (value == null || "".equals(value)) {
       final int dimIndex=dimIndexObject;
       return new ValueMatcher(){
@@ -21,7 +21,7 @@
     return new BooleanValueMatcher(false);
   }
   final int dimIndex=dimIndexObject;
-  final String id=idObject;
+  final String id=dimDim.get(value);
   return new ValueMatcher(){
     @Override public boolean matches(){
       String[][] dims=holder.getKey().getDims();
@@ -29,7 +29,7 @@
         return false;
       }
       for (      String dimVal : dims[dimIndex]) {
-        if (id == dimVal) {
+        if (dimDim.compareCannonicalValues(id,dimVal)) {
           return true;
         }
       }
