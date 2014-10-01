@@ -1,8 +1,8 @@
 {
   try {
-    IncrementalIndex first=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withSpatialDimensions(Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList()))).build());
-    IncrementalIndex second=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withSpatialDimensions(Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList()))).build());
-    IncrementalIndex third=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withSpatialDimensions(Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList()))).build());
+    IncrementalIndex first=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),TestQueryRunners.pool,false);
+    IncrementalIndex second=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),TestQueryRunners.pool,false);
+    IncrementalIndex third=new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),TestQueryRunners.pool,false);
     first.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","foo","dim.geo","0.0,0.0","val",17l)));
     first.add(new MapBasedInputRow(new DateTime("2013-01-02").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-02").toString(),"dim","foo","dim.geo","1.0,3.0","val",29l)));
     first.add(new MapBasedInputRow(new DateTime("2013-01-03").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-03").toString(),"dim","foo","dim.geo","4.0,2.0","val",13l)));
@@ -27,10 +27,10 @@
     thirdFile.deleteOnExit();
     mergedFile.mkdirs();
     mergedFile.deleteOnExit();
-    IndexMerger.persist(first,DATA_INTERVAL,firstFile);
-    IndexMerger.persist(second,DATA_INTERVAL,secondFile);
-    IndexMerger.persist(third,DATA_INTERVAL,thirdFile);
-    QueryableIndex mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(firstFile),IndexIO.loadIndex(secondFile),IndexIO.loadIndex(thirdFile)),METRIC_AGGS,mergedFile));
+    IndexMaker.persist(first,DATA_INTERVAL,firstFile);
+    IndexMaker.persist(second,DATA_INTERVAL,secondFile);
+    IndexMaker.persist(third,DATA_INTERVAL,thirdFile);
+    QueryableIndex mergedRealtime=IndexIO.loadIndex(IndexMaker.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(firstFile),IndexIO.loadIndex(secondFile),IndexIO.loadIndex(thirdFile)),METRIC_AGGS,mergedFile));
     return mergedRealtime;
   }
  catch (  IOException e) {

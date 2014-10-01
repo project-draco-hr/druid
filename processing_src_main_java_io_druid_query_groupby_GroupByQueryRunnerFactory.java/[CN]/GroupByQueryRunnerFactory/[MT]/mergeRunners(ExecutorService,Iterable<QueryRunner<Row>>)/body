@@ -6,7 +6,7 @@
         return new QueryRunner<Row>(){
           @Override public Sequence<Row> run(          final Query<Row> query,          final Map<String,Object> context){
             final GroupByQuery queryParam=(GroupByQuery)query;
-            final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get());
+            final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get(),computationBufferPool);
             final Pair<List,Accumulator<List,Row>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
             final int priority=query.getContextPriority(0);
             final boolean bySegment=query.getContextBySegment(false);
@@ -60,6 +60,6 @@ catch (            ExecutionException e) {
 ));
   }
  else {
-    return new GroupByParallelQueryRunner(queryExecutor,config,queryWatcher,queryRunners);
+    return new GroupByParallelQueryRunner(queryExecutor,config,queryWatcher,computationBufferPool,queryRunners);
   }
 }

@@ -1,0 +1,9 @@
+{
+  Stopwatch sectionWatch=sections.remove(section);
+  if (sectionWatch == null) {
+    throw new ISE("[%s]: Cannot stop progress tracker for [%s]. Nothing started.",progressName,section);
+  }
+  long time=sectionWatch.elapsed(TimeUnit.MILLISECONDS);
+  sectionWatch.stop();
+  log.info("[%s]: [%s] has completed. Elapsed time: [%,d] millis",progressName,section,time);
+}
