@@ -14,7 +14,13 @@
     }
   }
 );
-  IncrementalIndex index=new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),bufferPool,false,query.getContextValue("useOffheap",false));
+  final IncrementalIndex index;
+  if (query.getContextValue("useOffheap",false)) {
+    index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),bufferPool,false);
+  }
+ else {
+    index=new IncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),bufferPool,false);
+  }
   Accumulator<IncrementalIndex,T> accumulator=new Accumulator<IncrementalIndex,T>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    T in){
       if (in instanceof Row) {

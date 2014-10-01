@@ -5,5 +5,11 @@
   }
   final HadoopTuningConfig tuningConfig=config.getSchema().getTuningConfig();
   int bufferSize=aggsSize * tuningConfig.getRowFlushBoundary();
-  return new IncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build(),new OffheapBufferPool(bufferSize),tuningConfig.isIngestOffheap());
+  final IncrementalIndexSchema indexSchema=new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build();
+  if (tuningConfig.isIngestOffheap()) {
+    return new OffheapIncrementalIndex(indexSchema,new OffheapBufferPool(bufferSize));
+  }
+ else {
+    return new IncrementalIndex(indexSchema,new OffheapBufferPool(bufferSize));
+  }
 }
