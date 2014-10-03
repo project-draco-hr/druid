@@ -1,12 +1,3 @@
 {
-  int numMinutes=0;
-  for (  Interval interval : query.getIntervals()) {
-    numMinutes+=Minutes.minutesIn(interval).getMinutes();
-  }
-  return new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser4(query.getType()).setUser5(Lists.transform(query.getIntervals(),new Function<Interval,String>(){
-    @Override public String apply(    Interval input){
-      return input.toString();
-    }
-  }
-).toArray(new String[query.getIntervals().size()])).setUser6(String.valueOf(query.hasFilters())).setUser7(String.format("%,d aggs",query.getAggregatorSpecs().size())).setUser9(Minutes.minutes(numMinutes).toString());
+  return QueryMetricUtil.makeQueryTimeMetric(query).setUser7(String.format("%,d aggs",query.getAggregatorSpecs().size()));
 }

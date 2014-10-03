@@ -1,12 +1,7 @@
 {
   final long requestTime=System.currentTimeMillis() - start;
-  final String[] intervals=new String[query.getIntervals().size()];
-  int i=0;
-  for (  Object interval : query.getIntervals()) {
-    intervals[i]=interval.toString();
-  }
   try {
-    emitter.emit(new ServiceMetricEvent.Builder().setUser2(DataSourceUtil.getMetricName(query.getDataSource())).setUser3(jsonMapper.writeValueAsString(query.getContext() == null ? ImmutableMap.of() : query.getContext())).setUser4(query.getType()).setUser5(intervals).setUser6(String.valueOf(query.hasFilters())).setUser7(req.getRemoteAddr()).setUser8(query.getId()).setUser9(query.getDuration().toPeriod().toStandardMinutes().toString()).build("request/time",requestTime));
+    emitter.emit(QueryMetricUtil.makeRequestTimeMetric(jsonMapper,query,req.getRemoteAddr()).build("request/time",requestTime));
     requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
   }
  catch (  Exception e) {
