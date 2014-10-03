@@ -4,10 +4,18 @@
   if (fs.exists(path)) {
     return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
       @Override public InputStream getInput() throws IOException {
-        log.info("reading task log from: %s",path);
-        final InputStream inputStream=fs.open(path);
-        ByteStreams.skipFully(inputStream,offset);
-        log.info("read task log from: %s",path);
+        log.info("Reading task log from: %s",path);
+        final long seekPos;
+        if (offset < 0) {
+          final FileStatus stat=fs.getFileStatus(path);
+          seekPos=Math.max(0,stat.getLen() + offset);
+        }
+ else {
+          seekPos=offset;
+        }
+        final FSDataInputStream inputStream=fs.open(path);
+        inputStream.seek(seekPos);
+        log.info("Read task log from: %s (seek = %,d)",path,seekPos);
         return inputStream;
       }
     }
