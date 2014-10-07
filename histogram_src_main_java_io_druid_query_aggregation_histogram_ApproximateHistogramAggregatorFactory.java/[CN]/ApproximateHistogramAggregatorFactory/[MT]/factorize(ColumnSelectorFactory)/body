@@ -1,11 +1,3 @@
 {
-  ObjectColumnSelector selector=metricFactory.makeObjectColumnSelector(fieldName);
-  if (selector == null) {
-    return Aggregators.noopAggregator();
-  }
-  final Class classOfObject=selector.classOfObject();
-  if (classOfObject != null && (classOfObject.equals(Object.class) || ApproximateHistogramAggregator.class.isAssignableFrom(classOfObject))) {
-    System.out.println("here");
-  }
   return new ApproximateHistogramAggregator(name,metricFactory.makeFloatColumnSelector(fieldName),resolution,lowerLimit,upperLimit);
 }

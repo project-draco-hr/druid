@@ -11,8 +11,9 @@
     }
 ;
   }
-  if (ApproximateHistogram.class.isAssignableFrom(selector.classOfObject())) {
+  final Class cls=selector.classOfObject();
+  if (cls.equals(Object.class) || ApproximateHistogram.class.isAssignableFrom(cls)) {
     return new ApproximateHistogramFoldingBufferAggregator(selector,resolution,lowerLimit,upperLimit);
   }
-  throw new IAE("Incompatible type for metric[%s], expected a ApproximateHistogram, got a %s",fieldName,selector.classOfObject());
+  throw new IAE("Incompatible type for metric[%s], expected a ApproximateHistogram, got a %s",fieldName,cls);
 }
