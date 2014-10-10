@@ -1,7 +1,7 @@
 {
   QueryGranularity gran=QueryGranularity.DAY;
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters(QueryRunnerTestHelper.providerDimension,"upfront").intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.qualityUniques)).build();
-  Assert.assertEquals(Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.providerDimension).value("upfront").build(),query.getDimensionsFilter());
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters(QueryRunnerTestHelper.marketDimension,"upfront").intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.qualityUniques)).build();
+  Assert.assertEquals(Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.marketDimension).value("upfront").build(),query.getDimensionsFilter());
   DateTime expectedEarliest=new DateTime("2011-01-12");
   DateTime expectedLast=new DateTime("2011-04-15");
   Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
