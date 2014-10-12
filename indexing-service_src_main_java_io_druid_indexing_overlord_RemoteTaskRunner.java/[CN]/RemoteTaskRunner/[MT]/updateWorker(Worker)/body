@@ -1,0 +1,10 @@
+{
+  final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
+  if (zkWorker != null) {
+    log.info("Worker[%s] updated its announcement from[%s] to[%s].",worker.getHost(),zkWorker.getWorker(),worker);
+    zkWorker.setWorker(worker);
+  }
+ else {
+    log.warn("WTF, worker[%s] updated its announcement but we didn't have a ZkWorker for it. Ignoring.",worker.getHost());
+  }
+}
