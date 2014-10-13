@@ -12,7 +12,7 @@
       return null;
     }
   }
-,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null,Granularity.HOUR));
+,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null));
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().anyTimes();
@@ -24,6 +24,6 @@
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
   tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null,null);
-  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),new Period("PT10m"),tmpDir,Granularity.HOUR,new IntervalStartVersioningPolicy(),rejectionPolicy,null,0);
+  RealtimePlumberSchool realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor());
   plumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema,tuningConfig,new FireDepartmentMetrics());
 }
