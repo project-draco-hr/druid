@@ -16,7 +16,17 @@
         converters[i]=new DimValueConverter(dimValues);
       }
     }
-    final Iterable<String> dimensionValues=CombiningIterable.createSplatted(dimValueLookups,Ordering.<String>natural().nullsFirst());
+    final Iterable<String> dimensionValues=CombiningIterable.createSplatted(Iterables.transform(dimValueLookups,new Function<Indexed<String>,Iterable<String>>(){
+      @Override public Iterable<String> apply(      Indexed<String> indexed){
+        return Iterables.transform(indexed,new Function<String,String>(){
+          @Override public String apply(          @Nullable String input){
+            return (input == null) ? "" : input;
+          }
+        }
+);
+      }
+    }
+),Ordering.<String>natural());
     int cardinality=0;
     for (    String value : dimensionValues) {
       for (int i=0; i < adapters.size(); i++) {

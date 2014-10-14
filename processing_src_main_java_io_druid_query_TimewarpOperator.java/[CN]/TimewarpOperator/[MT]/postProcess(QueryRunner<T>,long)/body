@@ -1,0 +1,36 @@
+{
+  return new QueryRunner<T>(){
+    @Override public Sequence<T> run(    final Query<T> query,    final Map<String,Object> context){
+      final long offset=computeOffset(now);
+      final Interval interval=query.getIntervals().get(0);
+      final Interval modifiedInterval=new Interval(Math.min(interval.getStartMillis() + offset,now + offset),Math.min(interval.getEndMillis() + offset,now + offset));
+      return Sequences.map(baseRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(modifiedInterval))),context),new Function<T,T>(){
+        @Override public T apply(        T input){
+          if (input instanceof Result) {
+            Result res=(Result)input;
+            Object value=res.getValue();
+            if (value instanceof TimeBoundaryResultValue) {
+              TimeBoundaryResultValue boundary=(TimeBoundaryResultValue)value;
+              DateTime minTime=null;
+              try {
+                minTime=boundary.getMinTime();
+              }
+ catch (              IllegalArgumentException e) {
+              }
+              final DateTime maxTime=boundary.getMaxTime();
+              return (T)((TimeBoundaryQuery)query).buildResult(new DateTime(Math.min(res.getTimestamp().getMillis() - offset,now)),minTime != null ? minTime.minus(offset) : null,maxTime != null ? new DateTime(Math.min(maxTime.getMillis() - offset,now)) : null).iterator().next();
+            }
+            return (T)new Result(res.getTimestamp().minus(offset),value);
+          }
+ else           if (input instanceof MapBasedRow) {
+            MapBasedRow row=(MapBasedRow)input;
+            return (T)new MapBasedRow(row.getTimestamp().minus(offset),row.getEvent());
+          }
+          return input;
+        }
+      }
+);
+    }
+  }
+;
+}

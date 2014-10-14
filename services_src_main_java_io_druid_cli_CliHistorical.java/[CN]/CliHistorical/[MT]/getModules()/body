@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/historical");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8083);
       binder.bind(ServerManager.class).in(LazySingleton.class);
       binder.bind(ZkCoordinator.class).in(ManageLifecycle.class);
       binder.bind(QuerySegmentWalker.class).to(ServerManager.class).in(LazySingleton.class);

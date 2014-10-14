@@ -3,7 +3,7 @@
     return Sequences.empty();
   }
   Interval actualIntervalTmp=interval;
-  final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(getMaxTime().getMillis()));
+  final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(gran.truncate(getMaxTime().getMillis())));
   if (!actualIntervalTmp.overlaps(dataInterval)) {
     return Sequences.empty();
   }
@@ -206,7 +206,11 @@
                 return Object.class;
               }
               @Override public Object get(){
-                final String[] dimVals=currEntry.getKey().getDims()[dimensionIndex];
+                final String[][] dims=currEntry.getKey().getDims();
+                if (dimensionIndex >= dims.length) {
+                  return null;
+                }
+                final String[] dimVals=dims[dimensionIndex];
                 if (dimVals.length == 1) {
                   return dimVals[0];
                 }

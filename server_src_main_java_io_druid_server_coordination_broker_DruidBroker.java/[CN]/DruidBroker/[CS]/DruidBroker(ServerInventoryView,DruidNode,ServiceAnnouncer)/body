@@ -1,0 +1,11 @@
+{
+  this.self=self;
+  this.serviceAnnouncer=serviceAnnouncer;
+  serverInventoryView.registerSegmentCallback(MoreExecutors.sameThreadExecutor(),new ServerView.BaseSegmentCallback(){
+    @Override public ServerView.CallbackAction segmentViewInitialized(){
+      serviceAnnouncer.announce(self);
+      return ServerView.CallbackAction.UNREGISTER;
+    }
+  }
+);
+}

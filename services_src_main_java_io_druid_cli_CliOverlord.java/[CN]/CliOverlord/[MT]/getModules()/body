@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/overlord");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8090);
       JsonConfigProvider.bind(binder,"druid.indexer.queue",TaskQueueConfig.class);
       JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
@@ -42,6 +44,10 @@
       binder.bind(ForkingTaskRunnerFactory.class).in(LazySingleton.class);
       biddy.addBinding("remote").to(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
       binder.bind(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
+      PolyBind.createChoice(binder,"druid.indexer.runner.workerSelectStrategy.type",Key.get(WorkerSelectStrategy.class),Key.get(FillCapacityWorkerSelectStrategy.class));
+      final MapBinder<String,WorkerSelectStrategy> stratBinder=PolyBind.optionBinder(binder,Key.get(WorkerSelectStrategy.class));
+      stratBinder.addBinding("fillCapacity").to(FillCapacityWorkerSelectStrategy.class);
+      binder.bind(FillCapacityWorkerSelectStrategy.class).in(LazySingleton.class);
     }
     private void configureAutoscale(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",ResourceManagementSchedulerConfig.class);

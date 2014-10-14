@@ -14,7 +14,7 @@
   List<IndexableAdapter> adapters=Lists.newArrayList();
   for (  final SegmentToMergeHolder holder : segmentsToMerge) {
     adapters.add(new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(holder.getFile())),new Predicate<Rowboat>(){
-      @Override public boolean apply(      @Nullable Rowboat input){
+      @Override public boolean apply(      Rowboat input){
         return holder.getInterval().contains(input.getTimestamp());
       }
     }

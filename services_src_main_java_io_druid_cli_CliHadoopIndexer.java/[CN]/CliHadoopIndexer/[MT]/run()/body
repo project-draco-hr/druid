@@ -1,5 +1,12 @@
 {
   try {
+    final List<String> allCoordinates=Lists.newArrayList();
+    if (coordinates != null) {
+      allCoordinates.addAll(coordinates);
+    }
+    if (!noDefaultHadoop) {
+      allCoordinates.add(DEFAULT_HADOOP_COORDINATES);
+    }
     final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
     final List<URL> extensionURLs=Lists.newArrayList();
     for (    String coordinate : extensionsConfig.getCoordinates()) {
@@ -10,7 +17,7 @@
     nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)CliHadoopIndexer.class.getClassLoader()).getURLs()));
     final List<URL> driverURLs=Lists.newArrayList();
     driverURLs.addAll(nonHadoopURLs);
-    for (    String coordinate : hadoopDependencyCoordinates) {
+    for (    String coordinate : allCoordinates) {
       final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,coordinate);
       driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
     }
