@@ -3,7 +3,7 @@
   if (!timeBucket.isPresent()) {
     return Optional.absent();
   }
-  final ShardSpec actualSpec=shardSpecLookups.get(timeBucket.get().getStart()).getShardSpec(inputRow);
+  final ShardSpec actualSpec=shardSpecLookups.get(timeBucket.get().getStart()).getShardSpec(rollupGran.truncate(inputRow.getTimestampFromEpoch()),inputRow);
   final HadoopyShardSpec hadoopyShardSpec=hadoopShardSpecLookup.get(actualSpec);
   return Optional.of(new Bucket(hadoopyShardSpec.getShardNum(),timeBucket.get().getStart(),actualSpec.getPartitionNum()));
 }

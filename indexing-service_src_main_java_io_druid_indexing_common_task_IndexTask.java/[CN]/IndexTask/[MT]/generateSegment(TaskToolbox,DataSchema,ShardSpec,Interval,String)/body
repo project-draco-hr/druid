@@ -18,11 +18,12 @@
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
   final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeTuningConfig(null,null,null,null,null,null,null,shardSpec),metrics);
   final int myRowFlushBoundary=rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
+  final QueryGranularity rollupGran=ingestionSchema.getDataSchema().getGranularitySpec().getQueryGranularity();
   try {
     plumber.startJob();
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
-      if (shouldIndex(shardSpec,interval,inputRow)) {
+      if (shouldIndex(shardSpec,interval,inputRow,rollupGran)) {
         int numRows=plumber.add(inputRow);
         if (numRows == -1) {
           throw new ISE(String.format("Was expecting non-null sink for timestamp[%s]",new DateTime(inputRow.getTimestampFromEpoch())));
