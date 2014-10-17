@@ -1,9 +1,10 @@
 {
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,new TestRemoteTaskRunnerConfig(),new ZkPathsConfig(){
+  RemoteTaskRunnerConfig config=new TestRemoteTaskRunnerConfig();
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,config,new ZkPathsConfig(){
     @Override public String getZkBasePath(){
       return basePath;
     }
   }
-,cf,new SimplePathChildrenCacheFactory.Builder().build(),DSuppliers.of(new AtomicReference<WorkerSetupData>(new WorkerSetupData(0,1,null,null,null))),null);
+,cf,new SimplePathChildrenCacheFactory.Builder().build(),null,new FillCapacityWorkerSelectStrategy(config));
   remoteTaskRunner.start();
 }

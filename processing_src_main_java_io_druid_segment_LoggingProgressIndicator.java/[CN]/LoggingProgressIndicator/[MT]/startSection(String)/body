@@ -1,0 +1,9 @@
+{
+  log.info("[%s]: Starting [%s]",progressName,section);
+  Stopwatch sectionWatch=sections.get(section);
+  if (sectionWatch != null) {
+    throw new ISE("[%s]: Cannot start progress tracker for [%s]. It is already started.",progressName,section);
+  }
+  sectionWatch=Stopwatch.createStarted();
+  sections.put(section,sectionWatch);
+}

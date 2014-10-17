@@ -7,12 +7,19 @@
     return true;
   }
  else {
-    ZkWorker zkWorker=findWorkerForTask(task);
-    if (zkWorker != null) {
+    final Optional<ImmutableZkWorker> immutableZkWorker=strategy.findWorkerForTask(ImmutableMap.copyOf(Maps.transformEntries(zkWorkers,new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
+      @Override public ImmutableZkWorker transformEntry(      String key,      ZkWorker value){
+        return value.toImmutable();
+      }
+    }
+)),task);
+    if (immutableZkWorker.isPresent()) {
+      final ZkWorker zkWorker=zkWorkers.get(immutableZkWorker.get().getWorker().getHost());
       announceTask(task,zkWorker,taskRunnerWorkItem);
       return true;
     }
  else {
+      log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());
       return false;
     }
   }

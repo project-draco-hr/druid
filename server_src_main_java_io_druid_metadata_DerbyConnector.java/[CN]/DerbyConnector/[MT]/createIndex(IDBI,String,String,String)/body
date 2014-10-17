@@ -1,0 +1,12 @@
+{
+  dbi.withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      List<Map<String,Object>> table=handle.select(String.format("select * from SYS.SYSTABLES where tablename = \'%s\'",tableName.toUpperCase()));
+      if (table.isEmpty()) {
+        handle.createStatement(String.format("CREATE INDEX %1$s ON %2$s(%3$s)",indexName,tableName,columnName)).execute();
+      }
+      return null;
+    }
+  }
+);
+}

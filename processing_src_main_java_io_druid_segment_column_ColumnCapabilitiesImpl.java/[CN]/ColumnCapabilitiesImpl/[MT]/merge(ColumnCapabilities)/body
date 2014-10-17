@@ -1,0 +1,17 @@
+{
+  if (other == null) {
+    return this;
+  }
+  if (type == null) {
+    type=other.getType();
+  }
+  if (!type.equals(other.getType())) {
+    throw new ISE("Cannot merge columns of type[%s] and [%s]",type,other.getType());
+  }
+  this.dictionaryEncoded|=other.isDictionaryEncoded();
+  this.runLengthEncoded|=other.isRunLengthEncoded();
+  this.hasInvertedIndexes|=other.hasBitmapIndexes();
+  this.hasSpatialIndexes|=other.hasSpatialIndexes();
+  this.hasMultipleValues|=other.hasMultipleValues();
+  return this;
+}

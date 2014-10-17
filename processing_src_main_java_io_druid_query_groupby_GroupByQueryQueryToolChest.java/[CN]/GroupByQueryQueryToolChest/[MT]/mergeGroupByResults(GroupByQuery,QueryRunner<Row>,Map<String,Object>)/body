@@ -15,10 +15,11 @@
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
-    final IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(makeIncrementalIndex(innerQuery,subqueryResult));
-    return outerQuery.applyLimit(engine.process(outerQuery,adapter));
+    IncrementalIndex index=makeIncrementalIndex(innerQuery,subqueryResult);
+    return new ResourceClosingSequence<>(outerQuery.applyLimit(engine.process(outerQuery,new IncrementalIndexStorageAdapter(index))),index);
   }
  else {
-    return query.applyLimit(postAggregate(query,makeIncrementalIndex(query,runner.run(query,context))));
+    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(query,context));
+    return new ResourceClosingSequence<>(query.applyLimit(postAggregate(query,index)),index);
   }
 }
