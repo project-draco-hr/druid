@@ -1,0 +1,7 @@
+{
+  RabbitMQFirehoseFactory factory=new RabbitMQFirehoseFactory(new JacksonifiedConnectionFactory(),new RabbitMQFirehoseConfig(),new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto"),new DimensionsSpec(Arrays.<String>asList("dim"),Lists.<String>newArrayList(),Lists.<SpatialDimensionSchema>newArrayList())),null,null,null,null));
+  byte[] bytes=mapper.writeValueAsBytes(factory);
+  RabbitMQFirehoseFactory factory2=mapper.readValue(bytes,RabbitMQFirehoseFactory.class);
+  byte[] bytes2=mapper.writeValueAsBytes(factory2);
+  Assert.assertArrayEquals(bytes,bytes2);
+}
