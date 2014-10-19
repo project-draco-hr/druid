@@ -1,5 +1,5 @@
 {
-  this.connectionFactory=connectionFactory;
-  this.config=config;
+  this.connectionFactory=connectionFactory == null ? JacksonifiedConnectionFactory.makeDefaultConnectionFactory() : connectionFactory;
+  this.config=config == null ? RabbitMQFirehoseConfig.makeDefaultConfig() : config;
   this.parser=parser;
 }
