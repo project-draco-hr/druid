@@ -21,7 +21,7 @@
   if (requestedHeartbeat != that.requestedHeartbeat) {
     return false;
   }
-  if (clientProperties != null ? Maps.difference(clientProperties,that.clientProperties).areEqual() : that.clientProperties != null) {
+  if (clientProperties != null ? !Maps.difference(getSerializableClientProperties(clientProperties),getSerializableClientProperties(that.clientProperties)).areEqual() : that.clientProperties != null) {
     return false;
   }
   if (host != null ? !host.equals(that.host) : that.host != null) {
