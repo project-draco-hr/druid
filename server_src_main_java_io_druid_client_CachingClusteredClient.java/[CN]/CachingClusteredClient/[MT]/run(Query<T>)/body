@@ -89,13 +89,21 @@
       addSequencesFromServer(listOfSequences);
       addSequencesFromCache(listOfSequences);
       Collections.sort(listOfSequences,Ordering.natural().onResultOf(Pair.<DateTime,Sequence<T>>lhsFn()));
-      final Sequence<Sequence<T>> seq=Sequences.simple(Iterables.transform(listOfSequences,Pair.<DateTime,Sequence<T>>rhsFn()));
-      if (strategy == null) {
-        return toolChest.mergeSequences(seq);
+      final List<Sequence<T>> orderedSequences=Lists.newLinkedList();
+      DateTime unorderedStart=null;
+      List<Sequence<T>> unordered=Lists.newLinkedList();
+      for (      Pair<DateTime,Sequence<T>> sequencePair : listOfSequences) {
+        if (unorderedStart != null && unorderedStart.getMillis() != sequencePair.lhs.getMillis()) {
+          orderedSequences.add(toolChest.mergeSequencesUnordered(Sequences.simple(unordered)));
+          unordered=Lists.newLinkedList();
+        }
+        unorderedStart=sequencePair.lhs;
+        unordered.add(sequencePair.rhs);
       }
- else {
-        return strategy.mergeSequences(seq);
+      if (!unordered.isEmpty()) {
+        orderedSequences.add(toolChest.mergeSequencesUnordered(Sequences.simple(unordered)));
       }
+      return toolChest.mergeSequences(Sequences.simple(orderedSequences));
     }
     private void addSequencesFromCache(    ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences){
       if (strategy == null) {
@@ -140,7 +148,7 @@
           resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec));
         }
  else {
-          resultSeqToAdd=toolChest.mergeSequences(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec)),new Function<Object,Sequence<T>>(){
+          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec)),new Function<Object,Sequence<T>>(){
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
             @Override public Sequence<T> apply(            Object input){
               Result<Object> result=(Result<Object>)input;
