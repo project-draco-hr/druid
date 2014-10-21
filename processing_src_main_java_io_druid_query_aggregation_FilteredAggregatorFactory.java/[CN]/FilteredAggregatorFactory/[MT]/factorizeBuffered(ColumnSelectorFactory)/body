@@ -1,6 +1,12 @@
 {
   final BufferAggregator aggregator=delegate.factorizeBuffered(metricFactory);
   final DimensionSelector dimSelector=metricFactory.makeDimensionSelector(((SelectorDimFilter)filter).getDimension());
-  Predicate<Integer> predicate=Predicates.equalTo(dimSelector.lookupId(((SelectorDimFilter)filter).getValue()));
+  final int lookupId=dimSelector.lookupId(((SelectorDimFilter)filter).getValue());
+  final IntPredicate predicate=new IntPredicate(){
+    @Override public boolean apply(    int value){
+      return lookupId == value;
+    }
+  }
+;
   return new FilteredBufferAggregator(dimSelector,predicate,aggregator);
 }
