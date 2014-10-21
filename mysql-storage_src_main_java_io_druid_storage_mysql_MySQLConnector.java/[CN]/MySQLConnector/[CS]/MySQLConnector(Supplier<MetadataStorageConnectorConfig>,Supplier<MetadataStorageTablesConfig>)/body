@@ -1,4 +1,11 @@
 {
   super(config,dbTables);
   this.dbi=new DBI(getDatasource());
+  dbi.withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement("SET sql_mode='ANSI_QUOTES'").execute();
+      return null;
+    }
+  }
+);
 }
