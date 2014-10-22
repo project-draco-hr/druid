@@ -1,0 +1,32 @@
+{
+  final SelectorDimFilter selector;
+  if (dimFilter instanceof NotDimFilter) {
+    selector=(SelectorDimFilter)((NotDimFilter)dimFilter).getField();
+  }
+ else   if (dimFilter instanceof SelectorDimFilter) {
+    selector=(SelectorDimFilter)dimFilter;
+  }
+ else {
+    throw new ISE("Unsupported DimFilter type [%d]",dimFilter.getClass());
+  }
+  final DimensionSelector dimSelector=metricFactory.makeDimensionSelector(selector.getDimension());
+  final int lookupId=dimSelector.lookupId(selector.getValue());
+  final IntPredicate predicate;
+  if (dimFilter instanceof NotDimFilter) {
+    predicate=new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId != value;
+      }
+    }
+;
+  }
+ else {
+    predicate=new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId == value;
+      }
+    }
+;
+  }
+  return Pair.of(dimSelector,predicate);
+}
