@@ -2,6 +2,9 @@
   Preconditions.checkNotNull(delegate);
   Preconditions.checkNotNull(filter);
   Preconditions.checkArgument(filter instanceof SelectorDimFilter || filter instanceof NotDimFilter,"FilteredAggregator currently only supports filters of type selector and not");
+  if (filter instanceof NotDimFilter) {
+    Preconditions.checkArgument(((NotDimFilter)filter).getField() instanceof SelectorDimFilter,"FilteredAggregator currently only support not filter with selector filter");
+  }
   this.name=name;
   this.delegate=delegate;
   this.filter=filter;
