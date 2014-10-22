@@ -1,0 +1,24 @@
+{
+  if (dimFilter instanceof SelectorDimFilter) {
+    final DimensionSelector dimSelector=metricFactory.makeDimensionSelector(((SelectorDimFilter)dimFilter).getDimension());
+    final int lookupId=dimSelector.lookupId(((SelectorDimFilter)dimFilter).getValue());
+    return Pair.<DimensionSelector,IntPredicate>of(dimSelector,new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId == value;
+      }
+    }
+);
+  }
+ else   if (dimFilter instanceof NotDimFilter) {
+    final Pair<DimensionSelector,IntPredicate> selectorPredicatePair=makeFilterPredicate(((NotDimFilter)dimFilter).getField(),metricFactory);
+    return Pair.<DimensionSelector,IntPredicate>of(selectorPredicatePair.lhs,new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return !selectorPredicatePair.rhs.apply(value);
+      }
+    }
+);
+  }
+ else {
+    throw new UnsupportedOperationException("FilteredAggregator does not support DimFilter of type " + dimFilter.getClass());
+  }
+}
