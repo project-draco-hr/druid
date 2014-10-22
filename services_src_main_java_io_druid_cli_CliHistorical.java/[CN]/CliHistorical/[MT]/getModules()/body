@@ -1,15 +1,17 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      LifecycleModule.register(binder,Server.class);
       binder.bind(ServerManager.class).in(LazySingleton.class);
       binder.bind(ZkCoordinator.class).in(ManageLifecycle.class);
       binder.bind(QuerySegmentWalker.class).to(ServerManager.class).in(LazySingleton.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig("historical"));
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
       Jerseys.addResource(binder,QueryResource.class);
+      Jerseys.addResource(binder,HistoricalResource.class);
       LifecycleModule.register(binder,QueryResource.class);
+      LifecycleModule.register(binder,HistoricalResource.class);
       LifecycleModule.register(binder,ZkCoordinator.class);
-      LifecycleModule.register(binder,Server.class);
       binder.bind(Cache.class).toProvider(CacheProvider.class).in(ManageLifecycle.class);
       JsonConfigProvider.bind(binder,"druid.historical.cache",CacheProvider.class);
       JsonConfigProvider.bind(binder,"druid.historical.cache",CacheConfig.class);
