@@ -1,8 +1,18 @@
 {
-  final String insertOrUpdateStatement=insertOrUpdateStatement(tableName,keyColumn,valueColumn);
   return getDBI().withHandle(new HandleCallback<Void>(){
     @Override public Void withHandle(    Handle handle) throws Exception {
-      handle.createStatement(insertOrUpdateStatement).bind("key",key).bind("value",value).execute();
+      Connection conn=getDBI().open().getConnection();
+      handle.begin();
+      conn.setAutoCommit(false);
+      List<Map<String,Object>> entry=handle.createQuery(String.format("SELECT * FROM %1$s WHERE %2$s=:key",tableName,keyColumn)).list();
+      if (entry == null || entry.isEmpty()) {
+        handle.createStatement(String.format("INSERT INTO %1$s (%2$s, %3$s) VALUES (:key, :value)",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
+      }
+ else {
+        handle.createStatement(String.format("UPDATE %1$s SET %3$s=:value WHERE %2$s=:key",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
+      }
+      conn.setAutoCommit(true);
+      handle.commit();
       return null;
     }
   }

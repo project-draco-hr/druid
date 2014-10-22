@@ -1,0 +1,9 @@
+{
+  return getDBI().withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement(String.format("INSERT INTO %1$s (%2$s, %3$s) VALUES (:key, :value) ON DUPLICATE KEY UPDATE %3$s = :value",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
+      return null;
+    }
+  }
+);
+}
