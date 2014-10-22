@@ -7,27 +7,26 @@
     selector=(SelectorDimFilter)dimFilter;
   }
  else {
-    throw new UnsupportedOperationException("FilteredAggregator does not support DimFilter of type " + dimFilter.getClass());
+    throw new ISE("Unsupported DimFilter type [%d]",dimFilter.getClass());
   }
   final DimensionSelector dimSelector=metricFactory.makeDimensionSelector(selector.getDimension());
   final int lookupId=dimSelector.lookupId(selector.getValue());
-  if (dimFilter instanceof SelectorDimFilter) {
-    return Pair.<DimensionSelector,IntPredicate>of(dimSelector,new IntPredicate(){
-      @Override public boolean apply(      int value){
-        return lookupId == value;
-      }
-    }
-);
-  }
- else   if (dimFilter instanceof NotDimFilter) {
-    return Pair.<DimensionSelector,IntPredicate>of(dimSelector,new IntPredicate(){
+  final IntPredicate predicate;
+  if (dimFilter instanceof NotDimFilter) {
+    predicate=new IntPredicate(){
       @Override public boolean apply(      int value){
         return lookupId != value;
       }
     }
-);
+;
   }
  else {
-    throw new UnsupportedOperationException("FilteredAggregator does not support DimFilter of type " + dimFilter.getClass());
+    predicate=new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId == value;
+      }
+    }
+;
   }
+  return Pair.of(dimSelector,predicate);
 }
