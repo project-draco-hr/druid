@@ -3,7 +3,7 @@
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
-  final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
+  final GenericColumn timestamps=index.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
   return Sequences.withBaggage(Sequences.map(Sequences.simple(gran.iterable(interval.getStartMillis(),interval.getEndMillis())),new Function<Long,Cursor>(){
     private int currRow=0;
     @Override public Cursor apply(    final Long input){
@@ -32,14 +32,6 @@
         }
         @Override public void reset(){
           currRow=initRow;
-        }
-        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-          return new TimestampColumnSelector(){
-            @Override public long getTimestamp(){
-              return timestamps.getLongSingleValueRow(currRow);
-            }
-          }
-;
         }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
@@ -105,7 +97,7 @@
           GenericColumn cachedMetricVals=genericColumnCache.get(metricName);
           if (cachedMetricVals == null) {
             Column holder=index.getColumn(metricName);
-            if (holder != null && holder.getCapabilities().getType() == ValueType.FLOAT) {
+            if (holder != null && (holder.getCapabilities().getType() == ValueType.LONG || holder.getCapabilities().getType() == ValueType.FLOAT)) {
               cachedMetricVals=holder.getGenericColumn();
               genericColumnCache.put(metricName,cachedMetricVals);
             }
@@ -122,6 +114,32 @@
           return new FloatColumnSelector(){
             @Override public float get(){
               return metricVals.getFloatSingleValueRow(currRow);
+            }
+          }
+;
+        }
+        @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
+          final String metricName=columnName.toLowerCase();
+          GenericColumn cachedMetricVals=genericColumnCache.get(metricName);
+          if (cachedMetricVals == null) {
+            Column holder=index.getColumn(metricName);
+            if (holder != null && (holder.getCapabilities().getType() == ValueType.LONG || holder.getCapabilities().getType() == ValueType.FLOAT)) {
+              cachedMetricVals=holder.getGenericColumn();
+              genericColumnCache.put(metricName,cachedMetricVals);
+            }
+          }
+          if (cachedMetricVals == null) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return 0L;
+              }
+            }
+;
+          }
+          final GenericColumn metricVals=cachedMetricVals;
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return metricVals.getLongSingleValueRow(currRow);
             }
           }
 ;
