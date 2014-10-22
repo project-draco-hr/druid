@@ -2,7 +2,7 @@
   return new Iterable<Rowboat>(){
     @Override public Iterator<Rowboat> iterator(){
       return new Iterator<Rowboat>(){
-        final GenericColumn timestamps=input.getTimeColumn().getGenericColumn();
+        final GenericColumn timestamps=input.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
         final Object[] metrics;
         final Map<String,DictionaryEncodedColumn> dimensions;
         final int numMetrics=getMetricNames().size();
@@ -20,6 +20,7 @@
             final ValueType type=column.getCapabilities().getType();
 switch (type) {
 case FLOAT:
+case LONG:
               metrics[i]=column.getGenericColumn();
             break;
 case COMPLEX:
@@ -66,8 +67,11 @@ for (String dim : dimensions.keySet()) {
 }
 Object[] metricArray=new Object[numMetrics];
 for (int i=0; i < metricArray.length; ++i) {
-  if (metrics[i] instanceof GenericColumn) {
+  if (metrics[i] instanceof IndexedFloatsGenericColumn) {
     metricArray[i]=((GenericColumn)metrics[i]).getFloatSingleValueRow(currRow);
+  }
+ else   if (metrics[i] instanceof IndexedLongsGenericColumn) {
+    metricArray[i]=((GenericColumn)metrics[i]).getLongSingleValueRow(currRow);
   }
  else   if (metrics[i] instanceof ComplexColumn) {
     metricArray[i]=((ComplexColumn)metrics[i]).getRowValue(currRow);

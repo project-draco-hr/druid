@@ -12,10 +12,19 @@
   for (int i=0; i < metrics.length; i++) {
     final AggregatorFactory agg=metrics[i];
     aggs[i]=agg.factorizeBuffered(new ColumnSelectorFactory(){
-      @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-        return new TimestampColumnSelector(){
-          @Override public long getTimestamp(){
-            return in.get().getTimestampFromEpoch();
+      @Override public LongColumnSelector makeLongColumnSelector(      String columnName){
+        if (columnName.equals(Column.TIME_COLUMN_NAME)) {
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return in.get().getTimestampFromEpoch();
+            }
+          }
+;
+        }
+        final String metricName=columnName.toLowerCase();
+        return new LongColumnSelector(){
+          @Override public long get(){
+            return in.get().getLongMetric(metricName);
           }
         }
 ;
@@ -124,6 +133,9 @@
     ValueType type;
     if (entry.getValue().equalsIgnoreCase("float")) {
       type=ValueType.FLOAT;
+    }
+ else     if (entry.getValue().equalsIgnoreCase("long")) {
+      type=ValueType.LONG;
     }
  else {
       type=ValueType.COMPLEX;
