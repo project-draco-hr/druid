@@ -7,7 +7,7 @@
     final Object waitingForMonitor=new Object();
     workerPathCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework client,      final PathChildrenCacheEvent event) throws Exception {
-        Worker worker;
+        final Worker worker;
 switch (event.getType()) {
 case CHILD_ADDED:
           worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
@@ -30,8 +30,12 @@ synchronized (waitingForMonitor) {
       }
 );
     break;
-case CHILD_REMOVED:
+case CHILD_UPDATED:
   worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
+updateWorker(worker);
+break;
+case CHILD_REMOVED:
+worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
 removeWorker(worker);
 break;
 case INITIALIZED:
