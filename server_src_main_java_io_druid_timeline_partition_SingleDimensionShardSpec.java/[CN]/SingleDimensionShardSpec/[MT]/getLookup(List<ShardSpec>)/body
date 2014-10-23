@@ -1,8 +1,8 @@
 {
   return new ShardSpecLookup(){
-    @Override public ShardSpec getShardSpec(    InputRow row){
+    @Override public ShardSpec getShardSpec(    long timestamp,    InputRow row){
       for (      ShardSpec spec : shardSpecs) {
-        if (spec.isInChunk(row)) {
+        if (spec.isInChunk(timestamp,row)) {
           return spec;
         }
       }

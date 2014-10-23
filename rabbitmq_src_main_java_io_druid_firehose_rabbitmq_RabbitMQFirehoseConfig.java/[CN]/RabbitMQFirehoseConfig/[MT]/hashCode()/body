@@ -1,0 +1,12 @@
+{
+  int result=queue != null ? queue.hashCode() : 0;
+  result=31 * result + (exchange != null ? exchange.hashCode() : 0);
+  result=31 * result + (routingKey != null ? routingKey.hashCode() : 0);
+  result=31 * result + (durable ? 1 : 0);
+  result=31 * result + (exclusive ? 1 : 0);
+  result=31 * result + (autoDelete ? 1 : 0);
+  result=31 * result + maxRetries;
+  result=31 * result + retryIntervalSeconds;
+  result=31 * result + (int)(maxDurationSeconds ^ (maxDurationSeconds >>> 32));
+  return result;
+}
