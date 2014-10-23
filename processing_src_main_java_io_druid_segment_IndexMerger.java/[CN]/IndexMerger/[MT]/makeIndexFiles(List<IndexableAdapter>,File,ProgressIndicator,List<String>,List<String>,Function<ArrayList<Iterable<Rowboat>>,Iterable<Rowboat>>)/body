@@ -162,11 +162,13 @@
   for (  String metric : mergedMetrics) {
     ValueType type=valueTypes.get(metric);
 switch (type) {
+case LONG:
+      metWriters.add(new LongMetricColumnSerializer(metric,v8OutDir,ioPeon));
 case FLOAT:
-      metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
-    break;
+    metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
+  break;
 case COMPLEX:
-  final String typeName=metricTypeNames.get(metric);
+final String typeName=metricTypeNames.get(metric);
 ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(typeName);
 if (serde == null) {
 throw new ISE("Unknown type[%s]",typeName);
