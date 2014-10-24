@@ -1,0 +1,9 @@
+{
+  final List<Object> groupKey=Rows.toGroupKey(timestamp,inputRow);
+  try {
+    return hashFunction.hashBytes(jsonMapper.writeValueAsBytes(groupKey)).asInt();
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+}

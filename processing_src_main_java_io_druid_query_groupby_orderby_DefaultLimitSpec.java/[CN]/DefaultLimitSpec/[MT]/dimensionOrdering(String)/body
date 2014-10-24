@@ -1,7 +1,7 @@
 {
   return Ordering.natural().nullsFirst().onResultOf(new Function<Row,String>(){
     @Override public String apply(    Row input){
-      final List<String> dimList=input.getDimension(dimension);
+      final List<String> dimList=input.getDimension(dimension.toLowerCase());
       return dimList.isEmpty() ? null : dimList.get(0);
     }
   }
