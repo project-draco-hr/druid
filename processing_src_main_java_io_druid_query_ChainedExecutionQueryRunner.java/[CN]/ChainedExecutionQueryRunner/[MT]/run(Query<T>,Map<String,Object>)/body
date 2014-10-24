@@ -4,6 +4,9 @@
     @Override public Iterator<T> make(){
       ListenableFuture<List<Iterable<T>>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,ListenableFuture<Iterable<T>>>(){
         @Override public ListenableFuture<Iterable<T>> apply(        final QueryRunner<T> input){
+          if (input == null) {
+            throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
+          }
           return exec.submit(new AbstractPrioritizedCallable<Iterable<T>>(priority){
             @Override public Iterable<T> call() throws Exception {
               try {
