@@ -4,8 +4,8 @@ synchronized (log) {
       return mergedRealtime;
     }
     try {
-      IncrementalIndex top=makeRealtimeIndex("druid.sample.tsv.top");
-      IncrementalIndex bottom=makeRealtimeIndex("druid.sample.tsv.bottom");
+      IncrementalIndex top=makeRealtimeIndex("druid.sample.tsv.top",false);
+      IncrementalIndex bottom=makeRealtimeIndex("druid.sample.tsv.bottom",false);
       File tmpFile=File.createTempFile("yay","who");
       tmpFile.delete();
       File topFile=new File(tmpFile,"top");
@@ -17,9 +17,9 @@ synchronized (log) {
       bottomFile.deleteOnExit();
       mergedFile.mkdirs();
       mergedFile.deleteOnExit();
-      IndexMerger.persist(top,DATA_INTERVAL,topFile);
-      IndexMerger.persist(bottom,DATA_INTERVAL,bottomFile);
-      mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(topFile),IndexIO.loadIndex(bottomFile)),METRIC_AGGS,mergedFile));
+      IndexMaker.persist(top,DATA_INTERVAL,topFile);
+      IndexMaker.persist(bottom,DATA_INTERVAL,bottomFile);
+      mergedRealtime=IndexIO.loadIndex(IndexMaker.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(topFile),IndexIO.loadIndex(bottomFile)),METRIC_AGGS,mergedFile));
       return mergedRealtime;
     }
  catch (    IOException e) {

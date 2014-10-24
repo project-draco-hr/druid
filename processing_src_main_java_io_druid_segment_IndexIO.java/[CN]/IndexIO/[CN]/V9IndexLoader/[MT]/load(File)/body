@@ -11,11 +11,11 @@
   final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
   final Interval dataInterval=new Interval(indexBuffer.getLong(),indexBuffer.getLong());
   Map<String,Column> columns=Maps.newHashMap();
-  ObjectMapper mapper=new DefaultObjectMapper();
   for (  String columnName : cols) {
     columns.put(columnName,deserializeColumn(mapper,smooshedFiles.mapFile(columnName)));
   }
-  final QueryableIndex index=new SimpleQueryableIndex(dataInterval,cols,dims,deserializeColumn(mapper,smooshedFiles.mapFile("__time")),columns,smooshedFiles);
+  columns.put(Column.TIME_COLUMN_NAME,deserializeColumn(mapper,smooshedFiles.mapFile("__time")));
+  final QueryableIndex index=new SimpleQueryableIndex(dataInterval,cols,dims,columns,smooshedFiles);
   log.debug("Mapped v9 index[%s] in %,d millis",inDir,System.currentTimeMillis() - startTime);
   return index;
 }

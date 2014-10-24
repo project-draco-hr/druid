@@ -26,7 +26,8 @@
   DyingQueryRunner runner2=new DyingQueryRunner(queriesStarted,queriesInterrupted);
   DyingQueryRunner runner3=new DyingQueryRunner(queriesStarted,queriesInterrupted);
   ChainedExecutionQueryRunner chainedRunner=new ChainedExecutionQueryRunner<>(exec,Ordering.<Integer>natural(),watcher,Lists.<QueryRunner<Integer>>newArrayList(runner1,runner2,runner3));
-  final Sequence seq=chainedRunner.run(Druids.newTimeseriesQueryBuilder().dataSource("test").intervals("2014/2015").aggregators(Lists.<AggregatorFactory>newArrayList(new CountAggregatorFactory("count"))).context(ImmutableMap.<String,Object>of("timeout",100,"queryId","test")).build());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  final Sequence seq=chainedRunner.run(Druids.newTimeseriesQueryBuilder().dataSource("test").intervals("2014/2015").aggregators(Lists.<AggregatorFactory>newArrayList(new CountAggregatorFactory("count"))).context(ImmutableMap.<String,Object>of("timeout",100,"queryId","test")).build(),context);
   Future resultFuture=Executors.newFixedThreadPool(1).submit(new Runnable(){
     @Override public void run(){
       Sequences.toList(seq,Lists.newArrayList());

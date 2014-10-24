@@ -23,8 +23,8 @@
     @Override public Cursor apply(    @Nullable final Long input){
       final long timeStart=Math.max(input,actualInterval.getStartMillis());
       return new Cursor(){
-        private Iterator<Map.Entry<IncrementalIndex.TimeAndDims,Aggregator[]>> baseIter;
-        private ConcurrentNavigableMap<IncrementalIndex.TimeAndDims,Aggregator[]> cursorMap;
+        private Iterator<Map.Entry<IncrementalIndex.TimeAndDims,Integer>> baseIter;
+        private ConcurrentNavigableMap<IncrementalIndex.TimeAndDims,Integer> cursorMap;
         final DateTime time;
         int numAdvanced=-1;
         boolean done;
@@ -86,14 +86,6 @@
           }
           done=!foundMatched && (cursorMap.size() == 0 || !baseIter.hasNext());
         }
-        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-          return new TimestampColumnSelector(){
-            @Override public long getTimestamp(){
-              return currEntry.getKey().getTimestamp();
-            }
-          }
-;
-        }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final String dimensionName=dimension.toLowerCase();
           final IncrementalIndex.DimDim dimValLookup=index.getDimension(dimensionName);
@@ -153,9 +145,38 @@
 ;
           }
           final int metricIndex=metricIndexInt;
+          final BufferAggregator agg=index.getAggregator(metricIndex);
           return new FloatColumnSelector(){
             @Override public float get(){
-              return currEntry.getValue()[metricIndex].getFloat();
+              return agg.getFloat(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
+            }
+          }
+;
+        }
+        @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
+          final String metricName=columnName.toLowerCase();
+          if (metricName.equals(Column.TIME_COLUMN_NAME)) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return currEntry.getKey().getTimestamp();
+              }
+            }
+;
+          }
+          final Integer metricIndexInt=index.getMetricIndex(metricName);
+          if (metricIndexInt == null) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return 0L;
+              }
+            }
+;
+          }
+          final int metricIndex=metricIndexInt;
+          final BufferAggregator agg=index.getAggregator(metricIndex);
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return agg.getLong(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
             }
           }
 ;
@@ -166,12 +187,13 @@
           if (metricIndexInt != null) {
             final int metricIndex=metricIndexInt;
             final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(index.getMetricType(columnName));
+            final BufferAggregator agg=index.getAggregator(metricIndex);
             return new ObjectColumnSelector(){
               @Override public Class classOfObject(){
                 return serde.getObjectStrategy().getClazz();
               }
               @Override public Object get(){
-                return currEntry.getValue()[metricIndex].get();
+                return agg.get(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
               }
             }
 ;

@@ -1,0 +1,7 @@
+{
+  final File outFile=IndexIO.makeMetricFile(outDir,metricName,IndexIO.BYTE_ORDER);
+  outFile.delete();
+  MetricHolder.writeLongMetric(Files.newOutputStreamSupplier(outFile,true),metricName,writer);
+  IndexIO.checkFileSize(outFile);
+  writer=null;
+}

@@ -13,5 +13,6 @@
 ,ImmutableMap.<String,Object>builder().put("market","total_market").put("rows",2L).put("index",200.0D).put("addRowsIndexConstant",203.0D).put("uniques",1.0002442201269182D).put("maxIndex",100.0D).put("minIndex",100.0D).build()))));
   TopNQuery query=makeTopNQuery();
   QueryRunner runner=TestQueryRunners.makeTopNQueryRunner(segment);
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query));
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
 }

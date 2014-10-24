@@ -2,5 +2,6 @@
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TopNResultValue(Lists.<Map<String,Object>>newArrayList())));
   TopNQuery query=makeFilteredTopNQuery();
   QueryRunner runner=TestQueryRunners.makeTopNQueryRunner(segment2);
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query));
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
 }

@@ -1,13 +1,21 @@
 {
-  channel.write(ByteBuffer.wrap(new byte[]{(byte)(isSingleValued() ? 0x0 : 0x1)}));
-  dictionary.writeToChannel(channel);
+  channel.write(ByteBuffer.wrap(new byte[]{(byte)(isSingleValued ? 0x0 : 0x1)}));
+  if (dictionary != null) {
+    dictionary.writeToChannel(channel);
+  }
   if (isSingleValued()) {
-    singleValuedColumn.writeToChannel(channel);
+    if (singleValuedColumn != null) {
+      singleValuedColumn.writeToChannel(channel);
+    }
   }
  else {
-    multiValuedColumn.writeToChannel(channel);
+    if (multiValuedColumn != null) {
+      multiValuedColumn.writeToChannel(channel);
+    }
   }
-  bitmaps.writeToChannel(channel);
+  if (bitmaps != null) {
+    bitmaps.writeToChannel(channel);
+  }
   if (spatialIndex != null) {
     ByteBufferSerializer.writeToChannel(spatialIndex,IndexedRTree.objectStrategy,channel);
   }

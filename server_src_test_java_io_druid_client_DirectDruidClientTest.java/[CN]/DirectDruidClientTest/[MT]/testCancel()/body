@@ -12,8 +12,9 @@
   QueryableDruidServer queryableDruidServer1=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client1);
   serverSelector.addServer(queryableDruidServer1);
   TimeBoundaryQuery query=Druids.newTimeBoundaryQueryBuilder().dataSource("test").build();
+  HashMap<String,List> context=new HashMap<String,List>();
   cancellationFuture.set(new StatusResponseHolder(HttpResponseStatus.OK,new StringBuilder("cancelled")));
-  Sequence results=client1.run(query);
+  Sequence results=client1.run(query,context);
   Assert.assertEquals(0,client1.getNumOpenConnections());
   QueryInterruptedException exception=null;
   try {

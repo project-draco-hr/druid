@@ -1,6 +1,7 @@
 {
   SearchQuery query=Druids.newSearchQueryBuilder().dataSource(dataSource).granularity(allGran).filters(marketDimension,"spot").intervals(fullOnInterval).query("a").build();
   failMsg+=" filtered search ";
-  Iterable<Result<SearchResultValue>> actualResults=Sequences.toList(runner.run(query),Lists.<Result<SearchResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<SearchResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<SearchResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,actualResults,failMsg);
 }

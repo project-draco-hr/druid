@@ -1,0 +1,25 @@
+{
+  final DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof QueryDataSource) {
+    GroupByQuery subquery;
+    try {
+      subquery=(GroupByQuery)((QueryDataSource)dataSource).getQuery().withOverriddenContext(query.getContext());
+    }
+ catch (    ClassCastException e) {
+      throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
+    }
+    final Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner,context);
+    final List<AggregatorFactory> aggs=Lists.newArrayList();
+    for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+      aggs.addAll(aggregatorFactory.getRequiredColumns());
+    }
+    final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
+    final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
+    IncrementalIndex index=makeIncrementalIndex(innerQuery,subqueryResult);
+    return new ResourceClosingSequence<>(outerQuery.applyLimit(engine.process(outerQuery,new IncrementalIndexStorageAdapter(index))),index);
+  }
+ else {
+    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(query,context));
+    return new ResourceClosingSequence<>(query.applyLimit(postAggregate(query,index)),index);
+  }
+}
