@@ -8,7 +8,7 @@
         }
         final List<Rule> defaultRules=Arrays.<Rule>asList(new ForeverLoadRule(ImmutableMap.<String,Integer>of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS)));
         final String version=new DateTime().toString();
-        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",ruleTable)).bind("id",String.format("%s_%s",defaultDatasourceName,version)).bind("dataSource",defaultDatasourceName).bind("version",version).bind("payload",jsonMapper.writeValueAsString(defaultRules)).execute();
+        handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",ruleTable)).bind("id",String.format("%s_%s",defaultDatasourceName,version)).bind("dataSource",defaultDatasourceName).bind("version",version).bind("payload",jsonMapper.writeValueAsBytes(defaultRules)).execute();
         return null;
       }
     }

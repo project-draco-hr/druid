@@ -4,7 +4,11 @@
       @Override public Void withHandle(      Handle handle) throws Exception {
         if (!tableExists(handle,tableName)) {
           log.info("Creating table[%s]",tableName);
-          handle.createStatement(sql).execute();
+          final Batch batch=handle.createBatch();
+          for (          String s : sql) {
+            batch.add(s);
+          }
+          batch.execute();
         }
  else {
           log.info("Table[%s] already exists",tableName);
