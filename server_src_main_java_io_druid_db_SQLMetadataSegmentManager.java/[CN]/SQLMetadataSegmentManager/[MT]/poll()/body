@@ -4,9 +4,9 @@
       return;
     }
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
-    List<Map<String,Object>> segmentRows=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
-      @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).list();
+    List<byte[]> segmentRows=dbi.withHandle(new HandleCallback<List<byte[]>>(){
+      @Override public List<byte[]> withHandle(      Handle handle) throws Exception {
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).map(ByteArrayMapper.FIRST).list();
       }
     }
 );
@@ -15,8 +15,8 @@
       return;
     }
     log.info("Polled and found %,d segments in the database",segmentRows.size());
-    for (    final Map<String,Object> segmentRow : segmentRows) {
-      DataSegment segment=jsonMapper.readValue((String)segmentRow.get("payload"),DataSegment.class);
+    for (    final byte[] payload : segmentRows) {
+      DataSegment segment=jsonMapper.readValue(payload,DataSegment.class);
       String datasourceName=segment.getDataSource();
       DruidDataSource dataSource=newDataSources.get(datasourceName);
       if (dataSource == null) {
