@@ -1,4 +1,7 @@
 {
   super(config,dbTables);
-  this.dbi=new DBI(getDatasource());
+  final BasicDataSource datasource=getDatasource();
+  datasource.setDriverClassLoader(getClass().getClassLoader());
+  datasource.setDriverClassName("org.postgresql.Driver");
+  this.dbi=new DBI(datasource);
 }

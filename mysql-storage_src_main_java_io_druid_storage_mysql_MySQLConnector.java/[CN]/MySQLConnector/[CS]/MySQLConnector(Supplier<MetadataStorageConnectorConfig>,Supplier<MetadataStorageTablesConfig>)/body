@@ -1,6 +1,9 @@
 {
   super(config,dbTables);
-  this.dbi=new DBI(getDatasource());
+  final BasicDataSource datasource=getDatasource();
+  datasource.setDriverClassLoader(getClass().getClassLoader());
+  datasource.setDriverClassName("com.mysql.jdbc.Driver");
+  this.dbi=new DBI(datasource);
   dbi.withHandle(new HandleCallback<Void>(){
     @Override public Void withHandle(    Handle handle) throws Exception {
       handle.createStatement("SET sql_mode='ANSI_QUOTES'").execute();
