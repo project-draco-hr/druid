@@ -1,4 +1,6 @@
 {
+  createBindingChoices(binder);
   super.configure(binder);
-  bindDataBaseDerby(binder);
+  PolyBind.optionBinder(binder,Key.get(MetadataStorageConnector.class)).addBinding(TYPE).to(DerbyConnector.class).in(LazySingleton.class);
+  PolyBind.optionBinder(binder,Key.get(SQLMetadataConnector.class)).addBinding(TYPE).to(DerbyConnector.class).in(LazySingleton.class);
 }
