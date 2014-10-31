@@ -1,0 +1,8 @@
+{
+  return retryingHandle(new HandleCallback<Integer>(){
+    @Override public Integer withHandle(    Handle handle) throws Exception {
+      return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",config.getTaskLockTable())).bind("id",lockId).execute();
+    }
+  }
+);
+}

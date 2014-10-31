@@ -1,18 +1,13 @@
 {
-  final List<Map<String,Object>> dbTasks=handler.getActiveTasks(dbTables.getTasksTable());
-  final ImmutableList.Builder<Task> tasks=ImmutableList.builder();
-  for (  final Map<String,Object> row : dbTasks) {
-    final String id=row.get("id").toString();
-    try {
-      final Task task=jsonMapper.readValue((byte[])row.get("payload"),Task.class);
-      final TaskStatus status=jsonMapper.readValue((byte[])row.get("status_payload"),TaskStatus.class);
-      if (status.isRunnable()) {
-        tasks.add(task);
-      }
-    }
- catch (    Exception e) {
-      log.makeAlert(e,"Failed to parse task payload").addData("task",id).emit();
+  return ImmutableList.copyOf(Iterables.transform(Iterables.filter(handler.getActiveTasksWithStatus(),new Predicate<Pair<Task,TaskStatus>>(){
+    @Override public boolean apply(    @Nullable Pair<Task,TaskStatus> input){
+      return input.rhs.isRunnable();
     }
   }
-  return tasks.build();
+),new Function<Pair<Task,TaskStatus>,Task>(){
+    @Nullable @Override public Task apply(    @Nullable Pair<Task,TaskStatus> input){
+      return input.lhs;
+    }
+  }
+));
 }

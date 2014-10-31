@@ -1,13 +1,3 @@
 {
-  final List<Map<String,Object>> dbTaskLogs=handler.getTaskLogs(dbTables.getTaskLogTable(),taskid);
-  final List<TaskAction> retList=Lists.newArrayList();
-  for (  final Map<String,Object> dbTaskLog : dbTaskLogs) {
-    try {
-      retList.add(jsonMapper.readValue((byte[])dbTaskLog.get("log_payload"),TaskAction.class));
-    }
- catch (    Exception e) {
-      log.makeAlert(e,"Failed to deserialize TaskLog").addData("task",taskid).addData("logPayload",dbTaskLog).emit();
-    }
-  }
-  return retList;
+  return handler.getTaskLogs(taskId);
 }

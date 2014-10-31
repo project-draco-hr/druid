@@ -1,18 +1,9 @@
 {
-  final DateTime recent=new DateTime().minus(config.getRecentlyFinishedThreshold());
-  final List<Map<String,Object>> dbTasks=handler.getRecentlyFinishedTaskStatuses(dbTables.getTasksTable(),recent.toString());
-  final ImmutableList.Builder<TaskStatus> statuses=ImmutableList.builder();
-  for (  final Map<String,Object> row : dbTasks) {
-    final String id=row.get("id").toString();
-    try {
-      final TaskStatus status=jsonMapper.readValue((byte[])row.get("status_payload"),TaskStatus.class);
-      if (status.isComplete()) {
-        statuses.add(status);
-      }
-    }
- catch (    Exception e) {
-      log.makeAlert(e,"Failed to parse status payload").addData("task",id).emit();
+  final DateTime start=new DateTime().minus(config.getRecentlyFinishedThreshold());
+  return ImmutableList.copyOf(Iterables.filter(handler.getRecentlyFinishedTaskStatuses(start),new Predicate<TaskStatus>(){
+    @Override public boolean apply(    TaskStatus status){
+      return status.isComplete();
     }
   }
-  return statuses.build();
+));
 }

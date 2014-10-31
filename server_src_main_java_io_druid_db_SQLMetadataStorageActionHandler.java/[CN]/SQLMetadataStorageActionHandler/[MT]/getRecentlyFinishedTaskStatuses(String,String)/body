@@ -1,8 +1,0 @@
-{
-  return retryingHandle(new HandleCallback<List<Map<String,Object>>>(){
-    @Override public List<Map<String,Object>> withHandle(    Handle handle) throws Exception {
-      return handle.createQuery(String.format("SELECT id, status_payload FROM %s WHERE active = 0 AND created_date >= :recent ORDER BY created_date DESC",tableName)).bind("recent",recent.toString()).list();
-    }
-  }
-);
-}

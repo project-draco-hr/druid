@@ -1,15 +1,3 @@
 {
-  try {
-    final List<Map<String,Object>> dbTasks=handler.getTask(dbTables.getTasksTable(),taskid);
-    if (dbTasks.size() == 0) {
-      return Optional.absent();
-    }
- else {
-      final Map<String,Object> dbStatus=Iterables.getOnlyElement(dbTasks);
-      return Optional.of(jsonMapper.readValue((byte[])dbStatus.get("payload"),Task.class));
-    }
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
+  return handler.getTask(taskId);
 }

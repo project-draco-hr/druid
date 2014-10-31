@@ -1,0 +1,8 @@
+{
+  return retryingHandle(new HandleCallback<Integer>(){
+    @Override public Integer withHandle(    Handle handle) throws Exception {
+      return handle.createStatement(String.format("INSERT INTO %s (task_id, lock_payload) VALUES (:task_id, :lock_payload)",config.getTaskLockTable())).bind("task_id",taskId).bind("lock_payload",jsonMapper.writeValueAsBytes(lock)).execute();
+    }
+  }
+);
+}
