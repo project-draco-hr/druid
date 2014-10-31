@@ -1,5 +1,6 @@
 {
   try {
+    final DBI dbi=connector.getDBI();
     List<Map<String,Object>> exists=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
       @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
         return handle.createQuery(String.format("SELECT id FROM %s WHERE id=:id",config.getSegmentsTable())).bind("id",segment.getIdentifier()).list();
