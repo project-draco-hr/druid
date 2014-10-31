@@ -1,0 +1,37 @@
+{
+  final LinkedList<String> tables=new LinkedList<String>();
+  tables.add(tablesConfig.getConfigTable());
+  tables.add(tablesConfig.getSegmentsTable());
+  tables.add(tablesConfig.getRulesTable());
+  tables.add(tablesConfig.getTaskLockTable());
+  tables.add(tablesConfig.getTaskLogTable());
+  tables.add(tablesConfig.getTasksTable());
+  try {
+    connector.createSegmentTable();
+    connector.createConfigTable();
+    connector.createRulesTable();
+    connector.createTaskTables();
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        for (        String table : tables) {
+          Assert.assertTrue(String.format("table $s was not created!",table),connector.tableExists(handle,table));
+        }
+        return null;
+      }
+    }
+);
+  }
+  finally {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        final Batch batch=handle.createBatch();
+        for (        String table : tables) {
+          batch.add(String.format("DROP TABLE %s",table));
+        }
+        batch.execute();
+        return null;
+      }
+    }
+);
+  }
+}

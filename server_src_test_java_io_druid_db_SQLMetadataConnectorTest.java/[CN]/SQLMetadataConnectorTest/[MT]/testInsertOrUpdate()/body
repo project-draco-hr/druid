@@ -1,0 +1,32 @@
+{
+  try {
+    connector.createSegmentTable(dbi,TABLE_NAME);
+    connector.insertOrUpdate(TABLE_NAME,"dummy1","dummy2","emperor","penguin".getBytes());
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        Assert.assertEquals(connector.lookup(TABLE_NAME,"dummy1","dummy2","emperor"),"penguin".getBytes());
+        return null;
+      }
+    }
+);
+    connector.insertOrUpdate(TABLE_NAME,"dummy1","dummy2","emperor","penguin chick".getBytes());
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        Assert.assertEquals(connector.lookup(TABLE_NAME,"dummy1","dummy2","emperor"),"penguin chick".getBytes());
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+  }
+ finally {
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(String.format("DROP TABLE %s",TABLE_NAME)).execute();
+        return null;
+      }
+    }
+);
+  }
+}
