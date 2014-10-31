@@ -4,15 +4,14 @@
   Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
   log.info("Inserting task %s with status: %s",task.getId(),status);
   try {
-    handler.insert(dbTables.getTasksTable(),task.getId(),new DateTime().toString(),task.getDataSource(),jsonMapper.writeValueAsBytes(task),status.isRunnable() ? 1 : 0,jsonMapper.writeValueAsBytes(status));
+    handler.insert(task.getId(),new DateTime(),task.getDataSource(),task,status.isRunnable(),status);
   }
  catch (  Exception e) {
-    final boolean isStatementException=e instanceof StatementException || (e instanceof CallbackFailedException && e.getCause() instanceof StatementException);
-    if (isStatementException && getTask(task.getId()).isPresent()) {
-      throw new TaskExistsException(task.getId(),e);
+    if (e instanceof TaskExistsException) {
+      throw (TaskExistsException)e;
     }
  else {
-      throw Throwables.propagate(e);
+      Throwables.propagate(e);
     }
   }
 }

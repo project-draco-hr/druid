@@ -1,8 +1,0 @@
-{
-  return retryingHandle(new HandleCallback<Integer>(){
-    @Override public Integer withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("INSERT INTO %s (task_id, log_payload) VALUES (:task_id, :log_payload)",tableName)).bind("task_id",Id).bind("log_payload",taskAction).execute();
-    }
-  }
-);
-}

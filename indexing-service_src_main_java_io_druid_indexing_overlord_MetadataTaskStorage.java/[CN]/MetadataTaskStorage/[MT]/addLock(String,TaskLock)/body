@@ -2,10 +2,5 @@
   Preconditions.checkNotNull(taskid,"taskid");
   Preconditions.checkNotNull(taskLock,"taskLock");
   log.info("Adding lock on interval[%s] version[%s] for task: %s",taskLock.getInterval(),taskLock.getVersion(),taskid);
-  try {
-    handler.addLock(dbTables.getTaskLockTable(),taskid,jsonMapper.writeValueAsBytes(taskLock));
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
+  handler.addLock(taskid,taskLock);
 }

@@ -34,6 +34,18 @@
       binder.bind(HeapMemoryTaskStorage.class).in(LazySingleton.class);
       storageBinder.addBinding("db").to(MetadataTaskStorage.class).in(ManageLifecycle.class);
       binder.bind(MetadataTaskStorage.class).in(LazySingleton.class);
+      binder.bind(TypeReference.class).annotatedWith(Names.named("taskType")).toInstance(new TypeReference<Task>(){
+      }
+);
+      binder.bind(TypeReference.class).annotatedWith(Names.named("taskStatusType")).toInstance(new TypeReference<TaskStatus>(){
+      }
+);
+      binder.bind(TypeReference.class).annotatedWith(Names.named("taskActionType")).toInstance(new TypeReference<TaskAction>(){
+      }
+);
+      binder.bind(TypeReference.class).annotatedWith(Names.named("taskLockType")).toInstance(new TypeReference<TaskLock>(){
+      }
+);
     }
     private void configureRunners(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);

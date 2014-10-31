@@ -1,13 +1,8 @@
 {
   Preconditions.checkNotNull(status,"status");
   log.info("Updating task %s to status: %s",status.getId(),status);
-  try {
-    int updated=handler.setStatus(dbTables.getTasksTable(),status.getId(),status.isRunnable() ? 1 : 0,jsonMapper.writeValueAsBytes(status));
-    if (updated != 1) {
-      throw new IllegalStateException(String.format("Active task not found: %s",status.getId()));
-    }
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
+  final boolean set=handler.setStatus(status.getId(),status.isRunnable(),status);
+  if (!set) {
+    throw new IllegalStateException(String.format("Active task not found: %s",status.getId()));
   }
 }

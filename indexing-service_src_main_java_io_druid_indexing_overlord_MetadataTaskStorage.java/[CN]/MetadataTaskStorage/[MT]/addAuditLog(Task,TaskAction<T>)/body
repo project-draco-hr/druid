@@ -1,10 +1,5 @@
 {
   Preconditions.checkNotNull(taskAction,"taskAction");
   log.info("Logging action for task[%s]: %s",task.getId(),taskAction);
-  try {
-    handler.addAuditLog(dbTables.getTaskLogTable(),task.getId(),jsonMapper.writeValueAsBytes(taskAction));
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
+  handler.addAuditLog(task.getId(),taskAction);
 }

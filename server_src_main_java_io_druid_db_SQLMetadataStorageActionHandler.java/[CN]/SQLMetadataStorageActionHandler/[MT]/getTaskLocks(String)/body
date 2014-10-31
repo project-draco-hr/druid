@@ -1,0 +1,25 @@
+{
+  return retryingHandle(new HandleCallback<Map<Long,TaskLockType>>(){
+    @Override public Map<Long,TaskLockType> withHandle(    Handle handle) throws Exception {
+      return handle.createQuery(String.format("SELECT id, lock_payload FROM %s WHERE task_id = :task_id",config.getTaskLockTable())).bind("task_id",taskId).map(new ResultSetMapper<Pair<Long,TaskLockType>>(){
+        @Override public Pair<Long,TaskLockType> map(        int index,        ResultSet r,        StatementContext ctx) throws SQLException {
+          try {
+            return Pair.of(r.getLong("id"),jsonMapper.<TaskLockType>readValue(r.getBytes("lock_payload"),taskLockType));
+          }
+ catch (          IOException e) {
+            log.makeAlert(e,"Failed to deserialize TaskLock").addData("task",r.getLong("id")).addData("lockPayload",new String(r.getBytes("lock_payload"),Charsets.UTF_8)).emit();
+            throw new SQLException(e);
+          }
+        }
+      }
+).fold(Maps.<Long,TaskLockType>newLinkedHashMap(),new Folder3<Map<Long,TaskLockType>,Pair<Long,TaskLockType>>(){
+        @Override public Map<Long,TaskLockType> fold(        Map<Long,TaskLockType> accumulator,        Pair<Long,TaskLockType> lock,        FoldController control,        StatementContext ctx) throws SQLException {
+          accumulator.put(lock.lhs,lock.rhs);
+          return accumulator;
+        }
+      }
+);
+    }
+  }
+);
+}
