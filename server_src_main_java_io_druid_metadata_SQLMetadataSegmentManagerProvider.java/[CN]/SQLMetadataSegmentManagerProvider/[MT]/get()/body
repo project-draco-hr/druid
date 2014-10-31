@@ -1,11 +1,11 @@
 {
   lifecycle.addHandler(new Lifecycle.Handler(){
     @Override public void start() throws Exception {
-      dbConnector.createSegmentTable();
+      connector.createSegmentTable();
     }
     @Override public void stop(){
     }
   }
 );
-  return new SQLMetadataSegmentManager(jsonMapper,config,dbTables,dbi);
+  return new SQLMetadataSegmentManager(jsonMapper,config,storageConfig,connector);
 }

@@ -2,7 +2,7 @@
   try {
     lifecycle.addMaybeStartHandler(new Lifecycle.Handler(){
       @Override public void start() throws Exception {
-        dbConnector.createRulesTable();
+        connector.createRulesTable();
         SQLMetadataRuleManager.createDefaultRule(dbi,dbTables.get().getRulesTable(),config.get().getDefaultRule(),jsonMapper);
       }
       @Override public void stop(){
@@ -13,5 +13,5 @@
  catch (  Exception e) {
     throw Throwables.propagate(e);
   }
-  return new SQLMetadataRuleManager(jsonMapper,config,dbTables,dbi);
+  return new SQLMetadataRuleManager(jsonMapper,config,dbTables,connector);
 }
