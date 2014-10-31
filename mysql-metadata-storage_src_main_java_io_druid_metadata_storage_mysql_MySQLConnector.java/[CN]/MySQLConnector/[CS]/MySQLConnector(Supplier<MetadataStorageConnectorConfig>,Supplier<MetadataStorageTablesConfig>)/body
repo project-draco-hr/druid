@@ -3,12 +3,6 @@
   final BasicDataSource datasource=getDatasource();
   datasource.setDriverClassLoader(getClass().getClassLoader());
   datasource.setDriverClassName("com.mysql.jdbc.Driver");
+  datasource.setConnectionInitSqls(ImmutableList.of("SET sql_mode='ANSI_QUOTES'"));
   this.dbi=new DBI(datasource);
-  dbi.withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      handle.createStatement("SET sql_mode='ANSI_QUOTES'").execute();
-      return null;
-    }
-  }
-);
 }
