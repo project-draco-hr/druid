@@ -2,6 +2,6 @@
   ObjectMapper objectMapper=new DefaultObjectMapper();
   DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null),objectMapper);
   RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new EventReceiverFirehoseFactory("foo",100,new NoopChatHandlerProvider(),objectMapper,null,new EventReceiverFirehoseRegister()),null,null);
-  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),new Period("PT10M"),null,null,null,null,null,null,buildV9Directly);
+  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),new Period("PT10M"),null,null,null,null,null,null,buildV9Directly,0,0);
   return new RealtimeIndexTask(taskId,null,new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig),null);
 }

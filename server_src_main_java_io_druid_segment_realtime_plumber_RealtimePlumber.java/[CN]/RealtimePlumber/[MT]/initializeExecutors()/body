@@ -1,10 +1,10 @@
 {
   final int maxPendingPersists=config.getMaxPendingPersists();
   if (persistExecutor == null) {
-    persistExecutor=Execs.newBlockingSingleThreaded("plumber_persist_%d",maxPendingPersists);
+    persistExecutor=Execs.newBlockingSingleThreaded("plumber_persist_%d",maxPendingPersists,TaskThreadPriority.getThreadPriorityFromTaskPriority(config.getPersistThreadPriority()));
   }
   if (mergeExecutor == null) {
-    mergeExecutor=Execs.newBlockingSingleThreaded("plumber_merge_%d",1);
+    mergeExecutor=Execs.newBlockingSingleThreaded("plumber_merge_%d",1,TaskThreadPriority.getThreadPriorityFromTaskPriority(config.getMergeThreadPriority()));
   }
   if (scheduledExecutor == null) {
     scheduledExecutor=Execs.scheduledSingleThreaded("plumber_scheduled_%d");
