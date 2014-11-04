@@ -1,0 +1,12 @@
+{
+  final String taskId="abcd";
+  Map<String,Integer> task=ImmutableMap.of("a",1);
+  Map<String,Integer> taskStatus=ImmutableMap.of("count",42);
+  handler.insert(taskId,new DateTime("2014-01-01"),"test",task,true,taskStatus);
+  Assert.assertEquals(ImmutableMap.of(),handler.getTaskLocks(taskId));
+  final ImmutableMap<String,String> log1=ImmutableMap.of("logentry","created");
+  final ImmutableMap<String,String> log2=ImmutableMap.of("logentry","updated");
+  Assert.assertTrue(handler.addAuditLog(taskId,log1));
+  Assert.assertTrue(handler.addAuditLog(taskId,log2));
+  Assert.assertEquals(ImmutableList.of(log1,log2),handler.getTaskLogs(taskId));
+}

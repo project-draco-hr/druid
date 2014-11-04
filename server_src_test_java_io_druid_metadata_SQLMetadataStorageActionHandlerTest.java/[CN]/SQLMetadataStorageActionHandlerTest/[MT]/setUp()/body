@@ -1,4 +1,28 @@
 {
   MetadataStorageConnectorConfig config=jsonMapper.readValue("{" + "\"type\" : \"db\",\n" + "\"segmentTable\" : \"segments\"\n"+ "}",MetadataStorageConnectorConfig.class);
   connector=new TestDerbyConnector(Suppliers.ofInstance(config),Suppliers.ofInstance(tablesConfig));
+  connector.createTaskTables();
+  handler=new SQLMetadataStorageActionHandler(connector,tablesConfig,jsonMapper,new MetadataStorageActionHandlerTypes(){
+    @Override public TypeReference getTaskType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+    @Override public TypeReference getTaskStatusType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+    @Override public TypeReference getTaskActionType(){
+      return new TypeReference<Map<String,String>>(){
+      }
+;
+    }
+    @Override public TypeReference getTaskLockType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+  }
+);
 }

@@ -1,7 +1,7 @@
 {
-  return retryingHandle(new HandleCallback<Integer>(){
-    @Override public Integer withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("INSERT INTO %s (task_id, log_payload) VALUES (:task_id, :log_payload)",config.getTaskLogTable())).bind("task_id",taskId).bind("log_payload",jsonMapper.writeValueAsBytes(taskAction)).execute();
+  return retryingHandle(new HandleCallback<Boolean>(){
+    @Override public Boolean withHandle(    Handle handle) throws Exception {
+      return handle.createStatement(String.format("INSERT INTO %s (task_id, log_payload) VALUES (:task_id, :log_payload)",config.getTaskLogTable())).bind("task_id",taskId).bind("log_payload",jsonMapper.writeValueAsBytes(taskAction)).execute() == 1;
     }
   }
 );
