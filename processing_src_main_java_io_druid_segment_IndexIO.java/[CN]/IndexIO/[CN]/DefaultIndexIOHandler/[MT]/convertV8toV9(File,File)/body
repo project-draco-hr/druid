@@ -15,15 +15,16 @@
   v9Dir.mkdirs();
   final FileSmoosher v9Smoosher=new FileSmoosher(v9Dir);
   ByteStreams.write(Ints.toByteArray(9),Files.newOutputStreamSupplier(new File(v9Dir,"version.bin")));
-  Map<String,GenericIndexed<ImmutableConciseSet>> bitmapIndexes=Maps.newHashMap();
+  Map<String,GenericIndexed<ImmutableBitmap>> bitmapIndexes=Maps.newHashMap();
   final ByteBuffer invertedBuffer=v8SmooshedFiles.mapFile("inverted.drd");
   while (invertedBuffer.hasRemaining()) {
-    bitmapIndexes.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
+    final String dimName=serializerUtils.readString(invertedBuffer);
+    bitmapIndexes.put(dimName,GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
   }
   Map<String,ImmutableRTree> spatialIndexes=Maps.newHashMap();
   final ByteBuffer spatialBuffer=v8SmooshedFiles.mapFile("spatial.drd");
   while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
-    spatialIndexes.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,IndexedRTree.objectStrategy));
+    spatialIndexes.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,new IndexedRTree.ImmutableRTreeObjectStrategy(new ConciseBitmapFactory())));
   }
   final LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
   final Set<String> skippedDimensions=Sets.newLinkedHashSet();
@@ -49,10 +50,23 @@
       }
       VSizeIndexedInts singleValCol=null;
       VSizeIndexed multiValCol=VSizeIndexed.readFromByteBuffer(dimBuffer.asReadOnlyBuffer());
-      GenericIndexed<ImmutableConciseSet> bitmaps=bitmapIndexes.get(dimension);
+      GenericIndexed<ImmutableBitmap> bitmaps=bitmapIndexes.get(dimension);
+      if (!(bitmapSerdeFactory instanceof ConciseBitmapSerdeFactory)) {
+        bitmaps=GenericIndexed.fromIterable(FunctionalIterable.create(bitmaps).transform(new Function<ImmutableBitmap,ImmutableBitmap>(){
+          @Override public ImmutableBitmap apply(          ImmutableBitmap bitmap){
+            IntIterator intIter=bitmap.iterator();
+            MutableBitmap mutableBitmap=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
+            while (intIter.hasNext()) {
+              mutableBitmap.add(intIter.next());
+            }
+            return bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(mutableBitmap);
+          }
+        }
+),bitmapSerdeFactory.getObjectStrategy());
+      }
       ImmutableRTree spatialIndex=spatialIndexes.get(dimension);
       boolean onlyOneValue=true;
-      ConciseSet nullsSet=null;
+      MutableBitmap nullsSet=null;
       for (int i=0; i < multiValCol.size(); ++i) {
         VSizeIndexedInts rowValue=multiValCol.get(i);
         if (!onlyOneValue) {
@@ -63,7 +77,7 @@
         }
         if (rowValue.size() == 0) {
           if (nullsSet == null) {
-            nullsSet=new ConciseSet();
+            nullsSet=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
           }
           nullsSet.add(i);
         }
@@ -73,18 +87,18 @@
         final boolean bumpedDictionary;
         if (nullsSet != null) {
           log.info("Dimension[%s] has null rows.",dimension);
-          final ImmutableConciseSet theNullSet=ImmutableConciseSet.newImmutableFromMutable(nullsSet);
+          final ImmutableBitmap theNullSet=bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(nullsSet);
           if (dictionary.get(0) != null) {
             log.info("Dimension[%s] has no null value in the dictionary, expanding...",dimension);
             bumpedDictionary=true;
             final List<String> nullList=Lists.newArrayList();
             nullList.add(null);
             dictionary=GenericIndexed.fromIterable(Iterables.concat(nullList,dictionary),GenericIndexed.stringStrategy);
-            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(theNullSet),bitmaps),ConciseCompressedIndexedInts.objectStrategy);
+            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(theNullSet),bitmaps),bitmapSerdeFactory.getObjectStrategy());
           }
  else {
             bumpedDictionary=false;
-            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(ImmutableConciseSet.union(theNullSet,bitmaps.get(0))),Iterables.skip(bitmaps,1)),ConciseCompressedIndexedInts.objectStrategy);
+            bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(bitmapSerdeFactory.getBitmapFactory().union(Arrays.asList(theNullSet,bitmaps.get(0)))),Iterables.skip(bitmaps,1)),bitmapSerdeFactory.getObjectStrategy());
           }
         }
  else {
@@ -106,7 +120,7 @@
  else {
         builder.setHasMultipleValues(true);
       }
-      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmaps,spatialIndex));
+      builder.addSerde(new DictionaryEncodedColumnPartSerde(dictionary,singleValCol,multiValCol,bitmapSerdeFactory,bitmaps,spatialIndex));
       final ColumnDescriptor serdeficator=builder.build();
       ByteArrayOutputStream baos=new ByteArrayOutputStream();
       serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
