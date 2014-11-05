@@ -1,7 +1,3 @@
 {
-  final byte[] intermediate=new byte[lz4.maxCompressedLength(bytes.length)];
-  final int outputBytes=lz4.compress(bytes,0,bytes.length,intermediate,0,intermediate.length);
-  final byte[] out=new byte[outputBytes];
-  System.arraycopy(intermediate,0,out,0,outputBytes);
-  return out;
+  return lz4High.compress(bytes);
 }

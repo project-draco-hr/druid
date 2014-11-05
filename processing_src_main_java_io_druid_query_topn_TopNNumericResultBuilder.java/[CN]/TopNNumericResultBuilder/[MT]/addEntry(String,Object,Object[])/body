@@ -1,5 +1,5 @@
 {
-  Map<String,Object> metricValues=Maps.newLinkedHashMap();
+  final Map<String,Object> metricValues=Maps.newLinkedHashMap();
   metricValues.put(dimSpec.getOutputName(),dimName);
   Iterator<AggregatorFactory> aggFactoryIter=aggFactories.iterator();
   for (  Object metricVal : metricVals) {
@@ -9,6 +9,12 @@
     metricValues.put(postAgg.getName(),postAgg.compute(metricValues));
   }
   Object topNMetricVal=metricValues.get(metricName);
-  pQueue.add(new DimValHolder.Builder().withTopNMetricVal(topNMetricVal).withDirName(dimName).withDimValIndex(dimValIndex).withMetricValues(metricValues).build());
+  if (shouldAdd(topNMetricVal)) {
+    DimValHolder dimValHolder=new DimValHolder.Builder().withTopNMetricVal(topNMetricVal).withDirName(dimName).withDimValIndex(dimValIndex).withMetricValues(metricValues).build();
+    pQueue.add(dimValHolder);
+  }
+  if (this.pQueue.size() > this.threshold) {
+    pQueue.poll();
+  }
   return this;
 }

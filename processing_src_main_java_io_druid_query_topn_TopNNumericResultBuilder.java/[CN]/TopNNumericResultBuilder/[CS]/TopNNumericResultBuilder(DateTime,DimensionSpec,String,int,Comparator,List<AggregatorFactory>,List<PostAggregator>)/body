@@ -4,5 +4,33 @@
   this.metricName=metricName;
   this.aggFactories=aggFactories;
   this.postAggs=AggregatorUtil.pruneDependentPostAgg(postAggs,this.metricName);
-  instantiatePQueue(threshold,comparator);
+  this.threshold=threshold;
+  this.metricComparator=comparator;
+  this.dimNameComparator=new Comparator<String>(){
+    @Override public int compare(    String o1,    String o2){
+      int retval;
+      if (o1 == null) {
+        retval=-1;
+      }
+ else       if (o2 == null) {
+        retval=1;
+      }
+ else {
+        retval=o1.compareTo(o2);
+      }
+      return retval;
+    }
+  }
+;
+  this.dimValComparator=new Comparator<DimValHolder>(){
+    @Override public int compare(    DimValHolder d1,    DimValHolder d2){
+      int retVal=metricComparator.compare(d1.getTopNMetricVal(),d2.getTopNMetricVal());
+      if (retVal == 0) {
+        retVal=dimNameComparator.compare(d1.getDimName(),d2.getDimName());
+      }
+      return retVal;
+    }
+  }
+;
+  pQueue=new PriorityQueue<>(this.threshold + 1,this.dimValComparator);
 }
