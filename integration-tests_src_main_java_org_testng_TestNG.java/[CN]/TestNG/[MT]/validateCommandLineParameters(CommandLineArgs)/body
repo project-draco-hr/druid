@@ -1,0 +1,23 @@
+{
+  String testClasses=args.testClass;
+  List<String> testNgXml=args.suiteFiles;
+  String testJar=args.testJar;
+  String slave=args.slave;
+  List<String> methods=args.commandLineMethods;
+  if (testClasses == null && slave == null && testJar == null && (testNgXml == null || testNgXml.isEmpty()) && (methods == null || methods.isEmpty())) {
+    throw new ParameterException("You need to specify at least one testng.xml, one class" + " or one method");
+  }
+  String groups=args.groups;
+  String excludedGroups=args.excludedGroups;
+  if (testJar == null && (null != groups || null != excludedGroups) && testClasses == null && (testNgXml == null || testNgXml.isEmpty())) {
+    throw new ParameterException("Groups option should be used with testclass option");
+  }
+  if (args.slave != null && args.master != null) {
+    throw new ParameterException(CommandLineArgs.SLAVE + " can't be combined with " + CommandLineArgs.MASTER);
+  }
+  Boolean junit=args.junit;
+  Boolean mixed=args.mixed;
+  if (junit && mixed) {
+    throw new ParameterException(CommandLineArgs.MIXED + " can't be combined with " + CommandLineArgs.JUNIT);
+  }
+}

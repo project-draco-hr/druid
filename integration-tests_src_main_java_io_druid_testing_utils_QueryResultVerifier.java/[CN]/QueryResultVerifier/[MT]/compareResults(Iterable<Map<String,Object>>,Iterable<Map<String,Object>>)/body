@@ -1,0 +1,15 @@
+{
+  Iterator<Map<String,Object>> actualIter=actual.iterator();
+  Iterator<Map<String,Object>> expectedIter=expected.iterator();
+  while (actualIter.hasNext() && expectedIter.hasNext()) {
+    Map<String,Object> actualRes=actualIter.next();
+    Map<String,Object> expRes=expectedIter.next();
+    if (!actualRes.equals(expRes)) {
+      return false;
+    }
+  }
+  if (actualIter.hasNext() || expectedIter.hasNext()) {
+    return false;
+  }
+  return true;
+}

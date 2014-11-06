@@ -1,0 +1,29 @@
+{
+  try {
+    Class c=Class.forName("java.util.ServiceLoader");
+    List<Object> parameters=Lists.newArrayList();
+    parameters.add(ITestNGListener.class);
+    Method loadMethod;
+    if (m_serviceLoaderClassLoader != null) {
+      parameters.add(m_serviceLoaderClassLoader);
+      loadMethod=c.getMethod("load",Class.class,ClassLoader.class);
+    }
+ else {
+      loadMethod=c.getMethod("load",Class.class);
+    }
+    Iterable<ITestNGListener> loader=(Iterable<ITestNGListener>)loadMethod.invoke(c,parameters.toArray());
+    for (    ITestNGListener l : loader) {
+      Utils.log("[TestNG]",2,"Adding ServiceLoader listener:" + l);
+      addListener(l);
+      addServiceLoaderListener(l);
+    }
+  }
+ catch (  ClassNotFoundException ex) {
+  }
+catch (  NoSuchMethodException ex) {
+  }
+catch (  IllegalAccessException ex) {
+  }
+catch (  InvocationTargetException ex) {
+  }
+}

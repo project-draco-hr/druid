@@ -1,0 +1,12 @@
+{
+  try {
+    StatusResponseHolder response=makeRequest(String.format("%s%s",getIndexerURL(),identifier));
+    LOG.info("Tasks %s response %s",identifier,response.getContent());
+    return jsonMapper.readValue(response.getContent(),new TypeReference<List<TaskResponseObject>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

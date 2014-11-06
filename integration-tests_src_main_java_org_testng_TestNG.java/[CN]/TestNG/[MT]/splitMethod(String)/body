@@ -1,0 +1,7 @@
+{
+  int index=m.lastIndexOf(".");
+  if (index < 0) {
+    throw new TestNGException("Bad format for command line method:" + m + ", expected <class>.<method>");
+  }
+  return new String[]{m.substring(0,index),m.substring(index + 1).replaceAll("\\*","\\.\\*")};
+}

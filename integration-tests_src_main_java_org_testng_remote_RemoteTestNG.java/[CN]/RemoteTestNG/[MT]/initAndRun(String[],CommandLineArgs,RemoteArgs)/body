@@ -1,0 +1,21 @@
+{
+  RemoteTestNG remoteTestNg=new RemoteTestNG();
+  if (m_debug) {
+    cla.port=Integer.parseInt(DEBUG_PORT);
+    ra.serPort=cla.port;
+    cla.suiteFiles=Arrays.asList(new String[]{DEBUG_SUITE_DIRECTORY + DEBUG_SUITE_FILE});
+  }
+  remoteTestNg.configure(cla);
+  remoteTestNg.setHost(cla.host);
+  m_serPort=ra.serPort;
+  remoteTestNg.m_port=cla.port;
+  if (isVerbose()) {
+    StringBuilder sb=new StringBuilder("Invoked with ");
+    for (    String s : args) {
+      sb.append(s).append(" ");
+    }
+    p(sb.toString());
+  }
+  validateCommandLineParameters(cla);
+  remoteTestNg.run();
+}

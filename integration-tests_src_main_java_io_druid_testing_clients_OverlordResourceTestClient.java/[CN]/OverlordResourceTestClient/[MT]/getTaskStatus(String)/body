@@ -1,0 +1,14 @@
+{
+  try {
+    StatusResponseHolder response=makeRequest(String.format("%stask/%s/status",getIndexerURL(),URLEncoder.encode(taskID,"UTF-8")));
+    LOG.info("Index status response" + response.getContent());
+    Map<String,Object> responseData=jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,Object>>(){
+    }
+);
+    String status=(String)((Map)responseData.get("status")).get("status");
+    return TaskStatus.Status.valueOf(status);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

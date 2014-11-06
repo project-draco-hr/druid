@@ -1,0 +1,27 @@
+{
+  Set<Class> classes=Sets.newHashSet();
+  for (  String m : commandLineMethods) {
+    Class c=ClassHelper.forName(splitMethod(m)[0]);
+    if (c != null) {
+      classes.add(c);
+    }
+  }
+  List<XmlSuite> result=createCommandLineSuitesForClasses(classes.toArray(new Class[0]));
+  List<XmlClass> xmlClasses=Lists.newArrayList();
+  for (  XmlSuite s : result) {
+    for (    XmlTest t : s.getTests()) {
+      xmlClasses.addAll(t.getClasses());
+    }
+  }
+  for (  XmlClass xc : xmlClasses) {
+    for (    String m : commandLineMethods) {
+      String[] split=splitMethod(m);
+      String className=split[0];
+      if (xc.getName().equals(className)) {
+        XmlInclude includedMethod=new XmlInclude(split[1]);
+        xc.getIncludedMethods().add(includedMethod);
+      }
+    }
+  }
+  return result;
+}

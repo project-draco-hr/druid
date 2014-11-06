@@ -1,0 +1,24 @@
+{
+  try {
+    String task=setShutOffTime(getTaskAsString(REALTIME_TASK_RESOURCE),new DateTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(2)));
+    String taskID=indexer.submitTask(task);
+    postEvents();
+    TimeUnit.SECONDS.sleep(5);
+    this.queryHelper.testQueriesFromFile(INDEX_QUERIES_RESOURCE,2);
+    indexer.waitUntilTaskCompletes(taskID);
+    RetryUtil.retryUntil(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        return coordinator.areSegmentsLoaded(INDEX_DATASOURCE);
+      }
+    }
+,true,60000,10,"Real-time generated segments loaded");
+    this.queryHelper.testQueriesFromFile(INDEX_QUERIES_RESOURCE,2);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    Throwables.propagate(e);
+  }
+ finally {
+    unloadAndKillData(INDEX_DATASOURCE);
+  }
+}

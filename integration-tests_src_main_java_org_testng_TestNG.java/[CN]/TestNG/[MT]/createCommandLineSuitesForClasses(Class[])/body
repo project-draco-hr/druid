@@ -1,0 +1,45 @@
+{
+  XmlClass[] xmlClasses=Utils.classesToXmlClasses(classes);
+  Map<String,XmlSuite> suites=Maps.newHashMap();
+  IAnnotationFinder finder=m_configuration.getAnnotationFinder();
+  for (int i=0; i < classes.length; i++) {
+    Class c=classes[i];
+    ITestAnnotation test=finder.findAnnotation(c,ITestAnnotation.class);
+    String suiteName=getDefaultSuiteName();
+    String testName=getDefaultTestName();
+    boolean isJUnit=false;
+    if (test != null) {
+      suiteName=defaultIfStringEmpty(test.getSuiteName(),suiteName);
+      testName=defaultIfStringEmpty(test.getTestName(),testName);
+    }
+ else {
+      if (m_isMixed && JUnitTestFinder.isJUnitTest(c)) {
+        isJUnit=true;
+        testName=c.getName();
+      }
+    }
+    XmlSuite xmlSuite=suites.get(suiteName);
+    if (xmlSuite == null) {
+      xmlSuite=new XmlSuite();
+      xmlSuite.setName(suiteName);
+      suites.put(suiteName,xmlSuite);
+    }
+    if (m_dataProviderThreadCount != null) {
+      xmlSuite.setDataProviderThreadCount(m_dataProviderThreadCount);
+    }
+    XmlTest xmlTest=null;
+    for (    XmlTest xt : xmlSuite.getTests()) {
+      if (xt.getName().equals(testName)) {
+        xmlTest=xt;
+        break;
+      }
+    }
+    if (xmlTest == null) {
+      xmlTest=new XmlTest(xmlSuite);
+      xmlTest.setName(testName);
+      xmlTest.setJUnit(isJUnit);
+    }
+    xmlTest.getXmlClasses().add(xmlClasses[i]);
+  }
+  return new ArrayList<XmlSuite>(suites.values());
+}

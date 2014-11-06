@@ -1,0 +1,13 @@
+{
+  SuiteRunner result=new SuiteRunner(getConfiguration(),xmlSuite,m_outputDir,m_testRunnerFactory,m_useDefaultListeners,m_methodInterceptor,m_invokedMethodListeners,m_testListeners);
+  for (  ISuiteListener isl : m_suiteListeners) {
+    result.addListener(isl);
+  }
+  for (  IReporter r : result.getReporters()) {
+    addListener(r);
+  }
+  for (  IConfigurationListener cl : m_configuration.getConfigurationListeners()) {
+    result.addListener(cl);
+  }
+  return result;
+}

@@ -1,0 +1,19 @@
+{
+  List<XmlTest> tests=Lists.newArrayList();
+  for (  XmlTest xt : s.getTests()) {
+    for (    String tn : testNames) {
+      if (xt.getName().equals(tn)) {
+        tests.add(xt);
+      }
+    }
+  }
+  if (tests.size() == 0) {
+    return s;
+  }
+ else {
+    XmlSuite result=(XmlSuite)s.clone();
+    result.getTests().clear();
+    result.getTests().addAll(tests);
+    return result;
+  }
+}

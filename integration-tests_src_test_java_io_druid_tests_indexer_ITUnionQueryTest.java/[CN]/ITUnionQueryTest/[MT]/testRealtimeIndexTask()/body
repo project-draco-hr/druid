@@ -1,0 +1,38 @@
+{
+  final int numTasks=4;
+  try {
+    String task=setShutOffTime(getTaskAsString(REALTIME_TASK_RESOURCE),new DateTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3)));
+    List<String> taskIDs=Lists.newArrayList();
+    for (int i=0; i < numTasks; i++) {
+      taskIDs.add(indexer.submitTask(withServiceName(withDataSource(task,UNION_DATASOURCE + i),EVENT_RECEIVER_SERVICE_PREFIX + i)));
+    }
+    for (int i=0; i < numTasks; i++) {
+      postEvents(i);
+    }
+    TimeUnit.SECONDS.sleep(5);
+    LOG.info("Running Union Queries..");
+    this.queryHelper.testQueriesFromFile(UNION_QUERIES_RESOURCE,2);
+    for (int i=0; i < numTasks; i++) {
+      indexer.waitUntilTaskCompletes(taskIDs.get(i));
+    }
+    for (int i=0; i < numTasks; i++) {
+      final int taskNum=i;
+      RetryUtil.retryUntil(new Callable<Boolean>(){
+        @Override public Boolean call() throws Exception {
+          return coordinator.areSegmentsLoaded(UNION_DATASOURCE + taskNum);
+        }
+      }
+,true,60000,10,"Real-time generated segments loaded");
+    }
+    this.queryHelper.testQueriesFromFile(UNION_QUERIES_RESOURCE,2);
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw Throwables.propagate(e);
+  }
+ finally {
+    for (int i=0; i < numTasks; i++) {
+      unloadAndKillData(UNION_DATASOURCE + i);
+    }
+  }
+}
