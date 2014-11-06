@@ -1,8 +1,8 @@
 {
-  final Optional<InputSupplier<InputStream>> stream=taskRunner.streamTaskLog(taskid,offset);
+  final Optional<ByteSource> stream=taskRunner.streamTaskLog(taskid,offset);
   if (stream.isPresent()) {
-    try {
-      return Response.ok(stream.get().getInput()).build();
+    try (InputStream logStream=stream.get().openStream()){
+      return Response.ok(logStream).build();
     }
  catch (    Exception e) {
       log.warn(e,"Failed to read log for task: %s",taskid);
