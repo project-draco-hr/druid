@@ -1,8 +1,0 @@
-{
-  return retryingHandle(new HandleCallback<Optional<TaskStatusType>>(){
-    @Override public Optional<TaskStatusType> withHandle(    Handle handle) throws Exception {
-      return Optional.fromNullable(jsonMapper.<TaskStatusType>readValue(handle.createQuery(String.format("SELECT status_payload FROM %s WHERE id = :id",config.getTasksTable())).bind("id",taskId).map(ByteArrayMapper.FIRST).first(),taskStatusType));
-    }
-  }
-);
-}

@@ -1,6 +1,6 @@
 {
   final DateTime start=new DateTime().minus(config.getRecentlyFinishedThreshold());
-  return ImmutableList.copyOf(Iterables.filter(handler.getRecentlyFinishedTaskStatuses(start),new Predicate<TaskStatus>(){
+  return ImmutableList.copyOf(Iterables.filter(handler.getInactiveStatusesSince(start),new Predicate<TaskStatus>(){
     @Override public boolean apply(    TaskStatus status){
       return status.isComplete();
     }

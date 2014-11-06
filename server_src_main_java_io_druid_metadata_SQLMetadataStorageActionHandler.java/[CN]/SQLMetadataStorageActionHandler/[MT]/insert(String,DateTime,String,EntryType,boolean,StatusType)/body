@@ -1,0 +1,20 @@
+{
+  try {
+    retryingHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(String.format("INSERT INTO %s (id, created_date, datasource, payload, active, status_payload) VALUES (:id, :created_date, :datasource, :payload, :active, :status_payload)",entryTable)).bind("id",id).bind("created_date",timestamp.toString()).bind("datasource",dataSource).bind("payload",jsonMapper.writeValueAsBytes(entry)).bind("active",active).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute();
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    final boolean isStatementException=e instanceof StatementException || (e instanceof CallbackFailedException && e.getCause() instanceof StatementException);
+    if (isStatementException && getEntry(id).isPresent()) {
+      throw new EntryExistsException(id,e);
+    }
+ else {
+      throw Throwables.propagate(e);
+    }
+  }
+}

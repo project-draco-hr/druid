@@ -1,7 +1,7 @@
 {
   return retryingHandle(new HandleCallback<Boolean>(){
     @Override public Boolean withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",config.getTaskLockTable())).bind("id",lockId).execute() == 1;
+      return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",lockTable)).bind("id",lockId).execute() == 1;
     }
   }
 );
