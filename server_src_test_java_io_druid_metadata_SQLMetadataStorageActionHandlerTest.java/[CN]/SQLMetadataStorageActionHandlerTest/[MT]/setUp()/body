@@ -1,0 +1,34 @@
+{
+  MetadataStorageConnectorConfig config=jsonMapper.readValue("{" + "\"type\" : \"db\",\n" + "\"segmentTable\" : \"segments\"\n"+ "}",MetadataStorageConnectorConfig.class);
+  connector=new TestDerbyConnector(Suppliers.ofInstance(config),Suppliers.ofInstance(tablesConfig));
+  final String entryType="entry";
+  final String entryTable="entries";
+  final String logTable="logs";
+  final String lockTable="locks";
+  connector.createEntryTable(connector.getDBI(),entryTable);
+  connector.createLockTable(connector.getDBI(),lockTable,entryType);
+  connector.createLogTable(connector.getDBI(),logTable,entryType);
+  handler=new SQLMetadataStorageActionHandler<>(connector,jsonMapper,new MetadataStorageActionHandlerTypes<Map<String,Integer>,Map<String,Integer>,Map<String,String>,Map<String,Integer>>(){
+    @Override public TypeReference<Map<String,Integer>> getEntryType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+    @Override public TypeReference<Map<String,Integer>> getStatusType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+    @Override public TypeReference<Map<String,String>> getLogType(){
+      return new TypeReference<Map<String,String>>(){
+      }
+;
+    }
+    @Override public TypeReference<Map<String,Integer>> getLockType(){
+      return new TypeReference<Map<String,Integer>>(){
+      }
+;
+    }
+  }
+,entryType,entryTable,logTable,lockTable);
+}

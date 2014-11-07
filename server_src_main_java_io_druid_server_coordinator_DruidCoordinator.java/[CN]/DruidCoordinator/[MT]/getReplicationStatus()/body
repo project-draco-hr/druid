@@ -5,7 +5,7 @@
   }
   final DateTime now=new DateTime();
   for (  DataSegment segment : getAvailableDataSegments()) {
-    List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
+    List<Rule> rules=metadataRuleManager.getRulesWithDefault(segment.getDataSource());
     for (    Rule rule : rules) {
       if (rule instanceof LoadRule && rule.appliesTo(segment,now)) {
         for (        Map.Entry<String,Integer> entry : ((LoadRule)rule).getTieredReplicants().entrySet()) {

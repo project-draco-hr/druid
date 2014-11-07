@@ -1,0 +1,8 @@
+{
+  super(config,dbTables);
+  final BasicDataSource datasource=getDatasource();
+  datasource.setDriverClassLoader(getClass().getClassLoader());
+  datasource.setDriverClassName("com.mysql.jdbc.Driver");
+  datasource.setConnectionInitSqls(ImmutableList.of("SET sql_mode='ANSI_QUOTES'"));
+  this.dbi=new DBI(datasource);
+}

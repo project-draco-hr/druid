@@ -1,0 +1,13 @@
+{
+  return ImmutableList.copyOf(Iterables.transform(Iterables.filter(handler.getActiveEntriesWithStatus(),new Predicate<Pair<Task,TaskStatus>>(){
+    @Override public boolean apply(    @Nullable Pair<Task,TaskStatus> input){
+      return input.rhs.isRunnable();
+    }
+  }
+),new Function<Pair<Task,TaskStatus>,Task>(){
+    @Nullable @Override public Task apply(    @Nullable Pair<Task,TaskStatus> input){
+      return input.lhs;
+    }
+  }
+));
+}

@@ -1,0 +1,10 @@
+{
+  final String nsURL=String.format("jdbc:derby://localhost:1527/%s;create=true",dbName);
+  try {
+    Class.forName("org.apache.derby.jdbc.ClientDriver");
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return DriverManager.getConnection(nsURL);
+}
