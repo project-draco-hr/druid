@@ -3,7 +3,7 @@
     HadoopDruidIndexerConfig config=getHadoopDruidIndexerConfig();
     List<Jobby> jobs=Lists.newArrayList();
     jobs.add(new HadoopDruidDetermineConfigurationJob(config));
-    jobs.add(new HadoopDruidIndexerJob(config));
+    jobs.add(new HadoopDruidIndexerJob(config,injector.getInstance(MetadataStorageUpdaterJobHandler.class)));
     JobHelper.runJobs(jobs,config);
   }
  catch (  Exception e) {
