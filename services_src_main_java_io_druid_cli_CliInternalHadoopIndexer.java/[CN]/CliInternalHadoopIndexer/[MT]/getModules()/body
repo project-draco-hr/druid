@@ -4,7 +4,9 @@
       binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/internal-hadoop-indexer");
       binder.bindConstant().annotatedWith(Names.named("servicePort")).to(0);
       MetadataStorageUpdaterJobSpec metadataSpec=getHadoopDruidIndexerConfig().getSchema().getIOConfig().getMetadataUpdateSpec();
-      binder.bind(MetadataStorageConnectorConfig.class).toInstance(metadataSpec.get());
+      binder.bind(new TypeLiteral<Supplier<MetadataStorageConnectorConfig>>(){
+      }
+).toInstance(metadataSpec);
     }
   }
 );
