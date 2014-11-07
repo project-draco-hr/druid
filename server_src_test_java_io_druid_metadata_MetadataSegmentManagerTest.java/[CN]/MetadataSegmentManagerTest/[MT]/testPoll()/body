@@ -1,7 +1,7 @@
 {
-  EasyMock.expect(dbi.withHandle(EasyMock.<HandleCallback>anyObject())).andReturn(testRows).times(2);
-  EasyMock.replay(dbi);
   manager.start();
   manager.poll();
+  Assert.assertEquals(ImmutableList.of("wikipedia"),manager.getAllDatasourceNames());
+  Assert.assertEquals(ImmutableSet.of(segment1,segment2),manager.getInventoryValue("wikipedia").getSegments());
   manager.stop();
 }
