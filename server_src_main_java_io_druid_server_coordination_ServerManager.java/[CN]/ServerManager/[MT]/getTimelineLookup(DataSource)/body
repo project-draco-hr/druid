@@ -1,0 +1,14 @@
+{
+  final List<String> names=dataSource.getNames();
+  if (names.size() == 1) {
+    return dataSources.get(names.get(0));
+  }
+ else {
+    return new UnionTimeLineLookup<>(Iterables.transform(names,new Function<String,TimelineLookup<String,ReferenceCountingSegment>>(){
+      @Override public TimelineLookup<String,ReferenceCountingSegment> apply(      String input){
+        return dataSources.get(input);
+      }
+    }
+));
+  }
+}

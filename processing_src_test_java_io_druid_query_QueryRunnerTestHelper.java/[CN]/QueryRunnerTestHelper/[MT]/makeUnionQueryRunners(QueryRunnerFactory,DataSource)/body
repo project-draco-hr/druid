@@ -1,0 +1,6 @@
+{
+  final IncrementalIndex rtIndex=TestIndex.getIncrementalTestIndex();
+  final QueryableIndex mMappedTestIndex=TestIndex.getMMappedTestIndex();
+  final QueryableIndex mergedRealtimeIndex=TestIndex.mergedRealtimeIndex();
+  return Arrays.asList(new Object[][]{{makeUnionQueryRunner(factory,new IncrementalIndexSegment(rtIndex,segmentId),unionDataSource)},{makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mMappedTestIndex),unionDataSource)},{makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mergedRealtimeIndex),unionDataSource)}});
+}

@@ -1,14 +1,8 @@
 {
-  DataSource dataSource=query.getDataSource();
-  if (dataSource instanceof UnionDataSource) {
-    return toolChest.mergeSequencesUnordered(Sequences.simple(Lists.transform(((UnionDataSource)dataSource).getDataSources(),new Function<DataSource,Sequence<T>>(){
-      @Override public Sequence<T> apply(      DataSource singleSource){
-        return baseRunner.run(query.withDataSource(singleSource));
-      }
+  return toolChest.mergeSequencesUnordered(Sequences.simple(Iterables.transform(baseRunners,new Function<QueryRunner<T>,Sequence<T>>(){
+    @Override public Sequence<T> apply(    QueryRunner<T> singleRunner){
+      return singleRunner.run(query);
     }
+  }
 )));
-  }
- else {
-    return baseRunner.run(query);
-  }
 }
