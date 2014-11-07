@@ -1,13 +1,16 @@
 {
-  try {
-    if (argumentSpec.startsWith("{")) {
-      return HadoopDruidIndexerConfig.fromString(argumentSpec);
-    }
+  if (config == null) {
+    try {
+      if (argumentSpec.startsWith("{")) {
+        config=HadoopDruidIndexerConfig.fromString(argumentSpec);
+      }
  else {
-      return HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+        config=HadoopDruidIndexerConfig.fromFile(new File(argumentSpec));
+      }
+    }
+ catch (    Exception e) {
+      throw Throwables.propagate(e);
     }
   }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
+  return config;
 }

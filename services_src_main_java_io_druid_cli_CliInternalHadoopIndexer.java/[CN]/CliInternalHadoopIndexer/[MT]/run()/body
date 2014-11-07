@@ -1,7 +1,9 @@
 {
-  Injector injector=makeInjector();
   try {
-    HadoopDruidIndexerConfig config=getHadoopDruidIndexerConfig();
+    Injector injector=makeInjector();
+    MetadataStorageUpdaterJobSpec metadataSpec=getHadoopDruidIndexerConfig().getSchema().getIOConfig().getMetadataUpdateSpec();
+    Preconditions.checkNotNull(metadataSpec.getType(),"type in metadataUpdateSpec must not be null");
+    injector.getInstance(Properties.class).setProperty("druid.metadata.storage.type",metadataSpec.getType());
     List<Jobby> jobs=Lists.newArrayList();
     jobs.add(new HadoopDruidDetermineConfigurationJob(config));
     jobs.add(new HadoopDruidIndexerJob(config,injector.getInstance(MetadataStorageUpdaterJobHandler.class)));
