@@ -3,7 +3,7 @@
   in.get(bytes);
   try (final ResourceHolder<byte[]> outputBytesHolder=CompressedPools.getOutputBytes()){
     final byte[] outputBytes=outputBytesHolder.get();
-    final int numDecompressedBytes=lz4Fast.decompress(bytes,0,outputBytes,0,outputBytes.length);
+    final int numDecompressedBytes=lz4.decompress(bytes,0,bytes.length,outputBytes,0,outputBytes.length);
     out.put(outputBytes,0,numDecompressedBytes);
     out.flip();
   }
