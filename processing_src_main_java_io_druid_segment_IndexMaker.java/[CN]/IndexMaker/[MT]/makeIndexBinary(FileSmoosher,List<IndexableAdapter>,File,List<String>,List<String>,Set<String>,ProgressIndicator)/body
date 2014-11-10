@@ -13,7 +13,8 @@
 );
   GenericIndexed<String> cols=GenericIndexed.fromIterable(finalColumns,GenericIndexed.stringStrategy);
   GenericIndexed<String> dims=GenericIndexed.fromIterable(finalDimensions,GenericIndexed.stringStrategy);
-  final long numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16;
+  final String bitmapSerdeFactoryType=mapper.writeValueAsString(bitmapSerdeFactory);
+  final long numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16+ 4+ bitmapSerdeFactoryType.getBytes().length;
   final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);
   cols.writeToChannel(writer);
   dims.writeToChannel(writer);
@@ -26,6 +27,7 @@
   final Interval dataInterval=new Interval(minTime,maxTime);
   serializerUtils.writeLong(writer,dataInterval.getStartMillis());
   serializerUtils.writeLong(writer,dataInterval.getEndMillis());
+  serializerUtils.writeString(writer,bitmapSerdeFactoryType);
   writer.close();
   IndexIO.checkFileSize(new File(outDir,"index.drd"));
   progress.stopSection(section);

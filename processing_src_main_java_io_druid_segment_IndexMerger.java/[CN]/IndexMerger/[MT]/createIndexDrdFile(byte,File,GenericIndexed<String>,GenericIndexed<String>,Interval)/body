@@ -7,6 +7,7 @@
     availableDimensions.writeToChannel(channel);
     availableMetrics.writeToChannel(channel);
     serializerUtils.writeString(channel,String.format("%s/%s",dataInterval.getStart(),dataInterval.getEnd()));
+    serializerUtils.writeString(channel,mapper.writeValueAsString(bitmapSerdeFactory));
   }
   finally {
     CloseQuietly.close(channel);

@@ -19,12 +19,12 @@
   final ByteBuffer invertedBuffer=v8SmooshedFiles.mapFile("inverted.drd");
   while (invertedBuffer.hasRemaining()) {
     final String dimName=serializerUtils.readString(invertedBuffer);
-    bitmapIndexes.put(dimName,GenericIndexed.read(invertedBuffer,ConciseCompressedIndexedInts.objectStrategy));
+    bitmapIndexes.put(dimName,GenericIndexed.read(invertedBuffer,bitmapSerdeFactory.getObjectStrategy()));
   }
   Map<String,ImmutableRTree> spatialIndexes=Maps.newHashMap();
   final ByteBuffer spatialBuffer=v8SmooshedFiles.mapFile("spatial.drd");
   while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
-    spatialIndexes.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,new IndexedRTree.ImmutableRTreeObjectStrategy(new ConciseBitmapFactory())));
+    spatialIndexes.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,new IndexedRTree.ImmutableRTreeObjectStrategy(bitmapSerdeFactory.getBitmapFactory())));
   }
   final LinkedHashSet<String> skippedFiles=Sets.newLinkedHashSet();
   final Set<String> skippedDimensions=Sets.newLinkedHashSet();
@@ -53,32 +53,6 @@
       GenericIndexed<ImmutableBitmap> bitmaps=bitmapIndexes.get(dimension);
       ImmutableRTree spatialIndex=spatialIndexes.get(dimension);
       final BitmapFactory bitmapFactory=bitmapSerdeFactory.getBitmapFactory();
-      if (!(bitmapSerdeFactory instanceof ConciseBitmapSerdeFactory)) {
-        if (spatialIndex != null) {
-          RTree convertedTree=new RTree(2,new LinearGutmanSplitStrategy(0,50,bitmapFactory),bitmapFactory);
-          for (          ImmutablePoint point : RTreeUtils.getBitmaps(spatialIndex)) {
-            IntIterator iterator=point.getImmutableBitmap().iterator();
-            while (iterator.hasNext()) {
-              convertedTree.insert(point.getCoords(),iterator.next());
-            }
-          }
-          spatialIndex=ImmutableRTree.newImmutableFromMutable(convertedTree);
-        }
-        bitmaps=GenericIndexed.fromIterable(FunctionalIterable.create(bitmaps).transform(new Function<ImmutableBitmap,ImmutableBitmap>(){
-          @Override public ImmutableBitmap apply(          ImmutableBitmap bitmap){
-            if (bitmap == null) {
-              return bitmapFactory.makeEmptyImmutableBitmap();
-            }
-            IntIterator intIter=bitmap.iterator();
-            MutableBitmap mutableBitmap=bitmapFactory.makeEmptyMutableBitmap();
-            while (intIter.hasNext()) {
-              mutableBitmap.add(intIter.next());
-            }
-            return bitmapFactory.makeImmutableBitmap(mutableBitmap);
-          }
-        }
-),bitmapSerdeFactory.getObjectStrategy());
-      }
       boolean onlyOneValue=true;
       MutableBitmap nullsSet=null;
       for (int i=0; i < multiValCol.size(); ++i) {
