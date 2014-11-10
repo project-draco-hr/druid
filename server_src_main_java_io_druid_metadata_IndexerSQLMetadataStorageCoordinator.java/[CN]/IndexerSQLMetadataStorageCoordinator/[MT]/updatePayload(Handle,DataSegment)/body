@@ -1,0 +1,9 @@
+{
+  try {
+    handle.createStatement(String.format("UPDATE %s SET payload = :payload WHERE id = :id",dbTables.getSegmentsTable())).bind("id",segment.getIdentifier()).bind("payload",jsonMapper.writeValueAsBytes(segment)).execute();
+  }
+ catch (  IOException e) {
+    log.error(e,"Exception inserting into DB");
+    throw e;
+  }
+}

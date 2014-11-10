@@ -1,0 +1,11 @@
+{
+  MetadataStorageConnectorConfig connectorConfig=getConfig();
+  BasicDataSource dataSource=new BasicDataSource();
+  dataSource.setUsername(connectorConfig.getUser());
+  dataSource.setPassword(connectorConfig.getPassword());
+  String uri=connectorConfig.getConnectURI();
+  dataSource.setUrl(uri);
+  dataSource.setValidationQuery(connectorConfig.getValidationQuery());
+  dataSource.setTestOnBorrow(true);
+  return dataSource;
+}
