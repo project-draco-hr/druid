@@ -3,15 +3,15 @@
   this.index=index;
   this.invertedIndexes=Maps.newHashMap();
   for (  String dimension : index.getDimensions()) {
-    invertedIndexes.put(dimension,Maps.<String,ConciseSet>newHashMap());
+    invertedIndexes.put(dimension,Maps.<String,MutableBitmap>newHashMap());
   }
   int rowNum=0;
   for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
     final String[][] dims=timeAndDims.getDims();
     for (    String dimension : index.getDimensions()) {
       int dimIndex=index.getDimensionIndex(dimension);
-      Map<String,ConciseSet> conciseSets=invertedIndexes.get(dimension);
-      if (conciseSets == null || dims == null) {
+      Map<String,MutableBitmap> bitmapIndexes=invertedIndexes.get(dimension);
+      if (bitmapIndexes == null || dims == null) {
         log.error("conciseSets and dims are null!");
         continue;
       }
@@ -19,13 +19,13 @@
         continue;
       }
       for (      String dimValue : dims[dimIndex]) {
-        ConciseSet conciseSet=conciseSets.get(dimValue);
-        if (conciseSet == null) {
-          conciseSet=new ConciseSet();
-          conciseSets.put(dimValue,conciseSet);
+        MutableBitmap mutableBitmap=bitmapIndexes.get(dimValue);
+        if (mutableBitmap == null) {
+          mutableBitmap=bitmapFactory.makeEmptyMutableBitmap();
+          bitmapIndexes.put(dimValue,mutableBitmap);
         }
         try {
-          conciseSet.add(rowNum);
+          mutableBitmap.add(rowNum);
         }
  catch (        Exception e) {
           log.info(e.toString());
