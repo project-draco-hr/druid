@@ -18,13 +18,7 @@
   final GenericIndexed<String> availableDimensions=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
   final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
   final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
-  final BitmapSerdeFactory segmentBitmapSerdeFactory;
-  if (indexBuffer.hasRemaining()) {
-    segmentBitmapSerdeFactory=mapper.readValue(serializerUtils.readString(indexBuffer),BitmapSerdeFactory.class);
-  }
- else {
-    segmentBitmapSerdeFactory=BitmapSerdeFactory.DEFAULT_BITMAP_SERDE_FACTORY;
-  }
+  final BitmapSerdeFactory conciseBitmapSerdeFactory=new ConciseBitmapSerdeFactory();
   CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromByteBuffer(smooshedFiles.mapFile(makeTimeFile(inDir,BYTE_ORDER).getName()),BYTE_ORDER);
   Map<String,MetricHolder> metrics=Maps.newLinkedHashMap();
   for (  String metric : availableMetrics) {
@@ -47,12 +41,12 @@
   }
   ByteBuffer invertedBuffer=smooshedFiles.mapFile("inverted.drd");
   for (int i=0; i < availableDimensions.size(); ++i) {
-    bitmaps.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,segmentBitmapSerdeFactory.getObjectStrategy()));
+    bitmaps.put(serializerUtils.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,conciseBitmapSerdeFactory.getObjectStrategy()));
   }
   Map<String,ImmutableRTree> spatialIndexed=Maps.newHashMap();
   ByteBuffer spatialBuffer=smooshedFiles.mapFile("spatial.drd");
   while (spatialBuffer != null && spatialBuffer.hasRemaining()) {
-    spatialIndexed.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,new IndexedRTree.ImmutableRTreeObjectStrategy(segmentBitmapSerdeFactory.getBitmapFactory())));
+    spatialIndexed.put(serializerUtils.readString(spatialBuffer),ByteBufferSerializer.read(spatialBuffer,new IndexedRTree.ImmutableRTreeObjectStrategy(conciseBitmapSerdeFactory.getBitmapFactory())));
   }
   final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimColumns,bitmaps,spatialIndexed,smooshedFiles);
   log.debug("Mapped v8 index[%s] in %,d millis",inDir,System.currentTimeMillis() - startTime);

@@ -185,19 +185,13 @@ return !skippedDimensions.contains(s);
 ),GenericIndexed.stringStrategy);
 final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
 final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
-final BitmapSerdeFactory segmentBitmapSerdeFactory;
-if (indexBuffer.hasRemaining()) {
-segmentBitmapSerdeFactory=mapper.readValue(serializerUtils.readString(indexBuffer),BitmapSerdeFactory.class);
-}
- else {
-segmentBitmapSerdeFactory=BitmapSerdeFactory.DEFAULT_BITMAP_SERDE_FACTORY;
-}
+final BitmapSerdeFactory segmentBitmapSerdeFactory=mapper.readValue(serializerUtils.readString(indexBuffer),BitmapSerdeFactory.class);
 Set<String> columns=Sets.newTreeSet();
 columns.addAll(Lists.newArrayList(dims9));
 columns.addAll(Lists.newArrayList(availableMetrics));
 GenericIndexed<String> cols=GenericIndexed.fromIterable(columns,GenericIndexed.stringStrategy);
 final String segmentBitmapSerdeFactoryString=mapper.writeValueAsString(segmentBitmapSerdeFactory);
-final long numBytes=cols.getSerializedSize() + dims9.getSerializedSize() + 16+ 4+ segmentBitmapSerdeFactoryString.getBytes().length;
+final long numBytes=cols.getSerializedSize() + dims9.getSerializedSize() + 16+ serializerUtils.getSerializedStringByteSize(segmentBitmapSerdeFactoryString);
 final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);
 cols.writeToChannel(writer);
 dims9.writeToChannel(writer);

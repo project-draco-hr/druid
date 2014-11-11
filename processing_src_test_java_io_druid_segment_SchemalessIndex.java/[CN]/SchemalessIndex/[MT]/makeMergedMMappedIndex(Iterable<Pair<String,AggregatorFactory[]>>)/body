@@ -6,7 +6,7 @@
     mergedFile.mkdirs();
     mergedFile.deleteOnExit();
     List<File> filesToMap=makeFilesToMap(tmpFile,files);
-    return IndexIO.loadIndex(IndexMaker.mergeQueryableIndex(Lists.newArrayList(Iterables.transform(filesToMap,new Function<File,QueryableIndex>(){
+    return IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Lists.newArrayList(Iterables.transform(filesToMap,new Function<File,QueryableIndex>(){
       @Override public QueryableIndex apply(      @Nullable File input){
         try {
           return IndexIO.loadIndex(input);

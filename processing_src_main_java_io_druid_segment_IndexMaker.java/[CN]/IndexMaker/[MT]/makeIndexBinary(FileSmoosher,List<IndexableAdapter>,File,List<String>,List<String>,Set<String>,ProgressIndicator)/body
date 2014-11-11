@@ -14,7 +14,7 @@
   GenericIndexed<String> cols=GenericIndexed.fromIterable(finalColumns,GenericIndexed.stringStrategy);
   GenericIndexed<String> dims=GenericIndexed.fromIterable(finalDimensions,GenericIndexed.stringStrategy);
   final String bitmapSerdeFactoryType=mapper.writeValueAsString(bitmapSerdeFactory);
-  final long numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16+ 4+ bitmapSerdeFactoryType.getBytes().length;
+  final long numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16+ serializerUtils.getSerializedStringByteSize(bitmapSerdeFactoryType);
   final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);
   cols.writeToChannel(writer);
   dims.writeToChannel(writer);
