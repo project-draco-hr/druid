@@ -1,0 +1,7 @@
+{
+  super(config,dbTables);
+  final BasicDataSource datasource=getDatasource();
+  datasource.setDriverClassLoader(getClass().getClassLoader());
+  datasource.setDriverClassName("org.apache.derby.jdbc.ClientDriver");
+  this.dbi=new DBI(datasource);
+}
