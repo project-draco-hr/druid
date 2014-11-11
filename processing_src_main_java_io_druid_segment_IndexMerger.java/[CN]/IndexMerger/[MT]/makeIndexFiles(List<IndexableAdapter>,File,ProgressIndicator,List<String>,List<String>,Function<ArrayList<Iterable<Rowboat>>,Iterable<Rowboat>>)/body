@@ -23,7 +23,6 @@
       metricTypeNames.put(metric,adapter.getMetricType(metric));
     }
   }
-  final Interval dataInterval;
   File v8OutDir=new File(outDir,"v8-tmp");
   v8OutDir.mkdirs();
   progress.progress();
@@ -43,7 +42,6 @@
       minTime=JodaUtils.minDateTime(minTime,index.getDataInterval().getStart());
       maxTime=JodaUtils.maxDateTime(maxTime,index.getDataInterval().getEnd());
     }
-    dataInterval=new Interval(minTime,maxTime);
     serializerUtils.writeString(channel,String.format("%s/%s",minTime,maxTime));
     serializerUtils.writeString(channel,mapper.writeValueAsString(bitmapSerdeFactory));
   }
@@ -317,7 +315,6 @@ if (!smooshDir.delete()) {
 log.info("Unable to delete temporary dir[%s], contains[%s]",smooshDir,Arrays.asList(smooshDir.listFiles()));
 throw new IOException(String.format("Unable to delete temporary dir[%s]",smooshDir));
 }
-createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy),dataInterval);
 IndexIO.DefaultIndexIOHandler.convertV8toV9(v8OutDir,outDir);
 FileUtils.deleteDirectory(v8OutDir);
 return outDir;
