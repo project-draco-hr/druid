@@ -15,7 +15,8 @@
     offset=new NoFilterOffset(0,index.getNumRows());
   }
  else {
-    offset=new ConciseOffset(filter.goConcise(new ColumnSelectorBitmapIndexSelector(index)));
+    final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
+    offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector));
   }
   return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset).build(),Predicates.<Cursor>notNull());
 }

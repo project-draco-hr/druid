@@ -1,0 +1,10 @@
+{
+  if (filters.size() == 1) {
+    return filters.get(0).getBitmapIndex(selector);
+  }
+  List<ImmutableBitmap> bitmaps=Lists.newArrayList();
+  for (int i=0; i < filters.size(); i++) {
+    bitmaps.add(filters.get(i).getBitmapIndex(selector));
+  }
+  return selector.getBitmapFactory().intersection(bitmaps);
+}

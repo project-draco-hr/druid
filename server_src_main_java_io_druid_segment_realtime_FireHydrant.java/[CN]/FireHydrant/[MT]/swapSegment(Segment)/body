@@ -1,4 +1,12 @@
 {
-  this.adapter=adapter;
+  if (this.adapter != null) {
+    try {
+      this.adapter.close();
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  this.adapter=new ReferenceCountingSegment(adapter);
   this.index=null;
 }

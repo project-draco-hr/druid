@@ -1,8 +1,5 @@
 {
   return new ColumnSelectorFactory(){
-    @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-      throw new UnsupportedOperationException();
-    }
     @Override public DimensionSelector makeDimensionSelector(    String dimensionName){
       if (dimensionName.equals("dim")) {
         return new DimensionSelector(){
@@ -43,6 +40,9 @@ default :
  else {
 throw new UnsupportedOperationException();
 }
+}
+@Override public LongColumnSelector makeLongColumnSelector(String columnName){
+throw new UnsupportedOperationException();
 }
 @Override public FloatColumnSelector makeFloatColumnSelector(String columnName){
 if (columnName.equals("value")) {

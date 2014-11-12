@@ -1,0 +1,20 @@
+{
+  final String entryId="ABC123";
+  Map<String,Integer> entry=ImmutableMap.of("a",1);
+  Map<String,Integer> status=ImmutableMap.of("count",42);
+  handler.insert(entryId,new DateTime("2014-01-01"),"test",entry,true,status);
+  Assert.assertEquals(ImmutableMap.<Long,Map<String,Integer>>of(),handler.getLocks(entryId));
+  final ImmutableMap<String,Integer> lock1=ImmutableMap.of("lock",1);
+  final ImmutableMap<String,Integer> lock2=ImmutableMap.of("lock",2);
+  Assert.assertTrue(handler.addLock(entryId,lock1));
+  Assert.assertTrue(handler.addLock(entryId,lock2));
+  final Map<Long,Map<String,Integer>> locks=handler.getLocks(entryId);
+  Assert.assertEquals(2,locks.size());
+  Assert.assertEquals(ImmutableSet.<Map<String,Integer>>of(lock1,lock2),new HashSet<>(locks.values()));
+  long lockId=locks.keySet().iterator().next();
+  Assert.assertTrue(handler.removeLock(lockId));
+  locks.remove(lockId);
+  final Map<Long,Map<String,Integer>> updated=handler.getLocks(entryId);
+  Assert.assertEquals(new HashSet<>(locks.values()),new HashSet<>(updated.values()));
+  Assert.assertEquals(updated.keySet(),locks.keySet());
+}

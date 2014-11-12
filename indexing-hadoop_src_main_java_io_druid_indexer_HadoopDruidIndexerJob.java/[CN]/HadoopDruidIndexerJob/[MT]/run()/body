@@ -1,10 +1,15 @@
 {
   List<Jobby> jobs=Lists.newArrayList();
   JobHelper.ensurePaths(config);
-  indexJob=new IndexGeneratorJob(config);
+  if (config.isPersistInHeap()) {
+    indexJob=new IndexGeneratorJob(config);
+  }
+ else {
+    indexJob=new LegacyIndexGeneratorJob(config);
+  }
   jobs.add(indexJob);
-  if (dbUpdaterJob != null) {
-    jobs.add(dbUpdaterJob);
+  if (metadataStorageUpdaterJob != null) {
+    jobs.add(metadataStorageUpdaterJob);
   }
  else {
     log.info("No updaterJobSpec set, not uploading to database");

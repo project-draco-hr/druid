@@ -4,7 +4,7 @@
   try {
     TimeseriesQueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new QueryConfig()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
     QueryRunner runner=new FinalizeResultsQueryRunner(factory.createRunner(segment),factory.getToolchest());
-    TestHelper.assertExpectedResults(expectedResults,runner.run(query));
+    TestHelper.assertExpectedResults(expectedResults,runner.run(query,Maps.newHashMap()));
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

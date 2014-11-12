@@ -1,0 +1,21 @@
+{
+  Map<String,Integer> entry=ImmutableMap.of("numericId",1234);
+  Map<String,Integer> status1=ImmutableMap.of("count",42);
+  Map<String,Integer> status2=ImmutableMap.of("count",42,"temp",1);
+  final String entryId="1234";
+  handler.insert(entryId,new DateTime("2014-01-02T00:00:00.123"),"testDataSource",entry,true,null);
+  Assert.assertEquals(Optional.of(entry),handler.getEntry(entryId));
+  Assert.assertEquals(Optional.absent(),handler.getStatus(entryId));
+  Assert.assertTrue(handler.setStatus(entryId,true,status1));
+  Assert.assertEquals(ImmutableList.of(Pair.of(entry,status1)),handler.getActiveEntriesWithStatus());
+  Assert.assertTrue(handler.setStatus(entryId,true,status2));
+  Assert.assertEquals(ImmutableList.of(Pair.of(entry,status2)),handler.getActiveEntriesWithStatus());
+  Assert.assertEquals(ImmutableList.of(),handler.getInactiveStatusesSince(new DateTime("2014-01-01")));
+  Assert.assertTrue(handler.setStatus(entryId,false,status1));
+  Assert.assertEquals(Optional.of(status1),handler.getStatus(entryId));
+  Assert.assertFalse(handler.setStatus(entryId,false,status2));
+  Assert.assertEquals(Optional.of(status1),handler.getStatus(entryId));
+  Assert.assertEquals(Optional.of(entry),handler.getEntry(entryId));
+  Assert.assertEquals(ImmutableList.of(),handler.getInactiveStatusesSince(new DateTime("2014-01-03")));
+  Assert.assertEquals(ImmutableList.of(status1),handler.getInactiveStatusesSince(new DateTime("2014-01-01")));
+}
