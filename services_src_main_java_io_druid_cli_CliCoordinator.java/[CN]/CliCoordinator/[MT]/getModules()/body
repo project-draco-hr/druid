@@ -1,7 +1,7 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
-      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/coordinator");
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to(TieredBrokerConfig.DEFAULT_COORDINATOR_SERVICE_NAME);
       binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8081);
       ConfigProvider.bind(binder,DruidCoordinatorConfig.class);
       binder.bind(MetadataStorage.class).toProvider(MetadataStorageProvider.class).in(ManageLifecycle.class);
