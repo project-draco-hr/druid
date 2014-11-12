@@ -15,7 +15,7 @@
     segmentBitmapSerdeFactory=mapper.readValue(serializerUtils.readString(indexBuffer),BitmapSerdeFactory.class);
   }
  else {
-    segmentBitmapSerdeFactory=BitmapSerdeFactory.DEFAULT_BITMAP_SERDE_FACTORY;
+    segmentBitmapSerdeFactory=new ConciseBitmapSerdeFactory();
   }
   Map<String,Column> columns=Maps.newHashMap();
   for (  String columnName : cols) {
