@@ -9,16 +9,19 @@
     @Override public boolean hasNulls(){
       return dictionary.indexOf(null) >= 0;
     }
-    @Override public ImmutableConciseSet getConciseSet(    String value){
-      final int index=dictionary.indexOf(value);
-      return getConciseSet(index);
+    @Override public BitmapFactory getBitmapFactory(){
+      return bitmapFactory;
     }
-    @Override public ImmutableConciseSet getConciseSet(    int idx){
+    @Override public ImmutableBitmap getBitmap(    String value){
+      final int index=dictionary.indexOf(value);
+      return getBitmap(index);
+    }
+    @Override public ImmutableBitmap getBitmap(    int idx){
       if (idx < 0) {
-        return EMPTY_SET;
+        return bitmapFactory.makeEmptyImmutableBitmap();
       }
-      final ImmutableConciseSet bitmap=bitmaps.get(idx);
-      return bitmap == null ? EMPTY_SET : bitmap;
+      final ImmutableBitmap bitmap=bitmaps.get(idx);
+      return bitmap == null ? bitmapFactory.makeEmptyImmutableBitmap() : bitmap;
     }
   }
 ;
