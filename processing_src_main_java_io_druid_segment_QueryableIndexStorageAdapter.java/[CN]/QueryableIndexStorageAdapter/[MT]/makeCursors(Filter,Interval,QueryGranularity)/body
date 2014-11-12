@@ -10,14 +10,13 @@
   if (actualInterval.getEnd().isAfter(dataInterval.getEnd())) {
     actualInterval=actualInterval.withEnd(dataInterval.getEnd());
   }
-  final Sequence<Cursor> sequence;
+  final Offset offset;
   if (filter == null) {
-    sequence=new NoFilterCursorSequenceBuilder(index,actualInterval,gran).build();
+    offset=new NoFilterOffset(0,index.getNumRows());
   }
  else {
     final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
-    final Offset offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector));
-    sequence=new CursorSequenceBuilder(index,actualInterval,gran,offset).build();
+    offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector));
   }
-  return Sequences.filter(sequence,Predicates.<Cursor>notNull());
+  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset).build(),Predicates.<Cursor>notNull());
 }
