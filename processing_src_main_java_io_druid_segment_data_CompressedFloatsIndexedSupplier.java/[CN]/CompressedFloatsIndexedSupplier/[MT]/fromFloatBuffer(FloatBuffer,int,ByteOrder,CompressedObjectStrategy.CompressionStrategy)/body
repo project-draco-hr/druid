@@ -1,5 +1,5 @@
 {
-  Preconditions.checkArgument(chunkFactor * Floats.BYTES <= 0xffff,"Chunks must be <= 64k bytes. chunkFactor was[%s]",chunkFactor);
+  Preconditions.checkArgument(chunkFactor <= MAX_FLOATS_IN_BUFFER,"Chunks must be <= 64k bytes. chunkFactor was[%s]",chunkFactor);
   return new CompressedFloatsIndexedSupplier(buffer.remaining(),chunkFactor,GenericIndexed.fromIterable(new Iterable<ResourceHolder<FloatBuffer>>(){
     @Override public Iterator<ResourceHolder<FloatBuffer>> iterator(){
       return new Iterator<ResourceHolder<FloatBuffer>>(){
