@@ -8,6 +8,7 @@
         return yielder;
       }
       for (int i=0; i < config.numTries(); i++) {
+        log.info("[%,d] missing segments found. Retry attempt [%,d]",missingSegments.size(),i);
         context.put(MISSING_SEGMENTS_KEY,Lists.newArrayList());
         final Query<T> retryQuery=query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(missingSegments));
         yielder=baseRunner.run(retryQuery,context).toYielder(initValue,accumulator);
