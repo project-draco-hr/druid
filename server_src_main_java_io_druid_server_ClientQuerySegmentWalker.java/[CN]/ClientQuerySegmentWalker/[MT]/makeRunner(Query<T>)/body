@@ -1,6 +1,6 @@
 {
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
-  final FinalizeResultsQueryRunner<T> baseRunner=new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(new UnionQueryRunner<>(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
+  final FinalizeResultsQueryRunner<T> baseRunner=new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(new UnionQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
     @Override public ServiceMetricEvent.Builder apply(    @Nullable Query<T> input){
       return toolChest.makeMetricBuilder(query);
     }
