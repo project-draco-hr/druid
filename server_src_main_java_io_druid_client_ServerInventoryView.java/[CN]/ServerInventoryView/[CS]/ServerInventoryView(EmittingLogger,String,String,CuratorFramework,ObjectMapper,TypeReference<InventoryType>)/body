@@ -30,6 +30,8 @@
         return jsonMapper.readValue(bytes,typeReference);
       }
  catch (      IOException e) {
+        CharBuffer charBuffer=Charsets.UTF_8.decode(ByteBuffer.wrap(bytes));
+        log.error(e,"Could not parse json: %s",charBuffer.toString());
         throw Throwables.propagate(e);
       }
     }
