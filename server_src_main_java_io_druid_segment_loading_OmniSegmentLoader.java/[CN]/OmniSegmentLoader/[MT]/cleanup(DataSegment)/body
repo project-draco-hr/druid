@@ -9,8 +9,7 @@
   }
   try {
     File cacheFile=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
-    log.info("Deleting directory[%s]",cacheFile);
-    FileUtils.deleteDirectory(cacheFile);
+    cleanupCacheFiles(loc.getPath(),cacheFile);
     loc.removeSegment(segment);
   }
  catch (  IOException e) {

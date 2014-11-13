@@ -11,10 +11,25 @@
       throw new ISE("Segment[%s:%,d] too large for storage[%s:%,d].",segment.getIdentifier(),segment.getSize(),loc.getPath(),loc.available());
     }
     File storageDir=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
-    if (!storageDir.mkdirs()) {
-      log.debug("Unable to make parent file[%s]",storageDir);
+    final File downloadStartMarker=new File(storageDir,"downloadStartMarker");
+synchronized (lock) {
+      if (!storageDir.mkdirs()) {
+        log.debug("Unable to make parent file[%s]",storageDir);
+      }
+      try {
+        downloadStartMarker.createNewFile();
+      }
+ catch (      IOException e) {
+        throw new SegmentLoadingException("Unable to create marker file for [%s]",storageDir);
+      }
     }
     getPuller(segment.getLoadSpec()).getSegmentFiles(segment,storageDir);
+    try {
+      FileUtils.deleteDirectory(downloadStartMarker);
+    }
+ catch (    Exception e) {
+      throw new SegmentLoadingException("Unable to remove marker file for [%s]",storageDir);
+    }
     loc.addSegment(segment);
     retVal=storageDir;
   }
