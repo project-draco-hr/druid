@@ -1,0 +1,17 @@
+{
+  if (cacheFile.equals(baseFile)) {
+    return;
+  }
+synchronized (lock) {
+    log.info("Deleting directory[%s]",cacheFile);
+    try {
+      FileUtils.deleteDirectory(cacheFile);
+    }
+ catch (    Exception e) {
+      log.error("Unable to remove file[%s]",cacheFile);
+    }
+  }
+  if (cacheFile.getParentFile() != null && cacheFile.getParentFile().listFiles().length == 0) {
+    cleanupCacheFiles(baseFile,cacheFile.getParentFile());
+  }
+}
