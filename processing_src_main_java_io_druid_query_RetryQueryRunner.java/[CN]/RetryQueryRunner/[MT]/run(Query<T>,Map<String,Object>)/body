@@ -1,17 +1,19 @@
 {
+  final List<Sequence<T>> listOfSequences=Lists.newArrayList();
   final Sequence<T> returningSeq=baseRunner.run(query,context);
+  listOfSequences.add(returningSeq);
   return new YieldingSequenceBase<T>(){
     @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
-      Yielder<OutType> yielder=returningSeq.toYielder(initValue,accumulator);
       final List<SegmentDescriptor> missingSegments=getMissingSegments(context);
       if (missingSegments.isEmpty()) {
-        return yielder;
+        return returningSeq.toYielder(initValue,accumulator);
       }
       for (int i=0; i < config.numTries(); i++) {
         log.info("[%,d] missing segments found. Retry attempt [%,d]",missingSegments.size(),i);
         context.put(MISSING_SEGMENTS_KEY,Lists.newArrayList());
         final Query<T> retryQuery=query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(missingSegments));
-        yielder=baseRunner.run(retryQuery,context).toYielder(initValue,accumulator);
+        Sequence<T> retrySequence=baseRunner.run(retryQuery,context);
+        listOfSequences.add(retrySequence);
         if (getMissingSegments(context).isEmpty()) {
           break;
         }
@@ -20,7 +22,7 @@
       if (!config.returnPartialResults() && !finalMissingSegs.isEmpty()) {
         throw new SegmentMissingException("No results found for segments[%s]",finalMissingSegs);
       }
-      return yielder;
+      return toolChest.mergeSequencesUnordered(Sequences.simple(listOfSequences)).toYielder(initValue,accumulator);
     }
   }
 ;
