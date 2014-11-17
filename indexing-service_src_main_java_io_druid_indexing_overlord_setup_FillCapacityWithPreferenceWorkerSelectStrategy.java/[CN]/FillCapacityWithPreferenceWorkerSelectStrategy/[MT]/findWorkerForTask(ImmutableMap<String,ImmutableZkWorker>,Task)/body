@@ -1,9 +1,0 @@
-{
-  String preferredZkWorker=preferenceConfig.getPreferences().get(task.getDataSource());
-  ImmutableZkWorker zkWorker=zkWorkers.get(preferredZkWorker);
-  final String minWorkerVer=config.getMinWorkerVersion();
-  if (zkWorker != null && zkWorker.canRunTask(task) && zkWorker.isValidVersion(minWorkerVer)) {
-    return Optional.of(zkWorker);
-  }
-  return super.findWorkerForTask(zkWorkers,task);
-}
