@@ -1,5 +1,5 @@
 {
-  final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(config,workerSetupData);
+  final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(config);
   return new Predicate<ZkWorker>(){
     @Override public boolean apply(    ZkWorker worker){
       final boolean itHasBeenAWhile=System.currentTimeMillis() - worker.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().toStandardDuration().getMillis();

@@ -21,7 +21,7 @@ synchronized (lock) {
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
     updateTargetWorkerCount(workerSetupData,pendingTasks,zkWorkers);
-    final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config,workerSetupData);
+    final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config);
     if (currentlyTerminating.isEmpty()) {
       final int excessWorkers=(zkWorkers.size() + currentlyProvisioning.size()) - targetWorkerCount;
       if (excessWorkers > 0) {

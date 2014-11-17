@@ -1,0 +1,11 @@
+{
+  FillCapacityWorkerSelectStrategy strategy=new FillCapacityWithPreferenceWorkerSelectStrategy(new FillCapacityWithPreferenceConfig(){
+    @Override public Map<String,String> getPreferences(){
+      return ImmutableMap.of("foo","localhost");
+    }
+  }
+,new RemoteTaskRunnerConfig());
+  Optional<ImmutableZkWorker> optional=strategy.findWorkerForTask(ImmutableMap.of("localhost",new ImmutableZkWorker(new Worker("localhost","localhost",1,"v1"),0,Sets.<String>newHashSet())),new NoopTask(null,1,0,null,null));
+  ImmutableZkWorker worker=optional.get();
+  Assert.assertEquals("localhost",worker.getWorker().getHost());
+}

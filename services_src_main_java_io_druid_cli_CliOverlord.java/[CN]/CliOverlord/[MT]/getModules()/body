@@ -47,6 +47,8 @@
       final MapBinder<String,WorkerSelectStrategy> stratBinder=PolyBind.optionBinder(binder,Key.get(WorkerSelectStrategy.class));
       stratBinder.addBinding("fillCapacity").to(FillCapacityWorkerSelectStrategy.class);
       binder.bind(FillCapacityWorkerSelectStrategy.class).in(LazySingleton.class);
+      stratBinder.addBinding("fillCapacityWithPreference").to(FillCapacityWithPreferenceWorkerSelectStrategy.class);
+      binder.bind(FillCapacityWithPreferenceWorkerSelectStrategy.class).in(LazySingleton.class);
     }
     private void configureAutoscale(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",ResourceManagementSchedulerConfig.class);

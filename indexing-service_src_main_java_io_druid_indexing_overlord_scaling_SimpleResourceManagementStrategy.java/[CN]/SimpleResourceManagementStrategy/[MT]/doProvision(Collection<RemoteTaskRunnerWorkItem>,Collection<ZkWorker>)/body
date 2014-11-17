@@ -6,7 +6,7 @@ synchronized (lock) {
       log.warn("No workerSetupData available, cannot provision new workers.");
       return false;
     }
-    final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(config,workerSetupData);
+    final Predicate<ZkWorker> isValidWorker=createValidWorkerPredicate(config);
     final int currValidWorkers=Collections2.filter(zkWorkers,isValidWorker).size();
     final List<String> workerNodeIds=autoScalingStrategy.ipToIdLookup(Lists.newArrayList(Iterables.<ZkWorker,String>transform(zkWorkers,new Function<ZkWorker,String>(){
       @Override public String apply(      ZkWorker input){
