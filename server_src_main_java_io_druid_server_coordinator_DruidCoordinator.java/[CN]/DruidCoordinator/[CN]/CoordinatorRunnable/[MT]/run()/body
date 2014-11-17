@@ -8,7 +8,7 @@ synchronized (lock) {
         return;
       }
     }
-    List<Boolean> allStarted=Arrays.asList(databaseSegmentManager.isStarted(),serverInventoryView.isStarted());
+    List<Boolean> allStarted=Arrays.asList(metadataSegmentManager.isStarted(),serverInventoryView.isStarted());
     for (    Boolean aBoolean : allStarted) {
       if (!aBoolean) {
         log.error("InventoryManagers not started[%s]",allStarted);
@@ -17,7 +17,7 @@ synchronized (lock) {
       }
     }
     BalancerStrategyFactory factory=new CostBalancerStrategyFactory(getDynamicConfigs().getBalancerComputeThreads());
-    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(databaseSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
+    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(metadataSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
     for (    DruidCoordinatorHelper helper : helpers) {
       if (leader && startingLeaderCounter == leaderCounter) {
         params=helper.run(params);

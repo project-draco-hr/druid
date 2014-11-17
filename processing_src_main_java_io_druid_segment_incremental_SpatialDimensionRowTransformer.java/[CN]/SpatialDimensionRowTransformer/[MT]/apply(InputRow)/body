@@ -28,6 +28,14 @@
     @Override public Object getRaw(    String dimension){
       return row.getRaw(dimension);
     }
+    @Override public long getLongMetric(    String metric){
+      try {
+        return row.getLongMetric(metric);
+      }
+ catch (      ParseException e) {
+        throw Throwables.propagate(e);
+      }
+    }
     @Override public float getFloatMetric(    String metric){
       try {
         return row.getFloatMetric(metric);

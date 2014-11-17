@@ -2,7 +2,7 @@
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
   final CacheStrategy<T,Object,Query<T>> strategy=toolChest.getCacheStrategy(query);
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
-  final List<Pair<DateTime,byte[]>> cachedResults=Lists.newArrayList();
+  final List<Pair<Interval,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
   final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
   final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
@@ -60,7 +60,7 @@
       final byte[] cachedValue=cachedValues.get(segmentCacheKey);
       if (cachedValue != null) {
         segments.remove(segment);
-        cachedResults.add(Pair.of(segmentQueryInterval.getStart(),cachedValue));
+        cachedResults.add(Pair.of(segmentQueryInterval,cachedValue));
       }
  else       if (populateCache) {
         final String segmentIdentifier=segment.lhs.getSegment().getIdentifier();
@@ -85,25 +85,18 @@
   }
   return new LazySequence<>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
-      ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences=Lists.newArrayList();
-      addSequencesFromServer(listOfSequences);
-      addSequencesFromCache(listOfSequences);
-      Collections.sort(listOfSequences,Ordering.natural().onResultOf(Pair.<DateTime,Sequence<T>>lhsFn()));
-      final Sequence<Sequence<T>> seq=Sequences.simple(Iterables.transform(listOfSequences,Pair.<DateTime,Sequence<T>>rhsFn()));
-      if (strategy == null) {
-        return toolChest.mergeSequences(seq);
-      }
- else {
-        return strategy.mergeSequences(seq);
-      }
+      ArrayList<Pair<Interval,Sequence<T>>> sequencesByInterval=Lists.newArrayList();
+      addSequencesFromCache(sequencesByInterval);
+      addSequencesFromServer(sequencesByInterval);
+      return mergeCachedAndUncachedSequences(sequencesByInterval,toolChest);
     }
-    private void addSequencesFromCache(    ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences){
+    private void addSequencesFromCache(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
       if (strategy == null) {
         return;
       }
       final Function<Object,T> pullFromCacheFunction=strategy.pullFromCache();
       final TypeReference<Object> cacheObjectClazz=strategy.getCacheObjectClazz();
-      for (      Pair<DateTime,byte[]> cachedResultPair : cachedResults) {
+      for (      Pair<Interval,byte[]> cachedResultPair : cachedResults) {
         final byte[] cachedResult=cachedResultPair.rhs;
         Sequence<Object> cachedSequence=new BaseSequence<>(new BaseSequence.IteratorMaker<Object,Iterator<Object>>(){
           @Override public Iterator<Object> make(){
@@ -124,7 +117,7 @@
         listOfSequences.add(Pair.of(cachedResultPair.lhs,Sequences.map(cachedSequence,pullFromCacheFunction)));
       }
     }
-    @SuppressWarnings("unchecked") private void addSequencesFromServer(    ArrayList<Pair<DateTime,Sequence<T>>> listOfSequences){
+    @SuppressWarnings("unchecked") private void addSequencesFromServer(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
@@ -140,7 +133,7 @@
           resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec),context);
         }
  else {
-          resultSeqToAdd=toolChest.mergeSequences(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),context),new Function<Object,Sequence<T>>(){
+          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),context),new Function<Object,Sequence<T>>(){
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
             @Override public Sequence<T> apply(            Object input){
               Result<Object> result=(Result<Object>)input;
@@ -165,7 +158,7 @@
           }
 ));
         }
-        listOfSequences.add(Pair.of(intervals.get(0).getStart(),resultSeqToAdd));
+        listOfSequences.add(Pair.of(new Interval(intervals.get(0).getStart(),intervals.get(intervals.size() - 1).getEnd()),resultSeqToAdd));
       }
     }
   }

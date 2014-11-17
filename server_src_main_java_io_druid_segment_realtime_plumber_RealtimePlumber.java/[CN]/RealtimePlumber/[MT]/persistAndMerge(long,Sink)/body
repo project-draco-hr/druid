@@ -3,6 +3,10 @@
   mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
     @Override public void doRun(){
       final Interval interval=sink.getInterval();
+      if (sinks.get(truncatedTime) != sink) {
+        log.info("Sink[%s] was abandoned, bailing out of persist-n-merge.",sink);
+        return;
+      }
       final File persistDir=computePersistDir(schema,interval);
       final File mergedTarget=new File(persistDir,"merged");
       final File isPushedMarker=new File(persistDir,"isPushedMarker");

@@ -1,7 +1,21 @@
 {
-  List<Map<String,Object>> values=new ArrayList<Map<String,Object>>(pQueue.size());
-  while (!pQueue.isEmpty()) {
-    values.add(pQueue.remove().getMetricValues());
+  final DimValHolder[] holderValueArray=pQueue.toArray(new DimValHolder[0]);
+  Arrays.sort(holderValueArray,new Comparator<DimValHolder>(){
+    @Override public int compare(    DimValHolder d1,    DimValHolder d2){
+      int retVal=metricComparator.compare(d2.getTopNMetricVal(),d1.getTopNMetricVal());
+      if (retVal == 0) {
+        retVal=dimNameComparator.compare(d1.getDimName(),d2.getDimName());
+      }
+      return retVal;
+    }
   }
+);
+  List<DimValHolder> holderValues=Arrays.asList(holderValueArray);
+  final List<Map<String,Object>> values=Lists.transform(holderValues,new Function<DimValHolder,Map<String,Object>>(){
+    @Override public Map<String,Object> apply(    DimValHolder valHolder){
+      return valHolder.getMetricValues();
+    }
+  }
+);
   return new Result<TopNResultValue>(timestamp,new TopNResultValue(values));
 }

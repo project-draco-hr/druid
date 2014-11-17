@@ -1,0 +1,17 @@
+{
+  Preconditions.checkNotNull(task,"task");
+  Preconditions.checkNotNull(status,"status");
+  Preconditions.checkArgument(task.getId().equals(status.getId()),"Task/Status ID mismatch[%s/%s]",task.getId(),status.getId());
+  log.info("Inserting task %s with status: %s",task.getId(),status);
+  try {
+    handler.insert(task.getId(),new DateTime(),task.getDataSource(),task,status.isRunnable(),status);
+  }
+ catch (  Exception e) {
+    if (e instanceof EntryExistsException) {
+      throw (EntryExistsException)e;
+    }
+ else {
+      Throwables.propagate(e);
+    }
+  }
+}

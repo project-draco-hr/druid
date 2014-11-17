@@ -7,19 +7,22 @@
   final String typeName=serializerUtils.readString(buf);
   MetricHolder holder=new MetricHolder(metricName,typeName);
 switch (holder.type) {
-case FLOAT:
-    holder.floatType=CompressedFloatsIndexedSupplier.fromByteBuffer(buf,ByteOrder.nativeOrder());
+case LONG:
+    holder.longType=CompressedLongsIndexedSupplier.fromByteBuffer(buf,ByteOrder.nativeOrder());
   break;
+case FLOAT:
+holder.floatType=CompressedFloatsIndexedSupplier.fromByteBuffer(buf,ByteOrder.nativeOrder());
+break;
 case COMPLEX:
 if (strategy != null) {
-  holder.complexType=GenericIndexed.read(buf,strategy);
+holder.complexType=GenericIndexed.read(buf,strategy);
 }
  else {
-  final ComplexMetricSerde serdeForType=ComplexMetrics.getSerdeForType(holder.getTypeName());
-  if (serdeForType == null) {
-    throw new ISE("Unknown type[%s], cannot load.",holder.getTypeName());
-  }
-  holder.complexType=GenericIndexed.read(buf,serdeForType.getObjectStrategy());
+final ComplexMetricSerde serdeForType=ComplexMetrics.getSerdeForType(holder.getTypeName());
+if (serdeForType == null) {
+throw new ISE("Unknown type[%s], cannot load.",holder.getTypeName());
+}
+holder.complexType=GenericIndexed.read(buf,serdeForType.getObjectStrategy());
 }
 break;
 }
