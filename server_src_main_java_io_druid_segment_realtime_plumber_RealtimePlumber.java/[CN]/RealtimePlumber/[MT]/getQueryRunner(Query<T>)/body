@@ -16,7 +16,18 @@
       final Sink theSink=holder.getObject().getChunk(0).getObject();
       return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        FireHydrant input){
-          return factory.createRunner(input.getSegment());
+          final Closeable closeable=input.getSegment().increment();
+          try {
+            return factory.createRunner(input.getSegment());
+          }
+  finally {
+            try {
+              closeable.close();
+            }
+ catch (            IOException e) {
+              throw Throwables.propagate(e);
+            }
+          }
         }
       }
 ))).withWaitMeasuredFromNow(),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum())));

@@ -1,0 +1,34 @@
+{
+  Map<String,MutableBitmap> dimInverted=invertedIndexes.get(dimension);
+  if (dimInverted == null) {
+    return new EmptyIndexedInts();
+  }
+  final MutableBitmap bitmapIndex=dimInverted.get(value);
+  if (bitmapIndex == null) {
+    return new EmptyIndexedInts();
+  }
+  return new IndexedInts(){
+    @Override public int size(){
+      return bitmapIndex.size();
+    }
+    @Override public int get(    int index){
+      throw new UnsupportedOperationException("This is really slow, so it's just not supported.");
+    }
+    @Override public Iterator<Integer> iterator(){
+      return new Iterator<Integer>(){
+        IntIterator baseIter=bitmapIndex.iterator();
+        @Override public boolean hasNext(){
+          return baseIter.hasNext();
+        }
+        @Override public Integer next(){
+          return baseIter.next();
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
+    }
+  }
+;
+}

@@ -1,0 +1,9 @@
+{
+  connector.getDBI().withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement(String.format("DROP TABLE %s",tableName)).execute();
+      return null;
+    }
+  }
+);
+}

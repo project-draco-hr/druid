@@ -1,0 +1,8 @@
+{
+  Preconditions.checkNotNull(status,"status");
+  log.info("Updating task %s to status: %s",status.getId(),status);
+  final boolean set=handler.setStatus(status.getId(),status.isRunnable(),status);
+  if (!set) {
+    throw new IllegalStateException(String.format("Active task not found: %s",status.getId()));
+  }
+}

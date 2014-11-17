@@ -4,19 +4,19 @@
     return new ConcatQueryRunner<>(Sequences.map(Sequences.simple(queryRunners),new Function<QueryRunner<Row>,QueryRunner<Row>>(){
       @Override public QueryRunner<Row> apply(      final QueryRunner<Row> input){
         return new QueryRunner<Row>(){
-          @Override public Sequence<Row> run(          final Query<Row> query){
+          @Override public Sequence<Row> run(          final Query<Row> query,          final Map<String,Object> context){
             final GroupByQuery queryParam=(GroupByQuery)query;
-            final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get());
+            final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get(),computationBufferPool);
             final Pair<List,Accumulator<List,Row>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
             final int priority=query.getContextPriority(0);
             final boolean bySegment=query.getContextBySegment(false);
             final ListenableFuture<Void> future=queryExecutor.submit(new AbstractPrioritizedCallable<Void>(priority){
               @Override public Void call() throws Exception {
                 if (bySegment) {
-                  input.run(queryParam).accumulate(bySegmentAccumulatorPair.lhs,bySegmentAccumulatorPair.rhs);
+                  input.run(queryParam,context).accumulate(bySegmentAccumulatorPair.lhs,bySegmentAccumulatorPair.rhs);
                 }
  else {
-                  input.run(query).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
+                  input.run(query,context).accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
                 }
                 return null;
               }
@@ -60,6 +60,6 @@ catch (            ExecutionException e) {
 ));
   }
  else {
-    return new GroupByParallelQueryRunner(queryExecutor,config,queryWatcher,queryRunners);
+    return new GroupByParallelQueryRunner(queryExecutor,config,queryWatcher,computationBufferPool,queryRunners);
   }
 }

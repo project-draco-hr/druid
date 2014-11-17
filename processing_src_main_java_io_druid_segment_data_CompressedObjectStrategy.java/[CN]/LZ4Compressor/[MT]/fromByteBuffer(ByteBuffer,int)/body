@@ -1,0 +1,16 @@
+{
+  final ResourceHolder<ByteBuffer> bufHolder=CompressedPools.getByteBuf(order);
+  final ByteBuffer buf=bufHolder.get();
+  buf.position(0);
+  buf.limit(buf.capacity());
+  decompress(buffer,numBytes,buf);
+  return new ResourceHolder<T>(){
+    @Override public T get(){
+      return converter.convert(buf);
+    }
+    @Override public void close() throws IOException {
+      bufHolder.close();
+    }
+  }
+;
+}

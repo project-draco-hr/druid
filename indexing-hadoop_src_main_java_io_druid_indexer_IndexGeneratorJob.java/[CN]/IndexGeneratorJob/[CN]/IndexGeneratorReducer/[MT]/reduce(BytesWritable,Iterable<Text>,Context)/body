@@ -4,76 +4,63 @@
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
   final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
   IncrementalIndex index=makeIncrementalIndex(bucket,aggs);
-  File baseFlushFile=File.createTempFile("base","flush");
-  baseFlushFile.delete();
-  baseFlushFile.mkdirs();
-  Set<File> toMerge=Sets.newTreeSet();
-  int indexCount=0;
-  int lineCount=0;
-  int runningTotalLineCount=0;
-  long startTime=System.currentTimeMillis();
-  Set<String> allDimensionNames=Sets.newHashSet();
-  for (  final Text value : values) {
-    context.progress();
-    final InputRow inputRow=index.getSpatialDimensionRowFormatter().formatRow(parser.parse(value.toString()));
-    allDimensionNames.addAll(inputRow.getDimensions());
-    int numRows=index.add(inputRow);
-    ++lineCount;
-    if (numRows >= config.getSchema().getTuningConfig().getRowFlushBoundary()) {
-      log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
-      runningTotalLineCount=lineCount;
-      final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
-      toMerge.add(file);
+  try {
+    File baseFlushFile=File.createTempFile("base","flush");
+    baseFlushFile.delete();
+    baseFlushFile.mkdirs();
+    Set<File> toMerge=Sets.newTreeSet();
+    int indexCount=0;
+    int lineCount=0;
+    int runningTotalLineCount=0;
+    long startTime=System.currentTimeMillis();
+    Set<String> allDimensionNames=Sets.newHashSet();
+    final ProgressIndicator progressIndicator=makeProgressIndicator(context);
+    for (    final Text value : values) {
       context.progress();
-      IndexMerger.persist(index,interval,file,new IndexMerger.ProgressIndicator(){
-        @Override public void progress(){
-          context.progress();
-        }
-      }
-);
-      index=makeIncrementalIndex(bucket,aggs);
-      startTime=System.currentTimeMillis();
-      ++indexCount;
-    }
-  }
-  log.info("%,d lines completed.",lineCount);
-  List<QueryableIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
-  final File mergedBase;
-  if (toMerge.size() == 0) {
-    if (index.isEmpty()) {
-      throw new IAE("If you try to persist empty indexes you are going to have a bad time");
-    }
-    mergedBase=new File(baseFlushFile,"merged");
-    IndexMerger.persist(index,interval,mergedBase,new IndexMerger.ProgressIndicator(){
-      @Override public void progress(){
+      final InputRow inputRow=index.formatRow(parser.parse(value.toString()));
+      allDimensionNames.addAll(inputRow.getDimensions());
+      int numRows=index.add(inputRow);
+      ++lineCount;
+      if (numRows >= config.getSchema().getTuningConfig().getRowFlushBoundary()) {
+        log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
+        runningTotalLineCount=lineCount;
+        final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
+        toMerge.add(file);
         context.progress();
+        persist(index,interval,file,progressIndicator);
+        index.close();
+        index=makeIncrementalIndex(bucket,aggs);
+        startTime=System.currentTimeMillis();
+        ++indexCount;
       }
     }
-);
-  }
+    log.info("%,d lines completed.",lineCount);
+    List<QueryableIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
+    final File mergedBase;
+    if (toMerge.size() == 0) {
+      if (index.isEmpty()) {
+        throw new IAE("If you try to persist empty indexes you are going to have a bad time");
+      }
+      mergedBase=new File(baseFlushFile,"merged");
+      persist(index,interval,mergedBase,progressIndicator);
+    }
  else {
-    if (!index.isEmpty()) {
-      final File finalFile=new File(baseFlushFile,"final");
-      IndexMerger.persist(index,interval,finalFile,new IndexMerger.ProgressIndicator(){
-        @Override public void progress(){
-          context.progress();
-        }
+      if (!index.isEmpty()) {
+        final File finalFile=new File(baseFlushFile,"final");
+        persist(index,interval,finalFile,progressIndicator);
+        toMerge.add(finalFile);
       }
-);
-      toMerge.add(finalFile);
+      for (      File file : toMerge) {
+        indexes.add(IndexIO.loadIndex(file));
+      }
+      mergedBase=mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),progressIndicator);
     }
+    serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
     for (    File file : toMerge) {
-      indexes.add(IndexIO.loadIndex(file));
+      FileUtils.deleteDirectory(file);
     }
-    mergedBase=IndexMerger.mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),new IndexMerger.ProgressIndicator(){
-      @Override public void progress(){
-        context.progress();
-      }
-    }
-);
   }
-  serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
-  for (  File file : toMerge) {
-    FileUtils.deleteDirectory(file);
+  finally {
+    index.close();
   }
 }

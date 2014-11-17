@@ -12,7 +12,7 @@
   }
   DruidCoordinatorRuntimeParams paramsWithReplicationManager=params.buildFromExisting().withReplicationManager(replicatorThrottler).build();
   DateTime now=new DateTime();
-  DatabaseRuleManager databaseRuleManager=paramsWithReplicationManager.getDatabaseRuleManager();
+  MetadataRuleManager databaseRuleManager=paramsWithReplicationManager.getDatabaseRuleManager();
   for (  DataSegment segment : paramsWithReplicationManager.getAvailableSegments()) {
     List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
     boolean foundMatchingRule=false;

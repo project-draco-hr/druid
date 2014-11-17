@@ -1,0 +1,51 @@
+{
+  try {
+    if (!started) {
+      return;
+    }
+    ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
+    List<DataSegment> segments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
+      @Override public List<DataSegment> withHandle(      Handle handle) throws Exception {
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).map(new ResultSetMapper<DataSegment>(){
+          @Override public DataSegment map(          int index,          ResultSet r,          StatementContext ctx) throws SQLException {
+            try {
+              return jsonMapper.readValue(r.getBytes("payload"),DataSegment.class);
+            }
+ catch (            IOException e) {
+              throw new SQLException(e);
+            }
+          }
+        }
+).list();
+      }
+    }
+);
+    if (segments == null || segments.isEmpty()) {
+      log.warn("No segments found in the database!");
+      return;
+    }
+    log.info("Polled and found %,d segments in the database",segments.size());
+    for (    final DataSegment segment : segments) {
+      String datasourceName=segment.getDataSource();
+      DruidDataSource dataSource=newDataSources.get(datasourceName);
+      if (dataSource == null) {
+        dataSource=new DruidDataSource(datasourceName,ImmutableMap.of("created",new DateTime().toString()));
+        Object shouldBeNull=newDataSources.put(datasourceName,dataSource);
+        if (shouldBeNull != null) {
+          log.warn("Just put key[%s] into dataSources and what was there wasn't null!?  It was[%s]",datasourceName,shouldBeNull);
+        }
+      }
+      if (!dataSource.getSegments().contains(segment)) {
+        dataSource.addSegment(segment.getIdentifier(),segment);
+      }
+    }
+synchronized (lock) {
+      if (started) {
+        dataSources.set(newDataSources);
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.error(e,"Problem polling DB.");
+  }
+}

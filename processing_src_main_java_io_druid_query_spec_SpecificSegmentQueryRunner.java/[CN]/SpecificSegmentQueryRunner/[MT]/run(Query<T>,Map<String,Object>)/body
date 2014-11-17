@@ -1,0 +1,67 @@
+{
+  final Query<T> query=input.withQuerySegmentSpec(specificSpec);
+  final Thread currThread=Thread.currentThread();
+  final String currThreadName=currThread.getName();
+  final String newName=String.format("%s_%s_%s",query.getType(),query.getDataSource(),query.getIntervals());
+  final Sequence<T> baseSequence=doNamed(currThread,currThreadName,newName,new Callable<Sequence<T>>(){
+    @Override public Sequence<T> call() throws Exception {
+      return base.run(query,context);
+    }
+  }
+);
+  return new Sequence<T>(){
+    @Override public <OutType>OutType accumulate(    final OutType initValue,    final Accumulator<OutType,T> accumulator){
+      return doItNamed(new Callable<OutType>(){
+        @Override public OutType call() throws Exception {
+          try {
+            return baseSequence.accumulate(initValue,accumulator);
+          }
+ catch (          SegmentMissingException e) {
+            List<SegmentDescriptor> missingSegments=(List<SegmentDescriptor>)context.get(RetryQueryRunner.MISSING_SEGMENTS_KEY);
+            if (missingSegments == null) {
+              missingSegments=Lists.newArrayList();
+              context.put(RetryQueryRunner.MISSING_SEGMENTS_KEY,missingSegments);
+            }
+            missingSegments.add(specificSpec.getDescriptor());
+            return initValue;
+          }
+        }
+      }
+);
+    }
+    @Override public <OutType>Yielder<OutType> toYielder(    final OutType initValue,    final YieldingAccumulator<OutType,T> accumulator){
+      return doItNamed(new Callable<Yielder<OutType>>(){
+        @Override public Yielder<OutType> call() throws Exception {
+          return makeYielder(baseSequence.toYielder(initValue,accumulator));
+        }
+      }
+);
+    }
+    private <OutType>Yielder<OutType> makeYielder(    final Yielder<OutType> yielder){
+      return new Yielder<OutType>(){
+        @Override public OutType get(){
+          return yielder.get();
+        }
+        @Override public Yielder<OutType> next(        final OutType initValue){
+          return doItNamed(new Callable<Yielder<OutType>>(){
+            @Override public Yielder<OutType> call() throws Exception {
+              return yielder.next(initValue);
+            }
+          }
+);
+        }
+        @Override public boolean isDone(){
+          return yielder.isDone();
+        }
+        @Override public void close() throws IOException {
+          yielder.close();
+        }
+      }
+;
+    }
+    private <RetType>RetType doItNamed(    Callable<RetType> toRun){
+      return doNamed(currThread,currThreadName,newName,toRun);
+    }
+  }
+;
+}

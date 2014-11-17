@@ -1,6 +1,7 @@
 {
-  TopNQuery query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).dimension(providerDimension).filters(providerDimension,"spot").metric(indexMetric).threshold(3).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TopNQuery query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).dimension(marketDimension).filters(marketDimension,"spot").metric(indexMetric).threshold(3).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
   failMsg+=" filtered topN ";
-  Iterable<Result<TopNResultValue>> actualResults=Sequences.toList(runner.run(query),Lists.<Result<TopNResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TopNResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TopNResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,actualResults,failMsg);
 }

@@ -1,0 +1,27 @@
+{
+  final Context cx=Context.enter();
+  try {
+    final Indexed<String> dimValues=selector.getDimensionValues(dimension);
+    ImmutableBitmap bitmap;
+    if (dimValues == null) {
+      bitmap=selector.getBitmapFactory().makeEmptyImmutableBitmap();
+    }
+ else {
+      bitmap=selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(new Predicate<String>(){
+        @Override public boolean apply(        @Nullable String input){
+          return predicate.applyInContext(cx,input);
+        }
+      }
+).transform(new com.google.common.base.Function<String,ImmutableBitmap>(){
+        @Override public ImmutableBitmap apply(        @Nullable String input){
+          return selector.getBitmapIndex(dimension,input);
+        }
+      }
+));
+    }
+    return bitmap;
+  }
+  finally {
+    Context.exit();
+  }
+}

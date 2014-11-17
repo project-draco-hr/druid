@@ -3,6 +3,10 @@
   mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
     @Override public void doRun(){
       final Interval interval=sink.getInterval();
+      if (sinks.get(truncatedTime) != sink) {
+        log.info("Sink[%s] was abandoned, bailing out of persist-n-merge.",sink);
+        return;
+      }
       final File persistDir=computePersistDir(schema,interval);
       final File mergedTarget=new File(persistDir,"merged");
       final File isPushedMarker=new File(persistDir,"isPushedMarker");
@@ -34,7 +38,13 @@ synchronized (hydrant) {
           log.info("Adding hydrant[%s]",fireHydrant);
           indexes.add(queryableIndex);
         }
-        final File mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        final File mergedFile;
+        if (config.isPersistInHeap()) {
+          mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        }
+ else {
+          mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+        }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         segmentPublisher.publishSegment(segment);

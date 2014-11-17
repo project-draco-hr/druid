@@ -1,0 +1,9 @@
+{
+  final Supplier<MetadataStorageTablesConfig> dbTables=Suppliers.ofInstance(MetadataStorageTablesConfig.fromBase("test"));
+  connector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),dbTables);
+  manager=new SQLMetadataSegmentManager(jsonMapper,Suppliers.ofInstance(new MetadataSegmentManagerConfig()),dbTables,connector);
+  SQLMetadataSegmentPublisher publisher=new SQLMetadataSegmentPublisher(jsonMapper,dbTables.get(),connector);
+  connector.createSegmentTable();
+  publisher.publishSegment(segment1);
+  publisher.publishSegment(segment2);
+}

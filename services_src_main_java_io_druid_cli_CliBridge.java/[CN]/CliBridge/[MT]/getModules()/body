@@ -1,11 +1,13 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/bridge");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8089);
       ConfigProvider.bind(binder,BridgeCuratorConfig.class);
       binder.bind(BridgeZkCoordinator.class).in(ManageLifecycle.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig("bridge"));
-      JsonConfigProvider.bind(binder,"druid.manager.segments",DatabaseSegmentManagerConfig.class);
-      binder.bind(DatabaseSegmentManager.class).toProvider(DatabaseSegmentManagerProvider.class).in(ManageLifecycle.class);
+      JsonConfigProvider.bind(binder,"druid.manager.segments",MetadataSegmentManagerConfig.class);
+      binder.bind(MetadataSegmentManager.class).toProvider(MetadataSegmentManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(QuerySegmentWalker.class).to(BridgeQuerySegmentWalker.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
       Jerseys.addResource(binder,QueryResource.class);

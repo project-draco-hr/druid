@@ -1,0 +1,13 @@
+{
+  final byte[] bytes=new byte[numBytes];
+  in.get(bytes);
+  try (final ResourceHolder<byte[]> outputBytesHolder=CompressedPools.getOutputBytes()){
+    final byte[] outputBytes=outputBytesHolder.get();
+    final int numDecompressedBytes=LZFDecoder.decode(bytes,outputBytes);
+    out.put(outputBytes,0,numDecompressedBytes);
+    out.flip();
+  }
+ catch (  IOException e) {
+    Throwables.propagate(e);
+  }
+}

@@ -5,14 +5,11 @@
   loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
   loadManagementPeons=new MapMaker().makeMap();
   serverInventoryView=EasyMock.createMock(SingleServerInventoryView.class);
-  databaseSegmentManager=EasyMock.createNiceMock(DatabaseSegmentManager.class);
+  databaseSegmentManager=EasyMock.createNiceMock(MetadataSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
   scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
   EasyMock.replay(scheduledExecutorFactory);
   coordinator=new DruidCoordinator(new DruidCoordinatorConfig(){
-    @Override public String getHost(){
-      return null;
-    }
     @Override public Duration getCoordinatorStartDelay(){
       return null;
     }
