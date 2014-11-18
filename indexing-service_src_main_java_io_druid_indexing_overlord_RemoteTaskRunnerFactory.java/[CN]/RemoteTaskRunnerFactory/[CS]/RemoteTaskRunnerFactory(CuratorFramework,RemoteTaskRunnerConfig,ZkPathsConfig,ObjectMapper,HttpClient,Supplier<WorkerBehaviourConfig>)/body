@@ -1,0 +1,19 @@
+{
+  this.curator=curator;
+  this.remoteTaskRunnerConfig=remoteTaskRunnerConfig;
+  this.zkPaths=zkPaths;
+  this.jsonMapper=jsonMapper;
+  this.httpClient=httpClient;
+  if (workerBehaviourConfigSupplier != null) {
+    final WorkerBehaviourConfig workerBehaviourConfig=workerBehaviourConfigSupplier.get();
+    if (workerBehaviourConfig != null) {
+      this.strategy=workerBehaviourConfig.getSelectStrategy();
+    }
+ else {
+      this.strategy=new FillCapacityWorkerSelectStrategy();
+    }
+  }
+ else {
+    this.strategy=new FillCapacityWorkerSelectStrategy();
+  }
+}
