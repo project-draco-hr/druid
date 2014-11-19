@@ -1,7 +1,7 @@
 {
   final float[] values={0.15f,0.27f};
   final TestFloatColumnSelector selector=new TestFloatColumnSelector(values);
-  FilteredAggregatorFactory factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new SelectorDimFilter("dim","a"));
+  FilteredAggregatorFactory factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new AndDimFilter(Lists.<DimFilter>newArrayList(new NotDimFilter(new SelectorDimFilter("dim","b")),new SelectorDimFilter("dim","a"))));
   FilteredAggregator agg=(FilteredAggregator)factory.factorize(makeColumnSelector(selector));
   Assert.assertEquals("billy",agg.getName());
   double expectedFirst=new Float(values[0]).doubleValue();
