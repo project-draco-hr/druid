@@ -1,0 +1,24 @@
+{
+  final ByteBuffer myBuffer=getStorageBuffer();
+  final int initialPosition=getInitPosition();
+  short numNonZeroRegisters=getNumNonZeroRegisters();
+  if (myBuffer.remaining() == getNumBytesForDenseStorage() && numNonZeroRegisters < DENSE_THRESHOLD) {
+    ByteBuffer retVal=ByteBuffer.wrap(new byte[numNonZeroRegisters * 3 + getNumHeaderBytes()]);
+    setVersion(retVal);
+    setRegisterOffset(retVal,getRegisterOffset());
+    setNumNonZeroRegisters(retVal,numNonZeroRegisters);
+    setMaxOverflowValue(retVal,getMaxOverflowValue());
+    setMaxOverflowRegister(retVal,getMaxOverflowRegister());
+    int startPosition=getPayloadBytePosition();
+    retVal.position(getPayloadBytePosition(retVal));
+    for (int i=startPosition; i < startPosition + NUM_BYTES_FOR_BUCKETS; i++) {
+      if (myBuffer.get(i) != 0) {
+        retVal.putShort((short)(0xffff & (i - initialPosition)));
+        retVal.put(myBuffer.get(i));
+      }
+    }
+    retVal.rewind();
+    return retVal.asReadOnlyBuffer();
+  }
+  return myBuffer.asReadOnlyBuffer();
+}

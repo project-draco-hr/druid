@@ -1,0 +1,41 @@
+{
+  final ByteBuffer myBuffer=getStorageBuffer();
+  final int initialPosition=getInitPosition();
+  final short numNonZeroRegisters=getNumNonZeroRegisters();
+  if (myBuffer.remaining() == getNumBytesForDenseStorage() && numNonZeroRegisters < DENSE_THRESHOLD) {
+    final ByteBuffer retVal=ByteBuffer.wrap(new byte[numNonZeroRegisters * 3 + getNumHeaderBytes()]);
+    setVersion(retVal);
+    setRegisterOffset(retVal,getRegisterOffset());
+    setNumNonZeroRegisters(retVal,numNonZeroRegisters);
+    setMaxOverflowValue(retVal,getMaxOverflowValue());
+    setMaxOverflowRegister(retVal,getMaxOverflowRegister());
+    final int startPosition=getPayloadBytePosition();
+    retVal.position(getPayloadBytePosition(retVal));
+    final byte[] zipperBuffer=new byte[NUM_BYTES_FOR_BUCKETS];
+    ByteBuffer roStorageBuffer=myBuffer.asReadOnlyBuffer();
+    roStorageBuffer.position(startPosition);
+    roStorageBuffer.get(zipperBuffer);
+    final ByteOrder byteOrder=retVal.order();
+    final byte[] tempBuffer=new byte[numNonZeroRegisters * 3];
+    int outBufferPos=0;
+    for (int i=0; i < NUM_BYTES_FOR_BUCKETS; ++i) {
+      if (zipperBuffer[i] != 0) {
+        final short val=(short)(0xffff & (i + startPosition - initialPosition));
+        if (byteOrder.equals(ByteOrder.LITTLE_ENDIAN)) {
+          tempBuffer[outBufferPos + 0]=(byte)(0xff & val);
+          tempBuffer[outBufferPos + 1]=(byte)(0xff & (val >> 8));
+        }
+ else {
+          tempBuffer[outBufferPos + 1]=(byte)(0xff & val);
+          tempBuffer[outBufferPos + 0]=(byte)(0xff & (val >> 8));
+        }
+        tempBuffer[outBufferPos + 2]=zipperBuffer[i];
+        outBufferPos+=3;
+      }
+    }
+    retVal.put(tempBuffer);
+    retVal.rewind();
+    return retVal.asReadOnlyBuffer();
+  }
+  return myBuffer.asReadOnlyBuffer();
+}
