@@ -1,6 +1,6 @@
 {
   final HadoopIngestionSpec schema;
-  schema=jsonReadWriteRead("{" + "\"updaterJobSpec\":{\n" + "    \"type\" : \"db\",\n"+ "    \"connectURI\" : \"jdbc:mysql://localhost/druid\",\n"+ "    \"user\" : \"rofl\",\n"+ "    \"password\" : \"p4ssw0rd\",\n"+ "    \"segmentTable\" : \"segments\"\n"+ "  }"+ "}",HadoopIngestionSpec.class);
+  schema=jsonReadWriteRead("{\n" + "    \"ioConfig\": {\n" + "        \"type\": \"hadoop\",\n"+ "        \"metadataUpdateSpec\": {\n"+ "            \"type\": \"db\",\n"+ "            \"connectURI\": \"jdbc:mysql://localhost/druid\",\n"+ "            \"user\": \"rofl\",\n"+ "            \"password\": \"p4ssw0rd\",\n"+ "            \"segmentTable\": \"segments\"\n"+ "        }\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
   final MetadataStorageUpdaterJobSpec spec=schema.getIOConfig().getMetadataUpdateSpec();
   final MetadataStorageConnectorConfig connectorConfig=spec.get();
   Assert.assertEquals("segments",spec.getSegmentTable());
