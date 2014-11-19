@@ -3,48 +3,34 @@
   if (!outDir.mkdirs()) {
     throw new ISE("Couldn't make outdir[%s].",outDir);
   }
-  final AggregatorFactory[] lowerCaseMetricAggs=new AggregatorFactory[metricAggs.length];
-  for (int i=0; i < metricAggs.length; i++) {
-    lowerCaseMetricAggs[i]=new ToLowerCaseAggregatorFactory(metricAggs[i]);
-  }
   final List<String> mergedDimensions=mergeIndexed(Lists.transform(adapters,new Function<IndexableAdapter,Iterable<String>>(){
     @Override public Iterable<String> apply(    IndexableAdapter input){
-      return Iterables.transform(input.getDimensionNames(),new Function<String,String>(){
-        @Override public String apply(        String input){
-          return input.toLowerCase();
-        }
-      }
-);
+      return input.getDimensionNames();
     }
   }
 ));
   final List<String> mergedMetrics=Lists.transform(mergeIndexed(Lists.newArrayList(FunctionalIterable.create(adapters).transform(new Function<IndexableAdapter,Iterable<String>>(){
     @Override public Iterable<String> apply(    IndexableAdapter input){
-      return Iterables.transform(input.getMetricNames(),new Function<String,String>(){
-        @Override public String apply(        String input){
-          return input.toLowerCase();
-        }
-      }
-);
+      return input.getMetricNames();
     }
   }
-).concat(Arrays.<Iterable<String>>asList(new AggFactoryStringIndexed(lowerCaseMetricAggs))))),new Function<String,String>(){
+).concat(Arrays.<Iterable<String>>asList(new AggFactoryStringIndexed(metricAggs))))),new Function<String,String>(){
     @Override public String apply(    String input){
-      return input.toLowerCase();
+      return input;
     }
   }
 );
-  if (mergedMetrics.size() != lowerCaseMetricAggs.length) {
-    throw new IAE("Bad number of metrics[%d], expected [%d]",mergedMetrics.size(),lowerCaseMetricAggs.length);
+  if (mergedMetrics.size() != metricAggs.length) {
+    throw new IAE("Bad number of metrics[%d], expected [%d]",mergedMetrics.size(),metricAggs.length);
   }
   final AggregatorFactory[] sortedMetricAggs=new AggregatorFactory[mergedMetrics.size()];
-  for (int i=0; i < lowerCaseMetricAggs.length; i++) {
-    AggregatorFactory metricAgg=lowerCaseMetricAggs[i];
+  for (int i=0; i < metricAggs.length; i++) {
+    AggregatorFactory metricAgg=metricAggs[i];
     sortedMetricAggs[mergedMetrics.indexOf(metricAgg.getName())]=metricAgg;
   }
   for (int i=0; i < mergedMetrics.size(); i++) {
     if (!sortedMetricAggs[i].getName().equals(mergedMetrics.get(i))) {
-      throw new IAE("Metric mismatch, index[%d] [%s] != [%s]",i,lowerCaseMetricAggs[i].getName(),mergedMetrics.get(i));
+      throw new IAE("Metric mismatch, index[%d] [%s] != [%s]",i,metricAggs[i].getName(),mergedMetrics.get(i));
     }
   }
   Function<ArrayList<Iterable<Rowboat>>,Iterable<Rowboat>> rowMergerFn=new Function<ArrayList<Iterable<Rowboat>>,Iterable<Rowboat>>(){
