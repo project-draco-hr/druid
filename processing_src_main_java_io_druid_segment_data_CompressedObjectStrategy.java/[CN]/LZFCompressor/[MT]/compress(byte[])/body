@@ -1,6 +1,9 @@
 {
-  final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder();
-  LZFChunk chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
-  CloseQuietly.close(encoder);
-  return chunk.getData();
+  try (final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder()){
+    LZFChunk chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
+    return chunk.getData();
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
 }

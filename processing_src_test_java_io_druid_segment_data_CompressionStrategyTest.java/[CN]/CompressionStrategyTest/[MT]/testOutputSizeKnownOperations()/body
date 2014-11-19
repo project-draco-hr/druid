@@ -1,0 +1,8 @@
+{
+  ByteBuffer compressed=ByteBuffer.wrap(compressionStrategy.getCompressor().compress(originalData));
+  ByteBuffer output=ByteBuffer.allocate(originalData.length);
+  compressionStrategy.getDecompressor().decompress(compressed,compressed.array().length,output,originalData.length);
+  byte[] checkArray=new byte[DATA_SIZER];
+  output.get(checkArray);
+  Assert.assertArrayEquals("Uncompressed data does not match",originalData,checkArray);
+}

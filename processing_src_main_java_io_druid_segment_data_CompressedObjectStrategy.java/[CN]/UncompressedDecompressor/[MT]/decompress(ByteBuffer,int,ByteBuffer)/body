@@ -1,8 +1,6 @@
 {
-  final int maxCopy=Math.min(numBytes,out.remaining());
   final ByteBuffer copyBuffer=in.duplicate();
-  copyBuffer.limit(copyBuffer.position() + maxCopy);
-  out.put(copyBuffer);
-  out.flip();
-  in.position(in.position() + maxCopy);
+  copyBuffer.limit(copyBuffer.position() + numBytes);
+  out.put(copyBuffer).flip();
+  in.position(in.position() + numBytes);
 }
