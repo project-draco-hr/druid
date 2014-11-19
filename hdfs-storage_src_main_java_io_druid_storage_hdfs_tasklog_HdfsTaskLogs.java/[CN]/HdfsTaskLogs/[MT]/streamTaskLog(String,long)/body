@@ -2,8 +2,8 @@
   final Path path=getTaskLogFileFromId(taskId);
   final FileSystem fs=FileSystem.get(new Configuration());
   if (fs.exists(path)) {
-    return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
-      @Override public InputStream getInput() throws IOException {
+    return Optional.<ByteSource>of(new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
         log.info("Reading task log from: %s",path);
         final long seekPos;
         if (offset < 0) {

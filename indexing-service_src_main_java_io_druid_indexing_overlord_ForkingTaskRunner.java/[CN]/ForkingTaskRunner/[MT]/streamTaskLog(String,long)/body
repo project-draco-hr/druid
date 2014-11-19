@@ -9,8 +9,8 @@ synchronized (tasks) {
       return Optional.absent();
     }
   }
-  return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
-    @Override public InputStream getInput() throws IOException {
+  return Optional.<ByteSource>of(new ByteSource(){
+    @Override public InputStream openStream() throws IOException {
       return LogUtils.streamFile(processHolder.logFile,offset);
     }
   }

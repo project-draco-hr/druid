@@ -2,8 +2,8 @@
   final String taskKey=getTaskLogKey(taskid);
   try {
     final StorageObject objectDetails=service.getObjectDetails(config.getS3Bucket(),taskKey,null,null,null,null);
-    return Optional.<InputSupplier<InputStream>>of(new InputSupplier<InputStream>(){
-      @Override public InputStream getInput() throws IOException {
+    return Optional.<ByteSource>of(new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
         try {
           final long start;
           final long end=objectDetails.getContentLength() - 1;
