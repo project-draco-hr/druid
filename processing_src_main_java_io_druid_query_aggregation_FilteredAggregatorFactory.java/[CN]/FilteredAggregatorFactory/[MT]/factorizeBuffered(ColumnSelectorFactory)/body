@@ -1,5 +1,14 @@
 {
   final BufferAggregator aggregator=delegate.factorizeBuffered(metricFactory);
-  final Pair<DimensionSelector,IntPredicate> selectorPredicatePair=makeFilterPredicate(filter,metricFactory);
-  return new FilteredBufferAggregator(selectorPredicatePair.lhs,selectorPredicatePair.rhs,aggregator);
+  SelectorDimFilter selector=getSelector(filter);
+  final DimensionSelector dimensionSelector=metricFactory.makeDimensionSelector(selector.getDimension());
+  if (dimensionSelector == null) {
+    if (filter instanceof NotDimFilter) {
+      return aggregator;
+    }
+ else {
+      return Aggregators.noopBufferAggregator();
+    }
+  }
+  return new FilteredBufferAggregator(dimensionSelector,makeFilterPredicate(filter,dimensionSelector,selector.getValue()),aggregator);
 }

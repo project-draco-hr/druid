@@ -1,0 +1,21 @@
+{
+  final int lookupId=dimSelector.lookupId(filterValue);
+  final IntPredicate predicate;
+  if (dimFilter instanceof NotDimFilter) {
+    predicate=new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId != value;
+      }
+    }
+;
+  }
+ else {
+    predicate=new IntPredicate(){
+      @Override public boolean apply(      int value){
+        return lookupId == value;
+      }
+    }
+;
+  }
+  return predicate;
+}

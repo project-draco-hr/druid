@@ -1,0 +1,13 @@
+{
+  final SelectorDimFilter selector;
+  if (dimFilter instanceof NotDimFilter) {
+    selector=(SelectorDimFilter)((NotDimFilter)dimFilter).getField();
+  }
+ else   if (dimFilter instanceof SelectorDimFilter) {
+    selector=(SelectorDimFilter)dimFilter;
+  }
+ else {
+    throw new ISE("Unsupported DimFilter type [%d]",dimFilter.getClass());
+  }
+  return selector;
+}
