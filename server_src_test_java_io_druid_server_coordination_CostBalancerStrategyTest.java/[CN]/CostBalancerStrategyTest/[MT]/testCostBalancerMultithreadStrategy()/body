@@ -1,8 +1,0 @@
-{
-  setupDummyCluster(10,20);
-  DataSegment segment=getSegment(1000);
-  BalancerStrategy strategy=new CostBalancerStrategy(DateTime.now(DateTimeZone.UTC),1);
-  ServerHolder holder=strategy.findNewSegmentHomeReplicator(segment,serverHolderList);
-  Assert.assertNotNull("Should be able to find a place for new segment!!",holder);
-  Assert.assertEquals("Best Server should be BEST_SERVER","BEST_SERVER",holder.getServer().getName());
-}

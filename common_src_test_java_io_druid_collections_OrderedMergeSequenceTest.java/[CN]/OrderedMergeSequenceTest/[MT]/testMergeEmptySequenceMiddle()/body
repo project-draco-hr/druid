@@ -1,0 +1,8 @@
+{
+  final ArrayList<TestSequence<Integer>> testSequences=Lists.newArrayList(TestSequence.create(2,8),TestSequence.create(ImmutableList.<Integer>of()),TestSequence.create(4,6,8));
+  OrderedMergeSequence<Integer> seq=makeMergedSequence(Ordering.<Integer>natural(),testSequences);
+  SequenceTestHelper.testAll(seq,Arrays.asList(2,4,6,8,8));
+  for (  TestSequence<Integer> sequence : testSequences) {
+    Assert.assertTrue(sequence.isClosed());
+  }
+}

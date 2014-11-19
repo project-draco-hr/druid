@@ -17,6 +17,6 @@
     bitmaps.writeToChannel(channel);
   }
   if (spatialIndex != null) {
-    ByteBufferSerializer.writeToChannel(spatialIndex,IndexedRTree.objectStrategy,channel);
+    ByteBufferSerializer.writeToChannel(spatialIndex,new IndexedRTree.ImmutableRTreeObjectStrategy(bitmapSerdeFactory.getBitmapFactory()),channel);
   }
 }

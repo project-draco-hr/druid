@@ -1,0 +1,10 @@
+{
+  final Column column=index.getColumn(dimension.toLowerCase());
+  if (column == null) {
+    return bitmapFactory.makeEmptyImmutableBitmap();
+  }
+  if (!column.getCapabilities().hasBitmapIndexes()) {
+    bitmapFactory.makeEmptyImmutableBitmap();
+  }
+  return column.getBitmapIndex().getBitmap(value);
+}

@@ -7,14 +7,12 @@
       return Sequences.empty();
     }
   }
-,new RetryQueryRunnerConfig(){
-    private int numTries=0;
-    private boolean returnPartialResults=true;
-    public int numTries(){
-      return numTries;
+,(QueryToolChest)new TimeseriesQueryQueryToolChest(new QueryConfig()),new RetryQueryRunnerConfig(){
+    @Override public int getNumTries(){
+      return 0;
     }
-    public boolean returnPartialResults(){
-      return returnPartialResults;
+    @Override public boolean isReturnPartialResults(){
+      return true;
     }
   }
 ,jsonMapper);

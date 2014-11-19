@@ -4,27 +4,34 @@
   final RetryPolicy retryPolicy=retryPolicyFactory.makeRetryPolicy();
   while (true) {
     try {
+      final Server server;
       final URI serviceUri;
       try {
-        serviceUri=getServiceUri();
+        server=getServiceInstance();
+        serviceUri=makeServiceUri(server);
       }
  catch (      Exception e) {
         throw new IOException("Failed to locate service uri",e);
       }
-      final String response;
+      final StatusResponseHolder response;
       log.info("Submitting action for task[%s] to overlord[%s]: %s",task.getId(),serviceUri,taskAction);
       try {
-        response=httpClient.post(serviceUri.toURL()).setContent("application/json",dataToSend).go(new ToStringResponseHandler(Charsets.UTF_8)).get();
+        response=httpClient.post(serviceUri.toURL()).setContent("application/json",dataToSend).go(new StatusResponseHandler(Charsets.UTF_8)).get();
       }
  catch (      Exception e) {
         Throwables.propagateIfInstanceOf(e.getCause(),IOException.class);
         Throwables.propagateIfInstanceOf(e.getCause(),ChannelException.class);
         throw Throwables.propagate(e);
       }
-      final Map<String,Object> responseDict=jsonMapper.readValue(response,new TypeReference<Map<String,Object>>(){
-      }
+      if (response.getStatus().getCode() / 200 == 1) {
+        final Map<String,Object> responseDict=jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,Object>>(){
+        }
 );
-      return jsonMapper.convertValue(responseDict.get("result"),taskAction.getReturnTypeReference());
+        return jsonMapper.convertValue(responseDict.get("result"),taskAction.getReturnTypeReference());
+      }
+ else {
+        throw new IOException(String.format("Scary HTTP status returned: %s. Check your overlord[%s] logs for exceptions.",response.getStatus(),server.getHost()));
+      }
     }
  catch (    IOException|ChannelException e) {
       log.warn(e,"Exception submitting action for task[%s]",task.getId());
