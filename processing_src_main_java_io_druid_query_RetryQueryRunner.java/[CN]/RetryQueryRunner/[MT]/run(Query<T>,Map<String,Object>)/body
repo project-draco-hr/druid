@@ -1,24 +1,25 @@
 {
   final List<Sequence<T>> listOfSequences=Lists.newArrayList();
-  listOfSequences.add(baseRunner.run(query,responseContext));
+  listOfSequences.add(baseRunner.run(query,context));
   return new YieldingSequenceBase<T>(){
     @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
-      doRetryLogic(responseContext,Result.MISSING_SEGMENTS_KEY,new TypeReference<List<SegmentDescriptor>>(){
-      }
-,new Function<List<SegmentDescriptor>,Query<T>>(){
-        @Override public Query<T> apply(        List<SegmentDescriptor> input){
-          return query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(input));
+      final List<SegmentDescriptor> missingSegments=getMissingSegments(context);
+      if (!missingSegments.isEmpty()) {
+        for (int i=0; i < config.getNumTries(); i++) {
+          log.info("[%,d] missing segments found. Retry attempt [%,d]",missingSegments.size(),i);
+          context.put(Result.MISSING_SEGMENTS_KEY,Lists.newArrayList());
+          final Query<T> retryQuery=query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(missingSegments));
+          Sequence<T> retrySequence=baseRunner.run(retryQuery,context);
+          listOfSequences.add(retrySequence);
+          if (getMissingSegments(context).isEmpty()) {
+            break;
+          }
+        }
+        final List<SegmentDescriptor> finalMissingSegs=getMissingSegments(context);
+        if (!config.isReturnPartialResults() && !finalMissingSegs.isEmpty()) {
+          throw new SegmentMissingException("No results found for segments[%s]",finalMissingSegs);
         }
       }
-,listOfSequences);
-      doRetryLogic(responseContext,Result.MISSING_INTERVALS_KEY,new TypeReference<List<Interval>>(){
-      }
-,new Function<List<Interval>,Query<T>>(){
-        @Override public Query<T> apply(        List<Interval> input){
-          return query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(input));
-        }
-      }
-,listOfSequences);
       return toolChest.mergeSequencesUnordered(Sequences.simple(listOfSequences)).toYielder(initValue,accumulator);
     }
   }
