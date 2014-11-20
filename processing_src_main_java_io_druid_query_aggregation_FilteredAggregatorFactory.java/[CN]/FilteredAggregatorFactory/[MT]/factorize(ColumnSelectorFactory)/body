@@ -1,14 +1,5 @@
 {
   final Aggregator aggregator=delegate.factorize(metricFactory);
-  SelectorDimFilter selector=getSelector(filter);
-  final DimensionSelector dimensionSelector=metricFactory.makeDimensionSelector(selector.getDimension());
-  if (dimensionSelector == null) {
-    if (filter instanceof NotDimFilter) {
-      return aggregator;
-    }
- else {
-      return Aggregators.noopAggregator();
-    }
-  }
-  return new FilteredAggregator(dimensionSelector,makeFilterPredicate(filter,dimensionSelector,selector.getValue()),aggregator);
+  final Pair<DimensionSelector,IntPredicate> selectorPredicatePair=makeFilterPredicate(filter,metricFactory);
+  return new FilteredAggregator(name,selectorPredicatePair.lhs,selectorPredicatePair.rhs,aggregator);
 }
