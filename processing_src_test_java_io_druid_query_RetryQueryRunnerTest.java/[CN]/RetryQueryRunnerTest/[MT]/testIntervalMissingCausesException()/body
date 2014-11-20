@@ -1,0 +1,15 @@
+{
+  Map<String,Object> context=new MapMaker().makeMap();
+  context.put(Result.MISSING_SEGMENTS_KEY,Lists.newArrayList());
+  RetryQueryRunner<Result<TimeseriesResultValue>> runner=new RetryQueryRunner<>(new ReportTimelineMissingIntervalQueryRunner<Result<TimeseriesResultValue>>(new Interval("2013/2014")),(QueryToolChest)new TimeseriesQueryQueryToolChest(new QueryConfig()),new RetryQueryRunnerConfig(){
+    public int getNumTries(){
+      return 1;
+    }
+    public boolean returnPartialResults(){
+      return false;
+    }
+  }
+,jsonMapper);
+  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  Assert.assertTrue("Should have one entry in the list of missing segments",((List)context.get(Result.MISSING_INTERVALS_KEY)).size() == 1);
+}
