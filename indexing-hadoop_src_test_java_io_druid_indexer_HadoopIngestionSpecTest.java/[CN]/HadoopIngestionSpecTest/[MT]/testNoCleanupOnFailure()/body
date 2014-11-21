@@ -1,7 +1,7 @@
 {
   final HadoopIngestionSpec schema;
   try {
-    schema=jsonReadWriteRead("{\"cleanupOnFailure\":false}",HadoopIngestionSpec.class);
+    schema=jsonReadWriteRead("{\n" + "    \"tuningConfig\" : {\n" + "        \"type\" : \"hadoop\", \n"+ "        \"cleanupOnFailure\" : \"false\"\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

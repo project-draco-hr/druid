@@ -12,7 +12,7 @@
   for (int i=0; i < metrics.length; i++) {
     final AggregatorFactory agg=metrics[i];
     aggs[i]=agg.factorizeBuffered(new ColumnSelectorFactory(){
-      @Override public LongColumnSelector makeLongColumnSelector(      String columnName){
+      @Override public LongColumnSelector makeLongColumnSelector(      final String columnName){
         if (columnName.equals(Column.TIME_COLUMN_NAME)) {
           return new LongColumnSelector(){
             @Override public long get(){
@@ -21,32 +21,29 @@
           }
 ;
         }
-        final String metricName=columnName.toLowerCase();
         return new LongColumnSelector(){
           @Override public long get(){
-            return in.get().getLongMetric(metricName);
+            return in.get().getLongMetric(columnName);
           }
         }
 ;
       }
-      @Override public FloatColumnSelector makeFloatColumnSelector(      String columnName){
-        final String metricName=columnName.toLowerCase();
+      @Override public FloatColumnSelector makeFloatColumnSelector(      final String columnName){
         return new FloatColumnSelector(){
           @Override public float get(){
-            return in.get().getFloatMetric(metricName);
+            return in.get().getFloatMetric(columnName);
           }
         }
 ;
       }
-      @Override public ObjectColumnSelector makeObjectColumnSelector(      String column){
+      @Override public ObjectColumnSelector makeObjectColumnSelector(      final String column){
         final String typeName=agg.getTypeName();
-        final String columnName=column.toLowerCase();
         final ObjectColumnSelector<Object> rawColumnSelector=new ObjectColumnSelector<Object>(){
           @Override public Class classOfObject(){
             return Object.class;
           }
           @Override public Object get(){
-            return in.get().getRaw(columnName);
+            return in.get().getRaw(column);
           }
         }
 ;
@@ -67,17 +64,16 @@
               return extractor.extractedClass();
             }
             @Override public Object get(){
-              return extractor.extractValue(in.get(),columnName);
+              return extractor.extractValue(in.get(),column);
             }
           }
 ;
         }
       }
       @Override public DimensionSelector makeDimensionSelector(      final String dimension){
-        final String dimensionName=dimension.toLowerCase();
         return new DimensionSelector(){
           @Override public IndexedInts getRow(){
-            final List<String> dimensionValues=in.get().getDimension(dimensionName);
+            final List<String> dimensionValues=in.get().getDimension(dimension);
             final ArrayList<Integer> vals=Lists.newArrayList();
             if (dimensionValues != null) {
               for (int i=0; i < dimensionValues.size(); ++i) {
@@ -101,10 +97,10 @@
             throw new UnsupportedOperationException("value cardinality is unknown in incremental index");
           }
           @Override public String lookupName(          int id){
-            return in.get().getDimension(dimensionName).get(id);
+            return in.get().getDimension(dimension).get(id);
           }
           @Override public int lookupId(          String name){
-            return in.get().getDimension(dimensionName).indexOf(name);
+            return in.get().getDimension(dimension).indexOf(name);
           }
         }
 ;
@@ -113,7 +109,7 @@
 );
     aggPositionOffsets[i]=currAggSize;
     currAggSize+=agg.getMaxIntermediateSize();
-    final String metricName=metrics[i].getName().toLowerCase();
+    final String metricName=metrics[i].getName();
     metricNamesBuilder.add(metricName);
     metricIndexesBuilder.put(metricName,i);
     metricTypesBuilder.put(metricName,metrics[i].getTypeName());

@@ -1,7 +1,7 @@
 {
   notifyLatch.countDown();
   try {
-    waitYieldLatch.await(25,TimeUnit.MILLISECONDS);
+    waitYieldLatch.await(1000,TimeUnit.MILLISECONDS);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
@@ -10,7 +10,7 @@
   return new Yielder<OutType>(){
     @Override public OutType get(){
       try {
-        waitLatch.await(25,TimeUnit.MILLISECONDS);
+        waitLatch.await(1000,TimeUnit.MILLISECONDS);
       }
  catch (      Exception e) {
         throw Throwables.propagate(e);

@@ -1,0 +1,13 @@
+{
+  final HadoopIngestionSpec schema;
+  try {
+    schema=jsonReadWriteRead("{\n" + "    \"tuningConfig\": {\n" + "        \"type\": \"hadoop\",\n"+ "        \"partitionsSpec\": {\n"+ "            \"targetPartitionSize\": 100\n"+ "        }\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  final PartitionsSpec partitionsSpec=schema.getTuningConfig().getPartitionsSpec();
+  Assert.assertEquals("isDeterminingPartitions",partitionsSpec.isDeterminingPartitions(),true);
+  Assert.assertEquals("getTargetPartitionSize",partitionsSpec.getTargetPartitionSize(),100);
+  Assert.assertTrue("partitionSpec",partitionsSpec instanceof HashedPartitionsSpec);
+}

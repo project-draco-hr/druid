@@ -6,7 +6,7 @@
   agg.aggregate();
   Map<String,Object> metricValues=new HashMap<String,Object>();
   metricValues.put(agg.getName(),agg.get());
-  List<PostAggregator> postAggregatorList=Lists.newArrayList(new ConstantPostAggregator("roku",6,null),new FieldAccessPostAggregator("rows","rows"));
+  List<PostAggregator> postAggregatorList=Lists.newArrayList(new ConstantPostAggregator("roku",6),new FieldAccessPostAggregator("rows","rows"));
   arithmeticPostAggregator=new ArithmeticPostAggregator("add","+",postAggregatorList);
   Assert.assertEquals(9.0,arithmeticPostAggregator.compute(metricValues));
   arithmeticPostAggregator=new ArithmeticPostAggregator("subtract","-",postAggregatorList);

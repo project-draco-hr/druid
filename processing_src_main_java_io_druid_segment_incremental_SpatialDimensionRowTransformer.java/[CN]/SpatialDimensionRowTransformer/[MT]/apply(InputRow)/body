@@ -1,11 +1,6 @@
 {
   final Map<String,List<String>> spatialLookup=Maps.newHashMap();
-  final List<String> finalDims=Lists.newArrayList(Iterables.filter(Lists.transform(row.getDimensions(),new Function<String,String>(){
-    @Override public String apply(    String input){
-      return input.toLowerCase();
-    }
-  }
-),new Predicate<String>(){
+  final List<String> finalDims=Lists.newArrayList(Iterables.filter(row.getDimensions(),new Predicate<String>(){
     @Override public boolean apply(    String input){
       return !spatialDimensionMap.containsKey(input) && !spatialPartialDimNames.contains(input);
     }
