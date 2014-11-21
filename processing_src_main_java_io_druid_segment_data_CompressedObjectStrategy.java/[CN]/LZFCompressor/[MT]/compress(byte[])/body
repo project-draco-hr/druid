@@ -1,9 +1,9 @@
 {
+  LZFChunk chunk=null;
   try (final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder()){
-    LZFChunk chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
-    return chunk.getData();
+    chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
   }
  catch (  IOException e) {
-    throw Throwables.propagate(e);
   }
+  return null == chunk ? null : chunk.getData();
 }
