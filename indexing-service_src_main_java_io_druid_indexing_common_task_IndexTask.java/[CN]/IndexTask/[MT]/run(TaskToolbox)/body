@@ -10,7 +10,7 @@
   for (  final Interval bucket : validIntervals) {
     final List<ShardSpec> shardSpecs;
     if (targetPartitionSize > 0) {
-      shardSpecs=determinePartitions(bucket,targetPartitionSize);
+      shardSpecs=determinePartitions(bucket,targetPartitionSize,granularitySpec.getQueryGranularity());
     }
  else {
       int numShards=ingestionSchema.getTuningConfig().getNumShards();
