@@ -130,10 +130,10 @@
         final MultipleSpecificSegmentSpec segmentSpec=new MultipleSpecificSegmentSpec(descriptors);
         List<Interval> intervals=segmentSpec.getIntervals();
         if (!server.isAssignable() || !populateCache || isBySegment) {
-          resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec),context);
+          resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec),responseContext);
         }
  else {
-          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),context),new Function<Object,Sequence<T>>(){
+          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),responseContext),new Function<Object,Sequence<T>>(){
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
             @Override public Sequence<T> apply(            Object input){
               Result<Object> result=(Result<Object>)input;

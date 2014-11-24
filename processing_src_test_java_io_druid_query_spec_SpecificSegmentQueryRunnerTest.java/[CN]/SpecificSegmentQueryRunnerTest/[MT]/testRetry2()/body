@@ -7,7 +7,7 @@
   builder.addMetric(rows);
   final Result<TimeseriesResultValue> value=builder.build();
   final SpecificSegmentQueryRunner queryRunner=new SpecificSegmentQueryRunner(new QueryRunner(){
-    @Override public Sequence run(    Query query,    Map context){
+    @Override public Sequence run(    Query query,    Map responseContext){
       return Sequences.withEffect(Sequences.simple(Arrays.asList(value)),new Runnable(){
         @Override public void run(){
           throw new SegmentMissingException("FAILSAUCE");
@@ -24,7 +24,7 @@
   Assert.assertEquals(1,res.size());
   Result<TimeseriesResultValue> theVal=res.get(0);
   Assert.assertTrue(1L == theVal.getValue().getLongMetric("rows"));
-  Object missingSegments=responseContext.get(RetryQueryRunner.MISSING_SEGMENTS_KEY);
+  Object missingSegments=responseContext.get(Result.MISSING_SEGMENTS_KEY);
   Assert.assertTrue(missingSegments != null);
   Assert.assertTrue(missingSegments instanceof List);
   Object segmentDesc=((List)missingSegments).get(0);

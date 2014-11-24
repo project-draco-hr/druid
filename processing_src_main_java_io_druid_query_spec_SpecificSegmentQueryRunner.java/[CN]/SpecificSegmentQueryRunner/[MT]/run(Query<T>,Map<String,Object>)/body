@@ -5,7 +5,7 @@
   final String newName=String.format("%s_%s_%s",query.getType(),query.getDataSource(),query.getIntervals());
   final Sequence<T> baseSequence=doNamed(currThread,currThreadName,newName,new Callable<Sequence<T>>(){
     @Override public Sequence<T> call() throws Exception {
-      return base.run(query,context);
+      return base.run(query,responseContext);
     }
   }
 );
@@ -17,10 +17,10 @@
             return baseSequence.accumulate(initValue,accumulator);
           }
  catch (          SegmentMissingException e) {
-            List<SegmentDescriptor> missingSegments=(List<SegmentDescriptor>)context.get(RetryQueryRunner.MISSING_SEGMENTS_KEY);
+            List<SegmentDescriptor> missingSegments=(List<SegmentDescriptor>)responseContext.get(Result.MISSING_SEGMENTS_KEY);
             if (missingSegments == null) {
               missingSegments=Lists.newArrayList();
-              context.put(RetryQueryRunner.MISSING_SEGMENTS_KEY,missingSegments);
+              responseContext.put(Result.MISSING_SEGMENTS_KEY,missingSegments);
             }
             missingSegments.add(specificSpec.getDescriptor());
             return initValue;
