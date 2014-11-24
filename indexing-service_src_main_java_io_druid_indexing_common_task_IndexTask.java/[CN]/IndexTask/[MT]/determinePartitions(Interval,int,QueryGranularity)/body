@@ -1,0 +1,31 @@
+{
+  log.info("Determining partitions for interval[%s] with targetPartitionSize[%d]",interval,targetPartitionSize);
+  final FirehoseFactory firehoseFactory=ingestionSchema.getIOConfig().getFirehoseFactory();
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  try (Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser())){
+    while (firehose.hasMore()) {
+      final InputRow inputRow=firehose.nextRow();
+      if (interval.contains(inputRow.getTimestampFromEpoch())) {
+        final List<Object> groupKey=Rows.toGroupKey(queryGranularity.truncate(inputRow.getTimestampFromEpoch()),inputRow);
+        collector.add(hashFunction.hashBytes(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)).asBytes());
+      }
+    }
+  }
+   final double numRows=collector.estimateCardinality();
+  log.info("Estimated approximately [%,f] rows of data.",numRows);
+  int numberOfShards=(int)Math.ceil(numRows / targetPartitionSize);
+  if ((double)numberOfShards > numRows) {
+    numberOfShards=(int)numRows;
+  }
+  log.info("Will require [%,d] shard(s).",numberOfShards);
+  final List<ShardSpec> shardSpecs=Lists.newArrayList();
+  if (numberOfShards == 1) {
+    shardSpecs.add(new NoneShardSpec());
+  }
+ else {
+    for (int i=0; i < numberOfShards; ++i) {
+      shardSpecs.add(new HashBasedNumberedShardSpec(i,numberOfShards,HadoopDruidIndexerConfig.jsonMapper));
+    }
+  }
+  return shardSpecs;
+}

@@ -1,0 +1,9 @@
+{
+  List<SegmentDescriptor> missingSegments=(List<SegmentDescriptor>)responseContext.get(Result.MISSING_SEGMENTS_KEY);
+  if (missingSegments == null) {
+    missingSegments=Lists.newArrayList();
+    responseContext.put(Result.MISSING_SEGMENTS_KEY,missingSegments);
+  }
+  missingSegments.add(descriptor);
+  return Sequences.empty();
+}

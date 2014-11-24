@@ -35,7 +35,7 @@
   if (populateCache) {
     final Function cacheFn=strategy.prepareForCache();
     final List<Object> cacheResults=Lists.newLinkedList();
-    return Sequences.withEffect(Sequences.map(base.run(query,context),new Function<T,T>(){
+    return Sequences.withEffect(Sequences.map(base.run(query,responseContext),new Function<T,T>(){
       @Override public T apply(      T input){
         cacheResults.add(cacheFn.apply(input));
         return input;
@@ -49,6 +49,6 @@
 ,MoreExecutors.sameThreadExecutor());
   }
  else {
-    return base.run(query,context);
+    return base.run(query,responseContext);
   }
 }
