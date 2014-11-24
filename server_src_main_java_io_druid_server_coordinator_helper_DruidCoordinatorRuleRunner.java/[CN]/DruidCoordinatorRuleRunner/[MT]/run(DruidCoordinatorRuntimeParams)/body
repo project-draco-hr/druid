@@ -13,6 +13,8 @@
   DruidCoordinatorRuntimeParams paramsWithReplicationManager=params.buildFromExisting().withReplicationManager(replicatorThrottler).build();
   DateTime now=new DateTime();
   MetadataRuleManager databaseRuleManager=paramsWithReplicationManager.getDatabaseRuleManager();
+  final List<String> segmentsWithMissingRules=Lists.newArrayListWithCapacity(MAX_MISSING_RULES);
+  int missingRules=0;
   for (  DataSegment segment : paramsWithReplicationManager.getAvailableSegments()) {
     List<Rule> rules=databaseRuleManager.getRulesWithDefault(segment.getDataSource());
     boolean foundMatchingRule=false;
@@ -24,8 +26,14 @@
       }
     }
     if (!foundMatchingRule) {
-      log.makeAlert("Unable to find a matching rule!").addData("dataSource",segment.getDataSource()).addData("segment",segment.getIdentifier()).emit();
+      if (segmentsWithMissingRules.size() < MAX_MISSING_RULES) {
+        segmentsWithMissingRules.add(segment.getIdentifier());
+      }
+      missingRules++;
     }
+  }
+  if (!segmentsWithMissingRules.isEmpty()) {
+    log.makeAlert("Unable to find matching rules!").addData("segmentsWithMissingRulesCount",missingRules).addData("segmentsWithMissingRules",segmentsWithMissingRules).emit();
   }
   return paramsWithReplicationManager.buildFromExisting().withCoordinatorStats(stats).build();
 }
