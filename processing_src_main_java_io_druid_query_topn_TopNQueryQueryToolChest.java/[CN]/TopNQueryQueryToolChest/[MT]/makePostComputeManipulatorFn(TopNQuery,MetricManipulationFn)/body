@@ -1,14 +1,18 @@
 {
   return new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     private String dimension=query.getDimensionSpec().getOutputName();
+    private final AggregatorFactory[] aggregatorFactories=query.getAggregatorSpecs().toArray(new AggregatorFactory[0]);
+    private final String[] aggFactoryNames=extractFactoryName(query.getAggregatorSpecs());
+    private final PostAggregator[] postAggregators=query.getPostAggregatorSpecs().toArray(new PostAggregator[0]);
     @Override public Result<TopNResultValue> apply(    Result<TopNResultValue> result){
       List<Map<String,Object>> serializedValues=Lists.newArrayList(Iterables.transform(result.getValue(),new Function<DimensionAndMetricValueExtractor,Map<String,Object>>(){
         @Override public Map<String,Object> apply(        DimensionAndMetricValueExtractor input){
-          final Map<String,Object> values=Maps.newHashMap();
-          for (          AggregatorFactory agg : query.getAggregatorSpecs()) {
-            values.put(agg.getName(),input.getMetric(agg.getName()));
+          final Map<String,Object> values=Maps.newHashMapWithExpectedSize(aggregatorFactories.length + query.getPostAggregatorSpecs().size() + 1);
+          for (int i=0; i < aggFactoryNames.length; ++i) {
+            final String name=aggFactoryNames[i];
+            values.put(name,input.getMetric(name));
           }
-          for (          PostAggregator postAgg : query.getPostAggregatorSpecs()) {
+          for (          PostAggregator postAgg : postAggregators) {
             Object calculatedPostAgg=input.getMetric(postAgg.getName());
             if (calculatedPostAgg != null) {
               values.put(postAgg.getName(),calculatedPostAgg);
@@ -17,8 +21,9 @@
               values.put(postAgg.getName(),postAgg.compute(values));
             }
           }
-          for (          AggregatorFactory agg : query.getAggregatorSpecs()) {
-            values.put(agg.getName(),fn.manipulate(agg,input.getMetric(agg.getName())));
+          for (int i=0; i < aggFactoryNames.length; ++i) {
+            final String name=aggFactoryNames[i];
+            values.put(name,fn.manipulate(aggregatorFactories[i],input.getMetric(name)));
           }
           values.put(dimension,input.getDimensionValue(dimension));
           return values;
