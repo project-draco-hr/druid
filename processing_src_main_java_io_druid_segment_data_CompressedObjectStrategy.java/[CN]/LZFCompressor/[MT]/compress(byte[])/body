@@ -1,10 +1,10 @@
 {
-  LZFChunk chunk=null;
   try (final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder()){
-    chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
+    final LZFChunk chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
+    return chunk.getData();
   }
  catch (  IOException e) {
     log.error(e,"IOException thrown while closing ChunkEncoder.");
   }
-  return null == chunk ? null : chunk.getData();
+  return null;
 }
