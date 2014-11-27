@@ -29,13 +29,15 @@
         startTime=System.currentTimeMillis();
         byteCount+=response.getContent().readableBytes();
         try {
-          final Map<String,Object> responseContext=objectMapper.readValue(response.headers().get("X-Druid-Response-Context"),new TypeReference<Map<String,Object>>(){
+          final String responseContext=response.headers().get("X-Druid-Response-Context");
+          if (responseContext != null) {
+            context.putAll(objectMapper.<Map<String,Object>>readValue(responseContext,new TypeReference<Map<String,Object>>(){
+            }
+));
           }
-);
-          context.putAll(responseContext);
         }
  catch (        IOException e) {
-          e.printStackTrace();
+          log.error(e,"Unable to parse response context from url[%s]",url);
         }
         return super.handleResponse(response);
       }
