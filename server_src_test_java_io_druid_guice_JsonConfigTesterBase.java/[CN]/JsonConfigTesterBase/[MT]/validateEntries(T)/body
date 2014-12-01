@@ -1,0 +1,19 @@
+{
+  for (  Field field : clazz.getDeclaredFields()) {
+    final String propertyKey=getPropertyKey(field);
+    if (null != propertyKey) {
+      field.setAccessible(true);
+      String getter=String.format("get%s%s",field.getName().substring(0,1).toUpperCase(),field.getName().substring(1));
+      Method method=clazz.getDeclaredMethod(getter);
+      final String value;
+      if (null != method) {
+        value=method.invoke(config).toString();
+      }
+ else {
+        value=field.get(config).toString();
+      }
+      Assert.assertEquals(propertyValues.get(propertyKey),value);
+      ++assertions;
+    }
+  }
+}

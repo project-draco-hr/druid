@@ -1,0 +1,7 @@
+{
+  propertyValues.put(getPropertyKey("host"),"fooHost");
+  testProperties.putAll(propertyValues);
+  configProvider.inject(testProperties,configurator);
+  CuratorConfig config=configProvider.get().get();
+  Assert.assertEquals("fooHost",config.getZkHosts());
+}

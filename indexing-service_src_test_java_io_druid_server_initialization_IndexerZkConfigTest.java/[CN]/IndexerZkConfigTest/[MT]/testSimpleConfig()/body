@@ -1,0 +1,11 @@
+{
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Object>of(simpleZkConfigModule));
+  JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  JsonConfigProvider<ZkPathsConfig> zkPathsConfig=JsonConfigProvider.of(zkServiceConfigString,ZkPathsConfig.class);
+  zkPathsConfig.inject(System.getProperties(),configurator);
+  JsonConfigProvider<IndexerZkConfig> indexerZkConfig=JsonConfigProvider.of(indexerPropertyString,IndexerZkConfig.class);
+  indexerZkConfig.inject(System.getProperties(),configurator);
+  validateEntries(indexerZkConfig.get().get());
+  validateEntries(zkPathsConfig.get().get());
+  Assert.assertEquals(clobberableProperties.size(),assertions);
+}
