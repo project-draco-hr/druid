@@ -1,5 +1,5 @@
 {
-  final LeaderLatch newLeaderLatch=new LeaderLatch(curator,ZKPaths.makePath(config.getConnectorPath(),BRIDGE_OWNER_NODE),self.getHost());
+  final LeaderLatch newLeaderLatch=new LeaderLatch(curator,ZKPaths.makePath(config.getConnectorPath(),BRIDGE_OWNER_NODE),self.getHostAndPort());
   newLeaderLatch.addListener(new LeaderLatchListener(){
     @Override public void isLeader(){
       becomeLeader();

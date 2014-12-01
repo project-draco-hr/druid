@@ -1,29 +1,29 @@
 {
+  Preconditions.checkNotNull(serviceName);
   this.serviceName=serviceName;
-  if (port == null) {
-    if (host == null) {
-      setHostAndPort(DEFAULT_HOST,-1,DEFAULT_HOST);
-    }
- else     if (host.contains(":")) {
-      final String[] hostParts=host.split(":");
-      try {
-        setHostAndPort(host,Integer.parseInt(hostParts[1]),hostParts[0]);
-      }
- catch (      NumberFormatException e) {
-        setHostAndPort(host,-1,hostParts[0]);
-      }
-    }
- else {
-      final int openPort=SocketUtil.findOpenPort(8080);
-      setHostAndPort(String.format("%s:%d",host,openPort),openPort,host);
-    }
+  if (host == null && port == null) {
+    host=DEFAULT_HOST;
+    port=-1;
   }
  else {
-    if (host == null || host.contains(":")) {
-      setHostAndPort(host == null ? DEFAULT_HOST : host,port,host == null ? DEFAULT_HOST : host.split(":")[0]);
+    final HostAndPort hostAndPort;
+    if (host != null) {
+      hostAndPort=HostAndPort.fromString(host);
+      if (port != null && hostAndPort.hasPort() && port != hostAndPort.getPort()) {
+        throw new IAE("Conflicting host:port [%s] and port [%d] settings",host,port);
+      }
     }
  else {
-      setHostAndPort(String.format("%s:%d",host,port),port,host);
+      hostAndPort=HostAndPort.fromParts(DEFAULT_HOST,port);
+    }
+    host=hostAndPort.getHostText();
+    if (hostAndPort.hasPort()) {
+      port=hostAndPort.getPort();
+    }
+    if (port == null) {
+      port=SocketUtil.findOpenPort(8080);
     }
   }
+  this.port=port;
+  this.host=host;
 }
