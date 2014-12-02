@@ -1,0 +1,12 @@
+{
+  properties.put(propertyPrefix + ".numBackgroundThreads","5");
+  properties.put(propertyPrefix + ".populateCache","true");
+  properties.put(propertyPrefix + ".useCache","true");
+  properties.put(propertyPrefix + ".unCacheable","[\"a\",\"b\"]");
+  configProvider.inject(properties,configurator);
+  CacheConfig config=configProvider.get().get();
+  injector.injectMembers(config);
+  Assert.assertEquals(5,config.getNumBackgroundThreads());
+  Assert.assertEquals(true,config.isPopulateCache());
+  Assert.assertEquals(true,config.isUseCache());
+}

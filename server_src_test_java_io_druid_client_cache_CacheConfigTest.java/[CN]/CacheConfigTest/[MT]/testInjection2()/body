@@ -1,0 +1,10 @@
+{
+  properties.put(propertyPrefix + ".numBackgroundThreads","99");
+  properties.put(propertyPrefix + ".populateCache","false");
+  properties.put(propertyPrefix + ".useCache","false");
+  configProvider.inject(properties,configurator);
+  CacheConfig config=configProvider.get().get();
+  Assert.assertEquals(99,config.getNumBackgroundThreads());
+  Assert.assertEquals(false,config.isPopulateCache());
+  Assert.assertEquals(false,config.isUseCache());
+}

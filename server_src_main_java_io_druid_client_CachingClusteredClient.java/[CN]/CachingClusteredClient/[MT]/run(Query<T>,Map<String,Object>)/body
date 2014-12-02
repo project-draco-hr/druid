@@ -7,7 +7,7 @@
   final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
   final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
   final boolean isBySegment=query.getContextBySegment(false);
-  ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
+  final ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
   final int priority=query.getContextPriority(0);
   contextBuilder.put("priority",priority);
   if (populateCache) {
@@ -15,14 +15,13 @@
     contextBuilder.put("bySegment",true);
   }
   contextBuilder.put("intermediate",true);
-  final Query<T> rewrittenQuery=query.withOverriddenContext(contextBuilder.build());
   VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
   if (timeline == null) {
     return Sequences.empty();
   }
   Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   List<TimelineObjectHolder<String,ServerSelector>> serversLookup=Lists.newLinkedList();
-  for (  Interval interval : rewrittenQuery.getIntervals()) {
+  for (  Interval interval : query.getIntervals()) {
     serversLookup.addAll(timeline.lookup(interval));
   }
   final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
@@ -117,7 +116,10 @@
         listOfSequences.add(Pair.of(cachedResultPair.lhs,Sequences.map(cachedSequence,pullFromCacheFunction)));
       }
     }
-    @SuppressWarnings("unchecked") private void addSequencesFromServer(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
+    private void addSequencesFromServer(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
+      listOfSequences.ensureCapacity(listOfSequences.size() + serverSegments.size());
+      final Query<Result<BySegmentResultValueClass<T>>> rewrittenQuery=(Query<Result<BySegmentResultValueClass<T>>>)query.withOverriddenContext(contextBuilder.build());
+      final Queue<ListenableFuture<?>> cacheFutures=new ConcurrentLinkedQueue<>();
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
@@ -133,27 +135,40 @@
           resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec),responseContext);
         }
  else {
-          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.map(clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),responseContext),new Function<Object,Sequence<T>>(){
+          final QueryRunner<Result<BySegmentResultValueClass<T>>> clientQueryableWithSegments=clientQueryable;
+          final Sequence<Result<BySegmentResultValueClass<T>>> runningSequence=clientQueryableWithSegments.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),responseContext);
+          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.<Result<BySegmentResultValueClass<T>>,Sequence<T>>map(runningSequence,new Function<Result<BySegmentResultValueClass<T>>,Sequence<T>>(){
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
-            @Override public Sequence<T> apply(            Object input){
-              Result<Object> result=(Result<Object>)input;
-              final BySegmentResultValueClass<T> value=(BySegmentResultValueClass<T>)result.getValue();
+            @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
+              final BySegmentResultValueClass<T> value=input.getValue();
               final List<Object> cacheData=Lists.newLinkedList();
-              return Sequences.withEffect(Sequences.map(Sequences.map(Sequences.simple(value.getResults()),new Function<T,T>(){
-                @Override public T apply(                T input){
-                  cacheData.add(cacheFn.apply(input));
+              return Sequences.<T>withEffect(Sequences.<T,T>map(Sequences.<T,T>map(Sequences.<T>simple(value.getResults()),new Function<T,T>(){
+                @Override public T apply(                final T input){
+                  cacheFutures.add(backgroundExecutorService.submit(new Runnable(){
+                    @Override public void run(){
+                      cacheData.add(cacheFn.apply(input));
+                    }
+                  }
+));
                   return input;
                 }
               }
-),toolChest.makePreComputeManipulatorFn(rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
+),toolChest.makePreComputeManipulatorFn((Query)rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
                 @Override public void run(){
                   CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
                   if (cachePopulator != null) {
-                    cachePopulator.populate(cacheData);
+                    try {
+                      Futures.allAsList(cacheFutures).get();
+                      cachePopulator.populate(cacheData);
+                    }
+ catch (                    Exception e) {
+                      log.error(e,"Error populating cache");
+                      throw Throwables.propagate(e);
+                    }
                   }
                 }
               }
-,MoreExecutors.sameThreadExecutor());
+,backgroundExecutorService);
             }
           }
 ));

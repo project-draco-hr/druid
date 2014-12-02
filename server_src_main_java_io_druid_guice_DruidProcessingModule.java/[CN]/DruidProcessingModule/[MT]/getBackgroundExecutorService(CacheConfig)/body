@@ -1,0 +1,8 @@
+{
+  if (cacheConfig.getNumBackgroundThreads() > 0) {
+    return Executors.newFixedThreadPool(cacheConfig.getNumBackgroundThreads(),new ThreadFactoryBuilder().setNameFormat("background-cacher-%d").setDaemon(true).setPriority(Thread.MIN_PRIORITY).build());
+  }
+ else {
+    return MoreExecutors.sameThreadExecutor();
+  }
+}
