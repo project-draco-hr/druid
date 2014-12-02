@@ -1,6 +1,7 @@
 {
   final long timestamp=System.currentTimeMillis();
-  IncrementalIndex toPersist=IncrementalIndexTest.createCaseInsensitiveIndex(timestamp);
+  IncrementalIndex toPersist=IncrementalIndexTest.createCaseInsensitiveIndex(true);
+  IncrementalIndexTest.populateIndex(timestamp,toPersist);
   final File tempDir=Files.createTempDir();
   try {
     QueryableIndex index=IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir));

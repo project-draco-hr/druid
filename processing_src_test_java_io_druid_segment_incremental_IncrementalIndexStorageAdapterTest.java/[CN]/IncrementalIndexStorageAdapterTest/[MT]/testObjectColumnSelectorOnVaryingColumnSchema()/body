@@ -1,5 +1,5 @@
 {
-  IncrementalIndex index=new OnheapIncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")});
+  IncrementalIndex index=indexCreator.createIndex();
   index.add(new MapBasedInputRow(new DateTime("2014-09-01T00:00:00"),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));
   index.add(new MapBasedInputRow(new DateTime("2014-09-01T01:00:00"),Lists.newArrayList("billy","sally"),ImmutableMap.<String,Object>of("billy","hip","sally","hop")));
   GroupByQueryEngine engine=makeGroupByQueryEngine();
