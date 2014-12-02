@@ -1,20 +1,25 @@
 {
   return new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     private String dimension=query.getDimensionSpec().getOutputName();
+    private final List<PostAggregator> prunedAggs=prunePostAggregators(query);
+    private final AggregatorFactory[] aggregatorFactories=query.getAggregatorSpecs().toArray(new AggregatorFactory[0]);
+    private final String[] aggFactoryNames=extractFactoryName(query.getAggregatorSpecs());
     @Override public Result<TopNResultValue> apply(    Result<TopNResultValue> result){
       List<Map<String,Object>> serializedValues=Lists.newArrayList(Iterables.transform(result.getValue(),new Function<DimensionAndMetricValueExtractor,Map<String,Object>>(){
         @Override public Map<String,Object> apply(        DimensionAndMetricValueExtractor input){
-          final Map<String,Object> values=Maps.newHashMap();
-          for (          AggregatorFactory agg : query.getAggregatorSpecs()) {
-            values.put(agg.getName(),fn.manipulate(agg,input.getMetric(agg.getName())));
+          final Map<String,Object> values=Maps.newHashMapWithExpectedSize(aggregatorFactories.length + prunedAggs.size() + 1);
+          for (int i=0; i < aggregatorFactories.length; ++i) {
+            final String aggName=aggFactoryNames[i];
+            values.put(aggName,fn.manipulate(aggregatorFactories[i],input.getMetric(aggName)));
           }
-          for (          PostAggregator postAgg : prunePostAggregators(query)) {
-            Object calculatedPostAgg=input.getMetric(postAgg.getName());
+          for (          PostAggregator postAgg : prunedAggs) {
+            final String name=postAgg.getName();
+            Object calculatedPostAgg=input.getMetric(name);
             if (calculatedPostAgg != null) {
-              values.put(postAgg.getName(),calculatedPostAgg);
+              values.put(name,calculatedPostAgg);
             }
  else {
-              values.put(postAgg.getName(),postAgg.compute(values));
+              values.put(name,postAgg.compute(values));
             }
           }
           values.put(dimension,input.getDimensionValue(dimension));

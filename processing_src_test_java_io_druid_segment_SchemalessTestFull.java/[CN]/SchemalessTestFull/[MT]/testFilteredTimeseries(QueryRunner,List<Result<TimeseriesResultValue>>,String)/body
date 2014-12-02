@@ -1,6 +1,7 @@
 {
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).filters(providerDimension,"spot").aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).filters(marketDimension,"spot").aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
   failMsg+=" filtered timeseries ";
-  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeseriesResultValue>> actualResults=Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
   TestHelper.assertExpectedResults(expectedResults,actualResults,failMsg);
 }

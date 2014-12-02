@@ -1,0 +1,78 @@
+{
+  final Map<String,List<String>> spatialLookup=Maps.newHashMap();
+  final List<String> finalDims=Lists.newArrayList(Iterables.filter(row.getDimensions(),new Predicate<String>(){
+    @Override public boolean apply(    String input){
+      return !spatialDimensionMap.containsKey(input) && !spatialPartialDimNames.contains(input);
+    }
+  }
+));
+  InputRow retVal=new InputRow(){
+    @Override public List<String> getDimensions(){
+      return finalDims;
+    }
+    @Override public long getTimestampFromEpoch(){
+      return row.getTimestampFromEpoch();
+    }
+    @Override public DateTime getTimestamp(){
+      return row.getTimestamp();
+    }
+    @Override public List<String> getDimension(    String dimension){
+      List<String> retVal=spatialLookup.get(dimension);
+      return (retVal == null) ? row.getDimension(dimension) : retVal;
+    }
+    @Override public Object getRaw(    String dimension){
+      return row.getRaw(dimension);
+    }
+    @Override public long getLongMetric(    String metric){
+      try {
+        return row.getLongMetric(metric);
+      }
+ catch (      ParseException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public float getFloatMetric(    String metric){
+      try {
+        return row.getFloatMetric(metric);
+      }
+ catch (      ParseException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public String toString(){
+      return row.toString();
+    }
+    @Override public int compareTo(    Row o){
+      return getTimestamp().compareTo(o.getTimestamp());
+    }
+  }
+;
+  for (  Map.Entry<String,SpatialDimensionSchema> entry : spatialDimensionMap.entrySet()) {
+    final String spatialDimName=entry.getKey();
+    final SpatialDimensionSchema spatialDim=entry.getValue();
+    List<String> dimVals=row.getDimension(spatialDimName);
+    if (dimVals != null && !dimVals.isEmpty()) {
+      if (dimVals.size() != 1) {
+        throw new ISE("Spatial dimension value must be in an array!");
+      }
+      if (isJoinedSpatialDimValValid(dimVals.get(0))) {
+        spatialLookup.put(spatialDimName,dimVals);
+        finalDims.add(spatialDimName);
+      }
+    }
+ else {
+      List<String> spatialDimVals=Lists.newArrayList();
+      for (      String dim : spatialDim.getDims()) {
+        List<String> partialDimVals=row.getDimension(dim);
+        if (isSpatialDimValsValid(partialDimVals)) {
+          spatialDimVals.addAll(partialDimVals);
+        }
+      }
+      if (spatialDimVals.size() == spatialDim.getDims().size()) {
+        spatialLookup.put(spatialDimName,Arrays.asList(JOINER.join(spatialDimVals)));
+        finalDims.add(spatialDimName);
+      }
+    }
+  }
+  return retVal;
+}

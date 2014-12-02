@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new JettyHttpClientModule("druid.router.http",Router.class),new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/router");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8888);
       JsonConfigProvider.bind(binder,"druid.router",TieredBrokerConfig.class);
       binder.bind(CoordinatorRuleManager.class);
       LifecycleModule.register(binder,CoordinatorRuleManager.class);

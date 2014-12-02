@@ -4,7 +4,7 @@
   final Map<String,GenericColumn> genericColumnCache=Maps.newHashMap();
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
-  final GenericColumn timestamps=index.getTimeColumn().getGenericColumn();
+  final GenericColumn timestamps=index.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
   return Sequences.withBaggage(Sequences.map(Sequences.simple(gran.iterable(interval.getStartMillis(),interval.getEndMillis())),new Function<Long,Cursor>(){
     @Override public Cursor apply(    final Long input){
       final long timeStart=Math.max(interval.getStartMillis(),input);
@@ -38,21 +38,12 @@
         @Override public void reset(){
           cursorOffset=initOffset.clone();
         }
-        @Override public TimestampColumnSelector makeTimestampColumnSelector(){
-          return new TimestampColumnSelector(){
-            @Override public long getTimestamp(){
-              return timestamps.getLongSingleValueRow(cursorOffset.getOffset());
-            }
-          }
-;
-        }
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
-          final String dimensionName=dimension.toLowerCase();
-          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimensionName);
-          final Column columnDesc=index.getColumn(dimensionName);
+          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimension);
+          final Column columnDesc=index.getColumn(dimension);
           if (cachedColumn == null && columnDesc != null) {
             cachedColumn=columnDesc.getDictionaryEncoding();
-            dictionaryColumnCache.put(dimensionName,cachedColumn);
+            dictionaryColumnCache.put(dimension,cachedColumn);
           }
           final DictionaryEncodedColumn column=cachedColumn;
           if (column == null) {
@@ -106,13 +97,12 @@
           }
         }
         @Override public FloatColumnSelector makeFloatColumnSelector(        String columnName){
-          final String metricName=columnName.toLowerCase();
-          GenericColumn cachedMetricVals=genericColumnCache.get(metricName);
+          GenericColumn cachedMetricVals=genericColumnCache.get(columnName);
           if (cachedMetricVals == null) {
-            Column holder=index.getColumn(metricName);
-            if (holder != null && holder.getCapabilities().getType() == ValueType.FLOAT) {
+            Column holder=index.getColumn(columnName);
+            if (holder != null && (holder.getCapabilities().getType() == ValueType.FLOAT || holder.getCapabilities().getType() == ValueType.LONG)) {
               cachedMetricVals=holder.getGenericColumn();
-              genericColumnCache.put(metricName,cachedMetricVals);
+              genericColumnCache.put(columnName,cachedMetricVals);
             }
           }
           if (cachedMetricVals == null) {
@@ -131,11 +121,35 @@
           }
 ;
         }
-        @Override public ObjectColumnSelector makeObjectColumnSelector(        String column){
-          final String columnName=column.toLowerCase();
-          Object cachedColumnVals=objectColumnCache.get(columnName);
-          if (cachedColumnVals == null) {
+        @Override public LongColumnSelector makeLongColumnSelector(        String columnName){
+          GenericColumn cachedMetricVals=genericColumnCache.get(columnName);
+          if (cachedMetricVals == null) {
             Column holder=index.getColumn(columnName);
+            if (holder != null && (holder.getCapabilities().getType() == ValueType.LONG || holder.getCapabilities().getType() == ValueType.FLOAT)) {
+              cachedMetricVals=holder.getGenericColumn();
+              genericColumnCache.put(columnName,cachedMetricVals);
+            }
+          }
+          if (cachedMetricVals == null) {
+            return new LongColumnSelector(){
+              @Override public long get(){
+                return 0L;
+              }
+            }
+;
+          }
+          final GenericColumn metricVals=cachedMetricVals;
+          return new LongColumnSelector(){
+            @Override public long get(){
+              return metricVals.getLongSingleValueRow(cursorOffset.getOffset());
+            }
+          }
+;
+        }
+        @Override public ObjectColumnSelector makeObjectColumnSelector(        String column){
+          Object cachedColumnVals=objectColumnCache.get(column);
+          if (cachedColumnVals == null) {
+            Column holder=index.getColumn(column);
             if (holder != null) {
               final ColumnCapabilities capabilities=holder.getCapabilities();
               if (capabilities.isDictionaryEncoded()) {
@@ -149,7 +163,7 @@
               }
             }
             if (cachedColumnVals != null) {
-              objectColumnCache.put(columnName,cachedColumnVals);
+              objectColumnCache.put(column,cachedColumnVals);
             }
           }
           if (cachedColumnVals == null) {

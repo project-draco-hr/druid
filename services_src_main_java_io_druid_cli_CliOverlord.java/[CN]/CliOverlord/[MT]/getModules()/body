@@ -1,6 +1,8 @@
 {
   return ImmutableList.<Object>of(new Module(){
     @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to(IndexingServiceSelectorConfig.DEFAULT_SERVICE_NAME);
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8090);
       JsonConfigProvider.bind(binder,"druid.indexer.queue",TaskQueueConfig.class);
       JsonConfigProvider.bind(binder,"druid.indexer.task",TaskConfig.class);
       binder.bind(TaskMaster.class).in(ManageLifecycle.class);
@@ -10,7 +12,6 @@
 ).toProvider(new ListProvider<TaskLogStreamer>().add(TaskRunnerTaskLogStreamer.class).add(TaskLogs.class)).in(LazySingleton.class);
       binder.bind(TaskActionClientFactory.class).to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
-      binder.bind(IndexerDBCoordinator.class).in(LazySingleton.class);
       binder.bind(TaskLockbox.class).in(LazySingleton.class);
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
       binder.bind(ResourceManagementSchedulerFactory.class).to(ResourceManagementSchedulerFactoryImpl.class).in(LazySingleton.class);
@@ -30,8 +31,8 @@
       final MapBinder<String,TaskStorage> storageBinder=PolyBind.optionBinder(binder,Key.get(TaskStorage.class));
       storageBinder.addBinding("local").to(HeapMemoryTaskStorage.class);
       binder.bind(HeapMemoryTaskStorage.class).in(LazySingleton.class);
-      storageBinder.addBinding("db").to(DbTaskStorage.class).in(ManageLifecycle.class);
-      binder.bind(DbTaskStorage.class).in(LazySingleton.class);
+      storageBinder.addBinding("metadata").to(MetadataTaskStorage.class).in(ManageLifecycle.class);
+      binder.bind(MetadataTaskStorage.class).in(LazySingleton.class);
     }
     private void configureRunners(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.worker",WorkerConfig.class);
@@ -42,21 +43,12 @@
       binder.bind(ForkingTaskRunnerFactory.class).in(LazySingleton.class);
       biddy.addBinding("remote").to(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
       binder.bind(RemoteTaskRunnerFactory.class).in(LazySingleton.class);
-      PolyBind.createChoice(binder,"druid.indexer.runner.workerSelectStrategy.type",Key.get(WorkerSelectStrategy.class),Key.get(FillCapacityWorkerSelectStrategy.class));
-      final MapBinder<String,WorkerSelectStrategy> stratBinder=PolyBind.optionBinder(binder,Key.get(WorkerSelectStrategy.class));
-      stratBinder.addBinding("fillCapacity").to(FillCapacityWorkerSelectStrategy.class);
-      binder.bind(FillCapacityWorkerSelectStrategy.class).in(LazySingleton.class);
+      JacksonConfigProvider.bind(binder,WorkerSetupData.CONFIG_KEY,WorkerSetupData.class,null);
+      JacksonConfigProvider.bind(binder,WorkerBehaviorConfig.CONFIG_KEY,WorkerBehaviorConfig.class,null);
     }
     private void configureAutoscale(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",ResourceManagementSchedulerConfig.class);
       binder.bind(ResourceManagementStrategy.class).to(SimpleResourceManagementStrategy.class).in(LazySingleton.class);
-      JacksonConfigProvider.bind(binder,WorkerSetupData.CONFIG_KEY,WorkerSetupData.class,null);
-      PolyBind.createChoice(binder,"druid.indexer.autoscale.strategy",Key.get(AutoScalingStrategy.class),Key.get(NoopAutoScalingStrategy.class));
-      final MapBinder<String,AutoScalingStrategy> autoScalingBinder=PolyBind.optionBinder(binder,Key.get(AutoScalingStrategy.class));
-      autoScalingBinder.addBinding("ec2").to(EC2AutoScalingStrategy.class);
-      binder.bind(EC2AutoScalingStrategy.class).in(LazySingleton.class);
-      autoScalingBinder.addBinding("noop").to(NoopAutoScalingStrategy.class);
-      binder.bind(NoopAutoScalingStrategy.class).in(LazySingleton.class);
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",SimpleResourceManagementConfig.class);
     }
   }

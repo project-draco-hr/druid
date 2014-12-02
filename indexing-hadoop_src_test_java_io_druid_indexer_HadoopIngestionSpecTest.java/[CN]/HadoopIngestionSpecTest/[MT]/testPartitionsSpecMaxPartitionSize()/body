@@ -1,7 +1,7 @@
 {
   final HadoopIngestionSpec schema;
   try {
-    schema=jsonReadWriteRead("{" + "\"partitionsSpec\":{" + "   \"targetPartitionSize\":100,"+ "   \"maxPartitionSize\":200,"+ "   \"partitionDimension\":\"foo\""+ " }"+ "}",HadoopIngestionSpec.class);
+    schema=jsonReadWriteRead("{\n" + "    \"tuningConfig\": {\n" + "        \"type\": \"hadoop\",\n"+ "        \"partitionsSpec\": {\n"+ "            \"type\": \"dimension\",\n"+ "            \"targetPartitionSize\": 100,\n"+ "            \"maxPartitionSize\" : 200,\n"+ "            \"partitionDimension\" : \"foo\"\n"+ "        }\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

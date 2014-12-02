@@ -1,3 +1,71 @@
 {
-  return add(row,true);
+  row=formatRow(row);
+  if (row.getTimestampFromEpoch() < minTimestamp) {
+    throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
+  }
+  final List<String> rowDimensions=row.getDimensions();
+  String[][] dims;
+  List<String[]> overflow=null;
+synchronized (dimensionOrder) {
+    dims=new String[dimensionOrder.size()][];
+    for (    String dimension : rowDimensions) {
+      List<String> dimensionValues=row.getDimension(dimension);
+      ColumnCapabilitiesImpl capabilities=columnCapabilities.get(dimension);
+      if (capabilities == null) {
+        capabilities=new ColumnCapabilitiesImpl();
+        capabilities.setType(ValueType.STRING);
+        columnCapabilities.put(dimension,capabilities);
+      }
+      if (dimensionValues.size() > 1) {
+        capabilities.setHasMultipleValues(true);
+      }
+      Integer index=dimensionOrder.get(dimension);
+      if (index == null) {
+        dimensionOrder.put(dimension,dimensionOrder.size());
+        dimensions.add(dimension);
+        if (overflow == null) {
+          overflow=Lists.newArrayList();
+        }
+        overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
+      }
+ else {
+        dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
+      }
+    }
+  }
+  if (overflow != null) {
+    String[][] newDims=new String[dims.length + overflow.size()][];
+    System.arraycopy(dims,0,newDims,0,dims.length);
+    for (int i=0; i < overflow.size(); ++i) {
+      newDims[dims.length + i]=overflow.get(i);
+    }
+    dims=newDims;
+  }
+  final TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
+  Integer rowOffset;
+synchronized (this) {
+    rowOffset=totalAggSize * numEntries.get();
+    final Integer prev=facts.putIfAbsent(key,rowOffset);
+    if (prev != null) {
+      rowOffset=prev;
+    }
+ else {
+      if (rowOffset + totalAggSize > bufferHolder.get().limit()) {
+        facts.remove(key);
+        throw new ISE("Buffer full, cannot add more rows! Current rowSize[%,d].",numEntries.get());
+      }
+      numEntries.incrementAndGet();
+      for (int i=0; i < aggs.length; i++) {
+        aggs[i].init(bufferHolder.get(),getMetricPosition(rowOffset,i));
+      }
+    }
+  }
+  in.set(row);
+  for (int i=0; i < aggs.length; i++) {
+synchronized (aggs[i]) {
+      aggs[i].aggregate(bufferHolder.get(),getMetricPosition(rowOffset,i));
+    }
+  }
+  in.set(null);
+  return numEntries.get();
 }

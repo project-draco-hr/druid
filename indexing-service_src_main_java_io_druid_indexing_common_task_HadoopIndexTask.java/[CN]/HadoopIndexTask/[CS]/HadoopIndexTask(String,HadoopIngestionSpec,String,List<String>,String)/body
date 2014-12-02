@@ -1,0 +1,17 @@
+{
+  super(id != null ? id : String.format("index_hadoop_%s_%s",getTheDataSource(spec),new DateTime()),getTheDataSource(spec));
+  this.spec=spec;
+  Preconditions.checkArgument(this.spec.getIOConfig().getSegmentOutputPath() == null,"segmentOutputPath must be absent");
+  Preconditions.checkArgument(this.spec.getTuningConfig().getWorkingPath() == null,"workingPath must be absent");
+  Preconditions.checkArgument(this.spec.getIOConfig().getMetadataUpdateSpec() == null,"updaterJobSpec must be absent");
+  if (hadoopDependencyCoordinates != null) {
+    this.hadoopDependencyCoordinates=hadoopDependencyCoordinates;
+  }
+ else   if (hadoopCoordinates != null) {
+    this.hadoopDependencyCoordinates=ImmutableList.of(hadoopCoordinates);
+  }
+ else {
+    this.hadoopDependencyCoordinates=null;
+  }
+  this.classpathPrefix=classpathPrefix;
+}

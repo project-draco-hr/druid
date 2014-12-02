@@ -1,0 +1,37 @@
+{
+  this.dataInterval=dataInterval;
+  this.index=index;
+  this.invertedIndexes=Maps.newHashMap();
+  for (  String dimension : index.getDimensions()) {
+    invertedIndexes.put(dimension,Maps.<String,MutableBitmap>newHashMap());
+  }
+  int rowNum=0;
+  for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
+    final String[][] dims=timeAndDims.getDims();
+    for (    String dimension : index.getDimensions()) {
+      int dimIndex=index.getDimensionIndex(dimension);
+      Map<String,MutableBitmap> bitmapIndexes=invertedIndexes.get(dimension);
+      if (bitmapIndexes == null || dims == null) {
+        log.error("bitmapIndexes and dims are null!");
+        continue;
+      }
+      if (dimIndex >= dims.length || dims[dimIndex] == null) {
+        continue;
+      }
+      for (      String dimValue : dims[dimIndex]) {
+        MutableBitmap mutableBitmap=bitmapIndexes.get(dimValue);
+        if (mutableBitmap == null) {
+          mutableBitmap=bitmapFactory.makeEmptyMutableBitmap();
+          bitmapIndexes.put(dimValue,mutableBitmap);
+        }
+        try {
+          mutableBitmap.add(rowNum);
+        }
+ catch (        Exception e) {
+          log.info(e.toString());
+        }
+      }
+    }
+    ++rowNum;
+  }
+}

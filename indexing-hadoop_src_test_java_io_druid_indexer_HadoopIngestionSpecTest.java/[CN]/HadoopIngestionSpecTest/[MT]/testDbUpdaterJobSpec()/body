@@ -1,11 +1,10 @@
 {
   final HadoopIngestionSpec schema;
-  schema=jsonReadWriteRead("{" + "\"updaterJobSpec\":{\n" + "    \"type\" : \"db\",\n"+ "    \"connectURI\" : \"jdbc:mysql://localhost/druid\",\n"+ "    \"user\" : \"rofl\",\n"+ "    \"password\" : \"p4ssw0rd\",\n"+ "    \"segmentTable\" : \"segments\"\n"+ "  }"+ "}",HadoopIngestionSpec.class);
-  final DbUpdaterJobSpec spec=schema.getIOConfig().getMetadataUpdateSpec();
-  final DbConnectorConfig connectorConfig=spec.get();
+  schema=jsonReadWriteRead("{\n" + "    \"ioConfig\": {\n" + "        \"type\": \"hadoop\",\n"+ "        \"metadataUpdateSpec\": {\n"+ "            \"type\": \"db\",\n"+ "            \"connectURI\": \"jdbc:mysql://localhost/druid\",\n"+ "            \"user\": \"rofl\",\n"+ "            \"password\": \"p4ssw0rd\",\n"+ "            \"segmentTable\": \"segments\"\n"+ "        }\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
+  final MetadataStorageUpdaterJobSpec spec=schema.getIOConfig().getMetadataUpdateSpec();
+  final MetadataStorageConnectorConfig connectorConfig=spec.get();
   Assert.assertEquals("segments",spec.getSegmentTable());
   Assert.assertEquals("jdbc:mysql://localhost/druid",connectorConfig.getConnectURI());
   Assert.assertEquals("rofl",connectorConfig.getUser());
   Assert.assertEquals("p4ssw0rd",connectorConfig.getPassword());
-  Assert.assertEquals(false,connectorConfig.isUseValidationQuery());
 }

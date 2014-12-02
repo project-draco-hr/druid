@@ -1,0 +1,12 @@
+{
+  Indexed<String> dimValues=selector.getDimensionValues(dimension);
+  if (dimValues == null || dimValues.size() == 0 || predicate == null) {
+    return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+  }
+  return selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(predicate).transform(new Function<String,ImmutableBitmap>(){
+    @Override public ImmutableBitmap apply(    @Nullable String input){
+      return selector.getBitmapIndex(dimension,input);
+    }
+  }
+));
+}

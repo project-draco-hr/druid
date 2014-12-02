@@ -1,0 +1,16 @@
+{
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0).times(2);
+  EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(1).times(2);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip")).times(2);
+  EasyMock.expect(autoScaler.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.<String>newArrayList("ip")));
+  EasyMock.replay(autoScaler);
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
+  Assert.assertTrue(terminatedSomething);
+  Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().size() == 1);
+  Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);
+  terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(null)));
+  Assert.assertFalse(terminatedSomething);
+  Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().size() == 1);
+  Assert.assertTrue(simpleResourceManagementStrategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);
+  EasyMock.verify(autoScaler);
+}

@@ -28,7 +28,7 @@
 ;
   ScheduledExecutorFactory factory=ScheduledExecutors.createFactory(new Lifecycle());
   DruidNode me=new DruidNode("me","localhost",8080);
-  AtomicReference<LeaderLatch> leaderLatch=new AtomicReference<>(new LeaderLatch(localCf,"test"));
+  AtomicReference<LeaderLatch> leaderLatch=new AtomicReference<>(new LeaderLatch(localCf,"/test"));
   ZkPathsConfig zkPathsConfig=new ZkPathsConfig(){
     @Override public String getZkBasePath(){
       return "/druid";
@@ -36,16 +36,16 @@
   }
 ;
   DruidServerMetadata metadata=new DruidServerMetadata("test","localhost",1000,"bridge",DruidServer.DEFAULT_TIER,0);
-  DbSegmentPublisher dbSegmentPublisher=EasyMock.createMock(DbSegmentPublisher.class);
+  SegmentPublisher dbSegmentPublisher=EasyMock.createMock(SegmentPublisher.class);
   EasyMock.replay(dbSegmentPublisher);
-  DatabaseSegmentManager databaseSegmentManager=EasyMock.createMock(DatabaseSegmentManager.class);
+  MetadataSegmentManager databaseSegmentManager=EasyMock.createMock(MetadataSegmentManager.class);
   EasyMock.replay(databaseSegmentManager);
   ServerView serverView=EasyMock.createMock(ServerView.class);
   EasyMock.replay(serverView);
   BridgeZkCoordinator bridgeZkCoordinator=new BridgeZkCoordinator(jsonMapper,zkPathsConfig,new SegmentLoaderConfig(),metadata,remoteCf,dbSegmentPublisher,databaseSegmentManager,serverView);
   Announcer announcer=new Announcer(remoteCf,Executors.newSingleThreadExecutor());
   announcer.start();
-  announcer.announce(zkPathsConfig.getAnnouncementsPath() + "/" + me.getHost(),jsonMapper.writeValueAsBytes(me));
+  announcer.announce(zkPathsConfig.getAnnouncementsPath() + "/" + me.getHostAndPort(),jsonMapper.writeValueAsBytes(me));
   BatchDataSegmentAnnouncer batchDataSegmentAnnouncer=EasyMock.createMock(BatchDataSegmentAnnouncer.class);
   BatchServerInventoryView batchServerInventoryView=EasyMock.createMock(BatchServerInventoryView.class);
   EasyMock.expect(batchServerInventoryView.getInventory()).andReturn(Arrays.asList(new DruidServer("1","localhost",117,"historical",DruidServer.DEFAULT_TIER,0),new DruidServer("2","localhost",1,"historical",DruidServer.DEFAULT_TIER,0)));

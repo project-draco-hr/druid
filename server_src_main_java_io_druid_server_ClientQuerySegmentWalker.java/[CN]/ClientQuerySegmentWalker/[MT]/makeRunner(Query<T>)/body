@@ -5,7 +5,7 @@
       return toolChest.makeMetricBuilder(query);
     }
   }
-,toolChest.preMergeQueryDecoration(baseClient)).withWaitMeasuredFromNow(),toolChest))),toolChest);
+,toolChest.preMergeQueryDecoration(new RetryQueryRunner<T>(baseClient,toolChest,retryConfig,objectMapper))).withWaitMeasuredFromNow(),toolChest))),toolChest);
   final Map<String,Object> context=query.getContext();
   PostProcessingOperator<T> postProcessing=null;
   if (context != null) {

@@ -1,7 +1,7 @@
 {
   HadoopIngestionSpec schema;
   try {
-    schema=jsonReadWriteRead("{" + "\"dataSource\": \"source\"," + " \"granularitySpec\":{"+ "   \"type\":\"uniform\","+ "   \"gran\":\"hour\","+ "   \"intervals\":[\"2012-07-10/P1D\"]"+ " },"+ "\"segmentOutputPath\": \"hdfs://server:9100/tmp/druid/datatest\""+ "}",HadoopIngestionSpec.class);
+    schema=jsonReadWriteRead("{\n" + "    \"dataSchema\": {\n" + "        \"dataSource\": \"source\",\n"+ "        \"metricsSpec\": [],\n"+ "        \"granularitySpec\": {\n"+ "            \"type\": \"uniform\",\n"+ "            \"segmentGranularity\": \"hour\",\n"+ "            \"intervals\": [\"2012-07-10/P1D\"]\n"+ "        }\n"+ "    },\n"+ "    \"ioConfig\": {\n"+ "        \"type\": \"hadoop\",\n"+ "        \"segmentOutputPath\": \"hdfs://server:9100/tmp/druid/datatest\"\n"+ "    }\n"+ "}",HadoopIngestionSpec.class);
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

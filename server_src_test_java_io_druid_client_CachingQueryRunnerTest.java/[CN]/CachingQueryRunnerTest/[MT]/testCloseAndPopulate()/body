@@ -15,7 +15,7 @@
   TopNQueryQueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig());
   DefaultObjectMapper objectMapper=new DefaultObjectMapper();
   CachingQueryRunner runner=new CachingQueryRunner(segmentIdentifier,segmentDescriptor,objectMapper,cache,toolchest,new QueryRunner(){
-    @Override public Sequence run(    Query query){
+    @Override public Sequence run(    Query query,    Map responseContext){
       return resultSeq;
     }
   }
@@ -23,7 +23,8 @@
   TopNQuery query=builder.build();
   CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
   Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));
-  Sequence res=runner.run(query);
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Sequence res=runner.run(query,context);
   Assert.assertFalse("sequence must not be closed",closable.isClosed());
   Assert.assertNull("cache must be empty",cache.get(cacheKey));
   ArrayList results=Sequences.toList(res,new ArrayList());

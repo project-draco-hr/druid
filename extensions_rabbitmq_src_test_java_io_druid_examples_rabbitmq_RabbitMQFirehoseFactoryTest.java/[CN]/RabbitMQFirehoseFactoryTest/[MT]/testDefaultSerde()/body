@@ -1,0 +1,15 @@
+{
+  RabbitMQFirehoseConfig config=RabbitMQFirehoseConfig.makeDefaultConfig();
+  JacksonifiedConnectionFactory connectionFactory=JacksonifiedConnectionFactory.makeDefaultConnectionFactory();
+  RabbitMQFirehoseFactory factory=new RabbitMQFirehoseFactory(connectionFactory,config);
+  byte[] bytes=mapper.writeValueAsBytes(factory);
+  RabbitMQFirehoseFactory factory2=mapper.readValue(bytes,RabbitMQFirehoseFactory.class);
+  byte[] bytes2=mapper.writeValueAsBytes(factory2);
+  Assert.assertArrayEquals(bytes,bytes2);
+  Assert.assertEquals(factory.getConfig(),factory2.getConfig());
+  Assert.assertEquals(factory.getConnectionFactory(),factory2.getConnectionFactory());
+  Assert.assertEquals(300,factory2.getConfig().getMaxDurationSeconds());
+  Assert.assertEquals(ConnectionFactory.DEFAULT_HOST,factory2.getConnectionFactory().getHost());
+  Assert.assertEquals(ConnectionFactory.DEFAULT_USER,factory2.getConnectionFactory().getUsername());
+  Assert.assertEquals(ConnectionFactory.DEFAULT_AMQP_PORT,factory2.getConnectionFactory().getPort());
+}

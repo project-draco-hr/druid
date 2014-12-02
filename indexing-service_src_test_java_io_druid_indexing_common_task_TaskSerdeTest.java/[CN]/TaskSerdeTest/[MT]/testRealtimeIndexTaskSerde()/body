@@ -1,5 +1,10 @@
 {
-  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),null,new Schema("foo",null,new AggregatorFactory[0],QueryGranularity.NONE,new NoneShardSpec()),null,null,new Period("PT10M"),1,Granularity.HOUR,null,null);
+  final RealtimeIndexTask task=new RealtimeIndexTask(null,new TaskResource("rofl",2),new FireDepartment(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null)),new RealtimeIOConfig(new LocalFirehoseFactory(new File("lol"),"rofl",null),new PlumberSchool(){
+    @Override public Plumber findPlumber(    DataSchema schema,    RealtimeTuningConfig config,    FireDepartmentMetrics metrics){
+      return null;
+    }
+  }
+),new RealtimeTuningConfig(1,new Period("PT10M"),null,null,null,null,1,new NoneShardSpec(),false,false)));
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final RealtimeIndexTask task2=(RealtimeIndexTask)jsonMapper.readValue(json,Task.class);

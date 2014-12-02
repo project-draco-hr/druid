@@ -1,5 +1,4 @@
 {
-  final BufferAggregator aggregator=delegate.factorizeBuffered(metricFactory);
-  final Pair<DimensionSelector,IntPredicate> selectorPredicatePair=makeFilterPredicate(filter,metricFactory);
-  return new FilteredBufferAggregator(selectorPredicatePair.lhs,selectorPredicatePair.rhs,aggregator);
+  final ValueMatcher valueMatcher=Filters.convertDimensionFilters(filter).makeMatcher(columnSelectorFactory);
+  return new FilteredBufferAggregator(valueMatcher,delegate.factorizeBuffered(columnSelectorFactory));
 }

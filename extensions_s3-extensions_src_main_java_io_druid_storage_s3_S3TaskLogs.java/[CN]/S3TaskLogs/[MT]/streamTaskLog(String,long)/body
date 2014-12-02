@@ -1,0 +1,36 @@
+{
+  final String taskKey=getTaskLogKey(taskid);
+  try {
+    final StorageObject objectDetails=service.getObjectDetails(config.getS3Bucket(),taskKey,null,null,null,null);
+    return Optional.<ByteSource>of(new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
+        try {
+          final long start;
+          final long end=objectDetails.getContentLength() - 1;
+          if (offset > 0 && offset < objectDetails.getContentLength()) {
+            start=offset;
+          }
+ else           if (offset < 0 && (-1 * offset) < objectDetails.getContentLength()) {
+            start=objectDetails.getContentLength() + offset;
+          }
+ else {
+            start=0;
+          }
+          return service.getObject(config.getS3Bucket(),taskKey,null,null,new String[]{objectDetails.getETag()},null,start,end).getDataInputStream();
+        }
+ catch (        ServiceException e) {
+          throw new IOException(e);
+        }
+      }
+    }
+);
+  }
+ catch (  ServiceException e) {
+    if (404 == e.getResponseCode() || "NoSuchKey".equals(e.getErrorCode()) || "NoSuchBucket".equals(e.getErrorCode())) {
+      return Optional.absent();
+    }
+ else {
+      throw new IOException(String.format("Failed to stream logs from: %s",taskKey),e);
+    }
+  }
+}

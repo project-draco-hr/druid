@@ -1,0 +1,21 @@
+{
+  List<DataSegment> matchingSegments=connector.getDBI().withHandle(new HandleCallback<List<DataSegment>>(){
+    @Override public List<DataSegment> withHandle(    Handle handle) throws IOException, SQLException {
+      return handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource and start >= :start and \"end\" <= :end and used = false",dbTables.getSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).map(ByteArrayMapper.FIRST).fold(Lists.<DataSegment>newArrayList(),new Folder3<List<DataSegment>,byte[]>(){
+        @Override public List<DataSegment> fold(        List<DataSegment> accumulator,        byte[] payload,        FoldController foldController,        StatementContext statementContext) throws SQLException {
+          try {
+            accumulator.add(jsonMapper.readValue(payload,DataSegment.class));
+            return accumulator;
+          }
+ catch (          Exception e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+  }
+);
+  log.info("Found %,d segments for %s for interval %s.",matchingSegments.size(),dataSource,interval);
+  return matchingSegments;
+}

@@ -1,0 +1,25 @@
+{
+  if (!(input instanceof SearchQuery)) {
+    throw new ISE("Can only handle [%s], got [%s]",SearchQuery.class,input.getClass());
+  }
+  final SearchQuery query=(SearchQuery)input;
+  if (query.getLimit() < config.getMaxSearchLimit()) {
+    return runner.run(query,responseContext);
+  }
+  final boolean isBySegment=query.getContextBySegment(false);
+  return Sequences.map(runner.run(query.withLimit(config.getMaxSearchLimit()),responseContext),new Function<Result<SearchResultValue>,Result<SearchResultValue>>(){
+    @Override public Result<SearchResultValue> apply(    Result<SearchResultValue> input){
+      if (isBySegment) {
+        BySegmentSearchResultValue value=(BySegmentSearchResultValue)input.getValue();
+        return new Result<SearchResultValue>(input.getTimestamp(),new BySegmentSearchResultValue(Lists.transform(value.getResults(),new Function<Result<SearchResultValue>,Result<SearchResultValue>>(){
+          @Override public Result<SearchResultValue> apply(          @Nullable Result<SearchResultValue> input){
+            return new Result<SearchResultValue>(input.getTimestamp(),new SearchResultValue(Lists.newArrayList(Iterables.limit(input.getValue(),query.getLimit()))));
+          }
+        }
+),value.getSegmentId(),value.getInterval()));
+      }
+      return new Result<SearchResultValue>(input.getTimestamp(),new SearchResultValue(Lists.<SearchHit>newArrayList(Iterables.limit(input.getValue(),query.getLimit()))));
+    }
+  }
+);
+}

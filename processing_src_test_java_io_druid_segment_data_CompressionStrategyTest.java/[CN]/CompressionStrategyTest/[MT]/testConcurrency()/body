@@ -1,0 +1,24 @@
+{
+  final int numThreads=20;
+  BlockingQueue<Runnable> queue=new ArrayBlockingQueue<>(numThreads);
+  ThreadPoolExecutor threadPoolExecutor=new ThreadPoolExecutor(numThreads,numThreads,100,TimeUnit.MILLISECONDS,queue);
+  Collection<Future<Boolean>> results=new ArrayList<>();
+  for (int i=0; i < numThreads; ++i) {
+    results.add(threadPoolExecutor.submit(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        ByteBuffer compressed=ByteBuffer.wrap(compressionStrategy.getCompressor().compress(originalData));
+        ByteBuffer output=ByteBuffer.allocate(originalData.length);
+        compressionStrategy.getDecompressor().decompress(compressed,compressed.array().length,output);
+        byte[] checkArray=new byte[DATA_SIZER];
+        output.get(checkArray);
+        Assert.assertArrayEquals("Uncompressed data does not match",originalData,checkArray);
+        return true;
+      }
+    }
+));
+  }
+  threadPoolExecutor.shutdown();
+  for (  Future result : results) {
+    Assert.assertTrue((Boolean)result.get(100,TimeUnit.MILLISECONDS));
+  }
+}

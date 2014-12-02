@@ -5,7 +5,8 @@
   final QueryRunner<Result<SearchResultValue>> runner=serverManager.getQueryRunnerForIntervals(query,intervals);
   return serverManagerExec.submit(new Runnable(){
     @Override public void run(){
-      Sequence<Result<SearchResultValue>> seq=runner.run(query);
+      Map<String,Object> context=new HashMap<String,Object>();
+      Sequence<Result<SearchResultValue>> seq=runner.run(query,context);
       Sequences.toList(seq,Lists.<Result<SearchResultValue>>newArrayList());
       Iterator<SegmentForTesting> adaptersIter=factory.getAdapters().iterator();
       while (expectedIter.hasNext() && adaptersIter.hasNext()) {

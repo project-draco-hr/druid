@@ -1,0 +1,11 @@
+{
+  final Closeable closeable=adapter.increment();
+  try {
+    final Sequence<T> baseSequence=factory.createRunner(adapter).run(query,responseContext);
+    return new ResourceClosingSequence<T>(baseSequence,closeable);
+  }
+ catch (  RuntimeException e) {
+    CloseQuietly.close(closeable);
+    throw e;
+  }
+}
