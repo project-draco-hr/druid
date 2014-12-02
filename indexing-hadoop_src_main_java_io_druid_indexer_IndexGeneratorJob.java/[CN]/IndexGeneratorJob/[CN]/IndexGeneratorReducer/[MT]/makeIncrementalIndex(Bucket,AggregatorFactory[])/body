@@ -7,9 +7,9 @@
   int bufferSize=aggsSize * tuningConfig.getRowFlushBoundary();
   final IncrementalIndexSchema indexSchema=new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build();
   if (tuningConfig.isIngestOffheap()) {
-    return new OffheapIncrementalIndex(indexSchema,new OffheapBufferPool(bufferSize));
+    return new OffheapIncrementalIndex(indexSchema,new OffheapBufferPool(bufferSize),true);
   }
  else {
-    return new IncrementalIndex(indexSchema,new OffheapBufferPool(bufferSize));
+    return new OnheapIncrementalIndex(indexSchema);
   }
 }

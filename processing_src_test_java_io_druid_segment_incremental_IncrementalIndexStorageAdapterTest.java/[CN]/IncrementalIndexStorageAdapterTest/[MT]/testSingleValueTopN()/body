@@ -1,5 +1,5 @@
 {
-  IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},TestQueryRunners.pool);
+  IncrementalIndex index=new OnheapIncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")});
   DateTime t=DateTime.now();
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","bo")));
   TopNQueryEngine engine=new TopNQueryEngine(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){

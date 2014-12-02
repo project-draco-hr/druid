@@ -1,7 +1,7 @@
 {
   final long timestamp=System.currentTimeMillis();
   IncrementalIndex toPersist1=IncrementalIndexTest.createCaseInsensitiveIndex(timestamp);
-  IncrementalIndex toPersist2=new IncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{},TestQueryRunners.pool);
+  IncrementalIndex toPersist2=new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{});
   toPersist2.add(new MapBasedInputRow(timestamp,Arrays.asList("dim1","dim2"),ImmutableMap.<String,Object>of("dim1","1","dim2","2")));
   toPersist2.add(new MapBasedInputRow(timestamp,Arrays.asList("dim1","dim2"),ImmutableMap.<String,Object>of("dim1","5","dim2","6")));
   final File tempDir1=Files.createTempDir();

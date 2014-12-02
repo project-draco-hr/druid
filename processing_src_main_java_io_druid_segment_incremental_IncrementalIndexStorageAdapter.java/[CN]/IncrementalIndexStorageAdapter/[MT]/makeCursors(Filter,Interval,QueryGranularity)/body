@@ -143,10 +143,9 @@
 ;
           }
           final int metricIndex=metricIndexInt;
-          final BufferAggregator agg=index.getAggregator(metricIndex);
           return new FloatColumnSelector(){
             @Override public float get(){
-              return agg.getFloat(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
+              return index.getMetricFloatValue(currEntry.getValue(),metricIndex);
             }
           }
 ;
@@ -170,10 +169,9 @@
 ;
           }
           final int metricIndex=metricIndexInt;
-          final BufferAggregator agg=index.getAggregator(metricIndex);
           return new LongColumnSelector(){
             @Override public long get(){
-              return agg.getLong(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
+              return index.getMetricLongValue(currEntry.getValue(),metricIndex);
             }
           }
 ;
@@ -183,13 +181,12 @@
           if (metricIndexInt != null) {
             final int metricIndex=metricIndexInt;
             final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(index.getMetricType(column));
-            final BufferAggregator agg=index.getAggregator(metricIndex);
             return new ObjectColumnSelector(){
               @Override public Class classOfObject(){
                 return serde.getObjectStrategy().getClazz();
               }
               @Override public Object get(){
-                return agg.get(index.getMetricBuffer(),index.getMetricPosition(currEntry.getValue(),metricIndex));
+                return index.getMetricObjectValue(currEntry.getValue(),metricIndex);
               }
             }
 ;
