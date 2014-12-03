@@ -1,4 +1,11 @@
 {
   JsonConfigProvider.bind(binder,"druid.emitter.http",HttpEmitterConfig.class);
-  binder.bind(SSLContext.class).toProvider(Providers.<SSLContext>of(null)).in(LazySingleton.class);
+  final SSLContext context;
+  try {
+    context=SSLContext.getDefault();
+  }
+ catch (  NoSuchAlgorithmException e) {
+    throw Throwables.propagate(e);
+  }
+  binder.bind(SSLContext.class).toProvider(Providers.of(context)).in(LazySingleton.class);
 }
