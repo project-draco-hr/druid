@@ -1,161 +1,18 @@
 {
-  this.minTimestamp=incrementalIndexSchema.getMinTimestamp();
-  this.gran=incrementalIndexSchema.getGran();
-  this.metrics=incrementalIndexSchema.getMetrics();
-  this.rowTransformers=Lists.newCopyOnWriteArrayList();
-  final ImmutableList.Builder<String> metricNamesBuilder=ImmutableList.builder();
-  final ImmutableMap.Builder<String,Integer> metricIndexesBuilder=ImmutableMap.builder();
-  final ImmutableMap.Builder<String,String> metricTypesBuilder=ImmutableMap.builder();
-  this.aggs=new BufferAggregator[metrics.length];
+  super(incrementalIndexSchema,deserializeComplexMetrics);
+  this.bufferHolder=bufferPool.take();
+  final AggregatorFactory[] metrics=incrementalIndexSchema.getMetrics();
   this.aggPositionOffsets=new int[metrics.length];
   int currAggSize=0;
   for (int i=0; i < metrics.length; i++) {
     final AggregatorFactory agg=metrics[i];
-    aggs[i]=agg.factorizeBuffered(new ColumnSelectorFactory(){
-      @Override public LongColumnSelector makeLongColumnSelector(      final String columnName){
-        if (columnName.equals(Column.TIME_COLUMN_NAME)) {
-          return new LongColumnSelector(){
-            @Override public long get(){
-              return in.get().getTimestampFromEpoch();
-            }
-          }
-;
-        }
-        return new LongColumnSelector(){
-          @Override public long get(){
-            return in.get().getLongMetric(columnName);
-          }
-        }
-;
-      }
-      @Override public FloatColumnSelector makeFloatColumnSelector(      final String columnName){
-        return new FloatColumnSelector(){
-          @Override public float get(){
-            return in.get().getFloatMetric(columnName);
-          }
-        }
-;
-      }
-      @Override public ObjectColumnSelector makeObjectColumnSelector(      final String column){
-        final String typeName=agg.getTypeName();
-        final ObjectColumnSelector<Object> rawColumnSelector=new ObjectColumnSelector<Object>(){
-          @Override public Class classOfObject(){
-            return Object.class;
-          }
-          @Override public Object get(){
-            return in.get().getRaw(column);
-          }
-        }
-;
-        if (!deserializeComplexMetrics) {
-          return rawColumnSelector;
-        }
- else {
-          if (typeName.equals("float")) {
-            return rawColumnSelector;
-          }
-          final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(typeName);
-          if (serde == null) {
-            throw new ISE("Don't know how to handle type[%s]",typeName);
-          }
-          final ComplexMetricExtractor extractor=serde.getExtractor();
-          return new ObjectColumnSelector(){
-            @Override public Class classOfObject(){
-              return extractor.extractedClass();
-            }
-            @Override public Object get(){
-              return extractor.extractValue(in.get(),column);
-            }
-          }
-;
-        }
-      }
-      @Override public DimensionSelector makeDimensionSelector(      final String dimension){
-        return new DimensionSelector(){
-          @Override public IndexedInts getRow(){
-            final List<String> dimensionValues=in.get().getDimension(dimension);
-            final ArrayList<Integer> vals=Lists.newArrayList();
-            if (dimensionValues != null) {
-              for (int i=0; i < dimensionValues.size(); ++i) {
-                vals.add(i);
-              }
-            }
-            return new IndexedInts(){
-              @Override public int size(){
-                return vals.size();
-              }
-              @Override public int get(              int index){
-                return vals.get(index);
-              }
-              @Override public Iterator<Integer> iterator(){
-                return vals.iterator();
-              }
-            }
-;
-          }
-          @Override public int getValueCardinality(){
-            throw new UnsupportedOperationException("value cardinality is unknown in incremental index");
-          }
-          @Override public String lookupName(          int id){
-            return in.get().getDimension(dimension).get(id);
-          }
-          @Override public int lookupId(          String name){
-            return in.get().getDimension(dimension).indexOf(name);
-          }
-        }
-;
-      }
-    }
-);
     aggPositionOffsets[i]=currAggSize;
     currAggSize+=agg.getMaxIntermediateSize();
-    final String metricName=metrics[i].getName();
-    metricNamesBuilder.add(metricName);
-    metricIndexesBuilder.put(metricName,i);
-    metricTypesBuilder.put(metricName,metrics[i].getTypeName());
   }
-  metricNames=metricNamesBuilder.build();
-  metricIndexes=metricIndexesBuilder.build();
-  metricTypes=metricTypesBuilder.build();
   this.totalAggSize=currAggSize;
-  this.dimensionOrder=Maps.newLinkedHashMap();
-  this.dimensions=new CopyOnWriteArrayList<>();
-  List<SpatialDimensionSchema> spatialDimensions=incrementalIndexSchema.getDimensionsSpec().getSpatialDimensions();
-  if (!spatialDimensions.isEmpty()) {
-    this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
-  }
-  this.columnCapabilities=Maps.newHashMap();
-  for (  Map.Entry<String,String> entry : metricTypes.entrySet()) {
-    ValueType type;
-    if (entry.getValue().equalsIgnoreCase("float")) {
-      type=ValueType.FLOAT;
-    }
- else     if (entry.getValue().equalsIgnoreCase("long")) {
-      type=ValueType.LONG;
-    }
- else {
-      type=ValueType.COMPLEX;
-    }
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(type);
-    columnCapabilities.put(entry.getKey(),capabilities);
-  }
-  for (  String dimension : dimensions) {
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(ValueType.STRING);
-    columnCapabilities.put(dimension,capabilities);
-  }
-  for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(ValueType.STRING);
-    capabilities.setHasSpatialIndexes(true);
-    columnCapabilities.put(spatialDimension.getDimName(),capabilities);
-  }
-  this.bufferHolder=bufferPool.take();
-  this.dimValues=new DimensionHolder();
   final DBMaker dbMaker=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheSoftRefEnable();
-  factsDb=dbMaker.make();
-  db=dbMaker.make();
+  this.factsDb=dbMaker.make();
+  this.db=dbMaker.make();
   final TimeAndDimsSerializer timeAndDimsSerializer=new TimeAndDimsSerializer(this);
   this.facts=factsDb.createTreeMap("__facts" + UUID.randomUUID()).keySerializer(timeAndDimsSerializer).comparator(timeAndDimsSerializer.getComparator()).valueSerializer(Serializer.INTEGER).make();
 }

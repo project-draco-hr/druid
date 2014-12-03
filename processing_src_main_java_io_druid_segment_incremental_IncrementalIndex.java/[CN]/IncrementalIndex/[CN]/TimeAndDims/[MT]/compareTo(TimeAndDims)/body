@@ -1,0 +1,29 @@
+{
+  int retVal=Longs.compare(timestamp,rhs.timestamp);
+  if (retVal == 0) {
+    retVal=Ints.compare(dims.length,rhs.dims.length);
+  }
+  int index=0;
+  while (retVal == 0 && index < dims.length) {
+    String[] lhsVals=dims[index];
+    String[] rhsVals=rhs.dims[index];
+    if (lhsVals == null) {
+      if (rhsVals == null) {
+        ++index;
+        continue;
+      }
+      return -1;
+    }
+    if (rhsVals == null) {
+      return 1;
+    }
+    retVal=Ints.compare(lhsVals.length,rhsVals.length);
+    int valsIndex=0;
+    while (retVal == 0 && valsIndex < lhsVals.length) {
+      retVal=lhsVals[valsIndex].compareTo(rhsVals[valsIndex]);
+      ++valsIndex;
+    }
+    ++index;
+  }
+  return retVal;
+}

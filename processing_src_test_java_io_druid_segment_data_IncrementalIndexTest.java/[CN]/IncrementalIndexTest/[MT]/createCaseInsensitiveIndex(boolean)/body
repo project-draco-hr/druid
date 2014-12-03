@@ -1,8 +1,8 @@
 {
   if (offheap) {
-    return new OffheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{},TestQueryRunners.pool,true);
+    return new OffheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},TestQueryRunners.pool,true);
   }
  else {
-    return new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{});
+    return new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")});
   }
 }
