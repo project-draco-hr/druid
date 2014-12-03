@@ -19,7 +19,7 @@
     index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),bufferPool,false);
   }
  else {
-    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false);
+    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,Integer.MAX_VALUE);
   }
   Accumulator<IncrementalIndex,T> accumulator=new Accumulator<IncrementalIndex,T>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    T in){
