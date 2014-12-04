@@ -15,7 +15,15 @@
       return Sequences.empty();
     }
   }
-,new CacheConfig());
+,new CacheConfig(){
+    @Override public boolean isPopulateCache(){
+      return true;
+    }
+    @Override public boolean isUseCache(){
+      return true;
+    }
+  }
+);
   HashMap<String,Object> context=new HashMap<String,Object>();
   List<Object> results=Sequences.toList(runner.run(query,context),new ArrayList());
   Assert.assertEquals(expectedResults,results);

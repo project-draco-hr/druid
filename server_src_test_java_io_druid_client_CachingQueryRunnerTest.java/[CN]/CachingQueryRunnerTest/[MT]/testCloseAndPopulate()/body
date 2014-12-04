@@ -19,7 +19,15 @@
       return resultSeq;
     }
   }
-,new CacheConfig());
+,new CacheConfig(){
+    @Override public boolean isPopulateCache(){
+      return true;
+    }
+    @Override public boolean isUseCache(){
+      return true;
+    }
+  }
+);
   TopNQuery query=builder.build();
   CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
   Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));
