@@ -1,6 +1,7 @@
 {
   config.verify();
   this.config=config;
+  Preconditions.checkArgument(!config.isUpdaterJobSpecSet() || handler != null,"MetadataStorageUpdaterJobHandler must not be null if ioConfig.metadataUpdateSpec is specified.");
   if (config.isUpdaterJobSpecSet()) {
     metadataStorageUpdaterJob=new MetadataStorageUpdaterJob(config,handler);
   }
