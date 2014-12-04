@@ -2,6 +2,9 @@
   Integer rowOffset;
 synchronized (this) {
     rowOffset=numEntries.get();
+    if (rowOffset >= maxRowCount && !facts.containsKey(key)) {
+      throw new IndexSizeExceededException("Maximum number of rows reached");
+    }
     final Integer prev=facts.putIfAbsent(key,rowOffset);
     if (prev != null) {
       rowOffset=prev;

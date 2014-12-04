@@ -2,16 +2,17 @@
   final BufferAggregator[] aggs=getAggs();
   Integer rowOffset;
 synchronized (this) {
+    if (!facts.containsKey(key)) {
+      if (!canAppendRow(false)) {
+        throw new IndexSizeExceededException(getOutOfRowsReason());
+      }
+    }
     rowOffset=totalAggSize * numEntries.get();
     final Integer prev=facts.putIfAbsent(key,rowOffset);
     if (prev != null) {
       rowOffset=prev;
     }
  else {
-      if (rowOffset + totalAggSize > bufferHolder.get().limit()) {
-        facts.remove(key);
-        throw new ISE("Buffer full, cannot add more rows! Current rowSize[%,d].",numEntries.get());
-      }
       numEntries.incrementAndGet();
       for (int i=0; i < aggs.length; i++) {
         aggs[i].init(bufferHolder.get(),getMetricPosition(rowOffset,i));

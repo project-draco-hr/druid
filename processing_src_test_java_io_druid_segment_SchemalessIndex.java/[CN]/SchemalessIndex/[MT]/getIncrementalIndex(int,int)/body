@@ -31,7 +31,12 @@ synchronized (log) {
           dims.add(val.getKey());
         }
       }
-      theIndex.add(new MapBasedInputRow(timestamp,dims,event));
+      try {
+        theIndex.add(new MapBasedInputRow(timestamp,dims,event));
+      }
+ catch (      IndexSizeExceededException e) {
+        Throwables.propagate(e);
+      }
       count++;
     }
     QueryableIndex retVal=TestIndex.persistRealtimeAndLoadMMapped(theIndex);

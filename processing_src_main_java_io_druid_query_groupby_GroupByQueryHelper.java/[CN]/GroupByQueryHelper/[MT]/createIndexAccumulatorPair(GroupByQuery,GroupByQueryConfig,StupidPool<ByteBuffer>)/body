@@ -19,13 +19,16 @@
     index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),bufferPool,false,Integer.MAX_VALUE);
   }
  else {
-    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,Integer.MAX_VALUE);
+    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,config.getMaxResults());
   }
   Accumulator<IncrementalIndex,T> accumulator=new Accumulator<IncrementalIndex,T>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    T in){
       if (in instanceof Row) {
-        if (accumulated.add(Rows.toCaseInsensitiveInputRow((Row)in,dimensions)) > config.getMaxResults()) {
-          throw new ISE("Computation exceeds maxRows limit[%s]",config.getMaxResults());
+        try {
+          accumulated.add(Rows.toCaseInsensitiveInputRow((Row)in,dimensions));
+        }
+ catch (        IndexSizeExceededException e) {
+          throw new ISE(e.getMessage());
         }
       }
  else {
