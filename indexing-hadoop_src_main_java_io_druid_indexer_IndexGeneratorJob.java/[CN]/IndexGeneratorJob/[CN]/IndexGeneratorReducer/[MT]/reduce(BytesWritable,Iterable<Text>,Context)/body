@@ -3,7 +3,10 @@
   Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
   final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
-  IncrementalIndex index=makeIncrementalIndex(bucket,aggs);
+  final int maxTotalBufferSize=config.getSchema().getTuningConfig().getBufferSize();
+  final int aggregationBufferSize=(int)((double)maxTotalBufferSize * config.getSchema().getTuningConfig().getAggregationBufferRatio());
+  final StupidPool<ByteBuffer> bufferPool=new OffheapBufferPool(aggregationBufferSize);
+  IncrementalIndex index=makeIncrementalIndex(bucket,aggs,bufferPool);
   try {
     File baseFlushFile=File.createTempFile("base","flush");
     baseFlushFile.delete();
@@ -30,7 +33,7 @@
         context.progress();
         persist(index,interval,file,progressIndicator);
         index.close();
-        index=makeIncrementalIndex(bucket,aggs);
+        index=makeIncrementalIndex(bucket,aggs,bufferPool);
         startTime=System.currentTimeMillis();
         ++indexCount;
       }
