@@ -11,7 +11,7 @@
     currAggSize+=agg.getMaxIntermediateSize();
   }
   this.totalAggSize=currAggSize;
-  final DBMaker dbMaker=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheSoftRefEnable();
+  final DBMaker dbMaker=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheLRUEnable().cacheSize(16384);
   this.factsDb=dbMaker.make();
   this.db=dbMaker.make();
   final TimeAndDimsSerializer timeAndDimsSerializer=new TimeAndDimsSerializer(this);
