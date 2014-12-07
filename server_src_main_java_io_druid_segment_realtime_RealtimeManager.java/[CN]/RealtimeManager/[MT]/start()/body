@@ -2,7 +2,12 @@
   for (  final FireDepartment fireDepartment : fireDepartments) {
     DataSchema schema=fireDepartment.getDataSchema();
     final FireChief chief=new FireChief(fireDepartment);
-    chiefs.put(schema.getDataSource(),chief);
+    List<FireChief> chiefs=this.chiefs.get(schema.getDataSource());
+    if (chiefs == null) {
+      chiefs=new ArrayList<RealtimeManager.FireChief>();
+      this.chiefs.put(schema.getDataSource(),chiefs);
+    }
+    chiefs.add(chief);
     chief.setName(String.format("chief-%s",schema.getDataSource()));
     chief.setDaemon(true);
     chief.init();
