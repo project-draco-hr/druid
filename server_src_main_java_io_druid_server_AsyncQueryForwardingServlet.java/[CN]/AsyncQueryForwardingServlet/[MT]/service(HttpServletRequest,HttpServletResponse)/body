@@ -1,5 +1,5 @@
 {
-  final boolean isSmile=QueryResource.APPLICATION_SMILE.equals(request.getContentType());
+  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(request.getContentType());
   final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   String host=hostFinder.getDefaultHost();
   Query inputQuery=null;
@@ -21,7 +21,7 @@
       final String errorMessage=e.getMessage() == null ? "no error message" : e.getMessage();
       requestLogger.log(new RequestLogLine(new DateTime(),request.getRemoteAddr(),null,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",errorMessage))));
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-      response.setContentType(QueryResource.APPLICATION_JSON);
+      response.setContentType(MediaType.APPLICATION_JSON);
       objectMapper.writeValue(response.getOutputStream(),ImmutableMap.of("error",errorMessage));
       return;
     }
