@@ -82,7 +82,8 @@
           continue;
         }
         fireDepartment.getMetrics().incrementProcessed();
-        if (currCount >= tuningConfig.getMaxRowsInMemory() || System.currentTimeMillis() > nextFlush) {
+        final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+        if ((sink != null && !sink.canAppendRow()) || System.currentTimeMillis() > nextFlush) {
           plumber.persist(firehose.commit());
           nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
         }

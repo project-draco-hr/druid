@@ -1,9 +1,0 @@
-{
-  if (factsDb == null) {
-    final DBMaker dbMaker=DBMaker.newMemoryDirectDB().transactionDisable().asyncWriteEnable().cacheSoftRefEnable();
-    factsDb=dbMaker.make();
-    db=dbMaker.make();
-  }
-  final TimeAndDimsSerializer timeAndDimsSerializer=new TimeAndDimsSerializer(this);
-  return factsDb.createTreeMap("__facts" + UUID.randomUUID()).keySerializer(timeAndDimsSerializer).comparator(timeAndDimsSerializer.getComparator()).valueSerializer(Serializer.INTEGER).make();
-}

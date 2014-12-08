@@ -1,0 +1,31 @@
+{
+  Integer rowOffset;
+synchronized (this) {
+    rowOffset=numEntries.get();
+    if (rowOffset >= maxRowCount && !facts.containsKey(key)) {
+      throw new IndexSizeExceededException("Maximum number of rows reached");
+    }
+    final Integer prev=facts.putIfAbsent(key,rowOffset);
+    if (prev != null) {
+      rowOffset=prev;
+    }
+ else {
+      Aggregator[] aggs=new Aggregator[metrics.length];
+      for (int i=0; i < metrics.length; i++) {
+        final AggregatorFactory agg=metrics[i];
+        aggs[i]=agg.factorize(makeColumnSelectorFactory(agg,in,deserializeComplexMetrics));
+      }
+      aggList.add(aggs);
+      numEntries.incrementAndGet();
+    }
+  }
+  in.set(row);
+  final Aggregator[] aggs=aggList.get(rowOffset);
+  for (int i=0; i < aggs.length; i++) {
+synchronized (aggs[i]) {
+      aggs[i].aggregate();
+    }
+  }
+  in.set(null);
+  return numEntries.get();
+}

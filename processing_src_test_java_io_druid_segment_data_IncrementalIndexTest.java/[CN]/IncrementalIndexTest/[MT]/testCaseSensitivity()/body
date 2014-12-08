@@ -1,6 +1,7 @@
 {
-  final long timestamp=System.currentTimeMillis();
-  IncrementalIndex index=createCaseInsensitiveIndex(timestamp);
+  long timestamp=System.currentTimeMillis();
+  IncrementalIndex index=indexCreator.createIndex();
+  populateIndex(timestamp,index);
   Assert.assertEquals(Arrays.asList("dim1","dim2"),index.getDimensions());
   Assert.assertEquals(2,index.size());
   final Iterator<Row> rows=index.iterator();

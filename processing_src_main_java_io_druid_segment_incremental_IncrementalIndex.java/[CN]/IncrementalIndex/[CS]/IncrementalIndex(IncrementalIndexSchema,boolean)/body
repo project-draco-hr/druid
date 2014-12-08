@@ -1,0 +1,54 @@
+{
+  this.minTimestamp=incrementalIndexSchema.getMinTimestamp();
+  this.gran=incrementalIndexSchema.getGran();
+  this.metrics=incrementalIndexSchema.getMetrics();
+  this.rowTransformers=Lists.newCopyOnWriteArrayList();
+  this.deserializeComplexMetrics=deserializeComplexMetrics;
+  final ImmutableList.Builder<String> metricNamesBuilder=ImmutableList.builder();
+  final ImmutableMap.Builder<String,Integer> metricIndexesBuilder=ImmutableMap.builder();
+  final ImmutableMap.Builder<String,String> metricTypesBuilder=ImmutableMap.builder();
+  this.aggs=initAggs(metrics,in,deserializeComplexMetrics);
+  for (int i=0; i < metrics.length; i++) {
+    final String metricName=metrics[i].getName();
+    metricNamesBuilder.add(metricName);
+    metricIndexesBuilder.put(metricName,i);
+    metricTypesBuilder.put(metricName,metrics[i].getTypeName());
+  }
+  metricNames=metricNamesBuilder.build();
+  metricIndexes=metricIndexesBuilder.build();
+  metricTypes=metricTypesBuilder.build();
+  this.dimensionOrder=Maps.newLinkedHashMap();
+  this.dimensions=new CopyOnWriteArrayList<>();
+  List<SpatialDimensionSchema> spatialDimensions=incrementalIndexSchema.getDimensionsSpec().getSpatialDimensions();
+  if (!spatialDimensions.isEmpty()) {
+    this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
+  }
+  this.columnCapabilities=Maps.newHashMap();
+  for (  Map.Entry<String,String> entry : metricTypes.entrySet()) {
+    ValueType type;
+    if (entry.getValue().equalsIgnoreCase("float")) {
+      type=ValueType.FLOAT;
+    }
+ else     if (entry.getValue().equalsIgnoreCase("long")) {
+      type=ValueType.LONG;
+    }
+ else {
+      type=ValueType.COMPLEX;
+    }
+    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
+    capabilities.setType(type);
+    columnCapabilities.put(entry.getKey(),capabilities);
+  }
+  for (  String dimension : dimensions) {
+    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
+    capabilities.setType(ValueType.STRING);
+    columnCapabilities.put(dimension,capabilities);
+  }
+  for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
+    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
+    capabilities.setType(ValueType.STRING);
+    capabilities.setHasSpatialIndexes(true);
+    columnCapabilities.put(spatialDimension.getDimName(),capabilities);
+  }
+  this.dimValues=new DimensionHolder();
+}
