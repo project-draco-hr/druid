@@ -7,7 +7,7 @@
           return Sequences.empty();
         }
         final String url=String.format("http://%s/druid/v2/",brokerSelector.pick().getHost());
-        StatusResponseHolder response=httpClient.post(new URL(url)).setContent("application/json",jsonMapper.writeValueAsBytes(query)).go(responseHandler).get();
+        StatusResponseHolder response=httpClient.post(new URL(url)).setContent(MediaType.APPLICATION_JSON,jsonMapper.writeValueAsBytes(query)).go(responseHandler).get();
         List<T> results=jsonMapper.readValue(response.getContent(),new TypeReference<List<T>>(){
         }
 );
