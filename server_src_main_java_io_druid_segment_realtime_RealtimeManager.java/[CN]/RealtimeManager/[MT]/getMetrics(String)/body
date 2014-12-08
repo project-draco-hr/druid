@@ -1,7 +1,16 @@
 {
-  FireChief chief=chiefs.get(datasource);
-  if (chief == null) {
+  List<FireChief> chiefs=this.chiefs.get(datasource);
+  if (chiefs == null) {
     return null;
   }
-  return chief.getMetrics();
+  FireDepartmentMetrics snapshot=null;
+  for (  FireChief chief : chiefs) {
+    if (snapshot == null) {
+      snapshot=chief.getMetrics().snapshot();
+    }
+ else {
+      snapshot.merge(chief.getMetrics());
+    }
+  }
+  return snapshot;
 }
