@@ -1,6 +1,6 @@
 {
   try {
-    return client.post(new URL(String.format("%s/task",baseUrl()))).setContent("application/json",jsonMapper.writeValueAsBytes(queryObject)).go(RESPONSE_HANDLER).get();
+    return client.post(new URL(String.format("%s/task",baseUrl()))).setContent(MediaType.APPLICATION_JSON,jsonMapper.writeValueAsBytes(queryObject)).go(RESPONSE_HANDLER).get();
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
