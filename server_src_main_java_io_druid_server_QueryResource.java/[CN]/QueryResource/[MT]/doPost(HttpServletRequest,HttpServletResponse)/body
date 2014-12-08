@@ -3,7 +3,7 @@
   Query query=null;
   byte[] requestQuery=null;
   String queryId=null;
-  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(req.getContentType());
+  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(req.getContentType()) || APPLICATION_SMILE.equals(req.getContentType());
   final String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
   ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   final ObjectWriter jsonWriter=req.getParameter("pretty") == null ? objectMapper.writer() : objectMapper.writerWithDefaultPrettyPrinter();
