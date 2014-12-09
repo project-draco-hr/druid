@@ -1,5 +1,5 @@
 {
-  final IncrementalIndex index=new IncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},TestQueryRunners.pool);
+  final IncrementalIndex index=indexCreator.createIndex();
   final int threadCount=10;
   final int elementsPerThread=200;
   final int dimensionCount=5;
@@ -30,7 +30,7 @@
   while (iterator.hasNext()) {
     Row row=iterator.next();
     Assert.assertEquals(timestamp + curr,row.getTimestampFromEpoch());
-    Assert.assertEquals(Float.valueOf(threadCount),row.getFloatMetric("count"));
+    Assert.assertEquals(Float.valueOf(threadCount),(Float)row.getFloatMetric("count"));
     curr++;
   }
   Assert.assertEquals(elementsPerThread,curr);

@@ -12,7 +12,7 @@
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
-  FunctionalIterable<QueryRunner<T>> adapters=FunctionalIterable.create(intervals).transformCat(new Function<Interval,Iterable<TimelineObjectHolder<String,ReferenceCountingSegment>>>(){
+  FunctionalIterable<QueryRunner<T>> queryRunners=FunctionalIterable.create(intervals).transformCat(new Function<Interval,Iterable<TimelineObjectHolder<String,ReferenceCountingSegment>>>(){
     @Override public Iterable<TimelineObjectHolder<String,ReferenceCountingSegment>> apply(    Interval input){
       return timeline.lookup(input);
     }
@@ -27,9 +27,9 @@
           return buildAndDecorateQueryRunner(factory,toolChest,input.getObject(),new SegmentDescriptor(holder.getInterval(),holder.getVersion(),input.getChunkNumber()));
         }
       }
-).filter(Predicates.<QueryRunner<T>>notNull());
+);
     }
   }
-).filter(Predicates.<QueryRunner<T>>notNull());
-  return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,adapters)),toolChest);
+);
+  return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,queryRunners)),toolChest);
 }

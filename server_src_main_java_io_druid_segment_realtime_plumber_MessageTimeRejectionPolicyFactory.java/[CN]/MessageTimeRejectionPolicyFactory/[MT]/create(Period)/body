@@ -1,7 +1,7 @@
 {
   final long windowMillis=windowPeriod.toStandardDuration().getMillis();
   return new RejectionPolicy(){
-    private volatile long maxTimestamp=Long.MIN_VALUE;
+    private volatile long maxTimestamp=JodaUtils.MIN_INSTANT;
     @Override public DateTime getCurrMaxTime(){
       return new DateTime(maxTimestamp);
     }

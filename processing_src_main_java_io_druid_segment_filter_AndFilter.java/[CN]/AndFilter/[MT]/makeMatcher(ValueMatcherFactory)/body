@@ -6,18 +6,5 @@
   for (int i=0; i < filters.size(); i++) {
     matchers[i]=filters.get(i).makeMatcher(factory);
   }
-  if (matchers.length == 1) {
-    return matchers[0];
-  }
-  return new ValueMatcher(){
-    @Override public boolean matches(){
-      for (      ValueMatcher matcher : matchers) {
-        if (!matcher.matches()) {
-          return false;
-        }
-      }
-      return true;
-    }
-  }
-;
+  return makeMatcher(matchers);
 }

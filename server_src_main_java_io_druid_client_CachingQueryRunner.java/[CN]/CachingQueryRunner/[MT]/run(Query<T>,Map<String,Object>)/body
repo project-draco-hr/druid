@@ -32,23 +32,36 @@
 ),cacheFn);
     }
   }
+  final Collection<ListenableFuture<?>> cacheFutures=Collections.synchronizedList(Lists.<ListenableFuture<?>>newLinkedList());
   if (populateCache) {
     final Function cacheFn=strategy.prepareForCache();
     final List<Object> cacheResults=Lists.newLinkedList();
-    return Sequences.withEffect(Sequences.map(base.run(query,context),new Function<T,T>(){
-      @Override public T apply(      T input){
-        cacheResults.add(cacheFn.apply(input));
+    return Sequences.withEffect(Sequences.map(base.run(query,responseContext),new Function<T,T>(){
+      @Override public T apply(      final T input){
+        cacheFutures.add(backgroundExecutorService.submit(new Runnable(){
+          @Override public void run(){
+            cacheResults.add(cacheFn.apply(input));
+          }
+        }
+));
         return input;
       }
     }
 ),new Runnable(){
       @Override public void run(){
-        CacheUtil.populate(cache,mapper,key,cacheResults);
+        try {
+          Futures.allAsList(cacheFutures).get();
+          CacheUtil.populate(cache,mapper,key,cacheResults);
+        }
+ catch (        Exception e) {
+          log.error(e,"Error while getting future for cache task");
+          throw Throwables.propagate(e);
+        }
       }
     }
-,MoreExecutors.sameThreadExecutor());
+,backgroundExecutorService);
   }
  else {
-    return base.run(query,context);
+    return base.run(query,responseContext);
   }
 }

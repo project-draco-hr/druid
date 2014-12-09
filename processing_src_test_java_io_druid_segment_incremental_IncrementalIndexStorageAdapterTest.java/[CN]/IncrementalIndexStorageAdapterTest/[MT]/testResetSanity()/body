@@ -1,5 +1,5 @@
 {
-  IncrementalIndex index=new IncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},TestQueryRunners.pool);
+  IncrementalIndex index=indexCreator.createIndex();
   DateTime t=DateTime.now();
   Interval interval=new Interval(t.minusMinutes(1),t.plusMinutes(1));
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("billy"),ImmutableMap.<String,Object>of("billy","hi")));

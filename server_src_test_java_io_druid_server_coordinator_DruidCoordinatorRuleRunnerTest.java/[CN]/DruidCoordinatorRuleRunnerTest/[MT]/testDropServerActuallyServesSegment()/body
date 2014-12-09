@@ -1,6 +1,6 @@
 {
   mockCoordinator();
-  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),null,0,"normal"))).atLeastOnce();
+  EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T01:00:00.000Z"),ImmutableMap.<String,Integer>of("normal",0)))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
   DruidServer server1=new DruidServer("server1","host1",1000,"historical","normal",0);
   server1.addDataSegment(availableSegments.get(0).getIdentifier(),availableSegments.get(0));

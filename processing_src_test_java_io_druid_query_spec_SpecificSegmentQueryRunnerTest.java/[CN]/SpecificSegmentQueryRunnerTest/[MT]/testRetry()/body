@@ -2,7 +2,7 @@
   final ObjectMapper mapper=new DefaultObjectMapper();
   SegmentDescriptor descriptor=new SegmentDescriptor(new Interval("2012-01-01T00:00:00Z/P1D"),"version",0);
   final SpecificSegmentQueryRunner queryRunner=new SpecificSegmentQueryRunner(new QueryRunner(){
-    @Override public Sequence run(    Query query,    Map context){
+    @Override public Sequence run(    Query query,    Map responseContext){
       return new Sequence(){
         @Override public Object accumulate(        Object initValue,        Accumulator accumulator){
           throw new SegmentMissingException("FAILSAUCE");
@@ -19,7 +19,7 @@
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("foo").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).build();
   Sequence results=queryRunner.run(query,responseContext);
   Sequences.toList(results,Lists.newArrayList());
-  Object missingSegments=responseContext.get(RetryQueryRunner.MISSING_SEGMENTS_KEY);
+  Object missingSegments=responseContext.get(Result.MISSING_SEGMENTS_KEY);
   Assert.assertTrue(missingSegments != null);
   Assert.assertTrue(missingSegments instanceof List);
   Object segmentDesc=((List)missingSegments).get(0);

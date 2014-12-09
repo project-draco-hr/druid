@@ -1,0 +1,27 @@
+{
+  final Path path=getTaskLogFileFromId(taskId);
+  final FileSystem fs=FileSystem.get(new Configuration());
+  if (fs.exists(path)) {
+    return Optional.<ByteSource>of(new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
+        log.info("Reading task log from: %s",path);
+        final long seekPos;
+        if (offset < 0) {
+          final FileStatus stat=fs.getFileStatus(path);
+          seekPos=Math.max(0,stat.getLen() + offset);
+        }
+ else {
+          seekPos=offset;
+        }
+        final FSDataInputStream inputStream=fs.open(path);
+        inputStream.seek(seekPos);
+        log.info("Read task log from: %s (seek = %,d)",path,seekPos);
+        return inputStream;
+      }
+    }
+);
+  }
+ else {
+    return Optional.absent();
+  }
+}

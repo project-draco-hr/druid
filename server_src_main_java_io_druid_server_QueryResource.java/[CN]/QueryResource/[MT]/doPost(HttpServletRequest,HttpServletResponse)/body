@@ -3,12 +3,12 @@
   Query query=null;
   byte[] requestQuery=null;
   String queryId=null;
-  final boolean isSmile=APPLICATION_SMILE.equals(req.getContentType());
+  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(req.getContentType()) || APPLICATION_SMILE.equals(req.getContentType());
+  final String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
   ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   final ObjectWriter jsonWriter=req.getParameter("pretty") == null ? objectMapper.writer() : objectMapper.writerWithDefaultPrettyPrinter();
   try {
-    requestQuery=ByteStreams.toByteArray(req.getInputStream());
-    query=objectMapper.readValue(requestQuery,Query.class);
+    query=objectMapper.readValue(req.getInputStream(),Query.class);
     queryId=query.getId();
     if (queryId == null) {
       queryId=UUID.randomUUID().toString();
@@ -46,7 +46,7 @@
           outputStream.close();
         }
       }
-,isSmile ? APPLICATION_JSON : APPLICATION_SMILE).header("X-Druid-Query-Id",queryId).header("X-Druid-Response-Context",jsonMapper.writeValueAsString(responseContext)).build();
+,contentType).header("X-Druid-Query-Id",queryId).header("X-Druid-Response-Context",jsonMapper.writeValueAsString(responseContext)).build();
     }
  catch (    Exception e) {
       yielder.close();
@@ -63,7 +63,7 @@
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",query);
     }
-    return Response.serverError().entity(jsonWriter.writeValueAsString(ImmutableMap.of("error",e.getMessage()))).build();
+    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
   }
 catch (  Exception e) {
     final String queryString=query == null ? (isSmile ? "smile_unknown" : new String(requestQuery,Charsets.UTF_8)) : query.toString();
@@ -75,6 +75,6 @@ catch (  Exception e) {
       log.error(e2,"Unable to log query [%s]!",queryString);
     }
     log.makeAlert(e,"Exception handling request").addData("exception",e.toString()).addData("query",queryString).addData("peer",req.getRemoteAddr()).emit();
-    return Response.serverError().entity(jsonWriter.writeValueAsString(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
+    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
   }
 }

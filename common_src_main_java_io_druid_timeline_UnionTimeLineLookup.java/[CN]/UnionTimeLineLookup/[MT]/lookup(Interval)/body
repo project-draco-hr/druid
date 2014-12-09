@@ -1,7 +1,8 @@
 {
-  List<TimelineObjectHolder<VersionType,ObjectType>> rv=Lists.newArrayList();
-  for (  TimelineLookup<VersionType,ObjectType> delegate : delegates) {
-    rv.addAll(delegate.lookup(interval));
+  return Iterables.concat(Iterables.transform(delegates,new Function<TimelineLookup<VersionType,ObjectType>,Iterable<TimelineObjectHolder<VersionType,ObjectType>>>(){
+    @Override public Iterable<TimelineObjectHolder<VersionType,ObjectType>> apply(    TimelineLookup<VersionType,ObjectType> input){
+      return input.lookup(interval);
+    }
   }
-  return rv;
+));
 }

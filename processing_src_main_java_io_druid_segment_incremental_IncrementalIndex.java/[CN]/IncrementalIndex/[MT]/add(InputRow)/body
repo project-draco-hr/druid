@@ -9,7 +9,6 @@
 synchronized (dimensionOrder) {
     dims=new String[dimensionOrder.size()][];
     for (    String dimension : rowDimensions) {
-      dimension=dimension.toLowerCase();
       List<String> dimensionValues=row.getDimension(dimension);
       ColumnCapabilitiesImpl capabilities=columnCapabilities.get(dimension);
       if (capabilities == null) {
@@ -43,30 +42,5 @@ synchronized (dimensionOrder) {
     dims=newDims;
   }
   final TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
-  Integer rowOffset;
-synchronized (this) {
-    rowOffset=totalAggSize * numEntries.get();
-    final Integer prev=facts.putIfAbsent(key,rowOffset);
-    if (prev != null) {
-      rowOffset=prev;
-    }
- else {
-      if (rowOffset + totalAggSize > bufferHolder.get().limit()) {
-        facts.remove(key);
-        throw new ISE("Buffer full, cannot add more rows! Current rowSize[%,d].",numEntries.get());
-      }
-      numEntries.incrementAndGet();
-      for (int i=0; i < aggs.length; i++) {
-        aggs[i].init(bufferHolder.get(),getMetricPosition(rowOffset,i));
-      }
-    }
-  }
-  in.set(row);
-  for (int i=0; i < aggs.length; i++) {
-synchronized (aggs[i]) {
-      aggs[i].aggregate(bufferHolder.get(),getMetricPosition(rowOffset,i));
-    }
-  }
-  in.set(null);
-  return numEntries.get();
+  return addToFacts(metrics,deserializeComplexMetrics,row,numEntries,key,in);
 }

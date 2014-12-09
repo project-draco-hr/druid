@@ -15,11 +15,19 @@
   TopNQueryQueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig());
   DefaultObjectMapper objectMapper=new DefaultObjectMapper();
   CachingQueryRunner runner=new CachingQueryRunner(segmentIdentifier,segmentDescriptor,objectMapper,cache,toolchest,new QueryRunner(){
-    @Override public Sequence run(    Query query,    Map context){
+    @Override public Sequence run(    Query query,    Map responseContext){
       return resultSeq;
     }
   }
-,new CacheConfig());
+,MoreExecutors.sameThreadExecutor(),new CacheConfig(){
+    @Override public boolean isPopulateCache(){
+      return true;
+    }
+    @Override public boolean isUseCache(){
+      return true;
+    }
+  }
+);
   TopNQuery query=builder.build();
   CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
   Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));

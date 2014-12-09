@@ -21,7 +21,7 @@
   final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
   try {
     log.debug("Querying url[%s]",url);
-    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new InputStreamResponseHandler(){
+    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(new InputStreamResponseHandler(){
       long startTime;
       long byteCount=0;
       @Override public ClientResponse<AppendableByteArrayInputStream> handleResponse(      HttpResponse response){
@@ -29,13 +29,15 @@
         startTime=System.currentTimeMillis();
         byteCount+=response.getContent().readableBytes();
         try {
-          final Map<String,Object> responseContext=objectMapper.readValue(response.headers().get("X-Druid-Response-Context"),new TypeReference<Map<String,Object>>(){
+          final String responseContext=response.headers().get("X-Druid-Response-Context");
+          if (responseContext != null) {
+            context.putAll(objectMapper.<Map<String,Object>>readValue(responseContext,new TypeReference<Map<String,Object>>(){
+            }
+));
           }
-);
-          context.putAll(responseContext);
         }
  catch (        IOException e) {
-          e.printStackTrace();
+          log.error(e,"Unable to parse response context from url[%s]",url);
         }
         return super.handleResponse(response);
       }
@@ -61,7 +63,7 @@
         openConnections.getAndDecrement();
         if (future.isCancelled()) {
           try {
-            StatusResponseHolder res=httpClient.delete(new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? "application/smile" : "application/json").go(new StatusResponseHandler(Charsets.UTF_8)).get();
+            StatusResponseHolder res=httpClient.delete(new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(new StatusResponseHandler(Charsets.UTF_8)).get();
             if (res.getStatus().getCode() >= 500) {
               throw new RE("Error cancelling query[%s]: queriable node returned status[%d] [%s].",res.getStatus().getCode(),res.getStatus().getReasonPhrase());
             }

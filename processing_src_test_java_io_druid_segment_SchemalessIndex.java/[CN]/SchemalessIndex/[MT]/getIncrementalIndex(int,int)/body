@@ -23,7 +23,7 @@ synchronized (log) {
       }
       final long timestamp=new DateTime(event.get(TIMESTAMP)).getMillis();
       if (theIndex == null) {
-        theIndex=new IncrementalIndex(timestamp,QueryGranularity.MINUTE,METRIC_AGGS,TestQueryRunners.pool);
+        theIndex=new OnheapIncrementalIndex(timestamp,QueryGranularity.MINUTE,METRIC_AGGS,1000);
       }
       final List<String> dims=Lists.newArrayList();
       for (      final Map.Entry<String,Object> val : event.entrySet()) {
@@ -31,7 +31,12 @@ synchronized (log) {
           dims.add(val.getKey());
         }
       }
-      theIndex.add(new MapBasedInputRow(timestamp,dims,event));
+      try {
+        theIndex.add(new MapBasedInputRow(timestamp,dims,event));
+      }
+ catch (      IndexSizeExceededException e) {
+        Throwables.propagate(e);
+      }
       count++;
     }
     QueryableIndex retVal=TestIndex.persistRealtimeAndLoadMMapped(theIndex);

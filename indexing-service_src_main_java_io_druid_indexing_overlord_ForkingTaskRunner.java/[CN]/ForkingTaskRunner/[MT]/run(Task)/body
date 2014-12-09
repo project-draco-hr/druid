@@ -31,7 +31,7 @@ synchronized (tasks) {
                   throw new ISE("TaskInfo already has processHolder for task[%s]!",task.getId());
                 }
                 final List<String> command=Lists.newArrayList();
-                final String childHost=String.format("%s:%d",node.getHostNoPort(),childPort);
+                final String childHost=node.getHost();
                 final String taskClasspath;
                 if (task.getClasspathPrefix() != null && !task.getClasspathPrefix().isEmpty()) {
                   taskClasspath=Joiner.on(File.pathSeparator).join(task.getClasspathPrefix(),config.getClasspath());
@@ -75,7 +75,7 @@ synchronized (tasks) {
               }
               log.info("Logging task %s output to: %s",task.getId(),logFile);
               boolean runFailed=true;
-              try (final OutputStream toLogfile=Files.newOutputStreamSupplier(logFile).getOutput()){
+              try (final OutputStream toLogfile=Files.asByteSink(logFile).openBufferedStream()){
                 ByteStreams.copy(processHolder.process.getInputStream(),toLogfile);
                 final int statusCode=processHolder.process.waitFor();
                 log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
