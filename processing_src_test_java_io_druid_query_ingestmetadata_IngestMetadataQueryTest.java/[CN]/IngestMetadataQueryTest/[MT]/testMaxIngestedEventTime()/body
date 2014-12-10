@@ -1,0 +1,13 @@
+{
+  final IncrementalIndex rtIndex=TestIndex.getIncrementalTestIndex(false);
+  final QueryRunner runner=QueryRunnerTestHelper.makeQueryRunner((QueryRunnerFactory)new IngestMetadataQueryRunnerFactory(QueryRunnerTestHelper.NOOP_QUERYWATCHER),new IncrementalIndexSegment(rtIndex,"test"));
+  DateTime timestamp=new DateTime(System.currentTimeMillis());
+  rtIndex.add(new MapBasedInputRow(timestamp.getMillis(),ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","x")));
+  IngestMetadataQuery ingestMetadataQuery=Druids.newIngestMetadataQueryBuilder().dataSource("testing").build();
+  Map<String,Object> context=new MapMaker().makeMap();
+  context.put(Result.MISSING_SEGMENTS_KEY,Lists.newArrayList());
+  Iterable<Result<IngestMetadataResultValue>> results=Sequences.toList(runner.run(ingestMetadataQuery,context),Lists.<Result<IngestMetadataResultValue>>newArrayList());
+  IngestMetadataResultValue val=results.iterator().next().getValue();
+  DateTime maxIngestedEventTime=val.getMaxIngestedEventTime();
+  Assert.assertEquals(timestamp,maxIngestedEventTime);
+}

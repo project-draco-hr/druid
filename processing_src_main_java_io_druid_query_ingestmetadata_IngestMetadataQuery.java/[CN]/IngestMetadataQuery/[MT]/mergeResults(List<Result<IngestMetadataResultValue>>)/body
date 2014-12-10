@@ -1,0 +1,13 @@
+{
+  if (results == null || results.isEmpty()) {
+    return Lists.newArrayList();
+  }
+  DateTime max=new DateTime(JodaUtils.MIN_INSTANT);
+  for (  Result<IngestMetadataResultValue> result : results) {
+    DateTime currMaxIngestedEventTime=result.getValue().getMaxIngestedEventTime();
+    if (currMaxIngestedEventTime != null && currMaxIngestedEventTime.isAfter(max)) {
+      max=currMaxIngestedEventTime;
+    }
+  }
+  return buildResult(max,max);
+}
