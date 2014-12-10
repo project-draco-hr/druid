@@ -33,7 +33,7 @@
     }
   }
   final byte[] queryCacheKey;
-  if (strategy != null) {
+  if ((populateCache || useCache) && !isBySegment) {
     queryCacheKey=strategy.computeCacheKey(query);
   }
  else {
@@ -129,7 +129,7 @@
           continue;
         }
         final MultipleSpecificSegmentSpec segmentSpec=new MultipleSpecificSegmentSpec(descriptors);
-        List<Interval> intervals=segmentSpec.getIntervals();
+        final List<Interval> intervals=segmentSpec.getIntervals();
         final Sequence<T> resultSeqToAdd;
         if (!server.isAssignable() || !populateCache || isBySegment) {
           if (!isBySegment) {
@@ -153,21 +153,23 @@
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
             @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
               final BySegmentResultValueClass<T> value=input.getValue();
+              final CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
               final List<Object> cacheData=Lists.newLinkedList();
               return Sequences.<T>withEffect(Sequences.<T,T>map(Sequences.<T,T>map(Sequences.<T>simple(value.getResults()),new Function<T,T>(){
                 @Override public T apply(                final T input){
-                  cacheFutures.add(backgroundExecutorService.submit(new Runnable(){
-                    @Override public void run(){
-                      cacheData.add(cacheFn.apply(input));
+                  if (cachePopulator != null) {
+                    cacheFutures.add(backgroundExecutorService.submit(new Runnable(){
+                      @Override public void run(){
+                        cacheData.add(cacheFn.apply(input));
+                      }
                     }
-                  }
 ));
+                  }
                   return input;
                 }
               }
 ),toolChest.makePreComputeManipulatorFn((Query)rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
                 @Override public void run(){
-                  CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
                   if (cachePopulator != null) {
                     try {
                       Futures.allAsList(cacheFutures).get();
