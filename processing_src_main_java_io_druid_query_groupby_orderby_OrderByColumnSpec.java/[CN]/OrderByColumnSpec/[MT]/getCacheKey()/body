@@ -1,5 +1,5 @@
 {
-  final byte[] dimensionBytes=dimension.getBytes(Charsets.UTF_8);
-  final byte[] directionBytes=direction.name().getBytes(Charsets.UTF_8);
+  final byte[] dimensionBytes=StringUtils.toUtf8(dimension);
+  final byte[] directionBytes=StringUtils.toUtf8(direction.name());
   return ByteBuffer.allocate(dimensionBytes.length + directionBytes.length).put(dimensionBytes).put(directionBytes).array();
 }

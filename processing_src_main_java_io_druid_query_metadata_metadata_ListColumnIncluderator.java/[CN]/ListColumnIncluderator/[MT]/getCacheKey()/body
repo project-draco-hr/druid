@@ -2,7 +2,7 @@
   int size=1;
   List<byte[]> columns=Lists.newArrayListWithExpectedSize(this.columns.size());
   for (  String column : this.columns) {
-    final byte[] bytes=column.getBytes(Charsets.UTF_8);
+    final byte[] bytes=StringUtils.toUtf8(column);
     columns.add(bytes);
     size+=bytes.length;
   }

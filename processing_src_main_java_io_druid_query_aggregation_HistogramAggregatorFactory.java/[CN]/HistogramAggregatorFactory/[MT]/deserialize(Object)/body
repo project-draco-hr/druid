@@ -6,7 +6,7 @@
     return Histogram.fromBytes((ByteBuffer)object);
   }
  else   if (object instanceof String) {
-    byte[] bytes=Base64.decodeBase64(((String)object).getBytes(Charsets.UTF_8));
+    byte[] bytes=Base64.decodeBase64(StringUtils.toUtf8((String)object));
     return Histogram.fromBytes(bytes);
   }
   return object;

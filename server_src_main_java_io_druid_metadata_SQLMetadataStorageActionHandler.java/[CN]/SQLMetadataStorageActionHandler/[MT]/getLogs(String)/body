@@ -8,7 +8,7 @@
             return list;
           }
  catch (          IOException e) {
-            log.makeAlert(e,"Failed to deserialize log").addData("entryId",entryId).addData("payload",new String(bytes,Charsets.UTF_8)).emit();
+            log.makeAlert(e,"Failed to deserialize log").addData("entryId",entryId).addData("payload",StringUtils.fromUtf8(bytes)).emit();
             throw new SQLException(e);
           }
         }
