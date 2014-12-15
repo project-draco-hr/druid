@@ -18,11 +18,7 @@
   final StatusListener statusListener;
   final int QUEUE_SIZE=2000;
   final BlockingQueue<Status> queue=new ArrayBlockingQueue<Status>(QUEUE_SIZE);
-  final LinkedList<String> dimensions=new LinkedList<String>();
   final long startMsec=System.currentTimeMillis();
-  dimensions.add("htags");
-  dimensions.add("lang");
-  dimensions.add("utc_offset");
   twitterStream=new TwitterStreamFactory().getInstance();
   twitterStream.addConnectionLifeCycleListener(connectionLifeCycleListener);
   statusListener=new StatusListener(){
@@ -66,7 +62,7 @@
 ;
     private long rowCount=0L;
     private boolean waitIfmax=(getMaxEventCount() < 0L);
-    private final Map<String,Object> theMap=new HashMap<String,Object>(2);
+    private final Map<String,Object> theMap=new TreeMap<>();
     private boolean maxTimeReached(){
       if (getMaxRunMinutes() <= 0) {
         return false;
@@ -114,23 +110,43 @@
         throw new RuntimeException("InterruptedException",e);
       }
       HashtagEntity[] hts=status.getHashtagEntities();
-      if (hts != null && hts.length > 0) {
-        List<String> hashTags=Lists.newArrayListWithExpectedSize(hts.length);
-        for (        HashtagEntity ht : hts) {
-          hashTags.add(ht.getText());
+      String text=status.getText();
+      theMap.put("text",(null == text) ? "" : text);
+      theMap.put("htags",(hts.length > 0) ? Lists.transform(Arrays.asList(hts),new Function<HashtagEntity,String>(){
+        @Nullable @Override public String apply(        HashtagEntity input){
+          return input.getText();
         }
-        theMap.put("htags",Arrays.asList(hashTags.get(0)));
+      }
+) : ImmutableList.<String>of());
+      long[] lcontrobutors=status.getContributors();
+      List<String> contributors=new ArrayList<>();
+      for (      long contrib : lcontrobutors) {
+        contributors.add(String.format("%d",contrib));
+      }
+      theMap.put("contributors",contributors);
+      GeoLocation geoLocation=status.getGeoLocation();
+      if (null != geoLocation) {
+        double lat=status.getGeoLocation().getLatitude();
+        double lon=status.getGeoLocation().getLongitude();
+        theMap.put("lat",lat);
+        theMap.put("lon",lon);
+      }
+ else {
+        theMap.put("lat",null);
+        theMap.put("lon",null);
       }
       long retweetCount=status.getRetweetCount();
       theMap.put("retweet_count",retweetCount);
       User user=status.getUser();
-      if (user != null) {
-        theMap.put("follower_count",user.getFollowersCount());
-        theMap.put("friends_count",user.getFriendsCount());
-        theMap.put("lang",user.getLang());
-        theMap.put("utc_offset",user.getUtcOffset());
-        theMap.put("statuses_count",user.getStatusesCount());
-      }
+      final boolean hasUser=(null != user);
+      theMap.put("follower_count",hasUser ? user.getFollowersCount() : 0);
+      theMap.put("friends_count",hasUser ? user.getFriendsCount() : 0);
+      theMap.put("lang",hasUser ? user.getLang() : "");
+      theMap.put("utc_offset",hasUser ? user.getUtcOffset() : -1);
+      theMap.put("statuses_count",hasUser ? user.getStatusesCount() : 0);
+      theMap.put("user_id",hasUser ? String.format("%d",user.getId()) : "");
+      theMap.put("ts",status.getCreatedAt().getTime());
+      List<String> dimensions=Lists.newArrayList(theMap.keySet());
       return new MapBasedInputRow(status.getCreatedAt().getTime(),dimensions,theMap);
     }
     @Override public Runnable commit(){
