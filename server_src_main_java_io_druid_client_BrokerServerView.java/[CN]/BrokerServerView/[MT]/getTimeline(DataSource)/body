@@ -1,6 +1,16 @@
 {
-  String table=Iterables.getOnlyElement(dataSource.getNames());
+  final List<String> tables=dataSource.getNames();
 synchronized (lock) {
-    return timelines.get(table);
+    if (tables.size() == 1) {
+      return timelines.get(tables.get(0));
+    }
+ else {
+      return new UnionTimeLineLookup<>(Iterables.transform(tables,new Function<String,TimelineLookup<String,ServerSelector>>(){
+        @Override public TimelineLookup<String,ServerSelector> apply(        String input){
+          return timelines.get(input);
+        }
+      }
+));
+    }
   }
 }

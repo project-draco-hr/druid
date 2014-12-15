@@ -15,14 +15,14 @@
     contextBuilder.put("bySegment",true);
   }
   contextBuilder.put("intermediate",true);
-  VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
+  TimelineLookup<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
   if (timeline == null) {
     return Sequences.empty();
   }
   Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   List<TimelineObjectHolder<String,ServerSelector>> serversLookup=Lists.newLinkedList();
   for (  Interval interval : query.getIntervals()) {
-    serversLookup.addAll(timeline.lookup(interval));
+    Iterables.addAll(serversLookup,timeline.lookup(interval));
   }
   final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
   for (  TimelineObjectHolder<String,ServerSelector> holder : filteredServersLookup) {

@@ -5,11 +5,10 @@
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
   DataSource dataSource=query.getDataSource();
-  if (!(dataSource instanceof TableDataSource)) {
+  if (dataSource instanceof QueryDataSource) {
     throw new UnsupportedOperationException("data source type '" + dataSource.getClass().getName() + "' unsupported");
   }
-  String dataSourceName=getDataSourceName(dataSource);
-  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(dataSourceName);
+  final TimelineLookup<String,ReferenceCountingSegment> timeline=getTimelineLookup(query.getDataSource());
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
