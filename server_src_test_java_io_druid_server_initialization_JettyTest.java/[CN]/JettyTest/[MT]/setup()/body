@@ -6,10 +6,13 @@
       binder.bind(JettyServerInitializer.class).to(JettyServerInit.class).in(LazySingleton.class);
       Jerseys.addResource(binder,SlowResource.class);
       Jerseys.addResource(binder,ExceptionResource.class);
+      Jerseys.addResource(binder,DefaultResource.class);
       LifecycleModule.register(binder,Server.class);
     }
   }
 ));
+  final DruidNode node=injector.getInstance(Key.get(DruidNode.class,Self.class));
+  port=node.getPort();
   lifecycle=injector.getInstance(Lifecycle.class);
   lifecycle.start();
   ClientHolder holder=injector.getInstance(ClientHolder.class);
