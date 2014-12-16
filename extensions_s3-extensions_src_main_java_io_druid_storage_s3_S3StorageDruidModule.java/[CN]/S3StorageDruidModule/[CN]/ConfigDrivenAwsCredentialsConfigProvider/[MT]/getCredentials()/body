@@ -1,0 +1,14 @@
+{
+  if (!Strings.isNullOrEmpty(config.getAccessKey()) && !Strings.isNullOrEmpty(config.getSecretKey())) {
+    return new com.amazonaws.auth.AWSCredentials(){
+      @Override public String getAWSAccessKeyId(){
+        return config.getAccessKey();
+      }
+      @Override public String getAWSSecretKey(){
+        return config.getSecretKey();
+      }
+    }
+;
+  }
+  throw new AmazonClientException("Unable to load AWS credentials from druid AWSCredentialsConfig");
+}
