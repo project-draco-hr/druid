@@ -1,11 +1,3 @@
 {
-  List<Result<DataSourceMetadataResultValue>> results=Lists.newArrayList();
-  Map<String,Object> result=Maps.newHashMap();
-  if (maxIngestedEventTime != null) {
-    result.put(MAX_INGESTED_EVENT_TIME,maxIngestedEventTime);
-  }
-  if (!result.isEmpty()) {
-    results.add(new Result<>(timestamp,new DataSourceMetadataResultValue(result)));
-  }
-  return results;
+  return Arrays.asList(new Result<>(timestamp,new DataSourceMetadataResultValue(maxIngestedEventTime)));
 }
