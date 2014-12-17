@@ -60,14 +60,12 @@ synchronized (done) {
             }
           }
           @Override public InputStream nextElement(){
-synchronized (done) {
-              try {
-                return queue.take();
-              }
- catch (              InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw Throwables.propagate(e);
-              }
+            try {
+              return queue.take();
+            }
+ catch (            InterruptedException e) {
+              Thread.currentThread().interrupt();
+              throw Throwables.propagate(e);
             }
           }
         }
