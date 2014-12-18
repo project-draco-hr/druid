@@ -13,7 +13,7 @@ synchronized (lock) {
         PathChildrenCache inventoryCache=cacheFactory.make(curatorFramework,inventoryPath);
         inventoryCache.getListenable().addListener(new InventoryCacheListener(containerKey,inventoryPath));
         containers.put(containerKey,new ContainerHolder(container,inventoryCache));
-        log.info("Starting inventory cache for %s, inventoryPath %s",containerKey,inventoryPath);
+        log.debug("Starting inventory cache for %s, inventoryPath %s",containerKey,inventoryPath);
         inventoryCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
         strategy.newContainer(container);
       }
@@ -28,7 +28,7 @@ synchronized (lock) {
       log.warn("Container[%s] removed that wasn't a container!?",child.getPath());
       break;
     }
-    log.info("Closing inventory cache for %s. Also removing listeners.",containerKey);
+    log.debug("Closing inventory cache for %s. Also removing listeners.",containerKey);
     removed.getCache().getListenable().clear();
     removed.getCache().close();
     strategy.deadContainer(removed.getContainer());
@@ -42,7 +42,7 @@ synchronized (lock) {
   final ChildData child=event.getData();
   final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
   final ContainerClass container=strategy.deserializeContainer(child.getData());
-  log.info("Container[%s] updated.",child.getPath());
+  log.debug("Container[%s] updated.",child.getPath());
   ContainerHolder holder=containers.get(containerKey);
   if (holder == null) {
     log.warn("Container update[%s], but the old container didn't exist!?  Ignoring.",child.getPath());
