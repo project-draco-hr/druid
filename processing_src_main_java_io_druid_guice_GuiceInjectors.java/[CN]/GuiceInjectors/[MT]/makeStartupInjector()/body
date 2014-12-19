@@ -1,9 +1,3 @@
 {
-  return Guice.createInjector(new DruidGuiceExtensions(),new JacksonModule(),new PropertiesModule(Arrays.asList("common.runtime.properties","runtime.properties")),new ConfigModule(),new Module(){
-    @Override public void configure(    Binder binder){
-      binder.bind(DruidSecondaryModule.class);
-      JsonConfigProvider.bind(binder,"druid.extensions",ExtensionsConfig.class);
-    }
-  }
-);
+  return Guice.createInjector(makeDefaultStartupModules());
 }
