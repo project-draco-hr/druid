@@ -1,7 +1,6 @@
 {
   final long start=System.currentTimeMillis();
   Query query=null;
-  byte[] requestQuery=null;
   String queryId=null;
   final String reqContentType=req.getContentType();
   final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType) || APPLICATION_SMILE.equals(reqContentType);
@@ -67,7 +66,7 @@
     return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
   }
 catch (  Exception e) {
-    final String queryString=query == null ? (isSmile ? "smile_unknown" : new String(requestQuery,Charsets.UTF_8)) : query.toString();
+    final String queryString=query == null ? "unparsable query" : query.toString();
     log.warn(e,"Exception occurred on request [%s]",queryString);
     try {
       requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
