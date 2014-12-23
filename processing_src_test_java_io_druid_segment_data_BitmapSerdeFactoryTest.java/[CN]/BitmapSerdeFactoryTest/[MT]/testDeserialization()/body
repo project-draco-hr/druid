@@ -1,0 +1,6 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  Assert.assertTrue(mapper.readValue("{\"type\":\"roaring\"}",BitmapSerdeFactory.class) instanceof RoaringBitmapSerdeFactory);
+  Assert.assertTrue(mapper.readValue("{\"type\":\"concise\"}",BitmapSerdeFactory.class) instanceof ConciseBitmapSerdeFactory);
+  Assert.assertTrue(mapper.readValue("{\"type\":\"BitmapSerde$SomeRandomClass\"}",BitmapSerdeFactory.class) instanceof ConciseBitmapSerdeFactory);
+}
