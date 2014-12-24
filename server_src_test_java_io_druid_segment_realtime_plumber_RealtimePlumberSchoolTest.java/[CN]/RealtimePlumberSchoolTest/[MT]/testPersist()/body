@@ -13,12 +13,8 @@
     }
   }
 );
-  Stopwatch stopwatch=Stopwatch.createStarted();
   while (!committed.booleanValue()) {
     Thread.sleep(100);
-    if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > 1000) {
-      throw new ISE("Taking too long to set perist value");
-    }
   }
   plumber.getSinks().clear();
   plumber.finishJob();
