@@ -1,5 +1,5 @@
 {
-  GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.qualityUniques)).setGranularity(QueryRunnerTestHelper.allGran).build();
+  GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.qualityUniques)).setGranularity(QueryRunnerTestHelper.allGran).build();
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","rows",26L,"uniques",QueryRunnerTestHelper.UNIQUES_9));
   Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
   TestHelper.assertExpectedObjects(expectedResults,results,"");

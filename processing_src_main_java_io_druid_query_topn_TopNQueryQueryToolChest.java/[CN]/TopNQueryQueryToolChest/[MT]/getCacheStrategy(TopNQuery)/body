@@ -57,13 +57,13 @@
             }
             retVal.add(vals);
           }
-          return new Result<TopNResultValue>(timestamp,new TopNResultValue(retVal));
+          return new Result<>(timestamp,new TopNResultValue(retVal));
         }
       }
 ;
     }
     @Override public Sequence<Result<TopNResultValue>> mergeSequences(    Sequence<Sequence<Result<TopNResultValue>>> seqOfSequences){
-      return new MergeSequence<Result<TopNResultValue>>(getOrdering(),seqOfSequences);
+      return new MergeSequence<>(getOrdering(),seqOfSequences);
     }
   }
 ;

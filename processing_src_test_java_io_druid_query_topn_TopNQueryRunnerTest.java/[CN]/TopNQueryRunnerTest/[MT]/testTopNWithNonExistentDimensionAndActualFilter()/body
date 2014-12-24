@@ -1,0 +1,14 @@
+{
+  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.marketDimension,"upfront").dimension("doesn't exist").metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
+  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(new LinkedHashMap<String,Object>(){
+{
+      put("doesn't exist",null);
+      put("rows",4L);
+      put("index",4875.669677734375D);
+      put("addRowsIndexConstant",4880.669677734375D);
+      put("uniques",QueryRunnerTestHelper.UNIQUES_2);
+    }
+  }
+))));
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,new HashMap<String,Object>()));
+}

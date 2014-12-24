@@ -41,13 +41,16 @@
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimension);
           final Column columnDesc=index.getColumn(dimension);
-          if (cachedColumn == null && columnDesc != null) {
+          if (columnDesc == null) {
+            return NULL_DIMENSION_SELECTOR;
+          }
+          if (cachedColumn == null) {
             cachedColumn=columnDesc.getDictionaryEncoding();
             dictionaryColumnCache.put(dimension,cachedColumn);
           }
           final DictionaryEncodedColumn column=cachedColumn;
           if (column == null) {
-            return null;
+            return NULL_DIMENSION_SELECTOR;
           }
  else           if (columnDesc.getCapabilities().hasMultipleValues()) {
             return new DimensionSelector(){
