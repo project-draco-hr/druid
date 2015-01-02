@@ -1,10 +1,9 @@
 {
-  try (final ResourceHolder<ChunkEncoder> encoder=CompressedPools.getChunkEncoder()){
-    final LZFChunk chunk=encoder.get().encodeChunk(bytes,0,bytes.length);
-    return chunk.getData();
+  try (final ResourceHolder<BufferRecycler> bufferRecycler=CompressedPools.getBufferRecycler()){
+    return LZFEncoder.encode(bytes,0,bytes.length,bufferRecycler.get());
   }
  catch (  IOException e) {
-    log.error(e,"IOException thrown while closing ChunkEncoder.");
+    log.error(e,"Error compressing data");
   }
   return null;
 }
