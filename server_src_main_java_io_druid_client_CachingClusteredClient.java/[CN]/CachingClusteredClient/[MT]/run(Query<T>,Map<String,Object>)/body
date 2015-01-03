@@ -154,7 +154,7 @@
             @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
               final BySegmentResultValueClass<T> value=input.getValue();
               final CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
-              final List<Object> cacheData=Lists.newLinkedList();
+              final Collection<Object> cacheData=new ConcurrentLinkedQueue<>();
               return Sequences.<T>withEffect(Sequences.<T,T>map(Sequences.<T,T>map(Sequences.<T>simple(value.getResults()),new Function<T,T>(){
                 @Override public T apply(                final T input){
                   if (cachePopulator != null) {
@@ -174,6 +174,8 @@
                     try {
                       Futures.allAsList(cacheFutures).get();
                       cachePopulator.populate(cacheData);
+                      cacheFutures.clear();
+                      cacheData.clear();
                     }
  catch (                    Exception e) {
                       log.error(e,"Error populating cache");
