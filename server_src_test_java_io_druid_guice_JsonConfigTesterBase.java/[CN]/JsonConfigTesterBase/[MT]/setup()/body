@@ -17,7 +17,7 @@
   }
   testProperties.putAll(System.getProperties());
   testProperties.putAll(propertyValues);
-  injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Object>of(simpleJsonConfigModule));
+  injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(simpleJsonConfigModule));
   configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
   configProvider=JsonConfigProvider.of(configPrefix,clazz);
 }
