@@ -5,6 +5,6 @@
   mockWorkerRunningTask(task);
   Assert.assertTrue(workerRunningTask(task.getId()));
   cf.delete().forPath(announcementsPath);
-  TaskStatus status=future.get();
+  TaskStatus status=future.get(TIMEOUT_SECONDS,TimeUnit.SECONDS);
   Assert.assertEquals(TaskStatus.Status.FAILED,status.getStatusCode());
 }

@@ -2,6 +2,6 @@
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,task.getId()),jsonMapper.writeValueAsBytes(TaskStatus.success(task.getId())));
   doSetup();
   ListenableFuture<TaskStatus> future=remoteTaskRunner.run(task);
-  TaskStatus status=future.get();
+  TaskStatus status=future.get(TIMEOUT_SECONDS,TimeUnit.SECONDS);
   Assert.assertEquals(TaskStatus.Status.SUCCESS,status.getStatusCode());
 }

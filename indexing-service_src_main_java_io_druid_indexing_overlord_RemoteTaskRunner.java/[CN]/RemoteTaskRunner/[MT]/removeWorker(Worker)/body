@@ -3,7 +3,7 @@
   final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
-      List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost())));
+      List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost())));
       log.info("[%s]: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
       for (      Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
         if (entry.getValue() == null) {
@@ -20,7 +20,7 @@
       for (      String assignedTask : tasksToFail) {
         RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
         if (taskRunnerWorkItem != null) {
-          String taskPath=JOINER.join(zkPaths.getIndexerTaskPath(),worker.getHost(),assignedTask);
+          String taskPath=JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost(),assignedTask);
           if (cf.checkExists().forPath(taskPath) != null) {
             cf.delete().guaranteed().forPath(taskPath);
           }
