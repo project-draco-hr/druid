@@ -1,0 +1,19 @@
+{
+  m_testListeners.add(new ExitCodeListener(this));
+  if (m_useDefaultListeners) {
+    addReporter(SuiteHTMLReporter.class);
+    addReporter(Main.class);
+    addReporter(FailedReporter.class);
+    addReporter(XMLReporter.class);
+    if (System.getProperty("oldTestngEmailableReporter") != null) {
+      addReporter(EmailableReporter.class);
+    }
+ else     if (System.getProperty("noEmailableReporter") == null) {
+      addReporter(EmailableReporter2.class);
+    }
+    addReporter(JUnitReportReporter.class);
+    if (m_verbose != null && m_verbose > 4) {
+      addListener(new VerboseReporter("[TestNG] "));
+    }
+  }
+}

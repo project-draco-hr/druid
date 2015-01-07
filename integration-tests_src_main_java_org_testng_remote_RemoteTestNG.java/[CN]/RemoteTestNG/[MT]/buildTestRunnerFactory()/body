@@ -1,0 +1,19 @@
+{
+  if (System.getProperty("testrunfactory") != null) {
+    m_customTestRunnerFactory=(ITestRunnerFactory)ClassHelper.newInstance(ClassHelper.fileToClass(System.getProperty("testrunfactory")));
+  }
+ else   if (null == m_customTestRunnerFactory) {
+    m_customTestRunnerFactory=new ITestRunnerFactory(){
+      @Override public TestRunner newTestRunner(      ISuite suite,      XmlTest xmlTest,      List<IInvokedMethodListener> listeners){
+        TestRunner runner=new TestRunner(getConfiguration(),suite,xmlTest,false,listeners);
+        if (m_useDefaultListeners) {
+          runner.addListener(new TestHTMLReporter());
+          runner.addListener(new JUnitXMLReporter());
+        }
+        return runner;
+      }
+    }
+;
+  }
+  return m_customTestRunnerFactory;
+}

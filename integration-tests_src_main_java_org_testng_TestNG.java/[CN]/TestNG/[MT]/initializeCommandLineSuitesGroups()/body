@@ -1,0 +1,17 @@
+{
+  boolean hasIncludedGroups=null != m_includedGroups && m_includedGroups.length > 0;
+  boolean hasExcludedGroups=null != m_excludedGroups && m_excludedGroups.length > 0;
+  List<XmlSuite> suites=m_cmdlineSuites != null ? m_cmdlineSuites : m_suites;
+  if (hasIncludedGroups || hasExcludedGroups) {
+    for (    XmlSuite s : suites) {
+      for (      XmlTest t : s.getTests()) {
+        if (hasIncludedGroups) {
+          t.setIncludedGroups(Arrays.asList(m_includedGroups));
+        }
+        if (hasExcludedGroups) {
+          t.setExcludedGroups(Arrays.asList(m_excludedGroups));
+        }
+      }
+    }
+  }
+}

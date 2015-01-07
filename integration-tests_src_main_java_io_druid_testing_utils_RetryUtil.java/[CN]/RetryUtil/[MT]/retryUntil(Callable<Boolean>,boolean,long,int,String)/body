@@ -1,0 +1,16 @@
+{
+  try {
+    int currentTry=0;
+    while (callable.call() != expectedValue) {
+      if (currentTry > retryCount) {
+        throw new ISE("Max number of retries[%d] exceeded for Task[%s]. Failing.",retryCount,taskMessage);
+      }
+      LOG.info("Attempt[%d]: Task %s still not complete. Next retry in %d ms",currentTry,taskMessage,delayInMillis);
+      Thread.sleep(delayInMillis);
+      currentTry++;
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

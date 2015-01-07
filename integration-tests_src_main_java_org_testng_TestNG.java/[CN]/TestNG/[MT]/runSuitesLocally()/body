@@ -1,0 +1,40 @@
+{
+  SuiteRunnerMap suiteRunnerMap=new SuiteRunnerMap();
+  if (m_suites.size() > 0) {
+    if (m_suites.get(0).getVerbose() >= 2) {
+      Version.displayBanner();
+    }
+    for (    XmlSuite xmlSuite : m_suites) {
+      createSuiteRunners(suiteRunnerMap,xmlSuite);
+    }
+    if (m_suiteThreadPoolSize == 1 && !m_randomizeSuites) {
+      for (      XmlSuite xmlSuite : m_suites) {
+        runSuitesSequentially(xmlSuite,suiteRunnerMap,getVerbose(xmlSuite),getDefaultSuiteName());
+      }
+    }
+ else {
+      DynamicGraph<ISuite> suiteGraph=new DynamicGraph<ISuite>();
+      for (      XmlSuite xmlSuite : m_suites) {
+        populateSuiteGraph(suiteGraph,suiteRunnerMap,xmlSuite);
+      }
+      IThreadWorkerFactory<ISuite> factory=new SuiteWorkerFactory(suiteRunnerMap,0,getDefaultSuiteName());
+      GraphThreadPoolExecutor<ISuite> pooledExecutor=new GraphThreadPoolExecutor<ISuite>(suiteGraph,factory,m_suiteThreadPoolSize,m_suiteThreadPoolSize,Integer.MAX_VALUE,TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>());
+      Utils.log("TestNG",2,"Starting executor for all suites");
+      pooledExecutor.run();
+      try {
+        pooledExecutor.awaitTermination(Long.MAX_VALUE,TimeUnit.MILLISECONDS);
+        pooledExecutor.shutdownNow();
+      }
+ catch (      InterruptedException handled) {
+        Thread.currentThread().interrupt();
+        error("Error waiting for concurrent executors to finish " + handled.getMessage());
+      }
+    }
+  }
+ else {
+    setStatus(HAS_NO_TEST);
+    error("No test suite found. Nothing to run");
+    usage();
+  }
+  return Lists.newArrayList(suiteRunnerMap.values());
+}

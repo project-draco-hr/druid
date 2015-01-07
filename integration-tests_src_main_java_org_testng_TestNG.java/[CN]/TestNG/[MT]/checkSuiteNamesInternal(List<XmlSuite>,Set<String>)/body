@@ -1,0 +1,10 @@
+{
+  for (  XmlSuite suite : suites) {
+    final String name=suite.getName();
+    if (names.contains(name)) {
+      throw new TestNGException("Two suites cannot have the same name: " + name);
+    }
+    names.add(name);
+    checkSuiteNamesInternal(suite.getChildSuites(),names);
+  }
+}

@@ -1,0 +1,127 @@
+{
+  if (m_isInitialized) {
+    return;
+  }
+  m_isInitialized=true;
+  if (m_suites.size() > 0) {
+    for (    XmlSuite s : m_suites) {
+      for (      String suiteFile : s.getSuiteFiles()) {
+        try {
+          Collection<XmlSuite> childSuites=getParser(suiteFile).parse();
+          for (          XmlSuite cSuite : childSuites) {
+            cSuite.setParentSuite(s);
+            s.getChildSuites().add(cSuite);
+          }
+        }
+ catch (        FileNotFoundException e) {
+          e.printStackTrace(System.out);
+        }
+catch (        ParserConfigurationException e) {
+          e.printStackTrace(System.out);
+        }
+catch (        SAXException e) {
+          e.printStackTrace(System.out);
+        }
+catch (        IOException e) {
+          e.printStackTrace(System.out);
+        }
+      }
+    }
+    return;
+  }
+  for (  String suitePath : m_stringSuites) {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("suiteXmlPath: \"" + suitePath + "\"");
+    }
+    try {
+      Collection<XmlSuite> allSuites=getParser(suitePath).parse();
+      for (      XmlSuite s : allSuites) {
+        if (m_testNames != null) {
+          m_suites.add(extractTestNames(s,m_testNames));
+        }
+ else {
+          m_suites.add(s);
+        }
+      }
+    }
+ catch (    FileNotFoundException e) {
+      e.printStackTrace(System.out);
+    }
+catch (    IOException e) {
+      e.printStackTrace(System.out);
+    }
+catch (    ParserConfigurationException e) {
+      e.printStackTrace(System.out);
+    }
+catch (    SAXException e) {
+      e.printStackTrace(System.out);
+    }
+catch (    Exception ex) {
+      Throwable t=ex;
+      while (t.getCause() != null) {
+        t=t.getCause();
+      }
+      if (t instanceof TestNGException) {
+        throw (TestNGException)t;
+      }
+ else {
+        throw new TestNGException(t);
+      }
+    }
+  }
+  if (m_jarPath != null && m_stringSuites.size() > 0) {
+    StringBuilder suites=new StringBuilder();
+    for (    String s : m_stringSuites) {
+      suites.append(s);
+    }
+    Utils.log("TestNG",2,"Ignoring the XML file inside " + m_jarPath + " and using "+ suites+ " instead");
+    return;
+  }
+  if (isStringEmpty(m_jarPath)) {
+    return;
+  }
+  File jarFile=new File(m_jarPath);
+  try {
+    Utils.log("TestNG",2,"Trying to open jar file:" + jarFile);
+    JarFile jf=new JarFile(jarFile);
+    Enumeration<JarEntry> entries=jf.entries();
+    List<String> classes=Lists.newArrayList();
+    boolean foundTestngXml=false;
+    while (entries.hasMoreElements()) {
+      JarEntry je=entries.nextElement();
+      if (je.getName().equals(m_xmlPathInJar)) {
+        Parser parser=getParser(jf.getInputStream(je));
+        m_suites.addAll(parser.parse());
+        foundTestngXml=true;
+        break;
+      }
+ else       if (je.getName().endsWith(".class")) {
+        int n=je.getName().length() - ".class".length();
+        classes.add(je.getName().replace("/",".").substring(0,n));
+      }
+    }
+    if (!foundTestngXml) {
+      Utils.log("TestNG",1,"Couldn't find the " + m_xmlPathInJar + " in the jar file, running all the classes");
+      XmlSuite xmlSuite=new XmlSuite();
+      xmlSuite.setVerbose(0);
+      xmlSuite.setName("Jar suite");
+      XmlTest xmlTest=new XmlTest(xmlSuite);
+      List<XmlClass> xmlClasses=Lists.newArrayList();
+      for (      String cls : classes) {
+        XmlClass xmlClass=new XmlClass(cls);
+        xmlClasses.add(xmlClass);
+      }
+      xmlTest.setXmlClasses(xmlClasses);
+      m_suites.add(xmlSuite);
+    }
+  }
+ catch (  ParserConfigurationException ex) {
+    ex.printStackTrace();
+  }
+catch (  SAXException ex) {
+    ex.printStackTrace();
+  }
+catch (  IOException ex) {
+    ex.printStackTrace();
+  }
+}

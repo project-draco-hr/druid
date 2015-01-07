@@ -1,0 +1,77 @@
+{
+  CommandLineArgs result=new CommandLineArgs();
+  Integer verbose=(Integer)cmdLineArgs.get(CommandLineArgs.LOG);
+  if (null != verbose) {
+    result.verbose=verbose;
+  }
+  result.outputDirectory=(String)cmdLineArgs.get(CommandLineArgs.OUTPUT_DIRECTORY);
+  String testClasses=(String)cmdLineArgs.get(CommandLineArgs.TEST_CLASS);
+  if (null != testClasses) {
+    result.testClass=testClasses;
+  }
+  String testNames=(String)cmdLineArgs.get(CommandLineArgs.TEST_NAMES);
+  if (testNames != null) {
+    result.testNames=testNames;
+  }
+  String useDefaultListeners=(String)cmdLineArgs.get(CommandLineArgs.USE_DEFAULT_LISTENERS);
+  if (null != useDefaultListeners) {
+    result.useDefaultListeners=useDefaultListeners;
+  }
+  result.groups=(String)cmdLineArgs.get(CommandLineArgs.GROUPS);
+  result.excludedGroups=(String)cmdLineArgs.get(CommandLineArgs.EXCLUDED_GROUPS);
+  result.testJar=(String)cmdLineArgs.get(CommandLineArgs.TEST_JAR);
+  result.xmlPathInJar=(String)cmdLineArgs.get(CommandLineArgs.XML_PATH_IN_JAR);
+  result.junit=(Boolean)cmdLineArgs.get(CommandLineArgs.JUNIT);
+  result.mixed=(Boolean)cmdLineArgs.get(CommandLineArgs.MIXED);
+  result.master=(String)cmdLineArgs.get(CommandLineArgs.MASTER);
+  result.slave=(String)cmdLineArgs.get(CommandLineArgs.SLAVE);
+  result.skipFailedInvocationCounts=(Boolean)cmdLineArgs.get(CommandLineArgs.SKIP_FAILED_INVOCATION_COUNTS);
+  String parallelMode=(String)cmdLineArgs.get(CommandLineArgs.PARALLEL);
+  if (parallelMode != null) {
+    result.parallelMode=parallelMode;
+  }
+  String threadCount=(String)cmdLineArgs.get(CommandLineArgs.THREAD_COUNT);
+  if (threadCount != null) {
+    result.threadCount=Integer.parseInt(threadCount);
+  }
+  Integer dptc=(Integer)cmdLineArgs.get(CommandLineArgs.DATA_PROVIDER_THREAD_COUNT);
+  if (dptc != null) {
+    result.dataProviderThreadCount=dptc;
+  }
+  String defaultSuiteName=(String)cmdLineArgs.get(CommandLineArgs.SUITE_NAME);
+  if (defaultSuiteName != null) {
+    result.suiteName=defaultSuiteName;
+  }
+  String defaultTestName=(String)cmdLineArgs.get(CommandLineArgs.TEST_NAME);
+  if (defaultTestName != null) {
+    result.testName=defaultTestName;
+  }
+  Object listeners=cmdLineArgs.get(CommandLineArgs.LISTENER);
+  if (listeners instanceof List) {
+    result.listener=Utils.join((List<?>)listeners,",");
+  }
+ else {
+    result.listener=(String)listeners;
+  }
+  String ms=(String)cmdLineArgs.get(CommandLineArgs.METHOD_SELECTORS);
+  if (null != ms) {
+    result.methodSelectors=ms;
+  }
+  String objectFactory=(String)cmdLineArgs.get(CommandLineArgs.OBJECT_FACTORY);
+  if (null != objectFactory) {
+    result.objectFactory=objectFactory;
+  }
+  String runnerFactory=(String)cmdLineArgs.get(CommandLineArgs.TEST_RUNNER_FACTORY);
+  if (null != runnerFactory) {
+    result.testRunnerFactory=runnerFactory;
+  }
+  String reporterConfigs=(String)cmdLineArgs.get(CommandLineArgs.REPORTER);
+  if (reporterConfigs != null) {
+    result.reporter=reporterConfigs;
+  }
+  String failurePolicy=(String)cmdLineArgs.get(CommandLineArgs.CONFIG_FAILURE_POLICY);
+  if (failurePolicy != null) {
+    result.configFailurePolicy=failurePolicy;
+  }
+  configure(result);
+}

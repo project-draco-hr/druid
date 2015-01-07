@@ -1,0 +1,26 @@
+{
+  if (null != m_isJUnit && !m_isJUnit.equals(XmlSuite.DEFAULT_JUNIT)) {
+    xmlSuite.setJUnit(m_isJUnit);
+  }
+  if (null != m_skipFailedInvocationCounts) {
+    xmlSuite.setSkipFailedInvocationCounts(m_skipFailedInvocationCounts);
+  }
+  if (m_verbose != null) {
+    xmlSuite.setVerbose(m_verbose);
+  }
+  if (null != m_configFailurePolicy) {
+    xmlSuite.setConfigFailurePolicy(m_configFailurePolicy);
+  }
+  for (  XmlTest t : xmlSuite.getTests()) {
+    for (    Map.Entry<String,Integer> ms : m_methodDescriptors.entrySet()) {
+      XmlMethodSelector xms=new XmlMethodSelector();
+      xms.setName(ms.getKey());
+      xms.setPriority(ms.getValue());
+      t.getMethodSelectors().add(xms);
+    }
+  }
+  suiteRunnerMap.put(xmlSuite,createSuiteRunner(xmlSuite));
+  for (  XmlSuite childSuite : xmlSuite.getChildSuites()) {
+    createSuiteRunners(suiteRunnerMap,childSuite);
+  }
+}
