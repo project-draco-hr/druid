@@ -171,20 +171,21 @@
 ),toolChest.makePreComputeManipulatorFn((Query)rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
                 @Override public void run(){
                   if (cachePopulator != null) {
-                    try {
-                      Futures.allAsList(cacheFutures).get();
-                      cachePopulator.populate(cacheData);
-                      cacheFutures.clear();
-                      cacheData.clear();
+                    Futures.addCallback(Futures.allAsList(cacheFutures),new FutureCallback<List<Object>>(){
+                      @Override public void onSuccess(                      List<Object> objects){
+                        cachePopulator.populate(cacheData);
+                        cacheFutures.clear();
+                        cacheData.clear();
+                      }
+                      @Override public void onFailure(                      Throwable throwable){
+                        log.error(throwable,"Background caching failed");
+                      }
                     }
- catch (                    Exception e) {
-                      log.error(e,"Error populating cache");
-                      throw Throwables.propagate(e);
-                    }
+,backgroundExecutorService);
                   }
                 }
               }
-,backgroundExecutorService);
+,MoreExecutors.sameThreadExecutor());
             }
           }
 ));
