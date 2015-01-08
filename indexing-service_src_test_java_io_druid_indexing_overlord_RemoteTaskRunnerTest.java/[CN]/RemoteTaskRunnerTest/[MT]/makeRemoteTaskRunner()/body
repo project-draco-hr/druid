@@ -1,10 +1,10 @@
 {
   RemoteTaskRunnerConfig config=new TestRemoteTaskRunnerConfig();
-  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,config,new IndexerZkConfig().setZkPathsConfig(new ZkPathsConfig(){
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,config,new IndexerZkConfig(new ZkPathsConfig(){
     @Override public String getBase(){
       return basePath;
     }
   }
-),cf,new SimplePathChildrenCacheFactory.Builder().build(),null,new FillCapacityWorkerSelectStrategy());
+,null,null,null,null,null),cf,new SimplePathChildrenCacheFactory.Builder().build(),null,new FillCapacityWorkerSelectStrategy());
   remoteTaskRunner.start();
 }

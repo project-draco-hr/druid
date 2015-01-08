@@ -5,12 +5,12 @@
   cf.start();
   cf.create().creatingParentsIfNeeded().forPath(basePath);
   worker=new Worker("host","ip",3,"v1");
-  curatorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig().setZkPathsConfig(new ZkPathsConfig(){
+  curatorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig(new ZkPathsConfig(){
     @Override public String getBase(){
       return basePath;
     }
   }
-),new RemoteTaskRunnerConfig(),cf,worker);
+,null,null,null,null,null),new RemoteTaskRunnerConfig(),cf,worker);
   curatorCoordinator.start();
   workerResource=new WorkerResource(worker,curatorCoordinator,null);
 }
