@@ -1,13 +1,15 @@
 {
-  hasStarted=true;
-  start.countDown();
-  if (Thread.interrupted()) {
-    interrupted=true;
-    stop.countDown();
-    throw new QueryInterruptedException("I got killed");
+synchronized (this) {
+    hasStarted=true;
+    start.countDown();
+    if (Thread.interrupted()) {
+      interrupted=true;
+      stop.countDown();
+      throw new QueryInterruptedException("I got killed");
+    }
   }
   try {
-    Thread.sleep(500);
+    Thread.sleep(5000);
   }
  catch (  InterruptedException e) {
     interrupted=true;
