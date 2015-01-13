@@ -18,12 +18,12 @@
   int count=0;
   for (  String property : fromFile.stringPropertyNames()) {
     boolean handled=false;
-    for (    PropertyConverter converter : converters) {
+    for (    PropertyConverter converter : converters6to7) {
       if (converter.canHandle(property)) {
         for (        Map.Entry<String,String> entry : converter.convert(fromFile).entrySet()) {
           if (entry.getValue() != null) {
             ++count;
-            log.info("Converting [%s] to [%s]",property,entry.getKey());
+            log.info("Converting [%s] to [%s]:[%s]",property,entry.getKey(),entry.getValue());
             updatedProps.setProperty(entry.getKey(),entry.getValue());
           }
         }
@@ -35,11 +35,12 @@
       updatedProps.put(property,fromFile.getProperty(property));
     }
   }
-  updatedProps.setProperty("druid.monitoring.monitors","[\"com.metamx.metrics.SysMonitor\"]");
   BufferedWriter out=null;
   try {
+    TreeMap<Object,Object> orderedUpdates=new TreeMap<>();
+    orderedUpdates.putAll(updatedProps);
     out=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile),Charsets.UTF_8));
-    for (    Map.Entry<Object,Object> prop : updatedProps.entrySet()) {
+    for (    Map.Entry<Object,Object> prop : orderedUpdates.entrySet()) {
       out.write((String)prop.getKey());
       out.write("=");
       out.write((String)prop.getValue());
