@@ -1,0 +1,9 @@
+{
+synchronized (resizeMutex) {
+    if (reference.get().length < capacity) {
+      resizeCount.incrementAndGet();
+      reference.set(Arrays.copyOf(reference.get(),reference.get().length << 1));
+      resizeCount.incrementAndGet();
+    }
+  }
+}
