@@ -13,9 +13,19 @@
   }
   return toolchest.mergeResults(factory.mergeRunners(queryExecutorService,FunctionalIterable.create(querySinks).transform(new Function<TimelineObjectHolder<String,Sink>,QueryRunner<T>>(){
     @Override public QueryRunner<T> apply(    TimelineObjectHolder<String,Sink> holder){
+      if (holder == null) {
+        throw new ISE("No timeline entry at all!");
+      }
       final Sink theSink=holder.getObject().getChunk(0).getObject();
+      if (theSink == null) {
+        throw new ISE("Missing sink for timeline entry[%s]!",holder);
+      }
+      final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum());
       return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        FireHydrant input){
+          if (input == null || input.getSegment() == null) {
+            return new ReportTimelineMissingSegmentQueryRunner<T>(descriptor);
+          }
           final Closeable closeable=input.getSegment().increment();
           try {
             return factory.createRunner(input.getSegment());
@@ -30,7 +40,7 @@
           }
         }
       }
-))).withWaitMeasuredFromNow(),new SpecificSegmentSpec(new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum())));
+))).withWaitMeasuredFromNow(),new SpecificSegmentSpec(descriptor));
     }
   }
 )));
