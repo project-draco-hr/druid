@@ -7,7 +7,7 @@
             return Pair.of(r.getLong("id"),jsonMapper.<LockType>readValue(r.getBytes("lock_payload"),lockType));
           }
  catch (          IOException e) {
-            log.makeAlert(e,"Failed to deserialize " + lockType.getType()).addData("id",r.getLong("id")).addData("lockPayload",new String(r.getBytes("lock_payload"),Charsets.UTF_8)).emit();
+            log.makeAlert(e,"Failed to deserialize " + lockType.getType()).addData("id",r.getLong("id")).addData("lockPayload",StringUtils.fromUtf8(r.getBytes("lock_payload"))).emit();
             throw new SQLException(e);
           }
         }

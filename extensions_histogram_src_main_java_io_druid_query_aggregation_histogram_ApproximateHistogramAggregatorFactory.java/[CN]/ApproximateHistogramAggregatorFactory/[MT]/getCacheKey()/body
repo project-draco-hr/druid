@@ -1,4 +1,4 @@
 {
-  byte[] fieldNameBytes=fieldName.getBytes(Charsets.UTF_8);
+  byte[] fieldNameBytes=StringUtils.toUtf8(fieldName);
   return ByteBuffer.allocate(1 + fieldNameBytes.length + Ints.BYTES * 2 + Floats.BYTES * 2).put(CACHE_TYPE_ID).put(fieldNameBytes).putInt(resolution).putInt(numBuckets).putFloat(lowerLimit).putFloat(upperLimit).array();
 }

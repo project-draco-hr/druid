@@ -51,7 +51,7 @@
   URL url=new URL(String.format("http://%s/druid/v2/?pretty",hostname));
   final URLConnection urlConnection=url.openConnection();
   urlConnection.addRequestProperty("content-type",MediaType.APPLICATION_JSON);
-  urlConnection.getOutputStream().write(queryStr.getBytes(Charsets.UTF_8));
+  urlConnection.getOutputStream().write(StringUtils.toUtf8(queryStr));
   BufferedReader stdInput=new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),Charsets.UTF_8));
   Object res=objectMapper.readValue(stdInput,typeRef);
   Joiner tabJoiner=Joiner.on("\t");
