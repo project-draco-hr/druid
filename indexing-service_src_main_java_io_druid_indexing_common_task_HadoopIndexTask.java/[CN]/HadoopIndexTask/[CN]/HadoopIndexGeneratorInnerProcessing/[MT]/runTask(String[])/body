@@ -2,7 +2,7 @@
   final String schema=args[0];
   String version=args[1];
   final HadoopIngestionSpec theSchema=HadoopDruidIndexerConfig.jsonMapper.readValue(schema,HadoopIngestionSpec.class);
-  final HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSchema(theSchema.withTuningConfig(theSchema.getTuningConfig().withVersion(version)));
+  final HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSpec(theSchema.withTuningConfig(theSchema.getTuningConfig().withVersion(version)));
   final MetadataStorageUpdaterJobHandler maybeHandler;
   if (config.isUpdaterJobSpecSet()) {
     maybeHandler=injector.getInstance(MetadataStorageUpdaterJobHandler.class);
