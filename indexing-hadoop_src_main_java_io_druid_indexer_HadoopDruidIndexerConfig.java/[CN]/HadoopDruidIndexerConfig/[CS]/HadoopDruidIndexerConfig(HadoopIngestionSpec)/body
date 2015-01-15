@@ -1,7 +1,7 @@
 {
-  this.schema=schema;
-  this.pathSpec=jsonMapper.convertValue(schema.getIOConfig().getPathSpec(),PathSpec.class);
-  for (  Map.Entry<DateTime,List<HadoopyShardSpec>> entry : schema.getTuningConfig().getShardSpecs().entrySet()) {
+  this.schema=spec;
+  this.pathSpec=jsonMapper.convertValue(spec.getIOConfig().getPathSpec(),PathSpec.class);
+  for (  Map.Entry<DateTime,List<HadoopyShardSpec>> entry : spec.getTuningConfig().getShardSpecs().entrySet()) {
     if (entry.getValue() == null || entry.getValue().isEmpty()) {
       continue;
     }
@@ -16,5 +16,5 @@
       hadoopShardSpecLookup.put(hadoopyShardSpec.getActualSpec(),hadoopyShardSpec);
     }
   }
-  this.rollupGran=schema.getDataSchema().getGranularitySpec().getQueryGranularity();
+  this.rollupGran=spec.getDataSchema().getGranularitySpec().getQueryGranularity();
 }
