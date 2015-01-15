@@ -1,5 +1,5 @@
 {
-  return ImmutableList.<Object>of(new Module(){
+  return ImmutableList.<Module>of(new Module(){
     @Override public void configure(    Binder binder){
       binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/bridge");
       binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8089);
@@ -19,7 +19,7 @@
       LifecycleModule.register(binder,Server.class);
     }
     @Provides @LazySingleton @Bridge public CuratorFramework getBridgeCurator(    final BridgeCuratorConfig bridgeCuratorConfig,    Lifecycle lifecycle){
-      final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(bridgeCuratorConfig.getParentZkHosts()).sessionTimeoutMs(bridgeCuratorConfig.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(bridgeCuratorConfig.enableCompression())).build();
+      final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(bridgeCuratorConfig.getParentZkHosts()).sessionTimeoutMs(bridgeCuratorConfig.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(bridgeCuratorConfig.getEnableCompression())).build();
       lifecycle.addHandler(new Lifecycle.Handler(){
         @Override public void start() throws Exception {
           log.info("Starting Curator for %s",bridgeCuratorConfig.getParentZkHosts());

@@ -24,10 +24,10 @@ synchronized (lock) {
               log.warn("No servers founds!");
             }
  else {
-              DruidServerMetadata me=new DruidServerMetadata(self.getHostAndPort(),self.getHostAndPort(),totalMaxSize,NODE_TYPE,config.getTier(),config.getPriority());
+              DruidServerMetadata me=new DruidServerMetadata(self.getHostAndPort(),self.getHostAndPort(),totalMaxSize,NODE_TYPE,druidServerMetadata.getTier(),druidServerMetadata.getPriority());
               try {
-                final String path=ZKPaths.makePath(config.getAnnouncementsPath(),self.getHostAndPort());
-                log.info("Updating [%s] to have a maxSize of[%,d] bytes",self.getHostAndPort(),totalMaxSize);
+                final String path=ZKPaths.makePath(zkPathsConfig.getAnnouncementsPath(),self.getHostAndPort());
+                log.info("Updating [%s] to have a maxSize of[%,d] bytes",self.getHost(),totalMaxSize);
                 announcer.update(path,jsonMapper.writeValueAsBytes(me));
               }
  catch (              Exception e) {

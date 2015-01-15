@@ -1,8 +1,11 @@
 {
-  setupSimple();
+  setupSimple(5);
   Assert.assertEquals(4,supplier.getBaseLongBuffers().size());
-  Assert.assertEquals(vals.length,indexed.size());
-  for (int i=0; i < indexed.size(); ++i) {
-    Assert.assertEquals(vals[i],indexed.get(i));
-  }
+  assertIndexMatchesVals();
+  setupSimple(4);
+  Assert.assertEquals(4,supplier.getBaseLongBuffers().size());
+  assertIndexMatchesVals();
+  setupSimple(32);
+  Assert.assertEquals(1,supplier.getBaseLongBuffers().size());
+  assertIndexMatchesVals();
 }

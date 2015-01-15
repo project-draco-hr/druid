@@ -1,0 +1,23 @@
+{
+  assertions=0;
+  T fakeValues=EasyMock.createNiceMock(clazz);
+  propertyValues.clear();
+  testProperties.clear();
+  for (  Field field : clazz.getDeclaredFields()) {
+    final String propertyKey=getPropertyKey(field);
+    if (null != propertyKey) {
+      field.setAccessible(true);
+      if (field.getType().isAssignableFrom(String.class)) {
+        propertyValues.put(propertyKey,UUID.randomUUID().toString());
+      }
+ else {
+        propertyValues.put(propertyKey,field.get(fakeValues).toString());
+      }
+    }
+  }
+  testProperties.putAll(System.getProperties());
+  testProperties.putAll(propertyValues);
+  injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(simpleJsonConfigModule));
+  configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  configProvider=JsonConfigProvider.of(configPrefix,clazz);
+}

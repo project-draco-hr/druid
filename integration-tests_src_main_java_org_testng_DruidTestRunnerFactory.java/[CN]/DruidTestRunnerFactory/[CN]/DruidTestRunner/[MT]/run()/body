@@ -1,0 +1,21 @@
+{
+  Injector injector=DruidTestModuleFactory.getInjector();
+  IntegrationTestingConfig config=injector.getInstance(IntegrationTestingConfig.class);
+  HttpClient client=injector.getInstance(Key.get(HttpClient.class,Global.class));
+  ;
+  waitUntilInstanceReady(client,config.getCoordinatorHost());
+  waitUntilInstanceReady(client,config.getIndexerHost());
+  waitUntilInstanceReady(client,config.getRouterHost());
+  Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+  try {
+    lifecycle.start();
+    runTests();
+  }
+ catch (  Exception e) {
+    e.printStackTrace();
+    throw Throwables.propagate(e);
+  }
+ finally {
+    lifecycle.stop();
+  }
+}

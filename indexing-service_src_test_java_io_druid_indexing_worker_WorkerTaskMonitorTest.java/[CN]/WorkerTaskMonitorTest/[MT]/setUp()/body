@@ -5,12 +5,12 @@
   cf.start();
   cf.create().creatingParentsIfNeeded().forPath(basePath);
   worker=new Worker("worker","localhost",3,"0");
-  workerCuratorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new ZkPathsConfig(){
-    @Override public String getZkBasePath(){
+  workerCuratorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig(new ZkPathsConfig(){
+    @Override public String getBase(){
       return basePath;
     }
   }
-,new TestRemoteTaskRunnerConfig(),cf,worker);
+,null,null,null,null,null),new TestRemoteTaskRunnerConfig(),cf,worker);
   workerCuratorCoordinator.start();
   final File tmp=Files.createTempDir();
   workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,0,null),null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
@@ -18,7 +18,7 @@
       return Lists.newArrayList();
     }
   }
-)),jsonMapper)),new WorkerConfig().setCapacity(1));
+)),jsonMapper),null),new WorkerConfig().setCapacity(1));
   jsonMapper.registerSubtypes(new NamedType(TestMergeTask.class,"test"));
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();

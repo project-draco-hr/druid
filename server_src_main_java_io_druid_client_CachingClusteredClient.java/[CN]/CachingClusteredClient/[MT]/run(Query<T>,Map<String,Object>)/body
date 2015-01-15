@@ -15,14 +15,14 @@
     contextBuilder.put("bySegment",true);
   }
   contextBuilder.put("intermediate",true);
-  VersionedIntervalTimeline<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
+  TimelineLookup<String,ServerSelector> timeline=serverView.getTimeline(query.getDataSource());
   if (timeline == null) {
     return Sequences.empty();
   }
   Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   List<TimelineObjectHolder<String,ServerSelector>> serversLookup=Lists.newLinkedList();
   for (  Interval interval : query.getIntervals()) {
-    serversLookup.addAll(timeline.lookup(interval));
+    Iterables.addAll(serversLookup,timeline.lookup(interval));
   }
   final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
   for (  TimelineObjectHolder<String,ServerSelector> holder : filteredServersLookup) {
@@ -154,7 +154,7 @@
             @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
               final BySegmentResultValueClass<T> value=input.getValue();
               final CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
-              final List<Object> cacheData=Lists.newLinkedList();
+              final Collection<Object> cacheData=new ConcurrentLinkedQueue<>();
               return Sequences.<T>withEffect(Sequences.<T,T>map(Sequences.<T,T>map(Sequences.<T>simple(value.getResults()),new Function<T,T>(){
                 @Override public T apply(                final T input){
                   if (cachePopulator != null) {
@@ -171,18 +171,21 @@
 ),toolChest.makePreComputeManipulatorFn((Query)rewrittenQuery,MetricManipulatorFns.deserializing())),new Runnable(){
                 @Override public void run(){
                   if (cachePopulator != null) {
-                    try {
-                      Futures.allAsList(cacheFutures).get();
-                      cachePopulator.populate(cacheData);
+                    Futures.addCallback(Futures.allAsList(cacheFutures),new FutureCallback<List<Object>>(){
+                      @Override public void onSuccess(                      List<Object> objects){
+                        cachePopulator.populate(cacheData);
+                        cacheFutures.clear();
+                        cacheData.clear();
+                      }
+                      @Override public void onFailure(                      Throwable throwable){
+                        log.error(throwable,"Background caching failed");
+                      }
                     }
- catch (                    Exception e) {
-                      log.error(e,"Error populating cache");
-                      throw Throwables.propagate(e);
-                    }
+,backgroundExecutorService);
                   }
                 }
               }
-,backgroundExecutorService);
+,MoreExecutors.sameThreadExecutor());
             }
           }
 ));

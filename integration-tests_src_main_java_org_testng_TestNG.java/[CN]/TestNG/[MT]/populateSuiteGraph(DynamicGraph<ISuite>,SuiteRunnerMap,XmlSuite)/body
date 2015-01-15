@@ -1,0 +1,12 @@
+{
+  ISuite parentSuiteRunner=suiteRunnerMap.get(xmlSuite);
+  if (xmlSuite.getChildSuites().isEmpty()) {
+    suiteGraph.addNode(parentSuiteRunner);
+  }
+ else {
+    for (    XmlSuite childSuite : xmlSuite.getChildSuites()) {
+      suiteGraph.addEdge(parentSuiteRunner,suiteRunnerMap.get(childSuite));
+      populateSuiteGraph(suiteGraph,suiteRunnerMap,childSuite);
+    }
+  }
+}

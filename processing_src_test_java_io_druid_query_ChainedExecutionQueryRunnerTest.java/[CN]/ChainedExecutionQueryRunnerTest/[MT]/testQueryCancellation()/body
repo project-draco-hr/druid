@@ -34,8 +34,8 @@
     }
   }
 );
-  Assert.assertTrue(queryIsRegistered.await(1,TimeUnit.SECONDS));
-  Assert.assertTrue(queriesStarted.await(1,TimeUnit.SECONDS));
+  queryIsRegistered.await();
+  queriesStarted.await();
   Assert.assertTrue(capturedFuture.hasCaptured());
   ListenableFuture future=capturedFuture.getValue();
   future.cancel(true);
@@ -47,14 +47,16 @@
     Assert.assertTrue(e.getCause() instanceof QueryInterruptedException);
     cause=(QueryInterruptedException)e.getCause();
   }
-  Assert.assertTrue(queriesInterrupted.await(500,TimeUnit.MILLISECONDS));
+  queriesInterrupted.await();
   Assert.assertNotNull(cause);
   Assert.assertTrue(future.isCancelled());
   Assert.assertTrue(runner1.hasStarted);
   Assert.assertTrue(runner2.hasStarted);
   Assert.assertTrue(runner1.interrupted);
   Assert.assertTrue(runner2.interrupted);
-  Assert.assertTrue(!runner3.hasStarted || runner3.interrupted);
+synchronized (runner3) {
+    Assert.assertTrue(!runner3.hasStarted || runner3.interrupted);
+  }
   Assert.assertFalse(runner1.hasCompleted);
   Assert.assertFalse(runner2.hasCompleted);
   Assert.assertFalse(runner3.hasCompleted);

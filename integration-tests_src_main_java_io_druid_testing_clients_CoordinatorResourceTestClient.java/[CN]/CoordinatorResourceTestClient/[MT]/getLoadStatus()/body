@@ -1,0 +1,13 @@
+{
+  Map<String,Integer> status=null;
+  try {
+    StatusResponseHolder response=makeRequest(HttpMethod.GET,getCoordinatorURL() + "loadstatus?simple");
+    status=jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,Integer>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    Throwables.propagate(e);
+  }
+  return status;
+}

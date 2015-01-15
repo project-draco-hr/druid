@@ -1,0 +1,28 @@
+{
+  TestNG result=new TestNG();
+  if (null != listener) {
+    result.addListener(listener);
+  }
+  try {
+    CommandLineArgs cla=new CommandLineArgs();
+    m_jCommander=new JCommander(cla,argv);
+    validateCommandLineParameters(cla);
+    result.configure(cla);
+  }
+ catch (  ParameterException ex) {
+    exitWithError(ex.getMessage());
+  }
+  try {
+    result.run();
+  }
+ catch (  TestNGException ex) {
+    if (TestRunner.getVerbose() > 1) {
+      ex.printStackTrace(System.out);
+    }
+ else {
+      error(ex.getMessage());
+    }
+    result.setStatus(HAS_FAILURE);
+  }
+  return result;
+}

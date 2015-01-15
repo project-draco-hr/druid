@@ -1,0 +1,10 @@
+{
+  propertyValues.clear();
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(simpleZkConfigModule));
+  JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  JsonConfigProvider<ZkPathsConfig> zkPathsConfig=JsonConfigProvider.of(zkServiceConfigString,ZkPathsConfig.class);
+  zkPathsConfig.inject(propertyValues,configurator);
+  JsonConfigProvider<IndexerZkConfig> indexerZkConfig=JsonConfigProvider.of(indexerPropertyString,IndexerZkConfig.class);
+  indexerZkConfig.inject(propertyValues,configurator);
+  Assert.assertEquals("/druid/indexer/leaderLatchPath",indexerZkConfig.get().get().getLeaderLatchPath());
+}

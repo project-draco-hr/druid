@@ -1,0 +1,11 @@
+{
+  final String taskID=indexer.submitTask(getTaskAsString(INDEX_TASK));
+  LOG.info("TaskID for loading index task %s",taskID);
+  indexer.waitUntilTaskCompletes(taskID);
+  RetryUtil.retryUntilTrue(new Callable<Boolean>(){
+    @Override public Boolean call() throws Exception {
+      return coordinator.areSegmentsLoaded(INDEX_DATASOURCE);
+    }
+  }
+,"Segment Load");
+}

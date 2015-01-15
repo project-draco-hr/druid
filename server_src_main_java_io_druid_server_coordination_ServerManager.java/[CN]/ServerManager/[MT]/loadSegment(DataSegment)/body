@@ -18,7 +18,7 @@ synchronized (lock) {
     String dataSource=segment.getDataSource();
     VersionedIntervalTimeline<String,ReferenceCountingSegment> loadedIntervals=dataSources.get(dataSource);
     if (loadedIntervals == null) {
-      loadedIntervals=new VersionedIntervalTimeline<String,ReferenceCountingSegment>(Ordering.natural());
+      loadedIntervals=new VersionedIntervalTimeline<>(Ordering.natural());
       dataSources.put(dataSource,loadedIntervals);
     }
     PartitionHolder<ReferenceCountingSegment> entry=loadedIntervals.findEntry(segment.getInterval(),segment.getVersion());

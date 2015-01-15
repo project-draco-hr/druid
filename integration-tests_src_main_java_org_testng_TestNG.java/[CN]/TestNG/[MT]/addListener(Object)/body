@@ -1,0 +1,37 @@
+{
+  if (!(listener instanceof ITestNGListener)) {
+    exitWithError("Listener " + listener + " must be one of ITestListener, ISuiteListener, IReporter, "+ " IAnnotationTransformer, IMethodInterceptor or IInvokedMethodListener");
+  }
+ else {
+    if (listener instanceof ISuiteListener) {
+      addListener((ISuiteListener)listener);
+    }
+    if (listener instanceof ITestListener) {
+      addListener((ITestListener)listener);
+    }
+    if (listener instanceof IReporter) {
+      addListener((IReporter)listener);
+    }
+    if (listener instanceof IAnnotationTransformer) {
+      setAnnotationTransformer((IAnnotationTransformer)listener);
+    }
+    if (listener instanceof IMethodInterceptor) {
+      setMethodInterceptor((IMethodInterceptor)listener);
+    }
+    if (listener instanceof IInvokedMethodListener) {
+      addInvokedMethodListener((IInvokedMethodListener)listener);
+    }
+    if (listener instanceof IHookable) {
+      setHookable((IHookable)listener);
+    }
+    if (listener instanceof IConfigurable) {
+      setConfigurable((IConfigurable)listener);
+    }
+    if (listener instanceof IExecutionListener) {
+      addExecutionListener((IExecutionListener)listener);
+    }
+    if (listener instanceof IConfigurationListener) {
+      getConfiguration().addConfigurationListener((IConfigurationListener)listener);
+    }
+  }
+}

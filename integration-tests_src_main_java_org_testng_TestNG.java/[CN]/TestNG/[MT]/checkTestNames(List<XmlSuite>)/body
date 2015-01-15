@@ -1,0 +1,14 @@
+{
+  for (  XmlSuite suite : suites) {
+    Set<String> testNames=Sets.newHashSet();
+    for (    XmlTest test : suite.getTests()) {
+      if (testNames.contains(test.getName())) {
+        throw new TestNGException("Two tests in the same suite " + "cannot have the same name: " + test.getName());
+      }
+ else {
+        testNames.add(test.getName());
+      }
+    }
+    checkTestNames(suite.getChildSuites());
+  }
+}

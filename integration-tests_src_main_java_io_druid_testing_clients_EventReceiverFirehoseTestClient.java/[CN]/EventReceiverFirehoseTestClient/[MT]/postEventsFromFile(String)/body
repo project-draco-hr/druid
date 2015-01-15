@@ -1,0 +1,20 @@
+{
+  try {
+    BufferedReader reader=new BufferedReader(new InputStreamReader(EventReceiverFirehoseTestClient.class.getResourceAsStream(file)));
+    String s;
+    Collection<Map<String,Object>> events=new ArrayList<Map<String,Object>>();
+    while ((s=reader.readLine()) != null) {
+      events.add((Map<String,Object>)this.jsonMapper.readValue(s,new TypeReference<Map<String,Object>>(){
+      }
+));
+    }
+    int eventsPosted=postEvents(events);
+    if (eventsPosted != events.size()) {
+      throw new ISE("All events not posted, expected : %d actual : %d",events.size(),eventsPosted);
+    }
+    return eventsPosted;
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

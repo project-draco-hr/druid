@@ -1,0 +1,35 @@
+{
+  initializeSuitesAndJarFile();
+  initializeConfiguration();
+  initializeDefaultListeners();
+  initializeCommandLineSuites();
+  initializeCommandLineSuitesParams();
+  initializeCommandLineSuitesGroups();
+  sanityCheck();
+  List<ISuite> suiteRunners=null;
+  runExecutionListeners(true);
+  m_start=System.currentTimeMillis();
+  if (m_slavefileName != null) {
+    SuiteSlave slave=new SuiteSlave(m_slavefileName,this);
+    slave.waitForSuites();
+  }
+ else   if (m_masterfileName == null) {
+    suiteRunners=runSuitesLocally();
+  }
+ else {
+    SuiteDispatcher dispatcher=new SuiteDispatcher(m_masterfileName);
+    suiteRunners=dispatcher.dispatch(getConfiguration(),m_suites,getOutputDirectory(),getTestListeners());
+  }
+  m_end=System.currentTimeMillis();
+  runExecutionListeners(false);
+  if (null != suiteRunners) {
+    generateReports(suiteRunners);
+  }
+  if (!m_hasTests) {
+    setStatus(HAS_NO_TEST);
+    if (TestRunner.getVerbose() > 1) {
+      System.err.println("[TestNG] No tests found. Nothing was run");
+      usage();
+    }
+  }
+}

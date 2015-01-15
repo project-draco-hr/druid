@@ -10,7 +10,7 @@
  else {
     final String workerId=worker.getHost();
     log.info("Cleaning up task[%s] on worker[%s]",taskId,workerId);
-    final String statusPath=JOINER.join(zkPaths.getIndexerStatusPath(),workerId,taskId);
+    final String statusPath=JOINER.join(indexerZkConfig.getStatus(),workerId,taskId);
     try {
       cf.delete().guaranteed().forPath(statusPath);
     }

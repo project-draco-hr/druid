@@ -1,0 +1,10 @@
+{
+  final URL url=new URL("http://localhost:" + port + "/default");
+  final HttpURLConnection get=(HttpURLConnection)url.openConnection();
+  get.setRequestProperty("Accept-Encoding","gzip");
+  Assert.assertEquals("gzip",get.getContentEncoding());
+  final HttpURLConnection post=(HttpURLConnection)url.openConnection();
+  post.setRequestProperty("Accept-Encoding","gzip");
+  post.setRequestMethod("POST");
+  Assert.assertEquals("gzip",post.getContentEncoding());
+}

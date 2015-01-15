@@ -21,13 +21,14 @@
   final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
   try {
     log.debug("Querying url[%s]",url);
-    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(new InputStreamResponseHandler(){
-      long startTime;
-      long byteCount=0;
-      @Override public ClientResponse<AppendableByteArrayInputStream> handleResponse(      HttpResponse response){
+    final HttpResponseHandler<InputStream,InputStream> responseHandler=new HttpResponseHandler<InputStream,InputStream>(){
+      private long startTime;
+      private final AtomicLong byteCount=new AtomicLong(0);
+      private final BlockingQueue<InputStream> queue=new LinkedBlockingQueue<>();
+      private final AtomicBoolean done=new AtomicBoolean(false);
+      @Override public ClientResponse<InputStream> handleResponse(      HttpResponse response){
         log.debug("Initial response from url[%s]",url);
         startTime=System.currentTimeMillis();
-        byteCount+=response.getContent().readableBytes();
         try {
           final String responseContext=response.headers().get("X-Druid-Response-Context");
           if (responseContext != null) {
@@ -35,24 +36,92 @@
             }
 ));
           }
+          queue.put(new ChannelBufferInputStream(response.getContent()));
         }
- catch (        IOException e) {
-          log.error(e,"Unable to parse response context from url[%s]",url);
+ catch (        final IOException e) {
+          log.error(e,"Error parsing response context from url [%s]",url);
+          return ClientResponse.<InputStream>finished(new InputStream(){
+            @Override public int read() throws IOException {
+              throw e;
+            }
+          }
+);
         }
-        return super.handleResponse(response);
+catch (        InterruptedException e) {
+          log.error(e,"Queue appending interrupted");
+          Thread.currentThread().interrupt();
+          throw Throwables.propagate(e);
+        }
+        byteCount.addAndGet(response.getContent().readableBytes());
+        return ClientResponse.<InputStream>finished(new SequenceInputStream(new Enumeration<InputStream>(){
+          @Override public boolean hasMoreElements(){
+synchronized (done) {
+              return !done.get() || !queue.isEmpty();
+            }
+          }
+          @Override public InputStream nextElement(){
+            try {
+              return queue.take();
+            }
+ catch (            InterruptedException e) {
+              Thread.currentThread().interrupt();
+              throw Throwables.propagate(e);
+            }
+          }
+        }
+));
       }
-      @Override public ClientResponse<AppendableByteArrayInputStream> handleChunk(      ClientResponse<AppendableByteArrayInputStream> clientResponse,      HttpChunk chunk){
-        final int bytes=chunk.getContent().readableBytes();
-        byteCount+=bytes;
-        return super.handleChunk(clientResponse,chunk);
+      @Override public ClientResponse<InputStream> handleChunk(      ClientResponse<InputStream> clientResponse,      HttpChunk chunk){
+        final ChannelBuffer channelBuffer=chunk.getContent();
+        final int bytes=channelBuffer.readableBytes();
+        if (bytes > 0) {
+          try {
+            queue.put(new ChannelBufferInputStream(channelBuffer));
+          }
+ catch (          InterruptedException e) {
+            log.error(e,"Unable to put finalizing input stream into Sequence queue for url [%s]",url);
+            Thread.currentThread().interrupt();
+            throw Throwables.propagate(e);
+          }
+          byteCount.addAndGet(bytes);
+        }
+        return clientResponse;
       }
-      @Override public ClientResponse<InputStream> done(      ClientResponse<AppendableByteArrayInputStream> clientResponse){
+      @Override public ClientResponse<InputStream> done(      ClientResponse<InputStream> clientResponse){
         long stopTime=System.currentTimeMillis();
-        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount,stopTime - startTime,byteCount / (0.0001 * (stopTime - startTime)));
-        return super.done(clientResponse);
+        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount.get(),stopTime - startTime,byteCount.get() / (0.0001 * (stopTime - startTime)));
+synchronized (done) {
+          try {
+            queue.put(ByteSource.empty().openStream());
+          }
+ catch (          InterruptedException e) {
+            log.error(e,"Unable to put finalizing input stream into Sequence queue for url [%s]",url);
+            Thread.currentThread().interrupt();
+            throw Throwables.propagate(e);
+          }
+catch (          IOException e) {
+            throw Throwables.propagate(e);
+          }
+ finally {
+            done.set(true);
+          }
+        }
+        return ClientResponse.<InputStream>finished(clientResponse.getObj());
+      }
+      @Override public void exceptionCaught(      final ClientResponse<InputStream> clientResponse,      final Throwable e){
+synchronized (done) {
+          done.set(true);
+          queue.offer(new InputStream(){
+            @Override public int read() throws IOException {
+              throw new IOException(e);
+            }
+          }
+);
+        }
       }
     }
-);
+;
+    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(responseHandler);
     queryWatcher.registerQuery(query,future);
     openConnections.getAndIncrement();
     Futures.addCallback(future,new FutureCallback<InputStream>(){

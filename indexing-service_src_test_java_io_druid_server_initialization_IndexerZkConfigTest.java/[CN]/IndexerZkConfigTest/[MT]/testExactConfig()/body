@@ -1,0 +1,11 @@
+{
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(simpleZkConfigModule));
+  propertyValues.setProperty(zkServiceConfigString + ".base","/druid/metrics");
+  JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  JsonConfigProvider<ZkPathsConfig> zkPathsConfig=JsonConfigProvider.of(zkServiceConfigString,ZkPathsConfig.class);
+  zkPathsConfig.inject(propertyValues,configurator);
+  ZkPathsConfig zkPathsConfig1=zkPathsConfig.get().get();
+  IndexerZkConfig indexerZkConfig=new IndexerZkConfig(zkPathsConfig1,null,null,null,null,null);
+  Assert.assertEquals("indexer",indexerZkConfig.getBase());
+  Assert.assertEquals("/druid/metrics/indexer/announcements",indexerZkConfig.getAnnouncementsPath());
+}

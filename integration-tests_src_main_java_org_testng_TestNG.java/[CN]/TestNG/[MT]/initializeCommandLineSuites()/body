@@ -1,0 +1,19 @@
+{
+  if (m_commandLineTestClasses != null || m_commandLineMethods != null) {
+    if (null != m_commandLineMethods) {
+      m_cmdlineSuites=createCommandLineSuitesForMethods(m_commandLineMethods);
+    }
+ else {
+      m_cmdlineSuites=createCommandLineSuitesForClasses(m_commandLineTestClasses);
+    }
+    for (    XmlSuite s : m_cmdlineSuites) {
+      for (      XmlTest t : s.getTests()) {
+        t.setPreserveOrder(m_preserveOrder ? "true " : "false");
+      }
+      m_suites.add(s);
+      if (m_groupByInstances != null) {
+        s.setGroupByInstances(m_groupByInstances);
+      }
+    }
+  }
+}
