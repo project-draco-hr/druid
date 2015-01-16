@@ -1,8 +1,8 @@
 {
   try {
     MessageDigest md=MessageDigest.getInstance("SHA-1");
-    byte[] fieldNameBytes=Joiner.on(",").join(fieldNames).getBytes(Charsets.UTF_8);
-    byte[] sha1=md.digest((fnAggregate + fnReset + fnCombine).getBytes(Charsets.UTF_8));
+    byte[] fieldNameBytes=StringUtils.toUtf8(Joiner.on(",").join(fieldNames));
+    byte[] sha1=md.digest(StringUtils.toUtf8(fnAggregate + fnReset + fnCombine));
     return ByteBuffer.allocate(1 + fieldNameBytes.length + sha1.length).put(CACHE_TYPE_ID).put(fieldNameBytes).put(sha1).array();
   }
  catch (  NoSuchAlgorithmException e) {

@@ -1,0 +1,10 @@
+{
+  ensureCapacity(index + 1);
+  Long pre, post;
+  do {
+    pre=resizeCount.get();
+    reference.get()[index]=object;
+    post=resizeCount.get();
+  }
+ while (wasCopying(pre) || wasCopying(post) || (!pre.equals(post)));
+}

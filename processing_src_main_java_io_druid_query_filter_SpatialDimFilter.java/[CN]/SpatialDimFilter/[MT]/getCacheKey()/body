@@ -1,5 +1,5 @@
 {
-  byte[] dimBytes=dimension.getBytes(Charsets.UTF_8);
+  byte[] dimBytes=StringUtils.toUtf8(dimension);
   byte[] boundBytes=bound.getCacheKey();
   return ByteBuffer.allocate(1 + dimBytes.length + boundBytes.length).put(DimFilterCacheHelper.SPATIAL_CACHE_ID).put(dimBytes).put(boundBytes).array();
 }
