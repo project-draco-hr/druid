@@ -1,0 +1,25 @@
+{
+  final ListeningExecutorService executorService=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(concurrentThreads,new ThreadFactoryBuilder().setDaemon(false).setNameFormat("indexible-writes-benchmark-%d").build()));
+  final AtomicInteger index=new AtomicInteger(0);
+  List<ListenableFuture<?>> futures=new LinkedList<>();
+  final Integer loops=totalIndexSize / concurrentThreads;
+  for (int i=0; i < concurrentThreads; ++i) {
+    futures.add(executorService.submit(new Runnable(){
+      @Override public void run(){
+        for (int i=0; i < loops; ++i) {
+          final Integer idx=index.getAndIncrement();
+          concurrentIndexible.set(idx,idx);
+        }
+      }
+    }
+));
+  }
+  Futures.allAsList(futures).get();
+  Assert.assertTrue(String.format("Index too small %d, expected %d across %d loops",index.get(),totalIndexSize,loops),index.get() >= totalIndexSize);
+  for (int i=0; i < index.get(); ++i) {
+    Assert.assertEquals(i,concurrentIndexible.get(i).intValue());
+  }
+  concurrentIndexible.clear();
+  futures.clear();
+  executorService.shutdown();
+}
