@@ -1,0 +1,6 @@
+{
+  Query query=Druids.newDataSourceMetadataQueryBuilder().dataSource("testing").build();
+  String json=jsonMapper.writeValueAsString(query);
+  Query serdeQuery=jsonMapper.readValue(json,Query.class);
+  Assert.assertEquals(query,serdeQuery);
+}

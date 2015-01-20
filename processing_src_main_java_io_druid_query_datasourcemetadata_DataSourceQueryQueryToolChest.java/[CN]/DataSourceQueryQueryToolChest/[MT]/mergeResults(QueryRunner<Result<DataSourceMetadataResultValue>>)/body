@@ -1,0 +1,9 @@
+{
+  return new BySegmentSkippingQueryRunner<Result<DataSourceMetadataResultValue>>(runner){
+    @Override protected Sequence<Result<DataSourceMetadataResultValue>> doRun(    QueryRunner<Result<DataSourceMetadataResultValue>> baseRunner,    Query<Result<DataSourceMetadataResultValue>> input,    Map<String,Object> context){
+      DataSourceMetadataQuery query=(DataSourceMetadataQuery)input;
+      return Sequences.simple(query.mergeResults(Sequences.toList(baseRunner.run(query,context),Lists.<Result<DataSourceMetadataResultValue>>newArrayList())));
+    }
+  }
+;
+}
