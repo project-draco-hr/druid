@@ -1,4 +1,5 @@
 {
+  final CountDownLatch removeCallbackLatch=new CountDownLatch(1);
   segmentAnnouncer.announceSegments(testSegments);
   waitForSync(filteredBatchServerInventoryView,testSegments);
   DruidServer server=Iterables.get(filteredBatchServerInventoryView.getInventory(),0);
@@ -12,7 +13,13 @@
   }
 ;
   EasyMock.expect(callback.segmentAdded(EasyMock.<DruidServerMetadata>anyObject(),EasyMock.cmp(makeSegment(INITIAL_SEGMENTS + 2),dataSegmentComparator,LogicalOperator.EQUAL))).andReturn(ServerView.CallbackAction.CONTINUE).times(1);
-  EasyMock.expect(callback.segmentRemoved(EasyMock.<DruidServerMetadata>anyObject(),EasyMock.cmp(makeSegment(INITIAL_SEGMENTS + 2),dataSegmentComparator,LogicalOperator.EQUAL))).andReturn(ServerView.CallbackAction.CONTINUE).times(1);
+  EasyMock.expect(callback.segmentRemoved(EasyMock.<DruidServerMetadata>anyObject(),EasyMock.cmp(makeSegment(INITIAL_SEGMENTS + 2),dataSegmentComparator,LogicalOperator.EQUAL))).andAnswer(new IAnswer<ServerView.CallbackAction>(){
+    @Override public ServerView.CallbackAction answer() throws Throwable {
+      removeCallbackLatch.countDown();
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+).times(1);
   EasyMock.replay(callback);
   filteredBatchServerInventoryView.registerSegmentCallback(MoreExecutors.sameThreadExecutor(),callback,new Predicate<DataSegment>(){
     @Override public boolean apply(    @Nullable DataSegment dataSegment){
@@ -32,5 +39,6 @@
   segmentAnnouncer.unannounceSegment(segment2);
   testSegments.remove(segment2);
   waitForSync(filteredBatchServerInventoryView,testSegments);
+  timing.forWaiting().awaitLatch(removeCallbackLatch);
   EasyMock.verify(callback);
 }
