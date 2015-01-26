@@ -119,7 +119,6 @@
     private void addSequencesFromServer(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
       listOfSequences.ensureCapacity(listOfSequences.size() + serverSegments.size());
       final Query<Result<BySegmentResultValueClass<T>>> rewrittenQuery=(Query<Result<BySegmentResultValueClass<T>>>)query.withOverriddenContext(contextBuilder.build());
-      final Queue<ListenableFuture<?>> cacheFutures=new ConcurrentLinkedQueue<>();
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
@@ -154,13 +153,13 @@
             @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
               final BySegmentResultValueClass<T> value=input.getValue();
               final CachePopulator cachePopulator=cachePopulatorMap.get(String.format("%s_%s",value.getSegmentId(),value.getInterval()));
-              final Collection<Object> cacheData=new ConcurrentLinkedQueue<>();
+              final Queue<ListenableFuture<Object>> cacheFutures=new ConcurrentLinkedQueue<>();
               return Sequences.<T>withEffect(Sequences.<T,T>map(Sequences.<T,T>map(Sequences.<T>simple(value.getResults()),new Function<T,T>(){
                 @Override public T apply(                final T input){
                   if (cachePopulator != null) {
-                    cacheFutures.add(backgroundExecutorService.submit(new Runnable(){
-                      @Override public void run(){
-                        cacheData.add(cacheFn.apply(input));
+                    cacheFutures.add(backgroundExecutorService.submit(new Callable<Object>(){
+                      @Override public Object call(){
+                        return cacheFn.apply(input);
                       }
                     }
 ));
@@ -172,10 +171,9 @@
                 @Override public void run(){
                   if (cachePopulator != null) {
                     Futures.addCallback(Futures.allAsList(cacheFutures),new FutureCallback<List<Object>>(){
-                      @Override public void onSuccess(                      List<Object> objects){
+                      @Override public void onSuccess(                      List<Object> cacheData){
                         cachePopulator.populate(cacheData);
                         cacheFutures.clear();
-                        cacheData.clear();
                       }
                       @Override public void onFailure(                      Throwable throwable){
                         log.error(throwable,"Background caching failed");
