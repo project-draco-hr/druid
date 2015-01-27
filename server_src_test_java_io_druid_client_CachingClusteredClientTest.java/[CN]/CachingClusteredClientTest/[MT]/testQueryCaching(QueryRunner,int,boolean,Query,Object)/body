@@ -127,6 +127,9 @@
             }
           }
 )),runner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(actualQueryInterval))),context));
+          if (queryCompletedCallback != null) {
+            queryCompletedCallback.run();
+          }
         }
       }
     }
