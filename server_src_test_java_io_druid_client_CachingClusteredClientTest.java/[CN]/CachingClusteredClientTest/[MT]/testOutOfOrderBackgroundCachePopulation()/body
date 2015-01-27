@@ -1,0 +1,66 @@
+{
+abstract class DrainTask implements Runnable {
+  }
+  final ForwardingListeningExecutorService randomizingExecutorService=new ForwardingListeningExecutorService(){
+    final ConcurrentLinkedDeque<Pair<SettableFuture,Object>> taskQueue=new ConcurrentLinkedDeque();
+    final ListeningExecutorService delegate=MoreExecutors.listeningDecorator(MoreExecutors.sameThreadExecutor());
+    @Override protected ListeningExecutorService delegate(){
+      return delegate;
+    }
+    private <T>ListenableFuture<T> maybeSubmitTask(    Object task,    boolean wait){
+      if (wait) {
+        SettableFuture<T> future=SettableFuture.create();
+        taskQueue.addFirst(Pair.<SettableFuture,Object>of(future,task));
+        return future;
+      }
+ else {
+        List<Pair<SettableFuture,Object>> tasks=Lists.newArrayList(taskQueue.iterator());
+        Collections.shuffle(tasks,new Random(0));
+        for (        final Pair<SettableFuture,Object> pair : tasks) {
+          ListenableFuture future=pair.rhs instanceof Callable ? delegate.submit((Callable)pair.rhs) : delegate.submit((Runnable)pair.rhs);
+          Futures.addCallback(future,new FutureCallback(){
+            @Override public void onSuccess(            @Nullable Object result){
+              pair.lhs.set(result);
+            }
+            @Override public void onFailure(            Throwable t){
+              pair.lhs.setException(t);
+            }
+          }
+);
+        }
+      }
+      return task instanceof Callable ? delegate.submit((Callable)task) : delegate.submit((Runnable)task);
+    }
+    @Override public <T>ListenableFuture<T> submit(    Callable<T> task){
+      return maybeSubmitTask(task,true);
+    }
+    @Override public ListenableFuture<?> submit(    Runnable task){
+      if (task instanceof DrainTask) {
+        return maybeSubmitTask(task,false);
+      }
+ else {
+        return maybeSubmitTask(task,true);
+      }
+    }
+  }
+;
+  client=makeClient(randomizingExecutorService);
+  queryCompletedCallback=new Runnable(){
+    @Override public void run(){
+      try {
+        randomizingExecutorService.submit(new DrainTask(){
+          @Override public void run(){
+          }
+        }
+).get();
+      }
+ catch (      Exception e) {
+        Throwables.propagate(e);
+      }
+    }
+  }
+;
+  final Druids.TimeseriesQueryBuilder builder=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).intervals(SEG_SPEC).filters(DIM_FILTER).granularity(GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT);
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(new QueryConfig()));
+  testQueryCaching(runner,builder.build(),new Interval("2011-01-05/2011-01-10"),makeTimeResults(new DateTime("2011-01-05"),85,102,new DateTime("2011-01-06"),412,521,new DateTime("2011-01-07"),122,21894,new DateTime("2011-01-08"),5,20,new DateTime("2011-01-09"),18,521),new Interval("2011-01-10/2011-01-13"),makeTimeResults(new DateTime("2011-01-10"),85,102,new DateTime("2011-01-11"),412,521,new DateTime("2011-01-12"),122,21894));
+}
