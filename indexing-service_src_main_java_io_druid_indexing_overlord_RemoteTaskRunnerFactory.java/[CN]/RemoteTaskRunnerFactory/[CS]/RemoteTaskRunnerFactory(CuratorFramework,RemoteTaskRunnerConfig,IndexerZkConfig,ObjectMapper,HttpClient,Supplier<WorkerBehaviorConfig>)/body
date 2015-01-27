@@ -4,16 +4,5 @@
   this.zkPaths=zkPaths;
   this.jsonMapper=jsonMapper;
   this.httpClient=httpClient;
-  if (workerBehaviourConfigSupplier != null) {
-    final WorkerBehaviorConfig workerBehaviorConfig=workerBehaviourConfigSupplier.get();
-    if (workerBehaviorConfig != null) {
-      this.strategy=workerBehaviorConfig.getSelectStrategy();
-    }
- else {
-      this.strategy=new FillCapacityWorkerSelectStrategy();
-    }
-  }
- else {
-    this.strategy=new FillCapacityWorkerSelectStrategy();
-  }
+  this.workerConfigRef=workerConfigRef;
 }

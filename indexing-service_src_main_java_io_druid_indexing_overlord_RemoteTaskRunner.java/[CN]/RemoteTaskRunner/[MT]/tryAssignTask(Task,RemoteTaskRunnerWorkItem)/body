@@ -7,6 +7,15 @@
     return true;
   }
  else {
+    WorkerBehaviorConfig workerConfig=workerConfigRef.get();
+    WorkerSelectStrategy strategy;
+    if (workerConfig == null || workerConfig.getSelectStrategy() == null) {
+      log.warn("No worker selections strategy set. Using default.");
+      strategy=WorkerBehaviorConfig.DEFAULT_STRATEGY;
+    }
+ else {
+      strategy=workerConfig.getSelectStrategy();
+    }
     final Optional<ImmutableZkWorker> immutableZkWorker=strategy.findWorkerForTask(config,ImmutableMap.copyOf(Maps.transformEntries(zkWorkers,new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
       @Override public ImmutableZkWorker transformEntry(      String key,      ZkWorker value){
         return value.toImmutable();
