@@ -2,6 +2,10 @@
   loadData();
   try {
     queryHelper.testQueriesFromFile(INDEX_QUERIES_RESOURCE,2);
+    reIndexData();
+    queryHelper.testQueriesFromFile(INDEX_QUERIES_RESOURCE,2);
+    final List<String> dimensions=clientInfoResourceTestClient.getDimensions(REINDEX_DATASOURCE,"2013-08-31T00:00:00.000Z/2013-09-10T00:00:00.000Z");
+    Assert.assertFalse("dimensions : " + dimensions,dimensions.contains("robot"));
   }
  catch (  Exception e) {
     e.printStackTrace();
@@ -9,5 +13,6 @@
   }
  finally {
     unloadAndKillData(INDEX_DATASOURCE);
+    unloadAndKillData(REINDEX_DATASOURCE);
   }
 }
