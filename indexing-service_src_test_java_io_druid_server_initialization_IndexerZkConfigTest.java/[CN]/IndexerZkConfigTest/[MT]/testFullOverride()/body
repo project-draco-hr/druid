@@ -1,0 +1,10 @@
+{
+  final DefaultObjectMapper mapper=new DefaultObjectMapper();
+  final ZkPathsConfig zkPathsConfig=new ZkPathsConfig();
+  IndexerZkConfig indexerZkConfig=new IndexerZkConfig(zkPathsConfig,"/druid/prod","/druid/prod/a","/druid/prod/t","/druid/prod/s","/druid/prod/l");
+  Map<String,String> value=mapper.readValue(mapper.writeValueAsString(indexerZkConfig),new TypeReference<Map<String,String>>(){
+  }
+);
+  IndexerZkConfig newConfig=new IndexerZkConfig(zkPathsConfig,value.get("base"),value.get("announcementsPath"),value.get("tasksPath"),value.get("statusPath"),value.get("leaderLatchPath"));
+  Assert.assertEquals(indexerZkConfig,newConfig);
+}
