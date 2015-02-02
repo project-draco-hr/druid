@@ -89,7 +89,7 @@
         @Override public DimensionSelector makeDimensionSelector(        String dimension){
           final IncrementalIndex.DimDim dimValLookup=index.getDimension(dimension);
           if (dimValLookup == null) {
-            return null;
+            return NULL_DIMENSION_SELECTOR;
           }
           final int maxId=dimValLookup.size();
           final int dimIndex=index.getDimensionIndex(dimension);
@@ -199,20 +199,22 @@
                 return Object.class;
               }
               @Override public Object get(){
-                final String[][] dims=currEntry.getKey().getDims();
+                IncrementalIndex.TimeAndDims key=currEntry.getKey();
+                if (key == null) {
+                  return null;
+                }
+                String[][] dims=key.getDims();
                 if (dimensionIndex >= dims.length) {
                   return null;
                 }
                 final String[] dimVals=dims[dimensionIndex];
+                if (dimVals == null || dimVals.length == 0) {
+                  return null;
+                }
                 if (dimVals.length == 1) {
                   return dimVals[0];
                 }
- else                 if (dimVals.length == 0) {
-                  return null;
-                }
- else {
-                  return dimVals;
-                }
+                return dimVals;
               }
             }
 ;

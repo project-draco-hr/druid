@@ -1,7 +1,12 @@
 {
   final Column column=index.getColumn(dimension);
   if (column == null) {
-    return bitmapFactory.makeEmptyImmutableBitmap();
+    if (Strings.isNullOrEmpty(value)) {
+      return bitmapFactory.complement(bitmapFactory.makeEmptyImmutableBitmap(),getNumRows());
+    }
+ else {
+      return bitmapFactory.makeEmptyImmutableBitmap();
+    }
   }
   if (!column.getCapabilities().hasBitmapIndexes()) {
     bitmapFactory.makeEmptyImmutableBitmap();

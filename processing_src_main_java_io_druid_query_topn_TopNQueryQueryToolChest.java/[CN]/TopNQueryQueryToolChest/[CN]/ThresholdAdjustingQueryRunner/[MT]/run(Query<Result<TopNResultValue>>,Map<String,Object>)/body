@@ -13,12 +13,12 @@
         BySegmentResultValue<Result<TopNResultValue>> value=(BySegmentResultValue<Result<TopNResultValue>>)input.getValue();
         return new Result<TopNResultValue>(input.getTimestamp(),new BySegmentTopNResultValue(Lists.transform(value.getResults(),new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
           @Override public Result<TopNResultValue> apply(          Result<TopNResultValue> input){
-            return new Result<TopNResultValue>(input.getTimestamp(),new TopNResultValue(Lists.<Object>newArrayList(Iterables.limit(input.getValue(),query.getThreshold()))));
+            return new Result<>(input.getTimestamp(),new TopNResultValue(Lists.<Object>newArrayList(Iterables.limit(input.getValue(),query.getThreshold()))));
           }
         }
 ),value.getSegmentId(),value.getInterval()));
       }
-      return new Result<TopNResultValue>(input.getTimestamp(),new TopNResultValue(Lists.<Object>newArrayList(Iterables.limit(input.getValue(),query.getThreshold()))));
+      return new Result<>(input.getTimestamp(),new TopNResultValue(Lists.<Object>newArrayList(Iterables.limit(input.getValue(),query.getThreshold()))));
     }
   }
 );
