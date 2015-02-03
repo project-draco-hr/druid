@@ -1,0 +1,14 @@
+{
+  if (cachedValues != null) {
+    final T cached=cachedValues.getValue(index);
+    if (cached != null) {
+      return cached;
+    }
+    final T value=delegate.get(index);
+    cachedValues.put(index,value,delegate.getLastValueSize());
+    return value;
+  }
+ else {
+    return delegate.get(index);
+  }
+}

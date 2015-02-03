@@ -1,36 +1,3 @@
 {
-  if (index < 0) {
-    throw new IAE("Index[%s] < 0",index);
-  }
-  if (index >= size) {
-    throw new IAE(String.format("Index[%s] >= size[%s]",index,size));
-  }
-  if (cacheable) {
-    final T cached=cachedValues.get().getValue(index);
-    if (cached != null) {
-      return cached;
-    }
-  }
-  final ByteBuffer copyBuffer=this.cachedBuffer.get();
-  final int startOffset;
-  final int endOffset;
-  if (index == 0) {
-    startOffset=4;
-    endOffset=copyBuffer.getInt(indexOffset);
-  }
- else {
-    copyBuffer.position(indexOffset + ((index - 1) * 4));
-    startOffset=copyBuffer.getInt() + 4;
-    endOffset=copyBuffer.getInt();
-  }
-  if (startOffset == endOffset) {
-    return null;
-  }
-  copyBuffer.position(valuesOffset + startOffset);
-  final int size=endOffset - startOffset;
-  final T value=strategy.fromByteBuffer(copyBuffer,size);
-  if (cacheable) {
-    cachedValues.get().put(index,value,size);
-  }
-  return value;
+  return bufferIndexed.get(index);
 }

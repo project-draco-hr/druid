@@ -1,0 +1,27 @@
+{
+  if (index < 0) {
+    throw new IAE("Index[%s] < 0",index);
+  }
+  if (index >= size) {
+    throw new IAE(String.format("Index[%s] >= size[%s]",index,size));
+  }
+  final int startOffset;
+  final int endOffset;
+  if (index == 0) {
+    startOffset=4;
+    endOffset=copyBuffer.getInt(indexOffset);
+  }
+ else {
+    copyBuffer.position(indexOffset + ((index - 1) * 4));
+    startOffset=copyBuffer.getInt() + 4;
+    endOffset=copyBuffer.getInt();
+  }
+  if (startOffset == endOffset) {
+    return null;
+  }
+  copyBuffer.position(valuesOffset + startOffset);
+  final int size=endOffset - startOffset;
+  lastReadSize=size;
+  final T value=strategy.fromByteBuffer(copyBuffer,size);
+  return value;
+}
