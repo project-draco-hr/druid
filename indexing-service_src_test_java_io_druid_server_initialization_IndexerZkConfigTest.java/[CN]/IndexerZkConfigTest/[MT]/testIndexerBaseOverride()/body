@@ -1,0 +1,21 @@
+{
+  final String overrideValue="/foo/bar/baz";
+  final String indexerPropertyKey=indexerPropertyString + ".base";
+  final String priorValue=System.getProperty(indexerPropertyKey);
+  System.setProperty(indexerPropertyKey,overrideValue);
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(simpleZkConfigModule));
+  propertyValues.clear();
+  propertyValues.setProperty(indexerPropertyKey,overrideValue);
+  JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  JsonConfigProvider<IndexerZkConfig> indexerPathsConfig=JsonConfigProvider.of(indexerPropertyString,IndexerZkConfig.class);
+  indexerPathsConfig.inject(propertyValues,configurator);
+  IndexerZkConfig indexerZkConfig=indexerPathsConfig.get().get();
+  if (priorValue == null) {
+    System.clearProperty(indexerPropertyKey);
+  }
+ else {
+    System.setProperty(indexerPropertyKey,priorValue);
+  }
+  Assert.assertEquals(overrideValue,indexerZkConfig.getBase());
+  Assert.assertEquals(overrideValue + "/announcements",indexerZkConfig.getAnnouncementsPath());
+}
