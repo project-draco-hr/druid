@@ -1,0 +1,21 @@
+{
+synchronized (lock) {
+    try {
+      dbi.inTransaction(new TransactionCallback<Void>(){
+        @Override public Void inTransaction(        Handle handle,        TransactionStatus transactionStatus) throws Exception {
+          final DateTime auditTime=DateTime.now();
+          auditManager.doAudit(AuditEntry.builder().key(dataSource).type("rules").auditInfo(auditInfo).payload(jsonMapper.writeValueAsString(newRules)).auditTime(auditTime).build(),handle);
+          String version=auditTime.toString();
+          handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",getRulesTable())).bind("id",String.format("%s_%s",dataSource,version)).bind("dataSource",dataSource).bind("version",version).bind("payload",jsonMapper.writeValueAsBytes(newRules)).execute();
+          return null;
+        }
+      }
+);
+    }
+ catch (    Exception e) {
+      log.error(e,String.format("Exception while overriding rule for %s",dataSource));
+      return false;
+    }
+  }
+  return true;
+}

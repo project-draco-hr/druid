@@ -1,0 +1,5 @@
+{
+  ConfigSerde configSerde=create(val.getClass(),null);
+  auditManager.doAudit(AuditEntry.builder().key(key).type(key).auditInfo(auditInfo).payload(configSerde.serializeToString(val)).build());
+  return configManager.set(key,configSerde,val);
+}

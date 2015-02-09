@@ -1,0 +1,6 @@
+{
+  AuditEntry entry=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment"),"testPayload",new DateTime("2013-01-01T00:00:00Z"));
+  ObjectMapper mapper=new DefaultObjectMapper();
+  AuditEntry serde=mapper.readValue(mapper.writeValueAsString(entry),AuditEntry.class);
+  Assert.assertEquals(entry,serde);
+}

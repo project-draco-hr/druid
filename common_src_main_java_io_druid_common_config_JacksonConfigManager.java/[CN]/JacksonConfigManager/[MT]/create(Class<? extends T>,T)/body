@@ -8,6 +8,14 @@
         throw Throwables.propagate(e);
       }
     }
+    @Override public String serializeToString(    T obj){
+      try {
+        return jsonMapper.writeValueAsString(obj);
+      }
+ catch (      JsonProcessingException e) {
+        throw Throwables.propagate(e);
+      }
+    }
     @Override public T deserialize(    byte[] bytes){
       if (bytes == null) {
         return defaultVal;
