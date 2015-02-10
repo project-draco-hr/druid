@@ -1,12 +1,12 @@
 {
   HttpClient httpClient=EasyMock.createMock(HttpClient.class);
-  RequestBuilder requestBuilder=new RequestBuilder(httpClient,HttpMethod.POST,new URL("http://foo.com"));
-  EasyMock.expect(httpClient.post(EasyMock.<URL>anyObject())).andReturn(requestBuilder).atLeastOnce();
-  SettableFuture futureException=SettableFuture.create();
+  final URL url=new URL("http://foo/druid/v2/");
   SettableFuture<InputStream> futureResult=SettableFuture.create();
-  EasyMock.expect(httpClient.go(EasyMock.<Request>anyObject())).andReturn(futureResult).times(1);
-  EasyMock.expect(httpClient.go(EasyMock.<Request>anyObject())).andReturn(futureException).times(1);
-  EasyMock.expect(httpClient.go(EasyMock.<Request>anyObject())).andReturn(SettableFuture.create()).atLeastOnce();
+  Capture<Request> capturedRequest=EasyMock.newCapture();
+  EasyMock.expect(httpClient.go(EasyMock.capture(capturedRequest),EasyMock.<HttpResponseHandler>anyObject())).andReturn(futureResult).times(1);
+  SettableFuture futureException=SettableFuture.create();
+  EasyMock.expect(httpClient.go(EasyMock.capture(capturedRequest),EasyMock.<HttpResponseHandler>anyObject())).andReturn(futureException).times(1);
+  EasyMock.expect(httpClient.go(EasyMock.capture(capturedRequest),EasyMock.<HttpResponseHandler>anyObject())).andReturn(SettableFuture.create()).atLeastOnce();
   EasyMock.replay(httpClient);
   final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,0L),new HighestPriorityTierSelectorStrategy(new ConnectionCountServerSelectorStrategy()));
   DirectDruidClient client1=new DirectDruidClient(new ReflectionQueryToolChestWarehouse(),QueryRunnerTestHelper.NOOP_QUERYWATCHER,new DefaultObjectMapper(),httpClient,"foo");
@@ -16,8 +16,11 @@
   QueryableDruidServer queryableDruidServer2=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client2);
   serverSelector.addServer(queryableDruidServer2);
   TimeBoundaryQuery query=Druids.newTimeBoundaryQueryBuilder().dataSource("test").build();
-  HashMap<String,List> context=new HashMap<String,List>();
+  HashMap<String,List> context=Maps.newHashMap();
   Sequence s1=client1.run(query,context);
+  Assert.assertTrue(capturedRequest.hasCaptured());
+  Assert.assertEquals(url,capturedRequest.getValue().getUrl());
+  Assert.assertEquals(HttpMethod.POST,capturedRequest.getValue().getMethod());
   Assert.assertEquals(1,client1.getNumOpenConnections());
   Sequence s2=client1.run(query,context);
   Assert.assertEquals(2,client1.getNumOpenConnections());

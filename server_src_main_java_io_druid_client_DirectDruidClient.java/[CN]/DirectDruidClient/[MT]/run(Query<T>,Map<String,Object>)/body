@@ -121,7 +121,7 @@ synchronized (done) {
       }
     }
 ;
-    future=httpClient.post(new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(responseHandler);
+    future=httpClient.go(new Request(HttpMethod.POST,new URL(url)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON),responseHandler);
     queryWatcher.registerQuery(query,future);
     openConnections.getAndIncrement();
     Futures.addCallback(future,new FutureCallback<InputStream>(){
@@ -132,7 +132,7 @@ synchronized (done) {
         openConnections.getAndDecrement();
         if (future.isCancelled()) {
           try {
-            StatusResponseHolder res=httpClient.delete(new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON).go(new StatusResponseHandler(Charsets.UTF_8)).get();
+            StatusResponseHolder res=httpClient.go(new Request(HttpMethod.DELETE,new URL(cancelUrl)).setContent(objectMapper.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE,isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON),new StatusResponseHandler(Charsets.UTF_8)).get();
             if (res.getStatus().getCode() >= 500) {
               throw new RE("Error cancelling query[%s]: queriable node returned status[%d] [%s].",res.getStatus().getCode(),res.getStatus().getReasonPhrase());
             }
