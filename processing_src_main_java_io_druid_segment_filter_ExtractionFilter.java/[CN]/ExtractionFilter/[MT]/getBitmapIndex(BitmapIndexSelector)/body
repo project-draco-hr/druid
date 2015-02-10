@@ -1,3 +1,7 @@
 {
+  final List<Filter> filters=makeFilters(selector);
+  if (filters.isEmpty()) {
+    return new WrappedConciseBitmap();
+  }
   return new OrFilter(makeFilters(selector)).getBitmapIndex(selector);
 }
