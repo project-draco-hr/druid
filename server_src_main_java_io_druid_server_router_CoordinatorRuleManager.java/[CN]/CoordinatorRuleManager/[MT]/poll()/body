@@ -4,11 +4,11 @@
     if (url == null) {
       return;
     }
-    FullResponseHolder response=httpClient.get(new URL(url)).go(responseHandler).get();
+    FullResponseHolder response=httpClient.go(new Request(HttpMethod.GET,new URL(url)),responseHandler).get();
     if (response.getStatus().equals(HttpResponseStatus.FOUND)) {
       url=response.getResponse().getHeader("Location");
       log.info("Redirecting rule request to [%s]",url);
-      response=httpClient.get(new URL(url)).go(responseHandler).get();
+      response=httpClient.go(new Request(HttpMethod.GET,new URL(url)),responseHandler).get();
     }
     ConcurrentHashMap<String,List<Rule>> newRules=new ConcurrentHashMap<>((Map<String,List<Rule>>)jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,List<Rule>>>(){
     }

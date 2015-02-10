@@ -1,6 +1,6 @@
 {
   try {
-    StatusResponseHolder response=httpClient.post(new URL(getURL())).setContent(MediaType.APPLICATION_JSON,this.jsonMapper.writeValueAsBytes(events)).go(responseHandler).get();
+    StatusResponseHolder response=httpClient.go(new Request(HttpMethod.POST,new URL(getURL())).setContent(MediaType.APPLICATION_JSON,this.jsonMapper.writeValueAsBytes(events)),responseHandler).get();
     if (!response.getStatus().equals(HttpResponseStatus.OK)) {
       throw new ISE("Error while posting events to url[%s] status[%s] content[%s]",getURL(),response.getStatus(),response.getContent());
     }

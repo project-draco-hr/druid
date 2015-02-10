@@ -3,7 +3,7 @@
   RetryUtil.retryUntilTrue(new Callable<Boolean>(){
     @Override public Boolean call() throws Exception {
       try {
-        StatusResponseHolder response=client.get(new URL(String.format("http://%s/status",host))).go(handler).get();
+        StatusResponseHolder response=client.go(new Request(HttpMethod.GET,new URL(String.format("http://%s/status",host))),handler).get();
         System.out.println(response.getStatus() + response.getContent());
         if (response.getStatus().equals(HttpResponseStatus.OK)) {
           return true;

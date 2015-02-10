@@ -16,7 +16,7 @@
       final StatusResponseHolder response;
       log.info("Submitting action for task[%s] to overlord[%s]: %s",task.getId(),serviceUri,taskAction);
       try {
-        response=httpClient.post(serviceUri.toURL()).setContent(MediaType.APPLICATION_JSON,dataToSend).go(new StatusResponseHandler(Charsets.UTF_8)).get();
+        response=httpClient.go(new Request(HttpMethod.POST,serviceUri.toURL()).setContent(MediaType.APPLICATION_JSON,dataToSend),new StatusResponseHandler(Charsets.UTF_8)).get();
       }
  catch (      Exception e) {
         Throwables.propagateIfInstanceOf(e.getCause(),IOException.class);
