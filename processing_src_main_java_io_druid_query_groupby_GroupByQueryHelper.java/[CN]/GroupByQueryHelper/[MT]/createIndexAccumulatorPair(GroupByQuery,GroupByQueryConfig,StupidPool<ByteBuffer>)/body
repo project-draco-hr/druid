@@ -23,9 +23,10 @@
   }
   Accumulator<IncrementalIndex,T> accumulator=new Accumulator<IncrementalIndex,T>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    T in){
-      if (in instanceof Row) {
+      if (in instanceof MapBasedRow) {
         try {
-          accumulated.add(Rows.toCaseInsensitiveInputRow((Row)in,dimensions));
+          MapBasedRow row=(MapBasedRow)in;
+          accumulated.add(new MapBasedInputRow(row.getTimestamp(),dimensions,row.getEvent()));
         }
  catch (        IndexSizeExceededException e) {
           throw new ISE(e.getMessage());
