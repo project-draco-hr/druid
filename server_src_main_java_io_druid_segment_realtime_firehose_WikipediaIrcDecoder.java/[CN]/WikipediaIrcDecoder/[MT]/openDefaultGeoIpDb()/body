@@ -1,0 +1,13 @@
+{
+  File geoDb=new File(System.getProperty("java.io.tmpdir"),this.getClass().getCanonicalName() + ".GeoLite2-City.mmdb");
+  try {
+    return openDefaultGeoIpDb(geoDb);
+  }
+ catch (  RuntimeException e) {
+    log.warn(e.getMessage() + " Attempting to re-download.",e);
+    if (geoDb.exists() && !geoDb.delete()) {
+      throw new RuntimeException("Could not delete geo db file [" + geoDb.getAbsolutePath() + "].");
+    }
+    return openDefaultGeoIpDb(geoDb);
+  }
+}
