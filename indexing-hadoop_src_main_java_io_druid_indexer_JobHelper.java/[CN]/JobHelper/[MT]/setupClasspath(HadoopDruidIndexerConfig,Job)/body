@@ -4,9 +4,9 @@
     classpathProperty=System.getProperty("java.class.path");
   }
   String[] jarFiles=classpathProperty.split(File.pathSeparator);
-  final Configuration conf=groupByJob.getConfiguration();
-  final FileSystem fs=FileSystem.get(conf);
-  Path distributedClassPath=new Path(config.getWorkingPath(),"classpath");
+  final Configuration conf=job.getConfiguration();
+  final Path distributedClassPath=new Path(config.getWorkingPath(),"classpath");
+  final FileSystem fs=distributedClassPath.getFileSystem(conf);
   if (fs instanceof LocalFileSystem) {
     return;
   }
