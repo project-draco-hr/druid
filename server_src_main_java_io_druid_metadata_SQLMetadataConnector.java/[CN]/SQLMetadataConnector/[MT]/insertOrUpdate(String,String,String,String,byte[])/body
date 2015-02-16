@@ -1,9 +1,6 @@
 {
-  return getDBI().withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      Connection conn=getDBI().open().getConnection();
-      handle.begin();
-      conn.setAutoCommit(false);
+  return getDBI().inTransaction(new TransactionCallback<Void>(){
+    @Override public Void inTransaction(    Handle handle,    TransactionStatus transactionStatus) throws Exception {
       int count=handle.createQuery(String.format("SELECT COUNT(*) FROM %1$s WHERE %2$s = :key",tableName,keyColumn)).bind("key",key).map(IntegerMapper.FIRST).first();
       if (count == 0) {
         handle.createStatement(String.format("INSERT INTO %1$s (%2$s, %3$s) VALUES (:key, :value)",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
@@ -11,8 +8,6 @@
  else {
         handle.createStatement(String.format("UPDATE %1$s SET %3$s=:value WHERE %2$s=:key",tableName,keyColumn,valueColumn)).bind("key",key).bind("value",value).execute();
       }
-      conn.setAutoCommit(true);
-      handle.commit();
       return null;
     }
   }
