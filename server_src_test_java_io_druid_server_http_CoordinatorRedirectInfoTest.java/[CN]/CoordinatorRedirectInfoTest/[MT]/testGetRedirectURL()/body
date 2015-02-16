@@ -1,0 +1,9 @@
+{
+  String host="localhost";
+  String query="query";
+  String request="request";
+  EasyMock.expect(druidCoordinator.getCurrentLeader()).andReturn(host).anyTimes();
+  EasyMock.replay(druidCoordinator);
+  URL url=coordinatorRedirectInfo.getRedirectURL(query,request);
+  Assert.assertTrue(url.toString().contains(host + request + "?"+ query));
+}

@@ -1,0 +1,7 @@
+{
+  EasyMock.expect(serviceProvider.getInstance()).andReturn(null).anyTimes();
+  EasyMock.replay(serviceProvider);
+  Server server=serverDiscoverySelector.pick();
+  Assert.assertNull(server);
+  EasyMock.verify(serviceProvider);
+}
