@@ -5,7 +5,7 @@
       return false;
     }
     try {
-      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",dbTables.getSegmentsTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",(segment.getShardSpec() instanceof NoneShardSpec) ? 0 : 1).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsBytes(segment)).execute();
+      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",dbTables.getSegmentsTable())).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",(segment.getShardSpec() instanceof NoneShardSpec) ? false : true).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsBytes(segment)).execute();
       log.info("Published segment [%s] to DB",segment.getIdentifier());
     }
  catch (    Exception e) {
