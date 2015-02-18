@@ -1,0 +1,17 @@
+{
+  return new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable input){
+      if (input == null) {
+        return false;
+      }
+      if (input instanceof HdfsIOException) {
+        return true;
+      }
+      if (input instanceof IOException) {
+        return true;
+      }
+      return apply(input.getCause());
+    }
+  }
+;
+}

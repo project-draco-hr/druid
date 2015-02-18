@@ -1,33 +1,3 @@
 {
-  final File path=getFile(segment);
-  if (path.isDirectory()) {
-    if (path.equals(dir)) {
-      log.info("Asked to load [%s] into itself, done!",dir);
-      return;
-    }
-    log.info("Copying files from [%s] to [%s]",path,dir);
-    File file=null;
-    try {
-      final File[] files=path.listFiles();
-      for (int i=0; i < files.length; ++i) {
-        file=files[i];
-        Files.copy(file,new File(dir,file.getName()));
-      }
-    }
- catch (    IOException e) {
-      throw new SegmentLoadingException(e,"Unable to copy file[%s].",file);
-    }
-  }
- else {
-    if (!path.getName().endsWith(".zip")) {
-      throw new SegmentLoadingException("File is not a zip file[%s]",path);
-    }
-    log.info("Unzipping local file[%s] to [%s]",path,dir);
-    try {
-      CompressionUtils.unzip(path,dir);
-    }
- catch (    IOException e) {
-      throw new SegmentLoadingException(e,"Unable to unzip file[%s]",path);
-    }
-  }
+  getSegmentFiles(getFile(segment),dir);
 }

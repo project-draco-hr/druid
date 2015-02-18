@@ -1,17 +1,3 @@
 {
-  final Path path=getPath(segment);
-  final FileSystem fs=checkPathAndGetFilesystem(path);
-  if (path.getName().endsWith(".zip")) {
-    try {
-      try (FSDataInputStream in=fs.open(path)){
-        CompressionUtils.unzip(in,dir);
-      }
-     }
- catch (    IOException e) {
-      throw new SegmentLoadingException(e,"Some IOException");
-    }
-  }
- else {
-    throw new SegmentLoadingException("Unknown file type[%s]",path);
-  }
+  getSegmentFiles(getPath(segment),dir);
 }

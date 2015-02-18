@@ -1,0 +1,43 @@
+{
+  StorageLocation loc=findStorageLocationIfLoaded(segment);
+  final File retVal;
+  if (loc == null) {
+    Iterator<StorageLocation> locIter=locations.iterator();
+    loc=locIter.next();
+    while (locIter.hasNext()) {
+      loc=loc.mostEmpty(locIter.next());
+    }
+    if (!loc.canHandle(segment.getSize())) {
+      throw new ISE("Segment[%s:%,d] too large for storage[%s:%,d].",segment.getIdentifier(),segment.getSize(),loc.getPath(),loc.available());
+    }
+    File storageDir=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
+    final File downloadStartMarker=new File(storageDir,"downloadStartMarker");
+synchronized (lock) {
+      if (!storageDir.mkdirs()) {
+        log.debug("Unable to make parent file[%s]",storageDir);
+      }
+      try {
+        if (!downloadStartMarker.createNewFile()) {
+          throw new SegmentLoadingException("Was not able to create new download marker for [%s]",storageDir);
+        }
+      }
+ catch (      IOException e) {
+        throw new SegmentLoadingException(e,"Unable to create marker file for [%s]",storageDir);
+      }
+    }
+    final LoadSpec loadSpec=jsonMapper.convertValue(segment.getLoadSpec(),LoadSpec.class);
+    final LoadSpec.LoadSpecResult result=loadSpec.loadSegment(storageDir);
+    if (result.getSize() != segment.getSize()) {
+      log.warn("Segment [%s] is different than expected size. Expected [%d] found [%d]",segment.getIdentifier(),segment.getSize(),result.getSize());
+    }
+    if (!downloadStartMarker.delete()) {
+      throw new SegmentLoadingException("Unable to remove marker file for [%s]",storageDir);
+    }
+    retVal=storageDir;
+  }
+ else {
+    retVal=new File(loc.getPath(),DataSegmentPusherUtil.getStorageDir(segment));
+  }
+  loc.addSegment(segment);
+  return retVal;
+}
