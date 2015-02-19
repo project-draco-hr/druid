@@ -2,7 +2,7 @@
   Preconditions.checkNotNull(serviceName);
   this.serviceName=serviceName;
   if (host == null && port == null) {
-    host=DEFAULT_HOST;
+    host=getDefaultHost();
     port=-1;
   }
  else {
@@ -14,7 +14,7 @@
       }
     }
  else {
-      hostAndPort=HostAndPort.fromParts(DEFAULT_HOST,port);
+      hostAndPort=HostAndPort.fromParts(getDefaultHost(),port);
     }
     host=hostAndPort.getHostText();
     if (hostAndPort.hasPort()) {
