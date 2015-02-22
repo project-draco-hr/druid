@@ -1,0 +1,8 @@
+{
+  boolean expected=true;
+  EasyMock.expect(peekIterator.hasNext()).andReturn(expected);
+  EasyMock.replay(peekIterator);
+  boolean actual=testingIterator.hasNext();
+  EasyMock.verify(peekIterator);
+  Assert.assertEquals("The hasNext function is broken",expected,actual);
+}

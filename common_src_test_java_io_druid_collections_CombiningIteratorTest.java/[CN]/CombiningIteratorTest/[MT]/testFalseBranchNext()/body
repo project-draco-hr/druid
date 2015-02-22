@@ -1,0 +1,10 @@
+{
+  boolean expected=true;
+  EasyMock.expect(peekIterator.hasNext()).andReturn(expected);
+  expected=false;
+  EasyMock.expect(peekIterator.hasNext()).andReturn(expected);
+  EasyMock.replay(peekIterator);
+  Object res=testingIterator.next();
+  EasyMock.verify(peekIterator);
+  Assert.assertNull("Should be null",res);
+}

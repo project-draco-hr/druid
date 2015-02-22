@@ -1,0 +1,12 @@
+{
+  final int index=0;
+  WritableByteChannel channelOutput=Channels.newChannel(outStream);
+  serializerUtils.writeFloat(channelOutput,floats[index]);
+  ByteArrayInputStream inputstream=new ByteArrayInputStream(outStream.toByteArray());
+  if (channelOutput != null) {
+    channelOutput.close();
+  }
+  float expected=serializerUtils.readFloat(inputstream);
+  float actuals=floats[index];
+  Assert.assertEquals(expected,actuals,delta);
+}
