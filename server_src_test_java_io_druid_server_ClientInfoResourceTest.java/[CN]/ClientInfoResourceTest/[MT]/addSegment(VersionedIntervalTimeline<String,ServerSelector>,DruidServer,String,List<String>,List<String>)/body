@@ -1,0 +1,6 @@
+{
+  DataSegment segment=DataSegment.builder().dataSource(dataSource).interval(new Interval(interval)).version(version).dimensions(dims).metrics(metrics).size(1).build();
+  server.addDataSegment(segment.getIdentifier(),segment);
+  ServerSelector ss=new ServerSelector(segment,null);
+  timeline.add(new Interval(interval),version,new SingleElementPartitionChunk<ServerSelector>(ss));
+}

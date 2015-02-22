@@ -1,0 +1,64 @@
+{
+  if (full == null) {
+    return ImmutableMap.<String,Object>of(KEY_DIMENSIONS,getDatasourceDimensions(dataSourceName,interval),KEY_METRICS,getDatasourceMetrics(dataSourceName,interval));
+  }
+  Interval theInterval;
+  if (interval == null || interval.isEmpty()) {
+    DateTime now=new DateTime();
+    theInterval=new Interval(now.minusMillis(SEGMENT_HISTORY_MILLIS),now);
+  }
+ else {
+    theInterval=new Interval(interval);
+  }
+  TimelineLookup<String,ServerSelector> timeline=timelineServerView.getTimeline(new TableDataSource(dataSourceName));
+  Iterable<TimelineObjectHolder<String,ServerSelector>> serversLookup=timeline != null ? timeline.lookup(theInterval) : null;
+  if (serversLookup == null || Iterables.isEmpty(serversLookup)) {
+    return Collections.EMPTY_MAP;
+  }
+  Map<Interval,Object> servedIntervals=new TreeMap<>(new Comparator<Interval>(){
+    @Override public int compare(    Interval o1,    Interval o2){
+      if (o1.equals(o2) || o1.overlaps(o2)) {
+        return 0;
+      }
+ else {
+        return o1.isBefore(o2) ? -1 : 1;
+      }
+    }
+  }
+);
+  for (  TimelineObjectHolder<String,ServerSelector> holder : serversLookup) {
+    servedIntervals.put(holder.getInterval(),ImmutableMap.of(KEY_DIMENSIONS,Sets.newHashSet(),KEY_METRICS,Sets.newHashSet()));
+  }
+  List<DataSegment> segments=getSegmentsForDatasources().get(dataSourceName);
+  if (segments == null || segments.isEmpty()) {
+    log.error("Found no DataSegments but TimelineServerView has served intervals. Datasource = %s , Interval = %s",dataSourceName,theInterval);
+    throw new RuntimeException("Internal Error");
+  }
+  for (  DataSegment segment : segments) {
+    if (servedIntervals.containsKey(segment.getInterval())) {
+      Map<String,Set<String>> columns=(Map<String,Set<String>>)servedIntervals.get(segment.getInterval());
+      columns.get(KEY_DIMENSIONS).addAll(segment.getDimensions());
+      columns.get(KEY_METRICS).addAll(segment.getMetrics());
+    }
+  }
+  Map<String,Object> result=Maps.newLinkedHashMap();
+  Interval curr=null;
+  Map<String,Set<String>> cols=null;
+  for (  Map.Entry<Interval,Object> e : servedIntervals.entrySet()) {
+    Interval ival=e.getKey();
+    if (curr != null && curr.abuts(ival) && cols.equals(e.getValue())) {
+      curr=curr.withEnd(ival.getEnd());
+    }
+ else {
+      if (curr != null) {
+        result.put(curr.toString(),cols);
+      }
+      curr=ival;
+      cols=(Map<String,Set<String>>)e.getValue();
+    }
+  }
+  if (curr != null) {
+    result.put(curr.toString(),cols);
+  }
+  return result;
+}
