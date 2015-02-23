@@ -1,6 +1,6 @@
 {
   final Druids.TimeseriesQueryBuilder builder=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).intervals(SEG_SPEC).filters(DIM_FILTER).granularity(PT1H_TZ_GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT);
-  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(new QueryConfig()));
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
   testQueryCaching(runner,builder.build(),new Interval("2011-11-04/2011-11-08"),makeTimeResults(new DateTime("2011-11-04",TIMEZONE),50,5000,new DateTime("2011-11-05",TIMEZONE),30,6000,new DateTime("2011-11-06",TIMEZONE),23,85312,new DateTime("2011-11-07",TIMEZONE),85,102));
   HashMap<String,List> context=new HashMap<String,List>();
   TestHelper.assertExpectedResults(makeRenamedTimeResults(new DateTime("2011-11-04",TIMEZONE),50,5000,new DateTime("2011-11-05",TIMEZONE),30,6000,new DateTime("2011-11-06",TIMEZONE),23,85312,new DateTime("2011-11-07",TIMEZONE),85,102),runner.run(builder.intervals("2011-11-04/2011-11-08").aggregators(RENAMED_AGGS).postAggregators(RENAMED_POST_AGGS).build(),context));

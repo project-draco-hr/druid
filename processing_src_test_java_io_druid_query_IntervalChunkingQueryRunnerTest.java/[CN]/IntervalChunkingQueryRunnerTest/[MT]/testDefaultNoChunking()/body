@@ -1,0 +1,8 @@
+{
+  Query query=queryBuilder.intervals("2014/2016").build();
+  EasyMock.expect(baseRunner.run(query,Collections.EMPTY_MAP)).andReturn(Sequences.empty());
+  EasyMock.replay(baseRunner);
+  QueryRunner runner=decorator.decorate(baseRunner,toolChest);
+  runner.run(query,Collections.EMPTY_MAP);
+  EasyMock.verify(baseRunner);
+}

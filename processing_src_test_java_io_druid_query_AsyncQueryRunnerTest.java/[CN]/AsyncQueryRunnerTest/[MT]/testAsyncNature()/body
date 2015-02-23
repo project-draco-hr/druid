@@ -1,0 +1,19 @@
+{
+  final CountDownLatch latch=new CountDownLatch(1);
+  QueryRunner baseRunner=new QueryRunner(){
+    @Override public Sequence run(    Query query,    Map responseContext){
+      try {
+        latch.await();
+        return Sequences.simple(Lists.newArrayList(1));
+      }
+ catch (      InterruptedException ex) {
+        throw Throwables.propagate(ex);
+      }
+    }
+  }
+;
+  AsyncQueryRunner asyncRunner=new AsyncQueryRunner<>(baseRunner,executor,QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+  Sequence lazy=asyncRunner.run(query,Collections.EMPTY_MAP);
+  latch.countDown();
+  Assert.assertEquals(Lists.newArrayList(1),Sequences.toList(lazy,Lists.newArrayList()));
+}

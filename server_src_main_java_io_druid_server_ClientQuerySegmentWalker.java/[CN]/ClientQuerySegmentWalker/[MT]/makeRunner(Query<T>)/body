@@ -1,11 +1,6 @@
 {
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
-  final FinalizeResultsQueryRunner<T> baseRunner=new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
-    @Override public ServiceMetricEvent.Builder apply(    @Nullable Query<T> input){
-      return toolChest.makeMetricBuilder(query);
-    }
-  }
-,toolChest.preMergeQueryDecoration(new RetryQueryRunner<T>(baseClient,toolChest,retryConfig,objectMapper))).withWaitMeasuredFromNow())),toolChest);
+  final FinalizeResultsQueryRunner<T> baseRunner=new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(toolChest.preMergeQueryDecoration(new RetryQueryRunner<T>(baseClient,toolChest,retryConfig,objectMapper)))),toolChest);
   final Map<String,Object> context=query.getContext();
   PostProcessingOperator<T> postProcessing=null;
   if (context != null) {

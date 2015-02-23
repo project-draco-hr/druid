@@ -1,6 +1,6 @@
 {
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(new UnionDataSource(Lists.newArrayList(new TableDataSource("ds1"),new TableDataSource("ds2")))).granularity(QueryRunnerTestHelper.dayGran).intervals(QueryRunnerTestHelper.firstToThird).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).build();
-  QueryToolChest toolChest=new TimeseriesQueryQueryToolChest(new QueryConfig());
+  QueryToolChest toolChest=new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
   QueryRunner mergingrunner=toolChest.mergeResults(new UnionQueryRunner<Result<TimeseriesResultValue>>((Iterable)Arrays.asList(new QueryRunner<Result<TimeseriesResultValue>>(){
     @Override public Sequence<Result<TimeseriesResultValue>> run(    Query<Result<TimeseriesResultValue>> query,    Map<String,Object> context){
       return Sequences.simple(Lists.newArrayList(new Result<>(new DateTime("2011-04-02"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",1L,"idx",2L))),new Result<>(new DateTime("2011-04-03"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",3L,"idx",4L)))));
