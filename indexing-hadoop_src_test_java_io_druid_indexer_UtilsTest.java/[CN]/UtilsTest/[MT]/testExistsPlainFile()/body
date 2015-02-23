@@ -1,0 +1,8 @@
+{
+  boolean expected=Utils.exists(mockJobContext,defaultFileSystem,tmpPath);
+  Assert.assertTrue("Should be true since file is created",expected);
+  tmpFolder.delete();
+  expected=Utils.exists(mockJobContext,defaultFileSystem,tmpPath);
+  Assert.assertFalse("Should be false since file is deleted",expected);
+  EasyMock.verify(mockJobContext);
+}

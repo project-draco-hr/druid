@@ -1,0 +1,14 @@
+{
+  jobConfig=new Configuration();
+  mockJobContext=EasyMock.createMock(JobContext.class);
+  EasyMock.expect(mockJobContext.getConfiguration()).andReturn(jobConfig).anyTimes();
+  EasyMock.replay(mockJobContext);
+  jobConfig.setBoolean(FileOutputFormat.COMPRESS,true);
+  jobConfig.set(FileOutputFormat.COMPRESS_CODEC,CODEC_CLASS);
+  Class<? extends CompressionCodec> codecClass=FileOutputFormat.getOutputCompressorClass(mockJobContext,DEFAULT_COMPRESSION_CODEC);
+  codec=ReflectionUtils.newInstance(codecClass,jobConfig);
+  tmpFile=tmpFolder.newFile(TMP_FILE_NAME + codec.getDefaultExtension());
+  tmpPathWithExtension=new Path(tmpFile.getAbsolutePath());
+  tmpPathWithoutExtension=new Path(tmpFile.getParent(),TMP_FILE_NAME);
+  defaultFileSystem=tmpPathWithoutExtension.getFileSystem(jobConfig);
+}

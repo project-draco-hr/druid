@@ -1,0 +1,7 @@
+{
+  jobConfig=new Configuration();
+  mockJobContext=EasyMock.createMock(JobContext.class);
+  EasyMock.expect(mockJobContext.getConfiguration()).andReturn(jobConfig).anyTimes();
+  EasyMock.replay(mockJobContext);
+  ioPeon=new HadoopIOPeon(mockJobContext,new Path(tmpFolder.newFile().getParent()),overwritesFiles);
+}
