@@ -8,7 +8,7 @@
     return;
   }
   try {
-    curator.delete().guaranteed().forPath(path);
+    curator.inTransaction().delete().forPath(path).and().commit();
   }
  catch (  KeeperException.NoNodeException e) {
     log.info("node[%s] didn't exist anyway...",path);

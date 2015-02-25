@@ -13,12 +13,21 @@ synchronized (toAnnounce) {
         unannounce(ZKPaths.makePath(basePath,announcementPath));
       }
     }
-    for (    String parent : parentsIBuilt) {
+    if (!parentsIBuilt.isEmpty()) {
+      CuratorTransaction transaction=curator.inTransaction();
+      for (      String parent : parentsIBuilt) {
+        try {
+          transaction=transaction.delete().forPath(parent).and();
+        }
+ catch (        Exception e) {
+          log.info(e,"Unable to delete parent[%s], boooo.",parent);
+        }
+      }
       try {
-        curator.delete().forPath(parent);
+        ((CuratorTransactionFinal)transaction).commit();
       }
  catch (      Exception e) {
-        log.info(e,"Unable to delete parent[%s], boooo.",parent);
+        log.info(e,"Unable to commit transaction. Please feed the hamsters");
       }
     }
   }
