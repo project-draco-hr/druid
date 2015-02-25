@@ -1,0 +1,8 @@
+{
+  byte[] firstPart={1,1,0,10};
+  byte[] secondPart={2,4,0,5};
+  byte[] expectedGroupParts=bucket.toGroupKey(firstPart,secondPart);
+  Pair<Bucket,byte[]> actualPair=Bucket.fromGroupKey(expectedGroupParts);
+  Assert.assertEquals("Bucket is not matching",bucket,actualPair.lhs);
+  Assert.assertArrayEquals("Parts not matching",Bytes.concat(firstPart,secondPart),actualPair.rhs);
+}

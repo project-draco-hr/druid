@@ -1,0 +1,13 @@
+{
+  EasyMock.expect(serviceProvider.getInstance()).andReturn(instance).anyTimes();
+  EasyMock.expect(instance.getAddress()).andReturn(ADDRESS).anyTimes();
+  EasyMock.expect(instance.getPort()).andReturn(PORT).anyTimes();
+  EasyMock.replay(instance,serviceProvider);
+  Server server=serverDiscoverySelector.pick();
+  Assert.assertEquals(PORT,server.getPort());
+  Assert.assertEquals(ADDRESS,server.getAddress());
+  Assert.assertTrue(server.getHost().contains(new Integer(PORT).toString()));
+  Assert.assertTrue(server.getHost().contains(ADDRESS));
+  Assert.assertEquals(new String("http"),server.getScheme());
+  EasyMock.verify(instance,serviceProvider);
+}

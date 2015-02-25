@@ -1,0 +1,21 @@
+{
+  boolean expected=true;
+  EasyMock.expect(peekIterator.hasNext()).andReturn(expected).times(4);
+  String defaultString="S1";
+  String resString="S2";
+  EasyMock.expect(peekIterator.next()).andReturn(defaultString);
+  EasyMock.expect(binaryFn.apply(EasyMock.eq(defaultString),EasyMock.isNull())).andReturn(resString);
+  EasyMock.expect(peekIterator.next()).andReturn(defaultString);
+  EasyMock.expect(comparator.compare(EasyMock.eq(resString),EasyMock.eq(defaultString))).andReturn(0);
+  EasyMock.expect(peekIterator.next()).andReturn(defaultString);
+  EasyMock.expect(binaryFn.apply(EasyMock.eq(resString),EasyMock.eq(defaultString))).andReturn(resString);
+  EasyMock.expect(comparator.compare(EasyMock.eq(resString),EasyMock.eq(defaultString))).andReturn(1);
+  EasyMock.replay(peekIterator);
+  EasyMock.replay(binaryFn);
+  EasyMock.replay(comparator);
+  String actual=testingIterator.next();
+  Assert.assertEquals(resString,actual);
+  EasyMock.verify(peekIterator);
+  EasyMock.verify(comparator);
+  EasyMock.verify(binaryFn);
+}

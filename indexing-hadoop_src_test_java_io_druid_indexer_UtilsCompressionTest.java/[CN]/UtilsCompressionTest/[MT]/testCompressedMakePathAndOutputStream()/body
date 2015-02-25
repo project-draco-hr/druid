@@ -1,0 +1,10 @@
+{
+  boolean overwrite=true;
+  OutputStream outStream=Utils.makePathAndOutputStream(mockJobContext,tmpPathWithoutExtension,overwrite);
+  Assert.assertNotNull("Output stream should not be null",outStream);
+  writeStingToOutputStream(DUMMY_STRING,outStream);
+  InputStream inStream=codec.createInputStream(defaultFileSystem.open(tmpPathWithExtension));
+  String actual=new String(ByteStreams.toByteArray(inStream),StandardCharsets.UTF_8.toString());
+  Assert.assertEquals("Strings not matching",DUMMY_STRING,actual);
+  inStream.close();
+}

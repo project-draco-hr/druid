@@ -1,0 +1,12 @@
+{
+  jobConfig=new Configuration();
+  mockJobContext=EasyMock.createMock(JobContext.class);
+  EasyMock.expect(mockJobContext.getConfiguration()).andReturn(jobConfig).anyTimes();
+  EasyMock.replay(mockJobContext);
+  setOfKeys=new HashSet();
+  setOfKeys.addAll(new ArrayList<>(Arrays.asList("key1","key2","key3")));
+  expectedMap=(Map<String,Object>)Maps.asMap(setOfKeys,new CreateValueFromKey());
+  tmpFile=tmpFolder.newFile(TMP_FILE_NAME);
+  tmpPath=new Path(tmpFile.getAbsolutePath());
+  defaultFileSystem=tmpPath.getFileSystem(jobConfig);
+}

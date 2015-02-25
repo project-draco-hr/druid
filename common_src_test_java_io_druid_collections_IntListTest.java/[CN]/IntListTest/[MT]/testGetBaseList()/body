@@ -1,0 +1,12 @@
+{
+  int listSize=2;
+  IntList list=new IntList(listSize);
+  int[] expectedArray={1,2};
+  list.add(expectedArray[0]);
+  list.add(expectedArray[1]);
+  IntBuffer outputBuffer=list.getBaseList(0);
+  Assert.assertEquals("Buffer size does not match",2,outputBuffer.limit());
+  int[] actualArray=new int[outputBuffer.capacity()];
+  outputBuffer.get(actualArray);
+  Assert.assertArrayEquals("Arrays are not matching",expectedArray,actualArray);
+}

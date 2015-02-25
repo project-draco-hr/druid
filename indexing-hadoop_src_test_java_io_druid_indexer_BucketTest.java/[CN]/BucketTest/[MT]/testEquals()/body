@@ -1,0 +1,9 @@
+{
+  Assert.assertFalse("Object should not be equals to NULL",bucket.equals(null));
+  Assert.assertFalse("Objects do not have the same Class",bucket.equals(new Integer(0)));
+  Assert.assertFalse("Objects do not have the same partitionNum",bucket.equals(new Bucket(shardNum,time,partitionNum + 1)));
+  Assert.assertFalse("Objects do not have the same shardNum",bucket.equals(new Bucket(shardNum + 1,time,partitionNum)));
+  Assert.assertFalse("Objects do not have the same time",bucket.equals(new Bucket(shardNum,new DateTime(),partitionNum)));
+  Assert.assertFalse("Object do have NULL time",bucket.equals(new Bucket(shardNum,null,partitionNum)));
+  Assert.assertTrue("Objects must be the same",bucket.equals(new Bucket(shardNum,time,partitionNum)));
+}

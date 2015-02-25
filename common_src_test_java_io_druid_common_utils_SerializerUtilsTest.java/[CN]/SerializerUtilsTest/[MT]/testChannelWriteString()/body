@@ -1,0 +1,11 @@
+{
+  final int index=0;
+  WritableByteChannel channelOutput=Channels.newChannel(outStream);
+  serializerUtils.writeString(channelOutput,strings[index]);
+  ByteArrayInputStream inputstream=new ByteArrayInputStream(outStream.toByteArray());
+  channelOutput.close();
+  inputstream.close();
+  String expected=serializerUtils.readString(inputstream);
+  String actuals=strings[index];
+  Assert.assertEquals(expected,actuals);
+}

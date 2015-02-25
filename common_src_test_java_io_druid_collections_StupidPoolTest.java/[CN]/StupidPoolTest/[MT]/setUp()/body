@@ -1,0 +1,7 @@
+{
+  generator=EasyMock.createMock(Supplier.class);
+  EasyMock.expect(generator.get()).andReturn(defaultString).anyTimes();
+  EasyMock.replay(generator);
+  poolOfString=new StupidPool<>(generator);
+  resourceHolderObj=poolOfString.take();
+}
