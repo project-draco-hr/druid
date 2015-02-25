@@ -13,8 +13,7 @@
         throw e;
       }
     }
-    GranularitySpec spec=config.getGranularitySpec();
-    if (!spec.bucketIntervals().isPresent() || spec.bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
+    if (!granularitySpec.bucketIntervals().isPresent() || granularitySpec.bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
       innerMap(inputRow,value,context);
     }
   }
