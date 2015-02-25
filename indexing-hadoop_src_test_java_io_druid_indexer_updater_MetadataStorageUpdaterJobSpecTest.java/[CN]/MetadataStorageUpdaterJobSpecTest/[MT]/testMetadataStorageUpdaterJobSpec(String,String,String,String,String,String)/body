@@ -1,0 +1,8 @@
+{
+  MetadataStorageUpdaterJobSpec spec=jsonMapper.readValue("{" + "\"type\": \"" + type + "\",\n"+ "\"connectURI\": \""+ connectURI+ "\",\n"+ "\"user\": \""+ user+ "\",\n"+ "\"password\": "+ pwdString+ ",\n"+ "\"segmentTable\": \""+ segmentTable+ "\"\n"+ "}",MetadataStorageUpdaterJobSpec.class);
+  Assert.assertEquals(segmentTable,spec.getSegmentTable());
+  Assert.assertEquals(type,spec.getType());
+  Assert.assertEquals("jdbc:mysql://localhost/druid",spec.get().getConnectURI());
+  Assert.assertEquals(user,spec.get().getUser());
+  Assert.assertEquals(pwd,spec.get().getPassword());
+}
