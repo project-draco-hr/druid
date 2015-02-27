@@ -86,7 +86,10 @@
           }
           done=!foundMatched && (cursorMap.size() == 0 || !baseIter.hasNext());
         }
-        @Override public DimensionSelector makeDimensionSelector(        String dimension){
+        @Override public DimensionSelector makeDimensionSelector(        final String dimension,        @Nullable final ExtractionFn extractionFn){
+          if (dimension.equals(Column.TIME_COLUMN_NAME)) {
+            return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn);
+          }
           final IncrementalIndex.DimDim dimValLookup=index.getDimension(dimension);
           if (dimValLookup == null) {
             return NULL_DIMENSION_SELECTOR;
@@ -124,9 +127,13 @@
               return maxId;
             }
             @Override public String lookupName(            int id){
-              return dimValLookup.getValue(id);
+              final String value=dimValLookup.getValue(id);
+              return extractionFn == null ? value : extractionFn.apply(value);
             }
             @Override public int lookupId(            String name){
+              if (extractionFn != null) {
+                throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
+              }
               return dimValLookup.getId(name);
             }
           }

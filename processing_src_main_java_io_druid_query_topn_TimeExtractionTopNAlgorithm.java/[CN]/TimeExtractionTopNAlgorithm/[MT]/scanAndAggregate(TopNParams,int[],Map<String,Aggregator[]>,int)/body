@@ -1,0 +1,16 @@
+{
+  final Cursor cursor=params.getCursor();
+  final DimensionSelector dimSelector=params.getDimSelector();
+  while (!cursor.isDone()) {
+    final String key=dimSelector.lookupName(dimSelector.getRow().get(0));
+    Aggregator[] theAggregators=aggregatesStore.get(key);
+    if (theAggregators == null) {
+      theAggregators=makeAggregators(cursor,query.getAggregatorSpecs());
+      aggregatesStore.put(key,theAggregators);
+    }
+    for (    Aggregator aggregator : theAggregators) {
+      aggregator.aggregate();
+    }
+    cursor.advance();
+  }
+}

@@ -10,7 +10,7 @@
   dimNames=Lists.newArrayListWithExpectedSize(dimensionSpecs.size());
   for (int i=0; i < dimensionSpecs.size(); ++i) {
     final DimensionSpec dimSpec=dimensionSpecs.get(i);
-    final DimensionSelector selector=cursor.makeDimensionSelector(dimSpec.getDimension());
+    final DimensionSelector selector=cursor.makeDimensionSelector(dimSpec.getDimension(),dimSpec.getExtractionFn());
     if (selector != null) {
       dimensions.add(selector);
       dimNames.add(dimSpec.getOutputName());

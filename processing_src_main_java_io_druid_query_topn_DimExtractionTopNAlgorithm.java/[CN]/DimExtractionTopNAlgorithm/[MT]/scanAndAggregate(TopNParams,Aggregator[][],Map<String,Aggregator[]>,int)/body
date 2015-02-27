@@ -7,7 +7,7 @@
       final int dimIndex=dimValues.get(i);
       Aggregator[] theAggregators=rowSelector[dimIndex];
       if (theAggregators == null) {
-        String key=query.getDimensionSpec().getDimExtractionFn().apply(dimSelector.lookupName(dimIndex));
+        final String key=dimSelector.lookupName(dimIndex);
         theAggregators=aggregatesStore.get(key);
         if (theAggregators == null) {
           theAggregators=makeAggregators(cursor,query.getAggregatorSpecs());

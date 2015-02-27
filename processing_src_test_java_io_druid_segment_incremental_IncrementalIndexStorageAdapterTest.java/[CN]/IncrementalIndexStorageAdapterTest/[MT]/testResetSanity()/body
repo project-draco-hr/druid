@@ -8,10 +8,10 @@
   Sequence<Cursor> cursorSequence=adapter.makeCursors(new SelectorFilter("sally","bo"),interval,QueryGranularity.NONE);
   Cursor cursor=Sequences.toList(Sequences.limit(cursorSequence,1),Lists.<Cursor>newArrayList()).get(0);
   DimensionSelector dimSelector;
-  dimSelector=cursor.makeDimensionSelector("sally");
+  dimSelector=cursor.makeDimensionSelector("sally",null);
   Assert.assertEquals("bo",dimSelector.lookupName(dimSelector.getRow().get(0)));
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","ah")));
   cursor.reset();
-  dimSelector=cursor.makeDimensionSelector("sally");
+  dimSelector=cursor.makeDimensionSelector("sally",null);
   Assert.assertEquals("bo",dimSelector.lookupName(dimSelector.getRow().get(0)));
 }

@@ -1,8 +1,8 @@
 {
   Set<String> months=Sets.newHashSet();
-  DimExtractionFn dimExtractionFn=new TimeDimExtractionFn("MM/dd/yyyy","MM/yyyy");
+  ExtractionFn extractionFn=new TimeDimExtractionFn("MM/dd/yyyy","MM/yyyy");
   for (  String dim : dims) {
-    months.add(dimExtractionFn.apply(dim));
+    months.add(extractionFn.apply(dim));
   }
   Assert.assertEquals(months.size(),4);
   Assert.assertTrue(months.contains("01/2012"));
