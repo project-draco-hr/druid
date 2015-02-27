@@ -1,7 +1,9 @@
 {
   final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
   root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
-  root.addServlet(new ServletHolder(new AsyncQueryForwardingServlet(jsonMapper,smileMapper,hostFinder,httpClient,emitter,requestLogger)),"/druid/v2/*");
+  final AsyncQueryForwardingServlet asyncQueryForwardingServlet=new AsyncQueryForwardingServlet(jsonMapper,smileMapper,hostFinder,httpClientProvider,httpClientConfig,emitter,requestLogger);
+  asyncQueryForwardingServlet.setTimeout(httpClientConfig.getReadTimeout().getMillis());
+  root.addServlet(new ServletHolder(asyncQueryForwardingServlet),"/druid/v2/*");
   root.addFilter(defaultAsyncGzipFilterHolder(),"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);
   final HandlerList handlerList=new HandlerList();

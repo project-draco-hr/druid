@@ -1,0 +1,14 @@
+{
+  proxyRequest.timeout(httpClientConfig.getReadTimeout().getMillis(),TimeUnit.MILLISECONDS);
+  proxyRequest.idleTimeout(httpClientConfig.getReadTimeout().getMillis(),TimeUnit.MILLISECONDS);
+  final Query query=(Query)request.getAttribute(QUERY_ATTRIBUTE);
+  if (query != null) {
+    final ObjectMapper objectMapper=(ObjectMapper)request.getAttribute(OBJECTMAPPER_ATTRIBUTE);
+    try {
+      proxyRequest.content(new BytesContentProvider(objectMapper.writeValueAsBytes(query)));
+    }
+ catch (    JsonProcessingException e) {
+      Throwables.propagate(e);
+    }
+  }
+}
