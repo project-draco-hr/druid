@@ -17,7 +17,7 @@
       return ByteBuffer.allocate(1024 * 1024);
     }
   }
-)),TestQueryRunners.pool));
+)),TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
   HashMap<String,Object> context=new HashMap<String,Object>();
   TestHelper.assertExpectedObjects(makeGroupByResults(new DateTime("2011-01-05T"),ImmutableMap.of("a","c","rows",3,"imps",3,"impers",3,"uniques",collector),new DateTime("2011-01-05T01"),ImmutableMap.of("a","c","rows",3,"imps",3,"impers",3,"uniques",collector),new DateTime("2011-01-06T"),ImmutableMap.of("a","d","rows",4,"imps",4,"impers",4,"uniques",collector),new DateTime("2011-01-06T01"),ImmutableMap.of("a","d","rows",4,"imps",4,"impers",4,"uniques",collector),new DateTime("2011-01-07T"),ImmutableMap.of("a","e","rows",5,"imps",5,"impers",5,"uniques",collector),new DateTime("2011-01-07T01"),ImmutableMap.of("a","e","rows",5,"imps",5,"impers",5,"uniques",collector),new DateTime("2011-01-08T"),ImmutableMap.of("a","f","rows",6,"imps",6,"impers",6,"uniques",collector),new DateTime("2011-01-08T01"),ImmutableMap.of("a","f","rows",6,"imps",6,"impers",6,"uniques",collector),new DateTime("2011-01-09T"),ImmutableMap.of("a","g","rows",7,"imps",7,"impers",7,"uniques",collector),new DateTime("2011-01-09T01"),ImmutableMap.of("a","g","rows",7,"imps",7,"impers",7,"uniques",collector)),runner.run(builder.setInterval("2011-01-05/2011-01-10").build(),context),"");
 }

@@ -1,6 +1,6 @@
 {
   final TopNQueryBuilder builder=new TopNQueryBuilder().dataSource(DATA_SOURCE).dimension(TOP_DIM).metric("imps").threshold(3).intervals(SEG_SPEC).filters(DIM_FILTER).granularity(PT1H_TZ_GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT);
-  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TopNQueryQueryToolChest(new TopNQueryConfig()));
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
   testQueryCaching(runner,builder.build(),new Interval("2011-11-04/2011-11-08"),makeTopNResults(new DateTime("2011-11-04",TIMEZONE),"a",50,4994,"b",50,4993,"c",50,4992,new DateTime("2011-11-05",TIMEZONE),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-11-06",TIMEZONE),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-11-07",TIMEZONE),"a",50,4988,"b",50,4987,"c",50,4986));
   HashMap<String,List> context=new HashMap<String,List>();
   TestHelper.assertExpectedResults(makeRenamedTopNResults(new DateTime("2011-11-04",TIMEZONE),"a",50,4994,"b",50,4993,"c",50,4992,new DateTime("2011-11-05",TIMEZONE),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-11-06",TIMEZONE),"a",50,4991,"b",50,4990,"c",50,4989,new DateTime("2011-11-07",TIMEZONE),"a",50,4988,"b",50,4987,"c",50,4986),runner.run(builder.intervals("2011-11-04/2011-11-08").metric("imps").aggregators(RENAMED_AGGS).postAggregators(RENAMED_POST_AGGS).build(),context));

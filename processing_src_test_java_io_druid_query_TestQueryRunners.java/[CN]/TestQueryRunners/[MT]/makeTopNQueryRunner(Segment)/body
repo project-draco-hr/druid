@@ -1,4 +1,4 @@
 {
-  QueryRunnerFactory factory=new TopNQueryRunnerFactory(pool,new TopNQueryQueryToolChest(topNConfig),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+  QueryRunnerFactory factory=new TopNQueryRunnerFactory(pool,new TopNQueryQueryToolChest(topNConfig,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
   return new FinalizeResultsQueryRunner<T>(factory.createRunner(adapter),factory.getToolchest());
 }

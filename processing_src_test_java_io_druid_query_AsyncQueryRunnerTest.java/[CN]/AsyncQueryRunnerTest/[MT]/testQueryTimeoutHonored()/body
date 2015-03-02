@@ -1,0 +1,24 @@
+{
+  QueryRunner baseRunner=new QueryRunner(){
+    @Override public Sequence run(    Query query,    Map responseContext){
+      try {
+        Thread.sleep(Long.MAX_VALUE);
+        throw new RuntimeException("query should not have completed");
+      }
+ catch (      InterruptedException ex) {
+        throw Throwables.propagate(ex);
+      }
+    }
+  }
+;
+  AsyncQueryRunner asyncRunner=new AsyncQueryRunner<>(baseRunner,executor,QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+  Sequence lazy=asyncRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of("timeout",1)),Collections.EMPTY_MAP);
+  try {
+    Sequences.toList(lazy,Lists.newArrayList());
+  }
+ catch (  RuntimeException ex) {
+    Assert.assertTrue(ex.getCause() instanceof TimeoutException);
+    return;
+  }
+  Assert.fail();
+}

@@ -10,6 +10,6 @@
     }
   }
 ));
-  QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool).mergeResults(runner);
+  QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()).mergeResults(runner);
   TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query,context),"no-limit");
 }

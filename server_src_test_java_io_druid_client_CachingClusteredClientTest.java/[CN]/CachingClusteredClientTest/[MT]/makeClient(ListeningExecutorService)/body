@@ -1,11 +1,11 @@
 {
   final Supplier<GroupByQueryConfig> groupByQueryConfigSupplier=Suppliers.ofInstance(new GroupByQueryConfig());
-  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(new QueryConfig())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig())).put(SelectQuery.class,new SelectQueryQueryToolChest(new QueryConfig(),jsonMapper)).put(GroupByQuery.class,new GroupByQueryQueryToolChest(groupByQueryConfigSupplier,jsonMapper,new GroupByQueryEngine(groupByQueryConfigSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
+  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(SelectQuery.class,new SelectQueryQueryToolChest(jsonMapper,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(GroupByQuery.class,new GroupByQueryQueryToolChest(groupByQueryConfigSupplier,jsonMapper,new GroupByQueryEngine(groupByQueryConfigSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(1024 * 1024);
     }
   }
-)),TestQueryRunners.pool)).put(TimeBoundaryQuery.class,new TimeBoundaryQueryQueryToolChest()).build()),new TimelineServerView(){
+)),TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(TimeBoundaryQuery.class,new TimeBoundaryQueryQueryToolChest()).build()),new TimelineServerView(){
     @Override public void registerSegmentCallback(    Executor exec,    SegmentCallback callback){
     }
     @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    DataSource dataSource){

@@ -61,6 +61,6 @@ abstract class DrainTask implements Runnable {
   }
 ;
   final Druids.TimeseriesQueryBuilder builder=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).intervals(SEG_SPEC).filters(DIM_FILTER).granularity(GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT);
-  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(new QueryConfig()));
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
   testQueryCaching(runner,builder.build(),new Interval("2011-01-05/2011-01-10"),makeTimeResults(new DateTime("2011-01-05"),85,102,new DateTime("2011-01-06"),412,521,new DateTime("2011-01-07"),122,21894,new DateTime("2011-01-08"),5,20,new DateTime("2011-01-09"),18,521),new Interval("2011-01-10/2011-01-13"),makeTimeResults(new DateTime("2011-01-10"),85,102,new DateTime("2011-01-11"),412,521,new DateTime("2011-01-12"),122,21894));
 }

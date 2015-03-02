@@ -1,16 +1,27 @@
 {
-  if (period.getMillis() == 0) {
+  final Period chunkPeriod=getChunkPeriod(query);
+  if (chunkPeriod.toStandardDuration().getMillis() == 0) {
     return baseRunner.run(query,responseContext);
   }
-  return Sequences.concat(FunctionalIterable.create(query.getIntervals()).transformCat(new Function<Interval,Iterable<Interval>>(){
+  List<Interval> chunkIntervals=Lists.newArrayList(FunctionalIterable.create(query.getIntervals()).transformCat(new Function<Interval,Iterable<Interval>>(){
     @Override public Iterable<Interval> apply(    Interval input){
-      return splitInterval(input);
-    }
-  }
-).transform(new Function<Interval,Sequence<T>>(){
-    @Override public Sequence<T> apply(    Interval singleInterval){
-      return baseRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(singleInterval))),responseContext);
+      return splitInterval(input,chunkPeriod);
     }
   }
 ));
+  if (chunkIntervals.size() <= 1) {
+    return baseRunner.run(query,responseContext);
+  }
+  final QueryRunner<T> finalQueryRunner=new AsyncQueryRunner<T>(toolChest.mergeResults(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
+    @Override public ServiceMetricEvent.Builder apply(    Query<T> input){
+      return toolChest.makeMetricBuilder(input);
+    }
+  }
+,baseRunner).withWaitMeasuredFromNow()),executor,queryWatcher);
+  return Sequences.concat(Lists.newArrayList(FunctionalIterable.create(chunkIntervals).transform(new Function<Interval,Sequence<T>>(){
+    @Override public Sequence<T> apply(    Interval singleInterval){
+      return finalQueryRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(singleInterval))),responseContext);
+    }
+  }
+)));
 }

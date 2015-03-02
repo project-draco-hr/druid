@@ -23,7 +23,7 @@
   final List<ListenableFuture<?>> indexFutures=new LinkedList<>();
   final List<ListenableFuture<?>> queryFutures=new LinkedList<>();
   final Segment incrementalIndexSegment=new IncrementalIndexSegment(index,null);
-  final QueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new QueryConfig()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+  final QueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
   final AtomicInteger currentlyRunning=new AtomicInteger(0);
   final AtomicBoolean concurrentlyRan=new AtomicBoolean(false);
   final AtomicInteger someoneRan=new AtomicInteger(0);

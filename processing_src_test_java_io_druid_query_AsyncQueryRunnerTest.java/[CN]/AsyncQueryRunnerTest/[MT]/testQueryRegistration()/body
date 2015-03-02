@@ -1,0 +1,14 @@
+{
+  QueryRunner baseRunner=new QueryRunner(){
+    @Override public Sequence run(    Query query,    Map responseContext){
+      return null;
+    }
+  }
+;
+  QueryWatcher mock=EasyMock.createMock(QueryWatcher.class);
+  mock.registerQuery(EasyMock.eq(query),EasyMock.anyObject(ListenableFuture.class));
+  EasyMock.replay(mock);
+  AsyncQueryRunner asyncRunner=new AsyncQueryRunner<>(baseRunner,executor,mock);
+  asyncRunner.run(query,Collections.EMPTY_MAP);
+  EasyMock.verify(mock);
+}

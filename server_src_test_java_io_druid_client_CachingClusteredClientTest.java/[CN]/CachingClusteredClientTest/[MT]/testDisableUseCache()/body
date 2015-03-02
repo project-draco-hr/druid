@@ -1,6 +1,6 @@
 {
   final Druids.TimeseriesQueryBuilder builder=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).intervals(SEG_SPEC).filters(DIM_FILTER).granularity(GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT);
-  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(new QueryConfig()));
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
   testQueryCaching(runner,1,true,builder.context(ImmutableMap.<String,Object>of("useCache","false","populateCache","true")).build(),new Interval("2011-01-01/2011-01-02"),makeTimeResults(new DateTime("2011-01-01"),50,5000));
   Assert.assertEquals(1,cache.getStats().getNumEntries());
   Assert.assertEquals(0,cache.getStats().getNumHits());
