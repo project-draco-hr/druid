@@ -1,0 +1,9 @@
+{
+  final Query query=(Query)request.getAttribute(QUERY_ATTRIBUTE);
+  if (query != null) {
+    return newMetricsEmittingProxyResponseListener(request,response,query,System.currentTimeMillis());
+  }
+ else {
+    return super.newProxyResponseListener(request,response);
+  }
+}

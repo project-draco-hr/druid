@@ -1,0 +1,31 @@
+{
+  final ServletContextHandler root=new ServletContextHandler(ServletContextHandler.SESSIONS);
+  root.addServlet(new ServletHolder(new DefaultServlet()),"/*");
+  final QueryHostFinder hostFinder=new QueryHostFinder(null){
+    @Override public String getHost(    Query query){
+      return "localhost:" + node.getPort();
+    }
+    @Override public String getDefaultHost(){
+      return "localhost:" + node.getPort();
+    }
+  }
+;
+  root.addServlet(new ServletHolder(new AsyncQueryForwardingServlet(injector.getInstance(ObjectMapper.class),injector.getInstance(Key.get(ObjectMapper.class,Smile.class)),hostFinder,injector.getProvider(org.eclipse.jetty.client.HttpClient.class),injector.getInstance(DruidHttpClientConfig.class),new NoopServiceEmitter(),new RequestLogger(){
+    @Override public void log(    RequestLogLine requestLogLine) throws IOException {
+    }
+  }
+){
+    @Override protected URI rewriteURI(    HttpServletRequest request){
+      URI uri=super.rewriteURI(request);
+      return URI.create(uri.toString().replace("/proxy",""));
+    }
+  }
+),"/proxy/*");
+  root.addFilter(defaultAsyncGzipFilterHolder(),"/*",null);
+  root.addFilter(GuiceFilter.class,"/slow/*",null);
+  root.addFilter(GuiceFilter.class,"/default/*",null);
+  root.addFilter(GuiceFilter.class,"/exception/*",null);
+  final HandlerList handlerList=new HandlerList();
+  handlerList.setHandlers(new Handler[]{root});
+  server.setHandler(handlerList);
+}

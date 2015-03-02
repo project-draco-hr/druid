@@ -1,20 +1,20 @@
 {
   final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(request.getContentType()) || APPLICATION_SMILE.equals(request.getContentType());
   final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
+  request.setAttribute(OBJECTMAPPER_ATTRIBUTE,objectMapper);
   String host=hostFinder.getDefaultHost();
-  Query inputQuery=null;
-  boolean hasContent=request.getContentLength() > 0 || request.getContentType() != null;
-  boolean isQuery=request.getMethod().equals(HttpMethod.POST.asString());
-  long startTime=System.currentTimeMillis();
+  request.setAttribute(HOST_ATTRIBUTE,host);
+  boolean isQuery=request.getMethod().equals(HttpMethod.POST.asString()) && request.getRequestURI().startsWith("/druid/v2");
   if (isQuery) {
     try {
-      inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
+      Query inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
       if (inputQuery != null) {
-        host=hostFinder.getHost(inputQuery);
+        request.setAttribute(HOST_ATTRIBUTE,hostFinder.getHost(inputQuery));
         if (inputQuery.getId() == null) {
           inputQuery=inputQuery.withId(UUID.randomUUID().toString());
         }
       }
+      request.setAttribute(QUERY_ATTRIBUTE,inputQuery);
     }
  catch (    IOException e) {
       log.warn(e,"Exception parsing query");
@@ -30,42 +30,5 @@ catch (    Exception e) {
       return;
     }
   }
-  URI rewrittenURI=rewriteURI(host,request);
-  if (rewrittenURI == null) {
-    onRewriteFailed(request,response);
-    return;
-  }
-  final Request proxyRequest=getHttpClient().newRequest(rewrittenURI).method(request.getMethod()).version(HttpVersion.fromString(request.getProtocol()));
-  for (Enumeration<String> headerNames=request.getHeaderNames(); headerNames.hasMoreElements(); ) {
-    String headerName=headerNames.nextElement();
-    if (HttpHeader.TRANSFER_ENCODING.is(headerName)) {
-      hasContent=true;
-    }
-    for (Enumeration<String> headerValues=request.getHeaders(headerName); headerValues.hasMoreElements(); ) {
-      String headerValue=headerValues.nextElement();
-      if (headerValue != null) {
-        proxyRequest.header(headerName,headerValue);
-      }
-    }
-  }
-  addViaHeader(proxyRequest);
-  addXForwardedHeaders(proxyRequest,request);
-  final AsyncContext asyncContext=request.startAsync();
-  asyncContext.setTimeout(0);
-  proxyRequest.timeout(getTimeout(),TimeUnit.MILLISECONDS);
-  if (hasContent) {
-    if (inputQuery != null) {
-      proxyRequest.content(new BytesContentProvider(jsonMapper.writeValueAsBytes(inputQuery)));
-    }
- else {
-      proxyRequest.content(proxyRequestContent(proxyRequest,request));
-    }
-  }
-  customizeProxyRequest(proxyRequest,request);
-  if (isQuery) {
-    proxyRequest.send(newMetricsEmittingProxyResponseListener(request,response,inputQuery,startTime));
-  }
- else {
-    proxyRequest.send(newProxyResponseListener(request,response));
-  }
+  super.service(request,response);
 }
