@@ -1,0 +1,16 @@
+{
+  if (geoDb.exists()) {
+    return;
+  }
+  try {
+    log.info("Downloading geo ip database to [%s]. This may take a few minutes.",geoDb.getAbsolutePath());
+    File tmpFile=File.createTempFile("druid","geo");
+    FileUtils.copyInputStreamToFile(new GZIPInputStream(new URL("http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz").openStream()),tmpFile);
+    if (!tmpFile.renameTo(geoDb)) {
+      throw new RuntimeException("Unable to move geo file to [" + geoDb.getAbsolutePath() + "]!");
+    }
+  }
+ catch (  IOException e) {
+    throw new RuntimeException("Unable to download geo ip database.",e);
+  }
+}
