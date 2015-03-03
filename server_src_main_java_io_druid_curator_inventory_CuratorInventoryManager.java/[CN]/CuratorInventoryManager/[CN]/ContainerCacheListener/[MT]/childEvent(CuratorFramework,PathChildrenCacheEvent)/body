@@ -3,8 +3,13 @@ switch (event.getType()) {
 case CHILD_ADDED:
 synchronized (lock) {
       final ChildData child=event.getData();
+      byte[] data=getZkDataForNode(child.getPath());
+      if (data == null) {
+        log.info("Ignoring event: Type - %s , Path - %s , Version - %s",event.getType(),child.getPath(),child.getStat().getVersion());
+        return;
+      }
       final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
-      final ContainerClass container=strategy.deserializeContainer(child.getData());
+      final ContainerClass container=strategy.deserializeContainer(data);
       if (containers.containsKey(containerKey)) {
         log.error("New node[%s] but there was already one.  That's not good, ignoring new one.",child.getPath());
       }
@@ -40,8 +45,13 @@ synchronized (removed) {
 case CHILD_UPDATED:
 synchronized (lock) {
   final ChildData child=event.getData();
+  byte[] data=getZkDataForNode(child.getPath());
+  if (data == null) {
+    log.info("Ignoring event: Type - %s , Path - %s , Version - %s",event.getType(),child.getPath(),child.getStat().getVersion());
+    return;
+  }
   final String containerKey=ZKPaths.getNodeFromPath(child.getPath());
-  final ContainerClass container=strategy.deserializeContainer(child.getData());
+  final ContainerClass container=strategy.deserializeContainer(data);
   log.debug("Container[%s] updated.",child.getPath());
   ContainerHolder holder=containers.get(containerKey);
   if (holder == null) {
