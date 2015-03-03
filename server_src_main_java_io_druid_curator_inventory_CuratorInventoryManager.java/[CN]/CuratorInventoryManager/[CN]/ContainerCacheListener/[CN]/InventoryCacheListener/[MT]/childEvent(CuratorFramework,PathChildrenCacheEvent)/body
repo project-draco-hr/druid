@@ -7,9 +7,14 @@ switch (event.getType()) {
 case CHILD_ADDED:
 {
       final ChildData child=event.getData();
+      byte[] data=getZkDataForNode(child.getPath());
+      if (data == null) {
+        log.info("Ignoring event: Type - %s , Path - %s , Version - %s",event.getType(),child.getPath(),child.getStat().getVersion());
+        return;
+      }
       final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
       log.debug("CHILD_ADDED[%s] with version[%s]",child.getPath(),event.getData().getStat().getVersion());
-      final InventoryClass addedInventory=strategy.deserializeInventory(child.getData());
+      final InventoryClass addedInventory=strategy.deserializeInventory(data);
 synchronized (holder) {
         holder.setContainer(strategy.addInventory(holder.getContainer(),inventoryKey,addedInventory));
       }
@@ -18,9 +23,14 @@ synchronized (holder) {
 case CHILD_UPDATED:
 {
     final ChildData child=event.getData();
+    byte[] data=getZkDataForNode(child.getPath());
+    if (data == null) {
+      log.info("Ignoring event: Type - %s , Path - %s , Version - %s",event.getType(),child.getPath(),child.getStat().getVersion());
+      return;
+    }
     final String inventoryKey=ZKPaths.getNodeFromPath(child.getPath());
     log.debug("CHILD_UPDATED[%s] with version[%s]",child.getPath(),event.getData().getStat().getVersion());
-    final InventoryClass updatedInventory=strategy.deserializeInventory(child.getData());
+    final InventoryClass updatedInventory=strategy.deserializeInventory(data);
 synchronized (holder) {
       holder.setContainer(strategy.updateInventory(holder.getContainer(),inventoryKey,updatedInventory));
     }
