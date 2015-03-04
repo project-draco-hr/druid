@@ -24,4 +24,7 @@ synchronized (handoffCondition) {
   }
   shutdownExecutors();
   stopped=true;
+  if (!cleanShutdown) {
+    throw new ISE("Exception occurred during persist and merge.");
+  }
 }
