@@ -8,6 +8,7 @@
  else {
     root.setResourceBase(config.getConsoleStatic());
   }
+  addExtensionFilters(root,injector);
   root.addFilter(defaultGzipFilterHolder(),"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);
   root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);

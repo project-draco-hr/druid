@@ -1,0 +1,21 @@
+{
+  Set<ServletFilterHolder> extensionFilters=injector.getInstance(Key.get(new TypeLiteral<Set<ServletFilterHolder>>(){
+  }
+));
+  for (  ServletFilterHolder servletFilterHolder : extensionFilters) {
+    FilterHolder holder=null;
+    if (servletFilterHolder.getFilter() != null) {
+      holder=new FilterHolder(servletFilterHolder.getFilter());
+    }
+ else     if (servletFilterHolder.getFilterClass() != null) {
+      holder=new FilterHolder(servletFilterHolder.getFilterClass());
+    }
+ else {
+      throw new ISE("Filter[%s] for path[%s] didn't have a Filter!?",servletFilterHolder,servletFilterHolder.getPath());
+    }
+    if (servletFilterHolder.getInitParameters() != null) {
+      holder.setInitParameters(servletFilterHolder.getInitParameters());
+    }
+    handler.addFilter(holder,servletFilterHolder.getPath(),servletFilterHolder.getDispatcherType());
+  }
+}
