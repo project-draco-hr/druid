@@ -3,8 +3,8 @@
   ServletHolder holderPwd=new ServletHolder("default",DefaultServlet.class);
   root.addServlet(holderPwd,"/");
   root.setBaseResource(new ResourceCollection(new String[]{TaskMaster.class.getClassLoader().getResource("static").toExternalForm(),TaskMaster.class.getClassLoader().getResource("indexer_static").toExternalForm()}));
-  addExtensionFilters(root,injector);
-  root.addFilter(defaultGzipFilterHolder(),"/*",null);
+  JettyServerInitUtils.addExtensionFilters(root,injector);
+  root.addFilter(JettyServerInitUtils.defaultGzipFilterHolder(),"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);
   root.addFilter(new FilterHolder(injector.getInstance(RedirectFilter.class)),"/*",null);
   root.addFilter(GuiceFilter.class,"/druid/*",null);
