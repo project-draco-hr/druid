@@ -21,7 +21,8 @@
     }
   }
 ),"/proxy/*");
-  root.addFilter(defaultAsyncGzipFilterHolder(),"/*",null);
+  JettyServerInitUtils.addExtensionFilters(root,injector);
+  root.addFilter(JettyServerInitUtils.defaultAsyncGzipFilterHolder(),"/*",null);
   root.addFilter(GuiceFilter.class,"/slow/*",null);
   root.addFilter(GuiceFilter.class,"/default/*",null);
   root.addFilter(GuiceFilter.class,"/exception/*",null);

@@ -4,7 +4,8 @@
   final AsyncQueryForwardingServlet asyncQueryForwardingServlet=new AsyncQueryForwardingServlet(jsonMapper,smileMapper,hostFinder,httpClientProvider,httpClientConfig,emitter,requestLogger);
   asyncQueryForwardingServlet.setTimeout(httpClientConfig.getReadTimeout().getMillis());
   root.addServlet(new ServletHolder(asyncQueryForwardingServlet),"/druid/v2/*");
-  root.addFilter(defaultAsyncGzipFilterHolder(),"/*",null);
+  JettyServerInitUtils.addExtensionFilters(root,injector);
+  root.addFilter(JettyServerInitUtils.defaultAsyncGzipFilterHolder(),"/*",null);
   root.addFilter(GuiceFilter.class,"/status/*",null);
   final HandlerList handlerList=new HandlerList();
   handlerList.setHandlers(new Handler[]{root});
