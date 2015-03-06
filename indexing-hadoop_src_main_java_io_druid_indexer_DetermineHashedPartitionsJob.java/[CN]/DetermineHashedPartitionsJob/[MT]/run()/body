@@ -3,12 +3,7 @@
     long startTime=System.currentTimeMillis();
     final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_partitions_hashed-%s",config.getDataSource(),config.getIntervals()));
     JobHelper.injectSystemProperties(groupByJob);
-    if (config.isCombineText()) {
-      groupByJob.setInputFormatClass(CombineTextInputFormat.class);
-    }
- else {
-      groupByJob.setInputFormatClass(TextInputFormat.class);
-    }
+    JobHelper.setInputFormat(groupByJob,config);
     groupByJob.setMapperClass(DetermineCardinalityMapper.class);
     groupByJob.setMapOutputKeyClass(LongWritable.class);
     groupByJob.setMapOutputValueClass(BytesWritable.class);
