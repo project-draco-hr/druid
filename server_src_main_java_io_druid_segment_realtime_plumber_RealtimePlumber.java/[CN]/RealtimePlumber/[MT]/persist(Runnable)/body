@@ -16,7 +16,11 @@
         }
         commitRunnable.run();
       }
-  finally {
+ catch (      Exception e) {
+        metrics.incrementFailedPersists();
+        throw e;
+      }
+ finally {
         metrics.incrementNumPersists();
         metrics.incrementPersistTimeMillis(persistStopwatch.elapsed(TimeUnit.MILLISECONDS));
         persistStopwatch.stop();

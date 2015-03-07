@@ -53,8 +53,10 @@ synchronized (hydrant) {
         }
       }
  catch (      Exception e) {
+        metrics.incrementFailedHandoffs();
         log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
         if (shuttingDown) {
+          cleanShutdown=false;
           abandonSegment(truncatedTime,sink);
         }
       }

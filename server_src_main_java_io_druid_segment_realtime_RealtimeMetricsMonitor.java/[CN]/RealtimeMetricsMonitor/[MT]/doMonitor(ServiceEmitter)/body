@@ -21,6 +21,8 @@
     emitter.emit(builder.build("persists/num",metrics.numPersists() - previous.numPersists()));
     emitter.emit(builder.build("persists/time",metrics.persistTimeMillis() - previous.persistTimeMillis()));
     emitter.emit(builder.build("persists/backPressure",metrics.persistBackPressureMillis() - previous.persistBackPressureMillis()));
+    emitter.emit(builder.build("failed/persists",metrics.failedPersists() - previous.failedPersists()));
+    emitter.emit(builder.build("failed/handoff",metrics.failedHandoffs() - previous.failedHandoffs()));
     previousValues.put(fireDepartment,metrics);
   }
   return true;
