@@ -1,0 +1,13 @@
+{
+  Preconditions.checkArgument(fnName != null,"fn cannot not be null");
+  Preconditions.checkArgument(fields != null && fields.size() > 1,"Illegal number of fields[%s], must be > 1");
+  this.name=name;
+  this.fnName=fnName;
+  this.fields=fields;
+  this.op=Ops.lookup(fnName);
+  if (op == null) {
+    throw new IAE("Unknown operation[%s], known operations[%s]",fnName,Ops.getFns());
+  }
+  this.ordering=ordering;
+  this.comparator=ordering == null ? DEFAULT_COMPARATOR : Ordering.valueOf(ordering);
+}
