@@ -13,7 +13,7 @@
         userDataBase64=envConfig.getUserData().withVersion(config.getWorkerVersion()).getUserDataBase64();
       }
     }
-    final RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withPlacement(new Placement(envConfig.getAvailabilityZone())).withKeyName(workerConfig.getKeyName()).withUserData(userDataBase64));
+    final RunInstancesResult result=amazonEC2Client.runInstances(new RunInstancesRequest(workerConfig.getAmiId(),workerConfig.getMinInstances(),workerConfig.getMaxInstances()).withInstanceType(workerConfig.getInstanceType()).withSecurityGroupIds(workerConfig.getSecurityGroupIds()).withPlacement(new Placement(envConfig.getAvailabilityZone())).withKeyName(workerConfig.getKeyName()).withSubnetId(workerConfig.getSubnetId()).withUserData(userDataBase64));
     final List<String> instanceIds=Lists.transform(result.getReservation().getInstances(),new Function<Instance,String>(){
       @Override public String apply(      Instance input){
         return input.getInstanceId();
