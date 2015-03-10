@@ -1,0 +1,12 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String oldJson="{\n" + "    \"type\": \"extraction\",\n" + "    \"outputName\": \"first3Letters\",\n"+ "    \"dimension\": \"myDim\","+ "    \"dimExtractionFn\": {\n"+ "        \"type\": \"regex\",\n"+ "        \"expr\": \"(...).*\"\n"+ "    }\n"+ "}";
+  final ExtractionDimensionSpec extractionDimensionSpec=(ExtractionDimensionSpec)objectMapper.readValue(oldJson,DimensionSpec.class);
+  Assert.assertEquals("first3Letters",extractionDimensionSpec.getOutputName());
+  Assert.assertEquals("myDim",extractionDimensionSpec.getDimension());
+  Assert.assertNotNull(extractionDimensionSpec.getExtractionFn());
+  Assert.assertTrue(extractionDimensionSpec.getExtractionFn() instanceof RegexDimExtractionFn);
+  Assert.assertEquals(extractionDimensionSpec,objectMapper.readValue(objectMapper.writeValueAsBytes(extractionDimensionSpec),DimensionSpec.class));
+  final String oldAndNewJson="{\n" + "    \"type\": \"extraction\",\n" + "    \"outputName\": \"first3Letters\",\n"+ "    \"dimension\": \"myDim\","+ "    \"extractionFn\": {\n"+ "        \"type\": \"partial\",\n"+ "        \"expr\": \"(...).*\"\n"+ "    },\n"+ "    \"dimExtractionFn\": {\n"+ "        \"type\": \"regex\",\n"+ "        \"expr\": \"(...).*\"\n"+ "    }\n"+ "}";
+  Assert.assertTrue(objectMapper.readValue(oldAndNewJson,DimensionSpec.class).getExtractionFn() instanceof MatchingDimExtractionFn);
+}

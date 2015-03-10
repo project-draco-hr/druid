@@ -1,8 +1,9 @@
 {
-  ObjectMapper objectMapper=new DefaultObjectMapper();
-  String json=objectMapper.writeValueAsString(fn);
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String json=objectMapper.writeValueAsString(fn);
   TimeFormatExtractionFn deserialized=objectMapper.readValue(json,TimeFormatExtractionFn.class);
   Assert.assertEquals(format,deserialized.getFormat());
   Assert.assertEquals(tz,deserialized.getTimeZone());
   Assert.assertEquals(locale,deserialized.getLocale());
+  Assert.assertEquals(fn,deserialized);
 }
