@@ -6,26 +6,32 @@
     mergedFile.mkdirs();
     mergedFile.deleteOnExit();
     List<File> filesToMap=makeFilesToMap(tmpFile,files);
-    List<IndexableAdapter> adapters=Lists.newArrayList();
     VersionedIntervalTimeline<Integer,File> timeline=new VersionedIntervalTimeline<Integer,File>(Ordering.natural().nullsFirst());
     ShardSpec noneShardSpec=new NoneShardSpec();
     for (int i=0; i < intervals.size(); i++) {
       timeline.add(intervals.get(i),i,noneShardSpec.createChunk(filesToMap.get(i)));
     }
-    List<Pair<File,Interval>> intervalsToMerge=Lists.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<Integer,File>,Pair<File,Interval>>(){
-      @Override public Pair<File,Interval> apply(      @Nullable TimelineObjectHolder<Integer,File> input){
-        return new Pair<File,Interval>(input.getObject().getChunk(0).getObject(),input.getInterval());
-      }
-    }
+    final List<IndexableAdapter> adapters=Lists.newArrayList(Iterables.concat(Iterables.transform(timeline.lookup(new Interval("1000-01-01/3000-01-01")),new Function<TimelineObjectHolder<Integer,File>,Iterable<IndexableAdapter>>(){
+      @Override public Iterable<IndexableAdapter> apply(      final TimelineObjectHolder<Integer,File> timelineObjectHolder){
+        return Iterables.transform(timelineObjectHolder.getObject(),new Function<PartitionChunk<File>,IndexableAdapter>(){
+          @Override public IndexableAdapter apply(          PartitionChunk<File> chunk){
+            try {
+              return new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(chunk.getObject())),new Predicate<Rowboat>(){
+                @Override public boolean apply(                Rowboat input){
+                  return timelineObjectHolder.getInterval().contains(input.getTimestamp());
+                }
+              }
 );
-    for (    final Pair<File,Interval> pair : intervalsToMerge) {
-      adapters.add(new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(pair.lhs)),new Predicate<Rowboat>(){
-        @Override public boolean apply(        @Nullable Rowboat input){
-          return pair.rhs.contains(input.getTimestamp());
+            }
+ catch (            IOException e) {
+              throw Throwables.propagate(e);
+            }
+          }
         }
+);
       }
-));
     }
+)));
     return IndexIO.loadIndex(IndexMerger.append(adapters,mergedFile));
   }
  catch (  IOException e) {
