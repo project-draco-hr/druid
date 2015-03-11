@@ -35,15 +35,9 @@
       ByteBuffer keyBuffer=input.getKey().duplicate();
       for (int i=0; i < dimensions.size(); ++i) {
         final DimensionSelector dimSelector=dimensions.get(i);
-        final DimExtractionFn fn=dimensionSpecs.get(i).getDimExtractionFn();
         final int dimVal=keyBuffer.getInt();
         if (dimSelector.getValueCardinality() != dimVal) {
-          if (fn != null) {
-            theEvent.put(dimNames.get(i),fn.apply(dimSelector.lookupName(dimVal)));
-          }
- else {
-            theEvent.put(dimNames.get(i),dimSelector.lookupName(dimVal));
-          }
+          theEvent.put(dimNames.get(i),dimSelector.lookupName(dimVal));
         }
       }
       int position=input.getValue();

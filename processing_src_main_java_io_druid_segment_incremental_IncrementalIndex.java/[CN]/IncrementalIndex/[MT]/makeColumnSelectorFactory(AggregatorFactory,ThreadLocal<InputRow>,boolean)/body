@@ -58,7 +58,7 @@
 ;
       }
     }
-    @Override public DimensionSelector makeDimensionSelector(    final String dimension){
+    @Override public DimensionSelector makeDimensionSelector(    final String dimension,    final ExtractionFn extractionFn){
       return new DimensionSelector(){
         @Override public IndexedInts getRow(){
           final List<String> dimensionValues=in.get().getDimension(dimension);
@@ -85,9 +85,13 @@
           throw new UnsupportedOperationException("value cardinality is unknown in incremental index");
         }
         @Override public String lookupName(        int id){
-          return in.get().getDimension(dimension).get(id);
+          final String value=in.get().getDimension(dimension).get(id);
+          return extractionFn == null ? value : extractionFn.apply(value);
         }
         @Override public int lookupId(        String name){
+          if (extractionFn != null) {
+            throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
+          }
           return in.get().getDimension(dimension).indexOf(name);
         }
       }

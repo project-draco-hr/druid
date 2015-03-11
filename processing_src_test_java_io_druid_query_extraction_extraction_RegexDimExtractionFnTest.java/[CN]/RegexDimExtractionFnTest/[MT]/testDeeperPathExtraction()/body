@@ -1,9 +1,9 @@
 {
   String regex="^/([^/]+/[^/]+)(/|$)";
-  DimExtractionFn dimExtractionFn=new RegexDimExtractionFn(regex);
+  ExtractionFn extractionFn=new RegexDimExtractionFn(regex);
   Set<String> extracted=Sets.newHashSet();
   for (  String path : paths) {
-    extracted.add(dimExtractionFn.apply(path));
+    extracted.add(extractionFn.apply(path));
   }
   Assert.assertEquals(4,extracted.size());
   Assert.assertTrue(extracted.contains("druid/prod"));

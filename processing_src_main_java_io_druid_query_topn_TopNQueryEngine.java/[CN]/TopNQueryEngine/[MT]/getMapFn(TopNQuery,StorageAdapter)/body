@@ -1,14 +1,18 @@
 {
   final Capabilities capabilities=adapter.getCapabilities();
-  final int cardinality=adapter.getDimensionCardinality(query.getDimensionSpec().getDimension());
+  final String dimension=query.getDimensionSpec().getDimension();
+  final int cardinality=adapter.getDimensionCardinality(dimension);
   int numBytesPerRecord=0;
   for (  AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
     numBytesPerRecord+=aggregatorFactory.getMaxIntermediateSize();
   }
   final TopNAlgorithmSelector selector=new TopNAlgorithmSelector(cardinality,numBytesPerRecord);
   query.initTopNAlgorithmSelector(selector);
-  TopNAlgorithm topNAlgorithm=null;
-  if (selector.isHasDimExtractionFn()) {
+  final TopNAlgorithm topNAlgorithm;
+  if (selector.isHasExtractionFn() && dimension.equals(Column.TIME_COLUMN_NAME)) {
+    topNAlgorithm=new TimeExtractionTopNAlgorithm(capabilities,query);
+  }
+ else   if (selector.isHasExtractionFn()) {
     topNAlgorithm=new DimExtractionTopNAlgorithm(capabilities,query);
   }
  else   if (selector.isAggregateAllMetrics()) {

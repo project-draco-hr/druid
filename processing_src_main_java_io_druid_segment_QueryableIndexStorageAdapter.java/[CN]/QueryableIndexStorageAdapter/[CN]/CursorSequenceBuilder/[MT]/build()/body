@@ -38,12 +38,15 @@
         @Override public void reset(){
           cursorOffset=initOffset.clone();
         }
-        @Override public DimensionSelector makeDimensionSelector(        String dimension){
-          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimension);
+        @Override public DimensionSelector makeDimensionSelector(        final String dimension,        @Nullable final ExtractionFn extractionFn){
           final Column columnDesc=index.getColumn(dimension);
           if (columnDesc == null) {
             return NULL_DIMENSION_SELECTOR;
           }
+          if (dimension.equals(Column.TIME_COLUMN_NAME)) {
+            return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn);
+          }
+          DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimension);
           if (cachedColumn == null) {
             cachedColumn=columnDesc.getDictionaryEncoding();
             dictionaryColumnCache.put(dimension,cachedColumn);
@@ -61,10 +64,13 @@
                 return column.getCardinality();
               }
               @Override public String lookupName(              int id){
-                final String retVal=column.lookupName(id);
-                return retVal == null ? "" : retVal;
+                final String value=column.lookupName(id);
+                return extractionFn == null ? Strings.nullToEmpty(value) : extractionFn.apply(Strings.nullToEmpty(value));
               }
               @Override public int lookupId(              String name){
+                if (extractionFn != null) {
+                  throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
+                }
                 return column.lookupId(name);
               }
             }
@@ -90,9 +96,13 @@
                 return column.getCardinality();
               }
               @Override public String lookupName(              int id){
-                return column.lookupName(id);
+                final String value=column.lookupName(id);
+                return extractionFn == null ? value : extractionFn.apply(value);
               }
               @Override public int lookupId(              String name){
+                if (extractionFn != null) {
+                  throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
+                }
                 return column.lookupId(name);
               }
             }
