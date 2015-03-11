@@ -2,5 +2,14 @@
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","business","rows",2L,"idx",217L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","mezzanine","rows",6L,"idx",4420L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","premium","rows",6L,"idx",4416L));
   GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null)).setHavingSpec(new OrHavingSpec(ImmutableList.of(new GreaterThanHavingSpec("rows",2L),new EqualToHavingSpec("idx",217L))));
   final GroupByQuery fullQuery=builder.build();
-  TestHelper.assertExpectedObjects(expectedResults,GroupByQueryRunnerTestHelper.runQuery(factory,runner,fullQuery),"");
+  QueryRunner mergedRunner=factory.getToolchest().mergeResults(new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
+      final Query query1=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-02/2011-04-03"))));
+      final Query query2=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-03/2011-04-04"))));
+      return Sequences.concat(runner.run(query1,responseContext),runner.run(query2,responseContext));
+    }
+  }
+);
+  Map<String,Object> context=Maps.newHashMap();
+  TestHelper.assertExpectedObjects(expectedResults,mergedRunner.run(fullQuery,context),"merged");
 }
