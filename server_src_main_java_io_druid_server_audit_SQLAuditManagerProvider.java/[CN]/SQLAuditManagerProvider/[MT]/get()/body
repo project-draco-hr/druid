@@ -1,0 +1,16 @@
+{
+  try {
+    lifecycle.addMaybeStartHandler(new Lifecycle.Handler(){
+      @Override public void start() throws Exception {
+        connector.createAuditTable();
+      }
+      @Override public void stop(){
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return new SQLAuditManager(connector,dbTables,emitter,mapper,config);
+}

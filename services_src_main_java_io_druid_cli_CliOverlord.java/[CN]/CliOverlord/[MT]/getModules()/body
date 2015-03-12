@@ -19,6 +19,7 @@
       configureTaskStorage(binder);
       configureRunners(binder);
       configureAutoscale(binder);
+      binder.bind(AuditManager.class).toProvider(AuditManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(RedirectFilter.class).in(LazySingleton.class);
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).toInstance(new OverlordJettyServerInitializer());

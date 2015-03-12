@@ -8,4 +8,7 @@
   PolyBind.optionBinder(binder,Key.get(MetadataStorageActionHandlerFactory.class)).addBinding(type).to(SQLMetadataStorageActionHandlerFactory.class).in(LazySingleton.class);
   PolyBind.optionBinder(binder,Key.get(IndexerMetadataStorageCoordinator.class)).addBinding(type).to(IndexerSQLMetadataStorageCoordinator.class).in(LazySingleton.class);
   PolyBind.optionBinder(binder,Key.get(MetadataStorageUpdaterJobHandler.class)).addBinding(type).to(SQLMetadataStorageUpdaterJobHandler.class).in(LazySingleton.class);
+  JsonConfigProvider.bind(binder,"druid.audit.manager",SQLAuditManagerConfig.class);
+  PolyBind.optionBinder(binder,Key.get(AuditManager.class)).addBinding(type).to(SQLAuditManager.class).in(LazySingleton.class);
+  PolyBind.optionBinder(binder,Key.get(AuditManagerProvider.class)).addBinding(type).to(SQLAuditManagerProvider.class).in(LazySingleton.class);
 }

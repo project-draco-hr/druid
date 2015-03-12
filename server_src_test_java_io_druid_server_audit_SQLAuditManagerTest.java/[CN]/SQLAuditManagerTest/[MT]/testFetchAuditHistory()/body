@@ -1,0 +1,9 @@
+{
+  AuditEntry entry=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment"),"testPayload",new DateTime("2013-01-01T00:00:00Z"));
+  auditManager.doAudit(entry);
+  auditManager.doAudit(entry);
+  List<AuditEntry> auditEntries=auditManager.fetchAuditHistory("testKey","testType",new Interval("2012-01-01T00:00:00Z/2013-01-03T00:00:00Z"));
+  Assert.assertEquals(2,auditEntries.size());
+  Assert.assertEquals(entry,auditEntries.get(0));
+  Assert.assertEquals(entry,auditEntries.get(1));
+}
