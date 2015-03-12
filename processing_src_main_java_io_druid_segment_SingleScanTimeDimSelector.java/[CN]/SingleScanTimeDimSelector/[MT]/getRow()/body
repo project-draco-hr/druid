@@ -1,0 +1,34 @@
+{
+  final long timestamp=selector.get();
+  if (index < 0) {
+    currentTimestamp=timestamp;
+    currentValue=extractionFn.apply(timestamp);
+    ++index;
+    timeValues.put(index,currentValue);
+  }
+ else   if (timestamp != currentTimestamp) {
+    if (timestamp < currentTimestamp) {
+      throw new IllegalStateException("cannot re-use time dimension selector for multiple scans");
+    }
+    currentTimestamp=timestamp;
+    final String value=extractionFn.apply(timestamp);
+    if (!value.equals(currentValue)) {
+      currentValue=value;
+      ++index;
+      timeValues.put(index,currentValue);
+    }
+  }
+  final int dimensionValueIndex=index;
+  return new IndexedInts(){
+    @Override public int size(){
+      return 1;
+    }
+    @Override public int get(    int i){
+      return dimensionValueIndex;
+    }
+    @Override public Iterator<Integer> iterator(){
+      return Iterators.singletonIterator(dimensionValueIndex);
+    }
+  }
+;
+}
