@@ -3,7 +3,7 @@
   EmittingLogger.registerEmitter(emitter);
   tmp=Files.createTempDir();
   final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
-  ts=new HeapMemoryTaskStorage(new TaskStorageConfig(){
+  ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
   }
 );
   tsqa=new TaskStorageQueryAdapter(ts);
