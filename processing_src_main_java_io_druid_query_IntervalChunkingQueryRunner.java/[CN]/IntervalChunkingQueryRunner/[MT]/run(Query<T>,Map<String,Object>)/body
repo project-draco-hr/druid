@@ -12,15 +12,14 @@
   if (chunkIntervals.size() <= 1) {
     return baseRunner.run(query,responseContext);
   }
-  final QueryRunner<T> finalQueryRunner=new AsyncQueryRunner<T>(toolChest.mergeResults(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
-    @Override public ServiceMetricEvent.Builder apply(    Query<T> input){
-      return toolChest.makeMetricBuilder(input);
-    }
-  }
-,baseRunner).withWaitMeasuredFromNow()),executor,queryWatcher);
   return Sequences.concat(Lists.newArrayList(FunctionalIterable.create(chunkIntervals).transform(new Function<Interval,Sequence<T>>(){
     @Override public Sequence<T> apply(    Interval singleInterval){
-      return finalQueryRunner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(singleInterval))),responseContext);
+      return new AsyncQueryRunner<T>(toolChest.mergeResults(new MetricsEmittingQueryRunner<T>(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
+        @Override public ServiceMetricEvent.Builder apply(        Query<T> input){
+          return toolChest.makeMetricBuilder(input);
+        }
+      }
+,baseRunner,"query/intervalChunk/time",ImmutableMap.of("chunkInterval",singleInterval.toString())).withWaitMeasuredFromNow()),executor,queryWatcher).run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Arrays.asList(singleInterval))),responseContext);
     }
   }
 )));

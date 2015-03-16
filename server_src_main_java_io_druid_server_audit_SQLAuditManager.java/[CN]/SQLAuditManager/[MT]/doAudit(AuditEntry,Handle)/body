@@ -1,4 +1,4 @@
 {
-  emitter.emit(new ServiceMetricEvent.Builder().setUser1(auditEntry.getKey()).setUser2(auditEntry.getType()).setUser3(auditEntry.getAuditInfo().getAuthor()).setUser5(jsonMapper.writeValueAsString(auditEntry.getPayload())).setUser6(auditEntry.getAuditInfo().getComment()).setUser7(auditEntry.getAuditTime().toString()).build("config/audit",1));
+  emitter.emit(new ServiceMetricEvent.Builder().setDimension("key",auditEntry.getKey()).setDimension("type",auditEntry.getType()).setDimension("author",auditEntry.getAuditInfo().getAuthor()).build("config/audit",1));
   handle.createStatement(String.format("INSERT INTO %s ( audit_key, type, author, comment, created_date, payload) VALUES (:audit_key, :type, :author, :comment, :created_date, :payload)",getAuditTable())).bind("audit_key",auditEntry.getKey()).bind("type",auditEntry.getType()).bind("author",auditEntry.getAuditInfo().getAuthor()).bind("comment",auditEntry.getAuditInfo().getComment()).bind("created_date",auditEntry.getAuditTime().toString()).bind("payload",jsonMapper.writeValueAsBytes(auditEntry)).execute();
 }

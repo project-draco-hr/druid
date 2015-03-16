@@ -1,10 +1,13 @@
 {
   final ServiceMetricEvent.Builder builder=builderFn.apply(query);
+  for (  Map.Entry<String,String> userDimension : userDimensions.entrySet()) {
+    builder.setDimension(userDimension.getKey(),userDimension.getValue());
+  }
   String queryId=query.getId();
   if (queryId == null) {
     queryId="";
   }
-  builder.setUser8(queryId);
+  builder.setDimension(DruidMetrics.ID,queryId);
   return new Sequence<T>(){
     @Override public <OutType>OutType accumulate(    OutType outType,    Accumulator<OutType,T> accumulator){
       OutType retVal;
@@ -13,18 +16,18 @@
         retVal=queryRunner.run(query,responseContext).accumulate(outType,accumulator);
       }
  catch (      RuntimeException e) {
-        builder.setUser10("failed");
+        builder.setDimension(DruidMetrics.STATUS,"failed");
         throw e;
       }
 catch (      Error e) {
-        builder.setUser10("failed");
+        builder.setDimension(DruidMetrics.STATUS,"failed");
         throw e;
       }
  finally {
         long timeTaken=System.currentTimeMillis() - startTime;
         emitter.emit(builder.build(metricName,timeTaken));
         if (creationTime > 0) {
-          emitter.emit(builder.build("query/wait",startTime - creationTime));
+          emitter.emit(builder.build("query/wait/time",startTime - creationTime));
         }
       }
       return retVal;
@@ -36,11 +39,11 @@ catch (      Error e) {
         retVal=queryRunner.run(query,responseContext).toYielder(initValue,accumulator);
       }
  catch (      RuntimeException e) {
-        builder.setUser10("failed");
+        builder.setDimension(DruidMetrics.STATUS,"failed");
         throw e;
       }
 catch (      Error e) {
-        builder.setUser10("failed");
+        builder.setDimension(DruidMetrics.STATUS,"failed");
         throw e;
       }
       return makeYielder(startTime,retVal,builder);
@@ -55,11 +58,11 @@ catch (      Error e) {
             return makeYielder(startTime,yielder.next(initValue),builder);
           }
  catch (          RuntimeException e) {
-            builder.setUser10("failed");
+            builder.setDimension(DruidMetrics.STATUS,"failed");
             throw e;
           }
 catch (          Error e) {
-            builder.setUser10("failed");
+            builder.setDimension(DruidMetrics.STATUS,"failed");
             throw e;
           }
         }
@@ -68,13 +71,13 @@ catch (          Error e) {
         }
         @Override public void close() throws IOException {
           try {
-            if (!isDone() && builder.getUser10() == null) {
-              builder.setUser10("short");
+            if (!isDone() && builder.getDimension(DruidMetrics.STATUS) == null) {
+              builder.setDimension(DruidMetrics.STATUS,"short");
             }
             long timeTaken=System.currentTimeMillis() - startTime;
             emitter.emit(builder.build(metricName,timeTaken));
             if (creationTime > 0) {
-              emitter.emit(builder.build("query/wait",startTime - creationTime));
+              emitter.emit(builder.build("query/wait/time",startTime - creationTime));
             }
           }
   finally {
