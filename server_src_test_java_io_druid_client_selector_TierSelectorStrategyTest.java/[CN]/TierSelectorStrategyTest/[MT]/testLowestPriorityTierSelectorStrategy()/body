@@ -1,0 +1,6 @@
+{
+  DirectDruidClient client=EasyMock.createMock(DirectDruidClient.class);
+  QueryableDruidServer lowPriority=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client);
+  QueryableDruidServer highPriority=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,1),client);
+  testTierSelectorStrategy(new LowestPriorityTierSelectorStrategy(new ConnectionCountServerSelectorStrategy()),Arrays.asList(lowPriority,highPriority),lowPriority);
+}
