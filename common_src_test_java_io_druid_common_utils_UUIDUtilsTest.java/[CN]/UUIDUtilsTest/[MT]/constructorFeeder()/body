@@ -1,0 +1,34 @@
+{
+  final ArrayList<String[]> args=new ArrayList<>();
+  final List<String> possibleArgs=Lists.newArrayList("one","two",null,"");
+  for (int i=0; i < possibleArgs.size(); ++i) {
+    args.add(new String[]{possibleArgs.get(i)});
+    for (int j=0; j < possibleArgs.size(); ++j) {
+      for (int k=0; k < possibleArgs.size(); ++k) {
+        args.add(new String[]{possibleArgs.get(i),possibleArgs.get(j),possibleArgs.get(k)});
+      }
+    }
+  }
+  for (  String possibleArg : possibleArgs) {
+    args.add(new String[]{possibleArg});
+  }
+  return Collections2.transform(args,new Function<String[],Object[]>(){
+    @Override public Object[] apply(    String[] input){
+      final ArrayList<String> strings=new ArrayList<>(input.length);
+      for (      String str : input) {
+        if (!Strings.isNullOrEmpty(str)) {
+          strings.add(str);
+        }
+      }
+      final String expected;
+      if (!strings.isEmpty()) {
+        expected=Joiner.on(UUIDUtils.UUID_DELIM).join(strings) + UUIDUtils.UUID_DELIM;
+      }
+ else {
+        expected="";
+      }
+      return new Object[]{input,expected};
+    }
+  }
+);
+}

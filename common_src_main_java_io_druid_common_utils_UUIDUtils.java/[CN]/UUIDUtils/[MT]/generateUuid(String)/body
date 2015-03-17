@@ -1,0 +1,16 @@
+{
+  String extra=null;
+  if (extraData != null && extraData.length > 0) {
+    final ArrayList<String> extraStrings=new ArrayList<>(extraData.length);
+    for (    String extraString : extraData) {
+      if (!Strings.isNullOrEmpty(extraString)) {
+        extraStrings.add(extraString);
+      }
+    }
+    if (!extraStrings.isEmpty()) {
+      extra=Joiner.on(UUID_DELIM).join(extraStrings);
+    }
+  }
+  final String uuid=UUID.randomUUID().toString();
+  return extra == null ? uuid : (extra + UUID_DELIM + uuid);
+}
