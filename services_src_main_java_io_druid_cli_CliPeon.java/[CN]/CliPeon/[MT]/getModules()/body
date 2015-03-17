@@ -38,6 +38,7 @@
       PolyBind.createChoice(binder,"druid.peon.mode",Key.get(TaskActionClientFactory.class),Key.get(RemoteTaskActionClientFactory.class));
       final MapBinder<String,TaskActionClientFactory> taskActionBinder=PolyBind.optionBinder(binder,Key.get(TaskActionClientFactory.class));
       taskActionBinder.addBinding("local").to(LocalTaskActionClientFactory.class).in(LazySingleton.class);
+      JsonConfigProvider.bind(binder,"druid.indexer.storage",TaskStorageConfig.class);
       binder.bind(TaskStorage.class).to(HeapMemoryTaskStorage.class).in(LazySingleton.class);
       binder.bind(TaskActionToolbox.class).in(LazySingleton.class);
       binder.bind(IndexerMetadataStorageCoordinator.class).to(IndexerSQLMetadataStorageCoordinator.class).in(LazySingleton.class);
