@@ -1,0 +1,9 @@
+{
+  final String filePath="/path/to/file";
+  AzureStorageContainer azureStorageContainer=createMock(AzureStorageContainer.class);
+  expect(azureStorageContainer.getBlobInputStream(filePath)).andThrow(new StorageException("","",500,null,null));
+  replayAll();
+  AzureByteSource byteSource=new AzureByteSource(azureStorageContainer,filePath);
+  byteSource.openStream();
+  verifyAll();
+}

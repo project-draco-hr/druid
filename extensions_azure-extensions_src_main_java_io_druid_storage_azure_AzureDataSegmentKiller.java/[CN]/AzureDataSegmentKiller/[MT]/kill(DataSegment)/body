@@ -1,0 +1,11 @@
+{
+  log.info("Killing segment [%s]",segment);
+  Map<String,Object> loadSpec=segment.getLoadSpec();
+  String storageDir=MapUtils.getString(loadSpec,"storageDir");
+  try {
+    azureStorageContainer.emptyCloudBlobDirectory(storageDir);
+  }
+ catch (  StorageException|URISyntaxException e) {
+    throw new SegmentLoadingException(e,"Couldn't kill segment[%s]",segment.getIdentifier());
+  }
+}

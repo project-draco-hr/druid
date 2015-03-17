@@ -1,0 +1,11 @@
+{
+  File outDir=Files.createTempDirectory("druid").toFile();
+  try {
+    AzureDataSegmentPuller puller=new AzureDataSegmentPuller(azureStorageContainer);
+    puller.prepareOutDir(outDir);
+    assertTrue(outDir.exists());
+  }
+  finally {
+    outDir.delete();
+  }
+}

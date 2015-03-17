@@ -1,0 +1,9 @@
+{
+  final File zipFile=Files.createTempFile("index",".zip").toFile();
+  final byte[] value=content.getBytes("utf8");
+  try (ZipOutputStream zipStream=new ZipOutputStream(new FileOutputStream(zipFile))){
+    zipStream.putNextEntry(new ZipEntry(segmentFileName));
+    zipStream.write(value);
+  }
+   return zipFile;
+}

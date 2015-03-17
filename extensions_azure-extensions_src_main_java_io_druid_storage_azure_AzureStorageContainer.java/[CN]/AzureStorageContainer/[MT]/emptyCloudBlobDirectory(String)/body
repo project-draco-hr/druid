@@ -1,0 +1,14 @@
+{
+  List<String> deletedFiles=new ArrayList<>();
+  for (  ListBlobItem blobItem : cloudBlobContainer.listBlobs(path,true,null,null,null)) {
+    CloudBlob cloudBlob=(CloudBlob)blobItem;
+    log.info("Removing file[%s] from Azure.",cloudBlob.getName());
+    if (cloudBlob.deleteIfExists()) {
+      deletedFiles.add(cloudBlob.getName());
+    }
+  }
+  if (deletedFiles.isEmpty()) {
+    log.warn("No files were deleted on the following Azure path: [%s]",path);
+  }
+  return deletedFiles;
+}

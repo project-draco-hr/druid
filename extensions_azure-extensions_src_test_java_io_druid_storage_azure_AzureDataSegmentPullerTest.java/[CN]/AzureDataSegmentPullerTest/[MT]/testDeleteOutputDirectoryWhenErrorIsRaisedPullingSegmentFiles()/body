@@ -1,0 +1,13 @@
+{
+  final File fromDir=Files.createTempDirectory("druidA").toFile();
+  fromDir.deleteOnExit();
+  final File outDir=Files.createTempDirectory("druid").toFile();
+  outDir.deleteOnExit();
+  final File zipFilePath=new File(fromDir.getAbsolutePath(),AzureStorageDruidModule.INDEX_ZIP_FILE_NAME);
+  expect(azureStorageContainer.getBlobInputStream(zipFilePath.getAbsolutePath())).andThrow(new StorageException("error","error",404,null,null));
+  replayAll();
+  AzureDataSegmentPuller puller=new AzureDataSegmentPuller(azureStorageContainer);
+  puller.getSegmentFiles(fromDir.getAbsolutePath(),outDir);
+  assertFalse(outDir.exists());
+  verifyAll();
+}

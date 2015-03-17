@@ -1,0 +1,11 @@
+{
+  try {
+    return azureStorageContainer.getBlobInputStream(filePath);
+  }
+ catch (  StorageException|URISyntaxException e) {
+    if (AzureUtils.AZURE_RETRY.apply(e)) {
+      throw new IOException("Recoverable exception",e);
+    }
+    throw Throwables.propagate(e);
+  }
+}
