@@ -1,6 +1,6 @@
 {
   List<Rule> rules=Arrays.<Rule>asList(new IntervalLoadRule(new Interval("2015-01-01/2015-02-01"),ImmutableMap.<String,Integer>of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS)));
-  AuditInfo auditInfo=new AuditInfo("test_author","test_comment");
+  AuditInfo auditInfo=new AuditInfo("test_author","test_comment","127.0.0.1");
   ruleManager.overrideRule("test_dataSource",rules,auditInfo);
   ruleManager.poll();
   Assert.assertEquals(rules,ruleManager.getRules("test_dataSource"));

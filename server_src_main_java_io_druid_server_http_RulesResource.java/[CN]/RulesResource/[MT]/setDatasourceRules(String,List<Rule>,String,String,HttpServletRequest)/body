@@ -1,5 +1,5 @@
 {
-  if (databaseRuleManager.overrideRule(dataSourceName,rules,new AuditInfo(author,comment))) {
+  if (databaseRuleManager.overrideRule(dataSourceName,rules,new AuditInfo(author,comment,req.getRemoteAddr()))) {
     return Response.ok().build();
   }
   return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
