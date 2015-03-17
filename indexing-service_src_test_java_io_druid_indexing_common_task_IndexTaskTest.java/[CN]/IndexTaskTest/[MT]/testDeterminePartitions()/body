@@ -9,29 +9,6 @@
   writer.println("2014-01-01T02:00:30Z,c,1");
   writer.close();
   IndexTask indexTask=new IndexTask(null,new IndexTask.IndexIngestionSpec(new DataSchema("test",new StringInputRowParser(new CSVParseSpec(new TimestampSpec("ts","auto"),new DimensionsSpec(Arrays.asList("ts"),Lists.<String>newArrayList(),Lists.<SpatialDimensionSchema>newArrayList()),null,Arrays.asList("ts","dim","val"))),new AggregatorFactory[]{new LongSumAggregatorFactory("val","val")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.MINUTE,Arrays.asList(new Interval("2014/2015")))),new IndexTask.IndexIOConfig(new LocalFirehoseFactory(tmpDir,"druid*",null)),new IndexTask.IndexTuningConfig(2,0,null)),new DefaultObjectMapper());
-  final List<DataSegment> segments=Lists.newArrayList();
-  indexTask.run(new TaskToolbox(null,null,new TaskActionClientFactory(){
-    @Override public TaskActionClient create(    Task task){
-      return new TaskActionClient(){
-        @Override public <RetType>RetType submit(        TaskAction<RetType> taskAction) throws IOException {
-          if (taskAction instanceof LockListAction) {
-            return (RetType)Arrays.asList(new TaskLock("","",null,new DateTime().toString()));
-          }
-          return null;
-        }
-      }
-;
-    }
-  }
-,null,new DataSegmentPusher(){
-    @Override public String getPathForHadoop(    String dataSource){
-      return null;
-    }
-    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
-      segments.add(segment);
-      return segment;
-    }
-  }
-,null,null,null,null,null,null,null,null,null,null,null));
+  final List<DataSegment> segments=runTask(indexTask);
   Assert.assertEquals(2,segments.size());
 }

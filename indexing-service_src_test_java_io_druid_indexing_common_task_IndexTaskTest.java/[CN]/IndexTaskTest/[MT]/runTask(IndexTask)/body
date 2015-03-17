@@ -1,0 +1,27 @@
+{
+  final List<DataSegment> segments=Lists.newArrayList();
+  indexTask.run(new TaskToolbox(null,null,new TaskActionClientFactory(){
+    @Override public TaskActionClient create(    Task task){
+      return new TaskActionClient(){
+        @Override public <RetType>RetType submit(        TaskAction<RetType> taskAction) throws IOException {
+          if (taskAction instanceof LockListAction) {
+            return (RetType)Arrays.asList(new TaskLock("","",null,new DateTime().toString()));
+          }
+          return null;
+        }
+      }
+;
+    }
+  }
+,null,new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String dataSource){
+      return null;
+    }
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      segments.add(segment);
+      return segment;
+    }
+  }
+,null,null,null,null,null,null,null,null,null,null,null));
+  return segments;
+}
