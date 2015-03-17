@@ -7,7 +7,7 @@
           @Override public Sequence<Row> run(          final Query<Row> query,          final Map<String,Object> responseContext){
             final GroupByQuery queryParam=(GroupByQuery)query;
             final Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(queryParam,config.get(),computationBufferPool);
-            final Pair<List,Accumulator<List,Row>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
+            final Pair<Queue,Accumulator<Queue,Row>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
             final int priority=query.getContextPriority(0);
             final boolean bySegment=query.getContextBySegment(false);
             final ListenableFuture<Void> future=queryExecutor.submit(new AbstractPrioritizedCallable<Void>(priority){

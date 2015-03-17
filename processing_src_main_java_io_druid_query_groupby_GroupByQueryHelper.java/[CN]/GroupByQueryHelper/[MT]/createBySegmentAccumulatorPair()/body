@@ -1,11 +1,11 @@
 {
-  List init=Lists.newArrayList();
-  Accumulator<List,T> accumulator=new Accumulator<List,T>(){
-    @Override public List accumulate(    List accumulated,    T in){
+  Queue init=new ConcurrentLinkedQueue<>();
+  Accumulator<Queue,T> accumulator=new Accumulator<Queue,T>(){
+    @Override public Queue accumulate(    Queue accumulated,    T in){
       if (in == null) {
         throw new ISE("Cannot have null result");
       }
-      accumulated.add(in);
+      accumulated.offer(in);
       return accumulated;
     }
   }
