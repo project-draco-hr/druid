@@ -1,5 +1,5 @@
 {
-  if (!configManager.set(WorkerBehaviorConfig.CONFIG_KEY,workerBehaviorConfig,new AuditInfo(author,comment))) {
+  if (!configManager.set(WorkerBehaviorConfig.CONFIG_KEY,workerBehaviorConfig,new AuditInfo(author,comment,req.getRemoteAddr()))) {
     return Response.status(Response.Status.BAD_REQUEST).build();
   }
   log.info("Updating Worker configs: %s",workerBehaviorConfig);
