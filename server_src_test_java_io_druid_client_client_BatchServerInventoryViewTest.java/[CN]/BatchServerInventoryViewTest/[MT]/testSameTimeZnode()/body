@@ -1,0 +1,56 @@
+{
+  final int numThreads=INITIAL_SEGMENTS / 10;
+  final ListeningExecutorService executor=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(numThreads));
+  segmentAnnouncer.announceSegments(testSegments);
+  waitForSync(batchServerInventoryView,testSegments);
+  DruidServer server=Iterables.get(batchServerInventoryView.getInventory(),0);
+  final Set<DataSegment> segments=Sets.newHashSet(server.getSegments().values());
+  Assert.assertEquals(testSegments,segments);
+  final CountDownLatch latch=new CountDownLatch(numThreads);
+  final List<ListenableFuture<BatchDataSegmentAnnouncer>> futures=new ArrayList<>();
+  for (int i=0; i < numThreads; ++i) {
+    final int ii=i;
+    futures.add(executor.submit(new Callable<BatchDataSegmentAnnouncer>(){
+      @Override public BatchDataSegmentAnnouncer call(){
+        BatchDataSegmentAnnouncer segmentAnnouncer=new BatchDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier",0),new BatchDataSegmentAnnouncerConfig(){
+          @Override public int getSegmentsPerNode(){
+            return 50;
+          }
+        }
+,new ZkPathsConfig(){
+          @Override public String getBase(){
+            return testBasePath;
+          }
+        }
+,announcer,jsonMapper);
+        segmentAnnouncer.start();
+        List<DataSegment> segments=new ArrayList<DataSegment>();
+        try {
+          for (int j=0; j < INITIAL_SEGMENTS / numThreads; ++j) {
+            segments.add(makeSegment(INITIAL_SEGMENTS + ii + numThreads * j));
+          }
+          latch.countDown();
+          latch.await();
+          segmentAnnouncer.announceSegments(segments);
+          testSegments.addAll(segments);
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+        return segmentAnnouncer;
+      }
+    }
+));
+  }
+  final List<BatchDataSegmentAnnouncer> announcers=Futures.<BatchDataSegmentAnnouncer>allAsList(futures).get();
+  Assert.assertEquals(INITIAL_SEGMENTS * 2,testSegments.size());
+  waitForSync(batchServerInventoryView,testSegments);
+  Assert.assertEquals(testSegments,Sets.newHashSet(server.getSegments().values()));
+  for (int i=0; i < INITIAL_SEGMENTS; ++i) {
+    final DataSegment segment=makeSegment(100 + i);
+    segmentAnnouncer.unannounceSegment(segment);
+    testSegments.remove(segment);
+  }
+  waitForSync(batchServerInventoryView,testSegments);
+  Assert.assertEquals(testSegments,Sets.newHashSet(server.getSegments().values()));
+}

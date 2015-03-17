@@ -1,5 +1,5 @@
 {
-  SegmentZNode segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+  SegmentZNode segmentZNode=new SegmentZNode(makeServedSegmentPath());
   Set<DataSegment> batch=Sets.newHashSet();
   int byteSize=0;
   int count=0;
@@ -11,7 +11,7 @@
     if (count >= config.getSegmentsPerNode() || byteSize + newBytesLen > config.getMaxBytesPerNode()) {
       segmentZNode.addSegments(batch);
       announcer.announce(segmentZNode.getPath(),segmentZNode.getBytes());
-      segmentZNode=new SegmentZNode(makeServedSegmentPath(new DateTime().toString()));
+      segmentZNode=new SegmentZNode(makeServedSegmentPath());
       batch=Sets.newHashSet();
       count=0;
       byteSize=0;
