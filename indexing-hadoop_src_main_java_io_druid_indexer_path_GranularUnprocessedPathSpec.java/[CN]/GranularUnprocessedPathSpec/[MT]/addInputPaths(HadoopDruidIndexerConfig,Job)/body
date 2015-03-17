@@ -2,8 +2,8 @@
   Preconditions.checkState(config.getGranularitySpec() instanceof UniformGranularitySpec,String.format("Cannot use %s without %s",GranularUnprocessedPathSpec.class.getSimpleName(),UniformGranularitySpec.class.getSimpleName()));
   final Path betaInput=new Path(getInputPath());
   final FileSystem fs=betaInput.getFileSystem(job.getConfiguration());
-  final Granularity segmentGranularity=((UniformGranularitySpec)config.getGranularitySpec()).getSegmentGranularity();
-  Map<DateTime,Long> inputModifiedTimes=new TreeMap<DateTime,Long>(Comparators.inverse(Comparators.<Comparable>comparable()));
+  final Granularity segmentGranularity=config.getGranularitySpec().getSegmentGranularity();
+  Map<DateTime,Long> inputModifiedTimes=new TreeMap<>(Comparators.inverse(Comparators.comparable()));
   for (  FileStatus status : FSSpideringIterator.spiderIterable(fs,betaInput)) {
     final DateTime key=segmentGranularity.toDate(status.getPath().toString());
     final Long currVal=inputModifiedTimes.get(key);

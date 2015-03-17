@@ -5,8 +5,14 @@
   try (Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser())){
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
-      Interval interval=granularitySpec.getSegmentGranularity().bucket(new DateTime(inputRow.getTimestampFromEpoch()));
-      retVal.add(interval);
+      DateTime dt=new DateTime(inputRow.getTimestampFromEpoch());
+      Optional<Interval> interval=granularitySpec.bucketInterval(dt);
+      if (interval.isPresent()) {
+        retVal.add(interval.get());
+      }
+ else {
+        throw new ISE("Unable to to find a matching interval for [%s]",dt);
+      }
     }
   }
    return retVal;
