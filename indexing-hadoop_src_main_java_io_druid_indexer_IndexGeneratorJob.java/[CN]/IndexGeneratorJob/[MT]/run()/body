@@ -3,12 +3,7 @@
     Job job=new Job(new Configuration(),String.format("%s-index-generator-%s",config.getDataSource(),config.getIntervals()));
     job.getConfiguration().set("io.sort.record.percent","0.23");
     JobHelper.injectSystemProperties(job);
-    if (config.isCombineText()) {
-      job.setInputFormatClass(CombineTextInputFormat.class);
-    }
- else {
-      job.setInputFormatClass(TextInputFormat.class);
-    }
+    JobHelper.setInputFormat(job,config);
     job.setMapperClass(IndexGeneratorMapper.class);
     job.setMapOutputValueClass(Text.class);
     SortableBytes.useSortableBytesAsMapOutputKey(job);

@@ -1,0 +1,70 @@
+{
+  SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
+  Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
+  final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
+  final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
+  final int maxTotalBufferSize=config.getSchema().getTuningConfig().getBufferSize();
+  final int aggregationBufferSize=(int)((double)maxTotalBufferSize * config.getSchema().getTuningConfig().getAggregationBufferRatio());
+  final StupidPool<ByteBuffer> bufferPool=new OffheapBufferPool(aggregationBufferSize);
+  IncrementalIndex index=makeIncrementalIndex(bucket,aggs,bufferPool);
+  try {
+    File baseFlushFile=File.createTempFile("base","flush");
+    baseFlushFile.delete();
+    baseFlushFile.mkdirs();
+    Set<File> toMerge=Sets.newTreeSet();
+    int indexCount=0;
+    int lineCount=0;
+    int runningTotalLineCount=0;
+    long startTime=System.currentTimeMillis();
+    Set<String> allDimensionNames=Sets.newHashSet();
+    final ProgressIndicator progressIndicator=makeProgressIndicator(context);
+    for (    final Writable value : values) {
+      context.progress();
+      final InputRow inputRow=index.formatRow(HadoopDruidIndexerMapper.parseInputRow(value,parser));
+      allDimensionNames.addAll(inputRow.getDimensions());
+      int numRows=index.add(inputRow);
+      ++lineCount;
+      if (!index.canAppendRow()) {
+        log.info(index.getOutOfRowsReason());
+        log.info("%,d lines to %,d rows in %,d millis",lineCount - runningTotalLineCount,numRows,System.currentTimeMillis() - startTime);
+        runningTotalLineCount=lineCount;
+        final File file=new File(baseFlushFile,String.format("index%,05d",indexCount));
+        toMerge.add(file);
+        context.progress();
+        persist(index,interval,file,progressIndicator);
+        index.close();
+        index=makeIncrementalIndex(bucket,aggs,bufferPool);
+        startTime=System.currentTimeMillis();
+        ++indexCount;
+      }
+    }
+    log.info("%,d lines completed.",lineCount);
+    List<QueryableIndex> indexes=Lists.newArrayListWithCapacity(indexCount);
+    final File mergedBase;
+    if (toMerge.size() == 0) {
+      if (index.isEmpty()) {
+        throw new IAE("If you try to persist empty indexes you are going to have a bad time");
+      }
+      mergedBase=new File(baseFlushFile,"merged");
+      persist(index,interval,mergedBase,progressIndicator);
+    }
+ else {
+      if (!index.isEmpty()) {
+        final File finalFile=new File(baseFlushFile,"final");
+        persist(index,interval,finalFile,progressIndicator);
+        toMerge.add(finalFile);
+      }
+      for (      File file : toMerge) {
+        indexes.add(IndexIO.loadIndex(file));
+      }
+      mergedBase=mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),progressIndicator);
+    }
+    serializeOutIndex(context,bucket,mergedBase,Lists.newArrayList(allDimensionNames));
+    for (    File file : toMerge) {
+      FileUtils.deleteDirectory(file);
+    }
+  }
+  finally {
+    index.close();
+  }
+}
