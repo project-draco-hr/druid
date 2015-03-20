@@ -6,6 +6,7 @@
     }
  catch (    Exception e) {
       if (config.isIgnoreInvalidRows()) {
+        log.debug(e,"Ignoring invalid row [%s] due to parsing error",value.toString());
         context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
         return;
       }
