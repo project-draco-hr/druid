@@ -20,9 +20,22 @@
     final ProgressIndicator progressIndicator=makeProgressIndicator(context);
     for (    final Writable value : values) {
       context.progress();
-      final InputRow inputRow=index.formatRow(HadoopDruidIndexerMapper.parseInputRow(value,parser));
-      allDimensionNames.addAll(inputRow.getDimensions());
-      int numRows=index.add(inputRow);
+      int numRows;
+      try {
+        final InputRow inputRow=index.formatRow(HadoopDruidIndexerMapper.parseInputRow(value,parser));
+        allDimensionNames.addAll(inputRow.getDimensions());
+        numRows=index.add(inputRow);
+      }
+ catch (      ParseException e) {
+        if (config.isIgnoreInvalidRows()) {
+          log.debug(e,"Ignoring invalid row [%s] due to parsing error",value.toString());
+          context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
+          continue;
+        }
+ else {
+          throw e;
+        }
+      }
       ++lineCount;
       if (!index.canAppendRow()) {
         log.info(index.getOutOfRowsReason());
