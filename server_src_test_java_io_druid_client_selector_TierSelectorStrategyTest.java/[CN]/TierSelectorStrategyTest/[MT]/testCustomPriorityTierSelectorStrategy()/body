@@ -1,0 +1,12 @@
+{
+  DirectDruidClient client=EasyMock.createMock(DirectDruidClient.class);
+  QueryableDruidServer lowPriority=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,-1),client);
+  QueryableDruidServer mediumPriority=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client);
+  QueryableDruidServer highPriority=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,1),client);
+  testTierSelectorStrategy(new CustomTierSelectorStrategy(new ConnectionCountServerSelectorStrategy(),new CustomTierSelectorStrategyConfig(){
+    @Override public List<Integer> getPriorities(){
+      return Arrays.asList(2,0,-1,1);
+    }
+  }
+),Arrays.asList(lowPriority,mediumPriority,highPriority),mediumPriority);
+}
