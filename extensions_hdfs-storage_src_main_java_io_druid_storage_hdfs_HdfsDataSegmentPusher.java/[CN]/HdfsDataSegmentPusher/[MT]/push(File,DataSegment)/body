@@ -4,7 +4,7 @@
   FileSystem fs=outFile.getFileSystem(hadoopConfig);
   fs.mkdirs(outFile.getParent());
   log.info("Compressing files from[%s] to [%s]",inDir,outFile);
-  long size;
+  final long size;
   try (FSDataOutputStream out=fs.create(outFile)){
     size=CompressionUtils.zip(inDir,out);
   }
