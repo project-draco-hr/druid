@@ -1,0 +1,84 @@
+{
+  final HeapMemoryTaskStorage ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
+  }
+);
+  final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withQueryGranularity(QueryGranularity.NONE).withMinTimestamp(JodaUtils.MIN_INSTANT).withDimensionsSpec(ROW_PARSER).withMetrics(new AggregatorFactory[]{new LongSumAggregatorFactory(METRIC_LONG_NAME,DIM_LONG_NAME),new DoubleSumAggregatorFactory(METRIC_FLOAT_NAME,DIM_FLOAT_NAME)}).build();
+  final OnheapIncrementalIndex index=new OnheapIncrementalIndex(schema,MAX_ROWS * MAX_SHARD_NUMBER);
+  for (Integer i=0; i < MAX_ROWS; ++i) {
+    index.add(ROW_PARSER.parse(buildRow(i.longValue())));
+  }
+  if (!persistDir.mkdirs() && !persistDir.exists()) {
+    throw new IOException(String.format("Could not create directory at [%s]",persistDir.getAbsolutePath()));
+  }
+  IndexMerger.persist(index,persistDir);
+  final TaskLockbox tl=new TaskLockbox(ts);
+  final IndexerSQLMetadataStorageCoordinator mdc=new IndexerSQLMetadataStorageCoordinator(null,null,null){
+    final private Set<DataSegment> published=Sets.newHashSet();
+    final private Set<DataSegment> nuked=Sets.newHashSet();
+    @Override public List<DataSegment> getUsedSegmentsForInterval(    String dataSource,    Interval interval) throws IOException {
+      return ImmutableList.copyOf(segmentSet);
+    }
+    @Override public List<DataSegment> getUnusedSegmentsForInterval(    String dataSource,    Interval interval){
+      return ImmutableList.of();
+    }
+    @Override public Set<DataSegment> announceHistoricalSegments(    Set<DataSegment> segments){
+      Set<DataSegment> added=Sets.newHashSet();
+      for (      final DataSegment segment : segments) {
+        if (published.add(segment)) {
+          added.add(segment);
+        }
+      }
+      return ImmutableSet.copyOf(added);
+    }
+    @Override public void deleteSegments(    Set<DataSegment> segments){
+      nuked.addAll(segments);
+    }
+  }
+;
+  final LocalTaskActionClientFactory tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
+  final TaskToolboxFactory taskToolboxFactory=new TaskToolboxFactory(new TaskConfig(tmpDir.getAbsolutePath(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String dataSource){
+      throw new UnsupportedOperationException();
+    }
+    @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      return segment;
+    }
+  }
+,new DataSegmentKiller(){
+    @Override public void kill(    DataSegment segments) throws SegmentLoadingException {
+    }
+  }
+,new DataSegmentMover(){
+    @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
+      return dataSegment;
+    }
+  }
+,new DataSegmentArchiver(){
+    @Override public DataSegment archive(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
+    }
+    @Override public DataSegment restore(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
+    }
+  }
+,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
+    @Override public List<StorageLocationConfig> getLocations(){
+      return Lists.newArrayList();
+    }
+  }
+)),new DefaultObjectMapper());
+  Collection<Object[]> values=new LinkedList<>();
+  for (  InputRowParser parser : Arrays.<InputRowParser>asList(ROW_PARSER,new MapInputRowParser(new JSONParseSpec(new TimestampSpec(TIME_COLUMN,"auto"),new DimensionsSpec(ImmutableList.<String>of(),ImmutableList.of(DIM_FLOAT_NAME,DIM_LONG_NAME),ImmutableList.<SpatialDimensionSchema>of()))))) {
+    for (    List<String> dim_names : Arrays.<List<String>>asList(null,ImmutableList.of(DIM_NAME))) {
+      for (      List<String> metric_names : Arrays.<List<String>>asList(null,ImmutableList.of(METRIC_LONG_NAME,METRIC_FLOAT_NAME))) {
+        values.add(new Object[]{new IngestSegmentFirehoseFactory(DATA_SOURCE_NAME,FOREVER,new SelectorDimFilter(DIM_NAME,DIM_VALUE),dim_names,metric_names,Guice.createInjector(new Module(){
+          @Override public void configure(          Binder binder){
+            binder.bind(TaskToolboxFactory.class).toInstance(taskToolboxFactory);
+          }
+        }
+)),String.format("DimNames[%s]MetricNames[%s]ParserDimNames[%s]",dim_names == null ? "null" : "dims",metric_names == null ? "null" : "metrics",parser == ROW_PARSER ? "dims" : "null"),parser});
+      }
+    }
+  }
+  return values;
+}

@@ -17,10 +17,17 @@
       dims=inputRowParser.getParseSpec().getDimensionsSpec().getDimensions();
     }
  else {
-      Set<String> dimSet=new HashSet<>();
-      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
-        dimSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getDimensions());
+      Set<String> dimSet=Sets.newHashSet(Iterables.concat(Iterables.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,Iterable<String>>(){
+        @Override public Iterable<String> apply(        TimelineObjectHolder<String,DataSegment> timelineObjectHolder){
+          return Iterables.concat(Iterables.transform(timelineObjectHolder.getObject(),new Function<PartitionChunk<DataSegment>,Iterable<String>>(){
+            @Override public Iterable<String> apply(            PartitionChunk<DataSegment> input){
+              return input.getObject().getDimensions();
+            }
+          }
+));
+        }
       }
+)));
       dims=Lists.newArrayList(Sets.difference(dimSet,inputRowParser.getParseSpec().getDimensionsSpec().getDimensionExclusions()));
     }
     List<String> metricsList;
@@ -28,25 +35,36 @@
       metricsList=metrics;
     }
  else {
-      Set<String> metricsSet=new HashSet<>();
-      for (      TimelineObjectHolder<String,DataSegment> timelineObjectHolder : timeLineSegments) {
-        metricsSet.addAll(timelineObjectHolder.getObject().getChunk(0).getObject().getMetrics());
+      Set<String> metricsSet=Sets.newHashSet(Iterables.concat(Iterables.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,Iterable<String>>(){
+        @Override public Iterable<String> apply(        TimelineObjectHolder<String,DataSegment> input){
+          return Iterables.concat(Iterables.transform(input.getObject(),new Function<PartitionChunk<DataSegment>,Iterable<String>>(){
+            @Override public Iterable<String> apply(            PartitionChunk<DataSegment> input){
+              return input.getObject().getMetrics();
+            }
+          }
+));
+        }
       }
+)));
       metricsList=Lists.newArrayList(metricsSet);
     }
-    final List<StorageAdapter> adapters=Lists.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,StorageAdapter>(){
-      @Override public StorageAdapter apply(      TimelineObjectHolder<String,DataSegment> input){
-        final DataSegment segment=input.getObject().getChunk(0).getObject();
-        final File file=Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier());
-        try {
-          return new QueryableIndexStorageAdapter((IndexIO.loadIndex(file)));
+    final List<StorageAdapter> adapters=Lists.newArrayList(Iterables.concat(Iterables.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,Iterable<StorageAdapter>>(){
+      @Override public Iterable<StorageAdapter> apply(      TimelineObjectHolder<String,DataSegment> input){
+        return Iterables.transform(input.getObject(),new Function<PartitionChunk<DataSegment>,StorageAdapter>(){
+          @Override public StorageAdapter apply(          PartitionChunk<DataSegment> input){
+            final DataSegment segment=input.getObject();
+            try {
+              return new QueryableIndexStorageAdapter(IndexIO.loadIndex(Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier())));
+            }
+ catch (            IOException e) {
+              throw Throwables.propagate(e);
+            }
+          }
         }
- catch (        IOException e) {
-          throw Throwables.propagate(e);
-        }
+);
       }
     }
-);
+)));
     return new IngestSegmentFirehose(adapters,dims,metricsList);
   }
  catch (  IOException e) {

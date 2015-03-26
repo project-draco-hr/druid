@@ -1,0 +1,10 @@
+{
+  Assert.assertEquals(DATA_SOURCE_NAME,factory.getDataSource());
+  if (factory.getDimensions() != null) {
+    Assert.assertArrayEquals(new String[]{DIM_NAME},factory.getDimensions().toArray());
+  }
+  Assert.assertEquals(FOREVER,factory.getInterval());
+  if (factory.getMetrics() != null) {
+    Assert.assertEquals(ImmutableSet.of(METRIC_LONG_NAME,METRIC_FLOAT_NAME),ImmutableSet.copyOf(factory.getMetrics()));
+  }
+}
