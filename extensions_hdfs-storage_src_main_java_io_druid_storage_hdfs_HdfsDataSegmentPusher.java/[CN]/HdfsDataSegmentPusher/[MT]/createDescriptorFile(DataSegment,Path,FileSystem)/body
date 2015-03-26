@@ -1,6 +1,6 @@
 {
   final Path descriptorFile=new Path(outDir,"descriptor.json");
   log.info("Creating descriptor file at[%s]",descriptorFile);
-  ByteStreams.copy(ByteStreams.newInputStreamSupplier(jsonMapper.writeValueAsBytes(segment)),new HdfsOutputStreamSupplier(fs,descriptorFile));
+  ByteSource.wrap(jsonMapper.writeValueAsBytes(segment)).copyTo(new HdfsOutputStreamSupplier(fs,descriptorFile));
   return segment;
 }
