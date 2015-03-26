@@ -1,0 +1,14 @@
+{
+  Injector stageOne=GuiceInjectors.makeStartupInjector();
+  Module module=stageOne.getInstance(DruidSecondaryModule.class);
+  Injector stageTwo=Guice.createInjector(module,new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(String.class).toInstance("Expected String");
+      JsonConfigProvider.bind(binder,"druid.emitter.",Emitter.class);
+      binder.bind(CustomEmitter.class).toProvider(new CustomEmitterFactory());
+    }
+  }
+);
+  CustomEmitter customEmitter=stageTwo.getInstance(CustomEmitter.class);
+  Assert.assertEquals("Expected String",customEmitter.getOtherValue());
+}
