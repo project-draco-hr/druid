@@ -1,0 +1,53 @@
+{
+  log.info("Pulling index at path[%s] to outDir[%s]",s3Coords,outDir);
+  if (!isObjectInBucket(s3Coords)) {
+    throw new SegmentLoadingException("IndexFile[%s] does not exist.",s3Coords);
+  }
+  if (!outDir.exists()) {
+    outDir.mkdirs();
+  }
+  if (!outDir.isDirectory()) {
+    throw new ISE("outDir[%s] must be a directory.",outDir);
+  }
+  try {
+    final URI uri=URI.create(String.format("s3://%s/%s",s3Coords.bucket,s3Coords.path));
+    final ByteSource byteSource=new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
+        try {
+          return buildFileObject(uri,s3Client).openInputStream();
+        }
+ catch (        ServiceException e) {
+          if (e.getCause() != null) {
+            if (S3Utils.S3RETRY.apply(e)) {
+              throw new IOException("Recoverable exception",e);
+            }
+          }
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+;
+    if (CompressionUtils.isZip(s3Coords.path)) {
+      final FileUtils.FileCopyResult result=CompressionUtils.unzip(byteSource,outDir,S3Utils.S3RETRY,true);
+      log.info("Loaded %d bytes from [%s] to [%s]",result.size(),s3Coords.toString(),outDir.getAbsolutePath());
+      return result;
+    }
+    if (CompressionUtils.isGz(s3Coords.path)) {
+      final String fname=Paths.get(uri).getFileName().toString();
+      final File outFile=new File(outDir,CompressionUtils.getGzBaseName(fname));
+      final FileUtils.FileCopyResult result=CompressionUtils.gunzip(byteSource,outFile);
+      log.info("Loaded %d bytes from [%s] to [%s]",result.size(),s3Coords.toString(),outFile.getAbsolutePath());
+      return result;
+    }
+    throw new IAE("Do not know how to load file type at [%s]",uri.toString());
+  }
+ catch (  Exception e) {
+    try {
+      org.apache.commons.io.FileUtils.deleteDirectory(outDir);
+    }
+ catch (    IOException ioe) {
+      log.warn(ioe,"Failed to remove output directory [%s] for segment pulled from [%s]",outDir.getAbsolutePath(),s3Coords.toString());
+    }
+    throw new SegmentLoadingException(e,e.getMessage());
+  }
+}

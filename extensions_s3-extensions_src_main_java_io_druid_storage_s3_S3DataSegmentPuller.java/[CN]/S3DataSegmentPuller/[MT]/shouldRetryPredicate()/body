@@ -1,0 +1,17 @@
+{
+  return new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable e){
+      if (e == null) {
+        return false;
+      }
+      if (e instanceof ServiceException) {
+        return S3Utils.isServiceExceptionRecoverable((ServiceException)e);
+      }
+      if (S3Utils.S3RETRY.apply(e)) {
+        return true;
+      }
+      return apply(e.getCause());
+    }
+  }
+;
+}

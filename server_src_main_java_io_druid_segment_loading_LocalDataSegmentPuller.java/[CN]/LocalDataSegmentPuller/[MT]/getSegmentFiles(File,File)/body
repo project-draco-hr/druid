@@ -1,0 +1,39 @@
+{
+  if (sourceFile.isDirectory()) {
+    if (sourceFile.equals(dir)) {
+      log.info("Asked to load [%s] into itself, done!",dir);
+      return new FileUtils.FileCopyResult(sourceFile);
+    }
+    final File[] files=sourceFile.listFiles();
+    if (files == null) {
+      throw new SegmentLoadingException("No files found in [%s]",sourceFile.getAbsolutePath());
+    }
+    final FileUtils.FileCopyResult result=new FileUtils.FileCopyResult(sourceFile);
+    for (    final File oldFile : files) {
+      if (oldFile.isDirectory()) {
+        log.info("[%s] is a child directory, skipping",oldFile.getAbsolutePath());
+        continue;
+      }
+      result.addFiles(FileUtils.retryCopy(Files.asByteSource(oldFile),new File(dir,oldFile.getName()),shouldRetryPredicate(),10).getFiles());
+    }
+    log.info("Coppied %d bytes from [%s] to [%s]",result.size(),sourceFile.getAbsolutePath(),dir.getAbsolutePath());
+    return result;
+  }
+  if (CompressionUtils.isZip(sourceFile.getName())) {
+    try {
+      final FileUtils.FileCopyResult result=CompressionUtils.unzip(Files.asByteSource(sourceFile),dir,shouldRetryPredicate(),false);
+      log.info("Unzipped %d bytes from [%s] to [%s]",result.size(),sourceFile.getAbsolutePath(),dir.getAbsolutePath());
+      return result;
+    }
+ catch (    IOException e) {
+      throw new SegmentLoadingException(e,"Unable to unzip file [%s]",sourceFile.getAbsolutePath());
+    }
+  }
+  if (CompressionUtils.isGz(sourceFile.getName())) {
+    final File outFile=new File(dir,CompressionUtils.getGzBaseName(sourceFile.getName()));
+    final FileUtils.FileCopyResult result=CompressionUtils.gunzip(Files.asByteSource(sourceFile),outFile,shouldRetryPredicate());
+    log.info("Gunzipped %d bytes from [%s] to [%s]",result.size(),sourceFile.getAbsolutePath(),outFile.getAbsolutePath());
+    return result;
+  }
+  throw new SegmentLoadingException("Do not know how to handle source [%s]",sourceFile.getAbsolutePath());
+}

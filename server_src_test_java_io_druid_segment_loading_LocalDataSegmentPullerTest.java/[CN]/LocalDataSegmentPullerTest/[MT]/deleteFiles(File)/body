@@ -1,0 +1,20 @@
+{
+  IOException ex=null;
+  for (  File file : files) {
+    if (file == null || !file.exists()) {
+      continue;
+    }
+    if (!file.delete()) {
+      IOException e=new IOException("Could not delete " + file.getAbsolutePath());
+      if (ex == null) {
+        ex=e;
+      }
+ else {
+        ex.addSuppressed(e);
+      }
+    }
+  }
+  if (ex != null) {
+    throw ex;
+  }
+}

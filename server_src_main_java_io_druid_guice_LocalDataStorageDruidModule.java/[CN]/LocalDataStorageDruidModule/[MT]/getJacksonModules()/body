@@ -1,0 +1,14 @@
+{
+  return ImmutableList.of(new com.fasterxml.jackson.databind.Module(){
+    @Override public String getModuleName(){
+      return "DruidLocalStorage-" + System.identityHashCode(this);
+    }
+    @Override public Version version(){
+      return Version.unknownVersion();
+    }
+    @Override public void setupModule(    SetupContext context){
+      context.registerSubtypes(LocalLoadSpec.class);
+    }
+  }
+);
+}
