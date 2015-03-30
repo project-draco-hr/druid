@@ -35,12 +35,12 @@
       return segment;
     }
   }
-,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }
   }
-,new DefaultObjectMapper())),new DefaultObjectMapper());
+)),new DefaultObjectMapper());
   tr=new ThreadPoolTaskRunner(tb,null);
   tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
   tq.start();
