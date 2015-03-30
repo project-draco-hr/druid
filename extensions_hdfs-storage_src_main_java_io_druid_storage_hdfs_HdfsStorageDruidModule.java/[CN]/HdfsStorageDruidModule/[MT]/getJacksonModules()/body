@@ -1,3 +1,14 @@
 {
-  return ImmutableList.of();
+  return ImmutableList.of(new Module(){
+    @Override public String getModuleName(){
+      return "DruidHDFSStorage-" + System.identityHashCode(this);
+    }
+    @Override public Version version(){
+      return Version.unknownVersion();
+    }
+    @Override public void setupModule(    SetupContext context){
+      context.registerSubtypes(HdfsLoadSpec.class);
+    }
+  }
+);
 }

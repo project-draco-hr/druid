@@ -13,12 +13,12 @@
 ,null,null,null,null,null),new TestRemoteTaskRunnerConfig(),cf,worker);
   workerCuratorCoordinator.start();
   final File tmp=Files.createTempDir();
-  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,0,null),null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
+  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,0,null),null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }
   }
-)),jsonMapper),null),new WorkerConfig().setCapacity(1));
+,jsonMapper)),jsonMapper),null),new WorkerConfig().setCapacity(1));
   jsonMapper.registerSubtypes(new NamedType(TestMergeTask.class,"test"));
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();

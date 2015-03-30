@@ -1,0 +1,27 @@
+{
+  final Path zipPath=new Path("/tmp/tmp2/test.txt");
+  final File outTmpDir=com.google.common.io.Files.createTempDir();
+  outTmpDir.deleteOnExit();
+  final File outFile=new File(outTmpDir,"test.txt");
+  outFile.delete();
+  final URI uri=URI.create(uriBase.toString() + "/tmp/tmp2");
+  try (final OutputStream outputStream=miniCluster.getFileSystem().create(zipPath)){
+    try (final InputStream inputStream=new ByteArrayInputStream(pathByteContents)){
+      ByteStreams.copy(inputStream,outputStream);
+    }
+   }
+   try {
+    Assert.assertFalse(outFile.exists());
+    puller.getSegmentFiles(uri,outTmpDir);
+    Assert.assertTrue(outFile.exists());
+    Assert.assertArrayEquals(pathByteContents,Files.readAllBytes(outFile.toPath()));
+  }
+  finally {
+    if (outFile.exists()) {
+      outFile.delete();
+    }
+    if (outTmpDir.exists()) {
+      outTmpDir.delete();
+    }
+  }
+}

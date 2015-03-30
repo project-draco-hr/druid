@@ -1,8 +1,8 @@
 {
   File expectedFile=temporaryFolder.newFile();
-  EasyMock.expect(mockOmniSegmentLoader.getSegmentFiles((DataSegment)EasyMock.anyObject())).andReturn(expectedFile).anyTimes();
-  EasyMock.expect(mockOmniSegmentLoader.withConfig((SegmentLoaderConfig)EasyMock.anyObject())).andReturn(mockOmniSegmentLoader).anyTimes();
-  EasyMock.replay(mockOmniSegmentLoader);
+  EasyMock.expect(mockSegmentLoaderLocalCacheManager.getSegmentFiles((DataSegment)EasyMock.anyObject())).andReturn(expectedFile).anyTimes();
+  EasyMock.expect(mockSegmentLoaderLocalCacheManager.withConfig((SegmentLoaderConfig)EasyMock.anyObject())).andReturn(mockSegmentLoaderLocalCacheManager).anyTimes();
+  EasyMock.replay(mockSegmentLoaderLocalCacheManager);
   DataSegment dataSegment=DataSegment.builder().dataSource("source").interval(new Interval("2012-01-01/P1D")).version("1").size(1).build();
   List<DataSegment> segments=ImmutableList.of(dataSegment);
   Map actualFetchedSegment=taskToolbox.build(task).fetchSegments(segments);
