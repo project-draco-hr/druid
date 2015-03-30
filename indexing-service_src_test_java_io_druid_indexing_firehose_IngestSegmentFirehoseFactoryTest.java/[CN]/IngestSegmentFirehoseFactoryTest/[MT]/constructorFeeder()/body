@@ -36,16 +36,6 @@
   }
 ;
   final LocalTaskActionClientFactory tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  final ObjectMapper objectMapper=new DefaultObjectMapper();
-  objectMapper.registerModule(new SimpleModule("testModule").registerSubtypes(LocalLoadSpec.class));
-  final GuiceAnnotationIntrospector guiceIntrospector=new GuiceAnnotationIntrospector();
-  objectMapper.setAnnotationIntrospectors(new AnnotationIntrospectorPair(guiceIntrospector,objectMapper.getSerializationConfig().getAnnotationIntrospector()),new AnnotationIntrospectorPair(guiceIntrospector,objectMapper.getDeserializationConfig().getAnnotationIntrospector()));
-  objectMapper.setInjectableValues(new GuiceInjectableValues(GuiceInjectors.makeStartupInjectorWithModules(ImmutableList.of(new Module(){
-    @Override public void configure(    Binder binder){
-      binder.bind(LocalDataSegmentPuller.class);
-    }
-  }
-))));
   final TaskToolboxFactory taskToolboxFactory=new TaskToolboxFactory(new TaskConfig(tmpDir.getAbsolutePath(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
@@ -71,12 +61,12 @@
       return segment;
     }
   }
-,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+,null,null,null,null,null,new SegmentLoaderFactory(new OmniSegmentLoader(ImmutableMap.<String,DataSegmentPuller>of("local",new LocalDataSegmentPuller()),null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }
   }
-,objectMapper)),objectMapper);
+)),new DefaultObjectMapper());
   Collection<Object[]> values=new LinkedList<>();
   for (  InputRowParser parser : Arrays.<InputRowParser>asList(ROW_PARSER,new MapInputRowParser(new JSONParseSpec(new TimestampSpec(TIME_COLUMN,"auto"),new DimensionsSpec(ImmutableList.<String>of(),ImmutableList.of(DIM_FLOAT_NAME,DIM_LONG_NAME),ImmutableList.<SpatialDimensionSchema>of()))))) {
     for (    List<String> dim_names : Arrays.<List<String>>asList(null,ImmutableList.of(DIM_NAME))) {

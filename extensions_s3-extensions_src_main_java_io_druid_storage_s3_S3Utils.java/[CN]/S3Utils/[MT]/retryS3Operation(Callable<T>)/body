@@ -1,4 +1,20 @@
 {
+  final Predicate<Throwable> shouldRetry=new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable e){
+      if (e instanceof IOException) {
+        return true;
+      }
+ else       if (e instanceof ServiceException) {
+        final boolean isIOException=e.getCause() instanceof IOException;
+        final boolean isTimeout="RequestTimeout".equals(((ServiceException)e).getErrorCode());
+        return isIOException || isTimeout;
+      }
+ else {
+        return false;
+      }
+    }
+  }
+;
   final int maxTries=10;
-  return RetryUtils.retry(f,S3RETRY,maxTries);
+  return RetryUtils.retry(f,shouldRetry,maxTries);
 }

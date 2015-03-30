@@ -1,0 +1,8 @@
+{
+  String type=MapUtils.getString(loadSpec,"type");
+  DataSegmentPuller loader=pullers.get(type);
+  if (loader == null) {
+    throw new SegmentLoadingException("Unknown loader type[%s].  Known types are %s",type,pullers.keySet());
+  }
+  return loader;
+}

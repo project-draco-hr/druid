@@ -1,3 +1,55 @@
 {
-  getSegmentFiles(new S3Coords(segment),outDir);
+  final S3Coords s3Coords=new S3Coords(segment);
+  log.info("Pulling index at path[%s] to outDir[%s]",s3Coords,outDir);
+  if (!isObjectInBucket(s3Coords)) {
+    throw new SegmentLoadingException("IndexFile[%s] does not exist.",s3Coords);
+  }
+  if (!outDir.exists()) {
+    outDir.mkdirs();
+  }
+  if (!outDir.isDirectory()) {
+    throw new ISE("outDir[%s] must be a directory.",outDir);
+  }
+  try {
+    S3Utils.retryS3Operation(new Callable<Void>(){
+      @Override public Void call() throws Exception {
+        long startTime=System.currentTimeMillis();
+        S3Object s3Obj=null;
+        try {
+          s3Obj=s3Client.getObject(s3Coords.bucket,s3Coords.path);
+          try (InputStream in=s3Obj.getDataInputStream()){
+            final String key=s3Obj.getKey();
+            if (key.endsWith(".zip")) {
+              CompressionUtils.unzip(in,outDir);
+            }
+ else             if (key.endsWith(".gz")) {
+              final File outFile=new File(outDir,toFilename(key,".gz"));
+              ByteStreams.copy(new GZIPInputStream(in),Files.newOutputStreamSupplier(outFile));
+            }
+ else {
+              ByteStreams.copy(in,Files.newOutputStreamSupplier(new File(outDir,toFilename(key,""))));
+            }
+            log.info("Pull of file[%s/%s] completed in %,d millis",s3Obj.getBucketName(),s3Obj.getKey(),System.currentTimeMillis() - startTime);
+            return null;
+          }
+ catch (          IOException e) {
+            throw new IOException(String.format("Problem decompressing object[%s]",s3Obj),e);
+          }
+        }
+  finally {
+          S3Utils.closeStreamsQuietly(s3Obj);
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    try {
+      FileUtils.deleteDirectory(outDir);
+    }
+ catch (    IOException ioe) {
+      log.warn(ioe,"Failed to remove output directory for segment[%s] after exception: %s",segment.getIdentifier(),outDir);
+    }
+    throw new SegmentLoadingException(e,e.getMessage());
+  }
 }
