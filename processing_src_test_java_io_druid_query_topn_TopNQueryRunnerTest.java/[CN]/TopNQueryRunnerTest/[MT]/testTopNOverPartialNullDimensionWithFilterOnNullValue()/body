@@ -1,0 +1,10 @@
+{
+  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).dimension("partial_null_column").metric(QueryRunnerTestHelper.uniqueMetric).filters(new SelectorDimFilter("partial_null_column",null)).threshold(1000).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).build();
+  Map<String,Object> map=Maps.newHashMap();
+  map.put("partial_null_column",null);
+  map.put("rows",22L);
+  map.put("index",7583.691513061523D);
+  map.put("uniques",QueryRunnerTestHelper.UNIQUES_9);
+  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.asList(map))));
+  TestHelper.assertExpectedResults(expectedResults,runner.run(query,new HashMap<String,Object>()));
+}

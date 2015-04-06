@@ -50,8 +50,8 @@
                   return nextMap2Bits < (1L << maps.size());
                 }
                 @Override public Object[] next(){
-                  final BitSet bitset2=BitSet.valueOf(new long[]{nextMap2Bits++});
-                  return new Object[]{maplist1,filterByBitset(maps,bitset2),nextMap2Bits == nextMap1Bits ? null : SegmentValidationException.class};
+                  final List<Map<String,Object>> maplist2=filterByBitset(maps,BitSet.valueOf(new long[]{nextMap2Bits++}));
+                  return new Object[]{maplist1,maplist2,filterNullValues(maplist1).equals(filterNullValues(maplist2)) ? null : SegmentValidationException.class};
                 }
                 @Override public void remove(){
                   throw new UOE("remove not supported");

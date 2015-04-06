@@ -18,7 +18,7 @@
   metricIndexes=metricIndexesBuilder.build();
   metricTypes=metricTypesBuilder.build();
   this.dimensionOrder=Maps.newLinkedHashMap();
-  this.dimensions=new CopyOnWriteArrayList<>();
+  this.dimensions=new CopyOnWriteArrayList<>(incrementalIndexSchema.getDimensionsSpec().getDimensions());
   List<SpatialDimensionSchema> spatialDimensions=incrementalIndexSchema.getDimensionsSpec().getSpatialDimensions();
   if (!spatialDimensions.isEmpty()) {
     this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
@@ -39,10 +39,13 @@
     capabilities.setType(type);
     columnCapabilities.put(entry.getKey(),capabilities);
   }
+  this.dimValues=new DimensionHolder();
   for (  String dimension : dimensions) {
     ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
     capabilities.setType(ValueType.STRING);
     columnCapabilities.put(dimension,capabilities);
+    dimensionOrder.put(dimension,dimensionOrder.size());
+    dimValues.add(dimension);
   }
   for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
     ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
@@ -50,5 +53,4 @@
     capabilities.setHasSpatialIndexes(true);
     columnCapabilities.put(spatialDimension.getDimName(),capabilities);
   }
-  this.dimValues=new DimensionHolder();
 }
