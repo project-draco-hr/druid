@@ -17,7 +17,9 @@ synchronized (lock) {
 synchronized (lock) {
             try {
               if (currentlyProcessing == null) {
-                log.makeAlert("Crazy race condition! server[%s]",basePath).emit();
+                if (!stopped) {
+                  log.makeAlert("Crazy race condition! server[%s]",basePath).emit();
+                }
                 actionCompleted();
                 doNext();
                 return;
