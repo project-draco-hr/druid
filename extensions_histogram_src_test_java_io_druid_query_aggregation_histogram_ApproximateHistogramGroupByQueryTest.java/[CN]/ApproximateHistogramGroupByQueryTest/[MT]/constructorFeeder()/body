@@ -21,9 +21,9 @@
   final Supplier<GroupByQueryConfig> singleThreadedConfigSupplier=Suppliers.ofInstance(singleThreadedConfig);
   final GroupByQueryEngine singleThreadEngine=new GroupByQueryEngine(singleThreadedConfigSupplier,pool);
   final GroupByQueryRunnerFactory singleThreadFactory=new GroupByQueryRunnerFactory(singleThreadEngine,QueryRunnerTestHelper.NOOP_QUERYWATCHER,singleThreadedConfigSupplier,new GroupByQueryQueryToolChest(singleThreadedConfigSupplier,mapper,singleThreadEngine,pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),pool);
-  Function<Object,Object> function=new Function<Object,Object>(){
-    @Override public Object apply(    @Nullable Object input){
-      return new Object[]{factory,((Object[])input)[0]};
+  final Function<Object,Object[]> function=new Function<Object,Object[]>(){
+    @Override public Object[] apply(    @Nullable Object input){
+      return new Object[]{factory,input};
     }
   }
 ;

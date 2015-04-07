@@ -1,0 +1,37 @@
+{
+  final Set<String> optimizedDims=ImmutableSet.copyOf(Iterables.transform(extractionsToRewrite(query),new Function<DimensionSpec,String>(){
+    @Override public String apply(    DimensionSpec input){
+      return input.getOutputName();
+    }
+  }
+));
+  final Function<Row,Row> preCompute=makePreComputeManipulatorFn(query,fn);
+  if (optimizedDims.isEmpty()) {
+    return preCompute;
+  }
+  final Map<String,ExtractionFn> extractionFnMap=new HashMap<>();
+  for (  DimensionSpec dimensionSpec : query.getDimensions()) {
+    final String dimension=dimensionSpec.getOutputName();
+    if (optimizedDims.contains(dimension)) {
+      extractionFnMap.put(dimension,dimensionSpec.getExtractionFn());
+    }
+  }
+  return new Function<Row,Row>(){
+    @Nullable @Override public Row apply(    Row input){
+      Row preRow=preCompute.apply(input);
+      if (preRow instanceof MapBasedRow) {
+        MapBasedRow preMapRow=(MapBasedRow)preRow;
+        Map<String,Object> event=Maps.newHashMap(preMapRow.getEvent());
+        for (        String dim : optimizedDims) {
+          final Object eventVal=event.get(dim);
+          event.put(dim,extractionFnMap.get(dim).apply(eventVal));
+        }
+        return new MapBasedRow(preMapRow.getTimestamp(),event);
+      }
+ else {
+        return preRow;
+      }
+    }
+  }
+;
+}

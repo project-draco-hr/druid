@@ -1,0 +1,21 @@
+{
+  try {
+    final ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+    for (    Map.Entry<String,String> entry : map.entrySet()) {
+      final String key=entry.getKey();
+      final String val=entry.getValue();
+      if (!Strings.isNullOrEmpty(key)) {
+        outputStream.write(StringUtils.toUtf8(key));
+      }
+      outputStream.write((byte)0xFF);
+      if (!Strings.isNullOrEmpty(val)) {
+        outputStream.write(StringUtils.toUtf8(val));
+      }
+      outputStream.write((byte)0xFF);
+    }
+    return outputStream.toByteArray();
+  }
+ catch (  IOException ex) {
+    throw Throwables.propagate(ex);
+  }
+}

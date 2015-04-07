@@ -1,5 +1,5 @@
 {
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).dimension("partial_null_column").metric(QueryRunnerTestHelper.uniqueMetric).filters(new SelectorDimFilter("partial_null_column","value")).threshold(1000).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).build();
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.asList(ImmutableMap.<String,Object>of("partial_null_column","value","rows",4L,"index",4875.669677734375D,"uniques",QueryRunnerTestHelper.UNIQUES_2)))));
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query,new HashMap<String,Object>()));
+  assertExpectedResults(expectedResults,query);
 }

@@ -1,6 +1,5 @@
 {
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.marketDimension,"upfront").dimension(QueryRunnerTestHelper.marketDimension).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of(QueryRunnerTestHelper.marketDimension,"upfront","rows",4L,"index",4875.669677734375D,"addRowsIndexConstant",4880.669677734375D,"uniques",QueryRunnerTestHelper.UNIQUES_2)))));
-  HashMap<String,Object> context=new HashMap<String,Object>();
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+  assertExpectedResults(expectedResults,query);
 }
