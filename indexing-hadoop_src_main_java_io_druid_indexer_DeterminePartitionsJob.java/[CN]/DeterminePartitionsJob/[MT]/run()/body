@@ -4,7 +4,7 @@
       throw new ISE("DeterminePartitionsJob can only be run for SingleDimensionPartitionsSpec, partitionSpec found [%s]",config.getPartitionsSpec());
     }
     if (!config.getPartitionsSpec().isAssumeGrouped()) {
-      final Job groupByJob=new Job(new Configuration(),String.format("%s-determine_partitions_groupby-%s",config.getDataSource(),config.getIntervals()));
+      final Job groupByJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_groupby-%s",config.getDataSource(),config.getIntervals()));
       JobHelper.injectSystemProperties(groupByJob);
       JobHelper.setInputFormat(groupByJob,config);
       groupByJob.setMapperClass(DeterminePartitionsGroupByMapper.class);
@@ -30,7 +30,7 @@
  else {
       log.info("Skipping group-by job.");
     }
-    final Job dimSelectionJob=new Job(new Configuration(),String.format("%s-determine_partitions_dimselection-%s",config.getDataSource(),config.getIntervals()));
+    final Job dimSelectionJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_dimselection-%s",config.getDataSource(),config.getIntervals()));
     dimSelectionJob.getConfiguration().set("io.sort.record.percent","0.19");
     JobHelper.injectSystemProperties(dimSelectionJob);
     if (!config.getPartitionsSpec().isAssumeGrouped()) {

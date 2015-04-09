@@ -1,6 +1,6 @@
 {
   try {
-    Job job=new Job(new Configuration(),String.format("%s-determine_partitions-%s",config.getDataSource(),config.getIntervals()));
+    Job job=Job.getInstance(new Configuration(),String.format("%s-determine_partitions-%s",config.getDataSource(),config.getIntervals()));
     job.getConfiguration().set("io.sort.record.percent","0.19");
     injectSystemProperties(job);
     config.addInputPaths(job);
