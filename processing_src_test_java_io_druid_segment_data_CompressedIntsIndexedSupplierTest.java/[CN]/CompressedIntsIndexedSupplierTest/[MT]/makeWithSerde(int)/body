@@ -1,0 +1,10 @@
+{
+  CloseQuietly.close(indexed);
+  ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  final CompressedIntsIndexedSupplier theSupplier=CompressedIntsIndexedSupplier.fromIntBuffer(IntBuffer.wrap(vals),chunkSize,ByteOrder.nativeOrder(),compressionStrategy);
+  theSupplier.writeToChannel(Channels.newChannel(baos));
+  final byte[] bytes=baos.toByteArray();
+  Assert.assertEquals(theSupplier.getSerializedSize(),bytes.length);
+  supplier=CompressedIntsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(bytes),ByteOrder.nativeOrder());
+  indexed=supplier.get();
+}

@@ -1,0 +1,31 @@
+{
+  Preconditions.checkArgument(chunkFactor <= MAX_INTS_IN_BUFFER,"Chunks must be <= 64k bytes. chunkFactor was[%s]",chunkFactor);
+  return new CompressedIntsIndexedSupplier(list.size(),chunkFactor,GenericIndexed.fromIterable(new Iterable<ResourceHolder<IntBuffer>>(){
+    @Override public Iterator<ResourceHolder<IntBuffer>> iterator(){
+      return new Iterator<ResourceHolder<IntBuffer>>(){
+        int position=0;
+        @Override public boolean hasNext(){
+          return position < list.size();
+        }
+        @Override public ResourceHolder<IntBuffer> next(){
+          IntBuffer retVal=IntBuffer.allocate(chunkFactor);
+          if (chunkFactor > list.size() - position) {
+            retVal.limit(list.size() - position);
+          }
+          final List<Integer> ints=list.subList(position,position + retVal.remaining());
+          for (          int value : ints) {
+            retVal.put(value);
+          }
+          retVal.rewind();
+          position+=retVal.remaining();
+          return StupidResourceHolder.create(retVal);
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
+    }
+  }
+,CompressedIntBufferObjectStrategy.getBufferForOrder(byteOrder,compression,chunkFactor)),compression);
+}
