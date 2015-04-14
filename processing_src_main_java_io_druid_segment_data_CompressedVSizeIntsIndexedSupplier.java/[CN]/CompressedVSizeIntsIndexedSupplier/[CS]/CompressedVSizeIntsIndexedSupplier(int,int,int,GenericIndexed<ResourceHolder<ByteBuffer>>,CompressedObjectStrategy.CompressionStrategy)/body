@@ -1,0 +1,10 @@
+{
+  Preconditions.checkArgument(sizePer == (1 << Integer.numberOfTrailingZeros(sizePer)),"Number of entries per chunk must be a power of 2");
+  this.totalSize=totalSize;
+  this.sizePer=sizePer;
+  this.baseBuffers=baseBuffers;
+  this.compression=compression;
+  this.numBytes=numBytes;
+  this.bigEndianShift=Integer.SIZE - (numBytes << 3);
+  this.littleEndianMask=(int)((1L << (numBytes << 3)) - 1);
+}

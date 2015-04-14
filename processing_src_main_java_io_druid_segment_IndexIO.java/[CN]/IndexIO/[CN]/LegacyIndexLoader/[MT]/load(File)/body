@@ -2,7 +2,7 @@
   MMappedIndex index=legacyHandler.mapDir(inDir);
   Map<String,Column> columns=Maps.newHashMap();
   for (  String dimension : index.getAvailableDimensions()) {
-    ColumnBuilder builder=new ColumnBuilder().setType(ValueType.STRING).setHasMultipleValues(true).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(index.getDimValueLookup(dimension),null,index.getDimColumn(dimension),columnConfig.columnCacheSizeBytes())).setBitmapIndex(new BitmapIndexColumnPartSupplier(new ConciseBitmapFactory(),index.getBitmapIndexes().get(dimension),index.getDimValueLookup(dimension)));
+    ColumnBuilder builder=new ColumnBuilder().setType(ValueType.STRING).setHasMultipleValues(true).setDictionaryEncodedColumn(new DictionaryEncodedColumnSupplier(index.getDimValueLookup(dimension),null,Suppliers.<IndexedMultivalue<IndexedInts>>ofInstance(index.getDimColumn(dimension)),columnConfig.columnCacheSizeBytes())).setBitmapIndex(new BitmapIndexColumnPartSupplier(new ConciseBitmapFactory(),index.getBitmapIndexes().get(dimension),index.getDimValueLookup(dimension)));
     if (index.getSpatialIndexes().get(dimension) != null) {
       builder.setSpatialIndex(new SpatialIndexColumnPartSupplier(index.getSpatialIndexes().get(dimension)));
     }

@@ -1,4 +1,5 @@
 {
+  final IndexSpec indexSpec=new IndexSpec();
   final HeapMemoryTaskStorage ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
   }
 );
@@ -10,7 +11,7 @@
   if (!persistDir.mkdirs() && !persistDir.exists()) {
     throw new IOException(String.format("Could not create directory at [%s]",persistDir.getAbsolutePath()));
   }
-  IndexMerger.persist(index,persistDir);
+  IndexMerger.persist(index,persistDir,indexSpec);
   final TaskLockbox tl=new TaskLockbox(ts);
   final IndexerSQLMetadataStorageCoordinator mdc=new IndexerSQLMetadataStorageCoordinator(null,null,null){
     final private Set<DataSegment> published=Sets.newHashSet();

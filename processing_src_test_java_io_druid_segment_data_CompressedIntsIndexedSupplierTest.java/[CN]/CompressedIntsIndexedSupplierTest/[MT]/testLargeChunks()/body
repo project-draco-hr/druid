@@ -1,0 +1,12 @@
+{
+  final int maxChunkSize=CompressedPools.BUFFER_SIZE / Longs.BYTES;
+  setupLargeChunks(maxChunkSize,10 * maxChunkSize);
+  Assert.assertEquals(10,supplier.getBaseIntBuffers().size());
+  assertIndexMatchesVals();
+  setupLargeChunks(maxChunkSize,10 * maxChunkSize + 1);
+  Assert.assertEquals(11,supplier.getBaseIntBuffers().size());
+  assertIndexMatchesVals();
+  setupLargeChunks(maxChunkSize - 1,10 * (maxChunkSize - 1) + 1);
+  Assert.assertEquals(11,supplier.getBaseIntBuffers().size());
+  assertIndexMatchesVals();
+}

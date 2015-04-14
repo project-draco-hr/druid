@@ -1,5 +1,5 @@
 {
-  final AppendTask task=new AppendTask(null,"foo",ImmutableList.of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()));
+  final AppendTask task=new AppendTask(null,"foo",ImmutableList.of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()),indexSpec);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final AppendTask task2=(AppendTask)jsonMapper.readValue(json,Task.class);

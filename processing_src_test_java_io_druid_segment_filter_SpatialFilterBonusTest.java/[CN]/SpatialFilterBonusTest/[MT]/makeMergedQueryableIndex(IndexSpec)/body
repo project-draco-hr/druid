@@ -1,0 +1,39 @@
+{
+  try {
+    IncrementalIndex first=new OnheapIncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),false,NUM_POINTS);
+    IncrementalIndex second=new OnheapIncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),false,NUM_POINTS);
+    IncrementalIndex third=new OnheapIncrementalIndex(new IncrementalIndexSchema.Builder().withMinTimestamp(DATA_INTERVAL.getStartMillis()).withQueryGranularity(QueryGranularity.DAY).withMetrics(METRIC_AGGS).withDimensionsSpec(new DimensionsSpec(null,null,Arrays.asList(new SpatialDimensionSchema("dim.geo",Lists.<String>newArrayList())))).build(),false,NUM_POINTS);
+    first.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","foo","dim.geo","0.0,0.0","val",17l)));
+    first.add(new MapBasedInputRow(new DateTime("2013-01-02").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-02").toString(),"dim","foo","dim.geo","1.0,3.0","val",29l)));
+    first.add(new MapBasedInputRow(new DateTime("2013-01-03").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-03").toString(),"dim","foo","dim.geo","4.0,2.0","val",13l)));
+    first.add(new MapBasedInputRow(new DateTime("2013-01-05").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-05").toString(),"dim","foo","dim.geo","_mmx.unknown","val",501l)));
+    second.add(new MapBasedInputRow(new DateTime("2013-01-04").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-04").toString(),"dim","foo","dim.geo","7.0,3.0","val",91l)));
+    second.add(new MapBasedInputRow(new DateTime("2013-01-05").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-05").toString(),"dim","foo","dim.geo","8.0,6.0","val",47l)));
+    Random rand=new Random();
+    for (int i=6; i < NUM_POINTS; i++) {
+      third.add(new MapBasedInputRow(new DateTime("2013-01-01").getMillis(),DIMS,ImmutableMap.<String,Object>of("timestamp",new DateTime("2013-01-01").toString(),"dim","boo","dim.geo",String.format("%s,%s",(float)(rand.nextFloat() * 10 + 10.0),(float)(rand.nextFloat() * 10 + 10.0)),"val",i)));
+    }
+    File tmpFile=File.createTempFile("yay","who");
+    tmpFile.delete();
+    File firstFile=new File(tmpFile,"first");
+    File secondFile=new File(tmpFile,"second");
+    File thirdFile=new File(tmpFile,"third");
+    File mergedFile=new File(tmpFile,"merged");
+    firstFile.mkdirs();
+    firstFile.deleteOnExit();
+    secondFile.mkdirs();
+    secondFile.deleteOnExit();
+    thirdFile.mkdirs();
+    thirdFile.deleteOnExit();
+    mergedFile.mkdirs();
+    mergedFile.deleteOnExit();
+    IndexMerger.persist(first,DATA_INTERVAL,firstFile,indexSpec);
+    IndexMerger.persist(second,DATA_INTERVAL,secondFile,indexSpec);
+    IndexMerger.persist(third,DATA_INTERVAL,thirdFile,indexSpec);
+    QueryableIndex mergedRealtime=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(firstFile),IndexIO.loadIndex(secondFile),IndexIO.loadIndex(thirdFile)),METRIC_AGGS,mergedFile,indexSpec));
+    return mergedRealtime;
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

@@ -1,0 +1,17 @@
+{
+  super(order,new BufferConverter<IntBuffer>(){
+    @Override public IntBuffer convert(    ByteBuffer buf){
+      return buf.asIntBuffer();
+    }
+    @Override public int compare(    IntBuffer lhs,    IntBuffer rhs){
+      return ORDERING.compare(lhs,rhs);
+    }
+    @Override public int sizeOf(    int count){
+      return count * Ints.BYTES;
+    }
+    @Override public IntBuffer combine(    ByteBuffer into,    IntBuffer from){
+      return into.asIntBuffer().put(from);
+    }
+  }
+,compression,sizePer);
+}

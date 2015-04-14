@@ -5,7 +5,7 @@
       @Override public Task apply(      DataSegment segment){
         final Integer segmentVersion=segment.getBinaryVersion();
         if (!CURR_VERSION_INTEGER.equals(segmentVersion)) {
-          return new SubTask(getGroupId(),segment);
+          return new SubTask(getGroupId(),segment,indexSpec);
         }
         log.info("Skipping[%s], already version[%s]",segment.getIdentifier(),segmentVersion);
         return null;
@@ -21,7 +21,7 @@
   }
  else {
     log.info("I'm in a subless mood.");
-    convertSegment(toolbox,segment);
+    convertSegment(toolbox,segment,indexSpec);
   }
   return success();
 }

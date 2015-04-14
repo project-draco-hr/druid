@@ -1,0 +1,52 @@
+{
+  final String section=String.format("make column[%s]",metric);
+  progress.startSection(section);
+  final ColumnDescriptor.Builder metBuilder=ColumnDescriptor.builder();
+  ValueType type=valueTypes.get(metric);
+switch (type) {
+case FLOAT:
+{
+      metBuilder.setValueType(ValueType.FLOAT);
+      float[] arr=new float[rowCount];
+      int rowNum=0;
+      for (      Rowboat theRow : theRows) {
+        Object obj=theRow.getMetrics()[metricIndex];
+        arr[rowNum++]=(obj == null) ? 0 : ((Number)obj).floatValue();
+      }
+      CompressedFloatsIndexedSupplier compressedFloats=CompressedFloatsIndexedSupplier.fromFloatBuffer(FloatBuffer.wrap(arr),IndexIO.BYTE_ORDER,compressionStrategy);
+      writeColumn(v9Smoosher,new FloatGenericColumnPartSerde(compressedFloats,IndexIO.BYTE_ORDER),metBuilder,metric);
+      break;
+    }
+case LONG:
+{
+    metBuilder.setValueType(ValueType.LONG);
+    long[] arr=new long[rowCount];
+    int rowNum=0;
+    for (    Rowboat theRow : theRows) {
+      Object obj=theRow.getMetrics()[metricIndex];
+      arr[rowNum++]=(obj == null) ? 0 : ((Number)obj).longValue();
+    }
+    CompressedLongsIndexedSupplier compressedLongs=CompressedLongsIndexedSupplier.fromLongBuffer(LongBuffer.wrap(arr),IndexIO.BYTE_ORDER,compressionStrategy);
+    writeColumn(v9Smoosher,new LongGenericColumnPartSerde(compressedLongs,IndexIO.BYTE_ORDER),metBuilder,metric);
+    break;
+  }
+case COMPLEX:
+String complexType=metricTypeNames.get(metric);
+ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(complexType);
+if (serde == null) {
+throw new ISE("Unknown type[%s]",complexType);
+}
+final GenericIndexed metricColumn=GenericIndexed.fromIterable(Iterables.transform(theRows,new Function<Rowboat,Object>(){
+@Override public Object apply(Rowboat input){
+return input.getMetrics()[metricIndex];
+}
+}
+),serde.getObjectStrategy());
+metBuilder.setValueType(ValueType.COMPLEX);
+writeColumn(v9Smoosher,new ComplexColumnPartSerde(metricColumn,complexType),metBuilder,metric);
+break;
+default :
+throw new ISE("Unknown type[%s]",type);
+}
+progress.stopSection(section);
+}

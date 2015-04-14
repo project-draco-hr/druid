@@ -1,0 +1,10 @@
+{
+  byte versionFromBuffer=buffer.get();
+  if (versionFromBuffer == version) {
+    final int totalSize=buffer.getInt();
+    final int sizePer=buffer.getInt();
+    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.forId(buffer.get());
+    return new CompressedIntsIndexedSupplier(totalSize,sizePer,GenericIndexed.read(buffer,CompressedIntBufferObjectStrategy.getBufferForOrder(order,compression,sizePer)),compression);
+  }
+  throw new IAE("Unknown version[%s]",versionFromBuffer);
+}

@@ -1,0 +1,15 @@
+{
+  final Iterable<CompressedObjectStrategy.CompressionStrategy> compressionStrategies=Iterables.transform(CompressionStrategyTest.compressionStrategies(),new Function<Object[],CompressedObjectStrategy.CompressionStrategy>(){
+    @Override public CompressedObjectStrategy.CompressionStrategy apply(    Object[] input){
+      return (CompressedObjectStrategy.CompressionStrategy)input[0];
+    }
+  }
+);
+  Set<List<Object>> combinations=Sets.cartesianProduct(Sets.newHashSet(compressionStrategies),Sets.newHashSet(ByteOrder.BIG_ENDIAN,ByteOrder.LITTLE_ENDIAN));
+  return Iterables.transform(combinations,new Function<List,Object[]>(){
+    @Override public Object[] apply(    List input){
+      return new Object[]{input.get(0),input.get(1)};
+    }
+  }
+);
+}

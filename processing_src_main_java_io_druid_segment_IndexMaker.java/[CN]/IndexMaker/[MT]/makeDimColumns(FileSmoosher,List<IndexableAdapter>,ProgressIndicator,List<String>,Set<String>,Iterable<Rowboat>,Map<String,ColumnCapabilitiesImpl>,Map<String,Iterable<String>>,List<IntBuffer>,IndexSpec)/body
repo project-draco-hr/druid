@@ -1,0 +1,14 @@
+{
+  final String dimSection="make dimension columns";
+  progress.startSection(dimSection);
+  int dimIndex=0;
+  for (  String dimension : mergedDimensions) {
+    if (skippedDimensions.contains(dimension)) {
+      dimIndex++;
+      continue;
+    }
+    makeDimColumn(v9Smoosher,adapters,progress,theRows,dimIndex,dimension,columnCapabilities,dimensionValuesLookup,rowNumConversions,indexSpec.getBitmapSerdeFactory(),indexSpec.getDimensionCompressionStrategy());
+    dimIndex++;
+  }
+  progress.stopSection(dimSection);
+}

@@ -20,7 +20,7 @@ synchronized (log) {
       File mergedFile=new File(tmpFile,"merged");
       mergedFile.mkdirs();
       mergedFile.deleteOnExit();
-      QueryableIndex index=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(rowPersistedIndexes.get(index1),rowPersistedIndexes.get(index2)),METRIC_AGGS,mergedFile));
+      QueryableIndex index=IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(rowPersistedIndexes.get(index1),rowPersistedIndexes.get(index2)),METRIC_AGGS,mergedFile,indexSpec));
       entry.put(index2,index);
       return index;
     }

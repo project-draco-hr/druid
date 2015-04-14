@@ -1,0 +1,8 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String json="{ \"dimensionCompression\" : \"uncompressed\" }";
+  final IndexSpec spec=objectMapper.readValue(json,IndexSpec.class);
+  Assert.assertEquals(IndexSpec.UNCOMPRESSED,spec.getDimensionCompression());
+  Assert.assertEquals(null,spec.getDimensionCompressionStrategy());
+  Assert.assertEquals(spec,objectMapper.readValue(objectMapper.writeValueAsBytes(spec),IndexSpec.class));
+}

@@ -1,0 +1,44 @@
+{
+  final int numBytes=VSizeIndexedInts.getNumBytesForMax(maxValue);
+  final int chunkBytes=chunkFactor * numBytes + bufferPadding(numBytes);
+  Preconditions.checkArgument(chunkFactor <= maxIntsInBufferForBytes(numBytes),"Chunks must be <= 64k bytes. chunkFactor was[%s]",chunkFactor);
+  return new CompressedVSizeIntsIndexedSupplier(list.size(),chunkFactor,numBytes,GenericIndexed.fromIterable(new Iterable<ResourceHolder<ByteBuffer>>(){
+    @Override public Iterator<ResourceHolder<ByteBuffer>> iterator(){
+      return new Iterator<ResourceHolder<ByteBuffer>>(){
+        int position=0;
+        @Override public boolean hasNext(){
+          return position < list.size();
+        }
+        @Override public ResourceHolder<ByteBuffer> next(){
+          ByteBuffer retVal=ByteBuffer.allocate(chunkBytes).order(byteOrder);
+          if (chunkFactor > list.size() - position) {
+            retVal.limit((list.size() - position) * numBytes);
+          }
+ else {
+            retVal.limit(chunkFactor * numBytes);
+          }
+          final List<Integer> ints=list.subList(position,position + retVal.remaining() / numBytes);
+          final ByteBuffer buf=ByteBuffer.allocate(Ints.BYTES).order(byteOrder);
+          final boolean bigEndian=byteOrder.equals(ByteOrder.BIG_ENDIAN);
+          for (          int value : ints) {
+            buf.putInt(0,value);
+            if (bigEndian) {
+              retVal.put(buf.array(),Ints.BYTES - numBytes,numBytes);
+            }
+ else {
+              retVal.put(buf.array(),0,numBytes);
+            }
+          }
+          retVal.rewind();
+          position+=retVal.remaining() / numBytes;
+          return StupidResourceHolder.create(retVal);
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
+    }
+  }
+,CompressedByteBufferObjectStrategy.getBufferForOrder(byteOrder,compression,chunkBytes)),compression);
+}

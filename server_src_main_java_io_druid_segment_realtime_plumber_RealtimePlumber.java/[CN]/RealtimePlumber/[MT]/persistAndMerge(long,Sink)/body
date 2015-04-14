@@ -40,10 +40,10 @@ synchronized (hydrant) {
         }
         final File mergedFile;
         if (config.isPersistInHeap()) {
-          mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+          mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
  else {
-          mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget);
+          mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));

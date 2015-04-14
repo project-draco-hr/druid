@@ -1,0 +1,12 @@
+{
+  for (  int maxValue : MAX_VALUES) {
+    final int maxChunkSize=CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForValue(maxValue);
+    try {
+      setupLargeChunks(maxChunkSize + 1,10 * (maxChunkSize + 1),maxValue);
+      Assert.fail();
+    }
+ catch (    IllegalArgumentException e) {
+      Assert.assertTrue("chunk too big for maxValue " + maxValue,true);
+    }
+  }
+}
