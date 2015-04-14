@@ -1,0 +1,17 @@
+{
+  for (  int maxValue : MAX_VALUES) {
+    final int maxChunkSize=CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForValue(maxValue);
+    setupLargeChunks(maxChunkSize,10 * maxChunkSize,maxValue);
+    Assert.assertEquals(10,supplier.getBaseBuffers().size());
+    assertIndexMatchesVals();
+    setupLargeChunks(maxChunkSize,10 * maxChunkSize + 1,maxValue);
+    Assert.assertEquals(11,supplier.getBaseBuffers().size());
+    assertIndexMatchesVals();
+    setupLargeChunks(1,0xFFFF,maxValue);
+    Assert.assertEquals(0xFFFF,supplier.getBaseBuffers().size());
+    assertIndexMatchesVals();
+    setupLargeChunks(maxChunkSize / 2,10 * (maxChunkSize / 2) + 1,maxValue);
+    Assert.assertEquals(11,supplier.getBaseBuffers().size());
+    assertIndexMatchesVals();
+  }
+}

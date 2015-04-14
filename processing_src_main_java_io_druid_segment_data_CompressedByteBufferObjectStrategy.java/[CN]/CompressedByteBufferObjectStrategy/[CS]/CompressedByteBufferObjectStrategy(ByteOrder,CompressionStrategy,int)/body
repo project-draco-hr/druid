@@ -1,0 +1,17 @@
+{
+  super(order,new BufferConverter<ByteBuffer>(){
+    @Override public ByteBuffer convert(    ByteBuffer buf){
+      return buf;
+    }
+    @Override public int compare(    ByteBuffer lhs,    ByteBuffer rhs){
+      return ORDERING.compare(lhs,rhs);
+    }
+    @Override public int sizeOf(    int count){
+      return count;
+    }
+    @Override public ByteBuffer combine(    ByteBuffer into,    ByteBuffer from){
+      return into.put(from);
+    }
+  }
+,compression,sizePer);
+}

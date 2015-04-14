@@ -1,0 +1,12 @@
+{
+  byte versionFromBuffer=buffer.get();
+  if (versionFromBuffer == version) {
+    final int numBytes=buffer.get();
+    final int totalSize=buffer.getInt();
+    final int sizePer=buffer.getInt();
+    final int chunkBytes=sizePer * numBytes + bufferPadding(numBytes);
+    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.forId(buffer.get());
+    return new CompressedVSizeIntsIndexedSupplier(totalSize,sizePer,numBytes,GenericIndexed.read(buffer,CompressedByteBufferObjectStrategy.getBufferForOrder(order,compression,chunkBytes)),compression);
+  }
+  throw new IAE("Unknown version[%s]",versionFromBuffer);
+}

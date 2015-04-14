@@ -1,0 +1,15 @@
+{
+  Assert.assertEquals(vals.length,indexed.size());
+  int[] indices=new int[vals.length];
+  for (int i=0; i < indexed.size(); ++i) {
+    final int expected=vals[i];
+    final int actual=indexed.get(i);
+    Assert.assertEquals(expected,actual);
+    indices[i]=i;
+  }
+  Collections.shuffle(Arrays.asList(indices));
+  for (int i=0; i < indexed.size(); ++i) {
+    int k=indices[i];
+    Assert.assertEquals(vals[k],indexed.get(k));
+  }
+}
