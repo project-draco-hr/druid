@@ -8,11 +8,12 @@ synchronized (indexToPersist) {
     try {
       int numRows=indexToPersist.getIndex().size();
       final File persistedFile;
+      final IndexSpec indexSpec=config.getIndexSpec();
       if (config.isPersistInHeap()) {
-        persistedFile=IndexMaker.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())));
+        persistedFile=IndexMaker.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),indexSpec);
       }
  else {
-        persistedFile=IndexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())));
+        persistedFile=IndexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),indexSpec);
       }
       indexToPersist.swapSegment(new QueryableIndexSegment(indexToPersist.getSegment().getIdentifier(),IndexIO.loadIndex(persistedFile)));
       return numRows;
