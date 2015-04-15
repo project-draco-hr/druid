@@ -5,7 +5,7 @@
   Assert.assertEquals(new PeriodGranularity(new Period("P1D"),null,null),gran);
   json="{ \"type\": \"period\", \"period\": \"P1D\"," + "\"timeZone\": \"America/Los_Angeles\", \"origin\": \"1970-01-01T00:00:00Z\"}";
   gran=mapper.readValue(json,QueryGranularity.class);
-  Assert.assertEquals(new PeriodGranularity(new Period("P1D"),new DateTime(0l),DateTimeZone.forID("America/Los_Angeles")),gran);
+  Assert.assertEquals(new PeriodGranularity(new Period("P1D"),new DateTime(0L),DateTimeZone.forID("America/Los_Angeles")),gran);
   QueryGranularity expected=new PeriodGranularity(new Period("P1D"),new DateTime("2012-01-01"),DateTimeZone.forID("America/Los_Angeles"));
   String jsonOut=mapper.writeValueAsString(expected);
   Assert.assertEquals(expected,mapper.readValue(jsonOut,QueryGranularity.class));
