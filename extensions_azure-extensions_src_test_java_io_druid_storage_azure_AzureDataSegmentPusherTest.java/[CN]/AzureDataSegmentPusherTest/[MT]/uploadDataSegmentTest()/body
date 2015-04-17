@@ -1,21 +1,20 @@
 {
+  AzureDataSegmentPusher pusher=new AzureDataSegmentPusher(azureStorage,azureAccountConfig,jsonMapper);
   final int version=9;
-  final File compressedSegmentData=AzureTestUtils.createZipTempFile("segment","bucket");
-  compressedSegmentData.deleteOnExit();
-  final File descriptorFile=Files.createTempFile("descriptor",".json").toFile();
-  descriptorFile.deleteOnExit();
-  final Map<String,String> azurePaths=ImmutableMap.of("index","/path/to/azure/storage","descriptor","/path/to/azure/storage","storage","/path/to/azure/storage");
-  azureStorageContainer.uploadBlob(compressedSegmentData,azurePaths.get("index"));
+  final File compressedSegmentData=new File("index.zip");
+  final File descriptorFile=new File("descriptor.json");
+  final Map<String,String> azurePaths=pusher.getAzurePaths(dataSegment);
+  expect(azureAccountConfig.getContainer()).andReturn(containerName).times(3);
+  azureStorage.uploadBlob(compressedSegmentData,containerName,azurePaths.get("index"));
   expectLastCall();
-  azureStorageContainer.uploadBlob(descriptorFile,azurePaths.get("descriptor"));
+  azureStorage.uploadBlob(descriptorFile,containerName,azurePaths.get("descriptor"));
   expectLastCall();
   replayAll();
-  AzureDataSegmentPusher pusher=new AzureDataSegmentPusher(azureStorageContainer,azureAccountConfig,jsonMapper);
   DataSegment pushedDataSegment=pusher.uploadDataSegment(dataSegment,version,compressedSegmentData,descriptorFile,azurePaths);
   assertEquals(compressedSegmentData.length(),pushedDataSegment.getSize());
   assertEquals(version,(int)pushedDataSegment.getBinaryVersion());
   Map<String,Object> loadSpec=pushedDataSegment.getLoadSpec();
   assertEquals(AzureStorageDruidModule.SCHEME,MapUtils.getString(loadSpec,"type"));
-  assertEquals(azurePaths.get("storage"),MapUtils.getString(loadSpec,"storageDir"));
+  assertEquals(azurePaths.get("index"),MapUtils.getString(loadSpec,"blobPath"));
   verifyAll();
 }

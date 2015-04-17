@@ -1,0 +1,7 @@
+{
+  CloudBlobContainer container=getCloudBlobContainer(containerName);
+  try (FileInputStream stream=new FileInputStream(file)){
+    CloudBlockBlob blob=container.getBlockBlobReference(blobPath);
+    blob.upload(stream,file.length());
+  }
+ }

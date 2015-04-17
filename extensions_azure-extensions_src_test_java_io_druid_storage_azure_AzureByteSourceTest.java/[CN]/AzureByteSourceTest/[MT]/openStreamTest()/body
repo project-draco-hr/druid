@@ -1,10 +1,11 @@
 {
-  final String filePath="/path/to/file";
-  AzureStorageContainer azureStorageContainer=createMock(AzureStorageContainer.class);
+  final String containerName="container";
+  final String blobPath="/path/to/file";
+  AzureStorage azureStorage=createMock(AzureStorage.class);
   InputStream stream=createMock(InputStream.class);
-  expect(azureStorageContainer.getBlobInputStream(filePath)).andReturn(stream);
+  expect(azureStorage.getBlobInputStream(containerName,blobPath)).andReturn(stream);
   replayAll();
-  AzureByteSource byteSource=new AzureByteSource(azureStorageContainer,filePath);
+  AzureByteSource byteSource=new AzureByteSource(azureStorage,containerName,blobPath);
   byteSource.openStream();
   verifyAll();
 }

@@ -1,0 +1,18 @@
+{
+  prepareOutDir(outDir);
+  try {
+    final ByteSource byteSource=new AzureByteSource(azureStorage,containerName,blobPath);
+    final com.metamx.common.FileUtils.FileCopyResult result=CompressionUtils.unzip(byteSource,outDir,AzureUtils.AZURE_RETRY,true);
+    log.info("Loaded %d bytes from [%s] to [%s]",result.size(),blobPath,outDir.getAbsolutePath());
+    return result;
+  }
+ catch (  IOException e) {
+    try {
+      FileUtils.deleteDirectory(outDir);
+    }
+ catch (    IOException ioe) {
+      log.warn(ioe,"Failed to remove output directory [%s] for segment pulled from [%s]",outDir.getAbsolutePath(),blobPath);
+    }
+    throw new SegmentLoadingException(e,e.getMessage());
+  }
+}
