@@ -1,0 +1,12 @@
+{
+  final boolean isForce=force == null ? false : force;
+  if (id == null) {
+    if (segment == null) {
+      return create(dataSource,interval,indexSpec,isForce);
+    }
+ else {
+      return create(segment,indexSpec,isForce);
+    }
+  }
+  return new ConvertSegmentTask(id,groupId,dataSource,interval,segment,indexSpec,isForce);
+}

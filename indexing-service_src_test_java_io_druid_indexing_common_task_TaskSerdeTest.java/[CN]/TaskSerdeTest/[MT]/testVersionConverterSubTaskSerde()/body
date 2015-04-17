@@ -1,8 +1,8 @@
 {
-  final VersionConverterTask.SubTask task=new VersionConverterTask.SubTask("myGroupId",DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build(),indexSpec);
+  final ConvertSegmentTask.SubTask task=new ConvertSegmentTask.SubTask("myGroupId",DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build(),indexSpec,false);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
-  final VersionConverterTask.SubTask task2=(VersionConverterTask.SubTask)jsonMapper.readValue(json,Task.class);
+  final ConvertSegmentTask.SubTask task2=(ConvertSegmentTask.SubTask)jsonMapper.readValue(json,Task.class);
   Assert.assertEquals("foo",task.getDataSource());
   Assert.assertEquals("myGroupId",task.getGroupId());
   Assert.assertEquals(task.getId(),task2.getId());
