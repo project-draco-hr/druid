@@ -1,0 +1,18 @@
+{
+  final String value="bucket";
+  final File pulledFile=AzureTestUtils.createZipTempFile(SEGMENT_FILE_NAME,value);
+  pulledFile.deleteOnExit();
+  final File toDir=Files.createTempDirectory("druid").toFile();
+  toDir.deleteOnExit();
+  final File zipFilePath=new File(pulledFile.getParent(),AzureStorageDruidModule.INDEX_ZIP_FILE_NAME);
+  final InputStream zipStream=new FileInputStream(pulledFile);
+  expect(azureStorageContainer.getBlobInputStream(zipFilePath.getAbsolutePath())).andReturn(zipStream);
+  replayAll();
+  AzureDataSegmentPuller puller=new AzureDataSegmentPuller(azureStorageContainer);
+  FileUtils.FileCopyResult result=puller.getSegmentFiles(pulledFile.getParent(),toDir);
+  File expected=new File(toDir,SEGMENT_FILE_NAME);
+  assertEquals(value.length(),result.size());
+  assertTrue(expected.exists());
+  assertEquals(value.length(),expected.length());
+  verifyAll();
+}

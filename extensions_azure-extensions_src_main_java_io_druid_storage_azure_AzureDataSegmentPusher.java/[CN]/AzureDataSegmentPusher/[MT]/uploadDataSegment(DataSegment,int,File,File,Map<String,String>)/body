@@ -1,0 +1,5 @@
+{
+  uploadThenDelete(compressedSegmentData,azurePaths.get("index"));
+  uploadThenDelete(descriptorFile,azurePaths.get("descriptor"));
+  return segment.withSize(compressedSegmentData.length()).withLoadSpec(ImmutableMap.<String,Object>of("type",AzureStorageDruidModule.SCHEME,"storageDir",azurePaths.get("storage"))).withBinaryVersion(version);
+}

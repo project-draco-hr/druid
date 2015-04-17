@@ -1,0 +1,11 @@
+{
+  final File outDir=new File("");
+  final Map<String,Object> loadSpec=dataSegment.getLoadSpec();
+  final String storageDir=MapUtils.getString(loadSpec,"storageDir");
+  final FileUtils.FileCopyResult result=createMock(FileUtils.FileCopyResult.class);
+  final AzureDataSegmentPuller puller=createMockBuilder(AzureDataSegmentPuller.class).withConstructor(azureStorageContainer).addMockedMethod("getSegmentFiles",String.class,File.class).createMock();
+  expect(puller.getSegmentFiles(storageDir,outDir)).andReturn(result);
+  replayAll();
+  puller.getSegmentFiles(dataSegment,outDir);
+  verifyAll();
+}

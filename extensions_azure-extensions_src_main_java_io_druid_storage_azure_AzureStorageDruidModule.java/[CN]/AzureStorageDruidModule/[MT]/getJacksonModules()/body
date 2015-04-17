@@ -1,0 +1,14 @@
+{
+  return ImmutableList.of(new Module(){
+    @Override public String getModuleName(){
+      return "DruidAzure-" + System.identityHashCode(this);
+    }
+    @Override public Version version(){
+      return Version.unknownVersion();
+    }
+    @Override public void setupModule(    SetupContext context){
+      context.registerSubtypes(AzureLoadSpec.class);
+    }
+  }
+);
+}

@@ -1,0 +1,8 @@
+{
+  final String storageDir=DataSegmentPusherUtil.getStorageDir(dataSegment);
+  AzureDataSegmentPusher pusher=new AzureDataSegmentPusher(azureStorageContainer,azureAccountConfig,jsonMapper);
+  Map<String,String> paths=pusher.getAzurePaths(dataSegment);
+  assertEquals(storageDir,paths.get("storage"));
+  assertEquals(String.format("%s/%s",storageDir,AzureStorageDruidModule.INDEX_ZIP_FILE_NAME),paths.get("index"));
+  assertEquals(String.format("%s/%s",storageDir,AzureStorageDruidModule.DESCRIPTOR_FILE_NAME),paths.get("descriptor"));
+}

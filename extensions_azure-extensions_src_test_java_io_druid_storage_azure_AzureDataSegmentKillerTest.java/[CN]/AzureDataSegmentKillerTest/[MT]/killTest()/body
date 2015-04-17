@@ -1,0 +1,8 @@
+{
+  List<String> deletedFiles=new ArrayList<>();
+  expect(azureStorageContainer.emptyCloudBlobDirectory("/path/to/storage/")).andReturn(deletedFiles);
+  replayAll();
+  AzureDataSegmentKiller killer=new AzureDataSegmentKiller(azureStorageContainer);
+  killer.kill(dataSegment);
+  verifyAll();
+}
