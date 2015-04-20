@@ -1,0 +1,27 @@
+{
+  final QueryableIndexIndexableAdapter adapter1=new QueryableIndexIndexableAdapter(loadIndex(dir1));
+  final QueryableIndexIndexableAdapter adapter2=new QueryableIndexIndexableAdapter(loadIndex(dir2));
+  if (adapter1.getNumRows() != adapter2.getNumRows()) {
+    throw new IOException("Validation failure - Row count mismatch");
+  }
+  final Iterator<Rowboat> it1=adapter1.getRows().iterator();
+  final Iterator<Rowboat> it2=adapter2.getRows().iterator();
+  long row=0L;
+  while (it1.hasNext()) {
+    if (it1.hasNext() ^ it2.hasNext()) {
+      throw new IOException("Validation failure - Iterator doesn't have enough");
+    }
+    final Rowboat rb1=it1.next();
+    final Rowboat rb2=it2.next();
+    ++row;
+    if (rb1.compareTo(rb2) != 0) {
+      throw new IOException(String.format("Validation failure on row %d: [%s] vs [%s]",row,rb1,rb2));
+    }
+  }
+  if (it2.hasNext()) {
+    throw new IOException("Validation failure - Iterator still has more");
+  }
+  if (row != adapter1.getNumRows()) {
+    throw new IOException("Validation failure - Actual Row count mismatch");
+  }
+}
