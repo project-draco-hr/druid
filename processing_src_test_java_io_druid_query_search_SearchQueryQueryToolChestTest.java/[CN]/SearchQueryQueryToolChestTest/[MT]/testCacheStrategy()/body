@@ -1,0 +1,9 @@
+{
+  CacheStrategy<Result<SearchResultValue>,Object,SearchQuery> strategy=new SearchQueryQueryToolChest(null,null).getCacheStrategy(new SearchQuery(new TableDataSource("dummy"),null,QueryGranularity.ALL,1,new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),ImmutableList.of("dim1"),new FragmentSearchQuerySpec(ImmutableList.of("a","b")),null,null));
+  final Result<SearchResultValue> result=new Result<>(new DateTime(123L),new SearchResultValue(ImmutableList.of(new SearchHit("dim1","a"))));
+  Object preparedValue=strategy.prepareForCache().apply(result);
+  ObjectMapper objectMapper=new DefaultObjectMapper();
+  Object fromCacheValue=objectMapper.readValue(objectMapper.writeValueAsBytes(preparedValue),strategy.getCacheObjectClazz());
+  Result<SearchResultValue> fromCacheResult=strategy.pullFromCache().apply(fromCacheValue);
+  Assert.assertEquals(result,fromCacheResult);
+}

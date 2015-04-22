@@ -38,7 +38,7 @@
       return new Function<Object,Result<SearchResultValue>>(){
         @Override @SuppressWarnings("unchecked") public Result<SearchResultValue> apply(        Object input){
           List<Object> result=(List<Object>)input;
-          return new Result<SearchResultValue>(new DateTime(result.get(0)),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
+          return new Result<>(new DateTime(((Number)result.get(0)).longValue()),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
             @Override public SearchHit apply(            @Nullable Object input){
               if (input instanceof Map) {
                 return new SearchHit((String)((Map)input).get("dimension"),(String)((Map)input).get("value"));
