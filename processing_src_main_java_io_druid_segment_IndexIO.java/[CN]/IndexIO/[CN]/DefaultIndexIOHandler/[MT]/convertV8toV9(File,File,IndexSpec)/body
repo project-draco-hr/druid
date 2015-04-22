@@ -43,7 +43,7 @@
       ByteArrayOutputStream nameBAOS=new ByteArrayOutputStream();
       serializerUtils.writeString(nameBAOS,dimension);
       outParts.add(ByteBuffer.wrap(nameBAOS.toByteArray()));
-      GenericIndexed<String> dictionary=GenericIndexed.read(dimBuffer,GenericIndexed.stringStrategy);
+      GenericIndexed<String> dictionary=GenericIndexed.read(dimBuffer,GenericIndexed.STRING_STRATEGY);
       if (dictionary.size() == 0) {
         log.info("Dimension[%s] had cardinality 0, equivalent to no column, so skipping.",dimension);
         skippedDimensions.add(dimension);
@@ -82,7 +82,7 @@
             bumpedDictionary=true;
             final List<String> nullList=Lists.newArrayList();
             nullList.add(null);
-            dictionary=GenericIndexed.fromIterable(Iterables.concat(nullList,dictionary),GenericIndexed.stringStrategy);
+            dictionary=GenericIndexed.fromIterable(Iterables.concat(nullList,dictionary),GenericIndexed.STRING_STRATEGY);
             bitmaps=GenericIndexed.fromIterable(Iterables.concat(Arrays.asList(theNullSet),bitmaps),bitmapSerdeFactory.getObjectStrategy());
           }
  else {
@@ -192,20 +192,20 @@ skippedFiles.add(filename);
 }
 final ByteBuffer indexBuffer=v8SmooshedFiles.mapFile("index.drd");
 indexBuffer.get();
-final GenericIndexed<String> dims8=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+final GenericIndexed<String> dims8=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
 final GenericIndexed<String> dims9=GenericIndexed.fromIterable(Iterables.filter(dims8,new Predicate<String>(){
 @Override public boolean apply(String s){
 return !skippedDimensions.contains(s);
 }
 }
-),GenericIndexed.stringStrategy);
-final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+),GenericIndexed.STRING_STRATEGY);
+final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
 final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
 final BitmapSerdeFactory segmentBitmapSerdeFactory=mapper.readValue(serializerUtils.readString(indexBuffer),BitmapSerdeFactory.class);
 Set<String> columns=Sets.newTreeSet();
 columns.addAll(Lists.newArrayList(dims9));
 columns.addAll(Lists.newArrayList(availableMetrics));
-GenericIndexed<String> cols=GenericIndexed.fromIterable(columns,GenericIndexed.stringStrategy);
+GenericIndexed<String> cols=GenericIndexed.fromIterable(columns,GenericIndexed.STRING_STRATEGY);
 final String segmentBitmapSerdeFactoryString=mapper.writeValueAsString(segmentBitmapSerdeFactory);
 final long numBytes=cols.getSerializedSize() + dims9.getSerializedSize() + 16+ serializerUtils.getSerializedStringByteSize(segmentBitmapSerdeFactoryString);
 final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);

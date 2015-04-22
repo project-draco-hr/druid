@@ -35,8 +35,8 @@
     fileOutputStream=new FileOutputStream(indexFile);
     channel=fileOutputStream.getChannel();
     channel.write(ByteBuffer.wrap(new byte[]{IndexIO.V8_VERSION}));
-    GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy).writeToChannel(channel);
-    GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy).writeToChannel(channel);
+    GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
+    GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
     DateTime minTime=new DateTime(JodaUtils.MAX_INSTANT);
     DateTime maxTime=new DateTime(JodaUtils.MIN_INSTANT);
     for (    IndexableAdapter index : indexes) {
@@ -65,7 +65,7 @@
     dimConversions.add(Maps.<String,IntBuffer>newHashMap());
   }
   for (  String dimension : mergedDimensions) {
-    final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.stringStrategy);
+    final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
     writer.open();
     List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size());
     DimValueConverter[] converters=new DimValueConverter[indexes.size()];
@@ -250,7 +250,7 @@ final MappedByteBuffer dimValsMapped=Files.map(dimOutFile);
 if (!dimension.equals(serializerUtils.readString(dimValsMapped))) {
 throw new ISE("dimensions[%s] didn't equate!?  This is a major WTF moment.",dimension);
 }
-Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.stringStrategy);
+Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.STRING_STRATEGY);
 log.info("Starting dimension[%s] with cardinality[%,d]",dimension,dimVals.size());
 final BitmapSerdeFactory bitmapSerdeFactory=indexSpec.getBitmapSerdeFactory();
 GenericIndexedWriter<ImmutableBitmap> writer=new GenericIndexedWriter<>(ioPeon,dimension,bitmapSerdeFactory.getObjectStrategy());
@@ -318,7 +318,7 @@ if (!smooshDir.delete()) {
 log.info("Unable to delete temporary dir[%s], contains[%s]",smooshDir,Arrays.asList(smooshDir.listFiles()));
 throw new IOException(String.format("Unable to delete temporary dir[%s]",smooshDir));
 }
-createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.stringStrategy),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.stringStrategy),dataInterval,indexSpec.getBitmapSerdeFactory());
+createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY),dataInterval,indexSpec.getBitmapSerdeFactory());
 IndexIO.DefaultIndexIOHandler.convertV8toV9(v8OutDir,outDir,indexSpec);
 FileUtils.deleteDirectory(v8OutDir);
 return outDir;

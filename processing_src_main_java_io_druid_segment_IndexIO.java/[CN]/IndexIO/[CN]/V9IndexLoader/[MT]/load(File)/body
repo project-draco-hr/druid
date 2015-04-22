@@ -7,8 +7,8 @@
   }
   SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);
   ByteBuffer indexBuffer=smooshedFiles.mapFile("index.drd");
-  final GenericIndexed<String> cols=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
-  final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+  final GenericIndexed<String> cols=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
+  final GenericIndexed<String> dims=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
   final Interval dataInterval=new Interval(indexBuffer.getLong(),indexBuffer.getLong());
   final BitmapSerdeFactory segmentBitmapSerdeFactory;
   if (indexBuffer.hasRemaining()) {

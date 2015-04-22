@@ -11,8 +11,8 @@
     }
   }
 );
-  GenericIndexed<String> cols=GenericIndexed.fromIterable(finalColumns,GenericIndexed.stringStrategy);
-  GenericIndexed<String> dims=GenericIndexed.fromIterable(finalDimensions,GenericIndexed.stringStrategy);
+  GenericIndexed<String> cols=GenericIndexed.fromIterable(finalColumns,GenericIndexed.STRING_STRATEGY);
+  GenericIndexed<String> dims=GenericIndexed.fromIterable(finalDimensions,GenericIndexed.STRING_STRATEGY);
   final String bitmapSerdeFactoryType=mapper.writeValueAsString(indexSpec.getBitmapSerdeFactory());
   final long numBytes=cols.getSerializedSize() + dims.getSerializedSize() + 16+ serializerUtils.getSerializedStringByteSize(bitmapSerdeFactoryType);
   final SmooshedWriter writer=v9Smoosher.addWithSmooshedWriter("index.drd",numBytes);

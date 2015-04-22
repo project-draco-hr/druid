@@ -1,0 +1,45 @@
+{
+  if (adapter1.getNumRows() != adapter2.getNumRows()) {
+    throw new SegmentValidationException("Row count mismatch. Expected [%d] found [%d]",adapter1.getNumRows(),adapter2.getNumRows());
+  }
+{
+    final Set<String> dimNames1=Sets.newHashSet(adapter1.getDimensionNames());
+    final Set<String> dimNames2=Sets.newHashSet(adapter2.getDimensionNames());
+    if (!dimNames1.equals(dimNames2)) {
+      throw new SegmentValidationException("Dimension names differ. Expected [%s] found [%s]",dimNames1,dimNames2);
+    }
+    final Set<String> metNames1=Sets.newHashSet(adapter1.getMetricNames());
+    final Set<String> metNames2=Sets.newHashSet(adapter2.getMetricNames());
+    if (!metNames1.equals(metNames2)) {
+      throw new SegmentValidationException("Metric names differ. Expected [%s] found [%s]",metNames1,metNames2);
+    }
+  }
+  final Iterator<Rowboat> it1=adapter1.getRows().iterator();
+  final Iterator<Rowboat> it2=adapter2.getRows().iterator();
+  long row=0L;
+  while (it1.hasNext()) {
+    if (!it2.hasNext()) {
+      throw new SegmentValidationException("Unexpected end of second adapter");
+    }
+    final Rowboat rb1=it1.next();
+    final Rowboat rb2=it2.next();
+    ++row;
+    if (rb1.getRowNum() != rb2.getRowNum()) {
+      throw new SegmentValidationException("Row number mismatch: [%d] vs [%d]",rb1.getRowNum(),rb2.getRowNum());
+    }
+    if (rb1.compareTo(rb2) != 0) {
+      try {
+        validateRowValues(rb1,adapter1,rb2,adapter2);
+      }
+ catch (      SegmentValidationException ex) {
+        throw new SegmentValidationException(ex,"Validation failure on row %d: [%s] vs [%s]",row,rb1,rb2);
+      }
+    }
+  }
+  if (it2.hasNext()) {
+    throw new SegmentValidationException("Unexpected end of first adapter");
+  }
+  if (row != adapter1.getNumRows()) {
+    throw new SegmentValidationException("Actual Row count mismatch. Expected [%d] found [%d]",row,adapter1.getNumRows());
+  }
+}

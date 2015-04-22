@@ -15,8 +15,8 @@
   SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);
   ByteBuffer indexBuffer=smooshedFiles.mapFile("index.drd");
   indexBuffer.get();
-  final GenericIndexed<String> availableDimensions=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
-  final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.stringStrategy);
+  final GenericIndexed<String> availableDimensions=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
+  final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY);
   final Interval dataInterval=new Interval(serializerUtils.readString(indexBuffer));
   final BitmapSerdeFactory bitmapSerdeFactory=new BitmapSerde.LegacyBitmapSerdeFactory();
   CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromByteBuffer(smooshedFiles.mapFile(makeTimeFile(inDir,BYTE_ORDER).getName()),BYTE_ORDER);
@@ -36,7 +36,7 @@
     ByteBuffer dimBuffer=smooshedFiles.mapFile(makeDimFile(inDir,dimension).getName());
     String fileDimensionName=serializerUtils.readString(dimBuffer);
     Preconditions.checkState(dimension.equals(fileDimensionName),"Dimension file[%s] has dimension[%s] in it!?",makeDimFile(inDir,dimension),fileDimensionName);
-    dimValueLookups.put(dimension,GenericIndexed.read(dimBuffer,GenericIndexed.stringStrategy));
+    dimValueLookups.put(dimension,GenericIndexed.read(dimBuffer,GenericIndexed.STRING_STRATEGY));
     dimColumns.put(dimension,VSizeIndexed.readFromByteBuffer(dimBuffer));
   }
   ByteBuffer invertedBuffer=smooshedFiles.mapFile("inverted.drd");

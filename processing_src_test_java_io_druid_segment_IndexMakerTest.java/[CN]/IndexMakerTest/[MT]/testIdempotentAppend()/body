@@ -1,0 +1,14 @@
+{
+  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(IndexIO.loadIndex(persistTmpDir));
+  Assert.assertEquals(events.size(),adapter.getNumRows());
+  final File tmpDir1=new File(tmpDir,"reprocessed1");
+  appendAndValidate(persistTmpDir,tmpDir1);
+  final File tmpDir2=new File(tmpDir,"reprocessed2");
+  final IndexableAdapter adapter2=new QueryableIndexIndexableAdapter(IndexIO.loadIndex(tmpDir1));
+  Assert.assertEquals(events.size(),adapter2.getNumRows());
+  appendAndValidate(tmpDir1,tmpDir2);
+  final File tmpDir3=new File(tmpDir,"reprocessed3");
+  final IndexableAdapter adapter3=new QueryableIndexIndexableAdapter(IndexIO.loadIndex(tmpDir2));
+  Assert.assertEquals(events.size(),adapter3.getNumRows());
+  appendAndValidate(tmpDir2,tmpDir3);
+}
