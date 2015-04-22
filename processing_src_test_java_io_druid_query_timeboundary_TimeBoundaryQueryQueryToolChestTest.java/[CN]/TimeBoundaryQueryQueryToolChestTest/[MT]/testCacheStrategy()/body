@@ -1,0 +1,9 @@
+{
+  CacheStrategy<Result<TimeBoundaryResultValue>,Object,TimeBoundaryQuery> strategy=new TimeBoundaryQueryQueryToolChest().getCacheStrategy(new TimeBoundaryQuery(new TableDataSource("dummy"),new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),null,null));
+  final Result<TimeBoundaryResultValue> result=new Result<>(new DateTime(123L),new TimeBoundaryResultValue(ImmutableMap.of(TimeBoundaryQuery.MIN_TIME,new DateTime(0L).toString(),TimeBoundaryQuery.MAX_TIME,new DateTime("2015-01-01").toString())));
+  Object preparedValue=strategy.prepareForCache().apply(result);
+  ObjectMapper objectMapper=new DefaultObjectMapper();
+  Object fromCacheValue=objectMapper.readValue(objectMapper.writeValueAsBytes(preparedValue),strategy.getCacheObjectClazz());
+  Result<TimeBoundaryResultValue> fromCacheResult=strategy.pullFromCache().apply(fromCacheValue);
+  Assert.assertEquals(result,fromCacheResult);
+}
