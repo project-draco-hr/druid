@@ -1,0 +1,73 @@
+{
+  final Map<String,Object> map=ImmutableMap.<String,Object>of();
+  final Map<String,Object> map00=ImmutableMap.<String,Object>of("dim0",ImmutableList.<String>of("dim00","dim01"));
+  final Map<String,Object> map10=ImmutableMap.<String,Object>of("dim1","dim10");
+  final Map<String,Object> map0null=new HashMap<>();
+  map0null.put("dim0",null);
+  final Map<String,Object> map1null=new HashMap<>();
+  map1null.put("dim1",null);
+  final Map<String,Object> mapAll=ImmutableMap.<String,Object>of("dim0",ImmutableList.<String>of("dim00","dim01"),"dim1","dim10");
+  final List<Map<String,Object>> maps=ImmutableList.of(map,map00,map10,map0null,map1null,mapAll);
+  return Iterables.<Object[]>concat(Iterables.<Object[]>concat(new Iterable<Iterable<Object[]>>(){
+    @Override public Iterator<Iterable<Object[]>> iterator(){
+      return new Iterator<Iterable<Object[]>>(){
+        long nextBitset=1L;
+        @Override public boolean hasNext(){
+          return nextBitset < (1L << maps.size());
+        }
+        @Override public Iterable<Object[]> next(){
+          final BitSet bitset=BitSet.valueOf(new long[]{nextBitset++});
+          final List<Map<String,Object>> myMaps=filterByBitset(maps,bitset);
+          return Collections2.transform(Collections2.permutations(myMaps),new Function<List<Map<String,Object>>,Object[]>(){
+            @Nullable @Override public Object[] apply(            List<Map<String,Object>> input){
+              return new Object[]{input,input,null};
+            }
+          }
+);
+        }
+        @Override public void remove(){
+          throw new UOE("Remove not suported");
+        }
+      }
+;
+    }
+  }
+),Iterables.<Object[]>concat(new Iterable<Iterable<Object[]>>(){
+    @Override public Iterator<Iterable<Object[]>> iterator(){
+      return new Iterator<Iterable<Object[]>>(){
+        long nextMap1Bits=1L;
+        @Override public boolean hasNext(){
+          return nextMap1Bits < (1L << maps.size());
+        }
+        @Override public Iterable<Object[]> next(){
+          final BitSet bitset1=BitSet.valueOf(new long[]{nextMap1Bits++});
+          final List<Map<String,Object>> maplist1=filterByBitset(maps,bitset1);
+          return new Iterable<Object[]>(){
+            @Override public Iterator<Object[]> iterator(){
+              return new Iterator<Object[]>(){
+                long nextMap2Bits=1L;
+                @Override public boolean hasNext(){
+                  return nextMap2Bits < (1L << maps.size());
+                }
+                @Override public Object[] next(){
+                  final BitSet bitset2=BitSet.valueOf(new long[]{nextMap2Bits++});
+                  return new Object[]{maplist1,filterByBitset(maps,bitset2),nextMap2Bits == nextMap1Bits ? null : SegmentValidationException.class};
+                }
+                @Override public void remove(){
+                  throw new UOE("remove not supported");
+                }
+              }
+;
+            }
+          }
+;
+        }
+        @Override public void remove(){
+          throw new UOE("Remove not supported");
+        }
+      }
+;
+    }
+  }
+));
+}

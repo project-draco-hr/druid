@@ -1,0 +1,12 @@
+{
+  long timestamp=0L;
+  for (  Map<String,Object> event : events1) {
+    incrementalIndex1.add(new MapBasedInputRow(timestamp++,Lists.newArrayList(event.keySet()),event));
+  }
+  timestamp=0L;
+  for (  Map<String,Object> event : events2) {
+    incrementalIndex2.add(new MapBasedInputRow(timestamp++,Lists.newArrayList(event.keySet()),event));
+  }
+  adapter2=new IncrementalIndexAdapter(DEFAULT_INTERVAL,incrementalIndex2,INDEX_SPEC.getBitmapSerdeFactory().getBitmapFactory());
+  adapter1=new IncrementalIndexAdapter(DEFAULT_INTERVAL,incrementalIndex1,INDEX_SPEC.getBitmapSerdeFactory().getBitmapFactory());
+}
