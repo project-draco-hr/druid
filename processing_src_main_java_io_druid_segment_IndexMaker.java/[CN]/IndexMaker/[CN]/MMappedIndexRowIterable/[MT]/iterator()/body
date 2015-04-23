@@ -1,10 +1,16 @@
 {
+  final IntBuffer[] converterArray=FluentIterable.from(convertedDims).transform(new Function<String,IntBuffer>(){
+    @Override public IntBuffer apply(    String input){
+      return converters.get(input);
+    }
+  }
+).toArray(IntBuffer.class);
   return Iterators.transform(index.iterator(),new Function<Rowboat,Rowboat>(){
     @Override public Rowboat apply(    Rowboat input){
-      int[][] dims=input.getDims();
-      int[][] newDims=new int[convertedDims.size()][];
+      final int[][] dims=input.getDims();
+      final int[][] newDims=new int[convertedDims.size()][];
       for (int i=0; i < newDims.length; ++i) {
-        IntBuffer converter=converters.get(convertedDims.get(i));
+        final IntBuffer converter=converterArray[i];
         if (converter == null) {
           continue;
         }

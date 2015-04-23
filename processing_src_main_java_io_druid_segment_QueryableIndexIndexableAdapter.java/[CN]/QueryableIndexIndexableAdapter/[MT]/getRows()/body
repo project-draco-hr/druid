@@ -4,15 +4,17 @@
       return new Iterator<Rowboat>(){
         final GenericColumn timestamps=input.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
         final Object[] metrics;
-        final Map<String,DictionaryEncodedColumn> dimensions;
+        final DictionaryEncodedColumn[] dictionaryEncodedColumns;
         final int numMetrics=getMetricNames().size();
         int currRow=0;
         boolean done=false;
 {
-          dimensions=Maps.newLinkedHashMap();
-          for (          String dim : getDimensionNames()) {
-            dimensions.put(dim,input.getColumn(dim).getDictionaryEncoding());
+          this.dictionaryEncodedColumns=FluentIterable.from(getDimensionNames()).transform(new Function<String,DictionaryEncodedColumn>(){
+            @Override public DictionaryEncodedColumn apply(            String dimName){
+              return input.getColumn(dimName).getDictionaryEncoding();
+            }
           }
+).toArray(DictionaryEncodedColumn.class);
           final Indexed<String> availableMetrics=getMetricNames();
           metrics=new Object[availableMetrics.size()];
           for (int i=0; i < metrics.length; ++i) {
@@ -40,7 +42,7 @@ if (!hasNext && !done) {
       CloseQuietly.close((Closeable)metric);
     }
   }
-  for (  Object dimension : dimensions.values()) {
+  for (  Object dimension : dictionaryEncodedColumns) {
     if (dimension instanceof Closeable) {
       CloseQuietly.close((Closeable)dimension);
     }
@@ -53,10 +55,9 @@ return hasNext;
 if (!hasNext()) {
   throw new NoSuchElementException();
 }
-int[][] dims=new int[dimensions.size()][];
+final int[][] dims=new int[dictionaryEncodedColumns.length][];
 int dimIndex=0;
-for (String dim : dimensions.keySet()) {
-  final DictionaryEncodedColumn dict=dimensions.get(dim);
+for (final DictionaryEncodedColumn dict : dictionaryEncodedColumns) {
   final IndexedInts dimVals;
   if (dict.hasMultipleValues()) {
     dimVals=dict.getMultiValueRow(currRow);
