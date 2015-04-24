@@ -5,11 +5,11 @@
       @Override public Task apply(      DataSegment segment){
         final Integer segmentVersion=segment.getBinaryVersion();
         if (!CURR_VERSION_INTEGER.equals(segmentVersion)) {
-          return new SubTask(getGroupId(),segment,indexSpec,force);
+          return new SubTask(getGroupId(),segment,indexSpec,force,validate);
         }
  else         if (force) {
           log.info("Segment[%s] already at version[%s], forcing conversion",segment.getIdentifier(),segmentVersion);
-          return new SubTask(getGroupId(),segment,indexSpec,force);
+          return new SubTask(getGroupId(),segment,indexSpec,force,validate);
         }
  else {
           log.info("Skipping[%s], already version[%s]",segment.getIdentifier(),segmentVersion);
@@ -27,7 +27,7 @@
   }
  else {
     log.info("I'm in a subless mood.");
-    convertSegment(toolbox,segment,indexSpec,force);
+    convertSegment(toolbox,segment,indexSpec,force,validate);
   }
   return success();
 }
