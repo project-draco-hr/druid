@@ -12,7 +12,7 @@
       log.info("Reading from bucket[%s] object[%s] (%s)",s3Bucket,s3Object.getKey(),nextURI);
       try {
         final InputStream innerInputStream=s3Client.getObject(new S3Bucket(s3Bucket),s3Object.getKey()).getDataInputStream();
-        final InputStream outerInputStream=s3Object.getKey().endsWith(".gz") ? new GZIPInputStream(innerInputStream) : innerInputStream;
+        final InputStream outerInputStream=s3Object.getKey().endsWith(".gz") ? CompressionUtils.gzipInputStream(innerInputStream) : innerInputStream;
         return IOUtils.lineIterator(new BufferedReader(new InputStreamReader(outerInputStream,Charsets.UTF_8)));
       }
  catch (      Exception e) {
