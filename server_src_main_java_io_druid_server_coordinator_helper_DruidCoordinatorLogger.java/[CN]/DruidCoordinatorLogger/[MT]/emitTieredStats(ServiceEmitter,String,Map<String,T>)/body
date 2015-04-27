@@ -3,7 +3,7 @@
     for (    Map.Entry<String,T> entry : statMap.entrySet()) {
       String tier=entry.getKey();
       Number value=entry.getValue();
-      emitter.emit(new ServiceMetricEvent.Builder().build(String.format(formatString,tier),value.doubleValue()));
+      emitter.emit(new ServiceMetricEvent.Builder().setDimension("tier",tier).build(metricName,value.doubleValue()));
     }
   }
 }

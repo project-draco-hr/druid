@@ -42,9 +42,9 @@
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
           jsonWriter.writeValue(outputStream,yielder);
           outputStream.close();
-          final long requestTime=System.currentTimeMillis() - start;
-          emitter.emit(QueryMetricUtil.makeRequestTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("request/time",requestTime));
-          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("request/time",requestTime,"success",true))));
+          final long queryTime=System.currentTimeMillis() - start;
+          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/time",queryTime));
+          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",true))));
         }
       }
 ,contentType).header("X-Druid-Query-Id",queryId).header("X-Druid-Response-Context",jsonMapper.writeValueAsString(responseContext)).build();

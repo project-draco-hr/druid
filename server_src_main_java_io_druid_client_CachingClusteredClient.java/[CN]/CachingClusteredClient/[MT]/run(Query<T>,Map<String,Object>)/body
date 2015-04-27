@@ -122,7 +122,12 @@
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
-        final QueryRunner clientQueryable=serverView.getQueryRunner(server);
+        final QueryRunner clientQueryable=new MetricsEmittingQueryRunner(emitter,new Function<Query<T>,ServiceMetricEvent.Builder>(){
+          @Override public ServiceMetricEvent.Builder apply(          @Nullable final Query<T> input){
+            return toolChest.makeMetricBuilder(input);
+          }
+        }
+,serverView.getQueryRunner(server),"query/node/time",ImmutableMap.of("server",server.getName()));
         if (clientQueryable == null) {
           log.error("WTF!? server[%s] doesn't have a client Queryable?",server);
           continue;

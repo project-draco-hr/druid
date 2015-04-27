@@ -1,5 +1,5 @@
 {
-  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setUser2(task.getDataSource()).setUser4(task.getType());
+  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setDimension("dataSource",task.getDataSource()).setDimension("taskType",task.getType());
   Futures.addCallback(statusFuture,new FutureCallback<TaskStatus>(){
     @Override public void onSuccess(    final TaskStatus status){
       log.info("Received %s status for task: %s",status.getStatusCode(),status.getId());
@@ -17,8 +17,8 @@
         }
         notifyStatus(task,status);
         if (status.isComplete()) {
-          metricBuilder.setUser3(status.getStatusCode().toString());
-          emitter.emit(metricBuilder.build("indexer/time/run/millis",status.getDuration()));
+          metricBuilder.setDimension(DruidMetrics.TASK_STATUS,status.getStatusCode().toString());
+          emitter.emit(metricBuilder.build("task/run/time",status.getDuration()));
           log.info("Task %s: %s (%d run duration)",status.getStatusCode(),task,status.getDuration());
         }
       }

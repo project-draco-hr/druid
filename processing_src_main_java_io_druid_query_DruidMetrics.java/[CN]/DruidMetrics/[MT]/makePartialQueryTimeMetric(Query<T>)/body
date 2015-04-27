@@ -1,0 +1,8 @@
+{
+  return new ServiceMetricEvent.Builder().setDimension(DATASOURCE,DataSourceUtil.getMetricName(query.getDataSource())).setDimension(TYPE,query.getType()).setDimension(INTERVAL,Lists.transform(query.getIntervals(),new Function<Interval,String>(){
+    @Override public String apply(    Interval input){
+      return input.toString();
+    }
+  }
+).toArray(new String[query.getIntervals().size()])).setDimension("hasFilters",String.valueOf(query.hasFilters())).setDimension("duration",query.getDuration().toPeriod().toStandardMinutes().toString());
+}

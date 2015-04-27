@@ -5,6 +5,7 @@
   this.objectMapper=objectMapper;
   this.cacheConfig=cacheConfig;
   this.backgroundExecutorService=MoreExecutors.listeningDecorator(backgroundExecutorService);
+  this.emitter=emitter;
   serverView.registerSegmentCallback(Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("CCClient-ServerView-CB-%d").build()),new ServerView.BaseSegmentCallback(){
     @Override public ServerView.CallbackAction segmentRemoved(    DruidServerMetadata server,    DataSegment segment){
       CachingClusteredClient.this.cache.close(segment.getIdentifier());
