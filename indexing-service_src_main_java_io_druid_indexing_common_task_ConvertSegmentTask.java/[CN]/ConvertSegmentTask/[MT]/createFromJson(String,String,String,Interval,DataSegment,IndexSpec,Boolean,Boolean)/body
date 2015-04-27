@@ -1,0 +1,13 @@
+{
+  final boolean isForce=force == null ? false : force;
+  final boolean isValidate=validate == null ? true : validate;
+  if (id == null) {
+    if (segment == null) {
+      return create(dataSource,interval,indexSpec,isForce,isValidate);
+    }
+ else {
+      return create(segment,indexSpec,isForce,isValidate);
+    }
+  }
+  return new ConvertSegmentTask(id,groupId,dataSource,interval,segment,indexSpec,isForce,isValidate);
+}

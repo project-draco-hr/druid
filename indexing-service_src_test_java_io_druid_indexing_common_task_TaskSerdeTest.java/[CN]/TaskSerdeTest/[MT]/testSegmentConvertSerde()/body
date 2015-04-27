@@ -1,6 +1,6 @@
 {
   final DataSegment segment=new DataSegment("dataSource",Interval.parse("1990-01-01/1999-12-31"),"version",ImmutableMap.<String,Object>of(),ImmutableList.of("dim1","dim2"),ImmutableList.of("metric1","metric2"),new NoneShardSpec(),0,12345L);
-  final ConvertSegmentTask convertSegmentTaskOriginal=ConvertSegmentTask.create(segment,new IndexSpec(new RoaringBitmapSerdeFactory(),"lzf","uncompressed"),false);
+  final ConvertSegmentTask convertSegmentTaskOriginal=ConvertSegmentTask.create(segment,new IndexSpec(new RoaringBitmapSerdeFactory(),"lzf","uncompressed"),false,true);
   final String json=jsonMapper.writeValueAsString(convertSegmentTaskOriginal);
   final Task task=jsonMapper.readValue(json,Task.class);
   Assert.assertTrue(task instanceof ConvertSegmentTask);
