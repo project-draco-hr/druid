@@ -1,0 +1,12 @@
+{
+  try {
+    final Server indexer=selector.pick();
+    if (indexer == null) {
+      throw new ISE("Cannot find instance of indexingService");
+    }
+    return new URI(request.getScheme(),indexer.getHost(),request.getRequestURI(),request.getQueryString(),null);
+  }
+ catch (  URISyntaxException e) {
+    throw Throwables.propagate(e);
+  }
+}

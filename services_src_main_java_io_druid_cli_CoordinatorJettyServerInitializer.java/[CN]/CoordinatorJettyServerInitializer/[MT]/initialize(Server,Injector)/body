@@ -15,6 +15,7 @@
   root.addFilter(GuiceFilter.class,"/info/*",null);
   root.addFilter(GuiceFilter.class,"/druid/coordinator/*",null);
   root.addFilter(GuiceFilter.class,"/coordinator/*",null);
+  root.addServlet(new ServletHolder(injector.getInstance(OverlordProxyServlet.class)),"/druid/indexer/*");
   HandlerList handlerList=new HandlerList();
   handlerList.setHandlers(new Handler[]{root});
   server.setHandler(handlerList);
