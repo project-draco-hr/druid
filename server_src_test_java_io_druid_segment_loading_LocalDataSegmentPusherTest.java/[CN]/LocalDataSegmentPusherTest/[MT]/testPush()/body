@@ -1,0 +1,10 @@
+{
+  DataSegment returnSegment=localDataSegmentPusher.push(dataSegmentFiles,dataSegment);
+  Assert.assertNotNull(returnSegment);
+  Assert.assertEquals(dataSegment,returnSegment);
+  outDir=new File(new LocalDataSegmentPusherConfig().getStorageDirectory(),DataSegmentPusherUtil.getStorageDir(returnSegment));
+  File versionFile=new File(outDir,"index.zip");
+  File descriptorJson=new File(outDir,"descriptor.json");
+  Assert.assertTrue(versionFile.exists());
+  Assert.assertTrue(descriptorJson.exists());
+}

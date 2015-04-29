@@ -1,0 +1,23 @@
+{
+  InventoryView inventoryView=EasyMock.createStrictMock(InventoryView.class);
+  DruidServer server=EasyMock.createStrictMock(DruidServer.class);
+  DruidDataSource[] druidDataSources={new DruidDataSource("datasource1",new HashMap()),new DruidDataSource("datasource2",new HashMap())};
+  EasyMock.expect(server.getDataSources()).andReturn(ImmutableList.of(druidDataSources[0],druidDataSources[1])).atLeastOnce();
+  EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
+  EasyMock.replay(inventoryView,server);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  Response response=datasourcesResource.getQueryableDataSources("full",null);
+  Set<DruidDataSource> result=(Set<DruidDataSource>)response.getEntity();
+  DruidDataSource[] resultantDruidDataSources=new DruidDataSource[result.size()];
+  result.toArray(resultantDruidDataSources);
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(2,resultantDruidDataSources.length);
+  Assert.assertArrayEquals(druidDataSources,resultantDruidDataSources);
+  response=datasourcesResource.getQueryableDataSources(null,null);
+  List<String> result1=(List<String>)response.getEntity();
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(2,result1.size());
+  Assert.assertTrue(result1.contains("datasource1"));
+  Assert.assertTrue(result1.contains("datasource2"));
+  EasyMock.verify(inventoryView,server);
+}

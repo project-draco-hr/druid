@@ -1,0 +1,14 @@
+{
+  InventoryView inventoryView=EasyMock.createStrictMock(InventoryView.class);
+  DruidServer server=EasyMock.createStrictMock(DruidServer.class);
+  DruidDataSource dataSource1=new DruidDataSource("datasource1",new HashMap());
+  EasyMock.expect(server.getDataSource("datasource1")).andReturn(dataSource1).atLeastOnce();
+  EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
+  EasyMock.replay(inventoryView,server);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  Response response=datasourcesResource.getTheDataSource("datasource1","full");
+  DruidDataSource result=(DruidDataSource)response.getEntity();
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(dataSource1,result);
+  EasyMock.verify(inventoryView,server);
+}
