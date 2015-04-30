@@ -1,0 +1,22 @@
+{
+  DeterminePartitionsJob job=new DeterminePartitionsJob(config);
+  job.run();
+  int shardNum=0;
+  int segmentNum=0;
+  Assert.assertEquals(expectedNumOfSegments,config.getSchema().getTuningConfig().getShardSpecs().size());
+  for (  Map.Entry<DateTime,List<HadoopyShardSpec>> entry : config.getSchema().getTuningConfig().getShardSpecs().entrySet()) {
+    int partitionNum=0;
+    List<HadoopyShardSpec> specs=entry.getValue();
+    Assert.assertEquals(expectedNumOfShardsForEachSegment[segmentNum],specs.size());
+    for (    HadoopyShardSpec spec : specs) {
+      SingleDimensionShardSpec actualSpec=(SingleDimensionShardSpec)spec.getActualSpec();
+      Assert.assertEquals(shardNum,spec.getShardNum());
+      Assert.assertEquals(expectedStartEndForEachShard[segmentNum][partitionNum][0],actualSpec.getStart());
+      Assert.assertEquals(expectedStartEndForEachShard[segmentNum][partitionNum][1],actualSpec.getEnd());
+      Assert.assertEquals(partitionNum,actualSpec.getPartitionNum());
+      shardNum++;
+      partitionNum++;
+    }
+    segmentNum++;
+  }
+}
