@@ -1,4 +1,5 @@
 {
+  log.info("Starting coordination. Getting available segments.");
   final Set<DataSegment> availableSegments=coordinator.getOrderedAvailableDataSegments();
   if (log.isDebugEnabled()) {
     log.debug("Available DataSegments");
@@ -6,5 +7,6 @@
       log.debug("  %s",dataSegment);
     }
   }
+  log.info("Found [%,d] available segments.",availableSegments.size());
   return params.buildFromExisting().withAvailableSegments(availableSegments).build();
 }
