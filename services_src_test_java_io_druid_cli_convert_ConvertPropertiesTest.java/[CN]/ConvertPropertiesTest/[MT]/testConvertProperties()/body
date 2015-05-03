@@ -1,0 +1,14 @@
+{
+  String oldPropertiesFile=this.getClass().getResource("/convertProps/old.properties").getFile();
+  File convertedPropertiesFile=tmpFolder.newFile();
+  Cli<?> parser=Cli.builder("convertProps").withCommand(ConvertProperties.class).build();
+  Object command=parser.parse("convertProps","-f",oldPropertiesFile,"-o",convertedPropertiesFile.getAbsolutePath());
+  Assert.assertNotNull(command);
+  ConvertProperties convertProperties=(ConvertProperties)command;
+  convertProperties.run();
+  Properties actualConvertedProperties=new Properties();
+  actualConvertedProperties.load(new FileInputStream(convertedPropertiesFile));
+  Properties expectedConvertedProperties=new Properties();
+  expectedConvertedProperties.load(this.getClass().getResourceAsStream("/convertProps/new.properties"));
+  Assert.assertEquals(expectedConvertedProperties,actualConvertedProperties);
+}
