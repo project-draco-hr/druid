@@ -1,0 +1,29 @@
+{
+  return new ProgressIndicator(){
+    @Override public void progress(){
+      context.progress();
+    }
+    @Override public void start(){
+      context.progress();
+      context.setStatus("STARTED");
+    }
+    @Override public void stop(){
+      context.progress();
+      context.setStatus("STOPPED");
+    }
+    @Override public void startSection(    String section){
+      context.progress();
+      context.setStatus(String.format("STARTED [%s]",section));
+    }
+    @Override public void progressSection(    String section,    String message){
+      log.info("Progress message for section [%s] : [%s]",section,message);
+      context.progress();
+      context.setStatus(String.format("PROGRESS [%s]",section));
+    }
+    @Override public void stopSection(    String section){
+      context.progress();
+      context.setStatus(String.format("STOPPED [%s]",section));
+    }
+  }
+;
+}

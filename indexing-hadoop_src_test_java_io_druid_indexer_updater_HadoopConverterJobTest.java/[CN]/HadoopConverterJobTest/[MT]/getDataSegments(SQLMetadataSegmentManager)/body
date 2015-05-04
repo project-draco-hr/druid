@@ -1,0 +1,10 @@
+{
+  manager.start();
+  while (!manager.isStarted()) {
+    Thread.sleep(10);
+  }
+  manager.poll();
+  final DruidDataSource druidDataSource=manager.getInventoryValue(DATASOURCE);
+  manager.stop();
+  return Lists.newArrayList(druidDataSource.getSegments());
+}

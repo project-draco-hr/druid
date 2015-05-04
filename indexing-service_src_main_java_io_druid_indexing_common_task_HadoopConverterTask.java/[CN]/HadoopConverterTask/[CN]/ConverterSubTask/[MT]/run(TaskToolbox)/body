@@ -1,0 +1,21 @@
+{
+  final Map<String,String> hadoopProperties=new HashMap<>();
+  final Properties properties=injector.getInstance(Properties.class);
+  for (  String name : properties.stringPropertyNames()) {
+    if (name.startsWith("hadoop.")) {
+      hadoopProperties.put(name.substring("hadoop.".length()),properties.getProperty(name));
+    }
+  }
+  final ClassLoader loader=buildClassLoader(toolbox);
+  final HadoopDruidConverterConfig config=new HadoopDruidConverterConfig(getDataSource(),parent.getInterval(),parent.getIndexSpec(),segments,parent.isValidate(),parent.getDistributedSuccessCache(),hadoopProperties,parent.getJobPriority(),parent.getSegmentOutputPath());
+  final String finishedSegmentString=invokeForeignLoader("io.druid.indexing.common.task.HadoopConverterTask$JobInvoker",new String[]{HadoopDruidConverterConfig.jsonMapper.writeValueAsString(config)},loader);
+  if (finishedSegmentString == null) {
+    return TaskStatus.failure(getId());
+  }
+  final List<DataSegment> finishedSegments=HadoopDruidConverterConfig.jsonMapper.readValue(finishedSegmentString,new TypeReference<List<DataSegment>>(){
+  }
+);
+  log.debug("Found new segments %s",Arrays.toString(finishedSegments.toArray()));
+  toolbox.pushSegments(finishedSegments);
+  return success();
+}

@@ -1,0 +1,21 @@
+{
+  if (segments.size() == 1) {
+    final DataSegment segment=segments.get(0);
+    jobConf.setJobName(String.format("druid-convert-%s-%s-%s",segment.getDataSource(),segment.getInterval(),segment.getVersion()));
+  }
+ else {
+    final Set<String> dataSources=Sets.newHashSet(Iterables.transform(segments,new Function<DataSegment,String>(){
+      @Override public String apply(      DataSegment input){
+        return input.getDataSource();
+      }
+    }
+));
+    final Set<String> versions=Sets.newHashSet(Iterables.transform(segments,new Function<DataSegment,String>(){
+      @Override public String apply(      DataSegment input){
+        return input.getVersion();
+      }
+    }
+));
+    jobConf.setJobName(String.format("druid-convert-%s-%s",Arrays.toString(dataSources.toArray()),Arrays.toString(versions.toArray())));
+  }
+}

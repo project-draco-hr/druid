@@ -1,0 +1,13 @@
+{
+  final HadoopDruidConverterConfig config=converterConfigFromConfiguration(jobContext.getConfiguration());
+  final List<DataSegment> segments=config.getSegments();
+  if (segments == null) {
+    throw new IOException("Bad config, missing segments");
+  }
+  return Lists.transform(segments,new Function<DataSegment,InputSplit>(){
+    @Nullable @Override public InputSplit apply(    DataSegment input){
+      return new DataSegmentSplit(input);
+    }
+  }
+);
+}

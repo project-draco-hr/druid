@@ -1,0 +1,51 @@
+{
+  final File scratchFileDir=temporaryFolder.newFolder();
+  storageLocProperty=System.getProperty(STORAGE_PROPERTY_KEY);
+  tmpSegmentDir=temporaryFolder.newFolder();
+  System.setProperty(STORAGE_PROPERTY_KEY,tmpSegmentDir.getAbsolutePath());
+  final URL url=Preconditions.checkNotNull(Query.class.getClassLoader().getResource("druid.sample.tsv"));
+  final File tmpInputFile=temporaryFolder.newFile();
+  FileUtils.retryCopy(new ByteSource(){
+    @Override public InputStream openStream() throws IOException {
+      return url.openStream();
+    }
+  }
+,tmpInputFile,FileUtils.IS_EXCEPTION,3);
+  final HadoopDruidIndexerConfig hadoopDruidIndexerConfig=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema(DATASOURCE,new StringInputRowParser(new DelimitedParseSpec(new TimestampSpec("ts","iso",null),new DimensionsSpec(Arrays.asList(TestIndex.DIMENSIONS),null,null),"\t","\u0001",Arrays.asList(TestIndex.COLUMNS))),new AggregatorFactory[]{new DoubleSumAggregatorFactory(TestIndex.METRICS[0],TestIndex.METRICS[0]),new HyperUniquesAggregatorFactory("quality_uniques","quality")},new UniformGranularitySpec(Granularity.MONTH,QueryGranularity.DAY,ImmutableList.<Interval>of(interval))),new HadoopIOConfig(ImmutableMap.<String,Object>of("type","static","paths",tmpInputFile.getAbsolutePath()),metadataStorageUpdaterJobSpc,tmpSegmentDir.getAbsolutePath()),new HadoopTuningConfig(scratchFileDir.getAbsolutePath(),null,null,null,null,null,false,false,false,false,null,false,false,false,null,null)));
+  metadataStorageTablesConfigSupplier=new Supplier<MetadataStorageTablesConfig>(){
+    @Override public MetadataStorageTablesConfig get(){
+      return MetadataStorageTablesConfig.fromBase("druid");
+    }
+  }
+;
+  connector=new TestDerbyConnector(new Supplier<MetadataStorageConnectorConfig>(){
+    @Override public MetadataStorageConnectorConfig get(){
+      return metadataStorageUpdaterJobSpc.get();
+    }
+  }
+,new Supplier<MetadataStorageTablesConfig>(){
+    @Override public MetadataStorageTablesConfig get(){
+      return new MetadataStorageTablesConfig(null,null,null,null,null,null,null,null);
+    }
+  }
+);
+  try {
+    connector.getDBI().withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.execute("DROP TABLE druid_segments");
+        return null;
+      }
+    }
+);
+  }
+ catch (  CallbackFailedException e) {
+  }
+  List<Jobby> jobs=ImmutableList.of(new Jobby(){
+    @Override public boolean run(){
+      connector.createSegmentTable(connector.getDBI(),"druid_segments");
+      return true;
+    }
+  }
+,new HadoopDruidDetermineConfigurationJob(hadoopDruidIndexerConfig),new HadoopDruidIndexerJob(hadoopDruidIndexerConfig,new SQLMetadataStorageUpdaterJobHandler(connector)));
+  JobHelper.runJobs(jobs,hadoopDruidIndexerConfig);
+}

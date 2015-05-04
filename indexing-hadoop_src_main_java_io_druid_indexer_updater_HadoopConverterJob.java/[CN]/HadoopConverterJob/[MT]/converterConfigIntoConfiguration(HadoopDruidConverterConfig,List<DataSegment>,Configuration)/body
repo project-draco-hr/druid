@@ -1,0 +1,9 @@
+{
+  final HadoopDruidConverterConfig config=new HadoopDruidConverterConfig(priorConfig.getDataSource(),priorConfig.getInterval(),priorConfig.getIndexSpec(),segments,priorConfig.isValidate(),priorConfig.getDistributedSuccessCache(),priorConfig.getHadoopProperties(),priorConfig.getJobPriority(),priorConfig.getSegmentOutputPath());
+  try {
+    configuration.set(HadoopDruidConverterConfig.CONFIG_PROPERTY,HadoopDruidConverterConfig.jsonMapper.writeValueAsString(config));
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+}

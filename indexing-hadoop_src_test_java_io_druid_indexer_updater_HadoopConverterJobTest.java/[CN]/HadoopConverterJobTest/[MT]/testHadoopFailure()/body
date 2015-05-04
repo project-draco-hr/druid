@@ -1,0 +1,17 @@
+{
+  final SQLMetadataSegmentManager manager=new SQLMetadataSegmentManager(HadoopDruidConverterConfig.jsonMapper,new Supplier<MetadataSegmentManagerConfig>(){
+    @Override public MetadataSegmentManagerConfig get(){
+      return new MetadataSegmentManagerConfig();
+    }
+  }
+,metadataStorageTablesConfigSupplier,connector);
+  final List<DataSegment> oldSemgments=getDataSegments(manager);
+  final File tmpDir=temporaryFolder.newFolder();
+  final HadoopConverterJob converterJob=new HadoopConverterJob(new HadoopDruidConverterConfig(DATASOURCE,interval,new IndexSpec(new RoaringBitmapSerdeFactory(),"uncompressed","uncompressed"),oldSemgments,true,tmpDir.toURI(),ImmutableMap.<String,String>of(),null,tmpSegmentDir.toURI().toString()));
+  corrupt(oldSemgments.get(0));
+  final List<DataSegment> result=converterJob.run();
+  Assert.assertNull("result should be null",result);
+  final List<DataSegment> segments=getDataSegments(manager);
+  Assert.assertEquals(oldSemgments.size(),segments.size());
+  Assert.assertEquals(oldSemgments,segments);
+}

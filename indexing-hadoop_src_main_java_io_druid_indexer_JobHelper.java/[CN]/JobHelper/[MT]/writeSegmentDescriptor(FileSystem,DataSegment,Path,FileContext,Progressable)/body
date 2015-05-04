@@ -1,6 +1,6 @@
 {
   final DataPusher descriptorPusher=(DataPusher)RetryProxy.create(DataPusher.class,new DataPusher(){
-    @Override public void push() throws IOException {
+    @Override public long push() throws IOException {
       try {
         progressable.progress();
         if (outputFS.exists(descriptorPath)) {
@@ -17,8 +17,9 @@
         log.info(ex,"Error in retry loop");
         throw ex;
       }
+      return -1;
     }
   }
-,RetryPolicies.retryUpToMaximumCountWithFixedSleep(NUM_RETRIES,SECONDS_BETWEEN_RETRIES,TimeUnit.SECONDS));
+,RetryPolicies.exponentialBackoffRetry(NUM_RETRIES,SECONDS_BETWEEN_RETRIES,TimeUnit.SECONDS));
   descriptorPusher.push();
 }

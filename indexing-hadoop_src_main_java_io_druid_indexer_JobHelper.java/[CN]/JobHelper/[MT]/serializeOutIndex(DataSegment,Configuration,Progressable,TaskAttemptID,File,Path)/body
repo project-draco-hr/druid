@@ -4,7 +4,7 @@
   final Path tmpPath=new Path(segmentBasePath,String.format("index.zip.%d",taskAttemptID.getId()));
   final AtomicLong size=new AtomicLong(0L);
   final DataPusher zipPusher=(DataPusher)RetryProxy.create(DataPusher.class,new DataPusher(){
-    @Override public void push() throws IOException {
+    @Override public long push() throws IOException {
       try (OutputStream outputStream=fileContext.create(tmpPath,EnumSet.of(CreateFlag.OVERWRITE,CreateFlag.CREATE),Options.CreateOpts.createParent(),Options.CreateOpts.bufferSize(256 * 1024))){
         size.set(zipAndCopyDir(mergedBase,outputStream,progressable));
         outputStream.flush();
@@ -13,9 +13,10 @@
         log.error(exception,"Exception in retry loop");
         throw exception;
       }
+      return -1;
     }
   }
-,RetryPolicies.retryUpToMaximumCountWithFixedSleep(NUM_RETRIES,SECONDS_BETWEEN_RETRIES,TimeUnit.SECONDS));
+,RetryPolicies.exponentialBackoffRetry(NUM_RETRIES,SECONDS_BETWEEN_RETRIES,TimeUnit.SECONDS));
   zipPusher.push();
   log.info("Zipped %,d bytes to [%s]",size.get(),tmpPath.toUri());
   final Path finalIndexZipFilePath=new Path(segmentBasePath,"index.zip");

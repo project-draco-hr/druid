@@ -1,0 +1,48 @@
+{
+  final InputSplit split=context.getInputSplit();
+  if (!(split instanceof DataSegmentSplit)) {
+    throw new IAE("Unexpected split type. Expected [%s] was [%s]",DataSegmentSplit.class.getCanonicalName(),split.getClass().getCanonicalName());
+  }
+  final String tmpDirLoc=context.getConfiguration().get(TMP_FILE_LOC_KEY);
+  final File tmpDir=Paths.get(tmpDirLoc).toFile();
+  final DataSegment segment=((DataSegmentSplit)split).getDataSegment();
+  final HadoopDruidConverterConfig config=converterConfigFromConfiguration(context.getConfiguration());
+  context.setStatus("DOWNLOADING");
+  context.progress();
+  final Path inPath=new Path(getURIFromSegment(segment));
+  final File inDir=new File(tmpDir,"in");
+  if (inDir.exists() && !inDir.delete()) {
+    log.warn("Could not delete [%s]",inDir);
+  }
+  if (!inDir.mkdir() && (!inDir.exists() || inDir.isDirectory())) {
+    log.warn("Unable to make directory");
+  }
+  final long inSize=JobHelper.unzipNoGuava(inPath,context.getConfiguration(),inDir,context);
+  log.debug("Loaded %d bytes into [%s] for converting",inSize,inDir.getAbsolutePath());
+  context.getCounter(COUNTER_GROUP,COUNTER_LOADED).increment(inSize);
+  context.setStatus("CONVERTING");
+  context.progress();
+  final File outDir=new File(tmpDir,"out");
+  if (!outDir.mkdir() && (!outDir.exists() || !outDir.isDirectory())) {
+    throw new IOException(String.format("Could not create output directory [%s]",outDir));
+  }
+  IndexMaker.convert(inDir,outDir,config.getIndexSpec(),JobHelper.progressIndicatorForContext(context));
+  if (config.isValidate()) {
+    context.setStatus("Validating");
+    IndexIO.DefaultIndexIOHandler.validateTwoSegments(inDir,outDir);
+  }
+  context.progress();
+  context.setStatus("Starting PUSH");
+  final Path baseOutputPath=new Path(config.getSegmentOutputPath());
+  final FileSystem outputFS=baseOutputPath.getFileSystem(context.getConfiguration());
+  final DataSegment finalSegmentTemplate=segment.withVersion(segment.getVersion() + "_converted");
+  final DataSegment finalSegment=JobHelper.serializeOutIndex(finalSegmentTemplate,context.getConfiguration(),context,context.getTaskAttemptID(),outDir,JobHelper.makeSegmentOutputPath(baseOutputPath,outputFS,finalSegmentTemplate.getDataSource(),finalSegmentTemplate.getVersion(),finalSegmentTemplate.getInterval(),finalSegmentTemplate.getShardSpec().getPartitionNum()));
+  context.progress();
+  context.setStatus("Finished PUSH");
+  final String finalSegmentString=HadoopDruidConverterConfig.jsonMapper.writeValueAsString(finalSegment);
+  context.getConfiguration().set(ConvertingOutputFormat.PUBLISHED_SEGMENT_KEY,finalSegmentString);
+  context.write(new Text("dataSegment"),new Text(finalSegmentString));
+  context.getCounter(COUNTER_GROUP,COUNTER_WRITTEN).increment(finalSegment.getSize());
+  context.progress();
+  context.setStatus("Ready To Commit");
+}

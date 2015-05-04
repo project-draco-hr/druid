@@ -1,0 +1,8 @@
+{
+  final Map<String,Object> localLoadSpec=segment.getLoadSpec();
+  final Path segmentPath=Paths.get(localLoadSpec.get("path").toString());
+  final MappedByteBuffer buffer=Files.map(segmentPath.toFile(),FileChannel.MapMode.READ_WRITE);
+  while (buffer.hasRemaining()) {
+    buffer.put((byte)0xFF);
+  }
+}

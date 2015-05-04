@@ -1,0 +1,45 @@
+{
+  final SQLMetadataSegmentManager manager=new SQLMetadataSegmentManager(HadoopDruidConverterConfig.jsonMapper,new Supplier<MetadataSegmentManagerConfig>(){
+    @Override public MetadataSegmentManagerConfig get(){
+      return new MetadataSegmentManagerConfig();
+    }
+  }
+,metadataStorageTablesConfigSupplier,connector);
+  final List<DataSegment> oldSemgments=getDataSegments(manager);
+  final File tmpDir=temporaryFolder.newFolder();
+  final HadoopConverterJob converterJob=new HadoopConverterJob(new HadoopDruidConverterConfig(DATASOURCE,interval,new IndexSpec(new RoaringBitmapSerdeFactory(),"uncompressed","uncompressed"),oldSemgments,true,tmpDir.toURI(),ImmutableMap.<String,String>of(),null,tmpSegmentDir.toURI().toString()));
+  final List<DataSegment> segments=Lists.newArrayList(converterJob.run());
+  Assert.assertNotNull("bad result",segments);
+  Assert.assertEquals("wrong segment count",4,segments.size());
+  Assert.assertTrue(converterJob.getLoadedBytes() > 0);
+  Assert.assertTrue(converterJob.getWrittenBytes() > 0);
+  Assert.assertTrue(converterJob.getWrittenBytes() > converterJob.getLoadedBytes());
+  Assert.assertEquals(oldSemgments.size(),segments.size());
+  final DataSegment segment=segments.get(0);
+  Assert.assertTrue(interval.contains(segment.getInterval()));
+  Assert.assertTrue(segment.getVersion().endsWith("_converted"));
+  Assert.assertTrue(segment.getLoadSpec().get("path").toString().contains("_converted"));
+  for (  File file : tmpDir.listFiles()) {
+    Assert.assertFalse(file.isDirectory());
+    Assert.assertTrue(file.isFile());
+  }
+  final Comparator<DataSegment> segmentComparator=new Comparator<DataSegment>(){
+    @Override public int compare(    DataSegment o1,    DataSegment o2){
+      return o1.getIdentifier().compareTo(o2.getIdentifier());
+    }
+  }
+;
+  Collections.sort(oldSemgments,segmentComparator);
+  Collections.sort(segments,segmentComparator);
+  for (int i=0; i < oldSemgments.size(); ++i) {
+    final DataSegment oldSegment=oldSemgments.get(i);
+    final DataSegment newSegment=segments.get(i);
+    Assert.assertEquals(oldSegment.getDataSource(),newSegment.getDataSource());
+    Assert.assertEquals(oldSegment.getInterval(),newSegment.getInterval());
+    Assert.assertEquals(Sets.<String>newHashSet(oldSegment.getMetrics()),Sets.<String>newHashSet(newSegment.getMetrics()));
+    Assert.assertEquals(Sets.<String>newHashSet(oldSegment.getDimensions()),Sets.<String>newHashSet(newSegment.getDimensions()));
+    Assert.assertEquals(oldSegment.getVersion() + "_converted",newSegment.getVersion());
+    Assert.assertTrue(oldSegment.getSize() < newSegment.getSize());
+    Assert.assertEquals(oldSegment.getBinaryVersion(),newSegment.getBinaryVersion());
+  }
+}
