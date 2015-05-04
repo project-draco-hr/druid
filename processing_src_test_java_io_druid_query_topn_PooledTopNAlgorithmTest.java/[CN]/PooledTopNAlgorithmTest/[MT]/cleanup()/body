@@ -1,0 +1,14 @@
+{
+  PooledTopNAlgorithm pooledTopNAlgorithm=new PooledTopNAlgorithm(Capabilities.builder().build(),null,null);
+  PooledTopNAlgorithm.PooledTopNParams params=EasyMock.createMock(PooledTopNAlgorithm.PooledTopNParams.class);
+  ResourceHolder<ByteBuffer> resourceHolder=EasyMock.createMock(ResourceHolder.class);
+  EasyMock.expect(params.getResultsBufHolder()).andReturn(resourceHolder).times(1);
+  EasyMock.expect(resourceHolder.get()).andReturn(ByteBuffer.allocate(1)).times(1);
+  resourceHolder.close();
+  EasyMock.expectLastCall().once();
+  EasyMock.replay(params);
+  EasyMock.replay(resourceHolder);
+  pooledTopNAlgorithm.cleanup(params);
+  EasyMock.verify(params);
+  EasyMock.verify(resourceHolder);
+}
