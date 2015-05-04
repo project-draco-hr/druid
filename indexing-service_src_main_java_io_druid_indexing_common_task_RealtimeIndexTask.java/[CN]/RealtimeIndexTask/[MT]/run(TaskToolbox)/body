@@ -6,8 +6,6 @@
     toolbox.getTaskActionClient().submit(new LockReleaseAction(taskLock.getInterval()));
   }
   boolean normalExit=true;
-  final Period intermediatePersistPeriod=spec.getTuningConfig().getIntermediatePersistPeriod();
-  final Firehose firehose=spec.getIOConfig().getFirehoseFactory().connect(spec.getDataSchema().getParser());
   final SegmentPublisher segmentPublisher=new TaskActionSegmentPublisher(this,toolbox);
   final DataSegmentAnnouncer lockingSegmentAnnouncer=new DataSegmentAnnouncer(){
     @Override public void announceSegment(    final DataSegment segment) throws IOException {
@@ -60,9 +58,12 @@
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
   final RealtimePlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService());
   this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
+  Firehose firehose=null;
   try {
     plumber.startJob();
     toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
+    final Period intermediatePersistPeriod=spec.getTuningConfig().getIntermediatePersistPeriod();
+    firehose=spec.getIOConfig().getFirehoseFactory().connect(spec.getDataSchema().getParser());
     long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
     while (firehose.hasMore()) {
       final InputRow inputRow;
