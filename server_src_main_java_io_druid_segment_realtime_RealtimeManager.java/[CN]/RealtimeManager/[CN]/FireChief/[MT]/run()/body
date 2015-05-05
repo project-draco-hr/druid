@@ -1,8 +1,9 @@
 {
-  verifyState();
+  plumber=initPlumber();
   final Period intermediatePersistPeriod=config.getIntermediatePersistPeriod();
   try {
     plumber.startJob();
+    firehose=initFirehose();
     long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
     while (firehose.hasMore()) {
       InputRow inputRow=null;
