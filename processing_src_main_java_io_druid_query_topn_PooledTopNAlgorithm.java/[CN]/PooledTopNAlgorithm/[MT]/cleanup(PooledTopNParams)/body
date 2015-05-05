@@ -1,7 +1,9 @@
 {
-  ResourceHolder<ByteBuffer> resultsBufHolder=params.getResultsBufHolder();
-  if (resultsBufHolder != null) {
-    resultsBufHolder.get().clear();
+  if (params != null) {
+    ResourceHolder<ByteBuffer> resultsBufHolder=params.getResultsBufHolder();
+    if (resultsBufHolder != null) {
+      resultsBufHolder.get().clear();
+    }
+    CloseQuietly.close(resultsBufHolder);
   }
-  CloseQuietly.close(resultsBufHolder);
 }
