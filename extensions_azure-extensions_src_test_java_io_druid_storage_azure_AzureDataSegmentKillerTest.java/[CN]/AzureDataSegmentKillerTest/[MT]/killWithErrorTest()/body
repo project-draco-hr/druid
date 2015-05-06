@@ -1,7 +1,8 @@
 {
-  expect(azureStorageContainer.emptyCloudBlobDirectory("/path/to/storage/")).andThrow(new StorageException("","",400,null,null));
+  String dirPath=Paths.get(blobPath).getParent().toString();
+  expect(azureStorage.emptyCloudBlobDirectory(containerName,dirPath)).andThrow(new StorageException("","",400,null,null));
   replayAll();
-  AzureDataSegmentKiller killer=new AzureDataSegmentKiller(azureStorageContainer);
+  AzureDataSegmentKiller killer=new AzureDataSegmentKiller(azureStorage);
   killer.kill(dataSegment);
   verifyAll();
 }
