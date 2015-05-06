@@ -8,7 +8,7 @@
     @Override public boolean matches(){
       String[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
-        return false;
+        return predicate.apply(null);
       }
       for (      String dimVal : dims[dimIndex]) {
         if (predicate.apply(dimVal)) {
