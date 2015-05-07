@@ -1,0 +1,14 @@
+{
+  Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+  int shardCount=0;
+  int segmentNum=0;
+  for (  Interval segmentGranularity : config.getSegmentGranularIntervals().get()) {
+    List<ShardSpec> specs=constructShardSpecFromShardInfo(partitionType,shardInfoForEachShard[segmentNum++]);
+    List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(specs.size());
+    for (int i=0; i < specs.size(); ++i) {
+      actualSpecs.add(new HadoopyShardSpec(specs.get(i),shardCount++));
+    }
+    shardSpecs.put(segmentGranularity.getStart(),actualSpecs);
+  }
+  return shardSpecs;
+}
