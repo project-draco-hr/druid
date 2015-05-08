@@ -1,0 +1,39 @@
+{
+  InventoryView inventoryView=EasyMock.createStrictMock(InventoryView.class);
+  DruidServer server=EasyMock.createStrictMock(DruidServer.class);
+  List<Map<String,Object>> input=new ArrayList(2);
+  HashMap<String,Object> dataSourceProp1=new HashMap<>();
+  dataSourceProp1.put("name","datasource1");
+  dataSourceProp1.put("partitionName","partition");
+  dataSourceProp1.put("datasegment",new DataSegment("datasource1",new Interval("2010-01-01/P1D"),null,null,null,null,null,0x9,0));
+  HashMap<String,Object> dataSourceProp2=new HashMap<>();
+  dataSourceProp2.put("name","datasource2");
+  dataSourceProp2.put("partitionName","partition");
+  dataSourceProp2.put("datasegment",new DataSegment("datasource2",new Interval("2010-01-01/P1D"),null,null,null,null,null,0x9,0));
+  input.add(dataSourceProp1);
+  input.add(dataSourceProp2);
+  List<DruidDataSource> listDataSources=new ArrayList<>();
+  for (  Map<String,Object> entry : input) {
+    listDataSources.add(new DruidDataSource(entry.get("name").toString(),new HashMap()).addSegment(entry.get("partitionName").toString(),(DataSegment)entry.get("datasegment")));
+  }
+  EasyMock.expect(server.getDataSources()).andReturn(listDataSources).atLeastOnce();
+  EasyMock.expect(server.getDataSource("datasource1")).andReturn(listDataSources.get(0)).atLeastOnce();
+  EasyMock.expect(server.getTier()).andReturn(null).atLeastOnce();
+  EasyMock.expect(server.getDataSource("datasource2")).andReturn(listDataSources.get(1)).atLeastOnce();
+  EasyMock.expect(server.getTier()).andReturn(null).atLeastOnce();
+  EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
+  EasyMock.replay(inventoryView,server);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  Response response=datasourcesResource.getQueryableDataSources(null,"simple");
+  Assert.assertEquals(200,response.getStatus());
+  List<Map<String,Object>> results=(List<Map<String,Object>>)response.getEntity();
+  int index=0;
+  for (  Map<String,Object> entry : results) {
+    Assert.assertEquals(input.get(index).get("name"),entry.get("name").toString());
+    Assert.assertTrue(((Map)((Map)entry.get("properties")).get("tiers")).containsKey(null));
+    Assert.assertNotNull((((Map)entry.get("properties")).get("segments")));
+    Assert.assertEquals(1,((Map)((Map)entry.get("properties")).get("segments")).get("count"));
+    index++;
+  }
+  EasyMock.verify(inventoryView,server);
+}
