@@ -1,0 +1,27 @@
+{
+  Random rand=new Random(0);
+  List<int[]> rows=Lists.newArrayList();
+  final int bound=1 << bytes;
+  for (int i=0; i < 0x10000; i++) {
+    int[] row=new int[rand.nextInt(valuesPerRowBound)];
+    int count=rand.nextInt(valuesPerRowBound);
+    for (int j=0; j < row.length; j++) {
+      row[j]=rand.nextInt(bound);
+    }
+    rows.add(row);
+  }
+  final ByteBuffer bufferCompressed=serialize(CompressedVSizeIndexedSupplier.fromIterable(Iterables.transform(rows,new Function<int[],IndexedInts>(){
+    @Override public IndexedInts apply(    int[] input){
+      return VSizeIndexedInts.fromArray(input,20);
+    }
+  }
+),bound - 1,ByteOrder.nativeOrder(),CompressedObjectStrategy.CompressionStrategy.LZ4));
+  this.compressed=CompressedVSizeIndexedSupplier.fromByteBuffer(bufferCompressed,ByteOrder.nativeOrder()).get();
+  final ByteBuffer bufferUncompressed=serialize(VSizeIndexed.fromIterable(Iterables.transform(rows,new Function<int[],VSizeIndexedInts>(){
+    @Override public VSizeIndexedInts apply(    int[] input){
+      return VSizeIndexedInts.fromArray(input,20);
+    }
+  }
+)).asWritableSupplier());
+  this.uncompressed=VSizeIndexed.readFromByteBuffer(bufferUncompressed);
+}

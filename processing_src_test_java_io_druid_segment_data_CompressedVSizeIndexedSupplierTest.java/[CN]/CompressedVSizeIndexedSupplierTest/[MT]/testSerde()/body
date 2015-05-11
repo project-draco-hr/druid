@@ -1,0 +1,8 @@
+{
+  final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  indexedSupplier.writeToChannel(Channels.newChannel(baos));
+  final byte[] bytes=baos.toByteArray();
+  Assert.assertEquals(indexedSupplier.getSerializedSize(),bytes.length);
+  CompressedVSizeIndexedSupplier deserializedIndexed=CompressedVSizeIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(bytes),ByteOrder.nativeOrder());
+  assertSame(vals,deserializedIndexed.get());
+}
