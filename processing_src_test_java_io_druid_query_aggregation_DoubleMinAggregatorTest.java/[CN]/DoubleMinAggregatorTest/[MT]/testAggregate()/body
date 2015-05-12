@@ -1,0 +1,11 @@
+{
+  final float[] values={0.15f,0.27f,0.0f,0.93f};
+  final TestFloatColumnSelector selector=new TestFloatColumnSelector(values);
+  DoubleMinAggregator agg=new DoubleMinAggregator("billy",selector);
+  Assert.assertEquals("billy",agg.getName());
+  aggregate(selector,agg);
+  aggregate(selector,agg);
+  aggregate(selector,agg);
+  aggregate(selector,agg);
+  Assert.assertEquals(new Float(values[2]).doubleValue(),agg.get());
+}

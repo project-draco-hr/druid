@@ -1,5 +1,5 @@
 {
-  ArrayList<AggregatorFactory> aggregatorFactories=Lists.<AggregatorFactory>newArrayList(Iterables.concat(QueryRunnerTestHelper.commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))));
+  ArrayList<AggregatorFactory> aggregatorFactories=Lists.<AggregatorFactory>newArrayList(Iterables.concat(QueryRunnerTestHelper.commonAggregators,Lists.newArrayList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))));
   List<PostAggregator> postAggregatorList=Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant,QueryRunnerTestHelper.dependentPostAgg);
   Pair<List<AggregatorFactory>,List<PostAggregator>> aggregatorsPair=AggregatorUtil.condensedAggregators(aggregatorFactories,postAggregatorList,dependentPostAggMetric);
   Assert.assertEquals(Lists.newArrayList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.indexDoubleSum),aggregatorsPair.lhs);

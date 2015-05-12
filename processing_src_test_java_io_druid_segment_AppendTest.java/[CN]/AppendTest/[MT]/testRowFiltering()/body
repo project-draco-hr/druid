@@ -1,6 +1,6 @@
 {
   List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",5L).put("index",500.0D).put("addRowsIndexConstant",506.0D).put("uniques",0.0D).put("maxIndex",100.0D).put("minIndex",100.0D).build())));
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).filters(marketDimension,"breakstuff").aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).filters(marketDimension,"breakstuff").aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
   QueryRunner runner=TestQueryRunners.makeTimeSeriesQueryRunner(segment3);
   HashMap<String,Object> context=new HashMap<String,Object>();
   TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));

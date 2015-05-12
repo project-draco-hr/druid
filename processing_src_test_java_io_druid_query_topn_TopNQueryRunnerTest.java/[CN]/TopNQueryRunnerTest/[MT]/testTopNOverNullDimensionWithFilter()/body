@@ -1,5 +1,5 @@
 {
-  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension("null_column").filters(new SelectorDimFilter("null_column",null)).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Lists.newArrayList(Iterables.concat(QueryRunnerTestHelper.commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
+  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension("null_column").filters(new SelectorDimFilter("null_column",null)).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Lists.newArrayList(Iterables.concat(QueryRunnerTestHelper.commonAggregators,Lists.newArrayList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   Map<String,Object> map=Maps.newHashMap();
   map.put("null_column",null);
   map.put("rows",1209L);

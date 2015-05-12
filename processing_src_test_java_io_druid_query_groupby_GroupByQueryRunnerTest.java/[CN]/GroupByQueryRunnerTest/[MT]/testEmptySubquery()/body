@@ -1,6 +1,6 @@
 {
   GroupByQuery subquery=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.emptyInterval).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
-  GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new MaxAggregatorFactory("idx","idx"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new DoubleMaxAggregatorFactory("idx","idx"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
   Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
   Assert.assertFalse(results.iterator().hasNext());
 }
