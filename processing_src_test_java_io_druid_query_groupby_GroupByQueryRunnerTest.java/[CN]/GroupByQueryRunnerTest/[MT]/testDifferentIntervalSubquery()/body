@@ -1,6 +1,6 @@
 {
   GroupByQuery subquery=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
-  GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.secondOnly).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new MaxAggregatorFactory("idx","idx"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.secondOnly).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new DoubleMaxAggregatorFactory("idx","idx"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","idx",2505.0));
   Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
   TestHelper.assertExpectedObjects(expectedResults,results,"");

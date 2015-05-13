@@ -1,5 +1,5 @@
 {
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryGranularity.ALL).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))).build();
   DateTime expectedEarliest=new DateTime("2011-01-12");
   DateTime expectedLast=new DateTime("2011-04-15");
   Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,CONTEXT),Lists.<Result<TimeseriesResultValue>>newArrayList());

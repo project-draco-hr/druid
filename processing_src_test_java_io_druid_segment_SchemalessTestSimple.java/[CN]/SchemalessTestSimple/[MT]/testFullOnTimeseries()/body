@@ -1,5 +1,5 @@
 {
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(dataSource).granularity(allGran).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
   List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<TimeseriesResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",11L).put("index",900.0).put("addRowsIndexConstant",912.0).put("uniques",2.000977198748901D).put("maxIndex",100.0).put("minIndex",0.0).build())));
   QueryRunner runner=TestQueryRunners.makeTimeSeriesQueryRunner(segment);
   HashMap<String,Object> context=new HashMap<String,Object>();

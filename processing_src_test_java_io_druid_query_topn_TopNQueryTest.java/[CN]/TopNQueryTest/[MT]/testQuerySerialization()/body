@@ -1,5 +1,5 @@
 {
-  Query query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).dimension(marketDimension).metric(indexMetric).threshold(4).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new MaxAggregatorFactory("maxIndex","index"),new MinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
+  Query query=new TopNQueryBuilder().dataSource(dataSource).granularity(allGran).dimension(marketDimension).metric(indexMetric).threshold(4).intervals(fullOnInterval).aggregators(Lists.<AggregatorFactory>newArrayList(Iterables.concat(commonAggregators,Lists.newArrayList(new DoubleMaxAggregatorFactory("maxIndex","index"),new DoubleMinAggregatorFactory("minIndex","index"))))).postAggregators(Arrays.<PostAggregator>asList(addRowsIndexConstant)).build();
   String json=jsonMapper.writeValueAsString(query);
   Query serdeQuery=jsonMapper.readValue(json,Query.class);
   Assert.assertEquals(query,serdeQuery);
