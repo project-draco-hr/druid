@@ -19,7 +19,7 @@
     return new ResourceClosingSequence<>(outerQuery.applyLimit(engine.process(outerQuery,new IncrementalIndexStorageAdapter(index))),index);
   }
  else {
-    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,query.getLimitSpec(),query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false)),context));
+    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false)),context));
     return new ResourceClosingSequence<>(query.applyLimit(postAggregate(query,index)),index);
   }
 }
