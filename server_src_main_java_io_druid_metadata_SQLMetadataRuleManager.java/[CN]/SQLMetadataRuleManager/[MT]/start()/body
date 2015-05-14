@@ -3,14 +3,19 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    this.exec=Execs.scheduledSingleThreaded("DatabaseRuleManager-Exec--%d");
+    exec=MoreExecutors.listeningDecorator(Execs.scheduledSingleThreaded("DatabaseRuleManager-Exec--%d"));
     createDefaultRule(dbi,getRulesTable(),config.get().getDefaultRule(),jsonMapper);
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),config.get().getPollDuration().toStandardDuration(),new Runnable(){
+    future=exec.scheduleWithFixedDelay(new Runnable(){
       @Override public void run(){
-        poll();
+        try {
+          poll();
+        }
+ catch (        Exception e) {
+          log.error(e,"uncaught exception in rule manager polling thread");
+        }
       }
     }
-);
+,0,config.get().getPollDuration().toStandardDuration().getMillis(),TimeUnit.MILLISECONDS);
     started=true;
   }
 }

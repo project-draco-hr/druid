@@ -3,14 +3,19 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    this.exec=Execs.scheduledSingleThreaded("DatabaseSegmentManager-Exec--%d");
+    exec=MoreExecutors.listeningDecorator(Execs.scheduledSingleThreaded("DatabaseSegmentManager-Exec--%d"));
     final Duration delay=config.get().getPollDuration().toStandardDuration();
-    ScheduledExecutors.scheduleWithFixedDelay(exec,new Duration(0),delay,new Runnable(){
+    future=exec.scheduleWithFixedDelay(new Runnable(){
       @Override public void run(){
-        poll();
+        try {
+          poll();
+        }
+ catch (        Exception e) {
+          log.error(e,"uncaught exception in segment manager polling thread");
+        }
       }
     }
-);
+,0,delay.getMillis(),TimeUnit.MILLISECONDS);
     started=true;
   }
 }

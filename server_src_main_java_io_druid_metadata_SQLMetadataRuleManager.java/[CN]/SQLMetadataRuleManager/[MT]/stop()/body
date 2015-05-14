@@ -4,6 +4,8 @@ synchronized (lock) {
       return;
     }
     rules.set(ImmutableMap.<String,List<Rule>>of());
+    future.cancel(false);
+    future=null;
     started=false;
     exec.shutdownNow();
     exec=null;
