@@ -1,31 +1,8 @@
 {
-  final List<String> finalHadoopDependencyCoordinates=hadoopDependencyCoordinates != null ? hadoopDependencyCoordinates : toolbox.getConfig().getDefaultHadoopCoordinates();
-  final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
-  final List<URL> extensionURLs=Lists.newArrayList();
-  for (  String coordinate : extensionsConfig.getCoordinates()) {
-    final ClassLoader coordinateLoader=Initialization.getClassLoaderForCoordinates(aetherClient,coordinate,extensionsConfig.getDefaultVersion());
-    extensionURLs.addAll(Arrays.asList(((URLClassLoader)coordinateLoader).getURLs()));
-  }
-  final List<URL> nonHadoopURLs=Lists.newArrayList();
-  nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)HadoopIndexTask.class.getClassLoader()).getURLs()));
-  final List<URL> driverURLs=Lists.newArrayList();
-  driverURLs.addAll(nonHadoopURLs);
-  for (  String hadoopDependencyCoordinate : finalHadoopDependencyCoordinates) {
-    final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopDependencyCoordinate,extensionsConfig.getDefaultVersion());
-    driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
-  }
-  final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);
-  Thread.currentThread().setContextClassLoader(loader);
-  final List<URL> jobUrls=Lists.newArrayList();
-  jobUrls.addAll(nonHadoopURLs);
-  jobUrls.addAll(extensionURLs);
-  System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
+  final ClassLoader loader=buildClassLoader(toolbox);
   boolean determineIntervals=!spec.getDataSchema().getGranularitySpec().bucketIntervals().isPresent();
-  final Class<?> determineConfigurationMainClass=loader.loadClass(HadoopDetermineConfigInnerProcessing.class.getName());
-  final Method determineConfigurationMainMethod=determineConfigurationMainClass.getMethod("runTask",String[].class);
-  String[] determineConfigArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(spec),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())};
-  String config=(String)determineConfigurationMainMethod.invoke(null,new Object[]{determineConfigArgs});
-  HadoopIngestionSpec indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopIngestionSpec.class);
+  final String config=invokeForeignLoader("io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing",new String[]{toolbox.getObjectMapper().writeValueAsString(spec),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())},loader);
+  final HadoopIngestionSpec indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopIngestionSpec.class);
   final String version;
   if (determineIntervals) {
     Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(indexerSchema.getDataSchema().getGranularitySpec().bucketIntervals().get()));
@@ -38,10 +15,7 @@
     version=myLock.getVersion();
   }
   log.info("Setting version to: %s",version);
-  final Class<?> indexGeneratorMainClass=loader.loadClass(HadoopIndexGeneratorInnerProcessing.class.getName());
-  final Method indexGeneratorMainMethod=indexGeneratorMainClass.getMethod("runTask",String[].class);
-  String[] indexGeneratorArgs=new String[]{toolbox.getObjectMapper().writeValueAsString(indexerSchema),version};
-  String segments=(String)indexGeneratorMainMethod.invoke(null,new Object[]{indexGeneratorArgs});
+  final String segments=invokeForeignLoader("io.druid.indexing.common.task.HadoopIndexTask$HadoopIndexGeneratorInnerProcessing",new String[]{toolbox.getObjectMapper().writeValueAsString(indexerSchema),version},loader);
   if (segments != null) {
     List<DataSegment> publishedSegments=toolbox.getObjectMapper().readValue(segments,new TypeReference<List<DataSegment>>(){
     }
