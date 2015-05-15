@@ -8,12 +8,12 @@
   }
   final Function<Object,Long> inputSizeFn=serde.inputSizeFn();
   if (inputSizeFn == null) {
-    return ColumnAnalysis.error("noSizeFn");
+    return new ColumnAnalysis(typeName,0,null,null);
   }
   final int length=column.getLength();
   long size=0;
   for (int i=0; i < length; ++i) {
     size+=inputSizeFn.apply(complexColumn.getRowValue(i));
   }
-  return new ColumnAnalysis(capabilities.getType().name(),size,null,null);
+  return new ColumnAnalysis(typeName,size,null,null);
 }
