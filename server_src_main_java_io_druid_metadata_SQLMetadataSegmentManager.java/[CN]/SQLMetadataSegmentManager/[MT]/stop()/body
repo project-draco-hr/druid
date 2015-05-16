@@ -5,6 +5,8 @@ synchronized (lock) {
     }
     started=false;
     dataSources.set(new ConcurrentHashMap<String,DruidDataSource>());
+    future.cancel(false);
+    future=null;
     exec.shutdownNow();
     exec=null;
   }
