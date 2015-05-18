@@ -1,0 +1,9 @@
+{
+  PathSpec ps1=EasyMock.createMock(PathSpec.class);
+  EasyMock.expect(ps1.addInputPaths(null,null)).andReturn(null);
+  PathSpec ps2=EasyMock.createMock(PathSpec.class);
+  EasyMock.expect(ps2.addInputPaths(null,null)).andReturn(null);
+  EasyMock.replay(ps1,ps2);
+  new MultiplePathSpec(Lists.newArrayList(ps1,ps2)).addInputPaths(null,null);
+  EasyMock.verify(ps1,ps2);
+}

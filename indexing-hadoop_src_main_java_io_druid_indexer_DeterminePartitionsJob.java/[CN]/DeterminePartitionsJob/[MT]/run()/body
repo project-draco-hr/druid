@@ -6,7 +6,6 @@
     if (!config.getPartitionsSpec().isAssumeGrouped()) {
       final Job groupByJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_groupby-%s",config.getDataSource(),config.getIntervals()));
       JobHelper.injectSystemProperties(groupByJob);
-      JobHelper.setInputFormat(groupByJob,config);
       groupByJob.setMapperClass(DeterminePartitionsGroupByMapper.class);
       groupByJob.setMapOutputKeyClass(BytesWritable.class);
       groupByJob.setMapOutputValueClass(NullWritable.class);
@@ -40,7 +39,6 @@
     }
  else {
       dimSelectionJob.setMapperClass(DeterminePartitionsDimSelectionAssumeGroupedMapper.class);
-      JobHelper.setInputFormat(dimSelectionJob,config);
       config.addInputPaths(dimSelectionJob);
     }
     SortableBytes.useSortableBytesAsMapOutputKey(dimSelectionJob);

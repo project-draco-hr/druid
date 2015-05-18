@@ -1,0 +1,13 @@
+{
+  if (inputFormatClass == null) {
+    if (config.isCombineText()) {
+      MultipleInputs.addInputPath(job,new Path(path),CombineTextInputFormat.class);
+    }
+ else {
+      MultipleInputs.addInputPath(job,new Path(path),TextInputFormat.class);
+    }
+  }
+ else {
+    MultipleInputs.addInputPath(job,new Path(path),inputFormatClass);
+  }
+}

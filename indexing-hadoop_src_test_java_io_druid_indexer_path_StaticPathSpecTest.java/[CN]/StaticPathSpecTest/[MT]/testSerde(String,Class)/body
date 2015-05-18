@@ -1,0 +1,15 @@
+{
+  StringBuilder sb=new StringBuilder();
+  sb.append("{\"paths\" : \"");
+  sb.append(path);
+  sb.append("\",");
+  if (inputFormat != null) {
+    sb.append("\"inputFormat\" : \"");
+    sb.append(inputFormat.getName());
+    sb.append("\",");
+  }
+  sb.append("\"type\" : \"static\"}");
+  StaticPathSpec pathSpec=(StaticPathSpec)readWriteRead(sb.toString(),jsonMapper);
+  Assert.assertEquals(inputFormat,pathSpec.getInputFormat());
+  Assert.assertEquals(path,pathSpec.getPaths());
+}
