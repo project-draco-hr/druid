@@ -1,7 +1,7 @@
 {
   Sequence<InputRow> rows=Sequences.concat(Iterables.transform(adapters,new Function<StorageAdapter,Sequence<InputRow>>(){
     @Nullable @Override public Sequence<InputRow> apply(    StorageAdapter adapter){
-      return Sequences.concat(Sequences.map(adapter.makeCursors(Filters.convertDimensionFilters(dimFilter),interval,QueryGranularity.ALL),new Function<Cursor,Sequence<InputRow>>(){
+      return Sequences.concat(Sequences.map(adapter.makeCursors(Filters.convertDimensionFilters(dimFilter),interval,granularity),new Function<Cursor,Sequence<InputRow>>(){
         @Nullable @Override public Sequence<InputRow> apply(        final Cursor cursor){
           final LongColumnSelector timestampColumnSelector=cursor.makeLongColumnSelector(Column.TIME_COLUMN_NAME);
           final Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
