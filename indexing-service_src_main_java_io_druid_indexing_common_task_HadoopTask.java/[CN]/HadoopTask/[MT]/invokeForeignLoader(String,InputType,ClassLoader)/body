@@ -1,0 +1,16 @@
+{
+  log.debug("Launching [%s] on class loader [%s] with input class [%s]",clazzName,loader,input.getClass());
+  final ClassLoader oldLoader=Thread.currentThread().getContextClassLoader();
+  try {
+    Thread.currentThread().setContextClassLoader(loader);
+    final Class<?> clazz=loader.loadClass(clazzName);
+    final Method method=clazz.getMethod("runTask",input.getClass());
+    return (OutputType)method.invoke(null,input);
+  }
+ catch (  IllegalAccessException|InvocationTargetException|ClassNotFoundException|NoSuchMethodException e) {
+    throw Throwables.propagate(e);
+  }
+ finally {
+    Thread.currentThread().setContextClassLoader(oldLoader);
+  }
+}
