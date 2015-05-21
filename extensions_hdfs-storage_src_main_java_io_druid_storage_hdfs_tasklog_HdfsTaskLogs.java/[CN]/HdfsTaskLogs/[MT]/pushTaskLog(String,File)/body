@@ -1,8 +1,7 @@
 {
   final Path path=getTaskLogFileFromId(taskId);
   log.info("Writing task log to: %s",path);
-  Configuration conf=new Configuration();
-  final FileSystem fs=path.getFileSystem(conf);
-  FileUtil.copy(logFile,fs,path,false,conf);
+  final FileSystem fs=path.getFileSystem(hadoopConfig);
+  FileUtil.copy(logFile,fs,path,false,hadoopConfig);
   log.info("Wrote task log to: %s",path);
 }

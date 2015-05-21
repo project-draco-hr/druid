@@ -1,6 +1,6 @@
 {
   final Path path=getTaskLogFileFromId(taskId);
-  final FileSystem fs=path.getFileSystem(new Configuration());
+  final FileSystem fs=path.getFileSystem(hadoopConfig);
   if (fs.exists(path)) {
     return Optional.<ByteSource>of(new ByteSource(){
       @Override public InputStream openStream() throws IOException {
