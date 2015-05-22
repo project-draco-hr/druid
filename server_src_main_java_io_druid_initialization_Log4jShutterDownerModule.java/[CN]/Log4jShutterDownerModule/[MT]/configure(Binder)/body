@@ -1,0 +1,20 @@
+{
+  try {
+    final Class<?> logManagerClazz=Class.forName("org.apache.logging.log4j.LogManager");
+    final LoggerContextFactory contextFactory=LogManager.getFactory();
+    if (!(contextFactory instanceof Log4jContextFactory)) {
+      log.warn("Expected [%s] found [%s]. Unknown class for context factory. Not logging shutdown",Log4jContextFactory.class.getCanonicalName(),contextFactory.getClass().getCanonicalName());
+      return;
+    }
+    final ShutdownCallbackRegistry registry=((Log4jContextFactory)contextFactory).getShutdownCallbackRegistry();
+    if (!(registry instanceof Log4jShutdown)) {
+      log.warn("Shutdown callback registry expected class [%s] found [%s]. Skipping shutdown registry",Log4jShutdown.class.getCanonicalName(),registry.getClass().getCanonicalName());
+      return;
+    }
+    binder.bind(Log4jShutdown.class).toInstance((Log4jShutdown)registry);
+    binder.bind(Key.get(Log4jShutterDowner.class,Names.named("ForTheEagerness"))).to(Log4jShutterDowner.class).asEagerSingleton();
+  }
+ catch (  ClassNotFoundException|ClassCastException|LinkageError e) {
+    log.warn(e,"Not registering log4j shutdown hooks. Not using log4j?");
+  }
+}
