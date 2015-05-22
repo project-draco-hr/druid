@@ -1,0 +1,9 @@
+{
+  Result<BySegmentResultValue> bySegmentResult=new Result<BySegmentResultValue>(expectedSegmentAnalysis.getIntervals().get(0).getStart(),new BySegmentResultValueClass(Arrays.asList(expectedSegmentAnalysis),expectedSegmentAnalysis.getId(),testQuery.getIntervals().get(0)));
+  QueryToolChest toolChest=factory.getToolchest();
+  QueryRunner singleSegmentQueryRunner=toolChest.preMergeQueryDecoration(runner);
+  ExecutorService exec=Executors.newCachedThreadPool();
+  QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(Executors.newCachedThreadPool(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(singleSegmentQueryRunner,singleSegmentQueryRunner))),toolChest);
+  TestHelper.assertExpectedObjects(ImmutableList.of(bySegmentResult,bySegmentResult),myRunner.run(testQuery.withOverriddenContext(ImmutableMap.<String,Object>of("bySegment",true)),Maps.newHashMap()),"failed SegmentMetadata bySegment query");
+  exec.shutdownNow();
+}

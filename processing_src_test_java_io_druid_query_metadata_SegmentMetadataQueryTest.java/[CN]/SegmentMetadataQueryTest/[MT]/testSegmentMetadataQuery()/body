@@ -1,15 +1,4 @@
 {
-  SegmentMetadataQuery query=Druids.newSegmentMetadataQueryBuilder().dataSource("testing").intervals("2013/2014").toInclude(new ListColumnIncluderator(Arrays.asList("placement"))).merge(true).build();
-  HashMap<String,Object> context=new HashMap<String,Object>();
-  Iterable<SegmentAnalysis> results=Sequences.toList(runner.run(query,context),Lists.<SegmentAnalysis>newArrayList());
-  SegmentAnalysis val=results.iterator().next();
-  Assert.assertEquals("testSegment",val.getId());
-  Assert.assertEquals(71982,val.getSize());
-  Assert.assertEquals(Arrays.asList(new Interval("2011-01-12T00:00:00.000Z/2011-04-15T00:00:00.001Z")),val.getIntervals());
-  Assert.assertEquals(1,val.getColumns().size());
-  final ColumnAnalysis columnAnalysis=val.getColumns().get("placement");
-  Assert.assertEquals("STRING",columnAnalysis.getType());
-  Assert.assertEquals(10881,columnAnalysis.getSize());
-  Assert.assertEquals(new Integer(1),columnAnalysis.getCardinality());
-  Assert.assertNull(columnAnalysis.getErrorMessage());
+  List<SegmentAnalysis> results=Sequences.toList(runner.run(testQuery,Maps.newHashMap()),Lists.<SegmentAnalysis>newArrayList());
+  Assert.assertEquals(Arrays.asList(expectedSegmentAnalysis),results);
 }
