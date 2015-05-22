@@ -1,0 +1,14 @@
+{
+  try (IncrementalIndex index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,maxRowCount)){
+    while (rows.hasNext()) {
+      Object row=rows.next();
+      if (row instanceof String && parser instanceof StringInputRowParser) {
+        index.add(((StringInputRowParser)parser).parse((String)row));
+      }
+ else {
+        index.add(parser.parse(row));
+      }
+    }
+    IndexMerger.persist(index,outDir,new IndexSpec());
+  }
+ }

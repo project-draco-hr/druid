@@ -1,0 +1,25 @@
+{
+  return new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> map){
+      try {
+        Sequence<Row> resultSeq=baseRunner.run(query,Maps.<String,Object>newHashMap());
+        final Yielder yielder=resultSeq.toYielder(null,new YieldingAccumulator(){
+          @Override public Object accumulate(          Object accumulated,          Object in){
+            yield();
+            return in;
+          }
+        }
+);
+        String resultStr=mapper.writer().writeValueAsString(yielder);
+        List resultRows=Lists.transform((List<Row>)mapper.readValue(resultStr,new TypeReference<List<Row>>(){
+        }
+),toolChest.makePreComputeManipulatorFn(query,MetricManipulatorFns.deserializing()));
+        return Sequences.simple(resultRows);
+      }
+ catch (      Exception ex) {
+        throw Throwables.propagate(ex);
+      }
+    }
+  }
+;
+}
