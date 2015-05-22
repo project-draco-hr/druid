@@ -1,0 +1,28 @@
+{
+  final ArrayList<Object[]> constructorArrays=new ArrayList<>();
+  final long longVal=13789;
+  LongMinAggregator longMinAggregator=new LongMinAggregator(NAME,new LongColumnSelector(){
+    @Override public long get(){
+      return longVal;
+    }
+  }
+);
+  LongMinAggregatorFactory longMinAggregatorFactory=new LongMinAggregatorFactory(NAME,FIELD);
+  constructorArrays.add(new Object[]{longMinAggregatorFactory,longMinAggregator,longMinAggregator,longMinAggregator,longVal,longVal});
+  HyperUniquesAggregatorFactory hyperUniquesAggregatorFactory=new HyperUniquesAggregatorFactory(NAME,FIELD);
+  HyperLogLogCollector collector=HyperLogLogCollector.makeLatestCollector();
+  collector.add((short)1,(byte)5);
+  constructorArrays.add(new Object[]{hyperUniquesAggregatorFactory,collector,collector,collector.estimateCardinality(),collector.toByteArray(),collector});
+  LongSumAggregatorFactory longSumAggregatorFactory=new LongSumAggregatorFactory(NAME,FIELD);
+  LongSumAggregator longSumAggregator=new LongSumAggregator(NAME,new LongColumnSelector(){
+    @Override public long get(){
+      return longVal;
+    }
+  }
+);
+  constructorArrays.add(new Object[]{longSumAggregatorFactory,longSumAggregator,longSumAggregator,longSumAggregator,longVal,longVal});
+  for (  Object[] argList : constructorArrays) {
+    Assert.assertEquals(String.format("Arglist %s is too short. Expected 6 found %d",Arrays.toString(argList),argList.length),6,argList.length);
+  }
+  return constructorArrays;
+}
