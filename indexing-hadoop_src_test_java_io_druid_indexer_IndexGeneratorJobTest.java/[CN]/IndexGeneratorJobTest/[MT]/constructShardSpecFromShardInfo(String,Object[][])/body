@@ -1,0 +1,18 @@
+{
+  List<ShardSpec> specs=Lists.newArrayList();
+  if (partitionType.equals("hashed")) {
+    for (    Integer[] shardInfo : (Integer[][])shardInfoForEachShard) {
+      specs.add(new HashBasedNumberedShardSpec(shardInfo[0],shardInfo[1],HadoopDruidIndexerConfig.jsonMapper));
+    }
+  }
+ else   if (partitionType.equals("single")) {
+    int partitionNum=0;
+    for (    String[] shardInfo : (String[][])shardInfoForEachShard) {
+      specs.add(new SingleDimensionShardSpec("host",shardInfo[0],shardInfo[1],partitionNum++));
+    }
+  }
+ else {
+    throw new RuntimeException(String.format("Invalid partition type:[%s]",partitionType));
+  }
+  return specs;
+}

@@ -1,0 +1,42 @@
+{
+  JobHelper.runJobs(ImmutableList.<Jobby>of(job),config);
+  int segmentNum=0;
+  for (DateTime currTime=interval.getStart(); currTime.isBefore(interval.getEnd()); currTime=currTime.plusDays(1)) {
+    Object[][] shardInfo=shardInfoForEachSegment[segmentNum++];
+    File segmentOutputFolder=new File(String.format("%s/%s/%s_%s/%s",config.getSchema().getIOConfig().getSegmentOutputPath(),config.getSchema().getDataSchema().getDataSource(),currTime.toString(),currTime.plusDays(1).toString(),config.getSchema().getTuningConfig().getVersion()));
+    Assert.assertTrue(segmentOutputFolder.exists());
+    Assert.assertEquals(shardInfo.length,segmentOutputFolder.list().length);
+    for (int partitionNum=0; partitionNum < shardInfo.length; ++partitionNum) {
+      File individualSegmentFolder=new File(segmentOutputFolder,Integer.toString(partitionNum));
+      Assert.assertTrue(individualSegmentFolder.exists());
+      File descriptor=new File(individualSegmentFolder,"descriptor.json");
+      File indexZip=new File(individualSegmentFolder,"index.zip");
+      Assert.assertTrue(descriptor.exists());
+      Assert.assertTrue(indexZip.exists());
+      DataSegment dataSegment=mapper.readValue(descriptor,DataSegment.class);
+      Assert.assertEquals("website",dataSegment.getDataSource());
+      Assert.assertEquals(config.getSchema().getTuningConfig().getVersion(),dataSegment.getVersion());
+      Assert.assertEquals(new Interval(currTime,currTime.plusDays(1)),dataSegment.getInterval());
+      Assert.assertEquals("local",dataSegment.getLoadSpec().get("type"));
+      Assert.assertEquals(indexZip.getCanonicalPath(),dataSegment.getLoadSpec().get("path"));
+      Assert.assertEquals("host",dataSegment.getDimensions().get(0));
+      Assert.assertEquals("visited_num",dataSegment.getMetrics().get(0));
+      Assert.assertEquals(Integer.valueOf(9),dataSegment.getBinaryVersion());
+      if (partitionType.equals("hashed")) {
+        Integer[] hashShardInfo=(Integer[])shardInfo[partitionNum];
+        HashBasedNumberedShardSpec spec=(HashBasedNumberedShardSpec)dataSegment.getShardSpec();
+        Assert.assertEquals((int)hashShardInfo[0],spec.getPartitionNum());
+        Assert.assertEquals((int)hashShardInfo[1],spec.getPartitions());
+      }
+ else       if (partitionType.equals("single")) {
+        String[] singleDimensionShardInfo=(String[])shardInfo[partitionNum];
+        SingleDimensionShardSpec spec=(SingleDimensionShardSpec)dataSegment.getShardSpec();
+        Assert.assertEquals(singleDimensionShardInfo[0],spec.getStart());
+        Assert.assertEquals(singleDimensionShardInfo[1],spec.getEnd());
+      }
+ else {
+        throw new RuntimeException(String.format("Invalid partition type:[%s]",partitionType));
+      }
+    }
+  }
+}
