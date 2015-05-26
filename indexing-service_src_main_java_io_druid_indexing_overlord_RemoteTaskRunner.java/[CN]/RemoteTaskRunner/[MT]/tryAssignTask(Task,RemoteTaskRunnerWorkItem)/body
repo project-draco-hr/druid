@@ -16,7 +16,12 @@
  else {
       strategy=workerConfig.getSelectStrategy();
     }
-    final Optional<ImmutableZkWorker> immutableZkWorker=strategy.findWorkerForTask(config,ImmutableMap.copyOf(Maps.transformEntries(zkWorkers,new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
+    final Optional<ImmutableZkWorker> immutableZkWorker=strategy.findWorkerForTask(config,ImmutableMap.copyOf(Maps.transformEntries(Maps.filterEntries(zkWorkers,new Predicate<Map.Entry<String,ZkWorker>>(){
+      @Override public boolean apply(      Map.Entry<String,ZkWorker> input){
+        return !lazyWorkers.containsKey(input.getKey());
+      }
+    }
+),new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
       @Override public ImmutableZkWorker transformEntry(      String key,      ZkWorker value){
         return value.toImmutable();
       }
@@ -24,8 +29,7 @@
 )),task);
     if (immutableZkWorker.isPresent()) {
       final ZkWorker zkWorker=zkWorkers.get(immutableZkWorker.get().getWorker().getHost());
-      announceTask(task,zkWorker,taskRunnerWorkItem);
-      return true;
+      return announceTask(task,zkWorker,taskRunnerWorkItem);
     }
  else {
       log.debug("Worker nodes %s do not have capacity to run any more tasks!",zkWorkers.values());

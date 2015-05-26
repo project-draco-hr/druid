@@ -4,7 +4,13 @@
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
   EasyMock.replay(autoScaler);
-  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create(),"h1","i1","0")));
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.<RemoteTaskRunnerWorkItem>asList()).times(3);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create(),"h1","i1","0"))).times(3);
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<ZkWorker>newArrayList());
+  EasyMock.expect(runner.markWokersLazy((Predicate<ZkWorker>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>emptyList());
+  EasyMock.replay(runner);
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(runner);
   Assert.assertFalse(terminatedSomething);
   EasyMock.verify(autoScaler);
   EasyMock.reset(autoScaler);
@@ -12,7 +18,7 @@
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
   EasyMock.replay(autoScaler);
-  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create())));
+  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertFalse(provisionedSomething);
   EasyMock.verify(autoScaler);
   EasyMock.reset(autoScaler);
@@ -22,7 +28,8 @@
   EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h3")));
   EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h4")));
   EasyMock.replay(autoScaler);
-  provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create(),"h1","i1","0")));
+  provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertTrue(provisionedSomething);
   EasyMock.verify(autoScaler);
+  EasyMock.verify(runner);
 }
