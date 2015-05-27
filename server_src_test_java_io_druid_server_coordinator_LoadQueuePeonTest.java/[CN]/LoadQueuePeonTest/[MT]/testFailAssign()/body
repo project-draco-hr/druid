@@ -1,0 +1,28 @@
+{
+  final DataSegment segment=dataSegmentWithInterval("2014-10-22T00:00:00Z/P1D");
+  final CountDownLatch loadRequestSignal=new CountDownLatch(1);
+  final CountDownLatch segmentLoadedSignal=new CountDownLatch(1);
+  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,new Duration(1),null,false,false));
+  loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
+    @Override public void childEvent(    CuratorFramework client,    PathChildrenCacheEvent event) throws Exception {
+      if (event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED) {
+        loadRequestSignal.countDown();
+      }
+    }
+  }
+);
+  loadQueueCache.start();
+  loadQueuePeon.loadSegment(segment,new LoadPeonCallback(){
+    @Override public void execute(){
+      segmentLoadedSignal.countDown();
+    }
+  }
+);
+  String loadRequestPath=ZKPaths.makePath(LOAD_QUEUE_PATH,segment.getIdentifier());
+  Assert.assertTrue(timing.forWaiting().awaitLatch(loadRequestSignal));
+  Assert.assertNotNull(curator.checkExists().forPath(loadRequestPath));
+  Assert.assertEquals(segment,((SegmentChangeRequestLoad)jsonMapper.readValue(curator.getData().decompressed().forPath(loadRequestPath),DataSegmentChangeRequest.class)).getSegment());
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentLoadedSignal));
+  Assert.assertEquals(0,loadQueuePeon.getSegmentsToLoad().size());
+  Assert.assertEquals(0L,loadQueuePeon.getLoadQueueSize());
+}

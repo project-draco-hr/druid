@@ -1,0 +1,100 @@
+{
+  final AtomicInteger requestSignalIdx=new AtomicInteger(0);
+  final AtomicInteger segmentSignalIdx=new AtomicInteger(0);
+  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,null,null,false,false));
+  final CountDownLatch[] loadRequestSignal=new CountDownLatch[5];
+  final CountDownLatch[] dropRequestSignal=new CountDownLatch[5];
+  final CountDownLatch[] segmentLoadedSignal=new CountDownLatch[5];
+  final CountDownLatch[] segmentDroppedSignal=new CountDownLatch[5];
+  for (int i=0; i < 5; ++i) {
+    loadRequestSignal[i]=new CountDownLatch(1);
+    dropRequestSignal[i]=new CountDownLatch(1);
+    segmentLoadedSignal[i]=new CountDownLatch(1);
+    segmentDroppedSignal[i]=new CountDownLatch(1);
+  }
+  final DataSegmentChangeHandler handler=new DataSegmentChangeHandler(){
+    @Override public void addSegment(    DataSegment segment,    DataSegmentChangeCallback callback){
+      loadRequestSignal[requestSignalIdx.get()].countDown();
+    }
+    @Override public void removeSegment(    DataSegment segment,    DataSegmentChangeCallback callback){
+      dropRequestSignal[requestSignalIdx.get()].countDown();
+    }
+  }
+;
+  final List<DataSegment> segmentToDrop=Lists.transform(ImmutableList.<String>of("2014-10-26T00:00:00Z/P1D","2014-10-25T00:00:00Z/P1D","2014-10-24T00:00:00Z/P1D","2014-10-23T00:00:00Z/P1D","2014-10-22T00:00:00Z/P1D"),new Function<String,DataSegment>(){
+    @Override public DataSegment apply(    String intervalStr){
+      return dataSegmentWithInterval(intervalStr);
+    }
+  }
+);
+  final List<DataSegment> segmentToLoad=Lists.transform(ImmutableList.<String>of("2014-10-31T00:00:00Z/P1D","2014-10-30T00:00:00Z/P1D","2014-10-29T00:00:00Z/P1D","2014-10-28T00:00:00Z/P1D","2014-10-27T00:00:00Z/P1D"),new Function<String,DataSegment>(){
+    @Override public DataSegment apply(    String intervalStr){
+      return dataSegmentWithInterval(intervalStr);
+    }
+  }
+);
+  loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
+    @Override public void childEvent(    CuratorFramework client,    PathChildrenCacheEvent event) throws Exception {
+      if (event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED) {
+        DataSegmentChangeRequest request=jsonMapper.readValue(event.getData().getData(),DataSegmentChangeRequest.class);
+        request.go(handler,null);
+      }
+    }
+  }
+);
+  loadQueueCache.start();
+  for (  DataSegment segment : segmentToDrop) {
+    loadQueuePeon.dropSegment(segment,new LoadPeonCallback(){
+      @Override public void execute(){
+        segmentDroppedSignal[segmentSignalIdx.get()].countDown();
+      }
+    }
+);
+  }
+  for (  DataSegment segment : segmentToLoad) {
+    loadQueuePeon.loadSegment(segment,new LoadPeonCallback(){
+      @Override public void execute(){
+        segmentLoadedSignal[segmentSignalIdx.get()].countDown();
+      }
+    }
+);
+  }
+  Assert.assertEquals(6000,loadQueuePeon.getLoadQueueSize());
+  Assert.assertEquals(5,loadQueuePeon.getSegmentsToLoad().size());
+  Assert.assertEquals(5,loadQueuePeon.getSegmentsToDrop().size());
+  for (  DataSegment segment : segmentToDrop) {
+    String dropRequestPath=ZKPaths.makePath(LOAD_QUEUE_PATH,segment.getIdentifier());
+    Assert.assertTrue(timing.forWaiting().awaitLatch(dropRequestSignal[requestSignalIdx.get()]));
+    Assert.assertNotNull(curator.checkExists().forPath(dropRequestPath));
+    Assert.assertEquals(segment,((SegmentChangeRequestDrop)jsonMapper.readValue(curator.getData().decompressed().forPath(dropRequestPath),DataSegmentChangeRequest.class)).getSegment());
+    if (requestSignalIdx.get() == 4) {
+      requestSignalIdx.set(0);
+    }
+ else {
+      requestSignalIdx.incrementAndGet();
+    }
+    curator.delete().guaranteed().forPath(dropRequestPath);
+    Assert.assertTrue(timing.forWaiting().awaitLatch(segmentDroppedSignal[segmentSignalIdx.get()]));
+    int expectedNumSegmentToDrop=5 - segmentSignalIdx.get() - 1;
+    Assert.assertEquals(expectedNumSegmentToDrop,loadQueuePeon.getSegmentsToDrop().size());
+    if (segmentSignalIdx.get() == 4) {
+      segmentSignalIdx.set(0);
+    }
+ else {
+      segmentSignalIdx.incrementAndGet();
+    }
+  }
+  for (  DataSegment segment : segmentToLoad) {
+    String loadRequestPath=ZKPaths.makePath(LOAD_QUEUE_PATH,segment.getIdentifier());
+    Assert.assertTrue(timing.forWaiting().awaitLatch(loadRequestSignal[requestSignalIdx.get()]));
+    Assert.assertNotNull(curator.checkExists().forPath(loadRequestPath));
+    Assert.assertEquals(segment,((SegmentChangeRequestLoad)jsonMapper.readValue(curator.getData().decompressed().forPath(loadRequestPath),DataSegmentChangeRequest.class)).getSegment());
+    requestSignalIdx.incrementAndGet();
+    curator.delete().guaranteed().forPath(loadRequestPath);
+    Assert.assertTrue(timing.forWaiting().awaitLatch(segmentLoadedSignal[segmentSignalIdx.get()]));
+    int expectedNumSegmentToLoad=5 - segmentSignalIdx.get() - 1;
+    Assert.assertEquals(1200 * expectedNumSegmentToLoad,loadQueuePeon.getLoadQueueSize());
+    Assert.assertEquals(expectedNumSegmentToLoad,loadQueuePeon.getSegmentsToLoad().size());
+    segmentSignalIdx.incrementAndGet();
+  }
+}
