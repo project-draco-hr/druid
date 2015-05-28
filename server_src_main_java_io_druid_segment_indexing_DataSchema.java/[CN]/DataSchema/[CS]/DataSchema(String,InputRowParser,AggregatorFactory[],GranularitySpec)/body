@@ -15,7 +15,16 @@
       }
     }
     if (dimensionsSpec != null) {
-      this.parser=parser.withParseSpec(parser.getParseSpec().withDimensionsSpec(dimensionsSpec.withDimensionExclusions(Sets.difference(dimensionExclusions,Sets.newHashSet(dimensionsSpec.getDimensions())))));
+      final Set<String> metSet=Sets.newHashSet();
+      for (      AggregatorFactory aggregator : aggregators) {
+        metSet.add(aggregator.getName());
+      }
+      final Set<String> dimSet=Sets.newHashSet(dimensionsSpec.getDimensions());
+      final Set<String> overlap=Sets.intersection(metSet,dimSet);
+      if (!overlap.isEmpty()) {
+        throw new IAE("Cannot have overlapping dimensions and metrics of the same name. Please change the name of the metric. Overlap: %s",overlap);
+      }
+      this.parser=parser.withParseSpec(parser.getParseSpec().withDimensionsSpec(dimensionsSpec.withDimensionExclusions(Sets.difference(dimensionExclusions,dimSet))));
     }
  else {
       this.parser=parser;
