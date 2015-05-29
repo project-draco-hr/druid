@@ -2,14 +2,10 @@
   final long timestamp=System.currentTimeMillis();
   IncrementalIndex toPersist=IncrementalIndexTest.createIndex(true,null);
   IncrementalIndexTest.populateIndex(timestamp,toPersist);
-  final File tempDir=Files.createTempDir();
-  try {
-    QueryableIndex index=IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir,indexSpec));
-    Assert.assertEquals(2,index.getColumn(Column.TIME_COLUMN_NAME).getLength());
-    Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
-    Assert.assertEquals(3,index.getColumnNames().size());
-  }
-  finally {
-    tempDir.delete();
-  }
+  final File tempDir=temporaryFolder.newFolder();
+  QueryableIndex index=IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir,indexSpec));
+  Assert.assertEquals(2,index.getColumn(Column.TIME_COLUMN_NAME).getLength());
+  Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
+  Assert.assertEquals(3,index.getColumnNames().size());
+  assertDimCompression(index,indexSpec.getDimensionCompressionStrategy());
 }
