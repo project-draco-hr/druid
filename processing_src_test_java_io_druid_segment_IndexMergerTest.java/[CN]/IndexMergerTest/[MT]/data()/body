@@ -1,3 +1,8 @@
 {
-  return Arrays.asList(new Object[][]{{null,null},{new RoaringBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZ4},{new ConciseBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZ4},{new RoaringBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZF},{new ConciseBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZF}});
+  return Collections2.transform(Sets.cartesianProduct(ImmutableList.of(ImmutableSet.of(new RoaringBitmapSerdeFactory(),new ConciseBitmapSerdeFactory()),ImmutableSet.of(CompressedObjectStrategy.CompressionStrategy.LZ4,CompressedObjectStrategy.CompressionStrategy.LZF),ImmutableSet.of(CompressedObjectStrategy.CompressionStrategy.LZ4,CompressedObjectStrategy.CompressionStrategy.LZF))),new Function<List<?>,Object[]>(){
+    @Nullable @Override public Object[] apply(    List<?> input){
+      return input.toArray();
+    }
+  }
+);
 }
