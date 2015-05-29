@@ -1,0 +1,18 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String json="{ \"amiId\" : \"abc123\", \"instanceType\" : \"k2.9xsmall\", \"minInstances\" : 1, \"maxInstances\" : 2," + " \"securityGroupIds\" : [\"sg-abc321\"], \"keyName\" : \"opensesame\", \"subnetId\" : \"darknet2\"," + " \"associatePublicIpAddress\" : true, \"iamProfile\" : { \"name\" : \"john\", \"arn\" : \"xxx:abc:1234/xyz\" } }";
+  EC2NodeData nodeData=objectMapper.readValue(json,EC2NodeData.class);
+  Assert.assertEquals("abc123",nodeData.getAmiId());
+  Assert.assertEquals("k2.9xsmall",nodeData.getInstanceType());
+  Assert.assertEquals(2,nodeData.getMaxInstances());
+  Assert.assertEquals(1,nodeData.getMinInstances());
+  Assert.assertEquals(Arrays.asList("sg-abc321"),nodeData.getSecurityGroupIds());
+  Assert.assertEquals("opensesame",nodeData.getKeyName());
+  Assert.assertEquals("darknet2",nodeData.getSubnetId());
+  Assert.assertEquals("john",nodeData.getIamProfile().getName());
+  Assert.assertEquals("xxx:abc:1234/xyz",nodeData.getIamProfile().getArn());
+  Assert.assertEquals(true,nodeData.getAssociatePublicIpAddress());
+  EC2NodeData nodeData2=objectMapper.readValue("{}",EC2NodeData.class);
+  Assert.assertNull(nodeData2.getAssociatePublicIpAddress());
+  Assert.assertEquals(nodeData,objectMapper.readValue(objectMapper.writeValueAsBytes(nodeData),EC2NodeData.class));
+}

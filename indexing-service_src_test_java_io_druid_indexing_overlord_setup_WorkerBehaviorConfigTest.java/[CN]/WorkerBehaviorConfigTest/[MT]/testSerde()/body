@@ -1,5 +1,5 @@
 {
-  WorkerBehaviorConfig config=new WorkerBehaviorConfig(new FillCapacityWithAffinityWorkerSelectStrategy(new FillCapacityWithAffinityConfig(ImmutableMap.of("foo",Arrays.asList("localhost")))),new EC2AutoScaler(7,11,new EC2EnvironmentConfig("us-east-1a",new EC2NodeData("amiid","instanceType",3,5,Arrays.asList("securityGroupIds"),"keyNames","subnetId",null),new StringEC2UserData("availZone","replace","version")),null,null));
+  WorkerBehaviorConfig config=new WorkerBehaviorConfig(new FillCapacityWithAffinityWorkerSelectStrategy(new FillCapacityWithAffinityConfig(ImmutableMap.of("foo",Arrays.asList("localhost")))),new EC2AutoScaler(7,11,new EC2EnvironmentConfig("us-east-1a",new EC2NodeData("amiid","instanceType",3,5,Arrays.asList("securityGroupIds"),"keyNames","subnetId",null,null),new StringEC2UserData("availZone","replace","version")),null,null));
   final ObjectMapper mapper=new DefaultObjectMapper();
   mapper.setInjectableValues(new InjectableValues(){
     @Override public Object findInjectableValue(    Object valueId,    DeserializationContext ctxt,    BeanProperty forProperty,    Object beanInstance){
