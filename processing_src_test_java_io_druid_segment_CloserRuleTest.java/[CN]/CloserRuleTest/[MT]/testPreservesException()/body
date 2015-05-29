@@ -1,0 +1,27 @@
+{
+  final CloserRule closer=new CloserRule(false);
+  final AtomicBoolean closed=new AtomicBoolean(false);
+  closer.closeLater(new Closeable(){
+    @Override public void close() throws IOException {
+      closed.set(true);
+    }
+  }
+);
+  final String msg="You can't divide by zero, you can only take the limit of such!";
+  Exception ex=null;
+  try {
+    run(closer,new Runnable(){
+      @Override public void run(){
+        throw new ArithmeticException(msg);
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    ex=e;
+  }
+  Assert.assertTrue(closed.get());
+  Assert.assertNotNull(ex);
+  Assert.assertTrue(ex instanceof ArithmeticException);
+  Assert.assertEquals(msg,ex.getMessage());
+}

@@ -1,5 +1,5 @@
 {
-  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(IndexIO.loadIndex(persistTmpDir));
+  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(closer.closeLater(IndexIO.loadIndex(persistTmpDir)));
   Assert.assertEquals(events.size(),adapter.getNumRows());
   reprocessAndValidate(persistTmpDir,new File(tmpDir,"reprocessed"));
 }

@@ -1,0 +1,23 @@
+{
+  final CloserRule closer=new CloserRule(false);
+  final String ioExceptionMsg="You can't triple stamp a double stamp!";
+  closer.closeLater(new Closeable(){
+    @Override public void close() throws IOException {
+      throw new IOException(ioExceptionMsg);
+    }
+  }
+);
+  closer.closeLater(new Closeable(){
+    @Override public void close() throws IOException {
+      throw new IOException(ioExceptionMsg);
+    }
+  }
+);
+  closer.closeLater(new AutoCloseable(){
+    @Override public void close() throws Exception {
+      throw new IOException(ioExceptionMsg);
+    }
+  }
+);
+  run(closer,Runnables.doNothing());
+}
