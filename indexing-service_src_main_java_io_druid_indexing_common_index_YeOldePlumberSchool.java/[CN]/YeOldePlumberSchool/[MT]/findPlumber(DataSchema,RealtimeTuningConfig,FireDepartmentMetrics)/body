@@ -43,7 +43,7 @@
             indexes.add(IndexIO.loadIndex(oneSpill));
           }
           fileToUpload=new File(tmpSegmentDir,"merged");
-          IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload,config.getIndexSpec());
+          IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload,config.getIndexSpec());
         }
         final QueryableIndex mappedSegment=IndexIO.loadIndex(fileToUpload);
         final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withBinaryVersion(SegmentUtils.getVersionFromDir(fileToUpload));
@@ -73,7 +73,7 @@
         final File dirToPersist=getSpillDir(indexToPersist.getCount());
         log.info("Spilling index[%d] with rows[%d] to: %s",indexToPersist.getCount(),rowsToPersist,dirToPersist);
         try {
-          IndexMaker.persist(indexToPersist.getIndex(),dirToPersist,config.getIndexSpec());
+          IndexMerger.persist(indexToPersist.getIndex(),dirToPersist,config.getIndexSpec());
           indexToPersist.swapSegment(null);
           metrics.incrementRowOutputCount(rowsToPersist);
           spilled.add(dirToPersist);
