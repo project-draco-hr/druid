@@ -1,0 +1,67 @@
+{
+  String dataSource="dataSource1";
+  String tier="hot";
+  Rule foreverLoadRule=new ForeverLoadRule(ImmutableMap.of(tier,2));
+  EasyMock.expect(metadataRuleManager.getRulesWithDefault(EasyMock.anyString())).andReturn(ImmutableList.of(foreverLoadRule)).atLeastOnce();
+  EasyMock.replay(metadataRuleManager);
+  DruidDataSource[] druidDataSources={new DruidDataSource(dataSource,new HashMap())};
+  DataSegment dataSegment=new DataSegment(dataSource,new Interval("2010-01-01/P1D"),"v1",null,null,null,null,0x9,0);
+  druidDataSources[0].addSegment("0",dataSegment);
+  EasyMock.expect(databaseSegmentManager.isStarted()).andReturn(true).anyTimes();
+  EasyMock.expect(databaseSegmentManager.getInventory()).andReturn(ImmutableList.of(druidDataSources[0])).atLeastOnce();
+  EasyMock.replay(databaseSegmentManager);
+  ImmutableDruidDataSource immutableDruidDataSource=EasyMock.createNiceMock(ImmutableDruidDataSource.class);
+  EasyMock.expect(immutableDruidDataSource.getSegments()).andReturn(ImmutableSet.of(dataSegment)).atLeastOnce();
+  EasyMock.replay(immutableDruidDataSource);
+  EasyMock.expect(druidServer.toImmutableDruidServer()).andReturn(new ImmutableDruidServer(new DruidServerMetadata("server1","localhost",5L,"historical",tier,0),1L,ImmutableMap.<String,ImmutableDruidDataSource>of(),ImmutableMap.<String,DataSegment>of())).atLeastOnce();
+  EasyMock.expect(druidServer.isAssignable()).andReturn(true).anyTimes();
+  EasyMock.expect(druidServer.getName()).andReturn("server1").anyTimes();
+  EasyMock.replay(druidServer);
+  loadManagementPeons.put("server1",loadQueuePeon);
+  EasyMock.expect(serverInventoryView.getInventory()).andReturn(ImmutableList.of(druidServer)).atLeastOnce();
+  try {
+    serverInventoryView.start();
+    EasyMock.expectLastCall().atLeastOnce();
+  }
+ catch (  Exception ex) {
+    throw ex;
+  }
+  EasyMock.expect(serverInventoryView.isStarted()).andReturn(true).anyTimes();
+  EasyMock.replay(serverInventoryView);
+  coordinator.start();
+  try {
+    Assert.assertTrue(leaderAnnouncerLatch.await(4,TimeUnit.SECONDS));
+  }
+ catch (  InterruptedException ex) {
+    throw ex;
+  }
+  Assert.assertTrue(coordinator.isLeader());
+  final CountDownLatch assignSegmentLatch=new CountDownLatch(1);
+  pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
+    @Override public void childEvent(    CuratorFramework curatorFramework,    PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+      if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
+        assignSegmentLatch.countDown();
+      }
+    }
+  }
+);
+  try {
+    pathChildrenCache.start();
+  }
+ catch (  Exception ex) {
+    throw ex;
+  }
+  Assert.assertTrue(assignSegmentLatch.await(4,TimeUnit.SECONDS));
+  curator.delete().guaranteed().forPath(ZKPaths.makePath(LOADPATH,dataSegment.getIdentifier()));
+  Map<String,CountingMap<String>> replicationStatus=coordinator.getReplicationStatus();
+  Assert.assertNotNull(replicationStatus);
+  Assert.assertEquals(1,replicationStatus.entrySet().size());
+  CountingMap<String> dataSourceMap=replicationStatus.get(tier);
+  Assert.assertNotNull(dataSourceMap);
+  Assert.assertEquals(1,dataSourceMap.size());
+  Assert.assertNotNull(dataSourceMap.get(dataSource));
+  Assert.assertEquals(2l,dataSourceMap.get(dataSource).get());
+  EasyMock.verify(druidServer);
+  EasyMock.verify(serverInventoryView);
+  EasyMock.verify(metadataRuleManager);
+}

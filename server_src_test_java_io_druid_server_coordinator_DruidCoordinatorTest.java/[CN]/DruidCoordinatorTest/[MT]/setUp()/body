@@ -1,18 +1,36 @@
 {
   druidServer=EasyMock.createMock(DruidServer.class);
-  druidServer2=EasyMock.createMock(DruidServer.class);
-  segment=EasyMock.createNiceMock(DataSegment.class);
-  loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
-  loadManagementPeons=new MapMaker().makeMap();
   serverInventoryView=EasyMock.createMock(SingleServerInventoryView.class);
   databaseSegmentManager=EasyMock.createNiceMock(MetadataSegmentManager.class);
-  EasyMock.replay(databaseSegmentManager);
-  scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
-  EasyMock.replay(scheduledExecutorFactory);
-  coordinator=new DruidCoordinator(new TestDruidCoordinatorConfig(null,null,null,null,null,false,false),new ZkPathsConfig(){
-    @Override public String getBase(){
-      return "";
+  metadataRuleManager=EasyMock.createNiceMock(MetadataRuleManager.class);
+  configManager=EasyMock.createNiceMock(JacksonConfigManager.class);
+  EasyMock.expect(configManager.watch(EasyMock.anyString(),EasyMock.anyObject(Class.class),EasyMock.anyObject())).andReturn(new AtomicReference(new CoordinatorDynamicConfig.Builder().build())).anyTimes();
+  EasyMock.replay(configManager);
+  setupServerAndCurator();
+  curator.start();
+  curator.create().creatingParentsIfNeeded().forPath(LOADPATH);
+  segmentReplicantLookup=null;
+  objectMapper=new DefaultObjectMapper();
+  druidCoordinatorConfig=new TestDruidCoordinatorConfig(new Duration(1),new Duration(6000),null,null,null,false,false);
+  pathChildrenCache=new PathChildrenCache(curator,LOADPATH,true,true,Execs.singleThreaded("coordinator_test_path_children_cache-%d"));
+  loadQueuePeon=new LoadQueuePeon(curator,LOADPATH,objectMapper,Execs.scheduledSingleThreaded("coordinator_test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("coordinator_test_load_queue_peon-%d"),druidCoordinatorConfig);
+  loadManagementPeons=new MapMaker().makeMap();
+  scheduledExecutorFactory=new ScheduledExecutorFactory(){
+    @Override public ScheduledExecutorService create(    int corePoolSize,    final String nameFormat){
+      return Executors.newSingleThreadScheduledExecutor();
     }
   }
-,null,databaseSegmentManager,serverInventoryView,null,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,new NoopServiceAnnouncer(),new DruidNode("hey","what",1234),loadManagementPeons);
+;
+  leaderAnnouncerLatch=new CountDownLatch(1);
+  coordinator=new DruidCoordinator(druidCoordinatorConfig,new ZkPathsConfig(){
+    @Override public String getBase(){
+      return "druid";
+    }
+  }
+,configManager,databaseSegmentManager,serverInventoryView,metadataRuleManager,curator,new NoopServiceEmitter(),scheduledExecutorFactory,null,taskMaster,new NoopServiceAnnouncer(){
+    @Override public void announce(    DruidNode node){
+      leaderAnnouncerLatch.countDown();
+    }
+  }
+,new DruidNode("hey","what",1234),loadManagementPeons);
 }

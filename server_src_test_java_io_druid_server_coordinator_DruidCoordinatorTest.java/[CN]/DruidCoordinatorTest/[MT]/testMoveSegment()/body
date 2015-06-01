@@ -1,12 +1,19 @@
 {
+  loadQueuePeon=EasyMock.createNiceMock(LoadQueuePeon.class);
+  EasyMock.expect(loadQueuePeon.getLoadQueueSize()).andReturn(new Long(1));
+  EasyMock.replay(loadQueuePeon);
+  segment=EasyMock.createNiceMock(DataSegment.class);
+  EasyMock.replay(segment);
+  scheduledExecutorFactory=EasyMock.createNiceMock(ScheduledExecutorFactory.class);
+  EasyMock.replay(scheduledExecutorFactory);
+  EasyMock.replay(metadataRuleManager);
   EasyMock.expect(druidServer.toImmutableDruidServer()).andReturn(new ImmutableDruidServer(new DruidServerMetadata("from",null,5L,null,null,0),1L,null,ImmutableMap.of("dummySegment",segment))).atLeastOnce();
   EasyMock.replay(druidServer);
+  druidServer2=EasyMock.createMock(DruidServer.class);
   EasyMock.expect(druidServer2.toImmutableDruidServer()).andReturn(new ImmutableDruidServer(new DruidServerMetadata("to",null,5L,null,null,0),1L,null,ImmutableMap.of("dummySegment2",segment))).atLeastOnce();
   EasyMock.replay(druidServer2);
   loadManagementPeons.put("from",loadQueuePeon);
   loadManagementPeons.put("to",loadQueuePeon);
-  EasyMock.expect(loadQueuePeon.getLoadQueueSize()).andReturn(new Long(1));
-  EasyMock.replay(loadQueuePeon);
   EasyMock.expect(serverInventoryView.getInventoryManagerConfig()).andReturn(new InventoryManagerConfig(){
     @Override public String getContainerPath(){
       return "";
@@ -18,4 +25,9 @@
 );
   EasyMock.replay(serverInventoryView);
   coordinator.moveSegment(druidServer.toImmutableDruidServer(),druidServer2.toImmutableDruidServer(),"dummySegment",null);
+  EasyMock.verify(druidServer);
+  EasyMock.verify(druidServer2);
+  EasyMock.verify(loadQueuePeon);
+  EasyMock.verify(serverInventoryView);
+  EasyMock.verify(metadataRuleManager);
 }
