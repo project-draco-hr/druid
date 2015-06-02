@@ -9,6 +9,9 @@
     @Override public boolean preservesOrdering(){
       return false;
     }
+    @Override public ExtractionType getExtractionType(){
+      return ExtractionType.MANY_TO_ONE;
+    }
   }
 ;
   final TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).metric("rows").threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).dimension(new ExtractionDimensionSpec(QueryRunnerTestHelper.marketDimension,QueryRunnerTestHelper.marketDimension,nullStringDimExtraction,null)).build();
@@ -22,5 +25,5 @@
     }
   }
 ,ImmutableMap.<String,Object>of(QueryRunnerTestHelper.marketDimension,"upfront","rows",4L,"index",4875.669677734375D,"addRowsIndexConstant",4880.669677734375D,"uniques",QueryRunnerTestHelper.UNIQUES_2)))));
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query,Maps.newHashMap()));
+  assertExpectedResults(expectedResults,query);
 }

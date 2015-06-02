@@ -1,0 +1,24 @@
+{
+  this.retainMissingValue=retainMissingValue;
+  this.replaceMissingValueWith=Strings.emptyToNull(replaceMissingValueWith);
+  Preconditions.checkArgument(!(this.retainMissingValue && !Strings.isNullOrEmpty(this.replaceMissingValueWith)),"Cannot specify a [replaceMissingValueWith] and set [retainMissingValue] to true");
+  if (this.retainMissingValue) {
+    this.extractionFunction=new Function<String,String>(){
+      @Nullable @Override public String apply(      @Nullable String dimValue){
+        final String retval=extractionFunction.apply(dimValue);
+        return Strings.isNullOrEmpty(retval) ? Strings.emptyToNull(dimValue) : retval;
+      }
+    }
+;
+  }
+ else {
+    this.extractionFunction=new Function<String,String>(){
+      @Nullable @Override public String apply(      @Nullable String dimValue){
+        final String retval=extractionFunction.apply(dimValue);
+        return Strings.isNullOrEmpty(retval) ? FunctionalExtraction.this.replaceMissingValueWith : retval;
+      }
+    }
+;
+  }
+  this.extractionType=injective ? ExtractionType.ONE_TO_ONE : ExtractionType.MANY_TO_ONE;
+}

@@ -1,0 +1,38 @@
+{
+  if (in == null) {
+    return ImmutableList.<Object[]>of();
+  }
+  final List<Iterable<?>> iterables=Arrays.asList(in);
+  final int length=in.length;
+  final List<Iterator<?>> iterators=new ArrayList<>(in.length);
+  for (  Iterable<?> iterable : iterables) {
+    iterators.add(iterable.iterator());
+  }
+  return new Iterable<Object[]>(){
+    @Override public Iterator<Object[]> iterator(){
+      return new Iterator<Object[]>(){
+        @Override public boolean hasNext(){
+          int hasMore=0;
+          for (          Iterator<?> it : iterators) {
+            if (it.hasNext()) {
+              ++hasMore;
+            }
+          }
+          return hasMore == length;
+        }
+        @Override public Object[] next(){
+          final ArrayList<Object> list=new ArrayList<Object>(length);
+          for (          Iterator<?> it : iterators) {
+            list.add(it.next());
+          }
+          return list.toArray();
+        }
+        @Override public void remove(){
+          throw new UOE("Remove not supported");
+        }
+      }
+;
+    }
+  }
+;
+}

@@ -1,3 +1,20 @@
 {
-  return intervalChunkingQueryRunnerDecorator.decorate(runner,this);
+  return intervalChunkingQueryRunnerDecorator.decorate(new QueryRunner<Result<TopNResultValue>>(){
+    @Override public Sequence<Result<TopNResultValue>> run(    Query<Result<TopNResultValue>> query,    Map<String,Object> responseContext){
+      if (!(query instanceof TopNQuery)) {
+        return runner.run(query,responseContext);
+      }
+ else {
+        final TopNQuery topNQuery=(TopNQuery)query;
+        if (TopNQueryEngine.canApplyExtractionInPost(topNQuery)) {
+          final DimensionSpec dimensionSpec=topNQuery.getDimensionSpec();
+          return runner.run(topNQuery.withDimensionSpec(new DefaultDimensionSpec(dimensionSpec.getDimension(),dimensionSpec.getOutputName())),responseContext);
+        }
+ else {
+          return runner.run(query,responseContext);
+        }
+      }
+    }
+  }
+,this);
 }

@@ -1,0 +1,9 @@
+{
+  final DimExtractionFn fn=mapper.reader(DimExtractionFn.class).readValue(String.format("{\"type\":\"lookup\",\"lookup\":{\"type\":\"map\", \"map\":%s}}",mapper.writeValueAsString(renames)));
+  for (  String key : renames.keySet()) {
+    Assert.assertEquals(renames.get(key),fn.apply(key));
+  }
+  final String crazyString=UUID.randomUUID().toString();
+  Assert.assertEquals(null,fn.apply(crazyString));
+  Assert.assertEquals(crazyString,mapper.reader(DimExtractionFn.class).<DimExtractionFn>readValue(String.format("{\"type\":\"lookup\",\"lookup\":{\"type\":\"map\", \"map\":%s}, \"retainMissingValue\":true}",mapper.writeValueAsString(renames))).apply(crazyString));
+}

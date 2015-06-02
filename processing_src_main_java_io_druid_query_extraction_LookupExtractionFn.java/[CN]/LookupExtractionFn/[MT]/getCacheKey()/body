@@ -1,0 +1,16 @@
+{
+  try {
+    final ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+    outputStream.write(CACHE_TYPE_ID);
+    outputStream.write(lookup.getCacheKey());
+    if (getReplaceMissingValueWith() != null) {
+      outputStream.write(StringUtils.toUtf8(getReplaceMissingValueWith()));
+    }
+    outputStream.write(isInjective() ? 1 : 0);
+    outputStream.write(isRetainMissingValue() ? 1 : 0);
+    return outputStream.toByteArray();
+  }
+ catch (  IOException ex) {
+    throw Throwables.propagate(ex);
+  }
+}

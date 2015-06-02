@@ -1,6 +1,5 @@
 {
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(QueryRunnerTestHelper.marketDimension).metric(new NumericTopNMetricSpec("numVals")).threshold(10).intervals(QueryRunnerTestHelper.firstToThird).aggregators(Lists.<AggregatorFactory>newArrayList(new CardinalityAggregatorFactory("numVals",ImmutableList.of(QueryRunnerTestHelper.marketDimension),false))).build();
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of("market","spot","numVals",1.0002442201269182d),ImmutableMap.<String,Object>of("market","total_market","numVals",1.0002442201269182d),ImmutableMap.<String,Object>of("market","upfront","numVals",1.0002442201269182d)))));
-  HashMap<String,Object> context=new HashMap<String,Object>();
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+  assertExpectedResults(expectedResults,query);
 }

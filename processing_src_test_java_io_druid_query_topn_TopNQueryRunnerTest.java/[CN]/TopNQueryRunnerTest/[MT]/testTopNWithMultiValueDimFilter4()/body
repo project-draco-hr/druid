@@ -1,6 +1,5 @@
 {
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.placementishDimension,"a","b").dimension(QueryRunnerTestHelper.placementishDimension).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).build();
   final ArrayList<Result<TopNResultValue>> expectedResults=Lists.newArrayList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of("placementish","preferred","rows",4L,"index",514.868408203125D,"addRowsIndexConstant",519.868408203125D,"uniques",QueryRunnerTestHelper.UNIQUES_2),ImmutableMap.<String,Object>of("placementish","a","rows",2L,"index",283.31103515625D,"addRowsIndexConstant",286.31103515625D,"uniques",QueryRunnerTestHelper.UNIQUES_1),ImmutableMap.<String,Object>of("placementish","b","rows",2L,"index",231.557373046875D,"addRowsIndexConstant",234.557373046875D,"uniques",QueryRunnerTestHelper.UNIQUES_1)))));
-  HashMap<String,Object> context=new HashMap<String,Object>();
-  TestHelper.assertExpectedResults(expectedResults,runner.run(query,context));
+  assertExpectedResults(expectedResults,query);
 }

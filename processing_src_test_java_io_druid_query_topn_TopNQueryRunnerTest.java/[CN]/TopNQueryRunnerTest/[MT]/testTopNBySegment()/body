@@ -3,12 +3,31 @@
   specialContext.put("bySegment","true");
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(QueryRunnerTestHelper.marketDimension).metric(QueryRunnerTestHelper.indexMetric).threshold(4).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).context(specialContext).build();
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of("addRowsIndexConstant",5356.814697265625D,"index",5351.814697265625D,QueryRunnerTestHelper.marketDimension,"total_market","uniques",QueryRunnerTestHelper.UNIQUES_2,"rows",4L),ImmutableMap.<String,Object>of("addRowsIndexConstant",4880.669677734375D,"index",4875.669677734375D,QueryRunnerTestHelper.marketDimension,"upfront","uniques",QueryRunnerTestHelper.UNIQUES_2,"rows",4L),ImmutableMap.<String,Object>of("addRowsIndexConstant",2250.8768157958984D,"index",2231.8768157958984D,QueryRunnerTestHelper.marketDimension,"spot","uniques",QueryRunnerTestHelper.UNIQUES_9,"rows",18L)))));
-  Sequence<Result<TopNResultValue>> results=new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()).postMergeQueryDecoration(runner).run(query,specialContext);
+  Sequence<Result<TopNResultValue>> results=runWithMerge(query,specialContext);
   List<Result<BySegmentTopNResultValue>> resultList=Sequences.toList(Sequences.map(results,new Function<Result<TopNResultValue>,Result<BySegmentTopNResultValue>>(){
     @Nullable @Override public Result<BySegmentTopNResultValue> apply(    Result<TopNResultValue> input){
-      return new Result<BySegmentTopNResultValue>(input.getTimestamp(),(BySegmentTopNResultValue)input.getValue());
+      Object val=input.getValue();
+      if (val instanceof BySegmentResultValue) {
+        BySegmentResultValue bySegVal=(BySegmentResultValue)val;
+        List<?> results=bySegVal.getResults();
+        return new Result<BySegmentTopNResultValue>(input.getTimestamp(),new BySegmentTopNResultValue(Lists.transform(results,new Function<Object,Result<TopNResultValue>>(){
+          @Nullable @Override public Result<TopNResultValue> apply(          @Nullable Object input){
+            if (Preconditions.checkNotNull(input) instanceof Result) {
+              Result result=(Result)input;
+              Object resVal=result.getValue();
+              if (resVal instanceof TopNResultValue) {
+                return new Result<TopNResultValue>(result.getTimestamp(),(TopNResultValue)resVal);
+              }
+            }
+            throw new IAE("Bad input: [%s]",input);
+          }
+        }
+),bySegVal.getSegmentId(),bySegVal.getInterval()));
+      }
+      throw new ISE("Bad type");
     }
   }
 ),Lists.<Result<BySegmentTopNResultValue>>newArrayList());
-  TestHelper.assertExpectedResults(expectedResults,resultList.get(0).getValue().getResults());
+  Result<BySegmentTopNResultValue> result=resultList.get(0);
+  TestHelper.assertExpectedResults(expectedResults,result.getValue().getResults());
 }

@@ -1,3 +1,27 @@
 {
-  return new SubqueryQueryRunner<>(intervalChunkingQueryRunnerDecorator.decorate(runner,this));
+  return new SubqueryQueryRunner<>(intervalChunkingQueryRunnerDecorator.decorate(new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
+      if (!(query instanceof GroupByQuery)) {
+        return runner.run(query,responseContext);
+      }
+      GroupByQuery groupByQuery=(GroupByQuery)query;
+      ArrayList<DimensionSpec> dimensionSpecs=new ArrayList<>();
+      Set<String> optimizedDimensions=ImmutableSet.copyOf(Iterables.transform(extractionsToRewrite(groupByQuery),new Function<DimensionSpec,String>(){
+        @Override public String apply(        DimensionSpec input){
+          return input.getDimension();
+        }
+      }
+));
+      for (      DimensionSpec dimensionSpec : groupByQuery.getDimensions()) {
+        if (optimizedDimensions.contains(dimensionSpec.getDimension())) {
+          dimensionSpecs.add(new DefaultDimensionSpec(dimensionSpec.getDimension(),dimensionSpec.getOutputName()));
+        }
+ else {
+          dimensionSpecs.add(dimensionSpec);
+        }
+      }
+      return runner.run(groupByQuery.withDimensionSpecs(dimensionSpecs),responseContext);
+    }
+  }
+,this));
 }

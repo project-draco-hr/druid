@@ -13,7 +13,7 @@
     singleSegmentRunners.add(toolChest.preMergeQueryDecoration(runner));
   }
   ExecutorService exec=Executors.newCachedThreadPool();
-  QueryRunner theRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(Executors.newCachedThreadPool(),singleSegmentRunners)),toolChest);
+  QueryRunner theRunner=toolChest.postMergeQueryDecoration(new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(Executors.newCachedThreadPool(),singleSegmentRunners)),toolChest));
   TestHelper.assertExpectedObjects(bySegmentResults,theRunner.run(fullQuery,Maps.newHashMap()),"");
   exec.shutdownNow();
 }

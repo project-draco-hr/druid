@@ -1,14 +1,10 @@
 {
-  final ExtractionFn fn1=new RegexDimExtractionFn("(\\w{1})");
-  final ExtractionFn emptyStringExtractionFn=new DimExtractionFn(){
+  final ExtractionFn emptyStringExtractionFn=new RegexDimExtractionFn("(\\w{1})"){
     @Override public byte[] getCacheKey(){
       return new byte[]{(byte)0xFF};
     }
     @Override public String apply(    String dimValue){
-      return dimValue.equals("mezzanine") ? "" : fn1.apply(dimValue);
-    }
-    @Override public boolean preservesOrdering(){
-      return false;
+      return dimValue.equals("mezzanine") ? "" : super.apply(dimValue);
     }
   }
 ;

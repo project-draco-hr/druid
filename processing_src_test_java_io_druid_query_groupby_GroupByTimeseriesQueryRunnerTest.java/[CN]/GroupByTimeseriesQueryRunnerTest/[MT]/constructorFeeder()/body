@@ -9,19 +9,12 @@
   }
 ));
   final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,QueryRunnerTestHelper.NOOP_QUERYWATCHER,configSupplier,new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),TestQueryRunners.pool);
-  final Collection<?> objects=QueryRunnerTestHelper.makeQueryRunners(factory);
-  Object[][] newObjects=new Object[objects.size()][];
-  int i=0;
-  for (  Object object : objects) {
-    if (object instanceof Object[]) {
-      Object[] queryRunnerArray=(Object[])object;
-      Preconditions.checkState(queryRunnerArray.length == 1);
-      Preconditions.checkState(queryRunnerArray[0] instanceof QueryRunner);
-      final QueryRunner groupByRunner=(QueryRunner)queryRunnerArray[0];
-      QueryRunner timeseriesRunner=new QueryRunner(){
+  return QueryRunnerTestHelper.transformToConstructionFeeder(Lists.transform(QueryRunnerTestHelper.makeQueryRunners(factory),new Function<QueryRunner<Row>,Object>(){
+    @Nullable @Override public Object apply(    final QueryRunner<Row> input){
+      return new QueryRunner(){
         @Override public Sequence run(        Query query,        Map responseContext){
           TimeseriesQuery tsQuery=(TimeseriesQuery)query;
-          return Sequences.map(groupByRunner.run(GroupByQuery.builder().setDataSource(tsQuery.getDataSource()).setQuerySegmentSpec(tsQuery.getQuerySegmentSpec()).setGranularity(tsQuery.getGranularity()).setDimFilter(tsQuery.getDimensionsFilter()).setAggregatorSpecs(tsQuery.getAggregatorSpecs()).setPostAggregatorSpecs(tsQuery.getPostAggregatorSpecs()).build(),responseContext),new Function<Row,Result<TimeseriesResultValue>>(){
+          return Sequences.map(input.run(GroupByQuery.builder().setDataSource(tsQuery.getDataSource()).setQuerySegmentSpec(tsQuery.getQuerySegmentSpec()).setGranularity(tsQuery.getGranularity()).setDimFilter(tsQuery.getDimensionsFilter()).setAggregatorSpecs(tsQuery.getAggregatorSpecs()).setPostAggregatorSpecs(tsQuery.getPostAggregatorSpecs()).build(),responseContext),new Function<Row,Result<TimeseriesResultValue>>(){
             @Override public Result<TimeseriesResultValue> apply(            final Row input){
               MapBasedRow row=(MapBasedRow)input;
               return new Result<TimeseriesResultValue>(row.getTimestamp(),new TimeseriesResultValue(row.getEvent()));
@@ -31,9 +24,7 @@
         }
       }
 ;
-      newObjects[i]=new Object[]{timeseriesRunner};
-      ++i;
     }
   }
-  return Arrays.asList(newObjects);
+));
 }

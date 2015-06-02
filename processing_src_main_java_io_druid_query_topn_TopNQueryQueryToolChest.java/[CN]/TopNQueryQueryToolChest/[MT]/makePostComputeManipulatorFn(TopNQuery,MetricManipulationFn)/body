@@ -1,4 +1,5 @@
 {
+  final ExtractionFn extractionFn=TopNQueryEngine.canApplyExtractionInPost(query) ? query.getDimensionSpec().getExtractionFn() : null;
   return new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     private String dimension=query.getDimensionSpec().getOutputName();
     private final AggregatorFactory[] aggregatorFactories=query.getAggregatorSpecs().toArray(new AggregatorFactory[0]);
@@ -25,7 +26,8 @@
             final String name=aggFactoryNames[i];
             values.put(name,fn.manipulate(aggregatorFactories[i],input.getMetric(name)));
           }
-          values.put(dimension,input.getDimensionValue(dimension));
+          final Object dimValue=input.getDimensionValue(dimension);
+          values.put(dimension,extractionFn == null ? dimValue : extractionFn.apply(dimValue));
           return values;
         }
       }
