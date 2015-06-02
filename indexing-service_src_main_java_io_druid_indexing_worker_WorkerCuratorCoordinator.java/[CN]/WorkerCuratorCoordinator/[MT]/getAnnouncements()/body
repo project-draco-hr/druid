@@ -1,0 +1,18 @@
+{
+  try {
+    return Lists.transform(curatorFramework.getChildren().forPath(getStatusPathForWorker()),new Function<String,TaskAnnouncement>(){
+      @Nullable @Override public TaskAnnouncement apply(      String input){
+        try {
+          return jsonMapper.readValue(curatorFramework.getData().forPath(getStatusPathForId(input)),TaskAnnouncement.class);
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

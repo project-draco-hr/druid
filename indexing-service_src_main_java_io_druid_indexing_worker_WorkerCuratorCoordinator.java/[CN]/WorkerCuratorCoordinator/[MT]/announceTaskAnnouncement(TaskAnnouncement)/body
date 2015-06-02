@@ -8,7 +8,7 @@ synchronized (lock) {
       if (rawBytes.length > config.getMaxZnodeBytes()) {
         throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxZnodeBytes());
       }
-      curatorFramework.create().withMode(CreateMode.EPHEMERAL).forPath(getStatusPathForId(announcement.getTaskStatus().getId()),rawBytes);
+      curatorFramework.create().withMode(CreateMode.PERSISTENT).forPath(getStatusPathForId(announcement.getTaskStatus().getId()),rawBytes);
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);

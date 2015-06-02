@@ -5,7 +5,7 @@ synchronized (lock) {
     }
     try {
       if (curatorFramework.checkExists().forPath(getStatusPathForId(announcement.getTaskStatus().getId())) == null) {
-        announceTastAnnouncement(announcement);
+        announceTaskAnnouncement(announcement);
         return;
       }
       byte[] rawBytes=jsonMapper.writeValueAsBytes(announcement);

@@ -55,6 +55,11 @@ while (waitingFor.intValue() > 0) {
 waitingForMonitor.wait();
 }
 }
+for (String worker : cf.getChildren().forPath(indexerZkConfig.getStatusPath())) {
+if (!zkWorkers.containsKey(worker) && cf.checkExists().forPath(JOINER.join(indexerZkConfig.getAnnouncementsPath(),worker)) == null) {
+scheduleTasksCleanupForWorker(worker,cf.getChildren().forPath(JOINER.join(indexerZkConfig.getStatusPath(),worker)));
+}
+}
 started=true;
 }
  catch (Exception e) {

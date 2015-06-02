@@ -1,0 +1,18 @@
+{
+  cf.create().creatingParentsIfNeeded().forPath(joiner.join(tasksPath,task.getId()),jsonMapper.writeValueAsBytes(task));
+  Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
+    @Override public boolean isValid(){
+      try {
+        return cf.checkExists().forPath(joiner.join(statusPath,task.getId())) != null;
+      }
+ catch (      Exception e) {
+        return false;
+      }
+    }
+  }
+));
+  List<TaskAnnouncement> announcements=workerCuratorCoordinator.getAnnouncements();
+  Assert.assertEquals(1,announcements.size());
+  Assert.assertEquals(task.getId(),announcements.get(0).getTaskStatus().getId());
+  Assert.assertEquals(TaskStatus.Status.RUNNING,announcements.get(0).getTaskStatus().getStatusCode());
+}
