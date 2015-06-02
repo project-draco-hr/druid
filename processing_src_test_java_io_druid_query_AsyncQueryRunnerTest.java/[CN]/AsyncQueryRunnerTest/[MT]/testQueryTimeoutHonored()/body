@@ -12,7 +12,7 @@
   }
 ;
   AsyncQueryRunner asyncRunner=new AsyncQueryRunner<>(baseRunner,executor,QueryRunnerTestHelper.NOOP_QUERYWATCHER);
-  Sequence lazy=asyncRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of("timeout",1)),Collections.EMPTY_MAP);
+  Sequence lazy=asyncRunner.run(query.withOverriddenContext(ImmutableMap.<String,Object>of(QueryContextKeys.TIMEOUT,1)),Collections.EMPTY_MAP);
   try {
     Sequences.toList(lazy,Lists.newArrayList());
   }

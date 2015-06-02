@@ -14,8 +14,8 @@
       queryId=UUID.randomUUID().toString();
       query=query.withId(queryId);
     }
-    if (query.getContextValue("timeout") == null) {
-      query=query.withOverriddenContext(ImmutableMap.of("timeout",config.getMaxIdleTime().toStandardDuration().getMillis()));
+    if (query.getContextValue(QueryContextKeys.TIMEOUT) == null) {
+      query=query.withOverriddenContext(ImmutableMap.of(QueryContextKeys.TIMEOUT,config.getMaxIdleTime().toStandardDuration().getMillis()));
     }
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);

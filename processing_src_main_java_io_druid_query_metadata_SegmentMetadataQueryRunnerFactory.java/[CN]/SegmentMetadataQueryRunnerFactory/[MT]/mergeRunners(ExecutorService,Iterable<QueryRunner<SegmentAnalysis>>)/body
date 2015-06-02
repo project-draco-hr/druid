@@ -13,7 +13,7 @@
 );
           try {
             queryWatcher.registerQuery(query,future);
-            final Number timeout=query.getContextValue("timeout",(Number)null);
+            final Number timeout=query.getContextValue(QueryContextKeys.TIMEOUT,(Number)null);
             return timeout == null ? future.get() : future.get(timeout.longValue(),TimeUnit.MILLISECONDS);
           }
  catch (          InterruptedException e) {
