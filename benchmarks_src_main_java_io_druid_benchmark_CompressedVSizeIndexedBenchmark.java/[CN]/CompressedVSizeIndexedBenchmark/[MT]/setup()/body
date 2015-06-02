@@ -2,9 +2,9 @@
   Random rand=new Random(0);
   List<int[]> rows=Lists.newArrayList();
   final int bound=1 << bytes;
-  for (int i=0; i < 0x10000; i++) {
-    int[] row=new int[rand.nextInt(valuesPerRowBound)];
-    int count=rand.nextInt(valuesPerRowBound);
+  for (int i=0; i < 0x100000; i++) {
+    int count=rand.nextInt(valuesPerRowBound) + 1;
+    int[] row=new int[rand.nextInt(count)];
     for (int j=0; j < row.length; j++) {
       row[j]=rand.nextInt(bound);
     }
@@ -24,4 +24,12 @@
   }
 )).asWritableSupplier());
   this.uncompressed=VSizeIndexed.readFromByteBuffer(bufferUncompressed);
+  filter=new BitSet();
+  for (int i=0; i < filteredRowCount; i++) {
+    int rowToAccess=rand.nextInt(rows.size());
+    while (filter.get(rowToAccess)) {
+      rowToAccess=(rowToAccess + 1) % rows.size();
+    }
+    filter.set(rowToAccess);
+  }
 }
