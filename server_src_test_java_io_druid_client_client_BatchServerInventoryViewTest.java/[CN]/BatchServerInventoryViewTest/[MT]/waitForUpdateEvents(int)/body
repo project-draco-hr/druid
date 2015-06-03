@@ -1,0 +1,10 @@
+{
+  final Timing forWaitingTiming=timing.forWaiting();
+  Stopwatch stopwatch=Stopwatch.createStarted();
+  while (inventoryUpdateCounter.get() != count) {
+    Thread.sleep(100);
+    if (stopwatch.elapsed(TimeUnit.MILLISECONDS) > forWaitingTiming.milliseconds()) {
+      throw new ISE("BatchServerInventoryView is not updating counter expected[%d] value[%d]",count,inventoryUpdateCounter.get());
+    }
+  }
+}
