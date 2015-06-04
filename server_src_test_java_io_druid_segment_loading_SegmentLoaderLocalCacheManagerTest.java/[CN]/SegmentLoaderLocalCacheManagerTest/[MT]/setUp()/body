@@ -1,0 +1,9 @@
+{
+  localSegmentCacheFolder=tmpFolder.newFolder("segment_cache_folder");
+  final List<StorageLocationConfig> locations=Lists.newArrayList();
+  final StorageLocationConfig locationConfig=new StorageLocationConfig();
+  locationConfig.setPath(localSegmentCacheFolder);
+  locationConfig.setMaxSize(10000000000L);
+  locations.add(locationConfig);
+  manager=new SegmentLoaderLocalCacheManager(new MMappedQueryableIndexFactory(),new SegmentLoaderConfig().withLocations(locations),jsonMapper);
+}

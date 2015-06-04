@@ -1,0 +1,13 @@
+{
+  final File localStorageFolder=tmpFolder.newFolder("local_storage_folder");
+  final DataSegment segmentToDownload=dataSegmentWithInterval("2014-10-20T00:00:00Z/P1D").withLoadSpec(ImmutableMap.<String,Object>of("type","local","path",localStorageFolder.getCanonicalPath() + "/test_segment_loader" + "/2014-10-20T00:00:00.000Z_2014-10-21T00:00:00.000Z/2015-05-27T03:38:35.683Z"+ "/0/index.zip"));
+  final File localSegmentFile=new File(localStorageFolder,"test_segment_loader/2014-10-20T00:00:00.000Z_2014-10-21T00:00:00.000Z/2015-05-27T03:38:35.683Z/0");
+  localSegmentFile.mkdirs();
+  final File indexZip=new File(localSegmentFile,"index.zip");
+  indexZip.createNewFile();
+  Assert.assertFalse("Expect cache miss before downloading segment",manager.isSegmentLoaded(segmentToDownload));
+  manager.getSegmentFiles(segmentToDownload);
+  Assert.assertTrue("Expect cache hit after downloading segment",manager.isSegmentLoaded(segmentToDownload));
+  manager.cleanup(segmentToDownload);
+  Assert.assertFalse("Expect cache miss after dropping segment",manager.isSegmentLoaded(segmentToDownload));
+}

@@ -1,0 +1,6 @@
+{
+  setupServerAndCurator();
+  curator.start();
+  curator.create().creatingParentsIfNeeded().forPath(LOAD_QUEUE_PATH);
+  loadQueueCache=new PathChildrenCache(curator,LOAD_QUEUE_PATH,true,true,Execs.singleThreaded("load_queue_cache-%d"));
+}

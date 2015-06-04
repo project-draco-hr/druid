@@ -1,0 +1,8 @@
+{
+  final DataSegment cachedSegment=dataSegmentWithInterval("2014-10-20T00:00:00Z/P1D");
+  final File cachedSegmentFile=new File(localSegmentCacheFolder,"test_segment_loader/2014-10-20T00:00:00.000Z_2014-10-21T00:00:00.000Z/2015-05-27T03:38:35.683Z/0");
+  cachedSegmentFile.mkdirs();
+  Assert.assertTrue("Expect cache hit",manager.isSegmentLoaded(cachedSegment));
+  final DataSegment uncachedSegment=dataSegmentWithInterval("2014-10-21T00:00:00Z/P1D");
+  Assert.assertFalse("Expect cache miss",manager.isSegmentLoaded(uncachedSegment));
+}
