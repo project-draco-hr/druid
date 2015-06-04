@@ -1,0 +1,11 @@
+{
+  AlphaNumericTopNMetricSpec expectedMetricSpec=new AlphaNumericTopNMetricSpec(null);
+  AlphaNumericTopNMetricSpec expectedMetricSpec1=new AlphaNumericTopNMetricSpec("test");
+  String jsonSpec="{\n" + "    \"type\": \"alphaNumeric\"\n" + "}";
+  String jsonSpec1="{\n" + "    \"type\": \"alphaNumeric\",\n" + "    \"previousStop\": \"test\"\n"+ "}";
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  TopNMetricSpec actualMetricSpec=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonSpec,TopNMetricSpec.class)),AlphaNumericTopNMetricSpec.class);
+  TopNMetricSpec actualMetricSpec1=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonSpec1,TopNMetricSpec.class)),AlphaNumericTopNMetricSpec.class);
+  assertEquals(expectedMetricSpec,actualMetricSpec);
+  assertEquals(expectedMetricSpec1,actualMetricSpec1);
+}

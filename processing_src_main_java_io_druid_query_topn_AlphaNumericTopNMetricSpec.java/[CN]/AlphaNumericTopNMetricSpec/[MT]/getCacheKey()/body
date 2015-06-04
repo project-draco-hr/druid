@@ -1,4 +1,4 @@
 {
-  byte[] previousStopBytes=StringUtils.toUtf8(previousStop);
+  byte[] previousStopBytes=getPreviousStop() == null ? new byte[]{} : StringUtils.toUtf8(getPreviousStop());
   return ByteBuffer.allocate(1 + previousStopBytes.length).put(CACHE_TYPE_ID).put(previousStopBytes).array();
 }
