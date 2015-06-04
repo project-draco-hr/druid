@@ -1,5 +1,5 @@
 {
-  final File outDir=IndexMerger.append(ImmutableList.<IndexableAdapter>of(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(inDir))),tmpDir,INDEX_SPEC);
+  final File outDir=IndexMerger.append(ImmutableList.<IndexableAdapter>of(new QueryableIndexIndexableAdapter(closer.closeLater(IndexIO.loadIndex(inDir)))),tmpDir,INDEX_SPEC);
   IndexIO.DefaultIndexIOHandler.validateTwoSegments(persistTmpDir,outDir);
   return outDir;
 }

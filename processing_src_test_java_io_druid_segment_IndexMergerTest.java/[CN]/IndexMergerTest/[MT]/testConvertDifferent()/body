@@ -1,0 +1,22 @@
+{
+  final long timestamp=System.currentTimeMillis();
+  IncrementalIndex toPersist1=IncrementalIndexTest.createIndex(true,new AggregatorFactory[]{new LongSumAggregatorFactory("longSum1","dim1"),new LongSumAggregatorFactory("longSum2","dim2")});
+  IncrementalIndexTest.populateIndex(timestamp,toPersist1);
+  final File tempDir1=temporaryFolder.newFolder();
+  final File convertDir=temporaryFolder.newFolder();
+  final IndexableAdapter incrementalAdapter=new IncrementalIndexAdapter(toPersist1.getInterval(),toPersist1,indexSpec.getBitmapSerdeFactory().getBitmapFactory());
+  QueryableIndex index1=closer.closeLater(IndexIO.loadIndex(IndexMerger.persist(toPersist1,tempDir1,indexSpec)));
+  final IndexableAdapter queryableAdapter=new QueryableIndexIndexableAdapter(index1);
+  IndexIO.DefaultIndexIOHandler.validateTwoSegments(incrementalAdapter,queryableAdapter);
+  Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
+  Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
+  Assert.assertEquals(4,index1.getColumnNames().size());
+  IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),"lz4".equals(indexSpec.getDimensionCompression()) ? "lzf" : "lz4","lz4".equals(indexSpec.getMetricCompression()) ? "lzf" : "lz4");
+  QueryableIndex converted=closer.closeLater(IndexIO.loadIndex(IndexMerger.convert(tempDir1,convertDir,newSpec)));
+  Assert.assertEquals(2,converted.getColumn(Column.TIME_COLUMN_NAME).getLength());
+  Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(converted.getAvailableDimensions()));
+  Assert.assertEquals(4,converted.getColumnNames().size());
+  IndexIO.DefaultIndexIOHandler.validateTwoSegments(tempDir1,convertDir);
+  assertDimCompression(index1,indexSpec.getDimensionCompressionStrategy());
+  assertDimCompression(converted,newSpec.getDimensionCompressionStrategy());
+}

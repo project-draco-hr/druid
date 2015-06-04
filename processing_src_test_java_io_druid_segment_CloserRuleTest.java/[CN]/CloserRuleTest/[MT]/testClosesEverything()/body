@@ -1,0 +1,38 @@
+{
+  final AtomicLong counter=new AtomicLong(0L);
+  final CloserRule closer=new CloserRule(true);
+  final String ioExceptionMsg="You can't triple stamp a double stamp!";
+  final List<IOException> ioExceptions=Arrays.<IOException>asList(new IOException(ioExceptionMsg),null,new IOException(ioExceptionMsg),null,new IOException(ioExceptionMsg),null);
+  for (  final IOException throwable : ioExceptions) {
+    closer.closeLater(new Closeable(){
+      @Override public void close() throws IOException {
+        counter.incrementAndGet();
+        if (throwable != null) {
+          throw throwable;
+        }
+      }
+    }
+);
+  }
+  for (  final IOException throwable : ioExceptions) {
+    closer.closeLater(new AutoCloseable(){
+      @Override public void close() throws Exception {
+        counter.incrementAndGet();
+        if (throwable != null) {
+          throw throwable;
+        }
+      }
+    }
+);
+  }
+  Throwable ex=null;
+  try {
+    run(closer,Runnables.doNothing());
+  }
+ catch (  Throwable throwable) {
+    ex=throwable;
+  }
+  Assert.assertNotNull(ex);
+  Assert.assertEquals(ioExceptions.size() * 2,counter.get());
+  Assert.assertEquals(ioExceptions.size(),ex.getSuppressed().length);
+}
