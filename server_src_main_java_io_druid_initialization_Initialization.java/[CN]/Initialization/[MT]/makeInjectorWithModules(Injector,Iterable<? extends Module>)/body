@@ -6,9 +6,11 @@
   for (  Object module : modules) {
     actualModules.addModule(module);
   }
+  Module intermediateModules=Modules.override(defaultModules.getModules()).with(actualModules.getModules());
+  ModuleList extensionModules=new ModuleList(baseInjector);
   final ExtensionsConfig config=baseInjector.getInstance(ExtensionsConfig.class);
   for (  DruidModule module : Initialization.getFromExtensions(config,DruidModule.class)) {
-    actualModules.addModule(module);
+    extensionModules.addModule(module);
   }
-  return Guice.createInjector(Modules.override(defaultModules.getModules()).with(actualModules.getModules()));
+  return Guice.createInjector(Modules.override(intermediateModules).with(extensionModules.getModules()));
 }
