@@ -1,0 +1,32 @@
+{
+  final List<QueryableIndexSegment> segments=Lists.transform(segmentDirs,new Function<File,QueryableIndexSegment>(){
+    @Override public QueryableIndexSegment apply(    File segmentDir){
+      try {
+        return new QueryableIndexSegment("",IndexIO.loadIndex(segmentDir));
+      }
+ catch (      IOException ex) {
+        throw Throwables.propagate(ex);
+      }
+    }
+  }
+);
+  try {
+    final FinalizeResultsQueryRunner baseRunner=new FinalizeResultsQueryRunner(toolChest.postMergeQueryDecoration(toolChest.mergeResults(toolChest.preMergeQueryDecoration(new ConcatQueryRunner(Sequences.simple(Lists.transform(segments,new Function<Segment,QueryRunner>(){
+      @Override public QueryRunner apply(      final Segment segment){
+        try {
+          return makeStringSerdeQueryRunner(mapper,toolChest,query,factory.createRunner(segment));
+        }
+ catch (        Exception ex) {
+          throw Throwables.propagate(ex);
+        }
+      }
+    }
+)))))),toolChest);
+    return baseRunner.run(query,Maps.newHashMap());
+  }
+  finally {
+    for (    Segment segment : segments) {
+      CloseQuietly.close(segment);
+    }
+  }
+}

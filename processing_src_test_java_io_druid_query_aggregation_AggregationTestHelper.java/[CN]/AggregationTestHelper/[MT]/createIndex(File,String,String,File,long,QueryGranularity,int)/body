@@ -1,0 +1,9 @@
+{
+  StringInputRowParser parser=mapper.readValue(parserJson,StringInputRowParser.class);
+  CharSource cs=Files.asCharSource(inputDataFile,Charset.defaultCharset());
+  Iterator<String> iter=cs.readLines().iterator();
+  List<AggregatorFactory> aggregatorSpecs=mapper.readValue(aggregators,new TypeReference<List<AggregatorFactory>>(){
+  }
+);
+  createIndex(iter,parser,aggregatorSpecs.toArray(new AggregatorFactory[0]),outDir,minTimestamp,gran,true,maxRowCount);
+}
