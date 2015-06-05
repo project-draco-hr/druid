@@ -1,0 +1,20 @@
+{
+  Random rand=new Random(0);
+  int[] vals=new int[0x100000];
+  final int bound=1 << bytes;
+  for (int i=0; i < vals.length; ++i) {
+    vals[i]=rand.nextInt(bound);
+  }
+  final ByteBuffer bufferCompressed=serialize(CompressedVSizeIntsIndexedSupplier.fromList(Ints.asList(vals),bound - 1,CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForBytes(bytes),ByteOrder.nativeOrder(),CompressedObjectStrategy.CompressionStrategy.LZ4));
+  this.compressed=CompressedVSizeIntsIndexedSupplier.fromByteBuffer(bufferCompressed,ByteOrder.nativeOrder()).get();
+  final ByteBuffer bufferUncompressed=serialize(new VSizeIndexedInts.VSizeIndexedIntsSupplier(VSizeIndexedInts.fromArray(vals)));
+  this.uncompressed=VSizeIndexedInts.readFromByteBuffer(bufferUncompressed);
+  filter=new BitSet();
+  for (int i=0; i < filteredRowCount; i++) {
+    int rowToAccess=rand.nextInt(vals.length);
+    while (filter.get(rowToAccess)) {
+      rowToAccess=(rowToAccess + 1) % vals.length;
+    }
+    filter.set(rowToAccess);
+  }
+}
