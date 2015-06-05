@@ -1,0 +1,19 @@
+{
+  createNewZipEntry(zipOutputStream,file);
+  long numRead=0;
+  try (FileInputStream inputStream=new FileInputStream(file)){
+    byte[] buf=new byte[0x10000];
+    for (int bytesRead=inputStream.read(buf); bytesRead >= 0; bytesRead=inputStream.read(buf)) {
+      progressable.progress();
+      if (bytesRead == 0) {
+        continue;
+      }
+      zipOutputStream.write(buf,0,bytesRead);
+      progressable.progress();
+      numRead+=bytesRead;
+    }
+  }
+   zipOutputStream.closeEntry();
+  progressable.progress();
+  return numRead;
+}
