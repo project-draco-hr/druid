@@ -1,24 +1,38 @@
 {
   final TeslaAether aether=getAetherClient(config);
-  Set<T> retVal=Sets.newHashSet();
-  if (config.searchCurrentClassloader()) {
-    for (    T module : ServiceLoader.load(clazz,Initialization.class.getClassLoader())) {
-      log.info("Adding local module[%s]",module.getClass());
-      retVal.add(module);
-    }
-  }
+  final Set<T> retVal=Sets.newHashSet();
+  final Set<String> extensionNames=Sets.newHashSet();
   for (  String coordinate : config.getCoordinates()) {
     log.info("Loading extension[%s] for class[%s]",coordinate,clazz.getName());
     try {
       URLClassLoader loader=getClassLoaderForCoordinates(aether,coordinate,config.getDefaultVersion());
-      final ServiceLoader<T> serviceLoader=ServiceLoader.load(clazz,loader);
-      for (      T module : serviceLoader) {
-        log.info("Adding extension module[%s] for class[%s]",module.getClass(),clazz.getName());
-        retVal.add(module);
+      for (      T module : ServiceLoader.load(clazz,loader)) {
+        String moduleName=module.getClass().getCanonicalName();
+        if (moduleName == null) {
+          log.warn("Extension module [%s] was ignored because it doesn't have a canonical name, is it a local or anonymous class?",module.getClass().getName());
+        }
+ else         if (!extensionNames.contains(moduleName)) {
+          log.info("Adding remote extension module[%s] for class[%s]",moduleName,clazz.getName());
+          extensionNames.add(moduleName);
+          retVal.add(module);
+        }
       }
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);
+    }
+  }
+  if (config.searchCurrentClassloader()) {
+    for (    T module : ServiceLoader.load(clazz,Initialization.class.getClassLoader())) {
+      String moduleName=module.getClass().getCanonicalName();
+      if (moduleName == null) {
+        log.warn("Extension module [%s] was ignored because it doesn't have a canonical name, is it a local or anonymous class?",module.getClass().getName());
+      }
+ else       if (!extensionNames.contains(moduleName)) {
+        log.info("Adding local extension module[%s] for class[%s]",moduleName,clazz.getName());
+        extensionNames.add(moduleName);
+        retVal.add(module);
+      }
     }
   }
   extensionsMap.put(clazz,retVal);
