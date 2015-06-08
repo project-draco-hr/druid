@@ -1,7 +1,0 @@
-{
-  final Interval bucketInterval=schema.getDataSchema().getGranularitySpec().bucketInterval(bucket.time).get();
-  if (fileSystem instanceof DistributedFileSystem) {
-    return new Path(String.format("%s/%s/%s_%s/%s/%s",schema.getIOConfig().getSegmentOutputPath(),schema.getDataSchema().getDataSource(),bucketInterval.getStart().toString(ISODateTimeFormat.basicDateTime()),bucketInterval.getEnd().toString(ISODateTimeFormat.basicDateTime()),schema.getTuningConfig().getVersion().replace(":","_"),bucket.partitionNum));
-  }
-  return new Path(String.format("%s/%s/%s_%s/%s/%s",schema.getIOConfig().getSegmentOutputPath(),schema.getDataSchema().getDataSource(),bucketInterval.getStart().toString(),bucketInterval.getEnd().toString(),schema.getTuningConfig().getVersion(),bucket.partitionNum));
-}

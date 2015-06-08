@@ -1,0 +1,13 @@
+{
+  Path outputPath=new Path(prependFSIfNullScheme(fileSystem,basePath),"./" + dataSource);
+  if ("hdfs".equals(fileSystem.getScheme())) {
+    outputPath=new Path(outputPath,String.format("./%s_%s",interval.getStart().toString(ISODateTimeFormat.basicDateTime()),interval.getEnd().toString(ISODateTimeFormat.basicDateTime())));
+    outputPath=new Path(outputPath,version.replace(":","_"));
+  }
+ else {
+    outputPath=new Path(outputPath,String.format("./%s_%s",interval.getStart().toString(),interval.getEnd().toString()));
+    outputPath=new Path(outputPath,String.format("./%s",version));
+  }
+  outputPath=new Path(outputPath,Integer.toString(partitionNum));
+  return outputPath;
+}

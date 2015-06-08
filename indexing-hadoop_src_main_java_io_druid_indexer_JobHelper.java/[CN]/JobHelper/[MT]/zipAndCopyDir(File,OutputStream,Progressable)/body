@@ -1,0 +1,17 @@
+{
+  long size=0L;
+  try (ZipOutputStream outputStream=new ZipOutputStream(baseOutputStream)){
+    List<String> filesToCopy=Arrays.asList(baseDir.list());
+    for (    String fileName : filesToCopy) {
+      final File fileToCopy=new File(baseDir,fileName);
+      if (java.nio.file.Files.isRegularFile(fileToCopy.toPath())) {
+        size+=copyFileToZipStream(fileToCopy,outputStream,progressable);
+      }
+ else {
+        log.warn("File at [%s] is not a regular file! skipping as part of zip",fileToCopy.getPath());
+      }
+    }
+    outputStream.flush();
+  }
+   return size;
+}
