@@ -1,0 +1,8 @@
+{
+  ShardSpec spec=new NumberedShardSpec(1,2);
+  IndexTask.IndexTuningConfig config=new IndexTask.IndexTuningConfig(100,1000,null,new IndexSpec());
+  RealtimeTuningConfig realtimeTuningConfig=IndexTask.convertTuningConfig(spec,config);
+  Assert.assertEquals(realtimeTuningConfig.getMaxRowsInMemory(),config.getRowFlushBoundary());
+  Assert.assertEquals(realtimeTuningConfig.getShardSpec(),spec);
+  Assert.assertEquals(realtimeTuningConfig.getIndexSpec(),indexSpec);
+}

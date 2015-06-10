@@ -16,7 +16,7 @@
 ;
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,new RealtimeTuningConfig(null,null,null,null,null,null,null,shardSpec,ingestionSchema.getTuningConfig().getIndexSpec(),null,null,null),metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,convertTuningConfig(shardSpec,ingestionSchema.getTuningConfig()),metrics);
   final int myRowFlushBoundary=rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
   final QueryGranularity rollupGran=ingestionSchema.getDataSchema().getGranularitySpec().getQueryGranularity();
   try {
