@@ -3,7 +3,7 @@
   return new Predicate<ZkWorker>(){
     @Override public boolean apply(    ZkWorker worker){
       final boolean itHasBeenAWhile=System.currentTimeMillis() - worker.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().toStandardDuration().getMillis();
-      return worker.getRunningTasks().isEmpty() && (itHasBeenAWhile || !isValidWorker.apply(worker));
+      return itHasBeenAWhile || !isValidWorker.apply(worker);
     }
   }
 ;

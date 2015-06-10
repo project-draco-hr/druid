@@ -4,7 +4,13 @@
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
   EasyMock.replay(autoScaler);
-  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create()),new TestZkWorker(NoopTask.create())));
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create()),new TestZkWorker(NoopTask.create()))).times(2);
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<ZkWorker>newArrayList());
+  EasyMock.expect(runner.markWokersLazy((Predicate<ZkWorker>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>emptyList());
+  EasyMock.replay(runner);
+  boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(runner);
   Assert.assertFalse(terminatedSomething);
   EasyMock.verify(autoScaler);
   EasyMock.reset(autoScaler);
@@ -12,7 +18,8 @@
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
   EasyMock.replay(autoScaler);
-  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(Arrays.<RemoteTaskRunnerWorkItem>asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())),Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create()),new TestZkWorker(NoopTask.create())));
+  boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertFalse(provisionedSomething);
   EasyMock.verify(autoScaler);
+  EasyMock.verify(runner);
 }

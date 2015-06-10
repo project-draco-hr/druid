@@ -1,4 +1,5 @@
 {
+  Collection<RemoteTaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
 synchronized (lock) {
     final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
     if (workerConfig == null) {
@@ -6,7 +7,7 @@ synchronized (lock) {
       return false;
     }
     boolean didTerminate=false;
-    final Set<String> workerNodeIds=Sets.newHashSet(workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(zkWorkers,new Function<ZkWorker,String>(){
+    final Set<String> workerNodeIds=Sets.newHashSet(workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(runner.getLazyWorkers(),new Function<ZkWorker,String>(){
       @Override public String apply(      ZkWorker input){
         return input.getWorker().getIp();
       }
@@ -20,17 +21,18 @@ synchronized (lock) {
     }
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
-    updateTargetWorkerCount(workerConfig,pendingTasks,zkWorkers);
-    final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config);
+    Collection<ZkWorker> workers=runner.getWorkers();
+    updateTargetWorkerCount(workerConfig,pendingTasks,workers);
     if (currentlyTerminating.isEmpty()) {
-      final int excessWorkers=(zkWorkers.size() + currentlyProvisioning.size()) - targetWorkerCount;
+      final int excessWorkers=(workers.size() + currentlyProvisioning.size()) - targetWorkerCount;
       if (excessWorkers > 0) {
-        final List<String> laziestWorkerIps=FluentIterable.from(zkWorkers).filter(isLazyWorker).limit(excessWorkers).transform(new Function<ZkWorker,String>(){
+        final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config);
+        final List<String> laziestWorkerIps=Lists.transform(runner.markWokersLazy(isLazyWorker,excessWorkers),new Function<ZkWorker,String>(){
           @Override public String apply(          ZkWorker zkWorker){
             return zkWorker.getWorker().getIp();
           }
         }
-).toList();
+);
         if (laziestWorkerIps.isEmpty()) {
           log.info("Wanted to terminate %,d workers, but couldn't find any lazy ones!",excessWorkers);
         }

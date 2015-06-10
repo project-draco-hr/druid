@@ -3,20 +3,7 @@
   final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
-      List<String> tasksToFail=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost())));
-      log.info("[%s]: Found %d tasks assigned",worker.getHost(),tasksToFail.size());
-      for (      Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
-        if (entry.getValue() == null) {
-          log.error("Huh? null work item for [%s]",entry.getKey());
-        }
- else         if (entry.getValue().getWorker() == null) {
-          log.error("Huh? no worker for [%s]",entry.getKey());
-        }
- else         if (entry.getValue().getWorker().getHost().equalsIgnoreCase(worker.getHost())) {
-          log.info("[%s]: Found [%s] running",worker.getHost(),entry.getKey());
-          tasksToFail.add(entry.getKey());
-        }
-      }
+      List<String> tasksToFail=getAssignedTasks(worker);
       for (      String assignedTask : tasksToFail) {
         RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
         if (taskRunnerWorkItem != null) {
@@ -45,4 +32,5 @@
       zkWorkers.remove(worker.getHost());
     }
   }
+  lazyWorkers.remove(worker.getHost());
 }
