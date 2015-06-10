@@ -10,15 +10,9 @@
       return basePath;
     }
   }
-,null,null,null,null,null),new TestRemoteTaskRunnerConfig(),cf,worker);
+,null,null,null,null,null),new TestRemoteTaskRunnerConfig(new Period("PT1S")),cf,worker);
   workerCuratorCoordinator.start();
-  final File tmp=Files.createTempDir();
-  workerTaskMonitor=new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,0,null),null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
-    @Override public List<StorageLocationConfig> getLocations(){
-      return Lists.newArrayList();
-    }
-  }
-,jsonMapper)),jsonMapper),null),new WorkerConfig().setCapacity(1));
+  workerTaskMonitor=createTaskMonitor();
   jsonMapper.registerSubtypes(new NamedType(TestMergeTask.class,"test"));
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();

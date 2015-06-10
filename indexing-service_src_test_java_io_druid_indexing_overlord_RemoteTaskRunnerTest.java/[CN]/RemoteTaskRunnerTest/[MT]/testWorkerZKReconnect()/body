@@ -1,0 +1,27 @@
+{
+  makeWorker();
+  makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period("PT5M")));
+  Future<TaskStatus> future=remoteTaskRunner.run(task);
+  Assert.assertTrue(taskAnnounced(task.getId()));
+  mockWorkerRunningTask(task);
+  Assert.assertTrue(workerRunningTask(task.getId()));
+  byte[] bytes=cf.getData().forPath(announcementsPath);
+  cf.delete().forPath(announcementsPath);
+  Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
+    @Override public boolean isValid(){
+      return remoteTaskRunner.getRemovedWorkerCleanups().containsKey(worker.getHost());
+    }
+  }
+));
+  cf.create().forPath(announcementsPath,bytes);
+  Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
+    @Override public boolean isValid(){
+      return !remoteTaskRunner.getRemovedWorkerCleanups().containsKey(worker.getHost());
+    }
+  }
+));
+  mockWorkerCompleteSuccessfulTask(task);
+  TaskStatus status=future.get(TIMEOUT_SECONDS,TimeUnit.SECONDS);
+  Assert.assertEquals(status.getStatusCode(),TaskStatus.Status.SUCCESS);
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,status.getStatusCode());
+}

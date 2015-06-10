@@ -1,0 +1,36 @@
+{
+  removedWorkerCleanups.put(worker,cleanupExec.schedule(new Runnable(){
+    @Override public void run(){
+      log.info("Running scheduled cleanup for Worker[%s]",worker);
+      try {
+        for (        String assignedTask : tasksToFail) {
+          String taskPath=JOINER.join(indexerZkConfig.getTasksPath(),worker,assignedTask);
+          String statusPath=JOINER.join(indexerZkConfig.getStatusPath(),worker,assignedTask);
+          try {
+            if (cf.checkExists().forPath(taskPath) != null) {
+              cf.delete().guaranteed().forPath(taskPath);
+            }
+            if (cf.checkExists().forPath(statusPath) != null) {
+              cf.delete().guaranteed().forPath(statusPath);
+            }
+          }
+ catch (          Exception e) {
+            throw Throwables.propagate(e);
+          }
+          log.info("Failing task[%s]",assignedTask);
+          RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
+          if (taskRunnerWorkItem != null) {
+            taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTaskId()));
+          }
+ else {
+            log.warn("RemoteTaskRunner has no knowledge of task[%s]",assignedTask);
+          }
+        }
+      }
+  finally {
+        removedWorkerCleanups.remove(worker);
+      }
+    }
+  }
+,config.getTaskCleanupTimeout().toStandardDuration().getMillis(),TimeUnit.MILLISECONDS));
+}

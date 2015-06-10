@@ -3,21 +3,7 @@
   final ZkWorker zkWorker=zkWorkers.get(worker.getHost());
   if (zkWorker != null) {
     try {
-      List<String> tasksToFail=getAssignedTasks(worker);
-      for (      String assignedTask : tasksToFail) {
-        RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
-        if (taskRunnerWorkItem != null) {
-          String taskPath=JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost(),assignedTask);
-          if (cf.checkExists().forPath(taskPath) != null) {
-            cf.delete().guaranteed().forPath(taskPath);
-          }
-          log.info("Failing task[%s]",assignedTask);
-          taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTaskId()));
-        }
- else {
-          log.warn("RemoteTaskRunner has no knowledge of task[%s]",assignedTask);
-        }
-      }
+      scheduleTasksCleanupForWorker(worker.getHost(),getAssignedTasks(worker));
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);

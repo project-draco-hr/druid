@@ -1,0 +1,9 @@
+{
+  remoteTaskRunner=new RemoteTaskRunner(jsonMapper,config,new IndexerZkConfig(new ZkPathsConfig(){
+    @Override public String getBase(){
+      return basePath;
+    }
+  }
+,null,null,null,null,null),cf,new SimplePathChildrenCacheFactory.Builder().build(),null,DSuppliers.of(new AtomicReference<>(WorkerBehaviorConfig.defaultConfig())),ScheduledExecutors.fixed(1,"Remote-Task-Runner-Cleanup--%d"));
+  remoteTaskRunner.start();
+}

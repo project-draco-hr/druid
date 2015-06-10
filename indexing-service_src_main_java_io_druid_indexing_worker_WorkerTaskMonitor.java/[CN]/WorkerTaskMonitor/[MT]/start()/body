@@ -1,5 +1,10 @@
 {
   try {
+    for (    TaskAnnouncement announcement : workerCuratorCoordinator.getAnnouncements()) {
+      if (announcement.getTaskStatus().isRunnable()) {
+        workerCuratorCoordinator.updateAnnouncement(TaskAnnouncement.create(announcement.getTaskId(),announcement.getTaskResource(),TaskStatus.failure(announcement.getTaskId())));
+      }
+    }
     pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
       @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
         if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
@@ -18,7 +23,7 @@
               TaskStatus taskStatus;
               try {
                 workerCuratorCoordinator.unannounceTask(task.getId());
-                workerCuratorCoordinator.announceTastAnnouncement(TaskAnnouncement.create(task,TaskStatus.running(task.getId())));
+                workerCuratorCoordinator.announceTaskAnnouncement(TaskAnnouncement.create(task,TaskStatus.running(task.getId())));
                 taskStatus=taskRunner.run(task).get();
               }
  catch (              Exception e) {

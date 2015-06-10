@@ -27,7 +27,7 @@ synchronized (lock) {
       final int excessWorkers=(workers.size() + currentlyProvisioning.size()) - targetWorkerCount;
       if (excessWorkers > 0) {
         final Predicate<ZkWorker> isLazyWorker=createLazyWorkerPredicate(config);
-        final List<String> laziestWorkerIps=Lists.transform(runner.markWokersLazy(isLazyWorker,excessWorkers),new Function<ZkWorker,String>(){
+        final List<String> laziestWorkerIps=Lists.transform(runner.markWorkersLazy(isLazyWorker,excessWorkers),new Function<ZkWorker,String>(){
           @Override public String apply(          ZkWorker zkWorker){
             return zkWorker.getWorker().getIp();
           }
