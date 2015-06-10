@@ -1,0 +1,17 @@
+{
+  final HadoopDruidConverterConfig config;
+  try {
+    config=HadoopDruidConverterConfig.jsonMapper.readValue(input[0],HadoopDruidConverterConfig.class);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  final HadoopConverterJob hadoopConverterJob=new HadoopConverterJob(config);
+  try {
+    final List<DataSegment> result=hadoopConverterJob.run();
+    return result == null ? null : HadoopDruidConverterConfig.jsonMapper.writeValueAsString(result);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

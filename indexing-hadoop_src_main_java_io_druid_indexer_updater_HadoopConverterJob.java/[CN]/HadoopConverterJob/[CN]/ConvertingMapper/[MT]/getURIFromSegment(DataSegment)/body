@@ -1,0 +1,28 @@
+{
+  final Map<String,Object> loadSpec=dataSegment.getLoadSpec();
+  final String type=loadSpec.get("type").toString();
+  final URI segmentLocURI;
+  if ("s3_zip".equals(type)) {
+    segmentLocURI=URI.create(String.format("s3n://%s/%s",loadSpec.get("bucket"),loadSpec.get("key")));
+  }
+ else   if ("hdfs".equals(type)) {
+    segmentLocURI=URI.create(loadSpec.get("path").toString());
+  }
+ else   if ("local".equals(type)) {
+    try {
+      segmentLocURI=new URI("file",null,loadSpec.get("path").toString(),null,null);
+    }
+ catch (    URISyntaxException e) {
+      throw new ISE(e,"Unable to form simple file uri");
+    }
+  }
+ else {
+    try {
+      throw new IAE("Cannot figure out loadSpec %s",HadoopDruidConverterConfig.jsonMapper.writeValueAsString(loadSpec));
+    }
+ catch (    JsonProcessingException e) {
+      throw new ISE("Cannot write Map with json mapper");
+    }
+  }
+  return segmentLocURI;
+}

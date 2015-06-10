@@ -1,0 +1,113 @@
+{
+  final JobConf jobConf=new JobConf();
+  jobConf.setKeepFailedTaskFiles(false);
+  for (  Map.Entry<String,String> entry : converterConfig.getHadoopProperties().entrySet()) {
+    jobConf.set(entry.getKey(),entry.getValue(),"converterConfig.getHadoopProperties()");
+  }
+  final List<DataSegment> segments=converterConfig.getSegments();
+  if (segments.isEmpty()) {
+    throw new IAE("No segments found for datasource [%s]",converterConfig.getDataSource());
+  }
+  converterConfigIntoConfiguration(converterConfig,segments,jobConf);
+  jobConf.setNumReduceTasks(0);
+  jobConf.setWorkingDirectory(new Path(converterConfig.getDistributedSuccessCache()));
+  setJobName(jobConf,segments);
+  if (converterConfig.getJobPriority() != null) {
+    jobConf.setJobPriority(JobPriority.valueOf(converterConfig.getJobPriority()));
+  }
+  final Job job=Job.getInstance(jobConf);
+  job.setInputFormatClass(ConfigInputFormat.class);
+  job.setMapperClass(ConvertingMapper.class);
+  job.setMapOutputKeyClass(Text.class);
+  job.setMapOutputValueClass(Text.class);
+  job.setMapSpeculativeExecution(false);
+  job.setOutputFormatClass(ConvertingOutputFormat.class);
+  JobHelper.setupClasspath(JobHelper.distributedClassPath(jobConf.getWorkingDirectory()),job);
+  Throwable throwable=null;
+  try {
+    job.submit();
+    log.info("Job %s submitted, status available at %s",job.getJobName(),job.getTrackingURL());
+    final boolean success=job.waitForCompletion(true);
+    if (!success) {
+      final TaskReport[] reports=job.getTaskReports(TaskType.MAP);
+      if (reports != null) {
+        for (        final TaskReport report : reports) {
+          log.error("Error in task [%s] : %s",report.getTaskId(),Arrays.toString(report.getDiagnostics()));
+        }
+      }
+      return null;
+    }
+    try {
+      loadedBytes=job.getCounters().findCounter(COUNTER_GROUP,COUNTER_LOADED).getValue();
+      writtenBytes=job.getCounters().findCounter(COUNTER_GROUP,COUNTER_WRITTEN).getValue();
+    }
+ catch (    IOException ex) {
+      log.error(ex,"Could not fetch counters");
+    }
+    final JobID jobID=job.getJobID();
+    final Path jobDir=getJobPath(jobID,job.getWorkingDirectory());
+    final FileSystem fs=jobDir.getFileSystem(job.getConfiguration());
+    final RemoteIterator<LocatedFileStatus> it=fs.listFiles(jobDir,true);
+    final List<Path> goodPaths=new ArrayList<>();
+    while (it.hasNext()) {
+      final LocatedFileStatus locatedFileStatus=it.next();
+      if (locatedFileStatus.isFile()) {
+        final Path myPath=locatedFileStatus.getPath();
+        if (ConvertingOutputFormat.DATA_SUCCESS_KEY.equals(myPath.getName())) {
+          goodPaths.add(new Path(myPath.getParent(),ConvertingOutputFormat.DATA_FILE_KEY));
+        }
+      }
+    }
+    if (goodPaths.isEmpty()) {
+      log.warn("No good data found at [%s]",jobDir);
+      return null;
+    }
+    final List<DataSegment> returnList=ImmutableList.copyOf(Lists.transform(goodPaths,new Function<Path,DataSegment>(){
+      @Nullable @Override public DataSegment apply(      final Path input){
+        try {
+          if (!fs.exists(input)) {
+            throw new ISE("Somehow [%s] was found but [%s] is missing at [%s]",ConvertingOutputFormat.DATA_SUCCESS_KEY,ConvertingOutputFormat.DATA_FILE_KEY,jobDir);
+          }
+        }
+ catch (        final IOException e) {
+          throw Throwables.propagate(e);
+        }
+        try (final InputStream stream=fs.open(input)){
+          return HadoopDruidConverterConfig.jsonMapper.readValue(stream,DataSegment.class);
+        }
+ catch (        final IOException e) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+));
+    if (returnList.size() == segments.size()) {
+      return returnList;
+    }
+ else {
+      throw new ISE("Tasks reported success but result length did not match! Expected %d found %d at path [%s]",segments.size(),returnList.size(),jobDir);
+    }
+  }
+ catch (  InterruptedException|ClassNotFoundException e) {
+    RuntimeException exception=Throwables.propagate(e);
+    throwable=exception;
+    throw exception;
+  }
+catch (  Throwable t) {
+    throwable=t;
+    throw t;
+  }
+ finally {
+    try {
+      cleanup(job);
+    }
+ catch (    IOException e) {
+      if (throwable != null) {
+        throwable.addSuppressed(e);
+      }
+ else {
+        log.error(e,"Could not clean up job [%s]",job.getJobID());
+      }
+    }
+  }
+}

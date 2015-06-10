@@ -1,0 +1,31 @@
+{
+  String classpathProperty=System.getProperty("druid.hadoop.internal.classpath");
+  if (classpathProperty == null) {
+    classpathProperty=System.getProperty("java.class.path");
+  }
+  String[] jarFiles=classpathProperty.split(File.pathSeparator);
+  final Configuration conf=job.getConfiguration();
+  final FileSystem fs=distributedClassPath.getFileSystem(conf);
+  if (fs instanceof LocalFileSystem) {
+    return;
+  }
+  for (  String jarFilePath : jarFiles) {
+    File jarFile=new File(jarFilePath);
+    if (jarFile.getName().endsWith(".jar")) {
+      final Path hdfsPath=new Path(distributedClassPath,jarFile.getName());
+      if (!existing.contains(hdfsPath)) {
+        if (jarFile.getName().matches(".*SNAPSHOT(-selfcontained)?\\.jar$") || !fs.exists(hdfsPath)) {
+          log.info("Uploading jar to path[%s]",hdfsPath);
+          ByteStreams.copy(Files.newInputStreamSupplier(jarFile),new OutputSupplier<OutputStream>(){
+            @Override public OutputStream getOutput() throws IOException {
+              return fs.create(hdfsPath);
+            }
+          }
+);
+        }
+        existing.add(hdfsPath);
+      }
+      DistributedCache.addFileToClassPath(hdfsPath,conf,fs);
+    }
+  }
+}

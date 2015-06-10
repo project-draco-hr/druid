@@ -1,0 +1,40 @@
+{
+  return new OutputCommitter(){
+    @Override public void setupJob(    JobContext jobContext) throws IOException {
+    }
+    @Override public void setupTask(    TaskAttemptContext taskContext) throws IOException {
+    }
+    @Override public boolean needsTaskCommit(    TaskAttemptContext taskContext) throws IOException {
+      return taskContext.getConfiguration().get(PUBLISHED_SEGMENT_KEY) != null;
+    }
+    @Override public void commitTask(    final TaskAttemptContext taskContext) throws IOException {
+      final Progressable commitProgressable=new Progressable(){
+        @Override public void progress(){
+          taskContext.progress();
+        }
+      }
+;
+      final String finalSegmentString=taskContext.getConfiguration().get(PUBLISHED_SEGMENT_KEY);
+      if (finalSegmentString == null) {
+        throw new IOException("Could not read final segment");
+      }
+      final DataSegment newSegment=HadoopDruidConverterConfig.jsonMapper.readValue(finalSegmentString,DataSegment.class);
+      log.info("Committing new segment [%s]",newSegment);
+      taskContext.progress();
+      final FileSystem fs=taskContext.getWorkingDirectory().getFileSystem(taskContext.getConfiguration());
+      final Path taskAttemptDir=getTaskPath(context.getJobID(),context.getTaskAttemptID(),taskContext.getWorkingDirectory());
+      final Path taskAttemptFile=new Path(taskAttemptDir,DATA_FILE_KEY);
+      final Path taskAttemptSuccess=new Path(taskAttemptDir,DATA_SUCCESS_KEY);
+      try (final OutputStream outputStream=fs.create(taskAttemptFile,false,1 << 10,commitProgressable)){
+        outputStream.write(HadoopDruidConverterConfig.jsonMapper.writeValueAsBytes(newSegment));
+      }
+       fs.create(taskAttemptSuccess,false).close();
+      taskContext.progress();
+      taskContext.setStatus("Committed");
+    }
+    @Override public void abortTask(    TaskAttemptContext taskContext) throws IOException {
+      log.warn("Aborting task. Nothing to clean up.");
+    }
+  }
+;
+}

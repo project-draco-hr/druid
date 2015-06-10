@@ -1,0 +1,23 @@
+{
+  return new RecordReader<String,String>(){
+    boolean readAnything=false;
+    @Override public void initialize(    InputSplit inputSplit,    TaskAttemptContext taskAttemptContext) throws IOException, InterruptedException {
+    }
+    @Override public boolean nextKeyValue() throws IOException, InterruptedException {
+      return !readAnything;
+    }
+    @Override public String getCurrentKey() throws IOException, InterruptedException {
+      return "key";
+    }
+    @Override public String getCurrentValue() throws IOException, InterruptedException {
+      readAnything=true;
+      return "fakeValue";
+    }
+    @Override public float getProgress() throws IOException, InterruptedException {
+      return readAnything ? 0.0F : 1.0F;
+    }
+    @Override public void close() throws IOException {
+    }
+  }
+;
+}

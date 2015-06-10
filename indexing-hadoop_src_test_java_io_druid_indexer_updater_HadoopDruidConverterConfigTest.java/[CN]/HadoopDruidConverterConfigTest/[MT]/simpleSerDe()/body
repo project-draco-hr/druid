@@ -1,0 +1,8 @@
+{
+  final HadoopDruidConverterConfig config=new HadoopDruidConverterConfig("datasource",Interval.parse("2000/2010"),new IndexSpec(),ImmutableList.<DataSegment>of(),true,URI.create("file:/dev/null"),ImmutableMap.<String,String>of(),"HIGH",temporaryFolder.newFolder().getAbsolutePath());
+  final ObjectMapper mapper=new DefaultObjectMapper();
+  mapper.registerSubtypes(HadoopDruidConverterConfig.class);
+  final byte[] value=mapper.writeValueAsBytes(config);
+  final HadoopDruidConverterConfig config2=mapper.readValue(value,HadoopDruidConverterConfig.class);
+  Assert.assertEquals(mapper.writeValueAsString(config),mapper.writeValueAsString(config2));
+}
