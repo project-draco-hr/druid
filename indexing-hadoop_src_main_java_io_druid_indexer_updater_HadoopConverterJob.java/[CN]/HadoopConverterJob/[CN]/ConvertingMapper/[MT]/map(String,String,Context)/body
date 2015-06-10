@@ -26,7 +26,7 @@
   if (!outDir.mkdir() && (!outDir.exists() || !outDir.isDirectory())) {
     throw new IOException(String.format("Could not create output directory [%s]",outDir));
   }
-  IndexMaker.convert(inDir,outDir,config.getIndexSpec(),JobHelper.progressIndicatorForContext(context));
+  IndexMerger.convert(inDir,outDir,config.getIndexSpec(),JobHelper.progressIndicatorForContext(context));
   if (config.isValidate()) {
     context.setStatus("Validating");
     IndexIO.DefaultIndexIOHandler.validateTwoSegments(inDir,outDir);
