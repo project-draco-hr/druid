@@ -1,0 +1,36 @@
+{
+  try {
+    return RetryUtils.retry(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        final boolean needRename;
+        if (outputFS.exists(finalIndexZipFilePath)) {
+          final FileStatus zipFile=outputFS.getFileStatus(indexZipFilePath);
+          final FileStatus finalIndexZipFile=outputFS.getFileStatus(finalIndexZipFilePath);
+          if (zipFile.getModificationTime() >= finalIndexZipFile.getModificationTime() || zipFile.getLen() != finalIndexZipFile.getLen()) {
+            log.info("File[%s / %s / %sB] existed, but wasn't the same as [%s / %s / %sB]",finalIndexZipFile.getPath(),new DateTime(finalIndexZipFile.getModificationTime()),finalIndexZipFile.getLen(),zipFile.getPath(),new DateTime(zipFile.getModificationTime()),zipFile.getLen());
+            outputFS.delete(finalIndexZipFilePath,false);
+            needRename=true;
+          }
+ else {
+            log.info("File[%s / %s / %sB] existed and will be kept",finalIndexZipFile.getPath(),new DateTime(finalIndexZipFile.getModificationTime()),finalIndexZipFile.getLen());
+            needRename=false;
+          }
+        }
+ else {
+          needRename=true;
+        }
+        if (needRename) {
+          log.info("Attempting rename from [%s] to [%s]",indexZipFilePath,finalIndexZipFilePath);
+          return outputFS.rename(indexZipFilePath,finalIndexZipFilePath);
+        }
+ else {
+          return true;
+        }
+      }
+    }
+,FileUtils.IS_EXCEPTION,NUM_RETRIES);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

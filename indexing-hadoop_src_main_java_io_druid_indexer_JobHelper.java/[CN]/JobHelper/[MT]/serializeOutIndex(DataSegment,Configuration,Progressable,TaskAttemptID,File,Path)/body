@@ -1,11 +1,10 @@
 {
   final FileSystem outputFS=FileSystem.get(segmentBasePath.toUri(),configuration);
-  final FileContext fileContext=FileContext.getFileContext(segmentBasePath.toUri(),configuration);
   final Path tmpPath=new Path(segmentBasePath,String.format("index.zip.%d",taskAttemptID.getId()));
   final AtomicLong size=new AtomicLong(0L);
   final DataPusher zipPusher=(DataPusher)RetryProxy.create(DataPusher.class,new DataPusher(){
     @Override public long push() throws IOException {
-      try (OutputStream outputStream=fileContext.create(tmpPath,EnumSet.of(CreateFlag.OVERWRITE,CreateFlag.CREATE),Options.CreateOpts.createParent(),Options.CreateOpts.bufferSize(256 * 1024))){
+      try (OutputStream outputStream=outputFS.create(tmpPath,true,DEFAULT_FS_BUFFER_SIZE,progressable)){
         size.set(zipAndCopyDir(mergedBase,outputStream,progressable));
         outputStream.flush();
       }
@@ -37,7 +36,9 @@ default :
 throw new IAE("Unknown file system scheme [%s]",outputFS.getScheme());
 }
 final DataSegment finalSegment=segmentTemplate.withLoadSpec(loadSpec).withSize(size.get()).withBinaryVersion(SegmentUtils.getVersionFromDir(mergedBase));
-fileContext.rename(tmpPath,finalIndexZipFilePath,Options.Rename.OVERWRITE);
-writeSegmentDescriptor(outputFS,finalSegment,new Path(segmentBasePath,"descriptor.json"),fileContext,progressable);
+if (!renameIndexFiles(outputFS,tmpPath,finalIndexZipFilePath)) {
+throw new IOException(String.format("Unable to rename [%s] to [%s]",tmpPath.toUri().toString(),finalIndexZipFilePath.toUri().toString()));
+}
+writeSegmentDescriptor(outputFS,finalSegment,new Path(segmentBasePath,"descriptor.json"),progressable);
 return finalSegment;
 }

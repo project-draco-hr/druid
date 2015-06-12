@@ -4,17 +4,17 @@
       try {
         progressable.progress();
         if (outputFS.exists(descriptorPath)) {
-          if (!fileContext.delete(descriptorPath,false)) {
+          if (!outputFS.delete(descriptorPath,false)) {
             throw new IOException(String.format("Failed to delete descriptor at [%s]",descriptorPath));
           }
         }
-        try (final OutputStream descriptorOut=fileContext.create(descriptorPath,EnumSet.of(CreateFlag.OVERWRITE,CreateFlag.CREATE),Options.CreateOpts.bufferSize(256 * 1024),Options.CreateOpts.createParent())){
+        try (final OutputStream descriptorOut=outputFS.create(descriptorPath,true,DEFAULT_FS_BUFFER_SIZE,progressable)){
           HadoopDruidIndexerConfig.jsonMapper.writeValue(descriptorOut,segment);
           descriptorOut.flush();
         }
        }
  catch (      RuntimeException|IOException ex) {
-        log.info(ex,"Error in retry loop");
+        log.info(ex,"Exception in descriptor pusher retry loop");
         throw ex;
       }
       return -1;
