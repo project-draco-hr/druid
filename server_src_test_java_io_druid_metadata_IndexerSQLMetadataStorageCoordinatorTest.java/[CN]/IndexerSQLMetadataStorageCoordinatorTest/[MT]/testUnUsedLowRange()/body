@@ -1,0 +1,6 @@
+{
+  coordinator.announceHistoricalSegments(segments);
+  unUseSegment();
+  Assert.assertEquals(segments,ImmutableSet.copyOf(coordinator.getUnusedSegmentsForInterval(defaultSegment.getDataSource(),defaultSegment.getInterval().withStart(defaultSegment.getInterval().getStart().minus(1)))));
+  Assert.assertEquals(segments,ImmutableSet.copyOf(coordinator.getUnusedSegmentsForInterval(defaultSegment.getDataSource(),defaultSegment.getInterval().withStart(defaultSegment.getInterval().getStart().minusYears(1)))));
+}
