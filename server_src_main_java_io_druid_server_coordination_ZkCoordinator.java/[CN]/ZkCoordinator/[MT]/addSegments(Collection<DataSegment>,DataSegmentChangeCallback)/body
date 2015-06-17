@@ -2,11 +2,13 @@
   try (final BackgroundSegmentAnnouncer backgroundSegmentAnnouncer=new BackgroundSegmentAnnouncer(announcer,exec,config.getAnnounceIntervalMillis())){
     backgroundSegmentAnnouncer.startAnnouncing();
     final List<ListenableFuture> segmentLoading=Lists.newArrayList();
+    final int numSegments=segments.size();
+    final AtomicLong counter=new AtomicLong(0);
     for (    final DataSegment segment : segments) {
       segmentLoading.add(getLoadingExecutor().submit(new Callable<Void>(){
         @Override public Void call() throws SegmentLoadingException {
           try {
-            log.info("Loading segment %s",segment.getIdentifier());
+            log.info("Loading segment[%d/%d][%s]",counter.getAndIncrement(),numSegments,segment.getIdentifier());
             final boolean loaded=loadSegment(segment,callback);
             if (loaded) {
               try {
