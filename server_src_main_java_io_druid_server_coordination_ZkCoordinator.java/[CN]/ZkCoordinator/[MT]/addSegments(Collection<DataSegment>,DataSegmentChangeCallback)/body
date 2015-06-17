@@ -1,0 +1,58 @@
+{
+  ExecutorService loadingExecutor=null;
+  try (final BackgroundSegmentAnnouncer backgroundSegmentAnnouncer=new BackgroundSegmentAnnouncer(announcer,exec,config.getAnnounceIntervalMillis())){
+    backgroundSegmentAnnouncer.startAnnouncing();
+    loadingExecutor=Execs.multiThreaded(config.getNumBootstrapThreads(),"ZkCoordinator-loading-%s");
+    final int numSegments=segments.size();
+    final CountDownLatch latch=new CountDownLatch(numSegments);
+    final AtomicInteger counter=new AtomicInteger(0);
+    final CopyOnWriteArrayList<DataSegment> failedSegments=new CopyOnWriteArrayList<>();
+    for (    final DataSegment segment : segments) {
+      loadingExecutor.submit(new Runnable(){
+        @Override public void run(){
+          try {
+            log.info("Loading segment[%d/%d][%s]",counter.getAndIncrement(),numSegments,segment.getIdentifier());
+            final boolean loaded=loadSegment(segment,callback);
+            if (loaded) {
+              try {
+                backgroundSegmentAnnouncer.announceSegment(segment);
+              }
+ catch (              InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new SegmentLoadingException(e,"Loading Interrupted");
+              }
+            }
+          }
+ catch (          SegmentLoadingException e) {
+            log.error(e,"[%s] failed to load",segment.getIdentifier());
+            failedSegments.add(segment);
+          }
+ finally {
+            latch.countDown();
+          }
+        }
+      }
+);
+    }
+    try {
+      latch.await();
+      if (failedSegments.size() > 0) {
+        log.makeAlert("%,d errors seen while loading segments",failedSegments.size()).addData("failedSegments",failedSegments);
+      }
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.makeAlert(e,"LoadingInterrupted");
+    }
+    backgroundSegmentAnnouncer.finishAnnouncing();
+  }
+ catch (  SegmentLoadingException e) {
+    log.makeAlert(e,"Failed to load segments -- likely problem with announcing.").addData("numSegments",segments.size()).emit();
+  }
+ finally {
+    callback.execute();
+    if (loadingExecutor != null) {
+      loadingExecutor.shutdownNow();
+    }
+  }
+}

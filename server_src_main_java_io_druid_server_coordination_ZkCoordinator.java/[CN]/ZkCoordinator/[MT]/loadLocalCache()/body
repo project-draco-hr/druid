@@ -5,8 +5,10 @@
     return;
   }
   List<DataSegment> cachedSegments=Lists.newArrayList();
-  for (  File file : baseDir.listFiles()) {
-    log.info("Loading segment cache file [%s]",file);
+  File[] segmentsToLoad=baseDir.listFiles();
+  for (int i=0; i < segmentsToLoad.length; i++) {
+    File file=segmentsToLoad[i];
+    log.info("Loading segment cache file [%d/%d][%s].",i,segmentsToLoad.length,file);
     try {
       DataSegment segment=jsonMapper.readValue(file,DataSegment.class);
       if (serverManager.isSegmentCached(segment)) {
