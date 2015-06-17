@@ -1,0 +1,9 @@
+{
+  ImmutableZkWorker worker1=createMockWorker(1,true,true);
+  ImmutableZkWorker worker2=createMockWorker(1,true,true);
+  ImmutableMap<String,ImmutableZkWorker> workerMap=ImmutableMap.of("10.0.0.1",worker1,"10.0.0.3",worker2);
+  ImmutableZkWorker workerForBatchTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("index_hadoop")).get();
+  Assert.assertEquals(worker1,workerForBatchTask);
+  ImmutableZkWorker workerForOtherTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("other_type")).get();
+  Assert.assertEquals(worker2,workerForOtherTask);
+}
