@@ -77,7 +77,7 @@
     Path descriptorPath=config.makeDescriptorInfoPath(segment);
     descriptorPath=JobHelper.prependFSIfNullScheme(FileSystem.get(descriptorPath.toUri(),context.getConfiguration()),descriptorPath);
     log.info("Writing descriptor to path[%s]",descriptorPath);
-    JobHelper.writeSegmentDescriptor(config.makeDescriptorInfoDir().getFileSystem(context.getConfiguration()),segment,descriptorPath,FileContext.getFileContext(descriptorPath.toUri(),context.getConfiguration()),context);
+    JobHelper.writeSegmentDescriptor(config.makeDescriptorInfoDir().getFileSystem(context.getConfiguration()),segment,descriptorPath,context);
     for (    File file : toMerge) {
       FileUtils.deleteDirectory(file);
     }

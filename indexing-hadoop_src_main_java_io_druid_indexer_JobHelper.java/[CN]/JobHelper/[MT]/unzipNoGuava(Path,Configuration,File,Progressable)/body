@@ -1,32 +1,34 @@
 {
   final DataPusher zipPusher=(DataPusher)RetryProxy.create(DataPusher.class,new DataPusher(){
     @Override public long push() throws IOException {
-      final FileContext context=FileContext.getFileContext(zip.toUri(),configuration);
-      long size=0L;
-      final byte[] buffer=new byte[1 << 13];
-      progressable.progress();
-      try (ZipInputStream in=new ZipInputStream(context.open(zip,1 << 13))){
-        for (ZipEntry entry=in.getNextEntry(); entry != null; entry=in.getNextEntry()) {
-          final String fileName=entry.getName();
-          try (final OutputStream out=new BufferedOutputStream(new FileOutputStream(outDir.getAbsolutePath() + File.separator + fileName),1 << 13)){
-            for (int len=in.read(buffer); len >= 0; len=in.read(buffer)) {
-              progressable.progress();
-              if (len == 0) {
-                continue;
+      try {
+        final FileSystem fileSystem=zip.getFileSystem(configuration);
+        long size=0L;
+        final byte[] buffer=new byte[1 << 13];
+        progressable.progress();
+        try (ZipInputStream in=new ZipInputStream(fileSystem.open(zip,1 << 13))){
+          for (ZipEntry entry=in.getNextEntry(); entry != null; entry=in.getNextEntry()) {
+            final String fileName=entry.getName();
+            try (final OutputStream out=new BufferedOutputStream(new FileOutputStream(outDir.getAbsolutePath() + File.separator + fileName),1 << 13)){
+              for (int len=in.read(buffer); len >= 0; len=in.read(buffer)) {
+                progressable.progress();
+                if (len == 0) {
+                  continue;
+                }
+                size+=len;
+                out.write(buffer,0,len);
               }
-              size+=len;
-              out.write(buffer,0,len);
+              out.flush();
             }
-            out.flush();
-          }
-         }
+           }
+        }
+         progressable.progress();
+        return size;
       }
  catch (      IOException|RuntimeException exception) {
-        log.error(exception,"Exception in retry loop");
+        log.error(exception,"Exception in unzip retry loop");
         throw exception;
       }
-      progressable.progress();
-      return size;
     }
   }
 ,RetryPolicies.exponentialBackoffRetry(NUM_RETRIES,SECONDS_BETWEEN_RETRIES,TimeUnit.SECONDS));
