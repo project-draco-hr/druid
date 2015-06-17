@@ -1,0 +1,40 @@
+{
+  segmentViewInitLatch=new CountDownLatch(1);
+  segmentAddedLatch=new CountDownLatch(5);
+  segmentRemovedLatch=new CountDownLatch(1);
+  setupViews();
+  final List<DruidServer> druidServers=Lists.transform(ImmutableList.<String>of("locahost:0","localhost:1","localhost:2","localhost:3","localhost:4"),new Function<String,DruidServer>(){
+    @Override public DruidServer apply(    String input){
+      return new DruidServer(input,input,10000000L,"historical","default_tier",0);
+    }
+  }
+);
+  for (  DruidServer druidServer : druidServers) {
+    setupZNodeForServer(druidServer);
+  }
+  final List<DataSegment> segments=Lists.transform(ImmutableList.<Pair<String,String>>of(Pair.of("2011-04-01/2011-04-03","v1"),Pair.of("2011-04-03/2011-04-06","v1"),Pair.of("2011-04-01/2011-04-09","v2"),Pair.of("2011-04-06/2011-04-09","v3"),Pair.of("2011-04-01/2011-04-02","v3")),new Function<Pair<String,String>,DataSegment>(){
+    @Override public DataSegment apply(    Pair<String,String> input){
+      return dataSegmentWithIntervalAndVersion(input.lhs,input.rhs);
+    }
+  }
+);
+  for (int i=0; i < 5; ++i) {
+    announceSegmentForServer(druidServers.get(i),segments.get(i));
+  }
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentAddedLatch));
+  TimelineLookup timeline=brokerServerView.getTimeline(new TableDataSource("test_broker_server_view"));
+  assertValues(Arrays.asList(createExpected("2011-04-01/2011-04-02","v3",druidServers.get(4),segments.get(4)),createExpected("2011-04-02/2011-04-06","v2",druidServers.get(2),segments.get(2)),createExpected("2011-04-06/2011-04-09","v3",druidServers.get(3),segments.get(3))),(List<TimelineObjectHolder>)timeline.lookup(new Interval("2011-04-01/2011-04-09")));
+  unannounceSegmentForServer(druidServers.get(2),segments.get(2));
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentRemovedLatch));
+  segmentRemovedLatch=new CountDownLatch(4);
+  timeline=brokerServerView.getTimeline(new TableDataSource("test_broker_server_view"));
+  assertValues(Arrays.asList(createExpected("2011-04-01/2011-04-02","v3",druidServers.get(4),segments.get(4)),createExpected("2011-04-02/2011-04-03","v1",druidServers.get(0),segments.get(0)),createExpected("2011-04-03/2011-04-06","v1",druidServers.get(1),segments.get(1)),createExpected("2011-04-06/2011-04-09","v3",druidServers.get(3),segments.get(3))),(List<TimelineObjectHolder>)timeline.lookup(new Interval("2011-04-01/2011-04-09")));
+  for (int i=0; i < 5; ++i) {
+    if (i != 2) {
+      unannounceSegmentForServer(druidServers.get(i),segments.get(i));
+    }
+  }
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentRemovedLatch));
+  Assert.assertEquals(0,((List<TimelineObjectHolder>)timeline.lookup(new Interval("2011-04-01/2011-04-09"))).size());
+}
