@@ -1,0 +1,9 @@
+{
+  JsonConfigProvider.bind(binder,STATIC_CONFIG_PREFIX,NamespaceLookupStaticConfig.class);
+  PolyBind.createChoiceWithDefault(binder,TYPE_PREFIX,Key.get(NamespaceExtractionCacheManager.class),Key.get(OnHeapNamespaceExtractionCacheManager.class),"onheap").in(LazySingleton.class);
+  PolyBind.optionBinder(binder,Key.get(NamespaceExtractionCacheManager.class)).addBinding("offheap").to(OffHeapNamespaceExtractionCacheManager.class).in(LazySingleton.class);
+  getNamespaceFactoryMapBinder(binder).addBinding(JDBCExtractionNamespace.class).to(JDBCExtractionNamespaceFunctionFactory.class).in(LazySingleton.class);
+  getNamespaceFactoryMapBinder(binder).addBinding(URIExtractionNamespace.class).to(URIExtractionNamespaceFunctionFactory.class).in(LazySingleton.class);
+  LifecycleModule.register(binder,NamespaceStaticConfiguration.class);
+  Jerseys.addResource(binder,NamespacesCacheResource.class);
+}

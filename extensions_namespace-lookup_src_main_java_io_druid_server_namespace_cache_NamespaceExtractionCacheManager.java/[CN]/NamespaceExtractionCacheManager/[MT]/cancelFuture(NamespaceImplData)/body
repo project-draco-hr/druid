@@ -1,0 +1,28 @@
+{
+synchronized (implDatum.enabled) {
+    final CountDownLatch latch=new CountDownLatch(1);
+    final ListenableFuture<?> future=implDatum.future;
+    Futures.addCallback(future,new FutureCallback<Object>(){
+      @Override public void onSuccess(      Object result){
+        latch.countDown();
+      }
+      @Override public void onFailure(      Throwable t){
+        latch.countDown();
+        if (!(t instanceof CancellationException)) {
+          log.error(t,"Error in namespace [%s]",implDatum.name);
+        }
+      }
+    }
+);
+    if (!future.isDone() && !future.cancel(true)) {
+      throw new ISE("Future for namespace [%s] was not able to be canceled",implDatum.name);
+    }
+    try {
+      latch.await();
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw Throwables.propagate(e);
+    }
+  }
+}

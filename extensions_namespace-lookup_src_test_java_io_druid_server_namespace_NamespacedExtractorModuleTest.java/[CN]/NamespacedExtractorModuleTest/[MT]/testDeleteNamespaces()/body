@@ -1,0 +1,11 @@
+{
+  final File tmpFile=temporaryFolder.newFile();
+  try (OutputStreamWriter out=new FileWriter(tmpFile)){
+    out.write(mapper.writeValueAsString(ImmutableMap.<String,String>of("foo","bar")));
+  }
+   final URIExtractionNamespace namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new DefaultObjectMapper())),new Period(0),null);
+  cacheManager.delete("ns");
+  while (!noNamespaces(cacheManager)) {
+    Thread.sleep(1);
+  }
+}

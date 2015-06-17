@@ -1,0 +1,14 @@
+{
+  if (implDatum == null) {
+    return false;
+  }
+synchronized (implDatum.enabled) {
+    if (!implDatum.enabled.compareAndSet(true,false)) {
+      return false;
+    }
+    if (!implDatum.future.isDone()) {
+      cancelFuture(implDatum);
+    }
+    return implData.remove(implDatum.name,implDatum);
+  }
+}

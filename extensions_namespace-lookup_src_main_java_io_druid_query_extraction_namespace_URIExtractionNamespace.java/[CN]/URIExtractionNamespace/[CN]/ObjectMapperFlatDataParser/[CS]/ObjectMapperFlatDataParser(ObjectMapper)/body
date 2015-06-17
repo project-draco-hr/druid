@@ -1,0 +1,21 @@
+{
+  parser=new Parser<String,String>(){
+    @Override public Map<String,String> parse(    String input){
+      try {
+        return jsonMapper.readValue(input,new TypeReference<Map<String,String>>(){
+        }
+);
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void setFieldNames(    Iterable<String> fieldNames){
+      throw new UOE("No field names available");
+    }
+    @Override public List<String> getFieldNames(){
+      throw new UOE("No field names available");
+    }
+  }
+;
+}

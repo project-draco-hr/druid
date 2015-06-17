@@ -1,0 +1,25 @@
+{
+  final Lock lock=nsLocks.get(namespaceOrCacheKey);
+  lock.lock();
+  try {
+    String realKey=currentNamespaceCache.get(namespaceOrCacheKey);
+    if (realKey == null) {
+      realKey=namespaceOrCacheKey;
+    }
+    final Lock nsLock=nsLocks.get(realKey);
+    if (lock != nsLock) {
+      nsLock.lock();
+    }
+    try {
+      return mmapDB.createHashMap(realKey).makeOrGet();
+    }
+  finally {
+      if (lock != nsLock) {
+        nsLock.unlock();
+      }
+    }
+  }
+  finally {
+    lock.unlock();
+  }
+}

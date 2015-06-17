@@ -2,21 +2,15 @@
   File zipFile=File.createTempFile("gztest",".gz");
   File unZipFile=new File(tmpDir,Files.getNameWithoutExtension(zipFile.getAbsolutePath()));
   unZipFile.delete();
-  zipFile.deleteOnExit();
   zipFile.delete();
-  try {
-    try (OutputStream fOutStream=new FileOutputStream(zipFile)){
-      try (OutputStream outputStream=new GZIPOutputStream(fOutStream)){
-        outputStream.write(new byte[0]);
-        outputStream.flush();
-      }
-     }
-     Assert.assertTrue(zipFile.exists());
-    Assert.assertFalse(unZipFile.exists());
-    puller.getSegmentFiles(zipFile,tmpDir);
-    Assert.assertTrue(unZipFile.exists());
-  }
-  finally {
-    deleteFiles(zipFile,unZipFile);
-  }
+  try (OutputStream fOutStream=new FileOutputStream(zipFile)){
+    try (OutputStream outputStream=new GZIPOutputStream(fOutStream)){
+      outputStream.write(new byte[0]);
+      outputStream.flush();
+    }
+   }
+   Assert.assertTrue(zipFile.exists());
+  Assert.assertFalse(unZipFile.exists());
+  puller.getSegmentFiles(zipFile,tmpDir);
+  Assert.assertTrue(unZipFile.exists());
 }

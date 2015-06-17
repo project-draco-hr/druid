@@ -1,0 +1,6 @@
+{
+  final String keyField="keyField";
+  final String valueField="valueField";
+  URIExtractionNamespace.JSONFlatDataParser parser=new URIExtractionNamespace.JSONFlatDataParser(new ObjectMapper(),keyField,valueField);
+  Assert.assertEquals(ImmutableMap.of("B","C"),parser.getParser().parse(String.format("{\"%s\":\"B\", \"%s\":\"C\", \"FOO\":\"BAR\"}",keyField,valueField)));
+}

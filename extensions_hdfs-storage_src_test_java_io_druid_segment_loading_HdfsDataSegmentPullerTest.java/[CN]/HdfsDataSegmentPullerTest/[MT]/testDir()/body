@@ -1,10 +1,10 @@
 {
-  final Path zipPath=new Path("/tmp/tmp2/test.txt");
+  final Path zipPath=new Path(perTestPath,"test.txt");
   final File outTmpDir=com.google.common.io.Files.createTempDir();
   outTmpDir.deleteOnExit();
   final File outFile=new File(outTmpDir,"test.txt");
   outFile.delete();
-  final URI uri=URI.create(uriBase.toString() + "/tmp/tmp2");
+  final URI uri=URI.create(uriBase.toString() + perTestPath.toString());
   try (final OutputStream outputStream=miniCluster.getFileSystem().create(zipPath)){
     try (final InputStream inputStream=new ByteArrayInputStream(pathByteContents)){
       ByteStreams.copy(inputStream,outputStream);

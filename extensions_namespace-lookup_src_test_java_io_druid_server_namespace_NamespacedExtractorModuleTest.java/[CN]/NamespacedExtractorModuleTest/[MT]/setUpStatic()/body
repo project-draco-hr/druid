@@ -1,0 +1,6 @@
+{
+  final Map<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>> factoryMap=ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(URIExtractionNamespace.class,new URIExtractionNamespaceFunctionFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder())),JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory());
+  lifecycle=new Lifecycle();
+  cacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,new ConcurrentHashMap<String,Function<String,String>>(),new NoopServiceEmitter(),factoryMap);
+  fnCache.clear();
+}

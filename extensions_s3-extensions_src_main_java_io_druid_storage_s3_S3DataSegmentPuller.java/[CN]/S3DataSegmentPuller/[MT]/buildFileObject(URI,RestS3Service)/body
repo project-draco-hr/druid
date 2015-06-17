@@ -1,11 +1,9 @@
 {
-  final URI checkedUri=checkURI(uri);
-  final AmazonS3URI s3URI=new AmazonS3URI(checkedUri);
-  final String key=s3URI.getKey();
-  final String bucket=s3URI.getBucket();
-  final S3Object s3Obj=s3Client.getObject(bucket,key);
+  final S3Coords coords=new S3Coords(checkURI(uri));
+  final S3Object s3Obj=s3Client.getObject(coords.bucket,coords.path);
   final String path=uri.getPath();
   return new FileObject(){
+    volatile boolean streamAcquired=false;
     @Override public URI toUri(){
       return uri;
     }
@@ -15,10 +13,11 @@
     }
     @Override public InputStream openInputStream() throws IOException {
       try {
+        streamAcquired=true;
         return s3Obj.getDataInputStream();
       }
  catch (      ServiceException e) {
-        throw new IOException(String.format("Could not load S3 URI [%s]",checkedUri.toString()),e);
+        throw new IOException(String.format("Could not load S3 URI [%s]",uri),e);
       }
     }
     @Override public OutputStream openOutputStream() throws IOException {
@@ -38,6 +37,16 @@
     }
     @Override public boolean delete(){
       throw new UOE("Cannot delete S3 items anonymously. jetS3t doesn't support authenticated deletes easily.");
+    }
+    @Override public void finalize() throws Throwable {
+      try {
+        if (!streamAcquired) {
+          s3Obj.closeDataInputStream();
+        }
+      }
+  finally {
+        super.finalize();
+      }
     }
   }
 ;

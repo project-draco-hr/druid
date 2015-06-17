@@ -1,0 +1,12 @@
+{
+  return new Function<String,Function<String,String>>(){
+    @Nullable @Override public Function<String,String> apply(    final String namespace){
+      Function<String,String> fn=fnCache.get(namespace);
+      if (fn == null) {
+        throw new IAE("Namespace [%s] not found",namespace);
+      }
+      return fn;
+    }
+  }
+;
+}

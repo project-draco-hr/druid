@@ -1,0 +1,17 @@
+{
+  long latestModified=Long.MIN_VALUE;
+  URI latest=null;
+  for (  File file : dir.toFile().listFiles(new FileFilter(){
+    @Override public boolean accept(    File pathname){
+      return pathname.exists() && pathname.isFile() && (pattern == null || pattern.matcher(pathname.getName()).matches());
+    }
+  }
+)) {
+    final long thisModified=file.lastModified();
+    if (thisModified >= latestModified) {
+      latestModified=thisModified;
+      latest=file.toURI();
+    }
+  }
+  return latest;
+}

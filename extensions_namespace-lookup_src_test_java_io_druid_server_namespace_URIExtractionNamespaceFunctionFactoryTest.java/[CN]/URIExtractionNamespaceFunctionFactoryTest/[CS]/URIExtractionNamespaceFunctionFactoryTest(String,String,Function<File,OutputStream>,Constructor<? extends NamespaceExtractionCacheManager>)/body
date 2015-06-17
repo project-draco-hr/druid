@@ -1,0 +1,9 @@
+{
+  final Map<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>> namespaceFunctionFactoryMap=new HashMap<>();
+  this.suffix=suffix;
+  this.outStreamSupplier=outStreamSupplier;
+  this.lifecycle=new Lifecycle();
+  this.fnCache=new ConcurrentHashMap<>();
+  this.manager=cacheManagerConstructor.newInstance(lifecycle,fnCache,new NoopServiceEmitter(),namespaceFunctionFactoryMap);
+  namespaceFunctionFactoryMap.put(URIExtractionNamespace.class,new URIExtractionNamespaceFunctionFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder())));
+}

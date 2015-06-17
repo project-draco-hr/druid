@@ -1,0 +1,23 @@
+{
+  final Lock lock=nsLocks.get(namespaceKey);
+  lock.lock();
+  try {
+    ConcurrentMap<String,String> cacheMap=mapMap.get(cacheKey);
+    if (cacheMap == null) {
+      return false;
+    }
+    dataSize.addAndGet(cacheMap.size());
+    ConcurrentMap<String,String> prior=mapMap.put(namespaceKey,cacheMap);
+    mapMap.remove(cacheKey);
+    if (prior != null) {
+      dataSize.addAndGet(-prior.size());
+      return true;
+    }
+ else {
+      return false;
+    }
+  }
+  finally {
+    lock.unlock();
+  }
+}

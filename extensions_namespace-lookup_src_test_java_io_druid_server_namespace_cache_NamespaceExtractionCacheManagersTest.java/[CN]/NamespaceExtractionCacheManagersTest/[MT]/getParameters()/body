@@ -1,0 +1,7 @@
+{
+  ArrayList<Object[]> params=new ArrayList<>();
+  ConcurrentMap<String,Function<String,String>> fnMap=new ConcurrentHashMap<String,Function<String,String>>();
+  params.add(new Object[]{new OffHeapNamespaceExtractionCacheManager(lifecycle,fnMap,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of()),fnMap});
+  params.add(new Object[]{new OnHeapNamespaceExtractionCacheManager(lifecycle,fnMap,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of()),fnMap});
+  return params;
+}

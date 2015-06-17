@@ -1,0 +1,13 @@
+{
+  final String key=namespace.getNamespace();
+  DBI dbi=null;
+  if (dbiCache.containsKey(key)) {
+    dbi=dbiCache.get(key);
+  }
+  if (dbi == null) {
+    final DBI newDbi=new DBI(namespace.getConnectorConfig().getConnectURI(),namespace.getConnectorConfig().getUser(),namespace.getConnectorConfig().getPassword());
+    dbiCache.putIfAbsent(key,newDbi);
+    dbi=dbiCache.get(key);
+  }
+  return dbi;
+}
