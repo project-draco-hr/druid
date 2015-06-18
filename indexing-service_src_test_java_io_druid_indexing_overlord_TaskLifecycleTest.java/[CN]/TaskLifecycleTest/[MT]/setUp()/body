@@ -1,6 +1,12 @@
 {
   final ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
   EmittingLogger.registerEmitter(emitter);
+  queryRunnerFactoryConglomerate=EasyMock.createStrictMock(QueryRunnerFactoryConglomerate.class);
+  serverView=EasyMock.createStrictMock(FilteredServerView.class);
+  monitorScheduler=EasyMock.createStrictMock(MonitorScheduler.class);
+  publishCountDown=new CountDownLatch(1);
+  announcedSinks=0;
+  pushedSegments=0;
   tmp=Files.createTempDir();
   final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
   indexSpec=new IndexSpec();
@@ -16,6 +22,7 @@
       throw new UnsupportedOperationException();
     }
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
+      pushedSegments++;
       return segment;
     }
   }
@@ -36,7 +43,18 @@
       return segment;
     }
   }
-,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+,new DataSegmentAnnouncer(){
+    @Override public void announceSegment(    DataSegment segment) throws IOException {
+      announcedSinks++;
+    }
+    @Override public void unannounceSegment(    DataSegment segment) throws IOException {
+    }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+    }
+  }
+,serverView,queryRunnerFactoryConglomerate,null,monitorScheduler,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }
