@@ -2,7 +2,7 @@
   final VersionedIntervalTimeline<String,DataSegment> timeline=connector.getDBI().withHandle(new HandleCallback<VersionedIntervalTimeline<String,DataSegment>>(){
     @Override public VersionedIntervalTimeline<String,DataSegment> withHandle(    Handle handle) throws IOException {
       final VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural());
-      final ResultIterator<byte[]> dbSegments=handle.createQuery(String.format("SELECT payload FROM %s WHERE used = true AND dataSource = :dataSource",dbTables.getSegmentsTable())).bind("dataSource",dataSource).map(ByteArrayMapper.FIRST).iterator();
+      final ResultIterator<byte[]> dbSegments=handle.createQuery(String.format("SELECT payload FROM %s WHERE used = true AND dataSource = :dataSource AND start <= :end and \"end\" >= :start  AND used = true",dbTables.getSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).map(ByteArrayMapper.FIRST).iterator();
       while (dbSegments.hasNext()) {
         final byte[] payload=dbSegments.next();
         DataSegment segment=jsonMapper.readValue(payload,DataSegment.class);
