@@ -1,0 +1,5 @@
+{
+  ImmutableMap<String,ImmutableZkWorker> workerMap=ImmutableMap.of("10.0.0.1",createMockWorker(1,true,true),"10.0.0.2",createMockWorker(1,true,true));
+  Optional<ImmutableZkWorker> workerForOtherTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("other_type"));
+  Assert.assertFalse(workerForOtherTask.isPresent());
+}

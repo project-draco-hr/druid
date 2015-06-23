@@ -1,0 +1,12 @@
+{
+  Preconditions.checkNotNull(fn,"function must not be null");
+  final ScriptEngine engine=new ScriptEngineManager().getEngineByName("javascript");
+  try {
+    ((Compilable)engine).compile("var apply = " + fn).eval();
+  }
+ catch (  ScriptException e) {
+    throw Throwables.propagate(e);
+  }
+  this.function=fn;
+  this.fnSelector=((Invocable)engine).getInterface(SelectorFunction.class);
+}
