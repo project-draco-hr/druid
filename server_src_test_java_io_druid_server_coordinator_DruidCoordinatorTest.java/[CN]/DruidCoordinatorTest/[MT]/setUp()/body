@@ -9,11 +9,11 @@
   setupServerAndCurator();
   curator.start();
   curator.create().creatingParentsIfNeeded().forPath(LOADPATH);
-  segmentReplicantLookup=null;
   objectMapper=new DefaultObjectMapper();
-  druidCoordinatorConfig=new TestDruidCoordinatorConfig(new Duration(1),new Duration(6000),null,null,null,false,false);
+  druidCoordinatorConfig=new TestDruidCoordinatorConfig(new Duration(COORDINATOR_START_DELAY),new Duration(COORDINATOR_PERIOD),null,null,null,false,false);
   pathChildrenCache=new PathChildrenCache(curator,LOADPATH,true,true,Execs.singleThreaded("coordinator_test_path_children_cache-%d"));
   loadQueuePeon=new LoadQueuePeon(curator,LOADPATH,objectMapper,Execs.scheduledSingleThreaded("coordinator_test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("coordinator_test_load_queue_peon-%d"),druidCoordinatorConfig);
+  druidNode=new DruidNode("hey","what",1234);
   loadManagementPeons=new MapMaker().makeMap();
   scheduledExecutorFactory=new ScheduledExecutorFactory(){
     @Override public ScheduledExecutorService create(    int corePoolSize,    final String nameFormat){
@@ -22,6 +22,7 @@
   }
 ;
   leaderAnnouncerLatch=new CountDownLatch(1);
+  leaderUnannouncerLatch=new CountDownLatch(1);
   coordinator=new DruidCoordinator(druidCoordinatorConfig,new ZkPathsConfig(){
     @Override public String getBase(){
       return "druid";
@@ -31,6 +32,9 @@
     @Override public void announce(    DruidNode node){
       leaderAnnouncerLatch.countDown();
     }
+    @Override public void unannounce(    DruidNode node){
+      leaderUnannouncerLatch.countDown();
+    }
   }
-,new DruidNode("hey","what",1234),loadManagementPeons);
+,druidNode,loadManagementPeons);
 }
