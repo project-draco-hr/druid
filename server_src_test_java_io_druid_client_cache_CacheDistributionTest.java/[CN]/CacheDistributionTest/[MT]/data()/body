@@ -1,0 +1,11 @@
+{
+  List<HashAlgorithm> hash=ImmutableList.of(DefaultHashAlgorithm.FNV1A_64_HASH,DefaultHashAlgorithm.KETAMA_HASH,MemcachedCache.MURMUR3_128);
+  List<Integer> repetitions=Arrays.asList(160,500,1000,2500,5000);
+  Set<List<Object>> values=Sets.cartesianProduct(Sets.newLinkedHashSet(hash),Sets.newLinkedHashSet(repetitions));
+  return Iterables.transform(values,new Function<List<Object>,Object[]>(){
+    @Nullable @Override public Object[] apply(    List<Object> input){
+      return input.toArray();
+    }
+  }
+);
+}
