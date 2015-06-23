@@ -3,6 +3,7 @@
   Binders.dataSegmentPusherBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentPusher.class).in(LazySingleton.class);
   Binders.dataSegmentKillerBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentKiller.class).in(LazySingleton.class);
   final Configuration conf=new Configuration();
+  conf.setClassLoader(getClass().getClassLoader());
   if (props != null) {
     for (    String propName : System.getProperties().stringPropertyNames()) {
       if (propName.startsWith("hadoop.")) {
