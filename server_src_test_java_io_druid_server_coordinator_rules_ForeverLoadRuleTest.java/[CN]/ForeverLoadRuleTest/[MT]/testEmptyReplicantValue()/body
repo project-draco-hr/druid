@@ -1,0 +1,7 @@
+{
+  Map<String,Integer> tieredReplicants=new HashMap<>();
+  tieredReplicants.put("tier",null);
+  ForeverLoadRule rule=new ForeverLoadRule(tieredReplicants);
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  Rule reread=jsonMapper.readValue(jsonMapper.writeValueAsString(rule),Rule.class);
+}
