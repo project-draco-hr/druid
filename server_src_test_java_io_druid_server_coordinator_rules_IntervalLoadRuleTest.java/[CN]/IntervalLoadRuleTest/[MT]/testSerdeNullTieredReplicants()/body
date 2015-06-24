@@ -1,0 +1,7 @@
+{
+  IntervalLoadRule rule=new IntervalLoadRule(new Interval("0/3000"),null);
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  Rule reread=jsonMapper.readValue(jsonMapper.writeValueAsString(rule),Rule.class);
+  Assert.assertEquals(rule,reread);
+  Assert.assertEquals(ImmutableMap.of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS),rule.getTieredReplicants());
+}

@@ -1,0 +1,7 @@
+{
+  ForeverLoadRule rule=new ForeverLoadRule(null);
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  Rule reread=jsonMapper.readValue(jsonMapper.writeValueAsString(rule),Rule.class);
+  Assert.assertEquals(rule.getTieredReplicants(),((ForeverLoadRule)reread).getTieredReplicants());
+  Assert.assertEquals(ImmutableMap.of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS),rule.getTieredReplicants());
+}
