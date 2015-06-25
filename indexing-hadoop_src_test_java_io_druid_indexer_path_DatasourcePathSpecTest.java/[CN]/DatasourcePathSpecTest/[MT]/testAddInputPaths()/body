@@ -1,0 +1,20 @@
+{
+  HadoopDruidIndexerConfig hadoopIndexerConfig=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema(ingestionSpec.getDataSource(),new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(null,null,null),null,ImmutableList.of("timestamp","host","visited"))),new AggregatorFactory[]{new LongSumAggregatorFactory("visited_sum","visited")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,ImmutableList.of(Interval.parse("2000/3000")))),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","/tmp/dummy","type","static"),null,"/tmp/dummy"),HadoopTuningConfig.makeDefaultTuningConfig().withWorkingPath("/tmp/work").withVersion("ver")));
+  List<DataSegment> segments=ImmutableList.of(new DataSegment(ingestionSpec.getDataSource(),Interval.parse("2000/3000"),"ver",ImmutableMap.<String,Object>of("type","local","path","/tmp/index.zip"),ImmutableList.of("product"),ImmutableList.of("visited_sum","unique_hosts"),new NoneShardSpec(),9,12334),new DataSegment(ingestionSpec.getDataSource(),Interval.parse("2050/3000"),"ver",ImmutableMap.<String,Object>of("type","hdfs","path","/tmp/index.zip"),ImmutableList.of("product"),ImmutableList.of("visited_sum","unique_hosts"),new NoneShardSpec(),9,12335));
+  IndexerMetadataStorageCoordinator indexerMetadataStorageCoordinator=EasyMock.createMock(IndexerMetadataStorageCoordinator.class);
+  EasyMock.expect(indexerMetadataStorageCoordinator.getUsedSegmentsForInterval(ingestionSpec.getDataSource(),ingestionSpec.getInterval())).andReturn(segments);
+  EasyMock.replay(indexerMetadataStorageCoordinator);
+  ObjectMapper mapper=new DefaultObjectMapper();
+  DatasourcePathSpec pathSpec=new DatasourcePathSpec(indexerMetadataStorageCoordinator,mapper,ingestionSpec,null);
+  Configuration config=new Configuration();
+  Job job=EasyMock.createNiceMock(Job.class);
+  EasyMock.expect(job.getConfiguration()).andReturn(config).anyTimes();
+  EasyMock.replay(job);
+  pathSpec.addInputPaths(hadoopIndexerConfig,job);
+  List<DataSegment> actualSegments=mapper.readValue(config.get(DatasourceInputFormat.CONF_INPUT_SEGMENTS),new TypeReference<List<DataSegment>>(){
+  }
+);
+  Assert.assertEquals(segments,actualSegments);
+  DatasourceIngestionSpec actualIngestionSpec=mapper.readValue(config.get(DatasourceInputFormat.CONF_DRUID_SCHEMA),DatasourceIngestionSpec.class);
+  Assert.assertEquals(ingestionSpec.withDimensions(ImmutableList.of("product")).withMetrics(ImmutableList.of("visited_sum")),actualIngestionSpec);
+}

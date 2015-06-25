@@ -1,15 +1,15 @@
 {
   final InputSplit split=context.getInputSplit();
-  if (!(split instanceof DataSegmentSplit)) {
-    throw new IAE("Unexpected split type. Expected [%s] was [%s]",DataSegmentSplit.class.getCanonicalName(),split.getClass().getCanonicalName());
+  if (!(split instanceof DatasourceInputSplit)) {
+    throw new IAE("Unexpected split type. Expected [%s] was [%s]",DatasourceInputSplit.class.getCanonicalName(),split.getClass().getCanonicalName());
   }
   final String tmpDirLoc=context.getConfiguration().get(TMP_FILE_LOC_KEY);
   final File tmpDir=Paths.get(tmpDirLoc).toFile();
-  final DataSegment segment=((DataSegmentSplit)split).getDataSegment();
+  final DataSegment segment=Iterables.getOnlyElement(((DatasourceInputSplit)split).getSegments());
   final HadoopDruidConverterConfig config=converterConfigFromConfiguration(context.getConfiguration());
   context.setStatus("DOWNLOADING");
   context.progress();
-  final Path inPath=new Path(getURIFromSegment(segment));
+  final Path inPath=new Path(JobHelper.getURIFromSegment(segment));
   final File inDir=new File(tmpDir,"in");
   if (inDir.exists() && !inDir.delete()) {
     log.warn("Could not delete [%s]",inDir);

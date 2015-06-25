@@ -1,0 +1,17 @@
+{
+  try {
+    String schema=Preconditions.checkNotNull(config.get(DatasourceInputFormat.CONF_DRUID_SCHEMA),"null schema");
+    logger.info("load schema [%s]",schema);
+    DatasourceIngestionSpec spec=jsonMapper.readValue(schema,DatasourceIngestionSpec.class);
+    if (spec.getDimensions() == null || spec.getDimensions().size() == 0) {
+      throw new ISE("load schema does not have dimensions");
+    }
+    if (spec.getMetrics() == null || spec.getMetrics().size() == 0) {
+      throw new ISE("load schema does not have metrics");
+    }
+    return spec;
+  }
+ catch (  IOException ex) {
+    throw new RuntimeException("couldn't load segment load spec",ex);
+  }
+}

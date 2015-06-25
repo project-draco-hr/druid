@@ -1,0 +1,6 @@
+{
+  config.set(DatasourceInputFormat.CONF_MAX_SPLIT_SIZE,"999999");
+  List<InputSplit> splits=new DatasourceInputFormat().getSplits(context);
+  Assert.assertEquals(1,splits.size());
+  Assert.assertEquals(Sets.newHashSet(segments),Sets.newHashSet((((DatasourceInputSplit)splits.get(0)).getSegments())));
+}

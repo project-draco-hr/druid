@@ -1,0 +1,7 @@
+{
+  List<InputSplit> splits=new DatasourceInputFormat().getSplits(context);
+  Assert.assertEquals(segments.size(),splits.size());
+  for (int i=0; i < segments.size(); i++) {
+    Assert.assertEquals(segments.get(i),((DatasourceInputSplit)splits.get(i)).getSegments().get(0));
+  }
+}

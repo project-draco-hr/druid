@@ -1,0 +1,17 @@
+{
+  final IndexerMetadataStorageCoordinator indexerMetadataStorageCoordinator=EasyMock.createMock(IndexerMetadataStorageCoordinator.class);
+  Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(IndexerMetadataStorageCoordinator.class).toInstance(indexerMetadataStorageCoordinator);
+      JsonConfigProvider.bindInstance(binder,Key.get(DruidNode.class,Self.class),new DruidNode("dummy-node",null,null));
+    }
+  }
+));
+  ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
+  DatasourcePathSpec expected=new DatasourcePathSpec(indexerMetadataStorageCoordinator,jsonMapper,ingestionSpec,Long.valueOf(10));
+  PathSpec actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+  expected=new DatasourcePathSpec(indexerMetadataStorageCoordinator,jsonMapper,ingestionSpec,null);
+  actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+}
