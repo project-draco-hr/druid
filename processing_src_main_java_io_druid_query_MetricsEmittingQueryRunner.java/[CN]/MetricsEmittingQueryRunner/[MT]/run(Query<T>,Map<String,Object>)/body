@@ -3,11 +3,7 @@
   for (  Map.Entry<String,String> userDimension : userDimensions.entrySet()) {
     builder.setDimension(userDimension.getKey(),userDimension.getValue());
   }
-  String queryId=query.getId();
-  if (queryId == null) {
-    queryId="";
-  }
-  builder.setDimension(DruidMetrics.ID,queryId);
+  builder.setDimension(DruidMetrics.ID,Strings.nullToEmpty(query.getId()));
   return new Sequence<T>(){
     @Override public <OutType>OutType accumulate(    OutType outType,    Accumulator<OutType,T> accumulator){
       OutType retVal;
