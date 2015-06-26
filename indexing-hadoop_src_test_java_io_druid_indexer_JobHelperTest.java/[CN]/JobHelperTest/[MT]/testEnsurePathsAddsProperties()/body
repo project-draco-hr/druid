@@ -1,0 +1,7 @@
+{
+  HadoopDruidIndexerConfigSpy hadoopDruidIndexerConfigSpy=new HadoopDruidIndexerConfigSpy(config);
+  JobHelper.ensurePaths(hadoopDruidIndexerConfigSpy);
+  Map<String,String> jobProperties=hadoopDruidIndexerConfigSpy.getJobProperties();
+  Assert.assertEquals("fs.s3.impl property set correctly","org.apache.hadoop.fs.s3native.NativeS3FileSystem",jobProperties.get("fs.s3.impl"));
+  Assert.assertEquals("fs.s3.accessKeyId property set correctly","THISISMYACCESSKEY",jobProperties.get("fs.s3.awsAccessKeyId"));
+}
