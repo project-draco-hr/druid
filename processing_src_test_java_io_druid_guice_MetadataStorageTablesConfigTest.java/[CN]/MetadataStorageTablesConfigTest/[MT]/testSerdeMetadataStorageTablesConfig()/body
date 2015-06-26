@@ -1,0 +1,23 @@
+{
+  Injector injector=Guice.createInjector(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.install(new PropertiesModule(Arrays.asList("test.runtime.properties")));
+      binder.install(new ConfigModule());
+      binder.install(new DruidGuiceExtensions());
+      JsonConfigProvider.bind(binder,"druid.metadata.storage.tables",MetadataStorageTablesConfig.class);
+    }
+    @Provides @LazySingleton public ObjectMapper jsonMapper(){
+      return new DefaultObjectMapper();
+    }
+  }
+);
+  Properties props=injector.getInstance(Properties.class);
+  MetadataStorageTablesConfig config=injector.getInstance(MetadataStorageTablesConfig.class);
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.base"),config.getBase());
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.segments"),config.getSegmentsTable());
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.rules"),config.getRulesTable());
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.config"),config.getConfigTable());
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.tasks"),config.getEntryTable(MetadataStorageTablesConfig.TASK_ENTRY_TYPE));
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.taskLog"),config.getLogTable(MetadataStorageTablesConfig.TASK_ENTRY_TYPE));
+  Assert.assertEquals(props.getProperty("druid.metadata.storage.tables.taskLock"),config.getLockTable(MetadataStorageTablesConfig.TASK_ENTRY_TYPE));
+}
