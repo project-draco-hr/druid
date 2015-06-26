@@ -3,6 +3,7 @@
   Map<String,Integer> entry=ImmutableMap.of("a",1);
   Map<String,Integer> status=ImmutableMap.of("count",42);
   handler.insert(entryId,new DateTime("2014-01-01"),"test",entry,true,status);
+  Assert.assertEquals(ImmutableMap.<Long,Map<String,Integer>>of(),handler.getLocks("non_exist_entry"));
   Assert.assertEquals(ImmutableMap.<Long,Map<String,Integer>>of(),handler.getLocks(entryId));
   final ImmutableMap<String,Integer> lock1=ImmutableMap.of("lock",1);
   final ImmutableMap<String,Integer> lock2=ImmutableMap.of("lock",2);

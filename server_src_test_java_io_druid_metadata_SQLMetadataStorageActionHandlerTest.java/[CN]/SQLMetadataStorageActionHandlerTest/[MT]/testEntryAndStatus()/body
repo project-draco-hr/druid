@@ -5,7 +5,9 @@
   final String entryId="1234";
   handler.insert(entryId,new DateTime("2014-01-02T00:00:00.123"),"testDataSource",entry,true,null);
   Assert.assertEquals(Optional.of(entry),handler.getEntry(entryId));
+  Assert.assertEquals(Optional.absent(),handler.getEntry("non_exist_entry"));
   Assert.assertEquals(Optional.absent(),handler.getStatus(entryId));
+  Assert.assertEquals(Optional.absent(),handler.getStatus("non_exist_entry"));
   Assert.assertTrue(handler.setStatus(entryId,true,status1));
   Assert.assertEquals(ImmutableList.of(Pair.of(entry,status1)),handler.getActiveEntriesWithStatus());
   Assert.assertTrue(handler.setStatus(entryId,true,status2));
