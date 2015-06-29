@@ -1,0 +1,8 @@
+{
+  String inputJson="{\n" + " \"type\": \"loadForever\"\n" + "}";
+  String expectedJson="    {\n" + "      \"tieredReplicants\": {\n" + "        \"" + DruidServer.DEFAULT_TIER + "\": "+ DruidServer.DEFAULT_NUM_REPLICANTS+ "\n"+ "      },\n"+ "      \"type\": \"loadForever\"\n"+ "    }";
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  ForeverLoadRule inputForeverLoadRule=jsonMapper.readValue(inputJson,ForeverLoadRule.class);
+  ForeverLoadRule expectedForeverLoadRule=jsonMapper.readValue(expectedJson,ForeverLoadRule.class);
+  Assert.assertEquals(expectedForeverLoadRule.getTieredReplicants(),inputForeverLoadRule.getTieredReplicants());
+}

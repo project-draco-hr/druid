@@ -1,0 +1,8 @@
+{
+  PeriodLoadRule rule=new PeriodLoadRule(new Period("P1D"),null);
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  Rule reread=jsonMapper.readValue(jsonMapper.writeValueAsString(rule),Rule.class);
+  Assert.assertEquals(rule.getPeriod(),((PeriodLoadRule)reread).getPeriod());
+  Assert.assertEquals(rule.getTieredReplicants(),((PeriodLoadRule)reread).getTieredReplicants());
+  Assert.assertEquals(ImmutableMap.of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS),rule.getTieredReplicants());
+}

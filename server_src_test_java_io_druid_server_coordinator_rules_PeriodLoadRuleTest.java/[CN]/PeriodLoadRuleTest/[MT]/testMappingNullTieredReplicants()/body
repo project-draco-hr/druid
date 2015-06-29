@@ -1,0 +1,9 @@
+{
+  String inputJson="{\n" + "      \"period\": \"P1D\",\n" + "      \"type\": \"loadByPeriod\"\n"+ "    }";
+  String expectedJson="{\n" + "      \"period\": \"P1D\",\n" + "      \"tieredReplicants\": {\n"+ "        \"" + DruidServer.DEFAULT_TIER + "\": "+ DruidServer.DEFAULT_NUM_REPLICANTS+ "\n"+ "      },\n"+ "      \"type\": \"loadByPeriod\"\n"+ "    }";
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  PeriodLoadRule inputPeriodLoadRule=jsonMapper.readValue(inputJson,PeriodLoadRule.class);
+  PeriodLoadRule expectedPeriodLoadRule=jsonMapper.readValue(expectedJson,PeriodLoadRule.class);
+  Assert.assertEquals(expectedPeriodLoadRule.getTieredReplicants(),inputPeriodLoadRule.getTieredReplicants());
+  Assert.assertEquals(expectedPeriodLoadRule.getPeriod(),inputPeriodLoadRule.getPeriod());
+}

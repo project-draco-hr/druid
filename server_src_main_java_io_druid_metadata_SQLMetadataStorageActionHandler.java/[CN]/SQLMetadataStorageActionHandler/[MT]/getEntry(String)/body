@@ -1,7 +1,8 @@
 {
   return retryingHandle(new HandleCallback<Optional<EntryType>>(){
     @Override public Optional<EntryType> withHandle(    Handle handle) throws Exception {
-      return Optional.fromNullable(jsonMapper.<EntryType>readValue(handle.createQuery(String.format("SELECT payload FROM %s WHERE id = :id",entryTable)).bind("id",entryId).map(ByteArrayMapper.FIRST).first(),entryType));
+      byte[] res=handle.createQuery(String.format("SELECT payload FROM %s WHERE id = :id",entryTable)).bind("id",entryId).map(ByteArrayMapper.FIRST).first();
+      return Optional.fromNullable(res == null ? null : jsonMapper.<EntryType>readValue(res,entryType));
     }
   }
 );
