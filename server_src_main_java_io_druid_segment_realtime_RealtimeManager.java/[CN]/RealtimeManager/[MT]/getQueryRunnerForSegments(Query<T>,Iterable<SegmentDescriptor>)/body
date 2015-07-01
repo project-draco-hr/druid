@@ -1,10 +1,20 @@
 {
   final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
-  Iterable<FireChief> chiefsOfDataSource=chiefs.get(Iterables.getOnlyElement(query.getDataSource().getNames()));
-  return chiefsOfDataSource == null ? new NoopQueryRunner() : factory.getToolchest().mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(chiefsOfDataSource,new Function<FireChief,QueryRunner<T>>(){
-    @Override public QueryRunner<T> apply(    FireChief input){
-      return input.getQueryRunner(query);
+  List<QueryRunner> runners=new ArrayList();
+  for (  String dataSource : query.getDataSource().getNames()) {
+    final Map<Integer,FireChief> dataSourceChiefs=RealtimeManager.this.chiefs.get(dataSource);
+    if (dataSourceChiefs == null) {
+      continue;
     }
+    QueryToolChest<T,Query<T>> toolchest=factory.getToolchest();
+    Iterable<QueryRunner<T>> subRunners=Iterables.transform(specs,new Function<SegmentDescriptor,QueryRunner<T>>(){
+      @Nullable @Override public QueryRunner<T> apply(      SegmentDescriptor spec){
+        FireChief retVal=dataSourceChiefs.get(spec.getPartitionNumber());
+        return retVal == null ? new NoopQueryRunner<T>() : retVal.getQueryRunner(query);
+      }
+    }
+);
+    runners.add(toolchest.mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),subRunners)));
   }
-)));
+  return new UnionQueryRunner<>(runners,conglomerate.findFactory(query).getToolchest());
 }
