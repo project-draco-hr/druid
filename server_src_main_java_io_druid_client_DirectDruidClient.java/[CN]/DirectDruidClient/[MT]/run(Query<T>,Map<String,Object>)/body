@@ -21,14 +21,19 @@
   final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
   try {
     log.debug("Querying url[%s]",url);
+    final long requestStartTime=System.currentTimeMillis();
+    final ServiceMetricEvent.Builder builder=toolChest.makeMetricBuilder(query);
+    builder.setDimension("server",host);
+    builder.setDimension(DruidMetrics.ID,Strings.nullToEmpty(query.getId()));
     final HttpResponseHandler<InputStream,InputStream> responseHandler=new HttpResponseHandler<InputStream,InputStream>(){
-      private long startTime;
+      private long responseStartTime;
       private final AtomicLong byteCount=new AtomicLong(0);
       private final BlockingQueue<InputStream> queue=new LinkedBlockingQueue<>();
       private final AtomicBoolean done=new AtomicBoolean(false);
       @Override public ClientResponse<InputStream> handleResponse(      HttpResponse response){
         log.debug("Initial response from url[%s]",url);
-        startTime=System.currentTimeMillis();
+        responseStartTime=System.currentTimeMillis();
+        emitter.emit(builder.build("query/node/ttfb",responseStartTime - requestStartTime));
         try {
           final String responseContext=response.headers().get("X-Druid-Response-Context");
           if (responseContext != null) {
@@ -89,7 +94,8 @@ synchronized (done) {
       }
       @Override public ClientResponse<InputStream> done(      ClientResponse<InputStream> clientResponse){
         long stopTime=System.currentTimeMillis();
-        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount.get(),stopTime - startTime,byteCount.get() / (0.0001 * (stopTime - startTime)));
+        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount.get(),stopTime - responseStartTime,byteCount.get() / (0.0001 * (stopTime - responseStartTime)));
+        emitter.emit(builder.build("query/node/time",stopTime - requestStartTime));
 synchronized (done) {
           try {
             queue.put(ByteSource.empty().openStream());
