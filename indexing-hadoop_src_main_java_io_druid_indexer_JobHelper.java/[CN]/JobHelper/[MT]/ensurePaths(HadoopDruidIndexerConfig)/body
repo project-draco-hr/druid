@@ -3,6 +3,7 @@
     Job job=Job.getInstance(new Configuration(),String.format("%s-determine_partitions-%s",config.getDataSource(),config.getIntervals()));
     job.getConfiguration().set("io.sort.record.percent","0.19");
     injectSystemProperties(job);
+    config.addJobProperties(job);
     config.addInputPaths(job);
   }
  catch (  IOException e) {
