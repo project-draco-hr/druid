@@ -1,14 +1,6 @@
 {
   Initialization.getLoadersMap().put("xyz",(URLClassLoader)Initialization.class.getClassLoader());
-  Collection<DruidModule> modules=Initialization.getFromExtensions(new ExtensionsConfig(){
-    @Override public List<String> getCoordinates(){
-      return ImmutableList.of("xyz");
-    }
-    @Override public List<String> getRemoteRepositories(){
-      return ImmutableList.of();
-    }
-  }
-,DruidModule.class);
+  Collection<DruidModule> modules=Initialization.getFromExtensions(new ExtensionsConfig(),DruidModule.class);
   Set<String> loadedModuleNames=Sets.newHashSet();
   for (  DruidModule module : modules) {
     Assert.assertFalse("Duplicate extensions are loaded",loadedModuleNames.contains(module.getClass().getName()));

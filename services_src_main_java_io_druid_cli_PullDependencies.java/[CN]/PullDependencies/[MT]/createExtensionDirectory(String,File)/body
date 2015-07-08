@@ -1,0 +1,9 @@
+{
+  if (atLocation.isDirectory()) {
+    log.info("Directory [%s] already exists, skipping creating a directory",atLocation.getAbsolutePath());
+    return;
+  }
+  if (!atLocation.mkdir()) {
+    throw new ISE(String.format("Unable to create directory at [%s] for coordinate [%s]",atLocation.getAbsolutePath(),coordinate));
+  }
+}

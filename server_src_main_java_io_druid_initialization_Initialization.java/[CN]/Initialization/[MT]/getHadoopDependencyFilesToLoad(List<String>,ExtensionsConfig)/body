@@ -1,0 +1,18 @@
+{
+  final File rootHadoopDependenciesDir=new File(extensionsConfig.getHadoopDependenciesDir());
+  if (rootHadoopDependenciesDir.exists() && !rootHadoopDependenciesDir.isDirectory()) {
+    throw new ISE("Root Hadoop dependencies directory [%s] is not a directory!?",rootHadoopDependenciesDir);
+  }
+  final File[] hadoopDependenciesToLoad=new File[hadoopDependencyCoordinates.size()];
+  int i=0;
+  for (  final String coordinate : hadoopDependencyCoordinates) {
+    final DefaultArtifact artifact=new DefaultArtifact(coordinate);
+    final File hadoopDependencyDir=new File(rootHadoopDependenciesDir,artifact.getArtifactId());
+    final File versionDir=new File(hadoopDependencyDir,artifact.getVersion());
+    if (!hadoopDependencyDir.isDirectory() || !versionDir.isDirectory()) {
+      throw new ISE(String.format("Hadoop dependency [%s] didn't exist!?",versionDir.getAbsolutePath()));
+    }
+    hadoopDependenciesToLoad[i++]=versionDir;
+  }
+  return hadoopDependenciesToLoad;
+}

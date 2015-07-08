@@ -1,0 +1,39 @@
+{
+  final CollectRequest collectRequest=new CollectRequest();
+  collectRequest.setRoot(new Dependency(versionedArtifact,JavaScopes.RUNTIME));
+  final DependencyRequest dependencyRequest=new DependencyRequest(collectRequest,DependencyFilterUtils.andFilter(DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME),new DependencyFilter(){
+    @Override public boolean accept(    DependencyNode node,    List<DependencyNode> parents){
+      if (accept(node.getArtifact())) {
+        return false;
+      }
+      for (      DependencyNode parent : parents) {
+        if (accept(parent.getArtifact())) {
+          return false;
+        }
+      }
+      return true;
+    }
+    private boolean accept(    final Artifact artifact){
+      return exclusions.contains(artifact.getGroupId());
+    }
+  }
+));
+  try {
+    log.info("Start downloading extension [%s]",versionedArtifact);
+    final List<Artifact> artifacts=aether.resolveArtifacts(dependencyRequest);
+    for (    Artifact artifact : artifacts) {
+      if (!exclusions.contains(artifact.getGroupId())) {
+        log.info("Adding file [%s] at [%s]",artifact.getFile().getName(),toLocation.getAbsolutePath());
+        FileUtils.copyFileToDirectory(artifact.getFile(),toLocation);
+      }
+ else {
+        log.debug("Skipped Artifact[%s]",artifact);
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.error(e,"Unable to resolve artifacts for [%s].",dependencyRequest);
+    throw Throwables.propagate(e);
+  }
+  log.info("Finish downloading extension [%s]",versionedArtifact);
+}

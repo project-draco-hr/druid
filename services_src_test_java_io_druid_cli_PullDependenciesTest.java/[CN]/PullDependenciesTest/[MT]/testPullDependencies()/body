@@ -1,0 +1,32 @@
+{
+  rootExtensionsDir.mkdir();
+  rootHadoopDependenciesDir.mkdir();
+  pullDependencies.clean=true;
+  pullDependencies.run();
+  final File[] actualExtensions=rootExtensionsDir.listFiles();
+  Arrays.sort(actualExtensions);
+  Assert.assertEquals(2,actualExtensions.length);
+  Assert.assertEquals(extension_A.getArtifactId(),actualExtensions[0].getName());
+  Assert.assertEquals(extension_B.getArtifactId(),actualExtensions[1].getName());
+  final File[] jarsUnderExtensionA=actualExtensions[0].listFiles();
+  Arrays.sort(jarsUnderExtensionA);
+  Assert.assertArrayEquals(getExpectedJarFiles(extension_A),jarsUnderExtensionA);
+  final File[] jarsUnderExtensionB=actualExtensions[1].listFiles();
+  Arrays.sort(jarsUnderExtensionB);
+  Assert.assertArrayEquals(getExpectedJarFiles(extension_B),jarsUnderExtensionB);
+  final File[] actualHadoopDependencies=rootHadoopDependenciesDir.listFiles();
+  Arrays.sort(actualHadoopDependencies);
+  Assert.assertEquals(1,actualHadoopDependencies.length);
+  Assert.assertEquals(hadoop_client_2_3_0.getArtifactId(),actualHadoopDependencies[0].getName());
+  final File[] versionDirsUnderHadoopClient=actualHadoopDependencies[0].listFiles();
+  Assert.assertEquals(2,versionDirsUnderHadoopClient.length);
+  Arrays.sort(versionDirsUnderHadoopClient);
+  Assert.assertEquals(hadoop_client_2_3_0.getVersion(),versionDirsUnderHadoopClient[0].getName());
+  Assert.assertEquals(hadoop_client_2_4_0.getVersion(),versionDirsUnderHadoopClient[1].getName());
+  final File[] jarsUnder2_3_0=versionDirsUnderHadoopClient[0].listFiles();
+  Arrays.sort(jarsUnder2_3_0);
+  Assert.assertArrayEquals(getExpectedJarFiles(hadoop_client_2_3_0),jarsUnder2_3_0);
+  final File[] jarsUnder2_4_0=versionDirsUnderHadoopClient[1].listFiles();
+  Arrays.sort(jarsUnder2_4_0);
+  Assert.assertArrayEquals(getExpectedJarFiles(hadoop_client_2_4_0),jarsUnder2_4_0);
+}

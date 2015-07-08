@@ -1,0 +1,16 @@
+{
+  URLClassLoader loader=loadersMap.get(extension.getName());
+  if (loader == null) {
+    final Collection<File> jars=FileUtils.listFiles(extension,new String[]{"jar"},false);
+    final URL[] urls=new URL[jars.size()];
+    int i=0;
+    for (    File jar : jars) {
+      final URL url=jar.toURI().toURL();
+      log.info("added URL[%s]",url);
+      urls[i++]=url;
+    }
+    loader=new URLClassLoader(urls,Initialization.class.getClassLoader());
+    loadersMap.put(extension.getName(),loader);
+  }
+  return loader;
+}

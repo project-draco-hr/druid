@@ -1,0 +1,15 @@
+{
+  final List<String> jarNames=extensionToJars.get(artifact);
+  final List<Artifact> artifacts=Lists.newArrayList();
+  for (  String jarName : jarNames) {
+    final File jarFile=new File(localRepo,jarName);
+    try {
+      jarFile.createNewFile();
+    }
+ catch (    IOException e) {
+      Throwables.propagate(e);
+    }
+    artifacts.add(new DefaultArtifact(null,jarName,null,"jar","1.0",null,jarFile));
+  }
+  return artifacts;
+}

@@ -1,38 +1,37 @@
 {
-  final TeslaAether aether=getAetherClient(config);
   final Set<T> retVal=Sets.newHashSet();
-  final Set<String> extensionNames=Sets.newHashSet();
-  for (  String coordinate : config.getCoordinates()) {
-    log.info("Loading extension[%s] for class[%s]",coordinate,clazz.getName());
+  final Set<String> loadedExtensionNames=Sets.newHashSet();
+  if (config.searchCurrentClassloader()) {
+    for (    T module : ServiceLoader.load(clazz,Thread.currentThread().getContextClassLoader())) {
+      final String moduleName=module.getClass().getCanonicalName();
+      if (moduleName == null) {
+        log.warn("Extension module [%s] was ignored because it doesn't have a canonical name, is it a local or anonymous class?",module.getClass().getName());
+      }
+ else       if (!loadedExtensionNames.contains(moduleName)) {
+        log.info("Adding classpath extension module [%s] for class [%s]",moduleName,clazz.getName());
+        loadedExtensionNames.add(moduleName);
+        retVal.add(module);
+      }
+    }
+  }
+  for (  File extension : getExtensionFilesToLoad(config)) {
+    log.info("Loading extension [%s] for class [%s]",extension.getName(),clazz.getName());
     try {
-      URLClassLoader loader=getClassLoaderForCoordinates(aether,coordinate,config.getDefaultVersion());
+      final URLClassLoader loader=getClassLoaderForExtension(extension);
       for (      T module : ServiceLoader.load(clazz,loader)) {
-        String moduleName=module.getClass().getCanonicalName();
+        final String moduleName=module.getClass().getCanonicalName();
         if (moduleName == null) {
           log.warn("Extension module [%s] was ignored because it doesn't have a canonical name, is it a local or anonymous class?",module.getClass().getName());
         }
- else         if (!extensionNames.contains(moduleName)) {
-          log.info("Adding remote extension module[%s] for class[%s]",moduleName,clazz.getName());
-          extensionNames.add(moduleName);
+ else         if (!loadedExtensionNames.contains(moduleName)) {
+          log.info("Adding local file system extension module [%s] for class [%s]",moduleName,clazz.getName());
+          loadedExtensionNames.add(moduleName);
           retVal.add(module);
         }
       }
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);
-    }
-  }
-  if (config.searchCurrentClassloader()) {
-    for (    T module : ServiceLoader.load(clazz,Initialization.class.getClassLoader())) {
-      String moduleName=module.getClass().getCanonicalName();
-      if (moduleName == null) {
-        log.warn("Extension module [%s] was ignored because it doesn't have a canonical name, is it a local or anonymous class?",module.getClass().getName());
-      }
- else       if (!extensionNames.contains(moduleName)) {
-        log.info("Adding local extension module[%s] for class[%s]",moduleName,clazz.getName());
-        extensionNames.add(moduleName);
-        retVal.add(module);
-      }
     }
   }
   extensionsMap.put(clazz,retVal);

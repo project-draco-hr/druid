@@ -1,0 +1,26 @@
+{
+  localRepo=temporaryFolder.newFolder();
+  extensionToJars=new HashMap<>();
+  extensionToJars.put(extension_A,ImmutableList.of("a.jar","b.jar","c.jar"));
+  extensionToJars.put(extension_B,ImmutableList.of("d.jar","e.jar"));
+  extensionToJars.put(hadoop_client_2_3_0,ImmutableList.of("f.jar","g.jar"));
+  extensionToJars.put(hadoop_client_2_4_0,ImmutableList.of("h.jar","i.jar"));
+  rootExtensionsDir=new File(temporaryFolder.getRoot(),"druid_extensions");
+  rootHadoopDependenciesDir=new File(temporaryFolder.getRoot(),"druid_hadoop_dependencies");
+  pullDependencies=new PullDependencies(new DefaultTeslaAether(){
+    @Override public List<Artifact> resolveArtifacts(    DependencyRequest request) throws DependencyResolutionException {
+      return getArtifactsForExtension(request.getCollectRequest().getRoot().getArtifact());
+    }
+  }
+,new ExtensionsConfig(){
+    @Override public String getDirectory(){
+      return rootExtensionsDir.getAbsolutePath();
+    }
+    @Override public String getHadoopDependenciesDir(){
+      return rootHadoopDependenciesDir.getAbsolutePath();
+    }
+  }
+);
+  pullDependencies.coordinates=ImmutableList.of(EXTENSION_A_COORDINATE,EXTENSION_B_COORDINATE);
+  pullDependencies.hadoopCoordinates=ImmutableList.of(HADOOP_CLIENT_2_3_0_COORDINATE,HADOOP_CLIENT_2_4_0_COORDINATE);
+}
