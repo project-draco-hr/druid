@@ -1,0 +1,26 @@
+{
+  for (  DruidPullRequest pullRequest : requestsRead) {
+    PullResult pullResult=null;
+    try {
+      if (!pullRequest.isLongPull()) {
+        pullResult=defaultMQPullConsumer.pull(pullRequest.getMessageQueue(),pullRequest.getTag(),pullRequest.getNextBeginOffset(),pullRequest.getPullBatchSize());
+      }
+ else {
+        pullResult=defaultMQPullConsumer.pullBlockIfNotFound(pullRequest.getMessageQueue(),pullRequest.getTag(),pullRequest.getNextBeginOffset(),pullRequest.getPullBatchSize());
+      }
+      pullRequest.setPullResult(pullResult);
+      pullRequest.setSuccessful(true);
+      if (!messageQueueTreeSetMap.keySet().contains(pullRequest.getMessageQueue())) {
+        messageQueueTreeSetMap.putIfAbsent(pullRequest.getMessageQueue(),new ConcurrentSkipListSet<>(new MessageComparator()));
+      }
+      messageQueueTreeSetMap.get(pullRequest.getMessageQueue()).addAll(pullResult.getMsgFoundList());
+    }
+ catch (    MQClientException|RemotingException|MQBrokerException|InterruptedException e) {
+      LOGGER.error("Failed to pull message from broker.",e);
+    }
+ finally {
+      pullRequest.getCountDownLatch().countDown();
+    }
+  }
+  requestsRead.clear();
+}

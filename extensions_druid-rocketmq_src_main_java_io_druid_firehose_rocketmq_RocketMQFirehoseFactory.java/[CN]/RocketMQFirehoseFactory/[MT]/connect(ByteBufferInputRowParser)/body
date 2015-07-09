@@ -1,0 +1,117 @@
+{
+  Set<String> newDimExclus=Sets.union(byteBufferInputRowParser.getParseSpec().getDimensionsSpec().getDimensionExclusions(),Sets.newHashSet("feed"));
+  final ByteBufferInputRowParser theParser=byteBufferInputRowParser.withParseSpec(byteBufferInputRowParser.getParseSpec().withDimensionsSpec(byteBufferInputRowParser.getParseSpec().getDimensionsSpec().withDimensionExclusions(newDimExclus)));
+  final ConcurrentHashMap<String,Set<MessageQueue>> topicQueueMap;
+  final DefaultMQPullConsumer defaultMQPullConsumer;
+  final DruidPullMessageService pullMessageService;
+  messageQueueTreeSetMap.clear();
+  windows.clear();
+  try {
+    defaultMQPullConsumer=new DefaultMQPullConsumer(this.consumerGroup);
+    defaultMQPullConsumer.setMessageModel(MessageModel.CLUSTERING);
+    topicQueueMap=new ConcurrentHashMap<>();
+    pullMessageService=new DruidPullMessageService(defaultMQPullConsumer);
+    String[] topics=feed.split(",");
+    for (    String topic : topics) {
+      topic=topic.trim();
+      if (topic.isEmpty()) {
+        continue;
+      }
+      defaultMQPullConsumer.fetchSubscribeMessageQueues(topic);
+      topicQueueMap.put(topic,defaultMQPullConsumer.fetchMessageQueuesInBalance(topic));
+    }
+    DruidMessageQueueListener druidMessageQueueListener=new DruidMessageQueueListener(Sets.newHashSet(topics),topicQueueMap,defaultMQPullConsumer);
+    defaultMQPullConsumer.setMessageQueueListener(druidMessageQueueListener);
+    defaultMQPullConsumer.start();
+    pullMessageService.start();
+  }
+ catch (  MQClientException e) {
+    LOGGER.error("Failed to start DefaultMQPullConsumer",e);
+    throw new IOException("Failed to start RocketMQ client",e);
+  }
+  return new Firehose(){
+    @Override public boolean hasMore(){
+      boolean hasMore=false;
+      DruidPullRequest earliestPullRequest=null;
+      for (      Map.Entry<String,Set<MessageQueue>> entry : topicQueueMap.entrySet()) {
+        for (        MessageQueue messageQueue : entry.getValue()) {
+          if (messageQueueTreeSetMap.keySet().contains(messageQueue) && !messageQueueTreeSetMap.get(messageQueue).isEmpty()) {
+            hasMore=true;
+          }
+ else {
+            DruidPullRequest newPullRequest=new DruidPullRequest();
+            newPullRequest.setMessageQueue(messageQueue);
+            try {
+              long offset=defaultMQPullConsumer.fetchConsumeOffset(messageQueue,false);
+              newPullRequest.setNextBeginOffset(offset);
+            }
+ catch (            MQClientException e) {
+              LOGGER.error("Failed to fetch consume offset for queue: {}",entry.getKey());
+              continue;
+            }
+            newPullRequest.setLongPull(!hasMessagesPending());
+            pullMessageService.putRequest(newPullRequest);
+            if (null == earliestPullRequest) {
+              earliestPullRequest=newPullRequest;
+            }
+          }
+        }
+      }
+      if (!hasMore && null != earliestPullRequest) {
+        try {
+          earliestPullRequest.getCountDownLatch().await();
+          hasMore=true;
+        }
+ catch (        InterruptedException e) {
+          LOGGER.error("CountDownLatch await got interrupted",e);
+        }
+      }
+      return hasMore;
+    }
+    @Override public InputRow nextRow(){
+      for (      Map.Entry<MessageQueue,ConcurrentSkipListSet<MessageExt>> entry : messageQueueTreeSetMap.entrySet()) {
+        if (!entry.getValue().isEmpty()) {
+          MessageExt message=entry.getValue().pollFirst();
+          InputRow inputRow=theParser.parse(ByteBuffer.wrap(message.getBody()));
+          if (!windows.keySet().contains(entry.getKey())) {
+            windows.put(entry.getKey(),new ConcurrentSkipListSet<Long>());
+          }
+          windows.get(entry.getKey()).add(message.getQueueOffset());
+          return inputRow;
+        }
+      }
+      return null;
+    }
+    @Override public Runnable commit(){
+      return new Runnable(){
+        @Override public void run(){
+          OffsetStore offsetStore=defaultMQPullConsumer.getOffsetStore();
+          Set<MessageQueue> updated=new HashSet<>();
+          for (          ConcurrentHashMap.Entry<MessageQueue,ConcurrentSkipListSet<Long>> entry : windows.entrySet()) {
+            while (!entry.getValue().isEmpty()) {
+              long offset=offsetStore.readOffset(entry.getKey(),ReadOffsetType.MEMORY_FIRST_THEN_STORE);
+              if (offset + 1 > entry.getValue().first()) {
+                entry.getValue().pollFirst();
+              }
+ else               if (offset + 1 == entry.getValue().first()) {
+                entry.getValue().pollFirst();
+                offsetStore.updateOffset(entry.getKey(),offset + 1,true);
+                updated.add(entry.getKey());
+              }
+ else {
+                break;
+              }
+            }
+          }
+          offsetStore.persistAll(updated);
+        }
+      }
+;
+    }
+    @Override public void close() throws IOException {
+      defaultMQPullConsumer.shutdown();
+      pullMessageService.shutdown(false);
+    }
+  }
+;
+}

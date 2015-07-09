@@ -1,0 +1,18 @@
+{
+  if (topics.contains(topic)) {
+    topicQueueMap.put(topic,mqDivided);
+    Iterator<ConcurrentHashMap.Entry<MessageQueue,ConcurrentSkipListSet<MessageExt>>> it=messageQueueTreeSetMap.entrySet().iterator();
+    while (it.hasNext()) {
+      if (!mqDivided.contains(it.next().getKey())) {
+        it.remove();
+      }
+    }
+    StringBuilder stringBuilder=new StringBuilder();
+    for (    MessageQueue messageQueue : mqDivided) {
+      stringBuilder.append(messageQueue.getBrokerName()).append("#").append(messageQueue.getQueueId()).append(", ");
+    }
+    if (LOGGER.isDebugEnabled() && stringBuilder.length() > 2) {
+      LOGGER.debug(String.format("%s@%s is consuming the following message queues: %s",defaultMQPullConsumer.getClientIP(),defaultMQPullConsumer.getInstanceName(),stringBuilder.substring(0,stringBuilder.length() - 2)));
+    }
+  }
+}

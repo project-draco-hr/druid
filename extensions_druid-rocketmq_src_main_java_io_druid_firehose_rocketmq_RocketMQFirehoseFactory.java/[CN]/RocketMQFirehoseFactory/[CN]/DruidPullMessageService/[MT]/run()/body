@@ -1,0 +1,18 @@
+{
+  LOGGER.info(getServiceName() + " starts.");
+  while (!isStoped()) {
+    waitForRunning(0);
+    doPull();
+  }
+  try {
+    Thread.sleep(10);
+  }
+ catch (  InterruptedException e) {
+    LOGGER.error("",e);
+  }
+synchronized (this) {
+    swapRequests();
+  }
+  doPull();
+  LOGGER.info(getServiceName() + " terminated.");
+}
