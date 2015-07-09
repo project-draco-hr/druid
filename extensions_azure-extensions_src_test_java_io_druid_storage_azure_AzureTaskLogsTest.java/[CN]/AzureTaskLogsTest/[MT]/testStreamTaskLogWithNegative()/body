@@ -1,0 +1,13 @@
+{
+  final String testLog="hello this is a log";
+  final String blobPath=prefix + "/" + taskid+ "/log";
+  expect(azureStorage.getBlobExists(container,blobPath)).andReturn(true);
+  expect(azureStorage.getBlobLength(container,blobPath)).andReturn((long)testLog.length());
+  expect(azureStorage.getBlobInputStream(container,blobPath)).andReturn(new ByteArrayInputStream(testLog.getBytes(Charsets.UTF_8)));
+  replayAll();
+  final Optional<ByteSource> byteSource=azureTaskLogs.streamTaskLog(taskid,-3);
+  final StringWriter writer=new StringWriter();
+  IOUtils.copy(byteSource.get().openStream(),writer,"UTF-8");
+  Assert.assertEquals(writer.toString(),testLog.substring(testLog.length() - 3));
+  verifyAll();
+}

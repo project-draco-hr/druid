@@ -3,4 +3,7 @@
   Binders.dataSegmentPullerBinder(binder).addBinding(SCHEME).to(AzureDataSegmentPuller.class).in(LazySingleton.class);
   Binders.dataSegmentPusherBinder(binder).addBinding(SCHEME).to(AzureDataSegmentPusher.class).in(LazySingleton.class);
   Binders.dataSegmentKillerBinder(binder).addBinding(SCHEME).to(AzureDataSegmentKiller.class).in(LazySingleton.class);
+  Binders.taskLogsBinder(binder).addBinding(SCHEME).to(AzureTaskLogs.class);
+  JsonConfigProvider.bind(binder,"druid.indexer.logs",AzureTaskLogsConfig.class);
+  binder.bind(AzureTaskLogs.class).in(LazySingleton.class);
 }

@@ -1,0 +1,14 @@
+{
+  final File tmpDir=Files.createTempDir();
+  try {
+    final File logFile=new File(tmpDir,"log");
+    azureStorage.uploadBlob(logFile,container,prefix + "/" + taskid+ "/log");
+    expectLastCall();
+    replayAll();
+    azureTaskLogs.pushTaskLog(taskid,logFile);
+    verifyAll();
+  }
+  finally {
+    FileUtils.deleteDirectory(tmpDir);
+  }
+}

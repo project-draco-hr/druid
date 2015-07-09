@@ -5,7 +5,7 @@
   final File descriptorFile=createSegmentDescriptorFile(jsonMapper,segment);
   final Map<String,String> azurePaths=getAzurePaths(segment);
   try {
-    return retryAzureOperation(new Callable<DataSegment>(){
+    return AzureUtils.retryAzureOperation(new Callable<DataSegment>(){
       @Override public DataSegment call() throws Exception {
         return uploadDataSegment(segment,version,compressedSegmentData,descriptorFile,azurePaths);
       }

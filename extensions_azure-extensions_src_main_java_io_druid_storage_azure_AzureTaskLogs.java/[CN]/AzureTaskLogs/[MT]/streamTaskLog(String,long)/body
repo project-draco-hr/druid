@@ -1,0 +1,34 @@
+{
+  final String container=config.getContainer();
+  final String taskKey=getTaskLogKey(taskid);
+  try {
+    if (!azureStorage.getBlobExists(container,taskKey))     return Optional.absent();
+    return Optional.<ByteSource>of(new ByteSource(){
+      @Override public InputStream openStream() throws IOException {
+        try {
+          final long start;
+          final long length=azureStorage.getBlobLength(container,taskKey);
+          if (offset > 0 && offset < length) {
+            start=offset;
+          }
+ else           if (offset < 0 && (-1 * offset) < length) {
+            start=length + offset;
+          }
+ else {
+            start=0;
+          }
+          InputStream stream=azureStorage.getBlobInputStream(container,taskKey);
+          stream.skip(start);
+          return stream;
+        }
+ catch (        Exception e) {
+          throw new IOException(e);
+        }
+      }
+    }
+);
+  }
+ catch (  StorageException|URISyntaxException e) {
+    throw new IOException(String.format("Failed to stream logs from: %s",taskKey),e);
+  }
+}

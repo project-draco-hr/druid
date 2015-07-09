@@ -1,0 +1,16 @@
+{
+  final String taskKey=getTaskLogKey(taskid);
+  log.info("Pushing task log %s to: %s",logFile,taskKey);
+  try {
+    AzureUtils.retryAzureOperation(new Callable<Void>(){
+      @Override public Void call() throws Exception {
+        azureStorage.uploadBlob(logFile,config.getContainer(),taskKey);
+        return null;
+      }
+    }
+,config.getMaxTries());
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
