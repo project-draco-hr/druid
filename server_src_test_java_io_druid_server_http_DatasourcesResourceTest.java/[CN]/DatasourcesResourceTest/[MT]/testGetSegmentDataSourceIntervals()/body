@@ -1,0 +1,35 @@
+{
+  server=new DruidServer("who","host",1234,"historical","tier1",0);
+  server.addDataSegment(dataSegmentList.get(0).getIdentifier(),dataSegmentList.get(0));
+  server.addDataSegment(dataSegmentList.get(1).getIdentifier(),dataSegmentList.get(1));
+  server.addDataSegment(dataSegmentList.get(2).getIdentifier(),dataSegmentList.get(2));
+  EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
+  EasyMock.replay(inventoryView);
+  List<Interval> expectedIntervals=new ArrayList<>();
+  expectedIntervals.add(new Interval("2010-01-22T00:00:00.000Z/2010-01-23T00:00:00.000Z"));
+  expectedIntervals.add(new Interval("2010-01-01T00:00:00.000Z/2010-01-02T00:00:00.000Z"));
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  Response response=datasourcesResource.getSegmentDataSourceIntervals("invalidDataSource",null,null);
+  Assert.assertEquals(response.getEntity(),null);
+  response=datasourcesResource.getSegmentDataSourceIntervals("datasource1",null,null);
+  TreeSet<Interval> actualIntervals=(TreeSet)response.getEntity();
+  Assert.assertEquals(2,actualIntervals.size());
+  Assert.assertEquals(expectedIntervals.get(0),actualIntervals.first());
+  Assert.assertEquals(expectedIntervals.get(1),actualIntervals.last());
+  response=datasourcesResource.getSegmentDataSourceIntervals("datasource1","simple",null);
+  TreeMap<Interval,Map<String,Object>> results=(TreeMap)response.getEntity();
+  Assert.assertEquals(2,results.size());
+  Assert.assertEquals(expectedIntervals.get(0),results.firstKey());
+  Assert.assertEquals(expectedIntervals.get(1),results.lastKey());
+  Assert.assertEquals(1,results.firstEntry().getValue().get("count"));
+  Assert.assertEquals(1,results.lastEntry().getValue().get("count"));
+  response=datasourcesResource.getSegmentDataSourceIntervals("datasource1",null,"full");
+  results=((TreeMap<Interval,Map<String,Object>>)response.getEntity());
+  int i=1;
+  for (  Map.Entry<Interval,Map<String,Object>> entry : results.entrySet()) {
+    Assert.assertEquals(dataSegmentList.get(i).getInterval(),entry.getKey());
+    Assert.assertEquals(dataSegmentList.get(i),((Map<String,Object>)entry.getValue().get(dataSegmentList.get(i).getIdentifier())).get("metadata"));
+    i--;
+  }
+  EasyMock.verify(inventoryView);
+}
