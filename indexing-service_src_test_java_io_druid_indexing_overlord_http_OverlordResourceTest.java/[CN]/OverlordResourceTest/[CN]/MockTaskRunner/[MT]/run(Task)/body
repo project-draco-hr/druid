@@ -1,0 +1,20 @@
+{
+  final int taskId=Integer.parseInt(task.getId());
+  ListenableFuture<TaskStatus> future=MoreExecutors.listeningDecorator(Execs.singleThreaded("noop_test_task_exec_%s")).submit(new Callable<TaskStatus>(){
+    @Override public TaskStatus call() throws Exception {
+      try {
+        taskLatches[taskId].await();
+      }
+ catch (      InterruptedException e) {
+        throw new RuntimeException("Thread was interrupted!");
+      }
+      runningTaskRunnerWorkItems.remove(taskId);
+      return TaskStatus.success(task.getId());
+    }
+  }
+);
+  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(task.getId(),future);
+  runningTaskRunnerWorkItems.put(taskId,taskRunnerWorkItem);
+  taskRunnerWorkItems.put(taskId,taskRunnerWorkItem);
+  return future;
+}

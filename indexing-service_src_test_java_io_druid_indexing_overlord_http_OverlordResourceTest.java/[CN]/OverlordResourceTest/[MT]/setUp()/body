@@ -1,0 +1,38 @@
+{
+  taskLockbox=EasyMock.createStrictMock(TaskLockbox.class);
+  taskLockbox.syncFromStorage();
+  EasyMock.expectLastCall().atLeastOnce();
+  taskLockbox.unlock(EasyMock.<Task>anyObject());
+  EasyMock.expectLastCall().atLeastOnce();
+  taskActionClientFactory=EasyMock.createStrictMock(TaskActionClientFactory.class);
+  EasyMock.expect(taskActionClientFactory.create(EasyMock.<Task>anyObject())).andReturn(null).anyTimes();
+  EasyMock.replay(taskLockbox,taskActionClientFactory);
+  taskStorage=new HeapMemoryTaskStorage(new TaskStorageConfig(null));
+  taskCountDownLatches=new CountDownLatch[2];
+  taskCountDownLatches[0]=new CountDownLatch(1);
+  taskCountDownLatches[1]=new CountDownLatch(1);
+  announcementLatch=new CountDownLatch(1);
+  IndexerZkConfig indexerZkConfig=new IndexerZkConfig(new ZkPathsConfig(),null,null,null,null,null);
+  setupServerAndCurator();
+  curator.start();
+  curator.create().creatingParentsIfNeeded().forPath(indexerZkConfig.getLeaderLatchPath());
+  druidNode=new DruidNode("hey","what",1234);
+  ServiceEmitter serviceEmitter=new NoopServiceEmitter();
+  taskMaster=new TaskMaster(new TaskQueueConfig(null,new Period(1),null,new Period(10)),taskLockbox,taskStorage,taskActionClientFactory,druidNode,indexerZkConfig,new TaskRunnerFactory(){
+    @Override public TaskRunner build(){
+      return new MockTaskRunner(taskCountDownLatches);
+    }
+  }
+,new ResourceManagementSchedulerFactory(){
+    @Override public ResourceManagementScheduler build(    RemoteTaskRunner runner,    ScheduledExecutorFactory executorFactory){
+      return new NoopResourceManagementScheduler();
+    }
+  }
+,curator,new NoopServiceAnnouncer(){
+    @Override public void announce(    DruidNode node){
+      announcementLatch.countDown();
+    }
+  }
+,serviceEmitter);
+  EmittingLogger.registerEmitter(serviceEmitter);
+}
