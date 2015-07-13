@@ -32,8 +32,18 @@
 ));
     log.info("Polled and found rules for %,d datasource(s)",newRules.size());
     rules.set(newRules);
+    retryStartTime=0;
   }
  catch (  Exception e) {
-    log.error(e,"Exception while polling for rules");
+    if (retryStartTime == 0) {
+      retryStartTime=System.currentTimeMillis();
+    }
+    if (System.currentTimeMillis() - retryStartTime > config.get().getAlertThreshold().getMillis()) {
+      log.makeAlert(e,"Exception while polling for rules").emit();
+      retryStartTime=0;
+    }
+ else {
+      log.error(e,"Exception while polling for rules");
+    }
   }
 }
