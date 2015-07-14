@@ -1,6 +1,6 @@
 {
   firehose=delegateFactory.connect(parser);
-  exec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("timed-shutoff-firehose-%d").build());
+  exec=Execs.scheduledSingleThreaded("timed-shutoff-firehose-%d");
   exec.schedule(new Runnable(){
     @Override public void run(){
       log.info("Closing delegate firehose.");
