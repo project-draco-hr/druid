@@ -1,6 +1,6 @@
 {
   ObjectMapper jsonMapper=new DefaultObjectMapper();
-  FireDepartment schema=new FireDepartment(new DataSchema("foo",new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(Arrays.asList("dim1","dim2"),null,null))),new AggregatorFactory[]{new CountAggregatorFactory("count")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.MINUTE,null)),new RealtimeIOConfig(null,new RealtimePlumberSchool(null,null,null,null,null,null,null)),new RealtimeTuningConfig(null,null,null,null,null,null,null,null,null,false,false,null));
+  FireDepartment schema=new FireDepartment(new DataSchema("foo",new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(Arrays.asList("dim1","dim2"),null,null))),new AggregatorFactory[]{new CountAggregatorFactory("count")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.MINUTE,null)),new RealtimeIOConfig(null,new RealtimePlumberSchool(null,null,null,null,null,null,null)),new RealtimeTuningConfig(null,null,null,null,null,null,null,null,null,false,false,null,null));
   String json=jsonMapper.writeValueAsString(schema);
   FireDepartment newSchema=jsonMapper.readValue(json,FireDepartment.class);
   Assert.assertEquals(schema.getDataSchema().getDataSource(),newSchema.getDataSchema().getDataSource());
