@@ -2,14 +2,21 @@
   try {
     Injector injector=makeInjector();
     try {
-      Lifecycle lifecycle=initLifecycle(injector);
+      final Lifecycle lifecycle=initLifecycle(injector);
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+        @Override public void run(){
+          log.info("Running shutdown hook");
+          lifecycle.stop();
+        }
+      }
+));
       injector.getInstance(ExecutorLifecycle.class).join();
-      lifecycle.stop();
     }
  catch (    Throwable t) {
       log.error(t,"Error when starting up.  Failing.");
       System.exit(1);
     }
+    log.info("Finished peon task");
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
