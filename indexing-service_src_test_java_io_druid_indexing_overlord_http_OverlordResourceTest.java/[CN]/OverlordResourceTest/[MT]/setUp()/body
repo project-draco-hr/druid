@@ -8,9 +8,12 @@
   EasyMock.expect(taskActionClientFactory.create(EasyMock.<Task>anyObject())).andReturn(null).anyTimes();
   EasyMock.replay(taskLockbox,taskActionClientFactory);
   taskStorage=new HeapMemoryTaskStorage(new TaskStorageConfig(null));
-  taskCountDownLatches=new CountDownLatch[2];
-  taskCountDownLatches[0]=new CountDownLatch(1);
-  taskCountDownLatches[1]=new CountDownLatch(1);
+  runTaskCountDownLatches=new CountDownLatch[2];
+  runTaskCountDownLatches[0]=new CountDownLatch(1);
+  runTaskCountDownLatches[1]=new CountDownLatch(1);
+  taskCompletionCountDownLatches=new CountDownLatch[2];
+  taskCompletionCountDownLatches[0]=new CountDownLatch(1);
+  taskCompletionCountDownLatches[1]=new CountDownLatch(1);
   announcementLatch=new CountDownLatch(1);
   IndexerZkConfig indexerZkConfig=new IndexerZkConfig(new ZkPathsConfig(),null,null,null,null,null);
   setupServerAndCurator();
@@ -20,7 +23,7 @@
   ServiceEmitter serviceEmitter=new NoopServiceEmitter();
   taskMaster=new TaskMaster(new TaskQueueConfig(null,new Period(1),null,new Period(10)),taskLockbox,taskStorage,taskActionClientFactory,druidNode,indexerZkConfig,new TaskRunnerFactory(){
     @Override public TaskRunner build(){
-      return new MockTaskRunner(taskCountDownLatches);
+      return new MockTaskRunner(runTaskCountDownLatches,taskCompletionCountDownLatches);
     }
   }
 ,new ResourceManagementSchedulerFactory(){
