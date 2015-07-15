@@ -2,11 +2,10 @@
   SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
   Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
-  final AggregatorFactory[] aggs=config.getSchema().getDataSchema().getAggregators();
   final int maxTotalBufferSize=config.getSchema().getTuningConfig().getBufferSize();
   final int aggregationBufferSize=(int)((double)maxTotalBufferSize * config.getSchema().getTuningConfig().getAggregationBufferRatio());
   final StupidPool<ByteBuffer> bufferPool=new OffheapBufferPool(aggregationBufferSize);
-  IncrementalIndex index=makeIncrementalIndex(bucket,aggs,bufferPool);
+  IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,bufferPool);
   try {
     File baseFlushFile=File.createTempFile("base","flush");
     baseFlushFile.delete();
@@ -18,24 +17,11 @@
     long startTime=System.currentTimeMillis();
     Set<String> allDimensionNames=Sets.newHashSet();
     final ProgressIndicator progressIndicator=makeProgressIndicator(context);
-    for (    final Writable value : values) {
+    for (    final BytesWritable bw : values) {
       context.progress();
-      int numRows;
-      try {
-        final InputRow inputRow=index.formatRow(HadoopDruidIndexerMapper.parseInputRow(value,parser));
-        allDimensionNames.addAll(inputRow.getDimensions());
-        numRows=index.add(inputRow);
-      }
- catch (      ParseException e) {
-        if (config.isIgnoreInvalidRows()) {
-          log.debug(e,"Ignoring invalid row [%s] due to parsing error",value.toString());
-          context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
-          continue;
-        }
- else {
-          throw e;
-        }
-      }
+      final InputRow inputRow=index.formatRow(InputRowSerde.fromBytes(bw.getBytes(),aggregators));
+      allDimensionNames.addAll(inputRow.getDimensions());
+      int numRows=index.add(inputRow);
       ++lineCount;
       if (!index.canAppendRow()) {
         log.info(index.getOutOfRowsReason());
@@ -46,7 +32,7 @@
         context.progress();
         persist(index,interval,file,progressIndicator);
         index.close();
-        index=makeIncrementalIndex(bucket,aggs,bufferPool);
+        index=makeIncrementalIndex(bucket,combiningAggs,bufferPool);
         startTime=System.currentTimeMillis();
         ++indexCount;
       }
@@ -70,7 +56,7 @@
       for (      File file : toMerge) {
         indexes.add(IndexIO.loadIndex(file));
       }
-      mergedBase=mergeQueryableIndex(indexes,aggs,new File(baseFlushFile,"merged"),progressIndicator);
+      mergedBase=mergeQueryableIndex(indexes,aggregators,new File(baseFlushFile,"merged"),progressIndicator);
     }
     final FileSystem outputFS=new Path(config.getSchema().getIOConfig().getSegmentOutputPath()).getFileSystem(context.getConfiguration());
     final DataSegment segment=JobHelper.serializeOutIndex(new DataSegment(config.getDataSource(),interval,config.getSchema().getTuningConfig().getVersion(),null,ImmutableList.copyOf(allDimensionNames),metricNames,config.getShardSpec(bucket).getActualSpec(),-1,-1),context.getConfiguration(),context,context.getTaskAttemptID(),mergedBase,JobHelper.makeSegmentOutputPath(new Path(config.getSchema().getIOConfig().getSegmentOutputPath()),outputFS,config.getSchema().getDataSchema().getDataSource(),config.getSchema().getTuningConfig().getVersion(),config.getSchema().getDataSchema().getGranularitySpec().bucketInterval(bucket.time).get(),bucket.partitionNum));

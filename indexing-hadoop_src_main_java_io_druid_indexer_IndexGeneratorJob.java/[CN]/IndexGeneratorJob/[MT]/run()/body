@@ -5,7 +5,7 @@
     JobHelper.injectSystemProperties(job);
     JobHelper.setInputFormat(job,config);
     job.setMapperClass(IndexGeneratorMapper.class);
-    job.setMapOutputValueClass(Text.class);
+    job.setMapOutputValueClass(BytesWritable.class);
     SortableBytes.useSortableBytesAsMapOutputKey(job);
     int numReducers=Iterables.size(config.getAllBuckets().get());
     if (numReducers == 0) {
