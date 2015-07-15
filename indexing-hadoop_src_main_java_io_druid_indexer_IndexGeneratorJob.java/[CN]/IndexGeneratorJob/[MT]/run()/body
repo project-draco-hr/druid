@@ -11,6 +11,10 @@
     if (numReducers == 0) {
       throw new RuntimeException("No buckets?? seems there is no data to index.");
     }
+    if (config.getSchema().getTuningConfig().getUseCombiner()) {
+      job.setCombinerClass(IndexGeneratorCombiner.class);
+      job.setCombinerKeyGroupingComparatorClass(BytesWritable.Comparator.class);
+    }
     job.setNumReduceTasks(numReducers);
     job.setPartitionerClass(IndexGeneratorPartitioner.class);
     setReducerClass(job);

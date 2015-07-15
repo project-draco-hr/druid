@@ -1,0 +1,8 @@
+{
+  config=HadoopDruidIndexerConfig.fromConfiguration(context.getConfiguration());
+  aggregators=config.getSchema().getDataSchema().getAggregators();
+  combiningAggs=new AggregatorFactory[aggregators.length];
+  for (int i=0; i < aggregators.length; ++i) {
+    combiningAggs[i]=aggregators[i].getCombiningFactory();
+  }
+}

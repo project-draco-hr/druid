@@ -1,0 +1,11 @@
+{
+  HadoopDruidIndexerConfig config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema("website",new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(ImmutableList.of("host"),null,null),null,ImmutableList.of("timestamp","host","visited"))),new AggregatorFactory[]{new LongSumAggregatorFactory("visited_sum","visited"),new HyperUniquesAggregatorFactory("unique_hosts","host")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,ImmutableList.of(Interval.parse("2010/2011")))),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","/tmp/dummy","type","static"),null,"/tmp/dummy"),HadoopTuningConfig.makeDefaultTuningConfig().withWorkingPath("/tmp/work").withVersion("ver")));
+  Configuration hadoopConfig=new Configuration();
+  hadoopConfig.set(HadoopDruidIndexerConfig.CONFIG_PROPERTY,HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(config));
+  Reducer.Context context=EasyMock.createMock(Reducer.Context.class);
+  EasyMock.expect(context.getConfiguration()).andReturn(hadoopConfig);
+  EasyMock.replay(context);
+  aggregators=config.getSchema().getDataSchema().getAggregators();
+  combiner=new IndexGeneratorJob.IndexGeneratorCombiner();
+  combiner.setup(context);
+}

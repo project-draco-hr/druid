@@ -5,7 +5,7 @@
   final int maxTotalBufferSize=config.getSchema().getTuningConfig().getBufferSize();
   final int aggregationBufferSize=(int)((double)maxTotalBufferSize * config.getSchema().getTuningConfig().getAggregationBufferRatio());
   final StupidPool<ByteBuffer> bufferPool=new OffheapBufferPool(aggregationBufferSize);
-  IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,bufferPool);
+  IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,config.getSchema().getTuningConfig().isIngestOffheap(),bufferPool);
   try {
     File baseFlushFile=File.createTempFile("base","flush");
     baseFlushFile.delete();
@@ -32,7 +32,7 @@
         context.progress();
         persist(index,interval,file,progressIndicator);
         index.close();
-        index=makeIncrementalIndex(bucket,combiningAggs,bufferPool);
+        index=makeIncrementalIndex(bucket,combiningAggs,config,config.getSchema().getTuningConfig().isIngestOffheap(),bufferPool);
         startTime=System.currentTimeMillis();
         ++indexCount;
       }

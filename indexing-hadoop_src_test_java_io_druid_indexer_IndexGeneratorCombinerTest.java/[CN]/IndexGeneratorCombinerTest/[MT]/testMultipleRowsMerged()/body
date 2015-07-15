@@ -1,0 +1,19 @@
+{
+  long timestamp=System.currentTimeMillis();
+  Bucket bucket=new Bucket(0,new DateTime(timestamp),0);
+  SortableBytes keySortableBytes=new SortableBytes(bucket.toGroupKey(),new byte[0]);
+  BytesWritable key=keySortableBytes.toBytesWritable();
+  InputRow row1=new MapBasedInputRow(timestamp,ImmutableList.<String>of(),ImmutableMap.<String,Object>of("host","host1","visited",10));
+  InputRow row2=new MapBasedInputRow(timestamp,ImmutableList.<String>of(),ImmutableMap.<String,Object>of("host","host2","visited",5));
+  List<BytesWritable> rows=Lists.newArrayList(new BytesWritable(InputRowSerde.toBytes(row1,aggregators)),new BytesWritable(InputRowSerde.toBytes(row2,aggregators)));
+  Reducer.Context context=EasyMock.createNiceMock(Reducer.Context.class);
+  Capture<BytesWritable> captureKey=Capture.newInstance();
+  Capture<BytesWritable> captureVal=Capture.newInstance();
+  context.write(EasyMock.capture(captureKey),EasyMock.capture(captureVal));
+  EasyMock.replay(context);
+  combiner.reduce(key,rows,context);
+  Assert.assertTrue(captureKey.getValue() == key);
+  InputRow capturedRow=InputRowSerde.fromBytes(captureVal.getValue().getBytes(),aggregators);
+  Assert.assertEquals(15,capturedRow.getLongMetric("visited_sum"));
+  Assert.assertEquals(2.0,(Double)HyperUniquesAggregatorFactory.estimateCardinality(capturedRow.getRaw("unique_hosts")),0.001);
+}

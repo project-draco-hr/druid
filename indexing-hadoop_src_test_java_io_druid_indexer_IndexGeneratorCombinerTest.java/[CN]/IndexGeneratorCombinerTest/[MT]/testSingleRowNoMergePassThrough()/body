@@ -1,0 +1,12 @@
+{
+  Reducer.Context context=EasyMock.createMock(Reducer.Context.class);
+  Capture<BytesWritable> captureKey=Capture.newInstance();
+  Capture<BytesWritable> captureVal=Capture.newInstance();
+  context.write(EasyMock.capture(captureKey),EasyMock.capture(captureVal));
+  EasyMock.replay(context);
+  BytesWritable key=new BytesWritable("dummy_key".getBytes());
+  BytesWritable val=new BytesWritable("dummy_row".getBytes());
+  combiner.reduce(key,Lists.newArrayList(val),context);
+  Assert.assertTrue(captureKey.getValue() == key);
+  Assert.assertTrue(captureVal.getValue() == val);
+}
