@@ -10,7 +10,7 @@
   this.druidServerMetadata=druidServerMetadata;
   this.exec=scheduledExecutorFactory.create(1,"Coordinator-Exec--%d");
   this.self=self;
-  ExecutorService serverInventoryViewExec=Executors.newFixedThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DruidClusterBridge-ServerInventoryView-%d").build());
+  ExecutorService serverInventoryViewExec=Execs.singleThreaded("DruidClusterBridge-ServerInventoryView-%d");
   serverInventoryView.registerSegmentCallback(serverInventoryViewExec,new ServerView.BaseSegmentCallback(){
     @Override public ServerView.CallbackAction segmentAdded(    DruidServerMetadata server,    DataSegment segment){
       try {

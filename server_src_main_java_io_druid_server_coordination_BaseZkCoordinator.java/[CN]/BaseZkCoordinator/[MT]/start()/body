@@ -7,7 +7,7 @@ synchronized (lock) {
     final String loadQueueLocation=ZKPaths.makePath(zkPaths.getLoadQueuePath(),me.getName());
     final String servedSegmentsLocation=ZKPaths.makePath(zkPaths.getServedSegmentsPath(),me.getName());
     final String liveSegmentsLocation=ZKPaths.makePath(zkPaths.getLiveSegmentsPath(),me.getName());
-    loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,Executors.newFixedThreadPool(config.getNumLoadingThreads(),new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ZkCoordinator-%s").build()));
+    loadQueueCache=new PathChildrenCache(curator,loadQueueLocation,true,true,Execs.multiThreaded(config.getNumLoadingThreads(),"ZkCoordinator-%s"));
     try {
       curator.newNamespaceAwareEnsurePath(loadQueueLocation).ensure(curator.getZookeeperClient());
       curator.newNamespaceAwareEnsurePath(servedSegmentsLocation).ensure(curator.getZookeeperClient());

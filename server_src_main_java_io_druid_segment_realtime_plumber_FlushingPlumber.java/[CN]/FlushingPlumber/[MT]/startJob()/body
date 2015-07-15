@@ -3,7 +3,7 @@
   computeBaseDir(getSchema()).mkdirs();
   initializeExecutors();
   if (flushScheduledExec == null) {
-    flushScheduledExec=Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("flushing_scheduled_%d").build());
+    flushScheduledExec=Execs.scheduledSingleThreaded("flushing_scheduled_%d");
   }
   bootstrapSinksFromDisk();
   startFlushThread();
