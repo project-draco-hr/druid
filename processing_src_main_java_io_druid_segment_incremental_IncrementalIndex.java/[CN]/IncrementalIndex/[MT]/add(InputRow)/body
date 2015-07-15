@@ -42,7 +42,7 @@ synchronized (dimensionOrder) {
     dims=newDims;
   }
   final TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
-  final Integer rv=addToFacts(metrics,deserializeComplexMetrics,row,numEntries,key,in);
+  final Integer rv=addToFacts(metrics,deserializeComplexMetrics,row,numEntries,key,in,rowSupplier);
   updateMaxIngestedTime(row.getTimestamp());
   return rv;
 }
