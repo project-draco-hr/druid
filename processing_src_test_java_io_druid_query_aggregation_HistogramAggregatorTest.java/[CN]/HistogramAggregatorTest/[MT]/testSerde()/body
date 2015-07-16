@@ -1,0 +1,10 @@
+{
+  final DefaultObjectMapper objectMapper=new DefaultObjectMapper();
+  String json0="{\"type\": \"histogram\", \"name\": \"billy\", \"fieldName\": \"nilly\"}";
+  HistogramAggregatorFactory agg0=objectMapper.readValue(json0,HistogramAggregatorFactory.class);
+  Assert.assertEquals(ImmutableList.of(),agg0.getBreaks());
+  String aggSpecJson="{\"type\": \"histogram\", \"name\": \"billy\", \"fieldName\": \"nilly\", \"breaks\": [ -1, 2, 3.0 ]}";
+  HistogramAggregatorFactory agg=objectMapper.readValue(aggSpecJson,HistogramAggregatorFactory.class);
+  Assert.assertEquals(new HistogramAggregatorFactory("billy","nilly",Arrays.asList(-1f,2f,3.0f)),agg);
+  Assert.assertEquals(agg,objectMapper.readValue(objectMapper.writeValueAsBytes(agg),HistogramAggregatorFactory.class));
+}
