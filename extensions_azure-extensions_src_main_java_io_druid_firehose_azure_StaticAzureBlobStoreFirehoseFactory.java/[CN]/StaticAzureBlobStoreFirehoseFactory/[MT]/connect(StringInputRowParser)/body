@@ -1,0 +1,27 @@
+{
+  Preconditions.checkNotNull(azureStorage,"null azureStorage");
+  final LinkedList<AzureBlob> objectQueue=Lists.newLinkedList(blobs);
+  return new FileIteratingFirehose(new Iterator<LineIterator>(){
+    @Override public boolean hasNext(){
+      return !objectQueue.isEmpty();
+    }
+    @Override public LineIterator next(){
+      final AzureBlob nextURI=objectQueue.poll();
+      final String container=nextURI.getContainer();
+      final String path=nextURI.getPath().startsWith("/") ? nextURI.getPath().substring(1) : nextURI.getPath();
+      try {
+        final InputStream innerInputStream=new AzureByteSource(azureStorage,container,path).openStream();
+        final InputStream outerInputStream=path.endsWith(".gz") ? CompressionUtils.gzipInputStream(innerInputStream) : innerInputStream;
+        return IOUtils.lineIterator(new BufferedReader(new InputStreamReader(outerInputStream,Charsets.UTF_8)));
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception opening container[%s] blob[%s]",container,path);
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+,stringInputRowParser);
+}
