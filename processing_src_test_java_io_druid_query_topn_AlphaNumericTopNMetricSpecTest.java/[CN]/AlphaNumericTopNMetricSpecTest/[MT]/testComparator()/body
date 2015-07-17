@@ -1,17 +1,23 @@
 {
   final Comparator<String> comparator=AlphaNumericTopNMetricSpec.comparator;
-  assertEquals(0,comparator.compare("",""));
-  assertEquals(0,comparator.compare("abc","abc"));
-  assertEquals(0,comparator.compare("123","123"));
-  assertEquals(0,comparator.compare("abc123","abc123"));
-  assertTrue(comparator.compare("","abc") < 0);
-  assertTrue(comparator.compare("abc","") > 0);
-  assertTrue(comparator.compare("123","abc") < 0);
-  assertTrue(comparator.compare("abc","123") > 0);
-  assertTrue(comparator.compare("2","11") < 0);
-  assertTrue(comparator.compare("a2","a11") < 0);
-  assertTrue(comparator.compare("02","11") < 0);
-  assertTrue(comparator.compare("02","002") < 0);
-  assertTrue(comparator.compare("1.3","1.5") < 0);
-  assertTrue(comparator.compare("1.3","1.15") < 0);
+  Assert.assertEquals(0,comparator.compare("",""));
+  Assert.assertEquals(0,comparator.compare("abc","abc"));
+  Assert.assertEquals(0,comparator.compare("123","123"));
+  Assert.assertEquals(0,comparator.compare("abc123","abc123"));
+  Assert.assertTrue(comparator.compare("","abc") < 0);
+  Assert.assertTrue(comparator.compare("abc","") > 0);
+  Assert.assertTrue(comparator.compare("123","abc") < 0);
+  Assert.assertTrue(comparator.compare("abc","123") > 0);
+  Assert.assertTrue(comparator.compare("2","11") < 0);
+  Assert.assertTrue(comparator.compare("a2","a11") < 0);
+  Assert.assertTrue(comparator.compare("02","11") < 0);
+  Assert.assertTrue(comparator.compare("02","002") < 0);
+  Assert.assertTrue(comparator.compare("1.3","1.5") < 0);
+  Assert.assertTrue(comparator.compare("1.3","1.15") < 0);
+  List<String> sorted=Lists.newArrayList("1-5","11-15","16-20","21-25","26-30","6-10","Other");
+  Collections.sort(sorted,comparator);
+  Assert.assertEquals(ImmutableList.of("1-5","6-10","11-15","16-20","21-25","26-30","Other"),sorted);
+  List<String> sortedFixedDecimal=Lists.newArrayList("Other","[0.00-0.05)","[0.05-0.10)","[0.10-0.50)","[0.50-1.00)","[1.00-5.00)","[5.00-10.00)","[10.00-20.00)");
+  Collections.sort(sortedFixedDecimal,comparator);
+  Assert.assertEquals(ImmutableList.of("[0.00-0.05)","[0.05-0.10)","[0.10-0.50)","[0.50-1.00)","[1.00-5.00)","[5.00-10.00)","[10.00-20.00)","Other"),sortedFixedDecimal);
 }
