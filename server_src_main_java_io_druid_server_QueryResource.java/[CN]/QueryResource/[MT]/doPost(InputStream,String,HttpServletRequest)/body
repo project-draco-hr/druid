@@ -41,6 +41,7 @@
       return Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
           jsonWriter.writeValue(outputStream,yielder);
+          outputStream.flush();
           outputStream.close();
           final long queryTime=System.currentTimeMillis() - start;
           emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/time",queryTime));
