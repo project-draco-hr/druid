@@ -7,17 +7,32 @@
   publishCountDown=new CountDownLatch(1);
   announcedSinks=0;
   pushedSegments=0;
-  tmp=Files.createTempDir();
-  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\"}",TaskQueueConfig.class);
+  tmpDir=temporaryFolder.newFolder();
+  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\", \"storageSyncRate\":\"PT0.5S\"}",TaskQueueConfig.class);
   indexSpec=new IndexSpec();
-  ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
-  }
+  if (taskStorageType.equals("HeapMemoryTaskStorage")) {
+    ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
+    }
 );
+  }
+ else   if (taskStorageType.equals("MetadataTaskStorage")) {
+    MetadataStorageTablesConfig tablesConfig=MetadataStorageTablesConfig.fromBase("test");
+    testDerbyConnector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),Suppliers.ofInstance(tablesConfig));
+    mapper=new DefaultObjectMapper();
+    mapper.registerSubtypes(new NamedType(MockExceptionalFirehoseFactory.class,"mockExcepFirehoseFactory"),new NamedType(MockFirehoseFactory.class,"mockFirehoseFactory"));
+    mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class,mapper));
+    testDerbyConnector.createTaskTables();
+    testDerbyConnector.createSegmentTable();
+    ts=new MetadataTaskStorage(testDerbyConnector,new TaskStorageConfig(null),new SQLMetadataStorageActionHandlerFactory(testDerbyConnector,tablesConfig,mapper));
+  }
+ else {
+    throw new RuntimeException(String.format("Unknown task storage type [%s]",taskStorageType));
+  }
   tsqa=new TaskStorageQueryAdapter(ts);
   tl=new TaskLockbox(ts);
   mdc=newMockMDC();
   tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  tb=new TaskToolboxFactory(new TaskConfig(tmp.toString(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
+  tb=new TaskToolboxFactory(new TaskConfig(tmpDir.toString(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
     }
@@ -26,11 +41,7 @@
       return segment;
     }
   }
-,new DataSegmentKiller(){
-    @Override public void kill(    DataSegment segments) throws SegmentLoadingException {
-    }
-  }
-,new DataSegmentMover(){
+,new LocalDataSegmentKiller(),new DataSegmentMover(){
     @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
       return dataSegment;
     }
