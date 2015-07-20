@@ -5,11 +5,15 @@
     JobHelper.injectSystemProperties(job);
     JobHelper.setInputFormat(job,config);
     job.setMapperClass(IndexGeneratorMapper.class);
-    job.setMapOutputValueClass(Text.class);
+    job.setMapOutputValueClass(BytesWritable.class);
     SortableBytes.useSortableBytesAsMapOutputKey(job);
     int numReducers=Iterables.size(config.getAllBuckets().get());
     if (numReducers == 0) {
       throw new RuntimeException("No buckets?? seems there is no data to index.");
+    }
+    if (config.getSchema().getTuningConfig().getUseCombiner()) {
+      job.setCombinerClass(IndexGeneratorCombiner.class);
+      job.setCombinerKeyGroupingComparatorClass(BytesWritable.Comparator.class);
     }
     job.setNumReduceTasks(numReducers);
     job.setPartitionerClass(IndexGeneratorPartitioner.class);

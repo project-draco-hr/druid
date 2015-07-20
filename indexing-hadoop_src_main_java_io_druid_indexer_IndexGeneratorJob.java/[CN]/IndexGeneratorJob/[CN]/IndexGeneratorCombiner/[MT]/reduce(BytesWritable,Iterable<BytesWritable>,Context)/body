@@ -1,0 +1,24 @@
+{
+  Iterator<BytesWritable> iter=values.iterator();
+  BytesWritable first=iter.next();
+  if (iter.hasNext()) {
+    SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
+    Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
+    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,false,null);
+    index.add(InputRowSerde.fromBytes(first.getBytes(),aggregators));
+    while (iter.hasNext()) {
+      context.progress();
+      InputRow value=InputRowSerde.fromBytes(iter.next().getBytes(),aggregators);
+      if (!index.canAppendRow()) {
+        log.info("current index full due to [%s]. creating new index.",index.getOutOfRowsReason());
+        flushIndexToContextAndClose(key,index,context);
+        index=makeIncrementalIndex(bucket,combiningAggs,config,false,null);
+      }
+      index.add(value);
+    }
+    flushIndexToContextAndClose(key,index,context);
+  }
+ else {
+    context.write(key,first);
+  }
+}

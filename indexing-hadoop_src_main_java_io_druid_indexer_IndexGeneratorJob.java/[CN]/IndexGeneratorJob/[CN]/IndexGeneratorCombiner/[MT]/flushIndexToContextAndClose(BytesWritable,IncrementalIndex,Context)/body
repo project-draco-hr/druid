@@ -1,0 +1,10 @@
+{
+  Iterator<Row> rows=index.iterator();
+  while (rows.hasNext()) {
+    context.progress();
+    Row row=rows.next();
+    InputRow inputRow=getInputRowFromRow(row,index.getDimensions());
+    context.write(key,new BytesWritable(InputRowSerde.toBytes(inputRow,combiningAggs)));
+  }
+  index.close();
+}
