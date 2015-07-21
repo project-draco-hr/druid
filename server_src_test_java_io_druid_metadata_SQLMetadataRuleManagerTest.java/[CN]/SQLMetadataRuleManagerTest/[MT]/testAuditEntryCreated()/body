@@ -7,7 +7,9 @@
   List<AuditEntry> auditEntries=auditManager.fetchAuditHistory("test_dataSource","rules",null);
   Assert.assertEquals(1,auditEntries.size());
   AuditEntry entry=auditEntries.get(0);
-  Assert.assertEquals(mapper.writeValueAsString(rules),entry.getPayload());
+  Assert.assertEquals(rules,mapper.readValue(entry.getPayload(),new TypeReference<List<Rule>>(){
+  }
+));
   Assert.assertEquals(auditInfo,entry.getAuditInfo());
   Assert.assertEquals("test_dataSource",entry.getKey());
 }
