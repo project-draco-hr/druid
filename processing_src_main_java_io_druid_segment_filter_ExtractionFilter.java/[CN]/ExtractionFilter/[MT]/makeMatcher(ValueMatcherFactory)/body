@@ -1,3 +1,8 @@
 {
-  throw new UnsupportedOperationException();
+  return factory.makeValueMatcher(dimension,new Predicate<String>(){
+    @Override public boolean apply(    String input){
+      return value.equals(fn.apply(Strings.emptyToNull(input)));
+    }
+  }
+);
 }
