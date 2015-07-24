@@ -3,7 +3,7 @@
   final MapBinder<String,SegmentPublisher> publisherBinder=PolyBind.optionBinder(binder,Key.get(SegmentPublisher.class));
   publisherBinder.addBinding("noop").to(NoopSegmentPublisher.class).in(LazySingleton.class);
   publisherBinder.addBinding("metadata").to(MetadataSegmentPublisher.class).in(LazySingleton.class);
-  PolyBind.createChoice(binder,"druid.realtime.chathandler.type",Key.get(ChatHandlerProvider.class),Key.get(NoopChatHandlerProvider.class));
+  PolyBind.createChoice(binder,"druid.realtime.chathandler.type",Key.get(ChatHandlerProvider.class),Key.get(ServiceAnnouncingChatHandlerProvider.class));
   final MapBinder<String,ChatHandlerProvider> handlerProviderBinder=PolyBind.optionBinder(binder,Key.get(ChatHandlerProvider.class));
   handlerProviderBinder.addBinding("announce").to(ServiceAnnouncingChatHandlerProvider.class).in(LazySingleton.class);
   handlerProviderBinder.addBinding("noop").to(NoopChatHandlerProvider.class).in(LazySingleton.class);
