@@ -6,14 +6,18 @@
     @Override public Object startJob(){
       return null;
     }
-    @Override public int add(    InputRow row) throws IndexSizeExceededException {
+    @Override public int add(    InputRow row,    Supplier<Committer> committerSupplier) throws IndexSizeExceededException {
       Sink sink=getSink(row.getTimestampFromEpoch());
       if (sink == null) {
         return -1;
       }
-      return sink.add(row);
+      final int numRows=sink.add(row);
+      if (!sink.canAppendRow()) {
+        persist(committerSupplier.get());
+      }
+      return numRows;
     }
-    public Sink getSink(    long timestamp){
+    private Sink getSink(    long timestamp){
       if (theSink.getInterval().contains(timestamp)) {
         return theSink;
       }
@@ -24,9 +28,9 @@
     @Override public <T>QueryRunner<T> getQueryRunner(    Query<T> query){
       throw new UnsupportedOperationException("Don't query me, bro.");
     }
-    @Override public void persist(    Runnable commitRunnable){
+    @Override public void persist(    Committer committer){
       spillIfSwappable();
-      commitRunnable.run();
+      committer.run();
     }
     @Override public void finishJob(){
       File fileToUpload=null;
@@ -87,9 +91,6 @@
     }
     private File getSpillDir(    final int n){
       return new File(persistDir,String.format("spill%d",n));
-    }
-    @Override public void persist(    Committer commitRunnable){
-      persist(commitRunnable);
     }
   }
 ;

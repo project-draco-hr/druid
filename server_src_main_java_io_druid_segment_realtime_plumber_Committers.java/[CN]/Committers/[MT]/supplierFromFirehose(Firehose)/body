@@ -1,0 +1,17 @@
+{
+  return new Supplier<Committer>(){
+    @Override public Committer get(){
+      final Runnable commitRunnable=firehose.commit();
+      return new Committer(){
+        @Override public Object getMetadata(){
+          return null;
+        }
+        @Override public void run(){
+          commitRunnable.run();
+        }
+      }
+;
+    }
+  }
+;
+}

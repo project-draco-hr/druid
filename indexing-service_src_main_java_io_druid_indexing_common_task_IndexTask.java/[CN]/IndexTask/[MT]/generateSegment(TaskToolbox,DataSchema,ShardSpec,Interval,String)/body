@@ -14,24 +14,22 @@
     }
   }
 ;
+  final int myRowFlushBoundary=rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,convertTuningConfig(shardSpec,ingestionSchema.getTuningConfig()),metrics);
-  final int myRowFlushBoundary=rowFlushBoundary > 0 ? rowFlushBoundary : toolbox.getConfig().getDefaultRowFlushBoundary();
+  final Supplier<Committer> committerSupplier=Committers.supplierFromFirehose(firehose);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,convertTuningConfig(shardSpec,myRowFlushBoundary,ingestionSchema.getTuningConfig().getIndexSpec()),metrics);
   final QueryGranularity rollupGran=ingestionSchema.getDataSchema().getGranularitySpec().getQueryGranularity();
   try {
     plumber.startJob();
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
       if (shouldIndex(shardSpec,interval,inputRow,rollupGran)) {
-        int numRows=plumber.add(inputRow);
+        int numRows=plumber.add(inputRow,committerSupplier);
         if (numRows == -1) {
           throw new ISE(String.format("Was expecting non-null sink for timestamp[%s]",new DateTime(inputRow.getTimestampFromEpoch())));
         }
         metrics.incrementProcessed();
-        if (numRows >= myRowFlushBoundary) {
-          plumber.persist(firehose.commit());
-        }
       }
  else {
         metrics.incrementThrownAway();
@@ -41,7 +39,7 @@
   finally {
     firehose.close();
   }
-  plumber.persist(firehose.commit());
+  plumber.persist(committerSupplier.get());
   try {
     plumber.finishJob();
   }

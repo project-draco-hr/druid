@@ -56,15 +56,15 @@
   final FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,tuningConfig);
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
-  final RealtimePlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService());
+  final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService());
   this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
   Firehose firehose=null;
+  Supplier<Committer> committerSupplier=null;
   try {
     plumber.startJob();
     toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
-    final Period intermediatePersistPeriod=spec.getTuningConfig().getIntermediatePersistPeriod();
     firehose=spec.getIOConfig().getFirehoseFactory().connect(spec.getDataSchema().getParser());
-    long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+    committerSupplier=Committers.supplierFromFirehose(firehose);
     while (firehose.hasMore()) {
       final InputRow inputRow;
       try {
@@ -80,22 +80,13 @@
         fireDepartment.getMetrics().incrementUnparseable();
         continue;
       }
-      int currCount=plumber.add(inputRow);
-      if (currCount == -1) {
+      int numRows=plumber.add(inputRow,committerSupplier);
+      if (numRows == -1) {
         fireDepartment.getMetrics().incrementThrownAway();
         log.debug("Throwing away event[%s]",inputRow);
-        if (System.currentTimeMillis() > nextFlush) {
-          plumber.persist(firehose.commit());
-          nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
-        }
         continue;
       }
       fireDepartment.getMetrics().incrementProcessed();
-      final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
-      if ((sink != null && !sink.canAppendRow()) || System.currentTimeMillis() > nextFlush) {
-        plumber.persist(firehose.commit());
-        nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
-      }
     }
   }
  catch (  Throwable e) {
@@ -106,7 +97,7 @@
  finally {
     if (normalExit) {
       try {
-        plumber.persist(firehose.commit());
+        plumber.persist(committerSupplier.get());
         plumber.finishJob();
       }
  catch (      Exception e) {

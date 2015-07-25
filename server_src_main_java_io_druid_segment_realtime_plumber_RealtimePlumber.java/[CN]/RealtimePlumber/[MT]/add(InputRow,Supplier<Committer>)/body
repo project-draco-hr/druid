@@ -1,0 +1,11 @@
+{
+  final Sink sink=getSink(row.getTimestampFromEpoch());
+  if (sink == null) {
+    return -1;
+  }
+  final int numRows=sink.add(row);
+  if (!sink.canAppendRow() || System.currentTimeMillis() > nextFlush) {
+    persist(committerSupplier.get());
+  }
+  return numRows;
+}
