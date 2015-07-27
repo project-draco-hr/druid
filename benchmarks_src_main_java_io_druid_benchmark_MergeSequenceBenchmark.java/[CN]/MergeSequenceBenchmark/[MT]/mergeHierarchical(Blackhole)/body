@@ -1,0 +1,23 @@
+{
+  Iterator<Sequence<Integer>> iterator=sequences.iterator();
+  List<Sequence<Integer>> partialMerged=new ArrayList<Sequence<Integer>>();
+  List<Sequence<Integer>> toMerge=new ArrayList<Sequence<Integer>>();
+  while (iterator.hasNext()) {
+    toMerge.add(iterator.next());
+    if (toMerge.size() == mergeAtOnce) {
+      partialMerged.add(new MergeSequence<Integer>(Ordering.<Integer>natural(),Sequences.simple(toMerge)));
+      toMerge=new ArrayList<Sequence<Integer>>();
+    }
+  }
+  if (!toMerge.isEmpty()) {
+    partialMerged.add(new MergeSequence<Integer>(Ordering.<Integer>natural(),Sequences.simple(toMerge)));
+  }
+  MergeSequence<Integer> mergeSequence=new MergeSequence(Ordering.<Integer>natural(),Sequences.simple(partialMerged));
+  Integer accumulate=mergeSequence.accumulate(0,new Accumulator<Integer,Integer>(){
+    @Override public Integer accumulate(    Integer accumulated,    Integer in){
+      return accumulated + in;
+    }
+  }
+);
+  blackhole.consume(accumulate);
+}
