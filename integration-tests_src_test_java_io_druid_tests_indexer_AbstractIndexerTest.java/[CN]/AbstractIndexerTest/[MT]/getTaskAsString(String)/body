@@ -1,6 +1,9 @@
 {
-  InputStream inputStream=ITRealtimeIndexTaskTest.class.getResourceAsStream(file);
-  StringWriter writer=new StringWriter();
-  IOUtils.copy(inputStream,writer,"UTF-8");
-  return writer.toString();
+  final InputStream inputStream=ITRealtimeIndexTaskTest.class.getResourceAsStream(file);
+  try {
+    return IOUtils.toString(inputStream,"UTF-8");
+  }
+  finally {
+    IOUtils.closeQuietly(inputStream);
+  }
 }
