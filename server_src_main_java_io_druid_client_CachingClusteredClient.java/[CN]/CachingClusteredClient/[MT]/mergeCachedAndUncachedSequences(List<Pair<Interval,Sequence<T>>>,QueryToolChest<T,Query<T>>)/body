@@ -2,23 +2,10 @@
   if (sequencesByInterval.isEmpty()) {
     return Sequences.empty();
   }
-  Collections.sort(sequencesByInterval,Ordering.from(Comparators.intervalsByStartThenEnd()).onResultOf(Pair.<Interval,Sequence<T>>lhsFn()));
-  Iterator<Pair<Interval,Sequence<T>>> iterator=sequencesByInterval.iterator();
-  Pair<Interval,Sequence<T>> current=iterator.next();
-  final List<Sequence<T>> orderedSequences=Lists.newLinkedList();
-  List<Sequence<T>> unordered=Lists.newLinkedList();
-  unordered.add(current.rhs);
-  while (iterator.hasNext()) {
-    Pair<Interval,Sequence<T>> next=iterator.next();
-    if (!next.lhs.overlaps(current.lhs)) {
-      orderedSequences.add(toolChest.mergeSequencesUnordered(Sequences.simple(unordered)));
-      unordered=Lists.newLinkedList();
+  return toolChest.mergeSequencesUnordered(Sequences.simple(Lists.transform(sequencesByInterval,new Function<Pair<Interval,Sequence<T>>,Sequence<T>>(){
+    @Override public Sequence<T> apply(    Pair<Interval,Sequence<T>> input){
+      return input.rhs;
     }
-    unordered.add(next.rhs);
-    current=next;
   }
-  if (!unordered.isEmpty()) {
-    orderedSequences.add(toolChest.mergeSequencesUnordered(Sequences.simple(unordered)));
-  }
-  return toolChest.mergeSequencesUnordered(Sequences.simple(orderedSequences));
+)));
 }
