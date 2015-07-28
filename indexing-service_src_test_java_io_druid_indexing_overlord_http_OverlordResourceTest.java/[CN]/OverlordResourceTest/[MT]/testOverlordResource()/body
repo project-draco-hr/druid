@@ -8,7 +8,7 @@
   overlordResource=new OverlordResource(taskMaster,new TaskStorageQueryAdapter(taskStorage),null,null,null);
   Response response=overlordResource.getLeader();
   Assert.assertEquals(druidNode.getHostAndPort(),response.getEntity());
-  String taskId_0="0";
+  final String taskId_0="0";
   NoopTask task_0=new NoopTask(taskId_0,0,0,null,null);
   response=overlordResource.taskPost(task_0);
   Assert.assertEquals(200,response.getStatus());
@@ -22,12 +22,15 @@
   response=overlordResource.getTaskStatus(taskId_0);
   Assert.assertEquals(taskId_0,((Map)response.getEntity()).get("task"));
   Assert.assertEquals(TaskStatus.running(taskId_0).getStatusCode(),((TaskStatus)((Map)response.getEntity()).get("status")).getStatusCode());
-  taskCountDownLatches[Integer.parseInt(taskId_0)].countDown();
+  taskCompletionCountDownLatches[Integer.parseInt(taskId_0)].countDown();
   waitForTaskStatus(taskId_0,TaskStatus.Status.SUCCESS);
-  String taskId_1="1";
+  final String taskId_1="1";
   NoopTask task_1=new NoopTask(taskId_1,0,0,null,null);
   taskStorage.insert(task_1,TaskStatus.running(taskId_1));
-  taskCountDownLatches[Integer.parseInt(taskId_1)].countDown();
+  runTaskCountDownLatches[Integer.parseInt(taskId_1)].await();
+  response=overlordResource.getRunningTasks();
+  Assert.assertEquals(1,(((List)response.getEntity()).size()));
+  taskCompletionCountDownLatches[Integer.parseInt(taskId_1)].countDown();
   waitForTaskStatus(taskId_1,TaskStatus.Status.SUCCESS);
   response=overlordResource.getCompleteTasks();
   Assert.assertEquals(2,(((List)response.getEntity()).size()));
