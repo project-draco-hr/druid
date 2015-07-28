@@ -1,0 +1,14 @@
+{
+  lifecycle.start();
+  fnCache.clear();
+  tmpFile=Files.createTempFile("druidTestURIExtractionNS",suffix).toFile();
+  tmpFile.deleteOnExit();
+  final ObjectMapper mapper=new DefaultObjectMapper();
+  try (OutputStream ostream=outStreamSupplier.apply(tmpFile)){
+    try (OutputStreamWriter out=new OutputStreamWriter(ostream)){
+      out.write(mapper.writeValueAsString(ImmutableMap.<String,String>of("foo","bar")));
+    }
+   }
+   factory=new URIExtractionNamespaceFunctionFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder()));
+  namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(0),Pattern.quote(tmpFile.getName()));
+}

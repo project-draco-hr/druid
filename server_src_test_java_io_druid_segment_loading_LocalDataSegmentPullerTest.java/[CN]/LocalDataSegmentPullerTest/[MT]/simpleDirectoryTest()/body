@@ -1,14 +1,8 @@
 {
-  File srcDir=Files.createTempDir();
+  File srcDir=temporaryFolder.newFolder();
   File tmpFile=File.createTempFile("test","file",srcDir);
   File expectedOutput=new File(tmpDir,Files.getNameWithoutExtension(tmpFile.getAbsolutePath()));
-  expectedOutput.delete();
-  try {
-    Assert.assertFalse(expectedOutput.exists());
-    puller.getSegmentFiles(srcDir,tmpDir);
-    Assert.assertTrue(expectedOutput.exists());
-  }
-  finally {
-    deleteFiles(expectedOutput,tmpFile,srcDir);
-  }
+  Assert.assertFalse(expectedOutput.exists());
+  puller.getSegmentFiles(srcDir,tmpDir);
+  Assert.assertTrue(expectedOutput.exists());
 }

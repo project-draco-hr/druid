@@ -1,6 +1,7 @@
 {
+  MapBinder.newMapBinder(binder,String.class,SearchableVersionedDataFinder.class).addBinding(LocalFileTimestampVersionFinder.URI_SCHEME).to(LocalFileTimestampVersionFinder.class).in(LazySingleton.class);
   Binders.dataSegmentPullerBinder(binder).addBinding(SCHEME).to(LocalDataSegmentPuller.class).in(LazySingleton.class);
   PolyBind.optionBinder(binder,Key.get(DataSegmentKiller.class)).addBinding(SCHEME).to(LocalDataSegmentKiller.class).in(LazySingleton.class);
-  PolyBind.optionBinder(binder,Key.get(DataSegmentPusher.class)).addBinding("local").to(LocalDataSegmentPusher.class).in(LazySingleton.class);
+  PolyBind.optionBinder(binder,Key.get(DataSegmentPusher.class)).addBinding(SCHEME).to(LocalDataSegmentPusher.class).in(LazySingleton.class);
   JsonConfigProvider.bind(binder,"druid.storage",LocalDataSegmentPusherConfig.class);
 }

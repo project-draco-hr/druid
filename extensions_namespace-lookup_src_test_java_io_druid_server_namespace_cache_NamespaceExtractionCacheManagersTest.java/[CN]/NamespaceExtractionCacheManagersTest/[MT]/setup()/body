@@ -1,0 +1,13 @@
+{
+  fnMap.clear();
+  for (  String ns : nsList) {
+    final ConcurrentMap<String,String> map=extractionCacheManager.getCacheMap(ns);
+    fnMap.put(ns,new Function<String,String>(){
+      @Nullable @Override public String apply(      String input){
+        return map.get(input);
+      }
+    }
+);
+    map.put("oldNameSeed1","oldNameSeed2");
+  }
+}

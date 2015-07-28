@@ -1,0 +1,17 @@
+{
+  final File file=new File(uri);
+  try {
+    return RetryUtils.retry(new Callable<URI>(){
+      @Override public URI call() throws Exception {
+        return mostRecentInDir(file.isDirectory() ? file.toPath() : file.getParentFile().toPath(),pattern);
+      }
+    }
+,shouldRetryPredicate(),DEFAULT_RETRY_COUNT);
+  }
+ catch (  Exception e) {
+    if (e instanceof FileNotFoundException) {
+      return null;
+    }
+    throw Throwables.propagate(e);
+  }
+}

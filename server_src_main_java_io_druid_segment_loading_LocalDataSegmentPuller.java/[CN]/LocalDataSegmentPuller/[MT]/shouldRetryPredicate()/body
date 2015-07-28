@@ -1,3 +1,8 @@
 {
-  return FileUtils.IS_EXCEPTION;
+  return new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable input){
+      return !(input instanceof InterruptedException) && !(input instanceof CancellationException) && (input instanceof Exception);
+    }
+  }
+;
 }

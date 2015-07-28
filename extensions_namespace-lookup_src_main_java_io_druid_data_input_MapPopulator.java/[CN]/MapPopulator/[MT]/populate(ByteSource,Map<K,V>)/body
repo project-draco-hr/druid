@@ -1,0 +1,14 @@
+{
+  return source.asCharSource(Charsets.UTF_8).readLines(new LineProcessor<Long>(){
+    private long count=0l;
+    @Override public boolean processLine(    String line) throws IOException {
+      map.putAll(parser.parse(line));
+      ++count;
+      return true;
+    }
+    @Override public Long getResult(){
+      return count;
+    }
+  }
+);
+}

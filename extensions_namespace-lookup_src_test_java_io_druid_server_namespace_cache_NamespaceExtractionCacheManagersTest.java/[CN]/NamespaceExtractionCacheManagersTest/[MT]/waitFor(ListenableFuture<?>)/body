@@ -1,0 +1,14 @@
+{
+  final CountDownLatch latch=new CountDownLatch(1);
+  Futures.addCallback(future,new FutureCallback<Object>(){
+    @Override public void onSuccess(    Object result){
+      latch.countDown();
+    }
+    @Override public void onFailure(    Throwable t){
+      log.error(t,"Error waiting");
+      throw Throwables.propagate(t);
+    }
+  }
+);
+  latch.await();
+}

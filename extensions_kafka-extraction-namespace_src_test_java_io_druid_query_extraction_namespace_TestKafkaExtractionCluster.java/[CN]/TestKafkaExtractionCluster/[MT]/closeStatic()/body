@@ -1,0 +1,27 @@
+{
+  lifecycle.stop();
+  if (null != renameManager) {
+    renameManager.stop();
+  }
+  if (null != kafkaServer) {
+    kafkaServer.shutdown();
+    kafkaServer.awaitShutdown();
+  }
+  if (null != zkClient) {
+    if (zkClient.exists("/kafka")) {
+      try {
+        zkClient.deleteRecursive("/kafka");
+      }
+ catch (      org.I0Itec.zkclient.exception.ZkException ex) {
+        log.warn(ex,"error deleting /kafka zk node");
+      }
+    }
+    zkClient.close();
+  }
+  if (null != zkTestServer) {
+    zkTestServer.stop();
+  }
+  if (tmpDir.exists()) {
+    FileUtils.deleteDirectory(tmpDir);
+  }
+}

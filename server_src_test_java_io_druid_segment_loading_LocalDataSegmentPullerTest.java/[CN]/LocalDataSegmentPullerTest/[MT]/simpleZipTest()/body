@@ -1,22 +1,14 @@
 {
   File file=new File(tmpDir,"test1data");
-  File zipFile=File.createTempFile("ziptest",".zip");
-  file.deleteOnExit();
-  zipFile.deleteOnExit();
-  zipFile.delete();
-  try {
-    try (OutputStream outputStream=new FileOutputStream(file)){
-      outputStream.write(new byte[0]);
-      outputStream.flush();
-    }
-     CompressionUtils.zip(tmpDir,zipFile);
-    file.delete();
-    Assert.assertFalse(file.exists());
-    Assert.assertTrue(zipFile.exists());
-    puller.getSegmentFiles(zipFile,tmpDir);
-    Assert.assertTrue(file.exists());
+  File zipFile=temporaryFolder.newFile("ziptest.zip");
+  try (OutputStream outputStream=new FileOutputStream(file)){
+    outputStream.write(new byte[0]);
+    outputStream.flush();
   }
-  finally {
-    deleteFiles(file,zipFile);
-  }
+   CompressionUtils.zip(tmpDir,zipFile);
+  file.delete();
+  Assert.assertFalse(file.exists());
+  Assert.assertTrue(zipFile.exists());
+  puller.getSegmentFiles(zipFile,tmpDir);
+  Assert.assertTrue(file.exists());
 }

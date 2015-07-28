@@ -1,0 +1,18 @@
+{
+  final Path oldPath=new Path(perTestPath,"555test.txt");
+  Assert.assertFalse(miniCluster.getFileSystem().exists(oldPath));
+  try (final OutputStream outputStream=miniCluster.getFileSystem().create(oldPath)){
+    try (final InputStream inputStream=new ByteArrayInputStream(pathByteContents)){
+      ByteStreams.copy(inputStream,outputStream);
+    }
+   }
+   Thread.sleep(10);
+  final Path newPath=new Path(perTestPath,"666test.txt");
+  Assert.assertFalse(miniCluster.getFileSystem().exists(newPath));
+  try (final OutputStream outputStream=miniCluster.getFileSystem().create(newPath)){
+    try (final InputStream inputStream=new ByteArrayInputStream(pathByteContents)){
+      ByteStreams.copy(inputStream,outputStream);
+    }
+   }
+   Assert.assertEquals(newPath.toString(),finder.getLatestVersion(perTestPath.toUri(),Pattern.compile(".*test\\.txt")).getPath());
+}

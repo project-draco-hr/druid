@@ -1,0 +1,15 @@
+{
+  MetadataStorageConnectorConfig config=new MetadataStorageConnectorConfig();
+  Field uriField=MetadataStorageConnectorConfig.class.getDeclaredField("connectURI");
+  uriField.setAccessible(true);
+  uriField.set(config,connectionURI);
+  final JDBCExtractionNamespace extractionNamespace=new JDBCExtractionNamespace(namespace,config,tableName,keyName,valName,tsColumn,new Period(0));
+  NamespaceExtractionCacheManagersTest.waitFor(extractionCacheManager.schedule(extractionNamespace));
+  Function<String,String> extractionFn=fnCache.get(extractionNamespace.getNamespace());
+  for (  Map.Entry<String,String> entry : renames.entrySet()) {
+    String key=entry.getKey();
+    String val=entry.getValue();
+    Assert.assertEquals(val,String.format(val,extractionFn.apply(key)));
+  }
+  Assert.assertEquals(null,extractionFn.apply("baz"));
+}

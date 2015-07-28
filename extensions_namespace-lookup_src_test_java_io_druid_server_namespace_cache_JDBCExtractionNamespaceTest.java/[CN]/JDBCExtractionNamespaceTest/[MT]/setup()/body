@@ -1,0 +1,15 @@
+{
+  dbi.withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement(String.format("TRUNCATE TABLE %s",tableName)).execute();
+      handle.commit();
+      return null;
+    }
+  }
+);
+  for (  Map.Entry<String,String> entry : renames.entrySet()) {
+    insertValues(entry.getKey(),entry.getValue(),"2015-01-01 00:00:00");
+  }
+  final Map<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>> factoryMap=new HashMap<>();
+  extractionCacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory()));
+}

@@ -1,0 +1,7 @@
+{
+  Preconditions.checkArgument(!Strings.isNullOrEmpty(keyFieldName),"[keyFieldName] cannot be empty");
+  Preconditions.checkArgument(!Strings.isNullOrEmpty(valueFieldName),"[valueFieldName] cannot be empty");
+  this.keyFieldName=keyFieldName;
+  this.valueFieldName=valueFieldName;
+  this.parser=new DelegateParser(new JSONParser(jsonMapper,ImmutableList.of(keyFieldName,valueFieldName)),keyFieldName,valueFieldName);
+}

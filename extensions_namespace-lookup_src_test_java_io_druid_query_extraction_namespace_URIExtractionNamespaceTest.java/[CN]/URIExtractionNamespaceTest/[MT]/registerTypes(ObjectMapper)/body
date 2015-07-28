@@ -1,0 +1,12 @@
+{
+  mapper.setInjectableValues(new GuiceInjectableValues(Guice.createInjector(ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(ObjectMapper.class).annotatedWith(Json.class).toInstance(mapper);
+      binder.bind(ObjectMapper.class).toInstance(mapper);
+    }
+  }
+)))).registerSubtypes(URIExtractionNamespace.class,URIExtractionNamespace.FlatDataParser.class);
+  final GuiceAnnotationIntrospector guiceIntrospector=new GuiceAnnotationIntrospector();
+  mapper.setAnnotationIntrospectors(new AnnotationIntrospectorPair(guiceIntrospector,mapper.getSerializationConfig().getAnnotationIntrospector()),new AnnotationIntrospectorPair(guiceIntrospector,mapper.getDeserializationConfig().getAnnotationIntrospector()));
+  return mapper;
+}

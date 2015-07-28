@@ -1,0 +1,21 @@
+{
+  final PathFilter filter=new PathFilter(){
+    @Override public boolean accept(    Path path){
+      return pattern == null || pattern.matcher(path.getName()).matches();
+    }
+  }
+;
+  long modifiedTime=Long.MIN_VALUE;
+  URI mostRecentURI=null;
+  final FileSystem fs=dir.getFileSystem(config);
+  for (  FileStatus status : fs.listStatus(dir,filter)) {
+    if (status.isFile()) {
+      final long thisModifiedTime=status.getModificationTime();
+      if (thisModifiedTime >= modifiedTime) {
+        modifiedTime=thisModifiedTime;
+        mostRecentURI=status.getPath().toUri();
+      }
+    }
+  }
+  return mostRecentURI;
+}

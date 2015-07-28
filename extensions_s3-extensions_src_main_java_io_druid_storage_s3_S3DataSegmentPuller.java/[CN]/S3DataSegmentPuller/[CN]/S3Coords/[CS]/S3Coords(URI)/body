@@ -1,0 +1,11 @@
+{
+  if (!"s3".equalsIgnoreCase(uri.getScheme())) {
+    throw new IAE("Unsupported scheme: [%s]",uri.getScheme());
+  }
+  bucket=uri.getHost();
+  String path=uri.getPath();
+  if (path.startsWith("/")) {
+    path=path.substring(1);
+  }
+  this.path=path;
+}

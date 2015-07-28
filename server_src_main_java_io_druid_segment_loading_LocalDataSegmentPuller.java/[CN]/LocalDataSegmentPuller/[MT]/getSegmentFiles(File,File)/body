@@ -14,7 +14,7 @@
         log.info("[%s] is a child directory, skipping",oldFile.getAbsolutePath());
         continue;
       }
-      result.addFiles(FileUtils.retryCopy(Files.asByteSource(oldFile),new File(dir,oldFile.getName()),shouldRetryPredicate(),10).getFiles());
+      result.addFiles(FileUtils.retryCopy(Files.asByteSource(oldFile),new File(dir,oldFile.getName()),shouldRetryPredicate(),DEFAULT_RETRY_COUNT).getFiles());
     }
     log.info("Coppied %d bytes from [%s] to [%s]",result.size(),sourceFile.getAbsolutePath(),dir.getAbsolutePath());
     return result;

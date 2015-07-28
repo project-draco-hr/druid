@@ -1,0 +1,39 @@
+{
+  try {
+    return RetryUtils.retry(new Callable<URI>(){
+      @Override public URI call() throws Exception {
+        final S3Coords coords=new S3Coords(checkURI(uri));
+        long mostRecent=Long.MIN_VALUE;
+        URI latest=null;
+        String parentPath=coords.path.endsWith("/") ? coords.path : Paths.get(coords.path).getParent().toString();
+        if (!parentPath.endsWith("/")) {
+          parentPath=parentPath + "/";
+        }
+        S3Object[] objects=s3Client.listObjects(coords.bucket,parentPath,"/");
+        if (objects == null) {
+          return null;
+        }
+        for (        S3Object storageObject : objects) {
+          storageObject.closeDataInputStream();
+          String keyString=storageObject.getKey().substring(parentPath.length());
+          if (keyString.startsWith("/")) {
+            keyString=keyString.substring(1);
+          }
+          if (pattern != null && !pattern.matcher(keyString).matches()) {
+            continue;
+          }
+          final long latestModified=storageObject.getLastModifiedDate().getTime();
+          if (latestModified >= mostRecent) {
+            mostRecent=latestModified;
+            latest=new URI(String.format("s3://%s/%s",storageObject.getBucketName(),storageObject.getKey()));
+          }
+        }
+        return latest;
+      }
+    }
+,shouldRetryPredicate(),DEFAULT_RETRY_COUNT);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}
