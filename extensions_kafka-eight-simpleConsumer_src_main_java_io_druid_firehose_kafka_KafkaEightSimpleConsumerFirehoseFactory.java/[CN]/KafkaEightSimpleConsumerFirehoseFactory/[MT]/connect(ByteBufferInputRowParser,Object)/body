@@ -1,7 +1,5 @@
 {
   final Map<Integer,Long> lastOffsets=loadOffsetFromPreviousMetaData(lastCommit);
-  Set<String> newDimExclus=Sets.union(firehoseParser.getParseSpec().getDimensionsSpec().getDimensionExclusions(),Sets.newHashSet("feed"));
-  final ByteBufferInputRowParser theParser=firehoseParser.withParseSpec(firehoseParser.getParseSpec().withDimensionsSpec(firehoseParser.getParseSpec().getDimensionsSpec().withDimensionExclusions(newDimExclus)));
   for (  Integer partition : partitionIdList) {
     final KafkaSimpleConsumer kafkaSimpleConsumer=new KafkaSimpleConsumer(feed,partition,clientId,brokerList,earliest);
     Long startOffset=lastOffsets.get(partition);
@@ -15,20 +13,19 @@
   }
   log.info("All consumer started");
   return new FirehoseV2(){
-    private ConcurrentMap<Integer,Long> lastOffsetPartitions;
-    private volatile boolean stop;
-    private volatile boolean interrupted;
+    private Map<Integer,Long> lastOffsetPartitions;
+    private volatile boolean stopped;
     private volatile BytesMessageWithOffset msg=null;
     private volatile InputRow row=null;
 {
-      lastOffsetPartitions=Maps.newConcurrentMap();
+      lastOffsetPartitions=Maps.newHashMap();
       lastOffsetPartitions.putAll(lastOffsets);
     }
     @Override public void start() throws Exception {
       nextMessage();
     }
     @Override public boolean advance(){
-      if (stop) {
+      if (stopped) {
         return false;
       }
       nextMessage();
@@ -42,18 +39,17 @@
             lastOffsetPartitions.put(msg.getPartition(),msg.offset());
           }
           msg=messageQueue.take();
-          interrupted=false;
           final byte[] message=msg.message();
-          row=message == null ? null : theParser.parse(ByteBuffer.wrap(message));
+          row=message == null ? null : firehoseParser.parse(ByteBuffer.wrap(message));
         }
       }
  catch (      InterruptedException e) {
-        interrupted=true;
-        log.info(e,"Interrupted when taken from queue");
+        log.warn(e,"Thread Interrupted while taking from queue, propagating the interrupt");
+        Thread.currentThread().interrupt();
       }
     }
     @Override public InputRow currRow(){
-      if (interrupted) {
+      if (stopped) {
         return null;
       }
       return row;
@@ -71,9 +67,9 @@
     }
     @Override public void close() throws IOException {
       log.info("Stopping kafka 0.8 simple firehose");
-      stop=true;
+      stopped=true;
       for (      PartitionConsumerWorker t : consumerWorkers) {
-        t.close();
+        Closeables.close(t,true);
       }
     }
   }

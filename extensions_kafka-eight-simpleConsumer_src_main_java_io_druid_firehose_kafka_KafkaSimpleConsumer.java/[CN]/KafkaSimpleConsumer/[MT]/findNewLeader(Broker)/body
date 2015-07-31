@@ -5,7 +5,7 @@
     if (metadata != null) {
       replicaBrokers.clear();
       for (      Broker replica : metadata.replicas()) {
-        replicaBrokers.add(new KafkaBroker(replica.host(),replica.port()));
+        replicaBrokers.add(HostAndPort.fromParts(replica.host(),replica.port()));
       }
       log.debug("Got new Kafka leader metadata : [%s], previous leader : [%s]",metadata,oldLeader);
       Broker newLeader=metadata.leader();

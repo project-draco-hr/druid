@@ -47,17 +47,11 @@ synchronized (hydrant) {
         }
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         log.info("Pushing [%s] to deep storage",sink.getSegment().getIdentifier());
-        try {
-          DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
-          log.info("Inserting [%s] to the metadata store",sink.getSegment().getIdentifier());
-          segmentPublisher.publishSegment(segment);
-          if (!isPushedMarker.createNewFile()) {
-            log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
-          }
-        }
- catch (        Throwable e) {
-          log.info("Exception happen when pushing to deep storage");
-          log.makeAlert(e,"Failed to persist merged index[%s]",schema.getDataSource()).addData("interval",interval).emit();
+        DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
+        log.info("Inserting [%s] to the metadata store",sink.getSegment().getIdentifier());
+        segmentPublisher.publishSegment(segment);
+        if (!isPushedMarker.createNewFile()) {
+          log.makeAlert("Failed to create marker file for [%s]",schema.getDataSource()).addData("interval",sink.getInterval()).addData("partitionNum",segment.getShardSpec().getPartitionNum()).addData("marker",isPushedMarker).emit();
         }
       }
  catch (      Exception e) {

@@ -74,7 +74,7 @@
         final File dirToPersist=getSpillDir(indexToPersist.getCount());
         log.info("Spilling index[%d] with rows[%d] to: %s",indexToPersist.getCount(),rowsToPersist,dirToPersist);
         try {
-          IndexMerger.persist(indexToPersist.getIndex(),dirToPersist,config.getIndexSpec());
+          IndexMerger.persist(indexToPersist.getIndex(),dirToPersist,null,config.getIndexSpec());
           indexToPersist.swapSegment(null);
           metrics.incrementRowOutputCount(rowsToPersist);
           spilled.add(dirToPersist);

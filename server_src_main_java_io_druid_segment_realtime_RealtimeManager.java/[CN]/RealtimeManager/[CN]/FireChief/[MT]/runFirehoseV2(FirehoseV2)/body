@@ -20,7 +20,7 @@
           numRows=plumber.add(inputRow);
         }
  catch (        IndexSizeExceededException e) {
-          log.info("Index limit exceeded: %s",e.getMessage());
+          log.debug(e,"Index limit exceeded: %s",e.getMessage());
           nextFlush=doIncrementalPersist(firehose.makeCommitter(),intermediatePersistPeriod);
           continue;
         }
@@ -32,20 +32,24 @@
           metrics.incrementProcessed();
         }
       }
+ else {
+        log.debug("thrown away null input row, considering unparseable");
+        metrics.incrementUnparseable();
+      }
     }
  catch (    Exception e) {
-      log.makeAlert(e,"Some exception got thrown while processing rows.  Ignoring and continuing.").addData("inputRow",inputRow);
+      log.makeAlert(e,"Unknown exception, Ignoring and continuing.").addData("inputRow",inputRow);
     }
     try {
       haveRow=firehose.advance();
     }
  catch (    Exception e) {
-      log.debug(e,"thrown away line due to exception, considering unparseable");
+      log.debug(e,"exception in firehose.advance(), considering unparseable row");
       metrics.incrementUnparseable();
       continue;
     }
     try {
-      final Sink sink=plumber.getSink(inputRow.getTimestampFromEpoch());
+      final Sink sink=inputRow != null ? plumber.getSink(inputRow.getTimestampFromEpoch()) : null;
       if ((sink != null && !sink.canAppendRow()) || System.currentTimeMillis() > nextFlush) {
         nextFlush=doIncrementalPersist(firehose.makeCommitter(),intermediatePersistPeriod);
       }

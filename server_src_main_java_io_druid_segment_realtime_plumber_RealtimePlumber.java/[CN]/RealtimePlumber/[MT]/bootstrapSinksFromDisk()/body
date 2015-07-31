@@ -58,11 +58,17 @@
           }
           continue;
         }
-        BasicFileAttributes attr=Files.readAttributes(segmentDir.toPath(),BasicFileAttributes.class);
-        if (attr.creationTime().toMillis() > latestCommitTime) {
-          log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetaData(),attr.creationTime().toMillis(),latestCommitTime);
-          latestCommitTime=attr.creationTime().toMillis();
-          metadata=queryableIndex.getMetaData();
+        Map<String,Object> segmentMetadata=queryableIndex.getMetaData();
+        if (segmentMetadata != null) {
+          Object timestampObj=segmentMetadata.get(COMMIT_METADATA_TIMESTAMP_KEY);
+          if (timestampObj != null) {
+            long timestamp=((Long)timestampObj).longValue();
+            if (timestamp > latestCommitTime) {
+              log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetaData(),timestamp,latestCommitTime);
+              latestCommitTime=timestamp;
+              metadata=queryableIndex.getMetaData().get(COMMIT_METADATA_KEY);
+            }
+          }
         }
         hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),config.getShardSpec()),queryableIndex),Integer.parseInt(segmentDir.getName())));
       }

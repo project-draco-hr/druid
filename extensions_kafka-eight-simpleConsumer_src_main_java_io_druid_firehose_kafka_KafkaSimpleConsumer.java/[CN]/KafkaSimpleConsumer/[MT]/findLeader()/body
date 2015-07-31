@@ -1,9 +1,9 @@
 {
-  for (  KafkaBroker broker : replicaBrokers) {
+  for (  HostAndPort broker : replicaBrokers) {
     SimpleConsumer consumer=null;
     try {
-      log.info("Finding new leader from Kafka brokers, try broker %s:%s",broker.host,broker.port);
-      consumer=new SimpleConsumer(broker.host,broker.port,SO_TIMEOUT,BUFFER_SIZE,leaderLookupClientId);
+      log.info("Finding new leader from Kafka brokers, try broker [%s]",broker.toString());
+      consumer=new SimpleConsumer(broker.getHostText(),broker.getPort(),SO_TIMEOUT,BUFFER_SIZE,leaderLookupClientId);
       TopicMetadataResponse resp=consumer.send(new TopicMetadataRequest(Collections.singletonList(topic)));
       List<TopicMetadata> metaData=resp.topicsMetadata();
       for (      TopicMetadata item : metaData) {

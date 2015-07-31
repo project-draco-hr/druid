@@ -1,18 +1,9 @@
 {
-  List<KafkaBroker> brokerList=new ArrayList<KafkaBroker>();
+  List<HostAndPort> brokerList=new ArrayList<>();
   for (  String broker : brokers) {
-    String[] tokens=broker.split(":");
-    if (tokens.length != 2) {
-      log.warn("wrong broker name [%s], its format should be host:port",broker);
-      continue;
-    }
-    try {
-      brokerList.add(new KafkaBroker(tokens[0],Integer.parseInt(tokens[1])));
-    }
- catch (    NumberFormatException e) {
-      log.warn("wrong broker name [%s], its format should be host:port",broker);
-      continue;
-    }
+    HostAndPort brokerHostAndPort=HostAndPort.fromString(broker);
+    Preconditions.checkArgument(brokerHostAndPort.getHostText() != null && !brokerHostAndPort.getHostText().isEmpty() && brokerHostAndPort.hasPort(),"kafka broker [%s] is not valid, must be <host>:<port>",broker);
+    brokerList.add(brokerHostAndPort);
   }
   this.allBrokers=Collections.unmodifiableList(brokerList);
   this.topic=topic;

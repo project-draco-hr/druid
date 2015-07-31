@@ -1,0 +1,54 @@
+{
+  progress.start();
+  progress.progress();
+  final Map<String,ValueType> valueTypes=Maps.newTreeMap(Ordering.<String>natural().nullsFirst());
+  final Map<String,String> metricTypeNames=Maps.newTreeMap(Ordering.<String>natural().nullsFirst());
+  final Map<String,ColumnCapabilitiesImpl> columnCapabilities=Maps.newHashMap();
+  for (  IndexableAdapter adapter : adapters) {
+    for (    String dimension : adapter.getDimensionNames()) {
+      ColumnCapabilitiesImpl mergedCapabilities=columnCapabilities.get(dimension);
+      ColumnCapabilities capabilities=adapter.getCapabilities(dimension);
+      if (mergedCapabilities == null) {
+        mergedCapabilities=new ColumnCapabilitiesImpl();
+        mergedCapabilities.setType(ValueType.STRING);
+      }
+      columnCapabilities.put(dimension,mergedCapabilities.merge(capabilities));
+    }
+    for (    String metric : adapter.getMetricNames()) {
+      ColumnCapabilitiesImpl mergedCapabilities=columnCapabilities.get(metric);
+      ColumnCapabilities capabilities=adapter.getCapabilities(metric);
+      if (mergedCapabilities == null) {
+        mergedCapabilities=new ColumnCapabilitiesImpl();
+      }
+      columnCapabilities.put(metric,mergedCapabilities.merge(capabilities));
+      valueTypes.put(metric,capabilities.getType());
+      metricTypeNames.put(metric,adapter.getMetricType(metric));
+    }
+  }
+  outDir.mkdirs();
+  final FileSmoosher v9Smoosher=new FileSmoosher(outDir);
+  ByteStreams.write(Ints.toByteArray(IndexIO.V9_VERSION),Files.newOutputStreamSupplier(new File(outDir,"version.bin")));
+  final Map<String,Integer> dimIndexes=Maps.newHashMap();
+  final Map<String,Iterable<String>> dimensionValuesLookup=Maps.newHashMap();
+  final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(adapters.size());
+  final Set<String> skippedDimensions=Sets.newHashSet();
+  final List<IntBuffer> rowNumConversions=Lists.newArrayListWithCapacity(adapters.size());
+  progress.progress();
+  setupDimConversion(adapters,progress,mergedDimensions,dimConversions,dimIndexes,skippedDimensions,dimensionValuesLookup);
+  progress.progress();
+  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,rowMergerFn);
+  progress.progress();
+  final int rowCount=convertDims(adapters,progress,theRows,rowNumConversions);
+  progress.progress();
+  makeTimeColumn(v9Smoosher,progress,theRows,rowCount);
+  progress.progress();
+  makeDimColumns(v9Smoosher,adapters,progress,mergedDimensions,skippedDimensions,theRows,columnCapabilities,dimensionValuesLookup,rowNumConversions,indexSpec);
+  progress.progress();
+  makeMetricColumns(v9Smoosher,progress,theRows,mergedMetrics,valueTypes,metricTypeNames,rowCount,indexSpec);
+  progress.progress();
+  makeIndexBinary(v9Smoosher,adapters,outDir,mergedDimensions,mergedMetrics,skippedDimensions,progress,indexSpec);
+  makeMetadataBinary(v9Smoosher,progress,segmentMetadata);
+  v9Smoosher.close();
+  progress.stop();
+  return outDir;
+}
