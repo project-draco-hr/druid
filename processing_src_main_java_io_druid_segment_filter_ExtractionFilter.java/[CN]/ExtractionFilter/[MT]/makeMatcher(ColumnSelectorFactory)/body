@@ -1,7 +1,7 @@
 {
   final DimensionSelector dimensionSelector=columnSelectorFactory.makeDimensionSelector(dimension,null);
   if (dimensionSelector == null) {
-    return new BooleanValueMatcher(Strings.isNullOrEmpty(fn.apply(value)));
+    return new BooleanValueMatcher(value.equals(Strings.nullToEmpty(fn.apply(null))));
   }
  else {
     return new ValueMatcher(){
@@ -9,7 +9,7 @@
         final IndexedInts row=dimensionSelector.getRow();
         final int size=row.size();
         for (int i=0; i < size; ++i) {
-          if (value.equals(fn.apply(dimensionSelector.lookupName(row.get(i))))) {
+          if (value.equals(Strings.nullToEmpty(fn.apply(dimensionSelector.lookupName(row.get(i)))))) {
             return true;
           }
         }

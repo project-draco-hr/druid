@@ -4,12 +4,12 @@
   if (allDimVals != null) {
     for (int i=0; i < allDimVals.size(); i++) {
       String dimVal=allDimVals.get(i);
-      if (value.equals(fn.apply(dimVal))) {
+      if (value.equals(Strings.nullToEmpty(fn.apply(dimVal)))) {
         filters.add(new SelectorFilter(dimension,dimVal));
       }
     }
   }
- else   if (value.equals(fn.apply(null))) {
+ else   if (value.equals(Strings.nullToEmpty(fn.apply(null)))) {
     filters.add(new SelectorFilter(dimension,null));
   }
   return filters;
