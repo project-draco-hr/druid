@@ -43,6 +43,10 @@ synchronized (tasks) {
                 command.add("-cp");
                 command.add(taskClasspath);
                 Iterables.addAll(command,whiteSpaceSplitter.split(config.getJavaOpts()));
+                Object taskJavaOpts=task.getContextValue("druid.indexer.runner.javaOpts");
+                if (taskJavaOpts != null) {
+                  Iterables.addAll(command,whiteSpaceSplitter.split((String)taskJavaOpts));
+                }
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
                     if (propName.startsWith(allowedPrefix)) {
@@ -53,6 +57,11 @@ synchronized (tasks) {
                 for (                String propName : props.stringPropertyNames()) {
                   if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
                     command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),props.getProperty(propName)));
+                  }
+                }
+                for (                String propName : task.getContext().keySet()) {
+                  if (propName.startsWith(CHILD_PROPERTY_PREFIX)) {
+                    command.add(String.format("-D%s=%s",propName.substring(CHILD_PROPERTY_PREFIX.length()),task.getContextValue(propName)));
                   }
                 }
                 command.add(String.format("-Ddruid.host=%s",childHost));
