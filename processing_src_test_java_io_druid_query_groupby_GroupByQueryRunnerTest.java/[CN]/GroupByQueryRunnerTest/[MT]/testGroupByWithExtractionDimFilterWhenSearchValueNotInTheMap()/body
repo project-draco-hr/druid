@@ -1,7 +1,5 @@
 {
   Map<String,String> extractionMap=new HashMap<>();
-  extractionMap.put("mezzanine","");
-  extractionMap.put("news",null);
   MapLookupExtractor mapLookupExtractor=new MapLookupExtractor(extractionMap);
   LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(mapLookupExtractor,false,null,true);
   GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).setDimFilter(new ExtractionDimFilter("quality","NOT_THERE",lookupExtractionFn,null)).build();

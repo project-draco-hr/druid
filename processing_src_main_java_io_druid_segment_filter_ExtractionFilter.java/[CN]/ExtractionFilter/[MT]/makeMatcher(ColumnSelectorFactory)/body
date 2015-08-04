@@ -4,12 +4,18 @@
     return new BooleanValueMatcher(value.equals(Strings.nullToEmpty(fn.apply(null))));
   }
  else {
+    final BitSet bitSetOfIds=new BitSet(dimensionSelector.getValueCardinality());
+    for (int i=0; i < dimensionSelector.getValueCardinality(); i++) {
+      if (value.equals(Strings.nullToEmpty(fn.apply(dimensionSelector.lookupName(i))))) {
+        bitSetOfIds.set(i);
+      }
+    }
     return new ValueMatcher(){
       @Override public boolean matches(){
         final IndexedInts row=dimensionSelector.getRow();
         final int size=row.size();
         for (int i=0; i < size; ++i) {
-          if (value.equals(Strings.nullToEmpty(fn.apply(dimensionSelector.lookupName(row.get(i)))))) {
+          if (bitSetOfIds.get(row.get(i))) {
             return true;
           }
         }
