@@ -3,7 +3,8 @@
   ServletHolder holderPwd=new ServletHolder("default",DefaultServlet.class);
   root.addServlet(holderPwd,"/");
   if (config.getConsoleStatic() == null) {
-    root.setBaseResource(Resource.newClassPathResource("static"));
+    ResourceCollection staticResources=new ResourceCollection(Resource.newClassPathResource("io/druid/console"),Resource.newClassPathResource("static"));
+    root.setBaseResource(staticResources);
   }
  else {
     root.setResourceBase(config.getConsoleStatic());
