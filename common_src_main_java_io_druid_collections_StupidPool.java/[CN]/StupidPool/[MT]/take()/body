@@ -1,8 +1,4 @@
 {
-synchronized (objects) {
-    if (objects.size() > 0) {
-      return new ObjectResourceHolder(objects.removeFirst());
-    }
-  }
-  return new ObjectResourceHolder(generator.get());
+  final T obj=objects.poll();
+  return obj == null ? new ObjectResourceHolder(generator.get()) : new ObjectResourceHolder(obj);
 }
