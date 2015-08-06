@@ -1,5 +1,10 @@
 {
-  if (!closed) {
-    log.warn("Not closed!  Object was[%s]. Allowing gc to prevent leak.",object);
+  try {
+    if (!closed.get()) {
+      log.warn("Not closed!  Object was[%s]. Allowing gc to prevent leak.",object);
+    }
+  }
+  finally {
+    super.finalize();
   }
 }
