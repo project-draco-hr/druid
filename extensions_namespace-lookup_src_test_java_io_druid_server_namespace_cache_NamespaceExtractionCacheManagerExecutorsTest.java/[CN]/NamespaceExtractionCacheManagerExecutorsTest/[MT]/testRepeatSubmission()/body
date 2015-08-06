@@ -4,20 +4,24 @@
   final AtomicLong ranCount=new AtomicLong(0l);
   final long totalRunCount;
   final long start;
+  final CountDownLatch latch=new CountDownLatch(repeatCount);
   try {
     final URIExtractionNamespace namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(delay),null);
     start=System.currentTimeMillis();
     final String cacheId=UUID.randomUUID().toString();
     ListenableFuture<?> future=manager.schedule(namespace,factory,new Runnable(){
       @Override public void run(){
-        manager.getPostRunnable(namespace,factory,cacheId).run();
-        ranCount.incrementAndGet();
+        try {
+          manager.getPostRunnable(namespace,factory,cacheId).run();
+          ranCount.incrementAndGet();
+        }
+  finally {
+          latch.countDown();
+        }
       }
     }
 ,cacheId);
-    while (ranCount.get() < repeatCount) {
-      Thread.sleep(0,100);
-    }
+    latch.await();
     long minEnd=start + ((repeatCount - 1) * delay);
     long end=System.currentTimeMillis();
     Assert.assertTrue(String.format("Didn't wait long enough between runs. Expected more than %d was %d",minEnd - start,end - start),minEnd < end);
