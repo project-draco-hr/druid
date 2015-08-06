@@ -1,0 +1,7 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  final List<URI> uris=Arrays.asList(new URI("s3://foo/bar/file.gz"),new URI("s3://bar/foo/file2.gz"));
+  TestStaticS3FirehoseFactory factory=new TestStaticS3FirehoseFactory(uris);
+  TestStaticS3FirehoseFactory outputFact=mapper.readValue(mapper.writeValueAsString(factory),TestStaticS3FirehoseFactory.class);
+  Assert.assertEquals(factory,outputFact);
+}
