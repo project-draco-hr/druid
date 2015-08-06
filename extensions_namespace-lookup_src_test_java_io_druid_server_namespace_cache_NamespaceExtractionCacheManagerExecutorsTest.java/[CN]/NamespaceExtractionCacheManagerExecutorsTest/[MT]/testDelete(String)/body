@@ -1,24 +1,30 @@
 {
   final CountDownLatch latch=new CountDownLatch(5);
+  final CountDownLatch latchMore=new CountDownLatch(10);
   final AtomicLong runs=new AtomicLong(0);
   long prior=0;
   final URIExtractionNamespace namespace=new URIExtractionNamespace(ns,tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(1l),null);
   final String cacheId=UUID.randomUUID().toString();
   ListenableFuture<?> future=manager.schedule(namespace,factory,new Runnable(){
     @Override public void run(){
-      if (!Thread.interrupted()) {
-        manager.getPostRunnable(namespace,factory,cacheId).run();
-      }
+      try {
+        if (!Thread.interrupted()) {
+          manager.getPostRunnable(namespace,factory,cacheId).run();
+        }
  else {
-        Thread.currentThread().interrupt();
-      }
-      if (!Thread.interrupted()) {
-        runs.incrementAndGet();
-      }
+          Thread.currentThread().interrupt();
+        }
+        if (!Thread.interrupted()) {
+          runs.incrementAndGet();
+        }
  else {
-        Thread.currentThread().interrupt();
+          Thread.currentThread().interrupt();
+        }
       }
-      latch.countDown();
+  finally {
+        latch.countDown();
+        latchMore.countDown();
+      }
     }
   }
 ,cacheId);
@@ -27,7 +33,7 @@
   Assert.assertFalse(future.isDone());
   Assert.assertTrue(fnCache.containsKey(ns));
   prior=runs.get();
-  Thread.sleep(20);
+  latchMore.await();
   Assert.assertTrue(runs.get() > prior);
   Assert.assertTrue(manager.implData.containsKey(ns));
   manager.delete("ns");
