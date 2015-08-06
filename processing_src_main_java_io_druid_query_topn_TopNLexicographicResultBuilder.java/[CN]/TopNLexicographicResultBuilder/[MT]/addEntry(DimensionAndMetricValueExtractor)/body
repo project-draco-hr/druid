@@ -1,4 +1,10 @@
 {
-  pQueue.add(new DimValHolder.Builder().withDirName(dimensionAndMetricValueExtractor.getStringDimensionValue(dimSpec.getOutputName())).withMetricValues(dimensionAndMetricValueExtractor.getBaseObject()).build());
+  String dimensionValue=dimensionAndMetricValueExtractor.getStringDimensionValue(dimSpec.getOutputName());
+  if (shouldAdd(dimensionValue)) {
+    pQueue.add(new DimValHolder.Builder().withDimName(dimensionValue).withMetricValues(dimensionAndMetricValueExtractor.getBaseObject()).build());
+    if (pQueue.size() > threshold) {
+      pQueue.poll();
+    }
+  }
   return this;
 }
