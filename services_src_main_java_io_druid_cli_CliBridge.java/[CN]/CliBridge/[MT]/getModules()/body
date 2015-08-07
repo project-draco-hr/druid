@@ -18,7 +18,7 @@
       LifecycleModule.register(binder,BridgeZkCoordinator.class);
       LifecycleModule.register(binder,Server.class);
     }
-    @Provides @LazySingleton @Bridge public CuratorFramework getBridgeCurator(    final BridgeCuratorConfig bridgeCuratorConfig,    Lifecycle lifecycle){
+    @Provides @LazySingleton @Bridge public final CuratorFramework getBridgeCurator(    final BridgeCuratorConfig bridgeCuratorConfig,    Lifecycle lifecycle){
       final CuratorFramework framework=CuratorFrameworkFactory.builder().connectString(bridgeCuratorConfig.getParentZkHosts()).sessionTimeoutMs(bridgeCuratorConfig.getZkSessionTimeoutMs()).retryPolicy(new BoundedExponentialBackoffRetry(1000,45000,30)).compressionProvider(new PotentiallyGzippedCompressionProvider(bridgeCuratorConfig.getEnableCompression())).build();
       lifecycle.addHandler(new Lifecycle.Handler(){
         @Override public void start() throws Exception {
@@ -33,13 +33,13 @@
 );
       return framework;
     }
-    @Provides @ManageLifecycle public ServerDiscoverySelector getServerDiscoverySelector(    DruidClusterBridgeConfig config,    ServerDiscoveryFactory factory){
+    @Provides @ManageLifecycle public final ServerDiscoverySelector getServerDiscoverySelector(    DruidClusterBridgeConfig config,    ServerDiscoveryFactory factory){
       return factory.createSelector(config.getBrokerServiceName());
     }
-    @Provides @ManageLifecycle @Bridge public Announcer getBridgeAnnouncer(    @Bridge CuratorFramework curator){
+    @Provides @ManageLifecycle @Bridge public final Announcer getBridgeAnnouncer(    @Bridge CuratorFramework curator){
       return new Announcer(curator,Execs.singleThreaded("BridgeAnnouncer-%s"));
     }
-    @Provides @ManageLifecycleLast @Bridge public AbstractDataSegmentAnnouncer getBridgeDataSegmentAnnouncer(    DruidServerMetadata metadata,    BatchDataSegmentAnnouncerConfig config,    ZkPathsConfig zkPathsConfig,    @Bridge Announcer announcer,    ObjectMapper jsonMapper){
+    @Provides @ManageLifecycleLast @Bridge public final AbstractDataSegmentAnnouncer getBridgeDataSegmentAnnouncer(    DruidServerMetadata metadata,    BatchDataSegmentAnnouncerConfig config,    ZkPathsConfig zkPathsConfig,    @Bridge Announcer announcer,    ObjectMapper jsonMapper){
       return new BatchDataSegmentAnnouncer(metadata,config,zkPathsConfig,announcer,jsonMapper);
     }
   }
