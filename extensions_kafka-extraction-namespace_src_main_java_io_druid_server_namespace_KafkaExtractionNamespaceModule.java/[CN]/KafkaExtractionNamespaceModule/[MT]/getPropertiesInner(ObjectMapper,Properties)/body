@@ -1,0 +1,16 @@
+{
+  String val=systemProperties.getProperty(PROPERTIES_KEY);
+  if (val == null) {
+    return new Properties();
+  }
+  try {
+    final Properties properties=new Properties();
+    properties.putAll(mapper.<Map<String,String>>readValue(val,new TypeReference<Map<String,String>>(){
+    }
+));
+    return properties;
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

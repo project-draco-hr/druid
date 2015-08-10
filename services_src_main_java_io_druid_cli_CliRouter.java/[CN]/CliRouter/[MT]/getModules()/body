@@ -15,7 +15,7 @@
       LifecycleModule.register(binder,Server.class);
       DiscoveryModule.register(binder,Self.class);
     }
-    @Provides @ManageLifecycle public ServerDiscoverySelector getCoordinatorServerDiscoverySelector(    TieredBrokerConfig config,    ServerDiscoveryFactory factory){
+    @Provides @ManageLifecycle public final ServerDiscoverySelector getCoordinatorServerDiscoverySelector(    TieredBrokerConfig config,    ServerDiscoveryFactory factory){
       return factory.createSelector(config.getCoordinatorServiceName());
     }
   }
