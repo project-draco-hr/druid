@@ -7,7 +7,7 @@
       final InputRow inputRow=firehose.nextRow();
       if (interval.contains(inputRow.getTimestampFromEpoch())) {
         final List<Object> groupKey=Rows.toGroupKey(queryGranularity.truncate(inputRow.getTimestampFromEpoch()),inputRow);
-        collector.add(hashFunction.hashBytes(HadoopDruidIndexerConfig.jsonMapper.writeValueAsBytes(groupKey)).asBytes());
+        collector.add(hashFunction.hashBytes(jsonMapper.writeValueAsBytes(groupKey)).asBytes());
       }
     }
   }
@@ -24,7 +24,7 @@
   }
  else {
     for (int i=0; i < numberOfShards; ++i) {
-      shardSpecs.add(new HashBasedNumberedShardSpec(i,numberOfShards,HadoopDruidIndexerConfig.jsonMapper));
+      shardSpecs.add(new HashBasedNumberedShardSpec(i,numberOfShards,jsonMapper));
     }
   }
   return shardSpecs;
