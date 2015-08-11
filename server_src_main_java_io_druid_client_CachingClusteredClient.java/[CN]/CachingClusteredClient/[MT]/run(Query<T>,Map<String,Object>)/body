@@ -84,12 +84,12 @@
   }
   return new LazySequence<>(new Supplier<Sequence<T>>(){
     @Override public Sequence<T> get(){
-      ArrayList<Pair<Interval,Sequence<T>>> sequencesByInterval=Lists.newArrayList();
+      ArrayList<Sequence<T>> sequencesByInterval=Lists.newArrayList();
       addSequencesFromCache(sequencesByInterval);
       addSequencesFromServer(sequencesByInterval);
       return mergeCachedAndUncachedSequences(sequencesByInterval,toolChest);
     }
-    private void addSequencesFromCache(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
+    private void addSequencesFromCache(    ArrayList<Sequence<T>> listOfSequences){
       if (strategy == null) {
         return;
       }
@@ -113,10 +113,10 @@
           }
         }
 );
-        listOfSequences.add(Pair.of(cachedResultPair.lhs,Sequences.map(cachedSequence,pullFromCacheFunction)));
+        listOfSequences.add(Sequences.map(cachedSequence,pullFromCacheFunction));
       }
     }
-    private void addSequencesFromServer(    ArrayList<Pair<Interval,Sequence<T>>> listOfSequences){
+    private void addSequencesFromServer(    ArrayList<Sequence<T>> listOfSequences){
       listOfSequences.ensureCapacity(listOfSequences.size() + serverSegments.size());
       final Query<Result<BySegmentResultValueClass<T>>> rewrittenQuery=(Query<Result<BySegmentResultValueClass<T>>>)query.withOverriddenContext(contextBuilder.build());
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
@@ -128,7 +128,6 @@
           continue;
         }
         final MultipleSpecificSegmentSpec segmentSpec=new MultipleSpecificSegmentSpec(descriptors);
-        final List<Interval> intervals=segmentSpec.getIntervals();
         final Sequence<T> resultSeqToAdd;
         if (!server.isAssignable() || !populateCache || isBySegment) {
           if (!isBySegment) {
@@ -188,7 +187,7 @@
           }
 ));
         }
-        listOfSequences.add(Pair.of(new Interval(intervals.get(0).getStart(),intervals.get(intervals.size() - 1).getEnd()),resultSeqToAdd));
+        listOfSequences.add(resultSeqToAdd);
       }
     }
   }
