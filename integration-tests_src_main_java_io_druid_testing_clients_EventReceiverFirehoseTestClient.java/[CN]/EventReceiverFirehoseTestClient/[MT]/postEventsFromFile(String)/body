@@ -1,18 +1,22 @@
 {
-  try {
-    BufferedReader reader=new BufferedReader(new InputStreamReader(EventReceiverFirehoseTestClient.class.getResourceAsStream(file)));
+  try (BufferedReader reader=new BufferedReader(new InputStreamReader(EventReceiverFirehoseTestClient.class.getResourceAsStream(file)))){
     String s;
     Collection<Map<String,Object>> events=new ArrayList<Map<String,Object>>();
+    int totalEventsPosted=0;
     while ((s=reader.readLine()) != null) {
       events.add((Map<String,Object>)this.jsonMapper.readValue(s,new TypeReference<Map<String,Object>>(){
       }
 ));
+      ObjectMapper mapper=(totalEventsPosted % 2 == 0) ? jsonMapper : smileMapper;
+      String mediaType=(totalEventsPosted % 2 == 0) ? MediaType.APPLICATION_JSON : SmileMediaTypes.APPLICATION_JACKSON_SMILE;
+      totalEventsPosted+=postEvents(events,mapper,mediaType);
+      ;
+      events=new ArrayList<>();
     }
-    int eventsPosted=postEvents(events);
-    if (eventsPosted != events.size()) {
-      throw new ISE("All events not posted, expected : %d actual : %d",events.size(),eventsPosted);
+    if (totalEventsPosted != events.size()) {
+      throw new ISE("All events not posted, expected : %d actual : %d",events.size(),totalEventsPosted);
     }
-    return eventsPosted;
+    return totalEventsPosted;
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

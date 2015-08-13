@@ -5,7 +5,7 @@
     ServerDiscoveryUtil.waitUntilInstanceReady(eventReceiverSelector,"Event Receiver");
     String host=config.getMiddleManagerHost() + ":" + eventReceiverSelector.pick().getPort();
     LOG.info("Event Receiver Found at host %s",host);
-    EventReceiverFirehoseTestClient client=new EventReceiverFirehoseTestClient(host,EVENT_RECEIVER_SERVICE_NAME,jsonMapper,httpClient);
+    EventReceiverFirehoseTestClient client=new EventReceiverFirehoseTestClient(host,EVENT_RECEIVER_SERVICE_NAME,jsonMapper,httpClient,smileMapper);
     client.postEventsFromFile(EVENT_DATA_FILE);
   }
   finally {
