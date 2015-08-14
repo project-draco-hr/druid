@@ -26,7 +26,7 @@
       Jerseys.addResource(binder,MetadataResource.class);
       LifecycleModule.register(binder,Server.class);
     }
-    @Provides @LazySingleton public final LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
+    @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
       return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),Executors.newSingleThreadExecutor(),config);
     }
   }
