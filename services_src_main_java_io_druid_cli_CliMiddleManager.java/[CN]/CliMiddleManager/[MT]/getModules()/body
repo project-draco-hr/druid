@@ -16,7 +16,7 @@
       Jerseys.addResource(binder,WorkerResource.class);
       LifecycleModule.register(binder,Server.class);
     }
-    @Provides @LazySingleton public final Worker getWorker(    @Self DruidNode node,    WorkerConfig config){
+    @Provides @LazySingleton public Worker getWorker(    @Self DruidNode node,    WorkerConfig config){
       return new Worker(node.getHostAndPort(),config.getIp(),config.getCapacity(),config.getVersion());
     }
   }
