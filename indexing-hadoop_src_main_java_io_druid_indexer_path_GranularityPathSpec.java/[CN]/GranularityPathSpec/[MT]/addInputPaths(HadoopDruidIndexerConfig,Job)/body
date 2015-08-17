@@ -36,7 +36,7 @@
   }
   for (  String path : paths) {
     log.info("Appending path[%s]",path);
-    FileInputFormat.addInputPath(job,new Path(path));
+    StaticPathSpec.addToMultipleInputs(config,job,path,inputFormat);
   }
   return job;
 }

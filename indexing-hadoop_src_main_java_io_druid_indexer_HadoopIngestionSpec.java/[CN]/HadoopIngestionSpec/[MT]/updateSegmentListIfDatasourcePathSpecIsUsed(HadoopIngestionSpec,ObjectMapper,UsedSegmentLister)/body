@@ -1,0 +1,29 @@
+{
+  String dataSource="dataSource";
+  String type="type";
+  String multi="multi";
+  String children="children";
+  String segments="segments";
+  String ingestionSpec="ingestionSpec";
+  Map<String,Object> pathSpec=spec.getIOConfig().getPathSpec();
+  Map<String,Object> datasourcePathSpec=null;
+  if (pathSpec.get(type).equals(dataSource)) {
+    datasourcePathSpec=pathSpec;
+  }
+ else   if (pathSpec.get(type).equals(multi)) {
+    List<Map<String,Object>> childPathSpecs=(List<Map<String,Object>>)pathSpec.get(children);
+    for (    Map<String,Object> childPathSpec : childPathSpecs) {
+      if (childPathSpec.get(type).equals(dataSource)) {
+        datasourcePathSpec=childPathSpec;
+        break;
+      }
+    }
+  }
+  if (datasourcePathSpec != null) {
+    Map<String,Object> ingestionSpecMap=(Map<String,Object>)datasourcePathSpec.get(ingestionSpec);
+    DatasourceIngestionSpec ingestionSpecObj=jsonMapper.convertValue(ingestionSpecMap,DatasourceIngestionSpec.class);
+    List<DataSegment> segmentsList=segmentLister.getUsedSegmentsForInterval(ingestionSpecObj.getDataSource(),ingestionSpecObj.getInterval());
+    datasourcePathSpec.put(segments,segmentsList);
+  }
+  return spec;
+}

@@ -1,0 +1,6 @@
+{
+  PathSpec expected=new MultiplePathSpec(Lists.<PathSpec>newArrayList(new StaticPathSpec("/tmp/path1",null),new StaticPathSpec("/tmp/path2",TextInputFormat.class)));
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  PathSpec actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+}

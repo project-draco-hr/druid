@@ -1,0 +1,27 @@
+{
+  StringBuilder sb=new StringBuilder();
+  sb.append("{\"inputPath\" : \"");
+  sb.append(inputPath);
+  sb.append("\",");
+  sb.append("\"filePattern\" : \"");
+  sb.append(filePattern);
+  sb.append("\",");
+  sb.append("\"pathFormat\" : \"");
+  sb.append(pathFormat);
+  sb.append("\",");
+  sb.append("\"dataGranularity\" : \"");
+  sb.append(granularity.toString());
+  sb.append("\",");
+  if (inputFormat != null) {
+    sb.append("\"inputFormat\" : \"");
+    sb.append(inputFormat.getName());
+    sb.append("\",");
+  }
+  sb.append("\"type\" : \"granularity\"}");
+  GranularityPathSpec pathSpec=(GranularityPathSpec)StaticPathSpecTest.readWriteRead(sb.toString(),jsonMapper);
+  Assert.assertEquals(inputFormat,pathSpec.getInputFormat());
+  Assert.assertEquals(inputPath,pathSpec.getInputPath());
+  Assert.assertEquals(filePattern,pathSpec.getFilePattern());
+  Assert.assertEquals(pathFormat,pathSpec.getPathFormat());
+  Assert.assertEquals(granularity,pathSpec.getDataGranularity());
+}

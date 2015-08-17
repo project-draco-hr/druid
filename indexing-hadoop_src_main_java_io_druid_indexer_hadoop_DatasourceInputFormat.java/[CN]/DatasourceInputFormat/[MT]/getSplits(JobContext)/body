@@ -1,0 +1,37 @@
+{
+  Configuration conf=context.getConfiguration();
+  String segmentsStr=Preconditions.checkNotNull(conf.get(CONF_INPUT_SEGMENTS),"No segments found to read");
+  List<DataSegment> segments=HadoopDruidIndexerConfig.jsonMapper.readValue(segmentsStr,new TypeReference<List<DataSegment>>(){
+  }
+);
+  if (segments == null || segments.size() == 0) {
+    throw new ISE("No segments found to read");
+  }
+  logger.info("segments to read [%s]",segmentsStr);
+  long maxSize=conf.getLong(CONF_MAX_SPLIT_SIZE,0);
+  if (maxSize > 0) {
+    Collections.sort(segments,new Comparator<DataSegment>(){
+      @Override public int compare(      DataSegment s1,      DataSegment s2){
+        return Long.compare(s1.getSize(),s2.getSize());
+      }
+    }
+);
+  }
+  List<InputSplit> splits=Lists.newArrayList();
+  List<DataSegment> list=new ArrayList<>();
+  long size=0;
+  for (  DataSegment segment : segments) {
+    if (size + segment.getSize() > maxSize && size > 0) {
+      splits.add(new DatasourceInputSplit(list));
+      list=Lists.newArrayList();
+      size=0;
+    }
+    list.add(segment);
+    size+=segment.getSize();
+  }
+  if (list.size() > 0) {
+    splits.add(new DatasourceInputSplit(list));
+  }
+  logger.info("Number of splits [%d]",splits.size());
+  return splits;
+}

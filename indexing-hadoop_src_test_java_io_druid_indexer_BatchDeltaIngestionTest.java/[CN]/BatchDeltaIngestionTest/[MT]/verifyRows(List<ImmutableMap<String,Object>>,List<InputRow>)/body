@@ -1,0 +1,12 @@
+{
+  Assert.assertEquals(expectedRows.size(),actualRows.size());
+  for (int i=0; i < expectedRows.size(); i++) {
+    Map<String,Object> expected=expectedRows.get(i);
+    InputRow actual=actualRows.get(i);
+    Assert.assertEquals(ImmutableList.of("host"),actual.getDimensions());
+    Assert.assertEquals(expected.get("time"),actual.getTimestamp());
+    Assert.assertEquals(expected.get("host"),actual.getDimension("host"));
+    Assert.assertEquals(expected.get("visited_sum"),actual.getLongMetric("visited_sum"));
+    Assert.assertEquals((Double)expected.get("unique_hosts"),(Double)HyperUniquesAggregatorFactory.estimateCardinality(actual.getRaw("unique_hosts")),0.001);
+  }
+}

@@ -1,7 +1,7 @@
 {
   Assert.assertEquals(MAX_SHARD_NUMBER.longValue(),segmentSet.size());
   Integer rowcount=0;
-  try (final IngestSegmentFirehoseFactory.IngestSegmentFirehose firehose=(IngestSegmentFirehoseFactory.IngestSegmentFirehose)factory.connect(rowParser)){
+  try (final IngestSegmentFirehose firehose=(IngestSegmentFirehose)factory.connect(rowParser)){
     while (firehose.hasMore()) {
       InputRow row=firehose.nextRow();
       Assert.assertArrayEquals(new String[]{DIM_NAME},row.getDimensions().toArray());

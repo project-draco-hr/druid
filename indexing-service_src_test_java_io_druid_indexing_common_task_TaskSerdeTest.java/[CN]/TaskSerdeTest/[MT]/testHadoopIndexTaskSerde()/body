@@ -1,7 +1,8 @@
 {
-  final HadoopIndexTask task=new HadoopIndexTask(null,new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P1D")))),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","bar"),null,null),null),null,null,"blah");
+  final HadoopIndexTask task=new HadoopIndexTask(null,new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P1D")))),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","bar"),null,null),null),null,null,"blah",jsonMapper);
   final String json=jsonMapper.writeValueAsString(task);
-  final HadoopIndexTask task2=(HadoopIndexTask)jsonMapper.readValue(json,Task.class);
+  InjectableValues inject=new InjectableValues.Std().addValue(ObjectMapper.class,jsonMapper);
+  final HadoopIndexTask task2=(HadoopIndexTask)jsonMapper.reader(Task.class).with(inject).readValue(json);
   Assert.assertEquals("foo",task.getDataSource());
   Assert.assertEquals(task.getId(),task2.getId());
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());

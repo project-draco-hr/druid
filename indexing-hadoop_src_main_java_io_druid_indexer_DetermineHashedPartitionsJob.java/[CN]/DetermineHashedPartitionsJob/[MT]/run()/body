@@ -3,7 +3,6 @@
     long startTime=System.currentTimeMillis();
     final Job groupByJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_hashed-%s",config.getDataSource(),config.getIntervals()));
     JobHelper.injectSystemProperties(groupByJob);
-    JobHelper.setInputFormat(groupByJob,config);
     groupByJob.setMapperClass(DetermineCardinalityMapper.class);
     groupByJob.setMapOutputKeyClass(LongWritable.class);
     groupByJob.setMapOutputValueClass(BytesWritable.class);

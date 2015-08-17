@@ -1,0 +1,7 @@
+{
+  File dataFile=temporaryFolder.newFile();
+  FileUtils.writeLines(dataFile,ImmutableList.of("2014102200,a.example.com,a.example.com,90","2014102201,b.example.com,b.example.com,25","2014102202,c.example.com,c.example.com,70"));
+  HadoopDruidIndexerConfig config=makeHadoopDruidIndexerConfig(ImmutableMap.<String,Object>of("type","multi","children",ImmutableList.of(ImmutableMap.<String,Object>of("type","dataSource","ingestionSpec",ImmutableMap.of("dataSource","xyz","interval",interval),"segments",segments),ImmutableMap.<String,Object>of("type","static","paths",dataFile.getCanonicalPath()))),temporaryFolder.newFolder());
+  List<ImmutableMap<String,Object>> expectedRows=ImmutableList.of(ImmutableMap.<String,Object>of("time",DateTime.parse("2014-10-22T00:00:00.000Z"),"host",ImmutableList.of("a.example.com"),"visited_sum",190L,"unique_hosts",1.0d),ImmutableMap.<String,Object>of("time",DateTime.parse("2014-10-22T01:00:00.000Z"),"host",ImmutableList.of("b.example.com"),"visited_sum",175L,"unique_hosts",1.0d),ImmutableMap.<String,Object>of("time",DateTime.parse("2014-10-22T02:00:00.000Z"),"host",ImmutableList.of("c.example.com"),"visited_sum",270L,"unique_hosts",1.0d));
+  testIngestion(config,expectedRows);
+}

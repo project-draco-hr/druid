@@ -1,0 +1,27 @@
+{
+  spec=readAndVerifyDatasourceIngestionSpec(context.getConfiguration(),HadoopDruidIndexerConfig.jsonMapper);
+  List<DataSegment> segments=((DatasourceInputSplit)split).getSegments();
+  List<StorageAdapter> adapters=Lists.transform(segments,new Function<DataSegment,StorageAdapter>(){
+    @Override public StorageAdapter apply(    DataSegment segment){
+      try {
+        logger.info("Getting storage path for segment [%s]",segment.getIdentifier());
+        Path path=new Path(JobHelper.getURIFromSegment(segment));
+        logger.info("Fetch segment files from [%s]",path);
+        File dir=Files.createTempDir();
+        tmpSegmentDirs.add(dir);
+        logger.info("Locally storing fetched segment at [%s]",dir);
+        JobHelper.unzipNoGuava(path,context.getConfiguration(),dir,context);
+        logger.info("finished fetching segment files");
+        QueryableIndex index=IndexIO.loadIndex(dir);
+        indexes.add(index);
+        numRows+=index.getNumRows();
+        return new QueryableIndexStorageAdapter(index);
+      }
+ catch (      IOException ex) {
+        throw Throwables.propagate(ex);
+      }
+    }
+  }
+);
+  firehose=new IngestSegmentFirehose(adapters,spec.getDimensions(),spec.getMetrics(),spec.getFilter(),spec.getInterval(),spec.getGranularity());
+}

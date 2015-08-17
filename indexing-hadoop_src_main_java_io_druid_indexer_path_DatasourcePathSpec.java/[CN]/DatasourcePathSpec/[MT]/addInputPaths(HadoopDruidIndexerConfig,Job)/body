@@ -1,0 +1,36 @@
+{
+  Preconditions.checkArgument(segments != null && !segments.isEmpty(),"no segments provided");
+  logger.info("Found total [%d] segments for [%s]  in interval [%s]",segments.size(),ingestionSpec.getDataSource(),ingestionSpec.getInterval());
+  DatasourceIngestionSpec updatedIngestionSpec=ingestionSpec;
+  if (updatedIngestionSpec.getDimensions() == null) {
+    List<String> dims;
+    if (config.getParser().getParseSpec().getDimensionsSpec().hasCustomDimensions()) {
+      dims=config.getParser().getParseSpec().getDimensionsSpec().getDimensions();
+    }
+ else {
+      Set<String> dimSet=Sets.newHashSet(Iterables.concat(Iterables.transform(segments,new Function<DataSegment,Iterable<String>>(){
+        @Override public Iterable<String> apply(        DataSegment dataSegment){
+          return dataSegment.getDimensions();
+        }
+      }
+)));
+      dims=Lists.newArrayList(Sets.difference(dimSet,config.getParser().getParseSpec().getDimensionsSpec().getDimensionExclusions()));
+    }
+    updatedIngestionSpec=updatedIngestionSpec.withDimensions(dims);
+  }
+  if (updatedIngestionSpec.getMetrics() == null) {
+    Set<String> metrics=Sets.newHashSet();
+    final AggregatorFactory[] cols=config.getSchema().getDataSchema().getAggregators();
+    if (cols != null) {
+      for (      AggregatorFactory col : cols) {
+        metrics.add(col.getName());
+      }
+    }
+    updatedIngestionSpec=updatedIngestionSpec.withMetrics(Lists.newArrayList(metrics));
+  }
+  job.getConfiguration().set(DatasourceInputFormat.CONF_DRUID_SCHEMA,mapper.writeValueAsString(updatedIngestionSpec));
+  job.getConfiguration().set(DatasourceInputFormat.CONF_INPUT_SEGMENTS,mapper.writeValueAsString(segments));
+  job.getConfiguration().set(DatasourceInputFormat.CONF_MAX_SPLIT_SIZE,String.valueOf(maxSplitSize));
+  MultipleInputs.addInputPath(job,new Path("/dummy/tobe/ignored"),DatasourceInputFormat.class);
+  return job;
+}

@@ -1,0 +1,20 @@
+{
+  final UsedSegmentLister segmentList=EasyMock.createMock(UsedSegmentLister.class);
+  Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(UsedSegmentLister.class).toInstance(segmentList);
+      JsonConfigProvider.bindInstance(binder,Key.get(DruidNode.class,Self.class),new DruidNode("dummy-node",null,null));
+    }
+  }
+));
+  ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
+  DatasourcePathSpec expected=new DatasourcePathSpec(jsonMapper,null,ingestionSpec,Long.valueOf(10));
+  PathSpec actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+  expected=new DatasourcePathSpec(jsonMapper,null,ingestionSpec,null);
+  actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+  expected=new DatasourcePathSpec(jsonMapper,segments,ingestionSpec,null);
+  actual=jsonMapper.readValue(jsonMapper.writeValueAsString(expected),PathSpec.class);
+  Assert.assertEquals(expected,actual);
+}
