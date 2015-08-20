@@ -1,0 +1,13 @@
+{
+  try {
+    StringInputRowParser parser=mapper.readValue(parserJson,StringInputRowParser.class);
+    LineIterator iter=IOUtils.lineIterator(inputDataStream,"UTF-8");
+    List<AggregatorFactory> aggregatorSpecs=mapper.readValue(aggregators,new TypeReference<List<AggregatorFactory>>(){
+    }
+);
+    createIndex(iter,parser,aggregatorSpecs.toArray(new AggregatorFactory[0]),outDir,minTimestamp,gran,true,maxRowCount);
+  }
+  finally {
+    Closeables.close(inputDataStream,true);
+  }
+}
