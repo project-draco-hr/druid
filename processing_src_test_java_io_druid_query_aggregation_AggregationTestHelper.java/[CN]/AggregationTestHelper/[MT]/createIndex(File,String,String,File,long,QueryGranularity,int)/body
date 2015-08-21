@@ -1,8 +1,3 @@
 {
-  StringInputRowParser parser=mapper.readValue(parserJson,StringInputRowParser.class);
-  LineIterator iter=FileUtils.lineIterator(inputDataFile,"UTF-8");
-  List<AggregatorFactory> aggregatorSpecs=mapper.readValue(aggregators,new TypeReference<List<AggregatorFactory>>(){
-  }
-);
-  createIndex(iter,parser,aggregatorSpecs.toArray(new AggregatorFactory[0]),outDir,minTimestamp,gran,true,maxRowCount);
+  createIndex(new FileInputStream(inputDataFile),parserJson,aggregators,outDir,minTimestamp,gran,maxRowCount);
 }
