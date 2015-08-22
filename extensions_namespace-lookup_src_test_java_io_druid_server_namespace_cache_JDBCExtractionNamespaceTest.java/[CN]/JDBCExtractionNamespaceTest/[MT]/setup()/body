@@ -1,15 +1,31 @@
 {
-  dbi.withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      handle.createStatement(String.format("TRUNCATE TABLE %s",tableName)).execute();
-      handle.commit();
-      return null;
-    }
-  }
-);
+  log.info("Setting up");
+  handle=derbyConnectorRule.getConnector().getDBI().open();
+  Assert.assertEquals(0,handle.createStatement(String.format("CREATE TABLE %s (%s TIMESTAMP, %s VARCHAR(64), %s VARCHAR(64))",tableName,tsColumn_,keyName,valName)).setQueryTimeout(1).execute());
+  handle.createStatement(String.format("TRUNCATE TABLE %s",tableName)).setQueryTimeout(1).execute();
+  handle.commit();
   for (  Map.Entry<String,String> entry : renames.entrySet()) {
     insertValues(entry.getKey(),entry.getValue(),"2015-01-01 00:00:00");
   }
-  final Map<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>> factoryMap=new HashMap<>();
-  extractionCacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory()));
+  extractionCacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory(){
+    @Override public Callable<String> getCachePopulator(    final JDBCExtractionNamespace namespace,    final String lastVersion,    final Map<String,String> cache){
+      final Callable<String> cachePopulator=super.getCachePopulator(namespace,lastVersion,cache);
+      return new Callable<String>(){
+        @Override public String call() throws Exception {
+synchronized (updateLock) {
+            log.debug("Running cache populator");
+            try {
+              return cachePopulator.call();
+            }
+  finally {
+              updates.incrementAndGet();
+            }
+          }
+        }
+      }
+;
+    }
+  }
+));
+  lifecycle.start();
 }

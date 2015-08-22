@@ -1,21 +1,13 @@
 {
-  dbi.withHandle(new HandleCallback<Void>(){
-    @Override public Void withHandle(    Handle handle) throws Exception {
-      final String query;
-      if (tsColumn == null) {
-        handle.createStatement(String.format("DELETE FROM %s WHERE %s='%s'",tableName,keyName,key)).execute();
-        handle.commit();
-        query=String.format("INSERT INTO %s (%s, %s) VALUES ('%s', '%s')",tableName,keyName,valName,key,val);
-      }
- else {
-        query=String.format("INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s')",tableName,tsColumn,keyName,valName,updateTs,key,val);
-      }
-      if (1 != handle.createStatement(query).execute()) {
-        throw new ISE("Did not return the correct number of rows");
-      }
-      handle.commit();
-      return null;
-    }
+  final String query;
+  if (tsColumn == null) {
+    handle.createStatement(String.format("DELETE FROM %s WHERE %s='%s'",tableName,keyName,key)).setQueryTimeout(1).execute();
+    query=String.format("INSERT INTO %s (%s, %s) VALUES ('%s', '%s')",tableName,keyName,valName,key,val);
   }
-);
+ else {
+    query=String.format("INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s')",tableName,tsColumn,keyName,valName,updateTs,key,val);
+  }
+  Assert.assertEquals(1,handle.createStatement(query).setQueryTimeout(1).execute());
+  handle.commit();
+  Thread.sleep(2);
 }

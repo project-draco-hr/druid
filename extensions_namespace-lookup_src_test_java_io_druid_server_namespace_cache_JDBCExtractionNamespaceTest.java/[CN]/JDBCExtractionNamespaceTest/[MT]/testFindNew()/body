@@ -1,17 +1,6 @@
 {
-  MetadataStorageConnectorConfig config=new MetadataStorageConnectorConfig();
-  Field uriField=MetadataStorageConnectorConfig.class.getDeclaredField("connectURI");
-  uriField.setAccessible(true);
-  uriField.set(config,connectionURI);
-  final JDBCExtractionNamespace extractionNamespace=new JDBCExtractionNamespace(namespace,config,tableName,keyName,valName,tsColumn,new Period(1));
-  extractionCacheManager.schedule(extractionNamespace);
-  while (!fnCache.containsKey(extractionNamespace.getNamespace())) {
-    Thread.sleep(1);
-  }
-  Function<String,String> extractionFn=fnCache.get(extractionNamespace.getNamespace());
-  Assert.assertEquals("bar",extractionFn.apply("foo"));
+  final JDBCExtractionNamespace extractionNamespace=ensureNamespace();
+  assertUpdated(extractionNamespace.getNamespace(),"foo","bar");
   insertValues("foo","baz","2900-01-01 00:00:00");
-  Thread.sleep(100);
-  extractionFn=fnCache.get(extractionNamespace.getNamespace());
-  Assert.assertEquals("baz",extractionFn.apply("foo"));
+  assertUpdated(extractionNamespace.getNamespace(),"foo","baz");
 }
