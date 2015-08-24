@@ -1,13 +1,17 @@
 {
-  if (inputFormatClass == null) {
+  if (path == null) {
+    return;
+  }
+  Class<? extends InputFormat> inputFormatClassToUse=inputFormatClass;
+  if (inputFormatClassToUse == null) {
     if (config.isCombineText()) {
-      MultipleInputs.addInputPath(job,new Path(path),CombineTextInputFormat.class);
+      inputFormatClassToUse=CombineTextInputFormat.class;
     }
  else {
-      MultipleInputs.addInputPath(job,new Path(path),TextInputFormat.class);
+      inputFormatClassToUse=TextInputFormat.class;
     }
   }
- else {
-    MultipleInputs.addInputPath(job,new Path(path),inputFormatClass);
+  for (  StringBuilder sb : HadoopGlobPathSplitter.splitGlob(path)) {
+    MultipleInputs.addInputPath(job,new Path(sb.toString()),inputFormatClassToUse);
   }
 }

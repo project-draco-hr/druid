@@ -1,0 +1,37 @@
+{
+  List<StringBuilder> result=new ArrayList<>();
+  List<StringBuilder> current=new ArrayList<>();
+  current.add(new StringBuilder());
+  while (path.hasMore()) {
+    char c=path.next();
+switch (c) {
+case '{':
+      List<StringBuilder> childResult=splitGlob(path);
+    List<StringBuilder> oldCurrent=current;
+  current=new ArrayList<>();
+for (StringBuilder sb1 : oldCurrent) {
+  for (  StringBuilder sb2 : childResult) {
+    StringBuilder sb3=new StringBuilder();
+    sb3.append(sb1);
+    sb3.append(sb2);
+    current.add(sb3);
+  }
+}
+break;
+case '}':
+result.addAll(current);
+return result;
+case ',':
+result.addAll(current);
+current=new ArrayList<>();
+current.add(new StringBuilder());
+break;
+default :
+for (StringBuilder sb : current) {
+sb.append(c);
+}
+}
+}
+result.addAll(current);
+return result;
+}

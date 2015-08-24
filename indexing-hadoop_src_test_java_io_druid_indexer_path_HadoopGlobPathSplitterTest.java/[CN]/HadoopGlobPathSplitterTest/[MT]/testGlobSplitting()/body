@@ -1,0 +1,38 @@
+{
+  String path="/a/b/c";
+  List<String> expected=ImmutableList.of("/a/b/c");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/c,/d/e";
+  expected=ImmutableList.of("/a/b/c","/d/e");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/*.c,/d/*.e";
+  expected=ImmutableList.of("/a/b/*.c","/d/*.e");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/c,/d/e,/f/g";
+  expected=ImmutableList.of("/a/b/c","/d/e","/f/g");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/{c,d}";
+  expected=ImmutableList.of("/a/b/c","/a/b/d");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/{c,d}/e";
+  expected=ImmutableList.of("/a/b/c/e","/a/b/d/e");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="{c,d}";
+  expected=ImmutableList.of("c","d");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="{c,d}/e";
+  expected=ImmutableList.of("c/e","d/e");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/{c,d},/a/b/{c,d}/e,{c,d},{c,d}/e";
+  expected=ImmutableList.of("/a/b/c","/a/b/d","/a/b/c/e","/a/b/d/e","c","d","c/e","d/e");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="/a/b/{c/{d,e/{f,g},h},i}/{j,k}/l";
+  expected=ImmutableList.of("/a/b/c/d/j/l","/a/b/c/d/k/l","/a/b/c/e/f/j/l","/a/b/c/e/f/k/l","/a/b/c/e/g/j/l","/a/b/c/e/g/k/l","/a/b/c/h/j/l","/a/b/c/h/k/l","/a/b/i/j/l","/a/b/i/k/l");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="";
+  expected=ImmutableList.of("");
+  Assert.assertEquals(expected,splitGlob(path));
+  path="{}";
+  expected=ImmutableList.of("");
+  Assert.assertEquals(expected,splitGlob(path));
+}
