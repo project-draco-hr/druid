@@ -17,5 +17,11 @@ synchronized (lock) {
       return false;
     }
   }
+  try {
+    poll();
+  }
+ catch (  Exception e) {
+    log.error(e,String.format("Exception while polling for rules after overriding the rule for %s",dataSource));
+  }
   return true;
 }
