@@ -3,7 +3,18 @@
   final FileSystem fs=checkPathAndGetFilesystem(path);
   try {
     if (path.getName().endsWith(".zip")) {
-      fs.delete(path.getParent(),true);
+      Path partitionNumDir=path.getParent();
+      if (!fs.delete(partitionNumDir,true)) {
+        throw new SegmentLoadingException("Unable to kill segment, failed to delete dir [%s]",partitionNumDir.toString());
+      }
+      Path versionDir=partitionNumDir.getParent();
+      if (safeNonRecursiveDelete(fs,versionDir)) {
+        Path intervalDir=versionDir.getParent();
+        if (safeNonRecursiveDelete(fs,intervalDir)) {
+          Path dataSourceDir=intervalDir.getParent();
+          safeNonRecursiveDelete(fs,dataSourceDir);
+        }
+      }
     }
  else {
       throw new SegmentLoadingException("Unknown file type[%s]",path);
