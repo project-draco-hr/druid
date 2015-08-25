@@ -1,5 +1,5 @@
 {
-  return retryingHandle(new HandleCallback<Boolean>(){
+  return connector.retryWithHandle(new HandleCallback<Boolean>(){
     @Override public Boolean withHandle(    Handle handle) throws Exception {
       return handle.createStatement(String.format("UPDATE %s SET active = :active, status_payload = :status_payload WHERE id = :id AND active = TRUE",entryTable)).bind("id",entryId).bind("active",active).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute() == 1;
     }

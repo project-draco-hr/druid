@@ -1,5 +1,5 @@
 {
-  return retryingHandle(new HandleCallback<List<Pair<EntryType,StatusType>>>(){
+  return connector.retryWithHandle(new HandleCallback<List<Pair<EntryType,StatusType>>>(){
     @Override public List<Pair<EntryType,StatusType>> withHandle(    Handle handle) throws Exception {
       return handle.createQuery(String.format("SELECT id, payload, status_payload FROM %s WHERE active = TRUE ORDER BY created_date",entryTable)).map(new ResultSetMapper<Pair<EntryType,StatusType>>(){
         @Override public Pair<EntryType,StatusType> map(        int index,        ResultSet r,        StatementContext ctx) throws SQLException {

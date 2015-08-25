@@ -13,7 +13,7 @@
   Assert.assertEquals(2,locks.size());
   Assert.assertEquals(ImmutableSet.<Map<String,Integer>>of(lock1,lock2),new HashSet<>(locks.values()));
   long lockId=locks.keySet().iterator().next();
-  Assert.assertTrue(handler.removeLock(lockId));
+  handler.removeLock(lockId);
   locks.remove(lockId);
   final Map<Long,Map<String,Integer>> updated=handler.getLocks(entryId);
   Assert.assertEquals(new HashSet<>(locks.values()),new HashSet<>(updated.values()));

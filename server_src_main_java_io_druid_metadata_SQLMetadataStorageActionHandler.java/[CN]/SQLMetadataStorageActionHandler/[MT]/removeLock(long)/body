@@ -1,7 +1,8 @@
 {
-  return retryingHandle(new HandleCallback<Boolean>(){
-    @Override public Boolean withHandle(    Handle handle) throws Exception {
-      return handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",lockTable)).bind("id",lockId).execute() == 1;
+  connector.retryWithHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      handle.createStatement(String.format("DELETE FROM %s WHERE id = :id",lockTable)).bind("id",lockId).execute();
+      return null;
     }
   }
 );

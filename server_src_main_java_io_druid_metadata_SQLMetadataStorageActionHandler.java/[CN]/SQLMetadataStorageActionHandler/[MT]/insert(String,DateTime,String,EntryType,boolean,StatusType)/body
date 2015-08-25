@@ -1,6 +1,6 @@
 {
   try {
-    retryingHandle(new HandleCallback<Void>(){
+    connector.retryWithHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
         handle.createStatement(String.format("INSERT INTO %s (id, created_date, datasource, payload, active, status_payload) VALUES (:id, :created_date, :datasource, :payload, :active, :status_payload)",entryTable)).bind("id",id).bind("created_date",timestamp.toString()).bind("datasource",dataSource).bind("payload",jsonMapper.writeValueAsBytes(entry)).bind("active",active).bind("status_payload",jsonMapper.writeValueAsBytes(status)).execute();
         return null;

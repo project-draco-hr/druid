@@ -1,5 +1,5 @@
 {
-  return retryingHandle(new HandleCallback<List<LogType>>(){
+  return connector.retryWithHandle(new HandleCallback<List<LogType>>(){
     @Override public List<LogType> withHandle(    Handle handle) throws Exception {
       return handle.createQuery(String.format("SELECT log_payload FROM %1$s WHERE %2$s_id = :entryId",logTable,entryTypeName)).bind("entryId",entryId).map(ByteArrayMapper.FIRST).fold(Lists.<LogType>newLinkedList(),new Folder3<List<LogType>,byte[]>(){
         @Override public List<LogType> fold(        List<LogType> list,        byte[] bytes,        FoldController control,        StatementContext ctx) throws SQLException {

@@ -1,5 +1,5 @@
 {
-  return retryingHandle(new HandleCallback<Boolean>(){
+  return connector.retryWithHandle(new HandleCallback<Boolean>(){
     @Override public Boolean withHandle(    Handle handle) throws Exception {
       return handle.createStatement(String.format("INSERT INTO %1$s (%2$s_id, lock_payload) VALUES (:entryId, :payload)",lockTable,entryTypeName)).bind("entryId",entryId).bind("payload",jsonMapper.writeValueAsBytes(lock)).execute() == 1;
     }
