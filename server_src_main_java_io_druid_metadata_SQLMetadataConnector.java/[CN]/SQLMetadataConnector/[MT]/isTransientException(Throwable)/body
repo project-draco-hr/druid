@@ -1,3 +1,3 @@
 {
-  return false;
+  return e != null && (e instanceof SQLTransientException || e instanceof SQLRecoverableException || e instanceof UnableToObtainConnectionException|| connectorIsTransientException(e)|| (e instanceof SQLException && isTransientException(e.getCause()))|| (e instanceof DBIException && isTransientException(e.getCause())));
 }

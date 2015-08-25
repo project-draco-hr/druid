@@ -1,13 +1,7 @@
 {
   final Callable<T> call=new Callable<T>(){
     @Override public T call() throws Exception {
-      return connector.getDBI().withHandle(callback);
-    }
-  }
-;
-  final Predicate<Throwable> shouldRetry=new Predicate<Throwable>(){
-    @Override public boolean apply(    Throwable e){
-      return shouldRetryException(e);
+      return getDBI().withHandle(callback);
     }
   }
 ;

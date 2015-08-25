@@ -1,0 +1,15 @@
+{
+  final Callable<T> call=new Callable<T>(){
+    @Override public T call() throws Exception {
+      return getDBI().inTransaction(callback);
+    }
+  }
+;
+  final int maxTries=10;
+  try {
+    return RetryUtils.retry(call,shouldRetry,maxTries);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

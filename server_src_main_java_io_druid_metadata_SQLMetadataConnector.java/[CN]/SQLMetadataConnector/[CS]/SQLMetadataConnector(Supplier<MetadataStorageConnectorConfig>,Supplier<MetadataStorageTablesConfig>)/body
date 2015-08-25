@@ -1,4 +1,10 @@
 {
   this.config=config;
   this.tablesConfigSupplier=tablesConfigSupplier;
+  this.shouldRetry=new Predicate<Throwable>(){
+    @Override public boolean apply(    Throwable e){
+      return isTransientException(e);
+    }
+  }
+;
 }
