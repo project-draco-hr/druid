@@ -2,7 +2,7 @@
 abstract class DrainTask implements Runnable {
   }
   final ForwardingListeningExecutorService randomizingExecutorService=new ForwardingListeningExecutorService(){
-    final ConcurrentLinkedDeque<Pair<SettableFuture,Object>> taskQueue=new ConcurrentLinkedDeque();
+    final ConcurrentLinkedDeque<Pair<SettableFuture,Object>> taskQueue=new ConcurrentLinkedDeque<>();
     final ListeningExecutorService delegate=MoreExecutors.listeningDecorator(MoreExecutors.sameThreadExecutor());
     @Override protected ListeningExecutorService delegate(){
       return delegate;
