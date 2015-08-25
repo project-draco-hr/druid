@@ -1,0 +1,9 @@
+{
+  List<Rule> rules=Arrays.<Rule>asList(new IntervalLoadRule(new Interval("2015-01-01/2015-02-01"),ImmutableMap.<String,Integer>of(DruidServer.DEFAULT_TIER,DruidServer.DEFAULT_NUM_REPLICANTS)));
+  AuditInfo auditInfo=new AuditInfo("test_author","test_comment","127.0.0.1");
+  ruleManager.overrideRule("test_dataSource",rules,auditInfo);
+  Map<String,List<Rule>> allRules=ruleManager.getAllRules();
+  Assert.assertEquals(1,allRules.size());
+  Assert.assertEquals(1,allRules.get("test_dataSource").size());
+  Assert.assertEquals(rules.get(0),allRules.get("test_dataSource").get(0));
+}
