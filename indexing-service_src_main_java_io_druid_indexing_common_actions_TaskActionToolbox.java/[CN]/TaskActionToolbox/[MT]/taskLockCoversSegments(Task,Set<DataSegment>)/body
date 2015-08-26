@@ -3,8 +3,7 @@
   for (  final DataSegment segment : segments) {
     final boolean ok=Iterables.any(taskLocks,new Predicate<TaskLock>(){
       @Override public boolean apply(      TaskLock taskLock){
-        final boolean versionOk=allowOlderVersions ? taskLock.getVersion().compareTo(segment.getVersion()) >= 0 : taskLock.getVersion().equals(segment.getVersion());
-        return versionOk && taskLock.getDataSource().equals(segment.getDataSource()) && taskLock.getInterval().contains(segment.getInterval());
+        return taskLock.getDataSource().equals(segment.getDataSource()) && taskLock.getInterval().contains(segment.getInterval()) && taskLock.getVersion().compareTo(segment.getVersion()) >= 0;
       }
     }
 );
