@@ -1,0 +1,7 @@
+{
+  GroupByQuery subquery=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","quality"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(new DoubleMaxAggregatorFactory("idx","idx"))).setDimFilter(new OrDimFilter(Lists.<DimFilter>newArrayList(new SelectorDimFilter("quality","automotive"),new SelectorDimFilter("quality","premium"),new SelectorDimFilter("quality","mezzanine"),new SelectorDimFilter("quality","business"),new SelectorDimFilter("quality","entertainment"),new SelectorDimFilter("quality","health"),new SelectorDimFilter("quality","news"),new SelectorDimFilter("quality","technology"),new SelectorDimFilter("quality","travel")))).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","idx",2900.0),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","idx",2505.0));
+  Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
+  TestHelper.assertExpectedObjects(expectedResults,results,"");
+}
