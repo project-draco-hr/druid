@@ -6,8 +6,19 @@
   mapper.setInjectableValues(inject);
   dataFile=temporaryFolder.newFile();
   tmpDir=temporaryFolder.newFolder();
-  FileUtils.writeLines(dataFile,data);
-  config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema("website",new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(ImmutableList.of("host"),null,null),null,ImmutableList.of("timestamp","host","visited_num"))),new AggregatorFactory[]{new LongSumAggregatorFactory("visited_num","visited_num"),new HyperUniquesAggregatorFactory("unique_hosts","host")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,ImmutableList.of(this.interval))),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths",dataFile.getCanonicalPath(),"type","static"),null,tmpDir.getCanonicalPath()),new HadoopTuningConfig(tmpDir.getCanonicalPath(),null,null,null,null,null,false,false,false,false,null,false,false,false,null,null,useCombiner)));
+  HashMap<String,Object> inputSpec=new HashMap<String,Object>();
+  inputSpec.put("paths",dataFile.getCanonicalPath());
+  inputSpec.put("type","static");
+  if (inputFormatName != null) {
+    inputSpec.put("inputFormat",inputFormatName);
+  }
+  if (SequenceFileInputFormat.class.getName().equals(inputFormatName)) {
+    writeDataToLocalSequenceFile(dataFile,data);
+  }
+ else {
+    FileUtils.writeLines(dataFile,data);
+  }
+  config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema("website",new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(ImmutableList.of("host"),null,null),null,ImmutableList.of("timestamp","host","visited_num"))),new AggregatorFactory[]{new LongSumAggregatorFactory("visited_num","visited_num"),new HyperUniquesAggregatorFactory("unique_hosts","host")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,ImmutableList.of(this.interval))),new HadoopIOConfig(ImmutableMap.copyOf(inputSpec),null,tmpDir.getCanonicalPath()),new HadoopTuningConfig(tmpDir.getCanonicalPath(),null,null,null,null,null,false,false,false,false,null,false,false,false,null,null,useCombiner)));
   config.setShardSpecs(loadShardSpecs(partitionType,shardInfoForEachSegment));
   config=HadoopDruidIndexerConfig.fromSpec(config.getSchema());
 }

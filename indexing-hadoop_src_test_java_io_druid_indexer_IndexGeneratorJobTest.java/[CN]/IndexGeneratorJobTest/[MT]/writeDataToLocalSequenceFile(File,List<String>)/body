@@ -1,0 +1,15 @@
+{
+  Configuration conf=new Configuration();
+  LocalFileSystem fs=FileSystem.getLocal(conf);
+  Writer fileWriter=SequenceFile.createWriter(fs,conf,new Path(outputFile.getAbsolutePath()),BytesWritable.class,BytesWritable.class,SequenceFile.CompressionType.NONE,(CompressionCodec)null);
+  int keyCount=10;
+  for (  String line : data) {
+    ByteBuffer buf=ByteBuffer.allocate(4);
+    buf.putInt(keyCount);
+    BytesWritable key=new BytesWritable(buf.array());
+    BytesWritable value=new BytesWritable(line.getBytes(Charsets.UTF_8));
+    fileWriter.append(key,value);
+    keyCount+=1;
+  }
+  fileWriter.close();
+}
