@@ -16,14 +16,13 @@
 );
   }
  else   if (taskStorageType.equals("MetadataTaskStorage")) {
-    MetadataStorageTablesConfig tablesConfig=MetadataStorageTablesConfig.fromBase("test");
-    testDerbyConnector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),Suppliers.ofInstance(tablesConfig));
+    testDerbyConnector=derbyConnectorRule.getConnector();
     mapper=new DefaultObjectMapper();
     mapper.registerSubtypes(new NamedType(MockExceptionalFirehoseFactory.class,"mockExcepFirehoseFactory"),new NamedType(MockFirehoseFactory.class,"mockFirehoseFactory"));
     mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class,mapper));
     testDerbyConnector.createTaskTables();
     testDerbyConnector.createSegmentTable();
-    ts=new MetadataTaskStorage(testDerbyConnector,new TaskStorageConfig(null),new SQLMetadataStorageActionHandlerFactory(testDerbyConnector,tablesConfig,mapper));
+    ts=new MetadataTaskStorage(testDerbyConnector,new TaskStorageConfig(null),new SQLMetadataStorageActionHandlerFactory(testDerbyConnector,derbyConnectorRule.metadataTablesConfigSupplier().get(),mapper));
   }
  else {
     throw new RuntimeException(String.format("Unknown task storage type [%s]",taskStorageType));

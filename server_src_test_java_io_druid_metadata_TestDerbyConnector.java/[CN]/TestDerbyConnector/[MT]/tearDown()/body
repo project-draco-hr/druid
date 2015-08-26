@@ -1,9 +1,9 @@
 {
   try {
-    new DBI("jdbc:derby:memory:druidTest;drop=true").open().close();
+    new DBI(jdbcUri + ";drop=true").open().close();
   }
  catch (  UnableToObtainConnectionException e) {
     SQLException cause=(SQLException)e.getCause();
-    Assert.assertEquals("08006",cause.getSQLState());
+    Assert.assertEquals(String.format("Derby not shutdown: [%s]",cause.toString()),"08006",cause.getSQLState());
   }
 }

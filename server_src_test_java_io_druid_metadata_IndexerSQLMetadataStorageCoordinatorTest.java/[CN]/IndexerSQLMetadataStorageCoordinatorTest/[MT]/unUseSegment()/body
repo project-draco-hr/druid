@@ -2,7 +2,7 @@
   for (  final DataSegment segment : segments) {
     Assert.assertEquals(1,(int)derbyConnector.getDBI().<Integer>withHandle(new HandleCallback<Integer>(){
       @Override public Integer withHandle(      Handle handle) throws Exception {
-        return handle.createStatement(String.format("UPDATE %s SET used = false WHERE id = :id",tablesConfig.getSegmentsTable())).bind("id",segment.getIdentifier()).execute();
+        return handle.createStatement(String.format("UPDATE %s SET used = false WHERE id = :id",derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable())).bind("id",segment.getIdentifier()).execute();
       }
     }
 ));
