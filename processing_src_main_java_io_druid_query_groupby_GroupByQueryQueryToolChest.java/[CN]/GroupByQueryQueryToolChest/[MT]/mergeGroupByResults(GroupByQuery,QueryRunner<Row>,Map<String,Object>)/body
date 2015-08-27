@@ -13,7 +13,7 @@
     for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
       aggs.addAll(aggregatorFactory.getRequiredColumns());
     }
-    final GroupByQuery innerQuery=new GroupByQuery.Builder(query).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
+    final GroupByQuery innerQuery=new GroupByQuery.Builder(subquery).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
     IncrementalIndex index=makeIncrementalIndex(innerQuery,subqueryResult);
     return new ResourceClosingSequence<>(outerQuery.applyLimit(engine.process(outerQuery,new IncrementalIndexStorageAdapter(index))),index);
