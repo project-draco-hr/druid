@@ -1,5 +1,5 @@
 {
-  connector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),Suppliers.ofInstance(tablesConfig));
+  connector=derbyConnectorRule.getConnector();
   connector.createAuditTable();
-  auditManager=new SQLAuditManager(connector,Suppliers.ofInstance(tablesConfig),new NoopServiceEmitter(),mapper,new SQLAuditManagerConfig());
+  auditManager=new SQLAuditManager(connector,derbyConnectorRule.metadataTablesConfigSupplier(),new NoopServiceEmitter(),mapper,new SQLAuditManagerConfig());
 }

@@ -1,8 +1,7 @@
 {
-  final Supplier<MetadataStorageTablesConfig> dbTables=Suppliers.ofInstance(MetadataStorageTablesConfig.fromBase("test"));
-  connector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),dbTables);
-  manager=new SQLMetadataSegmentManager(jsonMapper,Suppliers.ofInstance(new MetadataSegmentManagerConfig()),dbTables,connector);
-  SQLMetadataSegmentPublisher publisher=new SQLMetadataSegmentPublisher(jsonMapper,dbTables.get(),connector);
+  TestDerbyConnector connector=derbyConnectorRule.getConnector();
+  manager=new SQLMetadataSegmentManager(jsonMapper,Suppliers.ofInstance(new MetadataSegmentManagerConfig()),derbyConnectorRule.metadataTablesConfigSupplier(),connector);
+  SQLMetadataSegmentPublisher publisher=new SQLMetadataSegmentPublisher(jsonMapper,derbyConnectorRule.metadataTablesConfigSupplier().get(),connector);
   connector.createSegmentTable();
   publisher.publishSegment(segment1);
   publisher.publishSegment(segment2);

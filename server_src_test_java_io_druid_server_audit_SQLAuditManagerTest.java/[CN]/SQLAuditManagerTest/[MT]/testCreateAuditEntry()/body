@@ -1,7 +1,7 @@
 {
   AuditEntry entry=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment","127.0.0.1"),"testPayload",new DateTime("2013-01-01T00:00:00Z"));
   auditManager.doAudit(entry);
-  byte[] payload=connector.lookup(tablesConfig.getAuditTable(),"audit_key","payload","testKey");
+  byte[] payload=connector.lookup(derbyConnectorRule.metadataTablesConfigSupplier().get().getAuditTable(),"audit_key","payload","testKey");
   AuditEntry dbEntry=mapper.readValue(payload,AuditEntry.class);
   Assert.assertEquals(entry,dbEntry);
 }

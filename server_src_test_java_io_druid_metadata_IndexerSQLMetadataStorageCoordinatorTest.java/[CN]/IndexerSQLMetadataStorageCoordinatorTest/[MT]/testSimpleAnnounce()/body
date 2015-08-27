@@ -1,4 +1,4 @@
 {
   coordinator.announceHistoricalSegments(segments);
-  Assert.assertArrayEquals(mapper.writeValueAsString(defaultSegment).getBytes("UTF-8"),derbyConnector.lookup(tablesConfig.getSegmentsTable(),"id","payload",defaultSegment.getIdentifier()));
+  Assert.assertArrayEquals(mapper.writeValueAsString(defaultSegment).getBytes("UTF-8"),derbyConnector.lookup(derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable(),"id","payload",defaultSegment.getIdentifier()));
 }
