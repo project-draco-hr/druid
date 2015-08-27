@@ -1,7 +1,6 @@
 {
   final String dataSource="billy";
   final Interval interval=new Interval(new DateTime().minus(1000),new DateTime());
-  DefaultObjectMapper jsonMapper=new DefaultObjectMapper();
   ConvertSegmentTask task=ConvertSegmentTask.create(dataSource,interval,null,false,true);
   Task task2=jsonMapper.readValue(jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task),Task.class);
   Assert.assertEquals(task,task2);
