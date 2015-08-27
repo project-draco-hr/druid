@@ -1,35 +1,38 @@
 {
   final int repeatCount=5;
   final long delay=5;
-  final AtomicLong ranCount=new AtomicLong(0l);
   final long totalRunCount;
   final long start;
-  final CountDownLatch latch=new CountDownLatch(repeatCount);
   try {
     final URIExtractionNamespace namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(delay),null);
+    cacheUpdateAlerts.putIfAbsent(namespace.getNamespace(),new Object());
     start=System.currentTimeMillis();
-    final String cacheId=UUID.randomUUID().toString();
-    ListenableFuture<?> future=manager.schedule(namespace,factory,new Runnable(){
-      @Override public void run(){
-        try {
-          manager.getPostRunnable(namespace,factory,cacheId).run();
-          ranCount.incrementAndGet();
+    ListenableFuture<?> future=manager.schedule(namespace);
+    Assert.assertFalse(future.isDone());
+    Assert.assertFalse(future.isCancelled());
+    final long preRunCount;
+    final Object cacheUpdateAlerter=cacheUpdateAlerts.get(namespace.getNamespace());
+synchronized (cacheUpdateAlerter) {
+      preRunCount=numRuns.get();
+    }
+    for (; ; ) {
+synchronized (cacheUpdateAlerter) {
+        if (numRuns.get() - preRunCount >= repeatCount) {
+          break;
         }
-  finally {
-          latch.countDown();
+ else {
+          cacheUpdateAlerter.wait();
         }
       }
     }
-,cacheId);
-    latch.await();
     long minEnd=start + ((repeatCount - 1) * delay);
     long end=System.currentTimeMillis();
-    Assert.assertTrue(String.format("Didn't wait long enough between runs. Expected more than %d was %d",minEnd - start,end - start),minEnd < end);
+    Assert.assertTrue(String.format("Didn't wait long enough between runs. Expected more than %d was %d",minEnd - start,end - start),minEnd <= end);
   }
   finally {
     lifecycle.stop();
   }
-  totalRunCount=ranCount.get();
-  Thread.sleep(50);
-  Assert.assertEquals(totalRunCount,ranCount.get(),1);
+  totalRunCount=numRuns.get();
+  Thread.sleep(delay * 10);
+  Assert.assertEquals(totalRunCount,numRuns.get(),1);
 }
