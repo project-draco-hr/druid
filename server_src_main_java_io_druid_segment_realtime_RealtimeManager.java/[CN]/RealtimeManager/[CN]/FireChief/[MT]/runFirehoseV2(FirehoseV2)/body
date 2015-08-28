@@ -1,0 +1,61 @@
+{
+  final Period intermediatePersistPeriod=config.getIntermediatePersistPeriod();
+  try {
+    firehose.start();
+  }
+ catch (  Exception e) {
+    log.error(e,"Failed to start firehoseV2");
+    return;
+  }
+  long nextFlush=new DateTime().plus(intermediatePersistPeriod).getMillis();
+  log.info("FirehoseV2 started with nextFlush [%s]",nextFlush);
+  boolean haveRow=true;
+  while (haveRow) {
+    InputRow inputRow=null;
+    int numRows=0;
+    try {
+      inputRow=firehose.currRow();
+      if (inputRow != null) {
+        try {
+          numRows=plumber.add(inputRow);
+        }
+ catch (        IndexSizeExceededException e) {
+          log.debug(e,"Index limit exceeded: %s",e.getMessage());
+          nextFlush=doIncrementalPersist(firehose.makeCommitter(),intermediatePersistPeriod);
+          continue;
+        }
+        if (numRows < 0) {
+          metrics.incrementThrownAway();
+          log.debug("Throwing away event[%s]",inputRow);
+        }
+ else {
+          metrics.incrementProcessed();
+        }
+      }
+ else {
+        log.debug("thrown away null input row, considering unparseable");
+        metrics.incrementUnparseable();
+      }
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Unknown exception, Ignoring and continuing.").addData("inputRow",inputRow);
+    }
+    try {
+      haveRow=firehose.advance();
+    }
+ catch (    Exception e) {
+      log.debug(e,"exception in firehose.advance(), considering unparseable row");
+      metrics.incrementUnparseable();
+      continue;
+    }
+    try {
+      final Sink sink=inputRow != null ? plumber.getSink(inputRow.getTimestampFromEpoch()) : null;
+      if ((sink != null && !sink.canAppendRow()) || System.currentTimeMillis() > nextFlush) {
+        nextFlush=doIncrementalPersist(firehose.makeCommitter(),intermediatePersistPeriod);
+      }
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"An exception happened while queue to persist!?  We hope it is transient. Ignore and continue.");
+    }
+  }
+}

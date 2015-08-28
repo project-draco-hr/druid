@@ -1,0 +1,18 @@
+{
+  if (index.isEmpty()) {
+    throw new IAE("Trying to persist an empty index!");
+  }
+  final long firstTimestamp=index.getMinTime().getMillis();
+  final long lastTimestamp=index.getMaxTime().getMillis();
+  if (!(dataInterval.contains(firstTimestamp) && dataInterval.contains(lastTimestamp))) {
+    throw new IAE("interval[%s] does not encapsulate the full range of timestamps[%s, %s]",dataInterval,new DateTime(firstTimestamp),new DateTime(lastTimestamp));
+  }
+  if (!outDir.exists()) {
+    outDir.mkdirs();
+  }
+  if (!outDir.isDirectory()) {
+    throw new ISE("Can only persist to directories, [%s] wasn't a directory",outDir);
+  }
+  log.info("Starting persist for interval[%s], rows[%,d]",dataInterval,index.size());
+  return merge(Arrays.<IndexableAdapter>asList(new IncrementalIndexAdapter(dataInterval,index,indexSpec.getBitmapSerdeFactory().getBitmapFactory())),index.getMetricAggs(),outDir,segmentMetadata,indexSpec,progress);
+}

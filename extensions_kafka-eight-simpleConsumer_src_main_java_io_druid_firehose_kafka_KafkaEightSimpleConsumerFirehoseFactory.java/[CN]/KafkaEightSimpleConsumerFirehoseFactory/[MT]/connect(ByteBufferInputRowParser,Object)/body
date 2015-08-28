@@ -1,0 +1,77 @@
+{
+  final Map<Integer,Long> lastOffsets=loadOffsetFromPreviousMetaData(lastCommit);
+  for (  Integer partition : partitionIdList) {
+    final KafkaSimpleConsumer kafkaSimpleConsumer=new KafkaSimpleConsumer(feed,partition,clientId,brokerList,earliest);
+    Long startOffset=lastOffsets.get(partition);
+    PartitionConsumerWorker worker=new PartitionConsumerWorker(feed,kafkaSimpleConsumer,partition,startOffset == null ? 0 : startOffset);
+    consumerWorkers.add(worker);
+  }
+  final LinkedBlockingQueue<BytesMessageWithOffset> messageQueue=new LinkedBlockingQueue<BytesMessageWithOffset>(queueBufferLength);
+  log.info("Kicking off all consumers");
+  for (  PartitionConsumerWorker worker : consumerWorkers) {
+    worker.go(messageQueue);
+  }
+  log.info("All consumer started");
+  return new FirehoseV2(){
+    private Map<Integer,Long> lastOffsetPartitions;
+    private volatile boolean stopped;
+    private volatile BytesMessageWithOffset msg=null;
+    private volatile InputRow row=null;
+{
+      lastOffsetPartitions=Maps.newHashMap();
+      lastOffsetPartitions.putAll(lastOffsets);
+    }
+    @Override public void start() throws Exception {
+      nextMessage();
+    }
+    @Override public boolean advance(){
+      if (stopped) {
+        return false;
+      }
+      nextMessage();
+      return true;
+    }
+    private void nextMessage(){
+      try {
+        row=null;
+        while (row == null) {
+          if (msg != null) {
+            lastOffsetPartitions.put(msg.getPartition(),msg.offset());
+          }
+          msg=messageQueue.take();
+          final byte[] message=msg.message();
+          row=message == null ? null : firehoseParser.parse(ByteBuffer.wrap(message));
+        }
+      }
+ catch (      InterruptedException e) {
+        log.warn(e,"Thread Interrupted while taking from queue, propagating the interrupt");
+        Thread.currentThread().interrupt();
+      }
+    }
+    @Override public InputRow currRow(){
+      if (stopped) {
+        return null;
+      }
+      return row;
+    }
+    @Override public Committer makeCommitter(){
+      final Map<Integer,Long> offsets=Maps.newHashMap(lastOffsetPartitions);
+      return new Committer(){
+        @Override public Object getMetadata(){
+          return offsets;
+        }
+        @Override public void run(){
+        }
+      }
+;
+    }
+    @Override public void close() throws IOException {
+      log.info("Stopping kafka 0.8 simple firehose");
+      stopped=true;
+      for (      PartitionConsumerWorker t : consumerWorkers) {
+        Closeables.close(t,true);
+      }
+    }
+  }
+;
+}

@@ -1,8 +1,9 @@
 {
   computeBaseDir(schema).mkdirs();
   initializeExecutors();
-  bootstrapSinksFromDisk();
+  Object retVal=bootstrapSinksFromDisk();
   registerServerViewCallback();
   startPersistThread();
   mergeAndPush();
+  return retVal;
 }

@@ -1,0 +1,16 @@
+{
+  return FunctionalIterable.create(kafkaMessages).filter(new Predicate<MessageAndOffset>(){
+    @Override public boolean apply(    MessageAndOffset msgAndOffset){
+      return msgAndOffset.offset() >= offset;
+    }
+  }
+).transform(new Function<MessageAndOffset,BytesMessageWithOffset>(){
+    @Override public BytesMessageWithOffset apply(    MessageAndOffset msgAndOffset){
+      ByteBuffer bb=msgAndOffset.message().payload();
+      byte[] payload=new byte[bb.remaining()];
+      bb.get(payload);
+      return new BytesMessageWithOffset(payload,msgAndOffset.nextOffset(),partitionId);
+    }
+  }
+);
+}

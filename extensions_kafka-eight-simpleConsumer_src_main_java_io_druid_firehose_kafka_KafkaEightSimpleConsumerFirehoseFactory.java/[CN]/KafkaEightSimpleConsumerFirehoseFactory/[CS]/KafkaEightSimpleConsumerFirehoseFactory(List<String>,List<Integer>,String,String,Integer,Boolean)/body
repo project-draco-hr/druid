@@ -1,0 +1,15 @@
+{
+  this.brokerList=brokerList;
+  Preconditions.checkArgument(brokerList != null && brokerList.size() > 0,"brokerList is null/empty");
+  this.partitionIdList=partitionIdList;
+  Preconditions.checkArgument(partitionIdList != null && partitionIdList.size() > 0,"partitionIdList is null/empty");
+  this.clientId=clientId;
+  Preconditions.checkArgument(clientId != null && !clientId.isEmpty(),"clientId is null/empty");
+  this.feed=feed;
+  Preconditions.checkArgument(feed != null && !feed.isEmpty(),"feed is null/empty");
+  this.queueBufferLength=queueBufferLength == null ? DEFAULT_QUEUE_BUFFER_LENGTH : queueBufferLength;
+  Preconditions.checkArgument(queueBufferLength > 0,"queueBufferLength must be positive number");
+  log.info("queueBufferLength loaded as[%s]",this.queueBufferLength);
+  this.earliest=resetOffsetToEarliest == null ? true : resetOffsetToEarliest.booleanValue();
+  log.info("if old offsets are not known, data from partition will be read from [%s] available offset.",this.earliest ? "earliest" : "latest");
+}

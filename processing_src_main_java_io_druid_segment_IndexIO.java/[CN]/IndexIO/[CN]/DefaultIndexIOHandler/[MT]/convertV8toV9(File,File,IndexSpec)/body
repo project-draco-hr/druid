@@ -215,6 +215,10 @@ serializerUtils.writeLong(writer,dataInterval.getStartMillis());
 serializerUtils.writeLong(writer,dataInterval.getEndMillis());
 serializerUtils.writeString(writer,segmentBitmapSerdeFactoryString);
 writer.close();
+final ByteBuffer metadataBuffer=v8SmooshedFiles.mapFile("metadata.drd");
+if (metadataBuffer != null) {
+v9Smoosher.add("metadata.drd",metadataBuffer);
+}
 log.info("Skipped files[%s]",skippedFiles);
 v9Smoosher.close();
 }

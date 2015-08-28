@@ -1,0 +1,25 @@
+{
+  Map<Integer,Long> offsetMap=Maps.newHashMap();
+  if (lastCommit == null) {
+    return offsetMap;
+  }
+  if (lastCommit instanceof Map) {
+    Map<Object,Object> lastCommitMap=(Map)lastCommit;
+    for (    Map.Entry<Object,Object> entry : lastCommitMap.entrySet()) {
+      try {
+        int partitionId=Integer.parseInt(entry.getKey().toString());
+        long offset=Long.parseLong(entry.getValue().toString());
+        log.debug("Recover last commit information partitionId [%s], offset [%s]",partitionId,offset);
+        offsetMap.put(partitionId,offset);
+      }
+ catch (      NumberFormatException e) {
+        log.error(e,"Fail to load offset from previous meta data [%s]",entry);
+      }
+    }
+    log.info("Loaded offset map[%s]",offsetMap);
+  }
+ else {
+    log.makeAlert("Unable to cast lastCommit to Map for feed [%s]",feed);
+  }
+  return offsetMap;
+}

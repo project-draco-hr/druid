@@ -17,8 +17,8 @@ synchronized (log) {
       bottomFile.deleteOnExit();
       mergedFile.mkdirs();
       mergedFile.deleteOnExit();
-      IndexMerger.persist(top,topFile,indexSpec);
-      IndexMerger.persist(bottom,bottomFile,indexSpec);
+      IndexMerger.persist(top,topFile,null,indexSpec);
+      IndexMerger.persist(bottom,bottomFile,null,indexSpec);
       mergedIndex=io.druid.segment.IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Arrays.asList(IndexIO.loadIndex(topFile),IndexIO.loadIndex(bottomFile)),METRIC_AGGS,mergedFile,indexSpec));
       return mergedIndex;
     }

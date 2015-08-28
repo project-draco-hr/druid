@@ -1,0 +1,36 @@
+{
+  thread=new Thread(){
+    @Override public void run(){
+      long offset=startOffset;
+      log.info("Start running parition[%s], offset[%s]",partitionId,offset);
+      try {
+        while (!stopped.get()) {
+          try {
+            Iterable<BytesMessageWithOffset> msgs=consumer.fetch(offset,CONSUMER_FETCH_TIMEOUT);
+            int count=0;
+            for (            BytesMessageWithOffset msgWithOffset : msgs) {
+              offset=msgWithOffset.offset();
+              messageQueue.put(msgWithOffset);
+              count++;
+            }
+            log.debug("fetch [%s] msgs for partition [%s] in one time ",count,partitionId);
+          }
+ catch (          InterruptedException e) {
+            log.info("Interrupted when fetching data, shutting down.");
+            return;
+          }
+catch (          Exception e) {
+            log.error(e,"Exception happened in fetching data, but will continue consuming");
+          }
+        }
+      }
+  finally {
+        consumer.stop();
+      }
+    }
+  }
+;
+  thread.setDaemon(true);
+  thread.setName(String.format("kafka-%s-%s",topic,partitionId));
+  thread.start();
+}

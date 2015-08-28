@@ -1,0 +1,49 @@
+{
+  FetchResponse response=null;
+  Broker previousLeader=leaderBroker;
+  while (true) {
+    ensureConsumer(previousLeader);
+    FetchRequest request=new FetchRequestBuilder().clientId(clientId).addFetch(topic,partitionId,offset,FETCH_SIZE).maxWait(timeoutMs).minBytes(1).build();
+    log.debug("fetch offset %s",offset);
+    try {
+      response=consumer.fetch(request);
+    }
+ catch (    Exception e) {
+      ensureNotInterrupted(e);
+      log.warn(e,"caughte exception in fetch {} - {}",topic,partitionId);
+      response=null;
+    }
+    if (response == null || response.hasError()) {
+      short errorCode=response != null ? response.errorCode(topic,partitionId) : ErrorMapping.UnknownCode();
+      log.warn("fetch %s - %s with offset %s encounters error: [%s]",topic,partitionId,offset,errorCode);
+      boolean needNewLeader=false;
+      if (errorCode == ErrorMapping.RequestTimedOutCode()) {
+        log.info("kafka request timed out, response[%s]",response);
+      }
+ else       if (errorCode == ErrorMapping.OffsetOutOfRangeCode()) {
+        long newOffset=getOffset(earliest);
+        log.info("got [%s] offset[%s] for [%s][%s]",earliest ? "earliest" : "latest",newOffset,topic,partitionId);
+        if (newOffset < 0) {
+          needNewLeader=true;
+        }
+ else {
+          offset=newOffset;
+          continue;
+        }
+      }
+ else {
+        needNewLeader=true;
+      }
+      if (needNewLeader) {
+        stopConsumer();
+        previousLeader=leaderBroker;
+        leaderBroker=null;
+        continue;
+      }
+    }
+ else {
+      break;
+    }
+  }
+  return response != null ? filterAndDecode(response.messageSet(topic,partitionId),offset) : EMPTY_MSGS;
+}
