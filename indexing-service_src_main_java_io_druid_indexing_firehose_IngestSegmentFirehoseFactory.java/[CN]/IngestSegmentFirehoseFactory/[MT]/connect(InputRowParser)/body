@@ -4,12 +4,12 @@
   try {
     final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
     final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
-    VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<String,DataSegment>(Ordering.<String>natural().nullsFirst());
+    VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<>(Ordering.<String>natural().nullsFirst());
     for (    DataSegment segment : usedSegments) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
     }
     final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(interval);
-    List<String> dims;
+    final List<String> dims;
     if (dimensions != null) {
       dims=dimensions;
     }
@@ -30,7 +30,7 @@
 )));
       dims=Lists.newArrayList(Sets.difference(dimSet,inputRowParser.getParseSpec().getDimensionsSpec().getDimensionExclusions()));
     }
-    List<String> metricsList;
+    final List<String> metricsList;
     if (metrics != null) {
       metricsList=metrics;
     }
@@ -48,13 +48,13 @@
 )));
       metricsList=Lists.newArrayList(metricsSet);
     }
-    final List<StorageAdapter> adapters=Lists.newArrayList(Iterables.concat(Iterables.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,Iterable<StorageAdapter>>(){
-      @Override public Iterable<StorageAdapter> apply(      TimelineObjectHolder<String,DataSegment> input){
-        return Iterables.transform(input.getObject(),new Function<PartitionChunk<DataSegment>,StorageAdapter>(){
-          @Override public StorageAdapter apply(          PartitionChunk<DataSegment> input){
+    final List<WindowedStorageAdapter> adapters=Lists.newArrayList(Iterables.concat(Iterables.transform(timeLineSegments,new Function<TimelineObjectHolder<String,DataSegment>,Iterable<WindowedStorageAdapter>>(){
+      @Override public Iterable<WindowedStorageAdapter> apply(      final TimelineObjectHolder<String,DataSegment> holder){
+        return Iterables.transform(holder.getObject(),new Function<PartitionChunk<DataSegment>,WindowedStorageAdapter>(){
+          @Override public WindowedStorageAdapter apply(          final PartitionChunk<DataSegment> input){
             final DataSegment segment=input.getObject();
             try {
-              return new QueryableIndexStorageAdapter(IndexIO.loadIndex(Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier())));
+              return new WindowedStorageAdapter(new QueryableIndexStorageAdapter(IndexIO.loadIndex(Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier()))),holder.getInterval());
             }
  catch (            IOException e) {
               throw Throwables.propagate(e);
@@ -65,7 +65,7 @@
       }
     }
 )));
-    return new IngestSegmentFirehose(adapters,dims,metricsList,dimFilter,interval,QueryGranularity.NONE);
+    return new IngestSegmentFirehose(adapters,dims,metricsList,dimFilter,QueryGranularity.NONE);
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);

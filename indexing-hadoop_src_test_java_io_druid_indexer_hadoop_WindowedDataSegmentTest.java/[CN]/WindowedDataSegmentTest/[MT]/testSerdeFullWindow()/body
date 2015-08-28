@@ -1,0 +1,7 @@
+{
+  final WindowedDataSegment windowedDataSegment=WindowedDataSegment.of(SEGMENT);
+  final WindowedDataSegment roundTrip=MAPPER.readValue(MAPPER.writeValueAsBytes(windowedDataSegment),WindowedDataSegment.class);
+  Assert.assertEquals(windowedDataSegment,roundTrip);
+  Assert.assertEquals(SEGMENT,roundTrip.getSegment());
+  Assert.assertEquals(SEGMENT.getInterval(),roundTrip.getInterval());
+}

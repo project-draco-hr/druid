@@ -7,7 +7,7 @@
   EasyMock.expect(job.getConfiguration()).andReturn(config).anyTimes();
   EasyMock.replay(job);
   pathSpec.addInputPaths(hadoopIndexerConfig,job);
-  List<DataSegment> actualSegments=mapper.readValue(config.get(DatasourceInputFormat.CONF_INPUT_SEGMENTS),new TypeReference<List<DataSegment>>(){
+  List<WindowedDataSegment> actualSegments=mapper.readValue(config.get(DatasourceInputFormat.CONF_INPUT_SEGMENTS),new TypeReference<List<WindowedDataSegment>>(){
   }
 );
   Assert.assertEquals(segments,actualSegments);

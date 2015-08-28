@@ -1,8 +1,0 @@
-{
-  mapper=new DefaultObjectMapper();
-  mapper.registerSubtypes(new NamedType(HashBasedNumberedShardSpec.class,"hashed"));
-  InjectableValues inject=new InjectableValues.Std().addValue(ObjectMapper.class,mapper);
-  mapper.setInjectableValues(inject);
-  this.interval=new Interval("2014-10-22T00:00:00Z/P1D");
-  segments=ImmutableList.of(new DefaultObjectMapper().readValue(this.getClass().getClassLoader().getResource("test-segment/descriptor.json"),DataSegment.class).withLoadSpec(ImmutableMap.<String,Object>of("type","local","path",this.getClass().getClassLoader().getResource("test-segment/index.zip").getPath())));
-}

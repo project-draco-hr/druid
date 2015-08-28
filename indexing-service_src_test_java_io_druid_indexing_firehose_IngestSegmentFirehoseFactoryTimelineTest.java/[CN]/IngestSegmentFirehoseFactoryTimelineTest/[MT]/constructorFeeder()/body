@@ -1,0 +1,44 @@
+{
+  final List<TestCase> testCases=ImmutableList.of(TC("2000/2000T02",3,7,DS("2000/2000T01","v1",0,IR("2000",1),IR("2000T00:01",2)),DS("2000T01/2000T02","v1",0,IR("2000T01",4))),TC("2000/2000T02",3,7,DS("2000/2000T02","v1",0,IR("2000",1),IR("2000T00:01",2),IR("2000T01",8)),DS("2000T01/2000T02","v2",0,IR("2000T01:01",4))),TC("2000/2000T02",4,15,DS("2000/2000T02","v1",0,IR("2000",1),IR("2000T00:01",2),IR("2000T01",8)),DS("2000/2000T02","v1",1,IR("2000T01:01",4))),TC("2000T01/2000T02",1,2,DS("2000/2000T03","v1",0,IR("2000",1),IR("2000T01",2),IR("2000T02",4))),TC("2000T02/2000T04",2,12,DS("2000/2000T03","v1",0,IR("2000",1),IR("2000T01",2),IR("2000T02",4)),DS("2000T03/2000T04","v1",0,IR("2000T03",8))));
+  final List<Object[]> constructors=Lists.newArrayList();
+  for (  final TestCase testCase : testCases) {
+    final ObjectMapper objectMapper=IngestSegmentFirehoseFactoryTest.newObjectMapper();
+    final TaskActionClient taskActionClient=new TaskActionClient(){
+      @Override public <RetType>RetType submit(      TaskAction<RetType> taskAction) throws IOException {
+        if (taskAction instanceof SegmentListUsedAction) {
+          final SegmentListUsedAction action=(SegmentListUsedAction)taskAction;
+          if (action.getInterval().equals(testCase.interval)) {
+            return (RetType)ImmutableList.copyOf(testCase.segments);
+          }
+ else {
+            throw new IllegalArgumentException("WTF");
+          }
+        }
+ else {
+          throw new UnsupportedOperationException();
+        }
+      }
+    }
+;
+    final TaskToolboxFactory taskToolboxFactory=new TaskToolboxFactory(new TaskConfig(testCase.tmpDir.getAbsolutePath(),null,null,50000,null),new TaskActionClientFactory(){
+      @Override public TaskActionClient create(      Task task){
+        return taskActionClient;
+      }
+    }
+,new NoopServiceEmitter(),null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+      @Override public List<StorageLocationConfig> getLocations(){
+        return Lists.newArrayList();
+      }
+    }
+,objectMapper)),objectMapper);
+    final Injector injector=Guice.createInjector(new Module(){
+      @Override public void configure(      Binder binder){
+        binder.bind(TaskToolboxFactory.class).toInstance(taskToolboxFactory);
+      }
+    }
+);
+    final IngestSegmentFirehoseFactory factory=new IngestSegmentFirehoseFactory(DATA_SOURCE,testCase.interval,new NoopDimFilter(),Arrays.asList(DIMENSIONS),Arrays.asList(METRICS),injector);
+    constructors.add(new Object[]{testCase.toString(),factory,testCase.tmpDir,testCase.expectedCount,testCase.expectedSum});
+  }
+  return constructors;
+}

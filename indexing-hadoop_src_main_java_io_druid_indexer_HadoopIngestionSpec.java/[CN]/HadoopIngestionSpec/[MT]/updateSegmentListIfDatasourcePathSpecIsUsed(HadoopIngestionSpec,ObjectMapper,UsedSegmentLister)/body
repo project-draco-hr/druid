@@ -23,7 +23,18 @@
     Map<String,Object> ingestionSpecMap=(Map<String,Object>)datasourcePathSpec.get(ingestionSpec);
     DatasourceIngestionSpec ingestionSpecObj=jsonMapper.convertValue(ingestionSpecMap,DatasourceIngestionSpec.class);
     List<DataSegment> segmentsList=segmentLister.getUsedSegmentsForInterval(ingestionSpecObj.getDataSource(),ingestionSpecObj.getInterval());
-    datasourcePathSpec.put(segments,segmentsList);
+    VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<>(Ordering.natural());
+    for (    DataSegment segment : segmentsList) {
+      timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+    }
+    final List<TimelineObjectHolder<String,DataSegment>> timeLineSegments=timeline.lookup(ingestionSpecObj.getInterval());
+    final List<WindowedDataSegment> windowedSegments=Lists.newArrayList();
+    for (    TimelineObjectHolder<String,DataSegment> holder : timeLineSegments) {
+      for (      PartitionChunk<DataSegment> chunk : holder.getObject()) {
+        windowedSegments.add(new WindowedDataSegment(chunk.getObject(),holder.getInterval()));
+      }
+    }
+    datasourcePathSpec.put(segments,windowedSegments);
   }
   return spec;
 }

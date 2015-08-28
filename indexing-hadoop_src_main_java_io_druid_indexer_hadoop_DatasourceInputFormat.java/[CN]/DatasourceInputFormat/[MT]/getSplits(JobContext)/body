@@ -1,7 +1,7 @@
 {
   Configuration conf=context.getConfiguration();
   String segmentsStr=Preconditions.checkNotNull(conf.get(CONF_INPUT_SEGMENTS),"No segments found to read");
-  List<DataSegment> segments=HadoopDruidIndexerConfig.jsonMapper.readValue(segmentsStr,new TypeReference<List<DataSegment>>(){
+  List<WindowedDataSegment> segments=HadoopDruidIndexerConfig.jsonMapper.readValue(segmentsStr,new TypeReference<List<WindowedDataSegment>>(){
   }
 );
   if (segments == null || segments.size() == 0) {
@@ -10,24 +10,24 @@
   logger.info("segments to read [%s]",segmentsStr);
   long maxSize=conf.getLong(CONF_MAX_SPLIT_SIZE,0);
   if (maxSize > 0) {
-    Collections.sort(segments,new Comparator<DataSegment>(){
-      @Override public int compare(      DataSegment s1,      DataSegment s2){
-        return Long.compare(s1.getSize(),s2.getSize());
+    Collections.sort(segments,new Comparator<WindowedDataSegment>(){
+      @Override public int compare(      WindowedDataSegment s1,      WindowedDataSegment s2){
+        return Long.compare(s1.getSegment().getSize(),s2.getSegment().getSize());
       }
     }
 );
   }
   List<InputSplit> splits=Lists.newArrayList();
-  List<DataSegment> list=new ArrayList<>();
+  List<WindowedDataSegment> list=new ArrayList<>();
   long size=0;
-  for (  DataSegment segment : segments) {
-    if (size + segment.getSize() > maxSize && size > 0) {
+  for (  WindowedDataSegment segment : segments) {
+    if (size + segment.getSegment().getSize() > maxSize && size > 0) {
       splits.add(new DatasourceInputSplit(list));
       list=Lists.newArrayList();
       size=0;
     }
     list.add(segment);
-    size+=segment.getSize();
+    size+=segment.getSegment().getSize();
   }
   if (list.size() > 0) {
     splits.add(new DatasourceInputSplit(list));
