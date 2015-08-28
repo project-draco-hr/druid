@@ -1,0 +1,13 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  objectMapper.registerModule(new SimpleModule("testModule").registerSubtypes(LocalLoadSpec.class));
+  final GuiceAnnotationIntrospector guiceIntrospector=new GuiceAnnotationIntrospector();
+  objectMapper.setAnnotationIntrospectors(new AnnotationIntrospectorPair(guiceIntrospector,objectMapper.getSerializationConfig().getAnnotationIntrospector()),new AnnotationIntrospectorPair(guiceIntrospector,objectMapper.getDeserializationConfig().getAnnotationIntrospector()));
+  objectMapper.setInjectableValues(new GuiceInjectableValues(GuiceInjectors.makeStartupInjectorWithModules(ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(LocalDataSegmentPuller.class);
+    }
+  }
+))));
+  return objectMapper;
+}

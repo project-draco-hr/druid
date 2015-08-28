@@ -1,0 +1,8 @@
+{
+  final Interval partialInterval=new Interval("2500/3000");
+  final WindowedDataSegment windowedDataSegment=new WindowedDataSegment(SEGMENT,partialInterval);
+  final WindowedDataSegment roundTrip=MAPPER.readValue(MAPPER.writeValueAsBytes(windowedDataSegment),WindowedDataSegment.class);
+  Assert.assertEquals(windowedDataSegment,roundTrip);
+  Assert.assertEquals(SEGMENT,roundTrip.getSegment());
+  Assert.assertEquals(partialInterval,roundTrip.getInterval());
+}

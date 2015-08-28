@@ -1,0 +1,9 @@
+{
+  HadoopIngestionSpec spec=new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P1D")))),new HadoopIOConfig(jsonMapper.convertValue(datasourcePathSpec,Map.class),null,null),null);
+  spec=jsonMapper.readValue(jsonMapper.writeValueAsString(spec),HadoopIngestionSpec.class);
+  UsedSegmentLister segmentLister=EasyMock.createMock(UsedSegmentLister.class);
+  EasyMock.expect(segmentLister.getUsedSegmentsForInterval(testDatasource,jobInterval)).andReturn(ImmutableList.of(SEGMENT));
+  EasyMock.replay(segmentLister);
+  spec=HadoopIngestionSpec.updateSegmentListIfDatasourcePathSpecIsUsed(spec,jsonMapper,segmentLister);
+  return HadoopDruidIndexerConfig.fromString(jsonMapper.writeValueAsString(spec));
+}

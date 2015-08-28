@@ -1,0 +1,8 @@
+{
+  final File tmpDir=Files.createTempDir();
+  final Set<DataSegment> segments=Sets.newHashSet();
+  for (  DataSegmentMaker segmentMaker : segmentMakers) {
+    segments.add(segmentMaker.make(tmpDir));
+  }
+  return new TestCase(tmpDir,new Interval(intervalString),expectedCount,expectedSum,segments);
+}

@@ -1,0 +1,13 @@
+{
+  int count=0;
+  long sum=0;
+  try (final Firehose firehose=factory.connect(ROW_PARSER)){
+    while (firehose.hasMore()) {
+      final InputRow row=firehose.nextRow();
+      count++;
+      sum+=row.getLongMetric(METRICS[0]);
+    }
+  }
+   Assert.assertEquals("count",expectedCount,count);
+  Assert.assertEquals("sum",expectedSum,sum);
+}
