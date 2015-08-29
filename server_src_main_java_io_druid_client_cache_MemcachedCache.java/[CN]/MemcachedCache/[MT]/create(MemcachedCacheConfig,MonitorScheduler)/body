@@ -1,0 +1,162 @@
+{
+  final ConcurrentMap<String,AtomicLong> counters=new ConcurrentHashMap<>();
+  final ConcurrentMap<String,AtomicLong> meters=new ConcurrentHashMap<>();
+  emitter.addMonitor(new AbstractMonitor(){
+    final AtomicReference<Map<String,Long>> priorValues=new AtomicReference<Map<String,Long>>(new HashMap<String,Long>());
+    @Override public boolean doMonitor(    ServiceEmitter emitter){
+      final Map<String,Long> priorValues=this.priorValues.get();
+      final Map<String,Long> currentValues=getCurrentValues();
+      final ServiceMetricEvent.Builder builder=ServiceMetricEvent.builder();
+      for (      Map.Entry<String,Long> entry : currentValues.entrySet()) {
+        emitter.emit(builder.setDimension("memcached metric",entry.getKey()).build("query/cache/memcached/total",entry.getValue()));
+        final Long prior=priorValues.get(entry.getKey());
+        if (prior != null) {
+          emitter.emit(builder.setDimension("memcached metric",entry.getKey()).build("query/cache/memcached/delta",entry.getValue() - prior));
+        }
+      }
+      if (!this.priorValues.compareAndSet(priorValues,currentValues)) {
+        log.error("Prior value changed while I was reporting! updating anyways");
+        this.priorValues.set(currentValues);
+      }
+      return true;
+    }
+    private Map<String,Long> getCurrentValues(){
+      final ImmutableMap.Builder<String,Long> builder=ImmutableMap.builder();
+      for (      Map.Entry<String,AtomicLong> entry : counters.entrySet()) {
+        builder.put(entry.getKey(),entry.getValue().get());
+      }
+      return builder.build();
+    }
+  }
+);
+  try {
+    LZ4Transcoder transcoder=new LZ4Transcoder(config.getMaxObjectSize());
+    transcoder.setCompressionThreshold(0);
+    OperationQueueFactory opQueueFactory;
+    long maxQueueBytes=config.getMaxOperationQueueSize();
+    if (maxQueueBytes > 0) {
+      opQueueFactory=new MemcachedOperationQueueFactory(maxQueueBytes);
+    }
+ else {
+      opQueueFactory=new LinkedOperationQueueFactory();
+    }
+    final Predicate<String> interesting=new Predicate<String>(){
+      @Override public boolean apply(      @Nullable String input){
+        return input != null && !input.contains("Down");
+      }
+    }
+;
+    return new MemcachedCache(new MemcachedClient(new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setEnableMetrics(MetricType.DEBUG).setWriteOpQueueFactory(opQueueFactory).setReadOpQueueFactory(opQueueFactory).setMetricCollector(new MetricCollector(){
+      @Override public void addCounter(      String name){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        counters.put(name,new AtomicLong(0L));
+        if (log.isDebugEnabled()) {
+          log.debug("Add Counter [%s]",name);
+        }
+      }
+      @Override public void removeCounter(      String name){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        counters.remove(name);
+        if (log.isDebugEnabled()) {
+          log.debug("Remove Counter [%s]",name);
+        }
+      }
+      @Override public void incrementCounter(      String name){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        AtomicLong counter=counters.get(name);
+        if (counter == null) {
+          counters.putIfAbsent(name,new AtomicLong(0));
+          counter=counters.get(name);
+        }
+        counter.incrementAndGet();
+        if (log.isDebugEnabled()) {
+          log.debug("Incrament [%s]",name);
+        }
+      }
+      @Override public void incrementCounter(      String name,      int amount){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        AtomicLong counter=counters.get(name);
+        if (counter == null) {
+          counters.putIfAbsent(name,new AtomicLong(0));
+          counter=counters.get(name);
+        }
+        counter.addAndGet(amount);
+        if (log.isDebugEnabled()) {
+          log.debug("Increment [%s] %d",name,amount);
+        }
+      }
+      @Override public void decrementCounter(      String name){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        AtomicLong counter=counters.get(name);
+        if (counter == null) {
+          counters.putIfAbsent(name,new AtomicLong(0));
+          counter=counters.get(name);
+        }
+        counter.decrementAndGet();
+        if (log.isDebugEnabled()) {
+          log.debug("Decrement [%s]",name);
+        }
+      }
+      @Override public void decrementCounter(      String name,      int amount){
+        if (!interesting.apply(name)) {
+          return;
+        }
+        AtomicLong counter=counters.get(name);
+        if (counter == null) {
+          counters.putIfAbsent(name,new AtomicLong(0L));
+          counter=counters.get(name);
+        }
+        counter.addAndGet(-amount);
+        if (log.isDebugEnabled()) {
+          log.debug("Decrement [%s] %d",name,amount);
+        }
+      }
+      @Override public void addMeter(      String name){
+        meters.put(name,new AtomicLong(0L));
+        if (log.isDebugEnabled()) {
+          log.debug("Adding meter [%s]",name);
+        }
+      }
+      @Override public void removeMeter(      String name){
+        meters.remove(name);
+        if (log.isDebugEnabled()) {
+          log.debug("Removing meter [%s]",name);
+        }
+      }
+      @Override public void markMeter(      String name){
+        AtomicLong meter=meters.get(name);
+        if (meter == null) {
+          meters.putIfAbsent(name,new AtomicLong(0L));
+          meter=meters.get(name);
+        }
+        meter.incrementAndGet();
+        if (log.isDebugEnabled()) {
+          log.debug("Increment counter [%s]",name);
+        }
+      }
+      @Override public void addHistogram(      String name){
+        log.debug("Ignoring add histogram [%s]",name);
+      }
+      @Override public void removeHistogram(      String name){
+        log.debug("Ignoring remove histogram [%s]",name);
+      }
+      @Override public void updateHistogram(      String name,      int amount){
+        log.debug("Ignoring update histogram [%s]: %d",name,amount);
+      }
+    }
+).build(),AddrUtil.getAddresses(config.getHosts())),config);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

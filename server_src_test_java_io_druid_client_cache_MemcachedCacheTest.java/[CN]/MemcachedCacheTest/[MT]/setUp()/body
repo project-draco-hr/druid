@@ -1,15 +1,4 @@
 {
   MemcachedClientIF client=new MockMemcachedClient();
-  cache=new MemcachedCache(client,new MemcachedCacheConfig(){
-    @Override public String getMemcachedPrefix(){
-      return "druid-memcached-test";
-    }
-    @Override public int getTimeout(){
-      return 500;
-    }
-    @Override public int getExpiration(){
-      return 3600;
-    }
-  }
-);
+  cache=new MemcachedCache(client,memcachedCacheConfig);
 }
