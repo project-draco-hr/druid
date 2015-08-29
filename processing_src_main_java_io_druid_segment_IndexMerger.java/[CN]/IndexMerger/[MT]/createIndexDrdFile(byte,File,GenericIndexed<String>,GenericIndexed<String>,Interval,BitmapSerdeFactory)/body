@@ -1,17 +1,11 @@
 {
   File indexFile=new File(inDir,"index.drd");
-  FileChannel channel=null;
-  try {
-    channel=new FileOutputStream(indexFile).getChannel();
+  try (FileChannel channel=new FileOutputStream(indexFile).getChannel()){
     channel.write(ByteBuffer.wrap(new byte[]{versionId}));
     availableDimensions.writeToChannel(channel);
     availableMetrics.writeToChannel(channel);
     serializerUtils.writeString(channel,String.format("%s/%s",dataInterval.getStart(),dataInterval.getEnd()));
     serializerUtils.writeString(channel,mapper.writeValueAsString(bitmapSerdeFactory));
   }
-  finally {
-    CloseQuietly.close(channel);
-    channel=null;
-  }
-  IndexIO.checkFileSize(indexFile);
+   IndexIO.checkFileSize(indexFile);
 }

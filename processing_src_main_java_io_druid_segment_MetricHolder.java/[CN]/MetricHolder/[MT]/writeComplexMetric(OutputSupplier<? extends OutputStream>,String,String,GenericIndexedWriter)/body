@@ -1,17 +1,11 @@
 {
-  OutputStream out=null;
-  InputStream in=null;
-  try {
-    out=outSupplier.getOutput();
+  try (OutputStream out=outSupplier.getOutput()){
     out.write(version);
     serializerUtils.writeString(out,name);
     serializerUtils.writeString(out,typeName);
     final InputSupplier<InputStream> supplier=column.combineStreams();
-    in=supplier.getInput();
-    ByteStreams.copy(in,out);
-  }
-  finally {
-    CloseQuietly.close(out);
-    CloseQuietly.close(in);
-  }
-}
+    try (InputStream in=supplier.getInput()){
+      ByteStreams.copy(in,out);
+    }
+   }
+ }

@@ -1,23 +1,9 @@
 {
-  FileOutputStream metadataFileOutputStream=null;
-  FileChannel metadataFilechannel=null;
-  try {
-    metadataFileOutputStream=new FileOutputStream(metadataFile);
-    metadataFilechannel=metadataFileOutputStream.getChannel();
+  try (FileOutputStream metadataFileOutputStream=new FileOutputStream(metadataFile);FileChannel metadataFilechannel=metadataFileOutputStream.getChannel()){
     byte[] metadataBytes=mapper.writeValueAsBytes(metadata);
     if (metadataBytes.length != metadataFilechannel.write(ByteBuffer.wrap(metadataBytes))) {
       throw new IOException("Failed to write metadata for file");
     }
   }
-  finally {
-    if (metadataFilechannel != null) {
-      metadataFilechannel.close();
-      metadataFilechannel=null;
-    }
-    if (metadataFileOutputStream != null) {
-      metadataFileOutputStream.close();
-      metadataFileOutputStream=null;
-    }
-  }
-  IndexIO.checkFileSize(metadataFile);
+   IndexIO.checkFileSize(metadataFile);
 }
