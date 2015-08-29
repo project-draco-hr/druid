@@ -29,11 +29,7 @@
   progress.progress();
   long startTime=System.currentTimeMillis();
   File indexFile=new File(v8OutDir,"index.drd");
-  FileOutputStream fileOutputStream=null;
-  FileChannel channel=null;
-  try {
-    fileOutputStream=new FileOutputStream(indexFile);
-    channel=fileOutputStream.getChannel();
+  try (FileOutputStream fileOutputStream=new FileOutputStream(indexFile);FileChannel channel=fileOutputStream.getChannel()){
     channel.write(ByteBuffer.wrap(new byte[]{IndexIO.V8_VERSION}));
     GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
     GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
@@ -47,13 +43,7 @@
     serializerUtils.writeString(channel,String.format("%s/%s",minTime,maxTime));
     serializerUtils.writeString(channel,mapper.writeValueAsString(indexSpec.getBitmapSerdeFactory()));
   }
-  finally {
-    CloseQuietly.close(channel);
-    channel=null;
-    CloseQuietly.close(fileOutputStream);
-    fileOutputStream=null;
-  }
-  IndexIO.checkFileSize(indexFile);
+   IndexIO.checkFileSize(indexFile);
   log.info("outDir[%s] completed index.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
   progress.progress();
   startTime=System.currentTimeMillis();
