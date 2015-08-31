@@ -3,6 +3,7 @@
     Job job=Job.getInstance(new Configuration(),String.format("%s-index-generator-%s",config.getDataSource(),config.getIntervals()));
     job.getConfiguration().set("io.sort.record.percent","0.23");
     JobHelper.injectSystemProperties(job);
+    config.addJobProperties(job);
     job.setMapperClass(IndexGeneratorMapper.class);
     job.setMapOutputValueClass(BytesWritable.class);
     SortableBytes.useSortableBytesAsMapOutputKey(job);
@@ -21,7 +22,6 @@
     job.setOutputValueClass(Text.class);
     job.setOutputFormatClass(IndexGeneratorOutputFormat.class);
     FileOutputFormat.setOutputPath(job,config.makeIntermediatePath());
-    config.addJobProperties(job);
     config.addInputPaths(job);
     final String bitmapProperty="druid.processing.bitmap.type";
     final String bitmapType=HadoopDruidIndexerConfig.properties.getProperty(bitmapProperty);

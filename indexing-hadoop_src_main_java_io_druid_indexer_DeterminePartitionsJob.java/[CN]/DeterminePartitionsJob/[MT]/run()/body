@@ -6,6 +6,7 @@
     if (!config.getPartitionsSpec().isAssumeGrouped()) {
       final Job groupByJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_groupby-%s",config.getDataSource(),config.getIntervals()));
       JobHelper.injectSystemProperties(groupByJob);
+      config.addJobProperties(groupByJob);
       groupByJob.setMapperClass(DeterminePartitionsGroupByMapper.class);
       groupByJob.setMapOutputKeyClass(BytesWritable.class);
       groupByJob.setMapOutputValueClass(NullWritable.class);
@@ -16,7 +17,6 @@
       groupByJob.setOutputFormatClass(SequenceFileOutputFormat.class);
       JobHelper.setupClasspath(JobHelper.distributedClassPath(config.getWorkingPath()),groupByJob);
       config.addInputPaths(groupByJob);
-      config.addJobProperties(groupByJob);
       config.intoConfiguration(groupByJob);
       FileOutputFormat.setOutputPath(groupByJob,config.makeGroupedDataDir());
       groupByJob.submit();
@@ -32,6 +32,7 @@
     final Job dimSelectionJob=Job.getInstance(new Configuration(),String.format("%s-determine_partitions_dimselection-%s",config.getDataSource(),config.getIntervals()));
     dimSelectionJob.getConfiguration().set("io.sort.record.percent","0.19");
     JobHelper.injectSystemProperties(dimSelectionJob);
+    config.addJobProperties(dimSelectionJob);
     if (!config.getPartitionsSpec().isAssumeGrouped()) {
       dimSelectionJob.setMapperClass(DeterminePartitionsDimSelectionPostGroupByMapper.class);
       dimSelectionJob.setInputFormatClass(SequenceFileInputFormat.class);
@@ -51,7 +52,6 @@
     dimSelectionJob.setPartitionerClass(DeterminePartitionsDimSelectionPartitioner.class);
     dimSelectionJob.setNumReduceTasks(config.getGranularitySpec().bucketIntervals().get().size());
     JobHelper.setupClasspath(JobHelper.distributedClassPath(config.getWorkingPath()),dimSelectionJob);
-    config.addJobProperties(dimSelectionJob);
     config.intoConfiguration(dimSelectionJob);
     FileOutputFormat.setOutputPath(dimSelectionJob,config.makeIntermediatePath());
     dimSelectionJob.submit();
