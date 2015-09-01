@@ -1,0 +1,10 @@
+{
+  String jsonStr="{" + "\"dataSource\":\"test\"," + "\"parser\":{\"type\":\"invalid\"},"+ "\"metricsSpec\":[{\"type\":\"doubleSum\",\"name\":\"metric1\",\"fieldName\":\"col1\"}],"+ "\"granularitySpec\":{"+ "\"type\":\"arbitrary\","+ "\"queryGranularity\":{\"type\":\"duration\",\"duration\":86400000,\"origin\":\"1970-01-01T00:00:00.000Z\"},"+ "\"intervals\":[\"2014-01-01T00:00:00.000Z/2015-01-01T00:00:00.000Z\"]}}";
+  DataSchema schema=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonStr,DataSchema.class)),DataSchema.class);
+  try {
+    schema.getParser();
+    Assert.fail("should've failed to get parser.");
+  }
+ catch (  IllegalArgumentException ex) {
+  }
+}
