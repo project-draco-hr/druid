@@ -9,6 +9,8 @@
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
+  final Function<Query<T>,ServiceMetricEvent.Builder> builderFn=getBuilderFn(toolChest);
+  final AtomicLong cpuTimeAccumulator=new AtomicLong(0L);
   FunctionalIterable<QueryRunner<T>> queryRunners=FunctionalIterable.create(specs).transformCat(new Function<SegmentDescriptor,Iterable<QueryRunner<T>>>(){
     @Override @SuppressWarnings("unchecked") public Iterable<QueryRunner<T>> apply(    SegmentDescriptor input){
       final PartitionHolder<ReferenceCountingSegment> entry=timeline.findEntry(input.getInterval(),input.getVersion());
@@ -20,9 +22,9 @@
         return Arrays.<QueryRunner<T>>asList(new ReportTimelineMissingSegmentQueryRunner<T>(input));
       }
       final ReferenceCountingSegment adapter=chunk.getObject();
-      return Arrays.asList(buildAndDecorateQueryRunner(factory,toolChest,adapter,input));
+      return Arrays.asList(buildAndDecorateQueryRunner(factory,toolChest,adapter,input,builderFn,cpuTimeAccumulator));
     }
   }
 );
-  return new FinalizeResultsQueryRunner<T>(toolChest.mergeResults(factory.mergeRunners(exec,queryRunners)),toolChest);
+  return CPUTimeMetricQueryRunner.safeBuild(new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(exec,queryRunners)),toolChest),builderFn,emitter,cpuTimeAccumulator,true);
 }

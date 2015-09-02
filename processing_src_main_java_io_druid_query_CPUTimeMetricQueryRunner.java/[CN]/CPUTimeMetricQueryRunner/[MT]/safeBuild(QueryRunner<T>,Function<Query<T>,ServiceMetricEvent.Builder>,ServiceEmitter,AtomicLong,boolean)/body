@@ -1,0 +1,8 @@
+{
+  if (!THREAD_MX_BEAN.isThreadCpuTimeSupported() || !THREAD_MX_BEAN.isThreadCpuTimeEnabled()) {
+    return delegate;
+  }
+ else {
+    return new CPUTimeMetricQueryRunner<>(delegate,builderFn,emitter,accumulator,report);
+  }
+}
