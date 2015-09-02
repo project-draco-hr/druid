@@ -1,0 +1,10 @@
+{
+  log.info("Creating Composing Emitter with %s",config.getEmitters());
+  List<Emitter> emitters=Lists.transform(config.getEmitters(),new Function<String,Emitter>(){
+    @Override public Emitter apply(    String s){
+      return injector.getInstance(Key.get(Emitter.class,Names.named(s)));
+    }
+  }
+);
+  return new ComposingEmitter(emitters);
+}

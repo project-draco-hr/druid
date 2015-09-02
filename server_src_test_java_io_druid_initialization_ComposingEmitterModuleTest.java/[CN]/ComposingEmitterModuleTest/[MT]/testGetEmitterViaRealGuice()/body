@@ -1,0 +1,14 @@
+{
+  Injector injector=Guice.createInjector(new DruidGuiceExtensions(),new LifecycleModule(),new Module(){
+    @Override public void configure(    Binder binder){
+      Properties props=new Properties();
+      props.put("druid.emitter.composing.emitters","[\"" + testEmitterType + "\"]");
+      binder.bind(Properties.class).toInstance(props);
+      binder.bind(Validator.class).toInstance(Validation.buildDefaultValidatorFactory().getValidator());
+      binder.bind(Emitter.class).annotatedWith(Names.named(testEmitterType)).toInstance(emitter);
+    }
+  }
+,new ComposingEmitterModule());
+  injector.getInstance(Key.get(Emitter.class,Names.named("composing"))).start();
+  EasyMock.verify(emitter);
+}
