@@ -4,6 +4,7 @@
   threadPool.setMaxThreads(config.getNumThreads());
   threadPool.setDaemon(true);
   final Server server=new Server(threadPool);
+  server.addBean(new ScheduledExecutorScheduler("JettyScheduler",true),true);
   ServerConnector connector=new ServerConnector(server);
   connector.setPort(node.getPort());
   connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
