@@ -1,3 +1,12 @@
 {
+  log.info("Tearing down");
+  handle.createStatement("DROP TABLE " + tableName).setQueryTimeout(1).execute();
+  handle.close();
+  Assert.assertTrue("Delete failed",extractionCacheManager.delete(namespace));
   lifecycle.stop();
+  final NamespaceExtractionCacheManager.NamespaceImplData implData=extractionCacheManager.implData.get(namespace);
+  if (implData != null && implData.future != null) {
+    implData.future.cancel(true);
+    Assert.assertTrue(implData.future.isDone());
+  }
 }

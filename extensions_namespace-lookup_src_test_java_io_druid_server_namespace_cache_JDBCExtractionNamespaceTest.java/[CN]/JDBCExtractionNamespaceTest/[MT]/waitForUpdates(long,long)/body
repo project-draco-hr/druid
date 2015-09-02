@@ -1,0 +1,17 @@
+{
+  long startTime=System.currentTimeMillis();
+  long pre=0L;
+synchronized (updateLock) {
+    pre=updates.get();
+  }
+  long post=0L;
+  do {
+    Thread.sleep(5);
+    log.debug("Waiting for updateLock");
+synchronized (updateLock) {
+      Assert.assertTrue("Failed waiting for update",System.currentTimeMillis() - startTime < timeout);
+      post=updates.get();
+    }
+  }
+ while (post < pre + numUpdates);
+}
