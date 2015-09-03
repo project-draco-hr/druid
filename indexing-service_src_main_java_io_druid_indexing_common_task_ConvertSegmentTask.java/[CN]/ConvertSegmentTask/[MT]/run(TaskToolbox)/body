@@ -24,7 +24,7 @@
     log.info("I'm in a subless mood.");
     segmentsToUpdate=Collections.singleton(segment);
   }
-  for (  final Task subTask : generateSubTasks(getGroupId(),segmentsToUpdate,indexSpec,force,validate)) {
+  for (  final Task subTask : generateSubTasks(getGroupId(),segmentsToUpdate,indexSpec,force,validate,getContext())) {
     final TaskStatus status=subTask.run(toolbox);
     if (!status.isSuccess()) {
       return TaskStatus.fromCode(getId(),status.getStatusCode());

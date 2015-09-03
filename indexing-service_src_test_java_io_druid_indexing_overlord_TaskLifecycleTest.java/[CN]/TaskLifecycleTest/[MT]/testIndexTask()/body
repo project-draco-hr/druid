@@ -1,5 +1,5 @@
 {
-  final Task indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P2D")))),new IndexTask.IndexIOConfig(new MockFirehoseFactory(false)),new IndexTask.IndexTuningConfig(10000,10,-1,indexSpec)),TestUtils.MAPPER);
+  final Task indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P2D")))),new IndexTask.IndexIOConfig(new MockFirehoseFactory(false)),new IndexTask.IndexTuningConfig(10000,10,-1,indexSpec)),TestUtils.MAPPER,null);
   final Optional<TaskStatus> preRunTaskStatus=tsqa.getStatus(indexTask.getId());
   Assert.assertTrue("pre run task status not present",!preRunTaskStatus.isPresent());
   final TaskStatus mergedStatus=runTask(indexTask);

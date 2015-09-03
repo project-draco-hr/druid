@@ -11,7 +11,7 @@
   RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new MockFirehoseFactory(true),null,null);
   RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),null,null,null,null,null,null,null,null,null,null,null);
   FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig);
-  RealtimeIndexTask realtimeIndexTask=new RealtimeIndexTask(taskId,new TaskResource(taskId,1),fireDepartment);
+  RealtimeIndexTask realtimeIndexTask=new RealtimeIndexTask(taskId,new TaskResource(taskId,1),fireDepartment,null);
   tq.add(realtimeIndexTask);
   Assert.assertTrue(publishCountDown.await(1000,TimeUnit.MILLISECONDS));
   Assert.assertTrue("Task should be running",tsqa.getStatus(taskId).get().isRunnable());

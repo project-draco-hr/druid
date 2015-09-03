@@ -19,7 +19,7 @@
     file.mkdirs();
     segmentFiles.add(file);
   }
-  final Task killTask=new KillTask(null,"test_kill_task",new Interval("2011-04-01/P4D"));
+  final Task killTask=new KillTask(null,"test_kill_task",new Interval("2011-04-01/P4D"),null);
   final TaskStatus status=runTask(killTask);
   Assert.assertEquals("merged statusCode",TaskStatus.Status.SUCCESS,status.getStatusCode());
   Assert.assertEquals("num segments published",0,mdc.getPublished().size());
