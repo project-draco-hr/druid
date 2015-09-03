@@ -1,10 +1,5 @@
 {
-  File segmentDir=Files.createTempDir();
-  try {
-    createIndex(inputDataFile,parserJson,aggregators,segmentDir,minTimestamp,gran,maxRowCount);
-    return runQueryOnSegments(Lists.newArrayList(segmentDir),groupByQueryJson);
-  }
-  finally {
-    FileUtils.deleteDirectory(segmentDir);
-  }
+  File segmentDir=tempFolder.newFolder();
+  createIndex(inputDataFile,parserJson,aggregators,segmentDir,minTimestamp,gran,maxRowCount);
+  return runQueryOnSegments(Lists.newArrayList(segmentDir),groupByQueryJson);
 }

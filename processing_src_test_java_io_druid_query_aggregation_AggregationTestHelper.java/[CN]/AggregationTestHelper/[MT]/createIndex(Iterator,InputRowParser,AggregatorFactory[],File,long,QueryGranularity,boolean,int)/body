@@ -14,7 +14,7 @@
         }
       }
  catch (      IndexSizeExceededException ex) {
-        File tmp=Files.createTempDir();
+        File tmp=tempFolder.newFolder();
         toMerge.add(tmp);
         IndexMerger.persist(index,tmp,null,new IndexSpec());
         index.close();
@@ -22,7 +22,7 @@
       }
     }
     if (toMerge.size() > 0) {
-      File tmp=Files.createTempDir();
+      File tmp=tempFolder.newFolder();
       toMerge.add(tmp);
       IndexMerger.persist(index,tmp,null,new IndexSpec());
       List<QueryableIndex> indexes=new ArrayList<>(toMerge.size());
@@ -41,9 +41,6 @@
   finally {
     if (index != null) {
       index.close();
-    }
-    for (    File file : toMerge) {
-      FileUtils.deleteDirectory(file);
     }
   }
 }
