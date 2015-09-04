@@ -1,0 +1,53 @@
+{
+  final int threads=10;
+  final int deletesPerThread=5;
+  ListeningExecutorService executorService=MoreExecutors.listeningDecorator(Execs.multiThreaded(threads,"concurrentTestingPool-%s"));
+  final CountDownLatch latch=new CountDownLatch(threads);
+  Collection<ListenableFuture<?>> futures=new ArrayList<>();
+  for (int i=0; i < threads; ++i) {
+    final int ii=i;
+    futures.add(executorService.submit(new Runnable(){
+      @Override public void run(){
+        try {
+          latch.countDown();
+          if (!latch.await(5,TimeUnit.SECONDS)) {
+            throw new RuntimeException(new TimeoutException("Took too long to wait for more tasks"));
+          }
+          for (int j=0; j < deletesPerThread; ++j) {
+            testDelete(String.format("ns-%d-%d",ii,j));
+          }
+        }
+ catch (        InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+));
+  }
+  final Collection<Exception> exceptions=new ArrayList<>();
+  try {
+    for (    ListenableFuture<?> future : futures) {
+      try {
+        future.get();
+      }
+ catch (      InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw e;
+      }
+catch (      Exception e) {
+        exceptions.add(e);
+      }
+    }
+    if (!exceptions.isEmpty()) {
+      final RuntimeException e=new RuntimeException("Futures failed");
+      for (      Exception ex : exceptions) {
+        e.addSuppressed(ex);
+      }
+    }
+  }
+  finally {
+    executorService.shutdownNow();
+  }
+  checkNoMoreRunning();
+}
