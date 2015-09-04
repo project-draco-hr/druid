@@ -6,15 +6,18 @@
   EasyMock.expect(row.getTimestampFromEpoch()).andReturn(0L);
   EasyMock.expect(row.getDimensions()).andReturn(new ArrayList<String>());
   EasyMock.replay(row);
-  plumber.add(row);
-  plumber.persist(new Runnable(){
+  plumber.add(row,Committers.supplierOf(Committers.nil()));
+  plumber.persist(Committers.supplierFromRunnable(new Runnable(){
     @Override public void run(){
       committed.setValue(true);
       throw new RuntimeException();
     }
   }
-);
+).get());
   while (!committed.booleanValue()) {
+    Thread.sleep(100);
+  }
+  while (metrics.failedPersists() < 1) {
     Thread.sleep(100);
   }
   Assert.assertEquals(1,metrics.failedPersists());
