@@ -1,0 +1,9 @@
+{
+  final String name="foo";
+  final DimensionSpec spec=new DefaultDimensionSpec(name,name);
+  final String json=mapper.writeValueAsString(spec);
+  final DimensionSpec other=mapper.readValue(json,DimensionSpec.class);
+  Assert.assertEquals(spec.toString(),other.toString());
+  Assert.assertEquals(spec,other);
+  Assert.assertEquals(spec.hashCode(),other.hashCode());
+}
