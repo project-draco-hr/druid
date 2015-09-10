@@ -1,0 +1,16 @@
+{
+  final String path="path";
+  CloudFilesObjectApiProxy objectApi=createMock(CloudFilesObjectApiProxy.class);
+  CloudFilesObject cloudFilesObject=createMock(CloudFilesObject.class);
+  Payload payload=createMock(Payload.class);
+  InputStream stream=createMock(InputStream.class);
+  expect(objectApi.get(path)).andReturn(cloudFilesObject);
+  expect(cloudFilesObject.getPayload()).andReturn(payload);
+  expect(payload.openStream()).andReturn(stream);
+  payload.close();
+  replayAll();
+  CloudFilesByteSource byteSource=new CloudFilesByteSource(objectApi,path);
+  assertEquals(stream,byteSource.openStream());
+  byteSource.closeStream();
+  verifyAll();
+}

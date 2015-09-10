@@ -1,0 +1,9 @@
+{
+  final Map<String,Object> loadSpec=segment.getLoadSpec();
+  final String region=MapUtils.getString(loadSpec,"region");
+  final String container=MapUtils.getString(loadSpec,"container");
+  final String path=MapUtils.getString(loadSpec,"path");
+  log.info("Pulling index at path[%s] to outDir[%s]",path,outDir);
+  prepareOutDir(outDir);
+  getSegmentFiles(region,container,path,outDir);
+}

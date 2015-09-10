@@ -1,0 +1,12 @@
+{
+  payload=(payload == null) ? objectApi.get(path).getPayload() : payload;
+  try {
+    return payload.openStream();
+  }
+ catch (  IOException e) {
+    if (CloudFilesUtils.CLOUDFILESRETRY.apply(e)) {
+      throw new IOException("Recoverable exception",e);
+    }
+    throw Throwables.propagate(e);
+  }
+}
