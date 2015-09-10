@@ -5,6 +5,17 @@
   Binders.dataSegmentKillerBinder(binder).addBinding(SCHEME).to(HdfsDataSegmentKiller.class).in(LazySingleton.class);
   final Configuration conf=new Configuration();
   conf.setClassLoader(getClass().getClassLoader());
+  ClassLoader currCtxCl=Thread.currentThread().getContextClassLoader();
+  try {
+    Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+    FileSystem.get(conf);
+  }
+ catch (  IOException ex) {
+    throw Throwables.propagate(ex);
+  }
+ finally {
+    Thread.currentThread().setContextClassLoader(currCtxCl);
+  }
   if (props != null) {
     for (    String propName : System.getProperties().stringPropertyNames()) {
       if (propName.startsWith("hadoop.")) {
