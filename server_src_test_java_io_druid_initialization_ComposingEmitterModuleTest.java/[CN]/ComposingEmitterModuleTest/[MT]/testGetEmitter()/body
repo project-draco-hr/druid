@@ -1,0 +1,10 @@
+{
+  ComposingEmitterConfig config=EasyMock.createMock(ComposingEmitterConfig.class);
+  EasyMock.expect(config.getEmitters()).andReturn(Lists.newArrayList(testEmitterType)).anyTimes();
+  Injector injector=EasyMock.createMock(Injector.class);
+  EasyMock.expect(injector.getInstance(Key.get(Emitter.class,Names.named(testEmitterType)))).andReturn(emitter);
+  EasyMock.replay(config,injector);
+  Emitter composingEmitter=new ComposingEmitterModule().getEmitter(config,injector);
+  composingEmitter.start();
+  EasyMock.verify(config,emitter,injector);
+}
