@@ -1,0 +1,6 @@
+{
+  ClientInfoResource defaultResource=getResourceTestHelper(serverInventoryView,timelineServerView,new SegmentMetadataQueryConfig("P100Y"));
+  Map<String,?> expected=ImmutableMap.of("1960-02-13T00:00:00.000Z/1961-02-14T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d1"),KEY_METRICS,ImmutableSet.of("m1")),"2014-02-13T00:00:00.000Z/2014-02-15T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d1"),KEY_METRICS,ImmutableSet.of("m1")),"2014-02-16T00:00:00.000Z/2014-02-17T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d1"),KEY_METRICS,ImmutableSet.of("m1")),"2014-02-17T00:00:00.000Z/2014-02-18T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d2"),KEY_METRICS,ImmutableSet.of("m2")));
+  Map<String,Object> actual=defaultResource.getDatasource(dataSource,null,"false");
+  Assert.assertEquals(expected,actual);
+}

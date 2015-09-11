@@ -1,6 +1,7 @@
 {
   VersionedIntervalTimeline<String,ServerSelector> timeline=new VersionedIntervalTimeline<>(Ordering.<String>natural());
   DruidServer server=new DruidServer("name","host",1234,"type","tier",0);
+  addSegment(timeline,server,"1960-02-13/1961-02-14",ImmutableList.of("d1"),ImmutableList.of("m1"));
   addSegment(timeline,server,"2014-02-13/2014-02-14",ImmutableList.of("d1"),ImmutableList.of("m1"));
   addSegment(timeline,server,"2014-02-14/2014-02-15",ImmutableList.of("d1"),ImmutableList.of("m1"));
   addSegment(timeline,server,"2014-02-16/2014-02-17",ImmutableList.of("d1"),ImmutableList.of("m1"));
@@ -10,5 +11,5 @@
   timelineServerView=EasyMock.createMock(TimelineServerView.class);
   EasyMock.expect(timelineServerView.getTimeline(EasyMock.anyObject(TableDataSource.class))).andReturn(timeline);
   EasyMock.replay(serverInventoryView,timelineServerView);
-  resource=new ClientInfoResource(serverInventoryView,timelineServerView);
+  resource=getResourceTestHelper(serverInventoryView,timelineServerView,new SegmentMetadataQueryConfig());
 }

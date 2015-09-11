@@ -1,0 +1,17 @@
+{
+  if (!query.isUsingDefaultInterval()) {
+    return segments;
+  }
+  if (segments.size() <= 1) {
+    return segments;
+  }
+  final T max=segments.get(segments.size() - 1);
+  DateTime targetEnd=max.getInterval().getEnd();
+  final Interval targetInterval=new Interval(config.getDefaultHistory(),targetEnd);
+  return Lists.newArrayList(Iterables.filter(segments,new Predicate<T>(){
+    @Override public boolean apply(    T input){
+      return (input.getInterval().overlaps(targetInterval));
+    }
+  }
+));
+}

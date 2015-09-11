@@ -6,8 +6,8 @@
   }
   Interval theInterval;
   if (interval == null || interval.isEmpty()) {
-    DateTime now=new DateTime();
-    theInterval=new Interval(now.minusMillis(SEGMENT_HISTORY_MILLIS),now);
+    DateTime now=getCurrentTime();
+    theInterval=new Interval(segmentMetadataQueryConfig.getDefaultHistory(),now);
   }
  else {
     theInterval=new Interval(interval);

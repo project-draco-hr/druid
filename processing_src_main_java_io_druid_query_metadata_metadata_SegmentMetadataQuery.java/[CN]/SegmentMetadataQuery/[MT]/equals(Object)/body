@@ -1,9 +1,19 @@
 {
-  if (this == o)   return true;
-  if (o == null || getClass() != o.getClass())   return false;
-  if (!super.equals(o))   return false;
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  if (!super.equals(o)) {
+    return false;
+  }
   SegmentMetadataQuery that=(SegmentMetadataQuery)o;
-  if (merge != that.merge)   return false;
-  if (toInclude != null ? !toInclude.equals(that.toInclude) : that.toInclude != null)   return false;
-  return true;
+  if (merge != that.merge) {
+    return false;
+  }
+  if (usingDefaultInterval != that.usingDefaultInterval) {
+    return false;
+  }
+  return !(toInclude != null ? !toInclude.equals(that.toInclude) : that.toInclude != null);
 }

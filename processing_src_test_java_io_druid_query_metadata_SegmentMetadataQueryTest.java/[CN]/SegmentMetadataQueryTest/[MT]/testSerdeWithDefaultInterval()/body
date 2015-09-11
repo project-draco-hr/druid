@@ -1,0 +1,9 @@
+{
+  String queryStr="{\n" + "  \"queryType\":\"segmentMetadata\",\n" + "  \"dataSource\":\"test_ds\"\n"+ "}";
+  Query query=mapper.readValue(queryStr,Query.class);
+  Assert.assertTrue(query instanceof SegmentMetadataQuery);
+  Assert.assertEquals("test_ds",Iterables.getOnlyElement(query.getDataSource().getNames()));
+  Assert.assertEquals(new Interval(JodaUtils.MIN_INSTANT,JodaUtils.MAX_INSTANT),query.getIntervals().get(0));
+  Assert.assertTrue(((SegmentMetadataQuery)query).isUsingDefaultInterval());
+  Assert.assertEquals(query,mapper.readValue(mapper.writeValueAsString(query),Query.class));
+}
