@@ -5,7 +5,8 @@
     return new NoopQueryRunner<T>();
   }
   final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
-  final TimelineLookup<String,ReferenceCountingSegment> timeline=getTimelineLookup(query.getDataSource());
+  String dataSourceName=getDataSourceName(query.getDataSource());
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(dataSourceName);
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }

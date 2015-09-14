@@ -7,10 +7,11 @@
   final Function<Query<T>,ServiceMetricEvent.Builder> builderFn=getBuilderFn(toolChest);
   final AtomicLong cpuTimeAccumulator=new AtomicLong(0L);
   DataSource dataSource=query.getDataSource();
-  if (dataSource instanceof QueryDataSource) {
+  if (!(dataSource instanceof TableDataSource)) {
     throw new UnsupportedOperationException("data source type '" + dataSource.getClass().getName() + "' unsupported");
   }
-  final TimelineLookup<String,ReferenceCountingSegment> timeline=getTimelineLookup(query.getDataSource());
+  String dataSourceName=getDataSourceName(dataSource);
+  final VersionedIntervalTimeline<String,ReferenceCountingSegment> timeline=dataSources.get(dataSourceName);
   if (timeline == null) {
     return new NoopQueryRunner<T>();
   }
