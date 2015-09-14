@@ -1,5 +1,5 @@
 {
-  AggregationTestHelper helper=new AggregationTestHelper(Lists.newArrayList(new AggregatorsModule()));
+  AggregationTestHelper helper=new AggregationTestHelper(Lists.newArrayList(new AggregatorsModule()),tempFolder);
   String metricSpec="[{" + "\"type\": \"hyperUnique\"," + "\"name\": \"index_hll\","+ "\"fieldName\": \"market\""+ "}]";
   String parseSpec="{" + "\"type\" : \"string\"," + "\"parseSpec\" : {"+ "    \"format\" : \"tsv\","+ "    \"timestampSpec\" : {"+ "        \"column\" : \"timestamp\","+ "        \"format\" : \"auto\""+ "},"+ "    \"dimensionsSpec\" : {"+ "        \"dimensions\": [],"+ "        \"dimensionExclusions\" : [],"+ "        \"spatialDimensions\" : []"+ "    },"+ "    \"columns\": [\"timestamp\", \"market\", \"quality\", \"placement\", \"placementish\", \"index\"]"+ "  }"+ "}";
   String query="{" + "\"queryType\": \"groupBy\"," + "\"dataSource\": \"test_datasource\","+ "\"granularity\": \"ALL\","+ "\"dimensions\": [],"+ "\"aggregations\": ["+ "  { \"type\": \"hyperUnique\", \"name\": \"index_hll\", \"fieldName\": \"index_hll\" }"+ "],"+ "\"postAggregations\": ["+ "  { \"type\": \"hyperUniqueCardinality\", \"name\": \"index_unique_count\", \"fieldName\": \"index_hll\" }"+ "],"+ "\"intervals\": [ \"1970/2050\" ]"+ "}";

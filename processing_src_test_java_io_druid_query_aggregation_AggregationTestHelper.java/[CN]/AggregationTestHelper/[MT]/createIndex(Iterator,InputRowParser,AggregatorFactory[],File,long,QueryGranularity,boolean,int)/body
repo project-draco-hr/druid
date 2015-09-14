@@ -1,14 +1,46 @@
 {
-  try (IncrementalIndex index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,maxRowCount)){
+  IncrementalIndex index=null;
+  List<File> toMerge=new ArrayList<>();
+  try {
+    index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,maxRowCount);
     while (rows.hasNext()) {
       Object row=rows.next();
-      if (row instanceof String && parser instanceof StringInputRowParser) {
-        index.add(((StringInputRowParser)parser).parse((String)row));
-      }
+      try {
+        if (row instanceof String && parser instanceof StringInputRowParser) {
+          index.add(((StringInputRowParser)parser).parse((String)row));
+        }
  else {
-        index.add(parser.parse(row));
+          index.add(parser.parse(row));
+        }
+      }
+ catch (      IndexSizeExceededException ex) {
+        File tmp=tempFolder.newFolder();
+        toMerge.add(tmp);
+        IndexMerger.persist(index,tmp,null,new IndexSpec());
+        index.close();
+        index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,maxRowCount);
       }
     }
-    IndexMerger.persist(index,outDir,null,new IndexSpec());
+    if (toMerge.size() > 0) {
+      File tmp=tempFolder.newFolder();
+      toMerge.add(tmp);
+      IndexMerger.persist(index,tmp,null,new IndexSpec());
+      List<QueryableIndex> indexes=new ArrayList<>(toMerge.size());
+      for (      File file : toMerge) {
+        indexes.add(IndexIO.loadIndex(file));
+      }
+      IndexMerger.mergeQueryableIndex(indexes,metrics,outDir,new IndexSpec());
+      for (      QueryableIndex qi : indexes) {
+        qi.close();
+      }
+    }
+ else {
+      IndexMerger.persist(index,outDir,null,new IndexSpec());
+    }
   }
- }
+  finally {
+    if (index != null) {
+      index.close();
+    }
+  }
+}
