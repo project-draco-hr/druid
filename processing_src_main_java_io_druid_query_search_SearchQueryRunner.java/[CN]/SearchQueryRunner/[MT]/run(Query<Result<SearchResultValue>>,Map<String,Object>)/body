@@ -4,39 +4,43 @@
   }
   final SearchQuery query=(SearchQuery)input;
   final Filter filter=Filters.convertDimensionFilters(query.getDimensionsFilter());
-  final List<String> dimensions=query.getDimensions();
+  final List<DimensionSpec> dimensions=query.getDimensions();
   final SearchQuerySpec searchQuerySpec=query.getQuery();
   final int limit=query.getLimit();
   final QueryableIndex index=segment.asQueryableIndex();
   if (index != null) {
     final TreeSet<SearchHit> retVal=Sets.newTreeSet(query.getSort().getComparator());
-    Iterable<String> dimsToSearch;
+    Iterable<DimensionSpec> dimsToSearch;
     if (dimensions == null || dimensions.isEmpty()) {
-      dimsToSearch=index.getAvailableDimensions();
+      dimsToSearch=Iterables.transform(index.getAvailableDimensions(),Druids.DIMENSION_IDENTITY);
     }
  else {
       dimsToSearch=dimensions;
     }
-    BitmapFactory bitmapFactory=index.getBitmapFactoryForDimensions();
+    final BitmapFactory bitmapFactory=index.getBitmapFactoryForDimensions();
     final ImmutableBitmap baseFilter;
     if (filter == null) {
       baseFilter=bitmapFactory.complement(bitmapFactory.makeEmptyImmutableBitmap(),index.getNumRows());
     }
  else {
-      ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(bitmapFactory,index);
+      final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(bitmapFactory,index);
       baseFilter=filter.getBitmapIndex(selector);
     }
-    for (    String dimension : dimsToSearch) {
-      final Column column=index.getColumn(dimension);
+    for (    DimensionSpec dimension : dimsToSearch) {
+      final Column column=index.getColumn(dimension.getDimension());
       if (column == null) {
         continue;
       }
       final BitmapIndex bitmapIndex=column.getBitmapIndex();
+      ExtractionFn extractionFn=dimension.getExtractionFn();
+      if (extractionFn == null) {
+        extractionFn=new IdentityExtractionFn();
+      }
       if (bitmapIndex != null) {
         for (int i=0; i < bitmapIndex.getCardinality(); ++i) {
-          String dimVal=Strings.nullToEmpty(bitmapIndex.getValue(i));
+          String dimVal=Strings.nullToEmpty(extractionFn.apply(bitmapIndex.getValue(i)));
           if (searchQuerySpec.accept(dimVal) && bitmapFactory.intersection(Arrays.asList(baseFilter,bitmapIndex.getBitmap(i))).size() > 0) {
-            retVal.add(new SearchHit(dimension,dimVal));
+            retVal.add(new SearchHit(dimension.getOutputName(),dimVal));
             if (retVal.size() >= limit) {
               return makeReturnResult(limit,retVal);
             }
@@ -51,9 +55,9 @@
     log.makeAlert("WTF!? Unable to process search query on segment.").addData("segment",segment.getIdentifier()).addData("query",query).emit();
     throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
   }
-  final Iterable<String> dimsToSearch;
+  final Iterable<DimensionSpec> dimsToSearch;
   if (dimensions == null || dimensions.isEmpty()) {
-    dimsToSearch=adapter.getAvailableDimensions();
+    dimsToSearch=Iterables.transform(adapter.getAvailableDimensions(),Druids.DIMENSION_IDENTITY);
   }
  else {
     dimsToSearch=dimensions;
@@ -65,8 +69,8 @@
         return set;
       }
       Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
-      for (      String dim : dimsToSearch) {
-        dimSelectors.put(dim,cursor.makeDimensionSelector(dim,null));
+      for (      DimensionSpec dim : dimsToSearch) {
+        dimSelectors.put(dim.getOutputName(),cursor.makeDimensionSelector(dim.getDimension(),dim.getExtractionFn()));
       }
       while (!cursor.isDone()) {
         for (        Map.Entry<String,DimensionSelector> entry : dimSelectors.entrySet()) {

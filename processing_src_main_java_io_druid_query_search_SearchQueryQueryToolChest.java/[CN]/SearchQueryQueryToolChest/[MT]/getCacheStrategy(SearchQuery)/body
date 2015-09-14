@@ -5,15 +5,12 @@
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
       final byte[] querySpecBytes=query.getQuery().getCacheKey();
       final byte[] granularityBytes=query.getGranularity().cacheKey();
-      final Set<String> dimensions=Sets.newTreeSet();
-      if (query.getDimensions() != null) {
-        dimensions.addAll(query.getDimensions());
-      }
+      final Collection<DimensionSpec> dimensions=query.getDimensions() == null ? ImmutableList.<DimensionSpec>of() : query.getDimensions();
       final byte[][] dimensionsBytes=new byte[dimensions.size()][];
       int dimensionsBytesSize=0;
       int index=0;
-      for (      String dimension : dimensions) {
-        dimensionsBytes[index]=StringUtils.toUtf8(dimension);
+      for (      DimensionSpec dimension : dimensions) {
+        dimensionsBytes[index]=dimension.getCacheKey();
         dimensionsBytesSize+=dimensionsBytes[index].length;
         ++index;
       }
