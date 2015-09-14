@@ -1,0 +1,57 @@
+{
+  final Sequence<T> baseSequence=delegate.run(query,responseContext);
+  return Sequences.withEffect(new Sequence<T>(){
+    @Override public <OutType>OutType accumulate(    OutType initValue,    Accumulator<OutType,T> accumulator){
+      final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+      try {
+        return baseSequence.accumulate(initValue,accumulator);
+      }
+  finally {
+        cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+      }
+    }
+    @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
+      final Yielder<OutType> delegateYielder=baseSequence.toYielder(initValue,accumulator);
+      return new Yielder<OutType>(){
+        @Override public OutType get(){
+          final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+          try {
+            return delegateYielder.get();
+          }
+  finally {
+            cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+          }
+        }
+        @Override public Yielder<OutType> next(        OutType initValue){
+          final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+          try {
+            return delegateYielder.next(initValue);
+          }
+  finally {
+            cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+          }
+        }
+        @Override public boolean isDone(){
+          return delegateYielder.isDone();
+        }
+        @Override public void close() throws IOException {
+          delegateYielder.close();
+        }
+      }
+;
+    }
+  }
+,new Runnable(){
+    @Override public void run(){
+      if (report) {
+        final long cpuTime=cpuTimeAccumulator.get();
+        if (cpuTime > 0) {
+          final ServiceMetricEvent.Builder builder=Preconditions.checkNotNull(builderFn.apply(query));
+          builder.setDimension(DruidMetrics.ID,Strings.nullToEmpty(query.getId()));
+          emitter.emit(builder.build("query/cpu/time",cpuTimeAccumulator.get() / 1000));
+        }
+      }
+    }
+  }
+,MoreExecutors.sameThreadExecutor());
+}

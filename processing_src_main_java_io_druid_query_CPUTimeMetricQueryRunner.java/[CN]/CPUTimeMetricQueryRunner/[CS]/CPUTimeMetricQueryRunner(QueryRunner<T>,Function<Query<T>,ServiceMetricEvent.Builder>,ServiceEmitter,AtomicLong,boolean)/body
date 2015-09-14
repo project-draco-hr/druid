@@ -1,0 +1,10 @@
+{
+  if (!THREAD_MX_BEAN.isThreadCpuTimeEnabled()) {
+    throw new ISE("Cpu time must enabled");
+  }
+  this.delegate=delegate;
+  this.builderFn=builderFn;
+  this.emitter=emitter;
+  this.cpuTimeAccumulator=cpuTimeAccumulator == null ? new AtomicLong(0L) : cpuTimeAccumulator;
+  this.report=report;
+}
