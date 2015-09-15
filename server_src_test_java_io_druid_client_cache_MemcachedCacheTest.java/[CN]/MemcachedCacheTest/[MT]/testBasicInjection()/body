@@ -1,0 +1,26 @@
+{
+  final MemcachedCacheConfig config=new MemcachedCacheConfig(){
+    @Override public String getHosts(){
+      return "127.0.0.1:22";
+    }
+  }
+;
+  Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/test/memcached");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(0);
+      binder.bind(MemcachedCacheConfig.class).toInstance(config);
+      binder.bind(Cache.class).toProvider(MemcachedProviderWithConfig.class).in(ManageLifecycle.class);
+    }
+  }
+));
+  Lifecycle lifecycle=injector.getInstance(Lifecycle.class);
+  lifecycle.start();
+  try {
+    Cache cache=injector.getInstance(Cache.class);
+    Assert.assertEquals(MemcachedCache.class,cache.getClass());
+  }
+  finally {
+    lifecycle.stop();
+  }
+}
