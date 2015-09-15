@@ -5,7 +5,7 @@
   EasyMock.expect(row.getTimestampFromEpoch()).andReturn(0L);
   EasyMock.expect(row.getDimensions()).andReturn(new ArrayList<String>());
   EasyMock.replay(row);
-  plumber.add(row,Committers.supplierOf(Committers.nil()));
+  plumber.add(row,Suppliers.ofInstance(Committers.nil()));
   final CountDownLatch doneSignal=new CountDownLatch(1);
   plumber.persist(Committers.supplierFromRunnable(new Runnable(){
     @Override public void run(){
