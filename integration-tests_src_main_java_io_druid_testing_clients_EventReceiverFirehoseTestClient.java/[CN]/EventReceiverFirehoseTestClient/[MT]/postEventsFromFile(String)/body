@@ -3,6 +3,7 @@
     String s;
     Collection<Map<String,Object>> events=new ArrayList<Map<String,Object>>();
     int totalEventsPosted=0;
+    int expectedEventsPosted=0;
     while ((s=reader.readLine()) != null) {
       events.add((Map<String,Object>)this.jsonMapper.readValue(s,new TypeReference<Map<String,Object>>(){
       }
@@ -11,9 +12,10 @@
       String mediaType=(totalEventsPosted % 2 == 0) ? MediaType.APPLICATION_JSON : SmileMediaTypes.APPLICATION_JACKSON_SMILE;
       totalEventsPosted+=postEvents(events,mapper,mediaType);
       ;
+      expectedEventsPosted+=events.size();
       events=new ArrayList<>();
     }
-    if (totalEventsPosted != events.size()) {
+    if (totalEventsPosted != expectedEventsPosted) {
       throw new ISE("All events not posted, expected : %d actual : %d",events.size(),totalEventsPosted);
     }
     return totalEventsPosted;
