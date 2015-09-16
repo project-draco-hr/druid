@@ -1,3 +1,40 @@
 {
-  return parser;
+  if (parser == null) {
+    log.warn("No parser has been specified");
+    return null;
+  }
+  final InputRowParser inputRowParser=jsonMapper.convertValue(this.parser,InputRowParser.class);
+  final Set<String> dimensionExclusions=Sets.newHashSet();
+  for (  AggregatorFactory aggregator : aggregators) {
+    dimensionExclusions.addAll(aggregator.requiredFields());
+  }
+  if (inputRowParser.getParseSpec() != null) {
+    final DimensionsSpec dimensionsSpec=inputRowParser.getParseSpec().getDimensionsSpec();
+    final TimestampSpec timestampSpec=inputRowParser.getParseSpec().getTimestampSpec();
+    if (timestampSpec != null) {
+      final String timestampColumn=timestampSpec.getTimestampColumn();
+      if (!(dimensionsSpec.hasCustomDimensions() && dimensionsSpec.getDimensions().contains(timestampColumn))) {
+        dimensionExclusions.add(timestampColumn);
+      }
+    }
+    if (dimensionsSpec != null) {
+      final Set<String> metSet=Sets.newHashSet();
+      for (      AggregatorFactory aggregator : aggregators) {
+        metSet.add(aggregator.getName());
+      }
+      final Set<String> dimSet=Sets.newHashSet(dimensionsSpec.getDimensions());
+      final Set<String> overlap=Sets.intersection(metSet,dimSet);
+      if (!overlap.isEmpty()) {
+        throw new IAE("Cannot have overlapping dimensions and metrics of the same name. Please change the name of the metric. Overlap: %s",overlap);
+      }
+      return inputRowParser.withParseSpec(inputRowParser.getParseSpec().withDimensionsSpec(dimensionsSpec.withDimensionExclusions(Sets.difference(dimensionExclusions,dimSet))));
+    }
+ else {
+      return inputRowParser;
+    }
+  }
+ else {
+    log.warn("No parseSpec in parser has been specified.");
+    return inputRowParser;
+  }
 }

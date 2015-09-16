@@ -1,0 +1,12 @@
+{
+  if (input instanceof Text) {
+    return parser.parse(((Text)input).toString());
+  }
+ else   if (input instanceof BytesWritable) {
+    BytesWritable valueBytes=(BytesWritable)input;
+    return parser.parse(ByteBuffer.wrap(valueBytes.getBytes(),0,valueBytes.getLength()));
+  }
+ else {
+    throw new IAE("can't convert type [%s] to InputRow",input.getClass().getName());
+  }
+}

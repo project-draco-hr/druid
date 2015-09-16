@@ -1,7 +1,8 @@
 {
   final List<TestInputRowHolder> rows=Arrays.asList(makeRow(new DateTime("9000-01-01").getMillis()),makeRow(new ParseException("parse error")),null,makeRow(new DateTime().getMillis()));
-  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null));
-  schema2=new DataSchema("testV2",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null));
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
+  schema2=new DataSchema("testV2",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
   RealtimeIOConfig ioConfig=new RealtimeIOConfig(new FirehoseFactory(){
     @Override public Firehose connect(    InputRowParser parser) throws IOException {
       return new TestFirehose(rows.iterator());

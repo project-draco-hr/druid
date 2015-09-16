@@ -7,7 +7,7 @@
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(monitorScheduler,serverView,queryRunnerFactoryConglomerate);
   String taskId="rt_task_1";
-  DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new LongSumAggregatorFactory("count","rows")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null));
+  DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new LongSumAggregatorFactory("count","rows")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null),mapper);
   RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new MockFirehoseFactory(true),null,null);
   RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),null,null,null,null,null,null,null,null,null,null,null);
   FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig);
