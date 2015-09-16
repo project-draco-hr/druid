@@ -10,7 +10,13 @@
   final FireHydrant old;
 synchronized (hydrantLock) {
     old=currHydrant;
-    currHydrant=new FireHydrant(newIndex,hydrants.size(),getSegment().getIdentifier());
+    int newCount=0;
+    int numHydrants=hydrants.size();
+    if (numHydrants > 0) {
+      FireHydrant lastHydrant=hydrants.get(numHydrants - 1);
+      newCount=lastHydrant.getCount() + 1;
+    }
+    currHydrant=new FireHydrant(newIndex,newCount,getSegment().getIdentifier());
     hydrants.add(currHydrant);
   }
   return old;

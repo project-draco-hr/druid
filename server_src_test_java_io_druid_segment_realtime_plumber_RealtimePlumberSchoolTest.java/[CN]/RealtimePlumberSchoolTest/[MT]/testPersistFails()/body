@@ -1,5 +1,5 @@
 {
-  final MutableBoolean committed=new MutableBoolean(false);
+  final AtomicBoolean committed=new AtomicBoolean(false);
   plumber.getSinks().put(0L,new Sink(new Interval(0,TimeUnit.HOURS.toMillis(1)),schema,tuningConfig,new DateTime("2014-12-01T12:34:56.789").toString()));
   plumber.startJob();
   final InputRow row=EasyMock.createNiceMock(InputRow.class);
@@ -9,12 +9,12 @@
   plumber.add(row,Committers.supplierOf(Committers.nil()));
   plumber.persist(Committers.supplierFromRunnable(new Runnable(){
     @Override public void run(){
-      committed.setValue(true);
+      committed.set(true);
       throw new RuntimeException();
     }
   }
 ).get());
-  while (!committed.booleanValue()) {
+  while (!committed.get()) {
     Thread.sleep(100);
   }
   while (metrics.failedPersists() < 1) {
