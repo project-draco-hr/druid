@@ -1,9 +1,12 @@
 {
-  try {
-    client.set(computeKeyHash(memcachedPrefix,key),expiration,serializeValue(key,value));
+  try (final ResourceHolder<MemcachedClientIF> clientHolder=client.get()){
+    clientHolder.get().set(computeKeyHash(memcachedPrefix,key),expiration,serializeValue(key,value));
   }
  catch (  IllegalStateException e) {
     errorCount.incrementAndGet();
     log.warn(e,"Unable to queue cache operation");
+  }
+catch (  IOException e) {
+    Throwables.propagate(e);
   }
 }
