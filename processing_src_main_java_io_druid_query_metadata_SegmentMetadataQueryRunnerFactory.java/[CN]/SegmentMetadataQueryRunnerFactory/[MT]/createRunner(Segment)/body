@@ -3,11 +3,15 @@
     @Override public Sequence<SegmentAnalysis> run(    Query<SegmentAnalysis> inQ,    Map<String,Object> responseContext){
       SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
       final QueryableIndex index=segment.asQueryableIndex();
+      final Map<String,ColumnAnalysis> analyzedColumns;
+      long totalSize=0;
       if (index == null) {
-        return Sequences.empty();
+        analyzedColumns=analyzer.analyze(segment.asStorageAdapter());
       }
-      final Map<String,ColumnAnalysis> analyzedColumns=analyzer.analyze(index);
-      long totalSize=analyzedColumns.size() * index.getNumRows();
+ else {
+        analyzedColumns=analyzer.analyze(index);
+        totalSize=analyzedColumns.size() * index.getNumRows();
+      }
       Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
       ColumnIncluderator includerator=query.getToInclude();
       for (      Map.Entry<String,ColumnAnalysis> entry : analyzedColumns.entrySet()) {
