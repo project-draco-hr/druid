@@ -5,7 +5,7 @@
     Preconditions.checkNotNull(task,"task");
     Preconditions.checkState(tasks.size() < config.getMaxSize(),"Too many tasks (max = %,d)",config.getMaxSize());
     taskStorage.insert(task,TaskStatus.running(task.getId()));
-    tasks.add(task);
+    addTaskInternal(task);
     managementMayBeNecessary.signalAll();
     return true;
   }
