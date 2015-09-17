@@ -42,10 +42,10 @@ synchronized (tasks) {
                 command.add(config.getJavaCommand());
                 command.add("-cp");
                 command.add(taskClasspath);
-                Iterables.addAll(command,whiteSpaceSplitter.split(config.getJavaOpts()));
+                Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts()));
                 Object taskJavaOpts=task.getContextValue("druid.indexer.runner.javaOpts");
                 if (taskJavaOpts != null) {
-                  Iterables.addAll(command,whiteSpaceSplitter.split((String)taskJavaOpts));
+                  Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts));
                 }
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
