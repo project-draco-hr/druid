@@ -1,0 +1,9 @@
+{
+  if (other.getName().equals(this.getName()) && other instanceof ApproximateHistogramAggregatorFactory) {
+    ApproximateHistogramAggregatorFactory castedOther=(ApproximateHistogramAggregatorFactory)other;
+    return new ApproximateHistogramFoldingAggregatorFactory(name,name,Math.max(resolution,castedOther.resolution),numBuckets,Math.min(lowerLimit,castedOther.lowerLimit),Math.max(upperLimit,castedOther.upperLimit));
+  }
+ else {
+    throw new AggregatorFactoryNotMergeableException(this,other);
+  }
+}

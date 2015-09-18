@@ -1,0 +1,9 @@
+{
+  if (other.getName().equals(this.getName()) && other.getClass() == this.getClass()) {
+    JavaScriptAggregatorFactory castedOther=(JavaScriptAggregatorFactory)other;
+    if (this.fnCombine.equals(castedOther.fnCombine) && this.fnReset.equals(castedOther.fnReset)) {
+      return getCombiningFactory();
+    }
+  }
+  throw new AggregatorFactoryNotMergeableException(this,other);
+}
