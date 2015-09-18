@@ -1,0 +1,51 @@
+{
+  final AtomicBoolean committed=new AtomicBoolean(false);
+  Interval testInterval=new Interval(new DateTime("1970-01-01"),new DateTime("1971-01-01"));
+  RealtimePlumber plumber2=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema2,tuningConfig,metrics);
+  plumber2.getSinks().put(0L,new Sink(testInterval,schema2,tuningConfig,new DateTime("2014-12-01T12:34:56.789").toString()));
+  Assert.assertNull(plumber2.startJob());
+  final Committer committer=new Committer(){
+    @Override public Object getMetadata(){
+      return commitMetadata;
+    }
+    @Override public void run(){
+      committed.set(true);
+    }
+  }
+;
+  plumber2.add(getTestInputRow("1970-01-01"),Suppliers.ofInstance(committer));
+  plumber2.add(getTestInputRow("1970-02-01"),Suppliers.ofInstance(committer));
+  plumber2.add(getTestInputRow("1970-03-01"),Suppliers.ofInstance(committer));
+  plumber2.add(getTestInputRow("1970-04-01"),Suppliers.ofInstance(committer));
+  plumber2.add(getTestInputRow("1970-05-01"),Suppliers.ofInstance(committer));
+  plumber2.persist(committer);
+  while (!committed.get()) {
+    Thread.sleep(100);
+  }
+  plumber2.getSinks().clear();
+  plumber2.finishJob();
+  File persistDir=plumber2.computePersistDir(schema2,testInterval);
+  for (int i=0; i < 5; i++) {
+    Assert.assertTrue(new File(persistDir,String.valueOf(i)).exists());
+  }
+  FileUtils.deleteDirectory(new File(persistDir,"1"));
+  FileUtils.deleteDirectory(new File(persistDir,"3"));
+  RealtimePlumber restoredPlumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema2,tuningConfig,metrics);
+  restoredPlumber.bootstrapSinksFromDisk();
+  Map<Long,Sink> sinks=restoredPlumber.getSinks();
+  Assert.assertEquals(1,sinks.size());
+  List<FireHydrant> hydrants=Lists.newArrayList(sinks.get(new Long(0)));
+  DateTime startTime=new DateTime("1970-01-01T00:00:00.000Z");
+  Assert.assertEquals(0,hydrants.get(0).getCount());
+  Assert.assertEquals(new Interval(startTime,new DateTime("1970-01-01T00:00:00.001Z")),hydrants.get(0).getSegment().getDataInterval());
+  Assert.assertEquals(2,hydrants.get(1).getCount());
+  Assert.assertEquals(new Interval(startTime,new DateTime("1970-03-01T00:00:00.001Z")),hydrants.get(1).getSegment().getDataInterval());
+  Assert.assertEquals(4,hydrants.get(2).getCount());
+  Assert.assertEquals(new Interval(startTime,new DateTime("1970-05-01T00:00:00.001Z")),hydrants.get(2).getSegment().getDataInterval());
+  FileUtils.deleteDirectory(new File(persistDir,"0"));
+  FileUtils.deleteDirectory(new File(persistDir,"2"));
+  FileUtils.deleteDirectory(new File(persistDir,"4"));
+  RealtimePlumber restoredPlumber2=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema2,tuningConfig,metrics);
+  restoredPlumber2.bootstrapSinksFromDisk();
+  Assert.assertEquals(0,restoredPlumber2.getSinks().size());
+}

@@ -72,6 +72,10 @@
         }
         hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),config.getShardSpec()),queryableIndex),Integer.parseInt(segmentDir.getName())));
       }
+      if (hydrants.isEmpty()) {
+        log.warn("Found persisted segment directory with no intermediate segments present at %s, skipping sink creation.",sinkDir.getAbsolutePath());
+        continue;
+      }
       Sink currSink=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval),hydrants);
       sinks.put(sinkInterval.getStartMillis(),currSink);
       sinkTimeline.add(currSink.getInterval(),currSink.getVersion(),new SingleElementPartitionChunk<Sink>(currSink));
