@@ -1,0 +1,30 @@
+{
+  final List<SegmentAnalysis> results=getSegmentAnalysises(new IncrementalIndexSegment(TestIndex.getIncrementalTestIndex(false),null),analyses);
+  Assert.assertEquals(1,results.size());
+  final SegmentAnalysis analysis=results.get(0);
+  Assert.assertEquals(null,analysis.getId());
+  final Map<String,ColumnAnalysis> columns=analysis.getColumns();
+  Assert.assertEquals(TestIndex.COLUMNS.length,columns.size());
+  for (  String dimension : TestIndex.DIMENSIONS) {
+    final ColumnAnalysis columnAnalysis=columns.get(dimension);
+    Assert.assertEquals(dimension,ValueType.STRING.name(),columnAnalysis.getType());
+    if (analyses == null) {
+      Assert.assertTrue(dimension,columnAnalysis.getCardinality() > 0);
+    }
+ else {
+      Assert.assertEquals(dimension,0,columnAnalysis.getCardinality().longValue());
+      Assert.assertEquals(dimension,0,columnAnalysis.getSize());
+    }
+  }
+  for (  String metric : TestIndex.METRICS) {
+    final ColumnAnalysis columnAnalysis=columns.get(metric);
+    Assert.assertEquals(metric,ValueType.FLOAT.name(),columnAnalysis.getType());
+    if (analyses == null) {
+      Assert.assertTrue(metric,columnAnalysis.getSize() > 0);
+    }
+ else {
+      Assert.assertEquals(metric,0,columnAnalysis.getSize());
+    }
+    Assert.assertNull(metric,columnAnalysis.getCardinality());
+  }
+}

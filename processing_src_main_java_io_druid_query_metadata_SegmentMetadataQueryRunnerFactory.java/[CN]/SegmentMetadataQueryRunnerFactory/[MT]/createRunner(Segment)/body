@@ -4,13 +4,19 @@
       SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
       final QueryableIndex index=segment.asQueryableIndex();
       final Map<String,ColumnAnalysis> analyzedColumns;
+      final int numRows;
       long totalSize=0;
       if (index == null) {
-        analyzedColumns=analyzer.analyze(segment.asStorageAdapter());
+        StorageAdapter segmentAdapter=segment.asStorageAdapter();
+        analyzedColumns=analyzer.analyze(segmentAdapter,query.getAnalysisTypes());
+        numRows=segmentAdapter.getNumRows();
       }
  else {
-        analyzedColumns=analyzer.analyze(index);
-        totalSize=analyzedColumns.size() * index.getNumRows();
+        analyzedColumns=analyzer.analyze(index,query.getAnalysisTypes());
+        numRows=index.getNumRows();
+      }
+      if (query.hasSize()) {
+        totalSize=analyzedColumns.size() * numRows;
       }
       Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
       ColumnIncluderator includerator=query.getToInclude();

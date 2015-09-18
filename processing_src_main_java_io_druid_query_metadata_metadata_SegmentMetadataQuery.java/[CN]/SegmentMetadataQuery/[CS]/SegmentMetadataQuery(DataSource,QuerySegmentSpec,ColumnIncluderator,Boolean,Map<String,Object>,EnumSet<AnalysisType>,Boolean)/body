@@ -1,0 +1,13 @@
+{
+  super(dataSource,(querySegmentSpec == null) ? new MultipleIntervalSegmentSpec(Arrays.asList(DEFAULT_INTERVAL)) : querySegmentSpec,context);
+  if (querySegmentSpec == null) {
+    this.usingDefaultInterval=true;
+  }
+ else {
+    this.usingDefaultInterval=useDefaultInterval == null ? false : useDefaultInterval;
+  }
+  this.toInclude=toInclude == null ? new AllColumnIncluderator() : toInclude;
+  this.merge=merge == null ? false : merge;
+  this.analysisTypes=(analysisTypes == null) ? DEFAULT_ANALYSIS_TYPES : analysisTypes;
+  Preconditions.checkArgument(dataSource instanceof TableDataSource,"SegmentMetadataQuery only supports table datasource");
+}
