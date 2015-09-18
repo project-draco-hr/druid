@@ -1,4 +1,3 @@
 {
-  MemcachedClientIF client=new MockMemcachedClient();
-  cache=new MemcachedCache(client,memcachedCacheConfig);
+  cache=new MemcachedCache(Suppliers.<ResourceHolder<MemcachedClientIF>>ofInstance(StupidResourceHolder.<MemcachedClientIF>create(new MockMemcachedClient())),memcachedCacheConfig);
 }

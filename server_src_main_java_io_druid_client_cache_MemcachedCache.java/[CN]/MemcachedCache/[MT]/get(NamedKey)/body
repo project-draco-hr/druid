@@ -1,35 +1,40 @@
 {
-  Future<Object> future;
-  try {
-    future=client.asyncGet(computeKeyHash(memcachedPrefix,key));
-  }
- catch (  IllegalStateException e) {
-    errorCount.incrementAndGet();
-    log.warn(e,"Unable to queue cache operation");
-    return null;
-  }
-  try {
-    byte[] bytes=(byte[])future.get(timeout,TimeUnit.MILLISECONDS);
-    if (bytes != null) {
-      hitCount.incrementAndGet();
+  try (ResourceHolder<MemcachedClientIF> clientHolder=client.get()){
+    Future<Object> future;
+    try {
+      future=clientHolder.get().asyncGet(computeKeyHash(memcachedPrefix,key));
     }
+ catch (    IllegalStateException e) {
+      errorCount.incrementAndGet();
+      log.warn(e,"Unable to queue cache operation");
+      return null;
+    }
+    try {
+      byte[] bytes=(byte[])future.get(timeout,TimeUnit.MILLISECONDS);
+      if (bytes != null) {
+        hitCount.incrementAndGet();
+      }
  else {
-      missCount.incrementAndGet();
+        missCount.incrementAndGet();
+      }
+      return bytes == null ? null : deserializeValue(key,bytes);
     }
-    return bytes == null ? null : deserializeValue(key,bytes);
+ catch (    TimeoutException e) {
+      timeoutCount.incrementAndGet();
+      future.cancel(false);
+      return null;
+    }
+catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw Throwables.propagate(e);
+    }
+catch (    ExecutionException e) {
+      errorCount.incrementAndGet();
+      log.warn(e,"Exception pulling item from cache");
+      return null;
+    }
   }
- catch (  TimeoutException e) {
-    timeoutCount.incrementAndGet();
-    future.cancel(false);
-    return null;
-  }
-catch (  InterruptedException e) {
-    Thread.currentThread().interrupt();
+ catch (  IOException e) {
     throw Throwables.propagate(e);
-  }
-catch (  ExecutionException e) {
-    errorCount.incrementAndGet();
-    log.warn(e,"Exception pulling item from cache");
-    return null;
   }
 }

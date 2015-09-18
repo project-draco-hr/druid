@@ -1,42 +1,47 @@
 {
-  Map<String,NamedKey> keyLookup=Maps.uniqueIndex(keys,new Function<NamedKey,String>(){
-    @Override public String apply(    @Nullable NamedKey input){
-      return computeKeyHash(memcachedPrefix,input);
+  try (ResourceHolder<MemcachedClientIF> clientHolder=client.get()){
+    Map<String,NamedKey> keyLookup=Maps.uniqueIndex(keys,new Function<NamedKey,String>(){
+      @Override public String apply(      @Nullable NamedKey input){
+        return computeKeyHash(memcachedPrefix,input);
+      }
     }
-  }
 );
-  Map<NamedKey,byte[]> results=Maps.newHashMap();
-  BulkFuture<Map<String,Object>> future;
-  try {
-    future=client.asyncGetBulk(keyLookup.keySet());
-  }
- catch (  IllegalStateException e) {
-    errorCount.incrementAndGet();
-    log.warn(e,"Unable to queue cache operation");
-    return results;
-  }
-  try {
-    Map<String,Object> some=future.getSome(timeout,TimeUnit.MILLISECONDS);
-    if (future.isTimeout()) {
-      future.cancel(false);
-      timeoutCount.incrementAndGet();
+    Map<NamedKey,byte[]> results=Maps.newHashMap();
+    BulkFuture<Map<String,Object>> future;
+    try {
+      future=clientHolder.get().asyncGetBulk(keyLookup.keySet());
     }
-    missCount.addAndGet(keyLookup.size() - some.size());
-    hitCount.addAndGet(some.size());
-    for (    Map.Entry<String,Object> entry : some.entrySet()) {
-      final NamedKey key=keyLookup.get(entry.getKey());
-      final byte[] value=(byte[])entry.getValue();
-      results.put(key,value == null ? null : deserializeValue(key,value));
+ catch (    IllegalStateException e) {
+      errorCount.incrementAndGet();
+      log.warn(e,"Unable to queue cache operation");
+      return results;
     }
-    return results;
+    try {
+      Map<String,Object> some=future.getSome(timeout,TimeUnit.MILLISECONDS);
+      if (future.isTimeout()) {
+        future.cancel(false);
+        timeoutCount.incrementAndGet();
+      }
+      missCount.addAndGet(keyLookup.size() - some.size());
+      hitCount.addAndGet(some.size());
+      for (      Map.Entry<String,Object> entry : some.entrySet()) {
+        final NamedKey key=keyLookup.get(entry.getKey());
+        final byte[] value=(byte[])entry.getValue();
+        results.put(key,value == null ? null : deserializeValue(key,value));
+      }
+      return results;
+    }
+ catch (    InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw Throwables.propagate(e);
+    }
+catch (    ExecutionException e) {
+      errorCount.incrementAndGet();
+      log.warn(e,"Exception pulling item from cache");
+      return results;
+    }
   }
- catch (  InterruptedException e) {
-    Thread.currentThread().interrupt();
+ catch (  IOException e) {
     throw Throwables.propagate(e);
-  }
-catch (  ExecutionException e) {
-    errorCount.incrementAndGet();
-    log.warn(e,"Exception pulling item from cache");
-    return results;
   }
 }

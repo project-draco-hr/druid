@@ -1,0 +1,15 @@
+{
+  final CountingHolder holder;
+  try {
+    holder=queue.take();
+  }
+ catch (  InterruptedException e) {
+    Thread.currentThread().interrupt();
+    throw Throwables.propagate(e);
+  }
+synchronized (holder) {
+    holder.count.incrementAndGet();
+    queue.offer(holder);
+  }
+  return holder;
+}

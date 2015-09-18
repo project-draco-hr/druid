@@ -46,7 +46,7 @@
       }
     }
 ;
-    return new MemcachedCache(new MemcachedClient(new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setEnableMetrics(MetricType.DEBUG).setWriteOpQueueFactory(opQueueFactory).setReadOpQueueFactory(opQueueFactory).setMetricCollector(new MetricCollector(){
+    final MetricCollector metricCollector=new MetricCollector(){
       @Override public void addCounter(      String name){
         if (!interesting.apply(name)) {
           return;
@@ -76,7 +76,7 @@
         }
         counter.incrementAndGet();
         if (log.isDebugEnabled()) {
-          log.debug("Incrament [%s]",name);
+          log.debug("Increment [%s]",name);
         }
       }
       @Override public void incrementCounter(      String name,      int amount){
@@ -154,7 +154,28 @@
         log.debug("Ignoring update histogram [%s]: %d",name,amount);
       }
     }
-).build(),AddrUtil.getAddresses(config.getHosts())),config);
+;
+    final ConnectionFactory connectionFactory=new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setMetricCollector(metricCollector).build();
+    final List<InetSocketAddress> hosts=AddrUtil.getAddresses(config.getHosts());
+    final Supplier<ResourceHolder<MemcachedClientIF>> clientSupplier;
+    if (config.getNumConnections() > 1) {
+      clientSupplier=new LoadBalancingPool<MemcachedClientIF>(config.getNumConnections(),new Supplier<MemcachedClientIF>(){
+        @Override public MemcachedClientIF get(){
+          try {
+            return new MemcachedClient(connectionFactory,hosts);
+          }
+ catch (          IOException e) {
+            log.error(e,"Unable to create memcached client");
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+ else {
+      clientSupplier=Suppliers.<ResourceHolder<MemcachedClientIF>>ofInstance(StupidResourceHolder.<MemcachedClientIF>create(new MemcachedClient(connectionFactory,hosts)));
+    }
+    return new MemcachedCache(clientSupplier,config);
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
