@@ -21,9 +21,6 @@
           if (arg2 == null) {
             return arg1;
           }
-          if (!query.isMerge()) {
-            throw new ISE("Merging when a merge isn't supposed to happen[%s], [%s]",arg1,arg2);
-          }
           List<Interval> newIntervals=JodaUtils.condenseIntervals(Iterables.concat(arg1.getIntervals(),arg2.getIntervals()));
           final Map<String,ColumnAnalysis> leftColumns=arg1.getColumns();
           final Map<String,ColumnAnalysis> rightColumns=arg2.getColumns();
