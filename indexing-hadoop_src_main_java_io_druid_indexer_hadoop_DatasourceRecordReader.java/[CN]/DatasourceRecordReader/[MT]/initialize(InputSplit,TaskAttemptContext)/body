@@ -12,7 +12,7 @@
         logger.info("Locally storing fetched segment at [%s]",dir);
         JobHelper.unzipNoGuava(path,context.getConfiguration(),dir,context);
         logger.info("finished fetching segment files");
-        QueryableIndex index=IndexIO.loadIndex(dir);
+        QueryableIndex index=HadoopDruidIndexerConfig.INDEX_IO.loadIndex(dir);
         indexes.add(index);
         numRows+=index.getNumRows();
         return new WindowedStorageAdapter(new QueryableIndexStorageAdapter(index),segment.getInterval());

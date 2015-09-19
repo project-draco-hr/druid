@@ -4,7 +4,7 @@
   try {
     outDir=Files.createTempDir();
     Map<String,Object> segmentMetadata=ImmutableMap.<String,Object>of("key","value");
-    index=IndexIO.loadIndex(IndexMaker.persist(toPersist,outDir,segmentMetadata,INDEX_SPEC));
+    index=INDEX_IO.loadIndex(INDEX_MAKER.persist(toPersist,outDir,segmentMetadata,INDEX_SPEC));
     Assert.assertEquals(segmentMetadata,index.getMetaData());
   }
   finally {

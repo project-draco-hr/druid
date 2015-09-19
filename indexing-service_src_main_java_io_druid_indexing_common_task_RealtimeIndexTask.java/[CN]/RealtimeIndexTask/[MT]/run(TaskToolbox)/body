@@ -56,7 +56,7 @@
   final FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,tuningConfig);
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
-  final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService());
+  final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService(),toolbox.getIndexMerger(),toolbox.getIndexMaker(),toolbox.getIndexIO());
   this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
   Firehose firehose=null;
   Supplier<Committer> committerSupplier=null;

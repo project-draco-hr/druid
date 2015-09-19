@@ -4,7 +4,7 @@
   IncrementalIndexTest.populateIndex(timestamp,toPersist);
   Map<String,Object> segmentMetadata=ImmutableMap.<String,Object>of("key","value");
   final File tempDir=temporaryFolder.newFolder();
-  QueryableIndex index=closer.closeLater(IndexIO.loadIndex(IndexMerger.persist(toPersist,tempDir,segmentMetadata,indexSpec)));
+  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist,tempDir,segmentMetadata,indexSpec)));
   Assert.assertEquals(2,index.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
   Assert.assertEquals(3,index.getColumnNames().size());

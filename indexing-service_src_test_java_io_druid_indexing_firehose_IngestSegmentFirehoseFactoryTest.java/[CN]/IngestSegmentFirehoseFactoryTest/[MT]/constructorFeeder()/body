@@ -11,7 +11,7 @@
   if (!persistDir.mkdirs() && !persistDir.exists()) {
     throw new IOException(String.format("Could not create directory at [%s]",persistDir.getAbsolutePath()));
   }
-  IndexMerger.persist(index,persistDir,null,indexSpec);
+  INDEX_MERGER.persist(index,persistDir,null,indexSpec);
   final TaskLockbox tl=new TaskLockbox(ts);
   final IndexerSQLMetadataStorageCoordinator mdc=new IndexerSQLMetadataStorageCoordinator(null,null,null){
     final private Set<DataSegment> published=Sets.newHashSet();
@@ -37,7 +37,6 @@
   }
 ;
   final LocalTaskActionClientFactory tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  final ObjectMapper objectMapper=newObjectMapper();
   final TaskToolboxFactory taskToolboxFactory=new TaskToolboxFactory(new TaskConfig(tmpDir.getAbsolutePath(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
@@ -68,7 +67,7 @@
       return Lists.newArrayList();
     }
   }
-,objectMapper)),objectMapper);
+,MAPPER)),MAPPER,INDEX_MERGER,INDEX_MAKER,INDEX_IO);
   Collection<Object[]> values=new LinkedList<>();
   for (  InputRowParser parser : Arrays.<InputRowParser>asList(ROW_PARSER,new MapInputRowParser(new JSONParseSpec(new TimestampSpec(TIME_COLUMN,"auto",null),new DimensionsSpec(ImmutableList.<String>of(),ImmutableList.of(DIM_FLOAT_NAME,DIM_LONG_NAME),ImmutableList.<SpatialDimensionSchema>of()))))) {
     for (    List<String> dim_names : Arrays.<List<String>>asList(null,ImmutableList.of(DIM_NAME))) {
@@ -78,7 +77,7 @@
             binder.bind(TaskToolboxFactory.class).toInstance(taskToolboxFactory);
           }
         }
-)),String.format("DimNames[%s]MetricNames[%s]ParserDimNames[%s]",dim_names == null ? "null" : "dims",metric_names == null ? "null" : "metrics",parser == ROW_PARSER ? "dims" : "null"),parser});
+),INDEX_IO),String.format("DimNames[%s]MetricNames[%s]ParserDimNames[%s]",dim_names == null ? "null" : "dims",metric_names == null ? "null" : "metrics",parser == ROW_PARSER ? "dims" : "null"),parser});
       }
     }
   }

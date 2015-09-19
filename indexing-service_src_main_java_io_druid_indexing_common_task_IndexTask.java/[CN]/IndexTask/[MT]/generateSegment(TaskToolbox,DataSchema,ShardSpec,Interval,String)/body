@@ -18,7 +18,7 @@
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
   final Supplier<Committer> committerSupplier=Committers.supplierFromFirehose(firehose);
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir).findPlumber(schema,convertTuningConfig(shardSpec,myRowFlushBoundary,ingestionSchema.getTuningConfig().getIndexSpec()),metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir,toolbox.getIndexMerger(),toolbox.getIndexIO()).findPlumber(schema,convertTuningConfig(shardSpec,myRowFlushBoundary,ingestionSchema.getTuningConfig().getIndexSpec()),metrics);
   final QueryGranularity rollupGran=ingestionSchema.getDataSchema().getGranularitySpec().getQueryGranularity();
   try {
     plumber.startJob();

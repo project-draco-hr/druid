@@ -54,7 +54,7 @@
           @Override public WindowedStorageAdapter apply(          final PartitionChunk<DataSegment> input){
             final DataSegment segment=input.getObject();
             try {
-              return new WindowedStorageAdapter(new QueryableIndexStorageAdapter(IndexIO.loadIndex(Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier()))),holder.getInterval());
+              return new WindowedStorageAdapter(new QueryableIndexStorageAdapter(indexIO.loadIndex(Preconditions.checkNotNull(segmentFileMap.get(segment),"File for segment %s",segment.getIdentifier()))),holder.getInterval());
             }
  catch (            IOException e) {
               throw Throwables.propagate(e);

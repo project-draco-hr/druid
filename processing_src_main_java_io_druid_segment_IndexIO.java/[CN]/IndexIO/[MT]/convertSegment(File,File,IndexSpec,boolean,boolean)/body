@@ -11,16 +11,16 @@ case 5:
 case 6:
 case 7:
 log.info("Old version, re-persisting.");
-IndexMerger.append(Arrays.<IndexableAdapter>asList(new QueryableIndexIndexableAdapter(loadIndex(toConvert))),converted,indexSpec);
+new IndexMerger(mapper,this).append(Arrays.<IndexableAdapter>asList(new QueryableIndexIndexableAdapter(loadIndex(toConvert))),converted,indexSpec);
 return true;
 case 8:
-DefaultIndexIOHandler.convertV8toV9(toConvert,converted,indexSpec);
+defaultIndexIOHandler.convertV8toV9(toConvert,converted,indexSpec);
 return true;
 default :
 if (forceIfCurrent) {
-IndexMerger.convert(toConvert,converted,indexSpec);
+new IndexMerger(mapper,this).convert(toConvert,converted,indexSpec);
 if (validate) {
-DefaultIndexIOHandler.validateTwoSegments(toConvert,converted);
+validateTwoSegments(toConvert,converted);
 }
 return true;
 }

@@ -3,7 +3,7 @@
   createTestIndex(segmentDir);
   QueryableIndex qi=null;
   try {
-    qi=IndexIO.loadIndex(segmentDir);
+    qi=indexIO.loadIndex(segmentDir);
     StorageAdapter sa=new QueryableIndexStorageAdapter(qi);
     WindowedStorageAdapter wsa=new WindowedStorageAdapter(sa,sa.getInterval());
     IngestSegmentFirehose firehose=new IngestSegmentFirehose(ImmutableList.of(wsa,wsa),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),null,QueryGranularity.NONE);

@@ -314,7 +314,7 @@ log.info("Unable to delete temporary dir[%s], contains[%s]",smooshDir,Arrays.asL
 throw new IOException(String.format("Unable to delete temporary dir[%s]",smooshDir));
 }
 createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY),dataInterval,indexSpec.getBitmapSerdeFactory());
-IndexIO.DefaultIndexIOHandler.convertV8toV9(v8OutDir,outDir,indexSpec);
+indexIO.getDefaultIndexIOHandler().convertV8toV9(v8OutDir,outDir,indexSpec);
 FileUtils.deleteDirectory(v8OutDir);
 return outDir;
 }

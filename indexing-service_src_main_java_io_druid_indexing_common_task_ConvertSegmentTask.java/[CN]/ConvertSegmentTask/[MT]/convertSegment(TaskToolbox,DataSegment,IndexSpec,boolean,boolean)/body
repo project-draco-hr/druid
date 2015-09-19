@@ -13,7 +13,7 @@
   final Map<DataSegment,File> localSegments=toolbox.fetchSegments(Collections.singletonList(segment));
   final File location=localSegments.get(segment);
   final File outLocation=new File(location,"v9_out");
-  if (IndexIO.convertSegment(location,outLocation,indexSpec,force,validate)) {
+  if (toolbox.getIndexIO().convertSegment(location,outLocation,indexSpec,force,validate)) {
     final int outVersion=IndexIO.getVersionFromDir(outLocation);
     DataSegment updatedSegment=segment.withVersion(String.format("%s_v%s",segment.getVersion(),outVersion));
     updatedSegment=toolbox.getSegmentPusher().push(outLocation,updatedSegment);

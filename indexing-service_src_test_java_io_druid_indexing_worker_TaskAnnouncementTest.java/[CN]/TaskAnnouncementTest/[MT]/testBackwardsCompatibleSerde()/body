@@ -7,7 +7,6 @@
 ,null),null),null);
   final TaskStatus status=TaskStatus.running(task.getId());
   final TaskAnnouncement announcement=TaskAnnouncement.create(task,status);
-  final ObjectMapper jsonMapper=new DefaultObjectMapper();
   final String statusJson=jsonMapper.writeValueAsString(status);
   final String announcementJson=jsonMapper.writeValueAsString(announcement);
   final TaskStatus statusFromStatus=jsonMapper.readValue(statusJson,TaskStatus.class);
