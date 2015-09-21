@@ -1,0 +1,18 @@
+{
+  final String uuid=UUID.randomUUID().toString();
+  System.setProperty(uuid + ".type","memcached");
+  System.setProperty(uuid + ".hosts","localhost");
+  final MonitorScheduler monitorScheduler=EasyMock.createNiceMock(MonitorScheduler.class);
+  EasyMock.replay(monitorScheduler);
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(MonitorScheduler.class).toInstance(monitorScheduler);
+      binder.bind(Cache.class).toProvider(CacheProvider.class);
+      JsonConfigProvider.bind(binder,uuid,CacheProvider.class);
+    }
+  }
+));
+  final CacheProvider memcachedCacheProvider=injector.getInstance(CacheProvider.class);
+  Assert.assertNotNull(memcachedCacheProvider);
+  Assert.assertEquals(MemcachedCacheProvider.class,memcachedCacheProvider.getClass());
+}
