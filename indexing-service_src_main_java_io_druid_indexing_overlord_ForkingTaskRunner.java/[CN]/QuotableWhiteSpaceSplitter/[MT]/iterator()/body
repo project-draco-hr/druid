@@ -1,0 +1,15 @@
+{
+  return Splitter.on(new CharMatcher(){
+    private boolean inQuotes=false;
+    @Override public boolean matches(    char c){
+      if ('"' == c) {
+        inQuotes=!inQuotes;
+      }
+      if (inQuotes) {
+        return false;
+      }
+      return CharMatcher.BREAKING_WHITESPACE.matches(c);
+    }
+  }
+).omitEmptyStrings().split(string).iterator();
+}
