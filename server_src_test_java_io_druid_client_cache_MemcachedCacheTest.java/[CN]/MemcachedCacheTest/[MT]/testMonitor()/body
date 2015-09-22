@@ -1,16 +1,6 @@
 {
-  MonitorScheduler monitorScheduler=EasyMock.createNiceMock(MonitorScheduler.class);
-  Capture<? extends Monitor> monitorCapture=Capture.newInstance();
-  monitorScheduler.addMonitor(EasyMock.capture(monitorCapture));
-  EasyMock.expectLastCall().once();
-  EasyMock.replay(monitorScheduler);
-  MemcachedCache cache=MemcachedCache.create(memcachedCacheConfig,monitorScheduler);
-  EasyMock.verify(monitorScheduler);
-  Assert.assertTrue(monitorCapture.hasCaptured());
-  final Monitor monitor=monitorCapture.getValue();
-  monitor.start();
-  Assert.assertNotNull(monitor);
-  Emitter emitter=EasyMock.createNiceMock(Emitter.class);
+  final MemcachedCache cache=MemcachedCache.create(memcachedCacheConfig);
+  final Emitter emitter=EasyMock.createNiceMock(Emitter.class);
   final Collection<Event> events=new ArrayList<>();
   final ServiceEmitter serviceEmitter=new ServiceEmitter("service","host",emitter){
     @Override public void emit(    Event event){
@@ -20,7 +10,7 @@
 ;
   while (events.isEmpty()) {
     Thread.sleep(memcachedCacheConfig.getTimeout());
-    Assert.assertTrue(monitor.monitor(serviceEmitter));
+    cache.doMonitor(serviceEmitter);
   }
   Assert.assertFalse(events.isEmpty());
   ObjectMapper mapper=new DefaultObjectMapper();

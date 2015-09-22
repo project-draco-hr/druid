@@ -1,7 +1,7 @@
 {
   final ConcurrentMap<String,AtomicLong> counters=new ConcurrentHashMap<>();
   final ConcurrentMap<String,AtomicLong> meters=new ConcurrentHashMap<>();
-  emitter.addMonitor(new AbstractMonitor(){
+  final AbstractMonitor monitor=new AbstractMonitor(){
     final AtomicReference<Map<String,Long>> priorValues=new AtomicReference<Map<String,Long>>(new HashMap<String,Long>());
     @Override public boolean doMonitor(    ServiceEmitter emitter){
       final Map<String,Long> priorValues=this.priorValues.get();
@@ -28,7 +28,7 @@
       return builder.build();
     }
   }
-);
+;
   try {
     LZ4Transcoder transcoder=new LZ4Transcoder(config.getMaxObjectSize());
     transcoder.setCompressionThreshold(0);
@@ -41,8 +41,9 @@
       opQueueFactory=new LinkedOperationQueueFactory();
     }
     final Predicate<String> interesting=new Predicate<String>(){
+      private final Set<String> interestingMetrics=ImmutableSet.of("[MEM] Reconnecting Nodes (ReconnectQueue)","[MEM] Request Rate: All","[MEM] Average Bytes written to OS per write","[MEM] Average Bytes read from OS per read","[MEM] Average Time on wire for operations (??s)","[MEM] Response Rate: All (Failure + Success + Retry)","[MEM] Response Rate: Retry","[MEM] Response Rate: Failure","[MEM] Response Rate: Success");
       @Override public boolean apply(      @Nullable String input){
-        return input != null && !input.contains("Down");
+        return input != null && interestingMetrics.contains(input);
       }
     }
 ;
@@ -51,18 +52,14 @@
         if (!interesting.apply(name)) {
           return;
         }
-        counters.put(name,new AtomicLong(0L));
+        counters.putIfAbsent(name,new AtomicLong(0L));
         if (log.isDebugEnabled()) {
           log.debug("Add Counter [%s]",name);
         }
       }
       @Override public void removeCounter(      String name){
-        if (!interesting.apply(name)) {
-          return;
-        }
-        counters.remove(name);
         if (log.isDebugEnabled()) {
-          log.debug("Remove Counter [%s]",name);
+          log.debug("Ignoring request to remove [%s]",name);
         }
       }
       @Override public void incrementCounter(      String name){
@@ -122,18 +119,26 @@
         }
       }
       @Override public void addMeter(      String name){
-        meters.put(name,new AtomicLong(0L));
+        if (!interesting.apply(name)) {
+          return;
+        }
+        meters.putIfAbsent(name,new AtomicLong(0L));
         if (log.isDebugEnabled()) {
           log.debug("Adding meter [%s]",name);
         }
       }
       @Override public void removeMeter(      String name){
-        meters.remove(name);
+        if (!interesting.apply(name)) {
+          return;
+        }
         if (log.isDebugEnabled()) {
-          log.debug("Removing meter [%s]",name);
+          log.debug("Ignoring request to remove meter [%s]",name);
         }
       }
       @Override public void markMeter(      String name){
+        if (!interesting.apply(name)) {
+          return;
+        }
         AtomicLong meter=meters.get(name);
         if (meter == null) {
           meters.putIfAbsent(name,new AtomicLong(0L));
@@ -175,7 +180,7 @@
  else {
       clientSupplier=Suppliers.<ResourceHolder<MemcachedClientIF>>ofInstance(StupidResourceHolder.<MemcachedClientIF>create(new MemcachedClient(connectionFactory,hosts)));
     }
-    return new MemcachedCache(clientSupplier,config);
+    return new MemcachedCache(clientSupplier,config,monitor);
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);
