@@ -1,0 +1,11 @@
+{
+  final ColumnCapabilities capabilities=column.getCapabilities();
+  if (capabilities.hasMultipleValues()) {
+    return ColumnAnalysis.error("multi_value");
+  }
+  int size=0;
+  if (analysisHasSize(analysisTypes)) {
+    size=column.getLength() * numBytes;
+  }
+  return new ColumnAnalysis(capabilities.getType().name(),size,null,null);
+}

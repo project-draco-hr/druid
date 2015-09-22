@@ -1,0 +1,31 @@
+{
+  Preconditions.checkNotNull(adapter,"Adapter cannot be null");
+  Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
+  List<String> columnNames=getStorageAdapterColumnNames(adapter);
+  int numRows=adapter.getNumRows();
+  for (  String columnName : columnNames) {
+    final ColumnCapabilities capabilities=adapter.getColumnCapabilities(columnName);
+    final ColumnAnalysis analysis;
+    ValueType capType=capabilities.getType();
+switch (capType) {
+case LONG:
+      analysis=lengthBasedAnalysisForAdapter(analysisTypes,capType.name(),capabilities,numRows,Longs.BYTES);
+    break;
+case FLOAT:
+  analysis=lengthBasedAnalysisForAdapter(analysisTypes,capType.name(),capabilities,numRows,NUM_BYTES_IN_TEXT_FLOAT);
+break;
+case STRING:
+analysis=new ColumnAnalysis(capType.name(),0,analysisHasCardinality(analysisTypes) ? adapter.getDimensionCardinality(columnName) : 0,null);
+break;
+case COMPLEX:
+analysis=new ColumnAnalysis(capType.name(),0,null,null);
+break;
+default :
+log.warn("Unknown column type[%s].",capType);
+analysis=ColumnAnalysis.error(String.format("unknown_type_%s",capType));
+}
+columns.put(columnName,analysis);
+}
+columns.put(Column.TIME_COLUMN_NAME,lengthBasedAnalysisForAdapter(analysisTypes,ValueType.LONG.name(),null,numRows,NUM_BYTES_IN_TIMESTAMP));
+return columns;
+}

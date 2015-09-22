@@ -1,25 +1,4 @@
 {
-  final List<SegmentAnalysis> results=getSegmentAnalysises(new QueryableIndexSegment("test_1",TestIndex.getMMappedTestIndex()));
-  Assert.assertEquals(1,results.size());
-  final SegmentAnalysis analysis=results.get(0);
-  Assert.assertEquals("test_1",analysis.getId());
-  final Map<String,ColumnAnalysis> columns=analysis.getColumns();
-  Assert.assertEquals(TestIndex.COLUMNS.length - 1,columns.size());
-  for (  String dimension : TestIndex.DIMENSIONS) {
-    final ColumnAnalysis columnAnalysis=columns.get(dimension);
-    if (dimension.equals("null_column")) {
-      Assert.assertNull(columnAnalysis);
-    }
- else {
-      Assert.assertEquals(dimension,ValueType.STRING.name(),columnAnalysis.getType());
-      Assert.assertTrue(dimension,columnAnalysis.getSize() > 0);
-      Assert.assertTrue(dimension,columnAnalysis.getCardinality() > 0);
-    }
-  }
-  for (  String metric : TestIndex.METRICS) {
-    final ColumnAnalysis columnAnalysis=columns.get(metric);
-    Assert.assertEquals(metric,ValueType.FLOAT.name(),columnAnalysis.getType());
-    Assert.assertTrue(metric,columnAnalysis.getSize() > 0);
-    Assert.assertNull(metric,columnAnalysis.getCardinality());
-  }
+  testMappedWorksHelper(null);
+  testMappedWorksHelper(emptyAnalyses);
 }
