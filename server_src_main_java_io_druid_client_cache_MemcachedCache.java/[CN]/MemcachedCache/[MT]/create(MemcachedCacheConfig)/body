@@ -160,7 +160,7 @@
       }
     }
 ;
-    final ConnectionFactory connectionFactory=new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setMetricCollector(metricCollector).build();
+    final ConnectionFactory connectionFactory=new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setMetricCollector(metricCollector).setEnableMetrics(MetricType.DEBUG).build();
     final List<InetSocketAddress> hosts=AddrUtil.getAddresses(config.getHosts());
     final Supplier<ResourceHolder<MemcachedClientIF>> clientSupplier;
     if (config.getNumConnections() > 1) {
