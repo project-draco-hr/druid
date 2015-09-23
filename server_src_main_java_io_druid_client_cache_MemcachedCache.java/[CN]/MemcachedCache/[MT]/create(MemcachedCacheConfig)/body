@@ -25,6 +25,9 @@
       for (      Map.Entry<String,AtomicLong> entry : counters.entrySet()) {
         builder.put(entry.getKey(),entry.getValue().get());
       }
+      for (      Map.Entry<String,AtomicLong> entry : meters.entrySet()) {
+        builder.put(entry.getKey(),entry.getValue().get());
+      }
       return builder.build();
     }
   }
@@ -160,7 +163,7 @@
       }
     }
 ;
-    final ConnectionFactory connectionFactory=new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setMetricCollector(metricCollector).build();
+    final ConnectionFactory connectionFactory=new MemcachedCustomConnectionFactoryBuilder().setKetamaNodeRepetitions(1000).setHashAlg(MURMUR3_128).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY).setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT).setDaemon(true).setFailureMode(FailureMode.Cancel).setTranscoder(transcoder).setShouldOptimize(true).setOpQueueMaxBlockTime(config.getTimeout()).setOpTimeout(config.getTimeout()).setReadBufferSize(config.getReadBufferSize()).setOpQueueFactory(opQueueFactory).setMetricCollector(metricCollector).setEnableMetrics(MetricType.DEBUG).build();
     final List<InetSocketAddress> hosts=AddrUtil.getAddresses(config.getHosts());
     final Supplier<ResourceHolder<MemcachedClientIF>> clientSupplier;
     if (config.getNumConnections() > 1) {
