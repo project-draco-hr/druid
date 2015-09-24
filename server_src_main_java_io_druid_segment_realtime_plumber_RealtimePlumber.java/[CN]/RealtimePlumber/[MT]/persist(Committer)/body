@@ -11,6 +11,7 @@
   final Map<String,Object> metadata=committer.getMetadata() == null ? null : ImmutableMap.of(COMMIT_METADATA_KEY,committer.getMetadata(),COMMIT_METADATA_TIMESTAMP_KEY,System.currentTimeMillis());
   persistExecutor.execute(new ThreadRenamingRunnable(String.format("%s-incremental-persist",schema.getDataSource())){
     @Override public void doRun(){
+      long persistThreadCpuTime=VMUtils.safeGetThreadCpuTime();
       try {
         for (        Pair<FireHydrant,Interval> pair : indexesToPersist) {
           metrics.incrementRowOutputCount(persistHydrant(pair.lhs,schema,pair.rhs,metadata));
@@ -22,6 +23,7 @@
         throw e;
       }
  finally {
+        metrics.incrementPersistCpuTime(VMUtils.safeGetThreadCpuTime() - persistThreadCpuTime);
         metrics.incrementNumPersists();
         metrics.incrementPersistTimeMillis(persistStopwatch.elapsed(TimeUnit.MILLISECONDS));
         persistStopwatch.stop();

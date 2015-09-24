@@ -2,33 +2,33 @@
   final Sequence<T> baseSequence=delegate.run(query,responseContext);
   return Sequences.withEffect(new Sequence<T>(){
     @Override public <OutType>OutType accumulate(    OutType initValue,    Accumulator<OutType,T> accumulator){
-      final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+      final long start=VMUtils.getCurrentThreadCpuTime();
       try {
         return baseSequence.accumulate(initValue,accumulator);
       }
   finally {
-        cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+        cpuTimeAccumulator.addAndGet(VMUtils.getCurrentThreadCpuTime() - start);
       }
     }
     @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
       final Yielder<OutType> delegateYielder=baseSequence.toYielder(initValue,accumulator);
       return new Yielder<OutType>(){
         @Override public OutType get(){
-          final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+          final long start=VMUtils.getCurrentThreadCpuTime();
           try {
             return delegateYielder.get();
           }
   finally {
-            cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+            cpuTimeAccumulator.addAndGet(VMUtils.getCurrentThreadCpuTime() - start);
           }
         }
         @Override public Yielder<OutType> next(        OutType initValue){
-          final long start=THREAD_MX_BEAN.getCurrentThreadCpuTime();
+          final long start=VMUtils.getCurrentThreadCpuTime();
           try {
             return delegateYielder.next(initValue);
           }
   finally {
-            cpuTimeAccumulator.addAndGet(THREAD_MX_BEAN.getCurrentThreadCpuTime() - start);
+            cpuTimeAccumulator.addAndGet(VMUtils.getCurrentThreadCpuTime() - start);
           }
         }
         @Override public boolean isDone(){
