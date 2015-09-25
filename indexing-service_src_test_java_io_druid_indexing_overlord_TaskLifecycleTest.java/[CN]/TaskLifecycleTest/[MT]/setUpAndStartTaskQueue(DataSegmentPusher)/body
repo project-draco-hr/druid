@@ -1,0 +1,39 @@
+{
+  tsqa=new TaskStorageQueryAdapter(ts);
+  tl=new TaskLockbox(ts);
+  mdc=newMockMDC();
+  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
+  tb=new TaskToolboxFactory(new TaskConfig(tmpDir.toString(),null,null,50000,null),tac,newMockEmitter(),dataSegmentPusher,new LocalDataSegmentKiller(),new DataSegmentMover(){
+    @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
+      return dataSegment;
+    }
+  }
+,new DataSegmentArchiver(){
+    @Override public DataSegment archive(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
+    }
+    @Override public DataSegment restore(    DataSegment segment) throws SegmentLoadingException {
+      return segment;
+    }
+  }
+,new DataSegmentAnnouncer(){
+    @Override public void announceSegment(    DataSegment segment) throws IOException {
+      announcedSinks++;
+    }
+    @Override public void unannounceSegment(    DataSegment segment) throws IOException {
+    }
+    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+    }
+    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+    }
+  }
+,serverView,queryRunnerFactoryConglomerate,null,monitorScheduler,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+    @Override public List<StorageLocationConfig> getLocations(){
+      return Lists.newArrayList();
+    }
+  }
+,new DefaultObjectMapper())),new DefaultObjectMapper());
+  tr=new ThreadPoolTaskRunner(tb,null);
+  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
+  tq.start();
+}
