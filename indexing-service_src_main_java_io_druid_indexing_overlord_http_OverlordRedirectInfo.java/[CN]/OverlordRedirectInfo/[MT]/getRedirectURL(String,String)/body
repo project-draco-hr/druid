@@ -1,6 +1,12 @@
 {
   try {
-    return new URL(String.format("http://%s%s",taskMaster.getLeader(),requestURI));
+    final String leader=taskMaster.getLeader();
+    if (leader == null || leader.isEmpty()) {
+      return null;
+    }
+ else {
+      return new URI("http",leader,requestURI,queryString,null).toURL();
+    }
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

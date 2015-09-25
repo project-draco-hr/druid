@@ -1,0 +1,10 @@
+{
+  String host="localhost";
+  String query="foo=bar&x=y";
+  String request="/request";
+  EasyMock.expect(taskMaster.getLeader()).andReturn(host).anyTimes();
+  EasyMock.replay(taskMaster);
+  URL url=redirectInfo.getRedirectURL(query,request);
+  Assert.assertEquals("http://localhost/request?foo=bar&x=y",url.toString());
+  EasyMock.verify(taskMaster);
+}
