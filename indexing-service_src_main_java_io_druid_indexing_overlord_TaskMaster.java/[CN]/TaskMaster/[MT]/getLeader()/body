@@ -1,6 +1,12 @@
 {
   try {
-    return leaderSelector.getLeader().getId();
+    final Participant leader=leaderSelector.getLeader();
+    if (leader != null && leader.isLeader()) {
+      return leader.getId();
+    }
+ else {
+      return null;
+    }
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
