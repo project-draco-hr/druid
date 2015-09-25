@@ -4,9 +4,9 @@
   final String entryTable="entries";
   final String logTable="logs";
   final String lockTable="locks";
-  connector.createEntryTable(connector.getDBI(),entryTable);
-  connector.createLockTable(connector.getDBI(),lockTable,entryType);
-  connector.createLogTable(connector.getDBI(),logTable,entryType);
+  connector.createEntryTable(entryTable);
+  connector.createLockTable(lockTable,entryType);
+  connector.createLogTable(logTable,entryType);
   handler=new SQLMetadataStorageActionHandler<>(connector,jsonMapper,new MetadataStorageActionHandlerTypes<Map<String,Integer>,Map<String,Integer>,Map<String,String>,Map<String,Integer>>(){
     @Override public TypeReference<Map<String,Integer>> getEntryType(){
       return new TypeReference<Map<String,Integer>>(){
