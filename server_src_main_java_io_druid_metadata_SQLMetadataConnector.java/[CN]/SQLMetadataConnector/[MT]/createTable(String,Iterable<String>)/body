@@ -1,6 +1,6 @@
 {
   try {
-    dbi.withHandle(new HandleCallback<Void>(){
+    retryWithHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
         if (!tableExists(handle,tableName)) {
           log.info("Creating table[%s]",tableName);

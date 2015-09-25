@@ -1,3 +1,0 @@
-{
-  createTable(dbi,tableName,ImmutableList.of(String.format("CREATE TABLE %1$s (\n" + "  id %2$s NOT NULL,\n" + "  audit_key VARCHAR(255) NOT NULL,\n"+ "  type VARCHAR(255) NOT NULL,\n"+ "  author VARCHAR(255) NOT NULL,\n"+ "  comment VARCHAR(2048) NOT NULL,\n"+ "  created_date VARCHAR(255) NOT NULL,\n"+ "  payload %3$s NOT NULL,\n"+ "  PRIMARY KEY(id)\n"+ ")",tableName,getSerialType(),getPayloadType()),String.format("CREATE INDEX idx_%1$s_key_time ON %1$s(audit_key, created_date)",tableName),String.format("CREATE INDEX idx_%1$s_type_time ON %1$s(type, created_date)",tableName),String.format("CREATE INDEX idx_%1$s_audit_time ON %1$s(created_date)",tableName)));
-}
