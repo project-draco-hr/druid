@@ -1,5 +1,5 @@
 {
   cf.delete().forPath(joiner.join(tasksPath,task.getId()));
   TaskAnnouncement taskAnnouncement=TaskAnnouncement.create(task,TaskStatus.running(task.getId()));
-  cf.create().forPath(joiner.join(statusPath,task.getId()),jsonMapper.writeValueAsBytes(taskAnnouncement));
+  cf.create().creatingParentsIfNeeded().forPath(joiner.join(statusPath,task.getId()),jsonMapper.writeValueAsBytes(taskAnnouncement));
 }
