@@ -1,0 +1,24 @@
+{
+  setUpAndStartTaskQueue(new DataSegmentPusher(){
+    @Override public String getPathForHadoop(    String s){
+      throw new UnsupportedOperationException();
+    }
+    @Override public DataSegment push(    File file,    DataSegment dataSegment) throws IOException {
+      throw new RuntimeException("FAILURE");
+    }
+  }
+);
+  monitorScheduler.addMonitor(EasyMock.anyObject(Monitor.class));
+  EasyMock.expectLastCall().atLeastOnce();
+  monitorScheduler.removeMonitor(EasyMock.anyObject(Monitor.class));
+  EasyMock.expectLastCall().anyTimes();
+  EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
+  RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
+  final String taskId=realtimeIndexTask.getId();
+  tq.add(realtimeIndexTask);
+  while (tsqa.getStatus(taskId).get().isRunnable()) {
+    Thread.sleep(10);
+  }
+  Assert.assertTrue("Task should be in Failure state",tsqa.getStatus(taskId).get().isFailure());
+  EasyMock.verify(monitorScheduler,queryRunnerFactoryConglomerate);
+}

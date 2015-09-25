@@ -1,20 +1,18 @@
 {
-  serverView.registerSegmentCallback(EasyMock.anyObject(Executor.class),EasyMock.anyObject(ServerView.SegmentCallback.class),EasyMock.anyObject(Predicate.class));
-  EasyMock.expectLastCall().atLeastOnce();
   monitorScheduler.addMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().atLeastOnce();
   monitorScheduler.removeMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().anyTimes();
-  EasyMock.replay(monitorScheduler,serverView,queryRunnerFactoryConglomerate);
-  String taskId="rt_task_1";
-  DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new LongSumAggregatorFactory("count","rows")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null),mapper);
-  RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new MockFirehoseFactory(true),null,null);
-  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),null,null,null,null,null,null,null,null,null,null,null);
-  FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig);
-  RealtimeIndexTask realtimeIndexTask=new RealtimeIndexTask(taskId,new TaskResource(taskId,1),fireDepartment,null);
+  EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
+  RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
+  final String taskId=realtimeIndexTask.getId();
   tq.add(realtimeIndexTask);
   Assert.assertTrue(publishCountDown.await(1000,TimeUnit.MILLISECONDS));
-  Assert.assertTrue("Task should be running",tsqa.getStatus(taskId).get().isRunnable());
+  segmentCallbacks.get(0).segmentAdded(new DruidServerMetadata("dummy","dummy_host",0,"historical","dummy_tier",0),mdc.getPublished().iterator().next());
+  while (tsqa.getStatus(taskId).get().isRunnable()) {
+    Thread.sleep(10);
+  }
+  Assert.assertTrue("Task should be in Success state",tsqa.getStatus(taskId).get().isSuccess());
   Assert.assertEquals(1,announcedSinks);
   Assert.assertEquals(1,pushedSegments);
   Assert.assertEquals(1,mdc.getPublished().size());
@@ -23,5 +21,5 @@
   Assert.assertEquals(ImmutableList.of("dim1","dim2"),segment.getDimensions());
   Assert.assertEquals(new Interval(now.toString("YYYY-MM-dd") + "/" + now.plusDays(1).toString("YYYY-MM-dd")),segment.getInterval());
   Assert.assertEquals(ImmutableList.of("count"),segment.getMetrics());
-  EasyMock.verify(monitorScheduler,serverView,queryRunnerFactoryConglomerate);
+  EasyMock.verify(monitorScheduler,queryRunnerFactoryConglomerate);
 }

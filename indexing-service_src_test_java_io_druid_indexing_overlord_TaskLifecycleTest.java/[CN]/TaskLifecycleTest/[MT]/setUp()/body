@@ -1,14 +1,13 @@
 {
-  final ServiceEmitter emitter=EasyMock.createMock(ServiceEmitter.class);
+  emitter=EasyMock.createMock(ServiceEmitter.class);
   EmittingLogger.registerEmitter(emitter);
   queryRunnerFactoryConglomerate=EasyMock.createStrictMock(QueryRunnerFactoryConglomerate.class);
-  serverView=EasyMock.createStrictMock(FilteredServerView.class);
   monitorScheduler=EasyMock.createStrictMock(MonitorScheduler.class);
   publishCountDown=new CountDownLatch(1);
   announcedSinks=0;
   pushedSegments=0;
   tmpDir=temporaryFolder.newFolder();
-  final TaskQueueConfig tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\", \"storageSyncRate\":\"PT0.5S\"}",TaskQueueConfig.class);
+  tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\", \"storageSyncRate\":\"PT0.5S\"}",TaskQueueConfig.class);
   indexSpec=new IndexSpec();
   mapper=new DefaultObjectMapper();
   if (taskStorageType.equals("HeapMemoryTaskStorage")) {
@@ -27,11 +26,13 @@
  else {
     throw new RuntimeException(String.format("Unknown task storage type [%s]",taskStorageType));
   }
-  tsqa=new TaskStorageQueryAdapter(ts);
-  tl=new TaskLockbox(ts);
-  mdc=newMockMDC();
-  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  tb=new TaskToolboxFactory(new TaskConfig(tmpDir.toString(),null,null,50000,null),tac,newMockEmitter(),new DataSegmentPusher(){
+  serverView=new FilteredServerView(){
+    @Override public void registerSegmentCallback(    Executor exec,    ServerView.SegmentCallback callback,    Predicate<DataSegment> filter){
+      segmentCallbacks.add(callback);
+    }
+  }
+;
+  setUpAndStartTaskQueue(new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String dataSource){
       throw new UnsupportedOperationException();
     }
@@ -40,37 +41,5 @@
       return segment;
     }
   }
-,new LocalDataSegmentKiller(),new DataSegmentMover(){
-    @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
-      return dataSegment;
-    }
-  }
-,new DataSegmentArchiver(){
-    @Override public DataSegment archive(    DataSegment segment) throws SegmentLoadingException {
-      return segment;
-    }
-    @Override public DataSegment restore(    DataSegment segment) throws SegmentLoadingException {
-      return segment;
-    }
-  }
-,new DataSegmentAnnouncer(){
-    @Override public void announceSegment(    DataSegment segment) throws IOException {
-      announcedSinks++;
-    }
-    @Override public void unannounceSegment(    DataSegment segment) throws IOException {
-    }
-    @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
-    }
-    @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
-    }
-  }
-,serverView,queryRunnerFactoryConglomerate,null,monitorScheduler,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
-    @Override public List<StorageLocationConfig> getLocations(){
-      return Lists.newArrayList();
-    }
-  }
-,new DefaultObjectMapper())),new DefaultObjectMapper());
-  tr=new ThreadPoolTaskRunner(tb,null);
-  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
-  tq.start();
+);
 }
