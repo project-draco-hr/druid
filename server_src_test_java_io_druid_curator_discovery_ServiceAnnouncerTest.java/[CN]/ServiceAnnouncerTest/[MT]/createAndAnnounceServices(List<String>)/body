@@ -1,0 +1,10 @@
+{
+  int port=1000;
+  ServiceDiscovery<Void> serviceDiscovery=ServiceDiscoveryBuilder.builder(Void.class).basePath("/test").client(curator).build();
+  for (  String serviceName : serviceNames) {
+    String serviceNameToUse=CuratorServiceUtils.makeCanonicalServiceName(serviceName);
+    ServiceInstance instance=ServiceInstance.<Void>builder().name(serviceNameToUse).address("localhost").port(port++).build();
+    serviceDiscovery.registerService(instance);
+  }
+  return serviceDiscovery;
+}
