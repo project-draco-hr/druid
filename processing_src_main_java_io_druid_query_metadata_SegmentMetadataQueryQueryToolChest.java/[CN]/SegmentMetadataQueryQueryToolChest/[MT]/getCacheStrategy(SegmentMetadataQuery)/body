@@ -2,7 +2,8 @@
   return new CacheStrategy<SegmentAnalysis,SegmentAnalysis,SegmentMetadataQuery>(){
     @Override public byte[] computeCacheKey(    SegmentMetadataQuery query){
       byte[] includerBytes=query.getToInclude().getCacheKey();
-      return ByteBuffer.allocate(1 + includerBytes.length).put(SEGMENT_METADATA_CACHE_PREFIX).put(includerBytes).array();
+      byte[] analysisTypesBytes=query.getAnalysisTypesCacheKey();
+      return ByteBuffer.allocate(1 + includerBytes.length + analysisTypesBytes.length).put(SEGMENT_METADATA_CACHE_PREFIX).put(includerBytes).put(analysisTypesBytes).array();
     }
     @Override public TypeReference<SegmentAnalysis> getCacheObjectClazz(){
       return getResultTypeReference();
