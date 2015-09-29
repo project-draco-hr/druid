@@ -2,10 +2,23 @@
   giant.lock();
   try {
     if (active) {
-      final List<Task> newTasks=taskStorage.getActiveTasks();
-      log.info("Synced %,d tasks from storage (%,d tasks added, %,d tasks removed).",newTasks.size(),Sets.difference(Sets.newHashSet(newTasks),Sets.newHashSet(tasks)).size(),Sets.difference(Sets.newHashSet(tasks),Sets.newHashSet(newTasks)).size());
-      tasks.clear();
-      tasks.addAll(newTasks);
+      final Map<String,Task> newTasks=toTaskIDMap(taskStorage.getActiveTasks());
+      final int tasksSynced=newTasks.size();
+      final Map<String,Task> oldTasks=toTaskIDMap(tasks);
+      Set<String> commonIds=Sets.newHashSet(Sets.intersection(newTasks.keySet(),oldTasks.keySet()));
+      for (      String taskID : commonIds) {
+        newTasks.remove(taskID);
+        oldTasks.remove(taskID);
+      }
+      Collection<Task> addedTasks=newTasks.values();
+      Collection<Task> removedTasks=oldTasks.values();
+      for (      Task task : removedTasks) {
+        removeTaskInternal(task);
+      }
+      for (      Task task : addedTasks) {
+        addTaskInternal(task);
+      }
+      log.info("Synced %d tasks from storage (%d tasks added, %d tasks removed).",tasksSynced,addedTasks.size(),removedTasks.size());
       managementMayBeNecessary.signalAll();
     }
  else {

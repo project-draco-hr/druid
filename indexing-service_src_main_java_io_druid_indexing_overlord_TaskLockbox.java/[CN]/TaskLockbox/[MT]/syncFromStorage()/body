@@ -14,7 +14,7 @@
     }
 ;
     running.clear();
-    final Set<String> uniqueTaskIds=Sets.newHashSet();
+    activeTasks.clear();
     int taskLockCount=0;
     for (    final Pair<Task,TaskLock> taskAndLock : byVersionOrdering.sortedCopy(storedLocks)) {
       final Task task=taskAndLock.lhs;
@@ -23,7 +23,7 @@
         log.warn("WTF?! Got lock with empty interval for task: %s",task.getId());
         continue;
       }
-      uniqueTaskIds.add(task.getId());
+      activeTasks.add(task.getId());
       final Optional<TaskLock> acquiredTaskLock=tryLock(task,savedTaskLock.getInterval(),Optional.of(savedTaskLock.getVersion()));
       if (acquiredTaskLock.isPresent() && savedTaskLock.getVersion().equals(acquiredTaskLock.get().getVersion())) {
         taskLockCount++;
@@ -37,7 +37,7 @@
         log.info("Could not reacquire lock on interval[%s] version[%s] for task: %s",savedTaskLock.getInterval(),savedTaskLock.getVersion(),task.getId());
       }
     }
-    log.info("Synced %,d locks for %,d tasks from storage (%,d locks ignored).",taskLockCount,uniqueTaskIds.size(),storedLocks.size() - taskLockCount);
+    log.info("Synced %,d locks for %,d activeTasks from storage (%,d locks ignored).",taskLockCount,activeTasks.size(),storedLocks.size() - taskLockCount);
   }
   finally {
     giant.unlock();

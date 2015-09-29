@@ -1,0 +1,10 @@
+{
+  Task task=NoopTask.create();
+  lockbox.add(task);
+  Assert.assertTrue(lockbox.tryLock(task,new Interval("2015-01-01/2015-01-03")).isPresent());
+  Task task2=NoopTask.create();
+  lockbox.add(task2);
+  Assert.assertFalse(lockbox.tryLock(task2,new Interval("2015-01-01/2015-01-02")).isPresent());
+  lockbox.remove(task);
+  Assert.assertTrue(lockbox.tryLock(task2,new Interval("2015-01-01/2015-01-02")).isPresent());
+}

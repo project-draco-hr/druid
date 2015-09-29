@@ -1,0 +1,17 @@
+{
+  giant.lock();
+  try {
+    try {
+      log.info("Removing task[%s] from activeTasks",task.getId());
+      for (      final TaskLockPosse taskLockPosse : findLockPossesForTask(task)) {
+        unlock(task,taskLockPosse.getTaskLock().getInterval());
+      }
+    }
+  finally {
+      activeTasks.remove(task.getId());
+    }
+  }
+  finally {
+    giant.unlock();
+  }
+}
