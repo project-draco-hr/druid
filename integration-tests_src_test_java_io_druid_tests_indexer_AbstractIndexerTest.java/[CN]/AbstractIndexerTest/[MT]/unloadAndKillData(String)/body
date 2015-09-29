@@ -1,17 +1,3 @@
 {
-  Interval interval=new Interval("2013-01-01T00:00:00.000Z/2013-12-01T00:00:00.000Z");
-  coordinator.unloadSegmentsForDataSource(dataSource,interval);
-  RetryUtil.retryUntilFalse(new Callable<Boolean>(){
-    @Override public Boolean call() throws Exception {
-      return coordinator.areSegmentsLoaded(dataSource);
-    }
-  }
-,"Segment Unloading");
-  coordinator.deleteSegmentsDataSource(dataSource,interval);
-  RetryUtil.retryUntilTrue(new Callable<Boolean>(){
-    @Override public Boolean call() throws Exception {
-      return (indexer.getPendingTasks().size() + indexer.getRunningTasks().size() + indexer.getWaitingTasks().size()) == 0;
-    }
-  }
-,"Waiting for Tasks Completion");
+  unloadAndKillData(dataSource,"2013-01-01T00:00:00.000Z","2013-12-01T00:00:00.000Z");
 }

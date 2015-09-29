@@ -1,0 +1,20 @@
+{
+  for (int i=0; i < timesToRun; i++) {
+    LOG.info("Starting Iteration %d",i);
+    boolean failed=false;
+    for (    QueryWithResults queryWithResult : queries) {
+      LOG.info("Running Query %s",queryWithResult.getQuery().getType());
+      List<Map<String,Object>> result=queryClient.query(url,queryWithResult.getQuery());
+      if (!QueryResultVerifier.compareResults(result,queryWithResult.getExpectedResults())) {
+        LOG.error("Failed while executing %s actualResults : %s",queryWithResult,jsonMapper.writeValueAsString(result));
+        failed=true;
+      }
+ else {
+        LOG.info("Results Verified for Query %s",queryWithResult.getQuery().getType());
+      }
+    }
+    if (failed) {
+      throw new ISE("one or more queries failed");
+    }
+  }
+}

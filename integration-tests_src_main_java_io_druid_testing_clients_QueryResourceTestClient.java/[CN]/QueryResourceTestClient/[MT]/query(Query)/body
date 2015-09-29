@@ -1,14 +1,3 @@
 {
-  try {
-    StatusResponseHolder response=httpClient.go(new Request(HttpMethod.POST,new URL(getBrokerURL())).setContent("application/json",jsonMapper.writeValueAsBytes(query)),responseHandler).get();
-    if (!response.getStatus().equals(HttpResponseStatus.OK)) {
-      throw new ISE("Error while querying[%s] status[%s] content[%s]",getBrokerURL(),response.getStatus(),response.getContent());
-    }
-    return jsonMapper.readValue(response.getContent(),new TypeReference<List<Map<String,Object>>>(){
-    }
-);
-  }
- catch (  Exception e) {
-    throw Throwables.propagate(e);
-  }
+  return query(getBrokerURL(),query);
 }
