@@ -1,13 +1,14 @@
 {
-  if (Iterables.size(baseRunners) == 1) {
-    return Iterables.getOnlyElement(baseRunners).run(query,responseContext);
-  }
- else {
-    return toolChest.mergeSequencesUnordered(Sequences.simple(Iterables.transform(baseRunners,new Function<QueryRunner,Sequence<T>>(){
-      @Override public Sequence<T> apply(      QueryRunner singleRunner){
-        return singleRunner.run(query,responseContext);
+  DataSource dataSource=query.getDataSource();
+  if (dataSource instanceof UnionDataSource) {
+    return toolChest.mergeSequencesUnordered(Sequences.simple(Lists.transform(((UnionDataSource)dataSource).getDataSources(),new Function<DataSource,Sequence<T>>(){
+      @Override public Sequence<T> apply(      DataSource singleSource){
+        return baseRunner.run(query.withDataSource(singleSource),responseContext);
       }
     }
 )));
+  }
+ else {
+    return baseRunner.run(query,responseContext);
   }
 }
