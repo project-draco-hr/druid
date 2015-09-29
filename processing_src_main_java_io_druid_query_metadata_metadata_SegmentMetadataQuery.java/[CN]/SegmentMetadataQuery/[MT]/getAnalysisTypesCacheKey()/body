@@ -1,0 +1,15 @@
+{
+  int size=1;
+  List<byte[]> typeBytesList=Lists.newArrayListWithExpectedSize(analysisTypes.size());
+  for (  AnalysisType analysisType : analysisTypes) {
+    final byte[] bytes=analysisType.getCacheKey();
+    typeBytesList.add(bytes);
+    size+=bytes.length;
+  }
+  final ByteBuffer bytes=ByteBuffer.allocate(size);
+  bytes.put(ANALYSIS_TYPES_CACHE_PREFIX);
+  for (  byte[] typeBytes : typeBytesList) {
+    bytes.put(typeBytes);
+  }
+  return bytes.array();
+}
