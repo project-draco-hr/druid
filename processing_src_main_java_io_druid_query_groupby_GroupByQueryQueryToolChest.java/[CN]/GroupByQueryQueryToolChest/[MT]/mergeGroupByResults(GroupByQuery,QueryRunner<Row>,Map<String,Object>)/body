@@ -25,7 +25,7 @@
     }
     final List<AggregatorFactory> aggs=Lists.newArrayList(subquery.getAggregatorSpecs());
     for (    PostAggregator postAgg : subquery.getPostAggregatorSpecs()) {
-      aggs.add(new CountAggregatorFactory(postAgg.getName()));
+      aggs.add(new DoubleSumAggregatorFactory(postAgg.getName(),postAgg.getName()));
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(subquery).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
