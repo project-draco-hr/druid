@@ -1,0 +1,6 @@
+{
+  Map<String,Object> actual=resource.getDatasource(dataSource,"1975/2015","true");
+  Map<String,Object> expected=ImmutableMap.<String,Object>of("2014-02-13T00:00:00.000Z/2014-02-15T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d1"),KEY_METRICS,ImmutableSet.of("m1")),"2014-02-16T00:00:00.000Z/2014-02-17T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d1"),KEY_METRICS,ImmutableSet.of("m1")),"2014-02-17T00:00:00.000Z/2014-02-18T00:00:00.000Z",ImmutableMap.of(KEY_DIMENSIONS,ImmutableSet.of("d2"),KEY_METRICS,ImmutableSet.of("m2")));
+  EasyMock.verify(serverInventoryView,timelineServerView);
+  Assert.assertEquals(expected,actual);
+}

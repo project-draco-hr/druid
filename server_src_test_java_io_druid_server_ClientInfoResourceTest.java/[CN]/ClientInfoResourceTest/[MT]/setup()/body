@@ -1,11 +1,22 @@
 {
   VersionedIntervalTimeline<String,ServerSelector> timeline=new VersionedIntervalTimeline<>(Ordering.<String>natural());
   DruidServer server=new DruidServer("name","host",1234,"type","tier",0);
-  addSegment(timeline,server,"1960-02-13/1961-02-14",ImmutableList.of("d1"),ImmutableList.of("m1"));
-  addSegment(timeline,server,"2014-02-13/2014-02-14",ImmutableList.of("d1"),ImmutableList.of("m1"));
-  addSegment(timeline,server,"2014-02-14/2014-02-15",ImmutableList.of("d1"),ImmutableList.of("m1"));
-  addSegment(timeline,server,"2014-02-16/2014-02-17",ImmutableList.of("d1"),ImmutableList.of("m1"));
-  addSegment(timeline,server,"2014-02-17/2014-02-18",ImmutableList.of("d2"),ImmutableList.of("m2"));
+  addSegment(timeline,server,"1960-02-13/1961-02-14",ImmutableList.of("d5"),ImmutableList.of("m5"),"v0");
+  addSegment(timeline,server,"2014-02-13/2014-02-14",ImmutableList.of("d1"),ImmutableList.of("m1"),"v0");
+  addSegment(timeline,server,"2014-02-14/2014-02-15",ImmutableList.of("d1"),ImmutableList.of("m1"),"v0");
+  addSegment(timeline,server,"2014-02-16/2014-02-17",ImmutableList.of("d1"),ImmutableList.of("m1"),"v0");
+  addSegment(timeline,server,"2014-02-17/2014-02-18",ImmutableList.of("d2"),ImmutableList.of("m2"),"v0");
+  addSegment(timeline,server,"2015-02-01/2015-02-07",ImmutableList.of("d1"),ImmutableList.of("m1"),"v1");
+  addSegment(timeline,server,"2015-02-07/2015-02-13",ImmutableList.of("d1"),ImmutableList.of("m1"),"v1");
+  addSegmentWithShardSpec(timeline,server,"2015-02-03/2015-02-05",ImmutableList.of("d1","d2"),ImmutableList.of("m1","m2"),"v2",new NumberedShardSpec(0,2));
+  addSegmentWithShardSpec(timeline,server,"2015-02-03/2015-02-05",ImmutableList.of("d1","d2","d3"),ImmutableList.of("m1","m2","m3"),"v2",new NumberedShardSpec(1,2));
+  addSegment(timeline,server,"2015-02-09/2015-02-10",ImmutableList.of("d1","d3"),ImmutableList.of("m1","m3"),"v2");
+  addSegment(timeline,server,"2015-02-11/2015-02-12",ImmutableList.of("d3"),ImmutableList.of("m3"),"v2");
+  addSegment(timeline,server,"2015-03-13/2015-03-19",ImmutableList.of("d1"),ImmutableList.of("m1"),"v3");
+  addSegment(timeline,server,"2015-03-13/2015-03-14",ImmutableList.of("d1"),ImmutableList.of("m1"),"v4");
+  addSegment(timeline,server,"2015-03-14/2015-03-15",ImmutableList.of("d1"),ImmutableList.of("m1"),"v5");
+  addSegment(timeline,server,"2015-03-15/2015-03-16",ImmutableList.of("d1"),ImmutableList.of("m1"),"v6");
+  addSegmentWithShardSpec(timeline,server,"2015-04-03/2015-04-05",ImmutableList.of("d4"),ImmutableList.of("m4"),"v7",new NumberedShardSpec(0,2));
   serverInventoryView=EasyMock.createMock(InventoryView.class);
   EasyMock.expect(serverInventoryView.getInventory()).andReturn(ImmutableList.of(server)).anyTimes();
   timelineServerView=EasyMock.createMock(TimelineServerView.class);
