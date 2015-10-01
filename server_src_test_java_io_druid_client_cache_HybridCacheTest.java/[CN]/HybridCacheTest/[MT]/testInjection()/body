@@ -1,0 +1,23 @@
+{
+  final String prefix="testInjectHybridCache";
+  System.setProperty(prefix + ".type","hybrid");
+  System.setProperty(prefix + ".l1.type","local");
+  System.setProperty(prefix + ".l2.type","memcached");
+  System.setProperty(prefix + ".l2.hosts","localhost:11711");
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.<Module>of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("hybridTest");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(0);
+      binder.install(new CacheModule(prefix));
+    }
+  }
+));
+  final CacheProvider cacheProvider=injector.getInstance(Key.get(CacheProvider.class,Global.class));
+  Assert.assertNotNull(cacheProvider);
+  Assert.assertEquals(HybridCacheProvider.class,cacheProvider.getClass());
+  final Cache cache=cacheProvider.get();
+  Assert.assertNotNull(cache);
+  Assert.assertFalse(cache.isLocal());
+  Assert.assertEquals(LocalCacheProvider.class,((HybridCacheProvider)cacheProvider).level1.getClass());
+  Assert.assertEquals(MemcachedCacheProvider.class,((HybridCacheProvider)cacheProvider).level2.getClass());
+}

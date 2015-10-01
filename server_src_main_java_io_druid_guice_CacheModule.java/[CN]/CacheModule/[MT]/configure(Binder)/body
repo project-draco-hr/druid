@@ -1,4 +1,5 @@
 {
   binder.bind(Cache.class).toProvider(Key.get(CacheProvider.class,Global.class)).in(ManageLifecycle.class);
   JsonConfigProvider.bind(binder,prefix,CacheProvider.class,Global.class);
+  binder.install(new HybridCacheModule(prefix));
 }
