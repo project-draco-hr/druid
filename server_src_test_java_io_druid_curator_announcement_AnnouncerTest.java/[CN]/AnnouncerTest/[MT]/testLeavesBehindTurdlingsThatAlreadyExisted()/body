@@ -7,9 +7,13 @@
   curator.create().forPath(parent);
   final Stat initialStat=curator.checkExists().forPath(parent);
   announcer.start();
-  Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
-  announcer.announce(testPath,billy);
-  Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
-  announcer.stop();
+  try {
+    Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
+    announcer.announce(testPath,billy);
+    Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
+  }
+  finally {
+    announcer.stop();
+  }
   Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
 }
