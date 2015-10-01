@@ -9,23 +9,9 @@
       throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
     }
     final Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner,context);
-    Set<String> innerFieldNames=Sets.newHashSet();
-    for (    AggregatorFactory innerAggregator : subquery.getAggregatorSpecs()) {
-      innerFieldNames.add(innerAggregator.getName());
-    }
-    for (    PostAggregator innerPostAggregator : subquery.getPostAggregatorSpecs()) {
-      innerFieldNames.add(innerPostAggregator.getName());
-    }
-    for (    AggregatorFactory outerAggregator : query.getAggregatorSpecs()) {
-      for (      final String fieldName : outerAggregator.requiredFields()) {
-        if (!innerFieldNames.contains(fieldName)) {
-          throw new IllegalArgumentException(String.format("Subquery must have an aggregator or post aggregator with name '%s'",fieldName));
-        }
-      }
-    }
-    final List<AggregatorFactory> aggs=Lists.newArrayList(subquery.getAggregatorSpecs());
-    for (    PostAggregator postAgg : subquery.getPostAggregatorSpecs()) {
-      aggs.add(new DoubleSumAggregatorFactory(postAgg.getName(),postAgg.getName()));
+    final List<AggregatorFactory> aggs=Lists.newArrayList();
+    for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+      aggs.addAll(aggregatorFactory.getRequiredColumns());
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(subquery).setAggregatorSpecs(aggs).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
