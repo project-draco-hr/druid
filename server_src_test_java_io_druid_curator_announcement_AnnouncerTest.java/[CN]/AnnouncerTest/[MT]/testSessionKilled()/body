@@ -1,8 +1,9 @@
 {
   curator.start();
+  curator.blockUntilConnected();
   Announcer announcer=new Announcer(curator,exec);
   try {
-    curator.create().forPath("/somewhere");
+    curator.inTransaction().create().forPath("/somewhere").and().commit();
     announcer.start();
     final byte[] billy="billy".getBytes();
     final String testPath1="/test1";

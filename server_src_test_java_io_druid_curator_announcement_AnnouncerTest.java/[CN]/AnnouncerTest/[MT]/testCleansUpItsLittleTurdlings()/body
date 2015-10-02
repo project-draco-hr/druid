@@ -5,9 +5,13 @@
   final String testPath="/somewhere/test2";
   final String parent=ZKPaths.getPathAndNode(testPath).getPath();
   announcer.start();
-  Assert.assertNull(curator.checkExists().forPath(parent));
-  announcer.announce(testPath,billy);
-  Assert.assertNotNull(curator.checkExists().forPath(parent));
-  announcer.stop();
+  try {
+    Assert.assertNull(curator.checkExists().forPath(parent));
+    announcer.announce(testPath,billy);
+    Assert.assertNotNull(curator.checkExists().forPath(parent));
+  }
+  finally {
+    announcer.stop();
+  }
   Assert.assertNull(curator.checkExists().forPath(parent));
 }
