@@ -1,0 +1,16 @@
+{
+  byte[] res=level1.get(key);
+  if (res == null) {
+    res=level2.get(key);
+    if (res != null) {
+      level1.put(key,res);
+      hitCount.incrementAndGet();
+      return res;
+    }
+    missCount.incrementAndGet();
+  }
+  if (res != null) {
+    hitCount.incrementAndGet();
+  }
+  return res;
+}
