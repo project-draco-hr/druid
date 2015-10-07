@@ -1,0 +1,20 @@
+{
+  return new Runnable(){
+    @Override public void run(){
+      try {
+        latch.await();
+      }
+ catch (      InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw Throwables.propagate(e);
+      }
+      if (useFifo) {
+        Assert.assertEquals(myOrder,hasRun.getAndIncrement());
+      }
+ else {
+        Assume.assumeTrue(Integer.compare(myOrder,hasRun.getAndIncrement()) == 0);
+      }
+    }
+  }
+;
+}

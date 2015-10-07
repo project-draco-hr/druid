@@ -1,0 +1,12 @@
+{
+  for (  ListenableFuture<?> future : futures) {
+    try {
+      future.get();
+    }
+ catch (    ExecutionException e) {
+      if (!(e.getCause() instanceof AssumptionViolatedException)) {
+        throw e;
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
 {
   Preconditions.checkArgument(allowRegularTasks || runnable instanceof PrioritizedRunnable,"task does not implement PrioritizedRunnable");
-  return PrioritizedListenableFutureTask.create(ListenableFutureTask.create(runnable,value),runnable instanceof PrioritizedRunnable ? ((PrioritizedRunnable)runnable).getPriority() : defaultPriority);
+  return PrioritizedListenableFutureTask.create(ListenableFutureTask.create(runnable,value),runnable instanceof PrioritizedRunnable ? ((PrioritizedRunnable)runnable).getPriority() : defaultPriority,config.isFifo() ? queuePosition.decrementAndGet() : 0);
 }
