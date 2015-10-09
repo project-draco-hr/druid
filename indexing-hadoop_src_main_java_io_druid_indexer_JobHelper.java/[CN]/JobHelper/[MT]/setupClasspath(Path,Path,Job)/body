@@ -1,0 +1,34 @@
+{
+  String classpathProperty=System.getProperty("druid.hadoop.internal.classpath");
+  if (classpathProperty == null) {
+    classpathProperty=System.getProperty("java.class.path");
+  }
+  String[] jarFiles=classpathProperty.split(File.pathSeparator);
+  final Configuration conf=job.getConfiguration();
+  final FileSystem fs=distributedClassPath.getFileSystem(conf);
+  if (fs instanceof LocalFileSystem) {
+    return;
+  }
+  for (  String jarFilePath : jarFiles) {
+    final File jarFile=new File(jarFilePath);
+    if (jarFile.getName().endsWith(".jar")) {
+      try {
+        RetryUtils.retry(new Callable<Boolean>(){
+          @Override public Boolean call() throws Exception {
+            if (isSnapshot(jarFile)) {
+              addSnapshotJarToClassPath(jarFile,intermediateClassPath,fs,job);
+            }
+ else {
+              addJarToClassPath(jarFile,distributedClassPath,intermediateClassPath,fs,job);
+            }
+            return true;
+          }
+        }
+,shouldRetryPredicate(),NUM_RETRIES);
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+}

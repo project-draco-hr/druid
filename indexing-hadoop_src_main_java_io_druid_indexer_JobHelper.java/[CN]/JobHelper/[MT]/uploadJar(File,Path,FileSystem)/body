@@ -1,0 +1,9 @@
+{
+  log.info("Uploading jar to path[%s]",path);
+  ByteStreams.copy(Files.newInputStreamSupplier(jarFile),new OutputSupplier<OutputStream>(){
+    @Override public OutputStream getOutput() throws IOException {
+      return fs.create(path);
+    }
+  }
+);
+}

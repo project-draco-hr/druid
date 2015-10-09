@@ -1,0 +1,47 @@
+{
+  fs.mkdirs(distributedClassPath);
+  final Path hdfsPath=new Path(distributedClassPath,jarFile.getName());
+  if (!fs.exists(hdfsPath)) {
+    final Path intermediateHdfsPath=new Path(intermediateClassPath,jarFile.getName());
+    uploadJar(jarFile,intermediateHdfsPath,fs);
+    IOException exception=null;
+    try {
+      log.info("Renaming jar to path[%s]",hdfsPath);
+      fs.rename(intermediateHdfsPath,hdfsPath);
+      if (!fs.exists(hdfsPath)) {
+        throw new IOException(String.format("File does not exist even after moving from[%s] to [%s]",intermediateHdfsPath,hdfsPath));
+      }
+    }
+ catch (    IOException e) {
+      try {
+        if (!fs.exists(hdfsPath)) {
+          log.error(e,"IOException while Renaming jar file");
+          exception=e;
+        }
+      }
+ catch (      IOException e1) {
+        e.addSuppressed(e1);
+        exception=e;
+      }
+    }
+ finally {
+      try {
+        if (fs.exists(intermediateHdfsPath)) {
+          fs.delete(intermediateHdfsPath,false);
+        }
+      }
+ catch (      IOException e) {
+        if (exception == null) {
+          exception=e;
+        }
+ else {
+          exception.addSuppressed(e);
+        }
+      }
+      if (exception != null) {
+        throw exception;
+      }
+    }
+  }
+  job.addFileToClassPath(hdfsPath);
+}

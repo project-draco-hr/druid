@@ -1,0 +1,10 @@
+{
+  hdfsTmpDir=File.createTempFile("hdfsClasspathSetupTest","dir");
+  hdfsTmpDir.deleteOnExit();
+  if (!hdfsTmpDir.delete()) {
+    throw new IOException(String.format("Unable to delete hdfsTmpDir [%s]",hdfsTmpDir.getAbsolutePath()));
+  }
+  conf=new Configuration(true);
+  conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,hdfsTmpDir.getAbsolutePath());
+  miniCluster=new MiniDFSCluster.Builder(conf).build();
+}
