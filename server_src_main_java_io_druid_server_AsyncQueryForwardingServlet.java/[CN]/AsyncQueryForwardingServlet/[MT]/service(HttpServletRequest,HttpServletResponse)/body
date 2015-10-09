@@ -2,10 +2,24 @@
   final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(request.getContentType()) || APPLICATION_SMILE.equals(request.getContentType());
   final ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   request.setAttribute(OBJECTMAPPER_ATTRIBUTE,objectMapper);
-  String host=hostFinder.getDefaultHost();
-  request.setAttribute(HOST_ATTRIBUTE,host);
-  boolean isQuery=request.getMethod().equals(HttpMethod.POST.asString()) && request.getRequestURI().startsWith("/druid/v2");
-  if (isQuery) {
+  final String defaultHost=hostFinder.getDefaultHost();
+  request.setAttribute(HOST_ATTRIBUTE,defaultHost);
+  final boolean isQueryEndpoint=request.getRequestURI().startsWith("/druid/v2");
+  if (isQueryEndpoint && HttpMethod.DELETE.is(request.getMethod())) {
+    for (    final String host : hostFinder.getAllHosts()) {
+      if (!host.equals(defaultHost)) {
+        getHttpClient().newRequest(rewriteURI(request,host)).method(HttpMethod.DELETE).send(new Response.CompleteListener(){
+          @Override public void onComplete(          Result result){
+            if (result.isFailed()) {
+              log.warn(result.getFailure(),"Failed to forward cancellation request to [%s]",host);
+            }
+          }
+        }
+);
+      }
+    }
+  }
+ else   if (isQueryEndpoint && HttpMethod.POST.is(request.getMethod())) {
     try {
       Query inputQuery=objectMapper.readValue(request.getInputStream(),Query.class);
       if (inputQuery != null) {

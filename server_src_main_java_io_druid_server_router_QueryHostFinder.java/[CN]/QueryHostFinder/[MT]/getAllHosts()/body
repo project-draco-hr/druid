@@ -1,0 +1,13 @@
+{
+  return FluentIterable.from((Collection<ServerDiscoverySelector>)hostSelector.getAllBrokers().values()).transformAndConcat(new Function<ServerDiscoverySelector,Iterable<Server>>(){
+    @Override public Iterable<Server> apply(    ServerDiscoverySelector input){
+      return input.getAll();
+    }
+  }
+).transform(new Function<Server,String>(){
+    @Override public String apply(    Server input){
+      return input.getHost();
+    }
+  }
+).toList();
+}

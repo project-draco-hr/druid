@@ -1,0 +1,9 @@
+{
+  try {
+    return new URI("http",host,requestURI,rawQueryString == null ? null : URLDecoder.decode(rawQueryString,"UTF-8"),null);
+  }
+ catch (  UnsupportedEncodingException|URISyntaxException e) {
+    log.error(e,"Unable to rewrite URI [%s]",e.getMessage());
+    throw Throwables.propagate(e);
+  }
+}

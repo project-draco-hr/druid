@@ -11,19 +11,5 @@
     log.error("No server instance found");
     return null;
   }
-  return new Server(){
-    @Override public String getHost(){
-      return HostAndPort.fromParts(getAddress(),getPort()).toString();
-    }
-    @Override public String getAddress(){
-      return instance.getAddress();
-    }
-    @Override public int getPort(){
-      return instance.getPort();
-    }
-    @Override public String getScheme(){
-      return "http";
-    }
-  }
-;
+  return TO_SERVER.apply(instance);
 }

@@ -1,0 +1,11 @@
+{
+  CountDownLatch latch=new CountDownLatch(2);
+  makeTestDeleteServer(port + 1,latch).start();
+  makeTestDeleteServer(port + 2,latch).start();
+  final URL url=new URL("http://localhost:" + port + "/druid/v2/abc123");
+  final HttpURLConnection post=(HttpURLConnection)url.openConnection();
+  post.setRequestMethod("DELETE");
+  int code=post.getResponseCode();
+  Assert.assertEquals(200,code);
+  latch.await();
+}

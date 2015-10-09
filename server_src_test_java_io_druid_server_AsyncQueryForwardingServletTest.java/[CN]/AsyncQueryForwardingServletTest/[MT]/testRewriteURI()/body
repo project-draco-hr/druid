@@ -1,0 +1,5 @@
+{
+  Assert.assertEquals(new URI("http://localhost:1234/some/path?param=1"),AsyncQueryForwardingServlet.makeURI("localhost:1234","/some/path","param=1"));
+  Assert.assertEquals("http://[2a00:1450:4007:805::1007]:1234/some/path?param=1&param2=%E2%82%AC",AsyncQueryForwardingServlet.makeURI(HostAndPort.fromParts("2a00:1450:4007:805::1007",1234).toString(),"/some/path","param=1&param2=%E2%82%AC").toASCIIString());
+  Assert.assertEquals(new URI("http://localhost/"),AsyncQueryForwardingServlet.makeURI("localhost","/",null));
+}
