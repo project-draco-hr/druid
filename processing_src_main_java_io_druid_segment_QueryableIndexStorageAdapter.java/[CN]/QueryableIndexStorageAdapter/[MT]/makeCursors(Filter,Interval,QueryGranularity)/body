@@ -1,6 +1,8 @@
 {
   Interval actualInterval=interval;
-  final Interval dataInterval=new Interval(getMinTime().getMillis(),gran.next(gran.truncate(getMaxTime().getMillis())));
+  long minDataTimestamp=getMinTime().getMillis();
+  long maxDataTimestamp=getMaxTime().getMillis();
+  final Interval dataInterval=new Interval(minDataTimestamp,gran.next(gran.truncate(maxDataTimestamp)));
   if (!actualInterval.overlaps(dataInterval)) {
     return Sequences.empty();
   }
@@ -18,5 +20,5 @@
     final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
     offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector));
   }
-  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset).build(),Predicates.<Cursor>notNull());
+  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset,maxDataTimestamp).build(),Predicates.<Cursor>notNull());
 }
