@@ -6,8 +6,9 @@
         if (instance == null) {
           return Sequences.empty();
         }
-        final String url=String.format("http://%s/druid/v2/",brokerSelector.pick().getHost());
-        StatusResponseHolder response=httpClient.go(new Request(HttpMethod.POST,new URL(url)).setContent(MediaType.APPLICATION_JSON,jsonMapper.writeValueAsBytes(query)),responseHandler).get();
+        final Server brokerServer=brokerSelector.pick();
+        final URL url=new URL(brokerServer.getScheme(),brokerServer.getAddress(),brokerServer.getPort(),"/druid/v2/");
+        StatusResponseHolder response=httpClient.go(new Request(HttpMethod.POST,url).setContent(MediaType.APPLICATION_JSON,jsonMapper.writeValueAsBytes(query)),responseHandler).get();
         List<T> results=jsonMapper.readValue(response.getContent(),new TypeReference<List<T>>(){
         }
 );

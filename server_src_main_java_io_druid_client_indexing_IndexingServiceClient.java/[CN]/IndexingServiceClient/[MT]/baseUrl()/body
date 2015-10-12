@@ -4,7 +4,7 @@
     if (instance == null) {
       throw new ISE("Cannot find instance of indexingService");
     }
-    return String.format("http://%s/druid/indexer/v1",instance.getHost());
+    return new URI(instance.getScheme(),null,instance.getAddress(),instance.getPort(),"/druid/indexer/v1",null,null).toString();
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
