@@ -11,7 +11,8 @@
       while (baseOffset.withinBounds() && timestamps.getLongSingleValueRow(baseOffset.getOffset()) < timeStart) {
         baseOffset.increment();
       }
-      final Offset offset=new TimestampCheckingOffset(baseOffset,timestamps,Math.min(interval.getEndMillis(),gran.next(input)));
+      long threshold=Math.min(interval.getEndMillis(),gran.next(input));
+      final Offset offset=new TimestampCheckingOffset(baseOffset,timestamps,threshold,maxDataTimestamp < threshold);
       return new Cursor(){
         private final Offset initOffset=offset.clone();
         private final DateTime myBucket=gran.toDateTime(input);
