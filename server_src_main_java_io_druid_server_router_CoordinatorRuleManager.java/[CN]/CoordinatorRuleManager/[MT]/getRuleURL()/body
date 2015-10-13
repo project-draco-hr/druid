@@ -4,5 +4,5 @@
     log.error("No instances found for [%s]!",config.get().getCoordinatorServiceName());
     return null;
   }
-  return String.format("http://%s%s",server.getHost(),config.get().getRulesEndpoint());
+  return new URI(server.getScheme(),null,server.getAddress(),server.getPort(),config.get().getRulesEndpoint(),null,null).toString();
 }

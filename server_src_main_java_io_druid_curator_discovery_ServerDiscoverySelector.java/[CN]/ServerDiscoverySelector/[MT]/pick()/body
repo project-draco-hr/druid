@@ -13,7 +13,7 @@
   }
   return new Server(){
     @Override public String getHost(){
-      return String.format("%s:%d",getAddress(),getPort());
+      return HostAndPort.fromParts(getAddress(),getPort()).toString();
     }
     @Override public String getAddress(){
       return instance.getAddress();
