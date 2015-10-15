@@ -1,0 +1,17 @@
+{
+  Interval interval=new Interval(start + "/" + end);
+  coordinator.unloadSegmentsForDataSource(dataSource,interval);
+  RetryUtil.retryUntilFalse(new Callable<Boolean>(){
+    @Override public Boolean call() throws Exception {
+      return coordinator.areSegmentsLoaded(dataSource);
+    }
+  }
+,"Segment Unloading");
+  coordinator.deleteSegmentsDataSource(dataSource,interval);
+  RetryUtil.retryUntilTrue(new Callable<Boolean>(){
+    @Override public Boolean call() throws Exception {
+      return (indexer.getPendingTasks().size() + indexer.getRunningTasks().size() + indexer.getWaitingTasks().size()) == 0;
+    }
+  }
+,"Waiting for Tasks Completion");
+}
