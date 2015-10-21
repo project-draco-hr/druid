@@ -43,13 +43,13 @@ synchronized (tasks) {
                 command.add("-cp");
                 command.add(taskClasspath);
                 Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts()));
-                Object taskJavaOpts=task.getContextValue("druid.indexer.runner.javaOpts");
+                Object taskJavaOpts=task.getContextValue(ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY);
                 if (taskJavaOpts != null) {
                   Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts));
                 }
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
-                    if (propName.startsWith(allowedPrefix)) {
+                    if (propName.startsWith(allowedPrefix) && !ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY.equals(propName)) {
                       command.add(String.format("-D%s=%s",propName,props.getProperty(propName)));
                     }
                   }
