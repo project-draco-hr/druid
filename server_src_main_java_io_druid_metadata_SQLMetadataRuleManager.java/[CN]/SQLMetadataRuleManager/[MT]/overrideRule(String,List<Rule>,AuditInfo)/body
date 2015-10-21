@@ -1,10 +1,19 @@
 {
+  final String ruleString;
+  try {
+    ruleString=jsonMapper.writeValueAsString(newRules);
+    log.info("Updating [%s] with rules [%s] as per [%s]",dataSource,ruleString,auditInfo);
+  }
+ catch (  JsonProcessingException e) {
+    log.error(e,"Unable to write rules as string for [%s]",dataSource);
+    return false;
+  }
 synchronized (lock) {
     try {
       dbi.inTransaction(new TransactionCallback<Void>(){
         @Override public Void inTransaction(        Handle handle,        TransactionStatus transactionStatus) throws Exception {
           final DateTime auditTime=DateTime.now();
-          auditManager.doAudit(AuditEntry.builder().key(dataSource).type("rules").auditInfo(auditInfo).payload(jsonMapper.writeValueAsString(newRules)).auditTime(auditTime).build(),handle);
+          auditManager.doAudit(AuditEntry.builder().key(dataSource).type("rules").auditInfo(auditInfo).payload(ruleString).auditTime(auditTime).build(),handle);
           String version=auditTime.toString();
           handle.createStatement(String.format("INSERT INTO %s (id, dataSource, version, payload) VALUES (:id, :dataSource, :version, :payload)",getRulesTable())).bind("id",String.format("%s_%s",dataSource,version)).bind("dataSource",dataSource).bind("version",version).bind("payload",jsonMapper.writeValueAsBytes(newRules)).execute();
           return null;
