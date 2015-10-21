@@ -1,7 +1,7 @@
 {
   final String schema=args[0];
   String version=args[1];
-  final HadoopIngestionSpec theSchema=HadoopDruidIndexerConfig.jsonMapper.readValue(schema,HadoopIngestionSpec.class);
+  final HadoopIngestionSpec theSchema=HadoopDruidIndexerConfig.JSON_MAPPER.readValue(schema,HadoopIngestionSpec.class);
   final HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSpec(theSchema.withTuningConfig(theSchema.getTuningConfig().withVersion(version)));
   final MetadataStorageUpdaterJobHandler maybeHandler;
   if (config.isUpdaterJobSpecSet()) {
@@ -13,7 +13,7 @@
   HadoopDruidIndexerJob job=new HadoopDruidIndexerJob(config,maybeHandler);
   log.info("Starting a hadoop index generator job...");
   if (job.run()) {
-    return HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(job.getPublishedSegments());
+    return HadoopDruidIndexerConfig.JSON_MAPPER.writeValueAsString(job.getPublishedSegments());
   }
   return null;
 }

@@ -1,5 +1,5 @@
 {
-  final List<Object> timeAndDims=HadoopDruidIndexerConfig.jsonMapper.readValue(key.getBytes(),List.class);
+  final List<Object> timeAndDims=HadoopDruidIndexerConfig.JSON_MAPPER.readValue(key.getBytes(),List.class);
   final DateTime timestamp=new DateTime(timeAndDims.get(0));
   final Map<String,Iterable<String>> dims=(Map<String,Iterable<String>>)timeAndDims.get(1);
   helper.emitDimValueCounts(context,timestamp,dims);
