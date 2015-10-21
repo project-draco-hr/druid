@@ -4,6 +4,7 @@
       return;
     }
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
+    log.debug("Starting polling of segment table");
     List<DataSegment> segments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
       @Override public List<DataSegment> withHandle(      Handle handle) throws Exception {
         return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).map(new ResultSetMapper<DataSegment>(){
