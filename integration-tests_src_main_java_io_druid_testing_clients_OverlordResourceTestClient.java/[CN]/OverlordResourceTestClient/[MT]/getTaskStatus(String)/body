@@ -1,6 +1,6 @@
 {
   try {
-    StatusResponseHolder response=makeRequest(String.format("%stask/%s/status",getIndexerURL(),URLEncoder.encode(taskID,"UTF-8")));
+    StatusResponseHolder response=makeRequest(HttpMethod.GET,String.format("%stask/%s/status",getIndexerURL(),URLEncoder.encode(taskID,"UTF-8")));
     LOG.info("Index status response" + response.getContent());
     Map<String,Object> responseData=jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,Object>>(){
     }

@@ -1,0 +1,12 @@
+{
+  try {
+    StatusResponseHolder response=makeRequest(HttpMethod.POST,String.format("%stask/%s/shutdown",getIndexerURL(),URLEncoder.encode(taskID,"UTF-8")));
+    LOG.info("Shutdown Task %s response %s",taskID,response.getContent());
+    return jsonMapper.readValue(response.getContent(),new TypeReference<Map<String,String>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

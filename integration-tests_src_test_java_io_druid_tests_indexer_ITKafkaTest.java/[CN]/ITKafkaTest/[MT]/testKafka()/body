@@ -1,0 +1,109 @@
+{
+  LOG.info("Starting test: ITKafkaTest");
+  try {
+    int sessionTimeoutMs=10000;
+    int connectionTimeoutMs=10000;
+    String zkHosts=config.getZookeeperHosts();
+    zkClient=new ZkClient(zkHosts,sessionTimeoutMs,connectionTimeoutMs,ZKStringSerializer$.MODULE$);
+    int numPartitions=1;
+    int replicationFactor=1;
+    Properties topicConfig=new Properties();
+    AdminUtils.createTopic(zkClient,TOPIC_NAME,numPartitions,replicationFactor,topicConfig);
+  }
+ catch (  TopicExistsException e) {
+  }
+catch (  Exception e) {
+    throw new ISE(e,"could not create kafka topic");
+  }
+  String indexerSpec="";
+  try {
+    LOG.info("indexerFile name: [%s]",INDEXER_FILE);
+    indexerSpec=getTaskAsString(INDEXER_FILE);
+    indexerSpec=indexerSpec.replaceAll("%%TOPIC%%",TOPIC_NAME);
+    indexerSpec=indexerSpec.replaceAll("%%ZOOKEEPER_SERVER%%",config.getZookeeperHosts());
+    indexerSpec=indexerSpec.replaceAll("%%GROUP_ID%%",Long.toString(System.currentTimeMillis()));
+    indexerSpec=indexerSpec.replaceAll("%%SHUTOFFTIME%%",new DateTime(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(2 * MINUTES_TO_SEND)).toString());
+    LOG.info("indexerFile: [%s]\n",indexerSpec);
+  }
+ catch (  Exception e) {
+    LOG.error("could not read indexer file [%s]",INDEXER_FILE);
+    throw new ISE(e,"could not read indexer file [%s]",INDEXER_FILE);
+  }
+  taskID=indexer.submitTask(indexerSpec);
+  LOG.info("-------------SUBMITTED TASK");
+  Properties properties=new Properties();
+  properties.put("metadata.broker.list",config.getKafkaHost());
+  LOG.info("kafka host: [%s]",config.getKafkaHost());
+  properties.put("serializer.class","kafka.serializer.StringEncoder");
+  properties.put("request.required.acks","1");
+  properties.put("producer.type","async");
+  ProducerConfig producerConfig=new ProducerConfig(properties);
+  Producer<String,String> producer=new Producer<String,String>(producerConfig);
+  DateTimeZone zone=DateTimeZone.forID("UTC");
+  DateTimeFormatter event_fmt=DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  DateTime dt=new DateTime(zone);
+  dtFirst=dt;
+  dtLast=dt;
+  DateTime dtStop=dtFirst.plusMinutes(MINUTES_TO_SEND).plusSeconds(30);
+  int added=0;
+  int num_events=0;
+  while (dt.compareTo(dtStop) < 0) {
+    LOG.info("sending event at [%s]",event_fmt.print(dt));
+    num_events++;
+    added+=num_events;
+    String event=String.format(event_template,event_fmt.print(dt),num_events,0,num_events);
+    LOG.debug("event: [%s]",event);
+    try {
+      KeyedMessage<String,String> message=new KeyedMessage<String,String>(TOPIC_NAME,event);
+      producer.send(message);
+    }
+ catch (    Exception ioe) {
+      Throwables.propagate(ioe);
+    }
+    try {
+      Thread.sleep(DELAY_BETWEEN_EVENTS_SECS * 1000);
+    }
+ catch (    InterruptedException ex) {
+    }
+    dtLast=dt;
+    dt=new DateTime(zone);
+  }
+  producer.close();
+  String query_response_template=null;
+  InputStream is=ITKafkaTest.class.getResourceAsStream(QUERIES_FILE);
+  if (null == is) {
+    throw new ISE("could not open query file: %s",QUERIES_FILE);
+  }
+  try {
+    query_response_template=IOUtils.toString(is,"UTF-8");
+  }
+ catch (  IOException e) {
+    throw new ISE(e,"could not read query file: %s",QUERIES_FILE);
+  }
+  String queryStr=query_response_template.replace("%%TIMEBOUNDARY_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMEBOUNDARY_RESPONSE_MAXTIME%%",TIMESTAMP_FMT.print(dtLast)).replace("%%TIMEBOUNDARY_RESPONSE_MINTIME%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_END%%",INTERVAL_FMT.print(dtFirst.plusMinutes(MINUTES_TO_SEND + 2))).replace("%%TIMESERIES_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_ADDED%%",Integer.toString(added)).replace("%%TIMESERIES_NUMEVENTS%%",Integer.toString(num_events));
+  try {
+    this.queryHelper.testQueriesFromString(queryStr,2);
+  }
+ catch (  Exception e) {
+    Throwables.propagate(e);
+  }
+  try {
+    RetryUtil.retryUntil(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        return coordinator.areSegmentsLoaded(DATASOURCE);
+      }
+    }
+,true,30000,10,"Real-time generated segments loaded");
+  }
+ catch (  Exception e) {
+    Throwables.propagate(e);
+  }
+  LOG.info("segments are present");
+  segmentsExist=true;
+  try {
+    this.queryHelper.testQueriesFromString(queryStr,2);
+  }
+ catch (  Exception e) {
+    Throwables.propagate(e);
+  }
+}
