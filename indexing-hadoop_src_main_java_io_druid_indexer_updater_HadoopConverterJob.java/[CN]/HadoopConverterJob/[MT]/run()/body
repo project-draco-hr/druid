@@ -22,7 +22,7 @@
   job.setMapOutputValueClass(Text.class);
   job.setMapSpeculativeExecution(false);
   job.setOutputFormatClass(ConvertingOutputFormat.class);
-  JobHelper.setupClasspath(JobHelper.distributedClassPath(jobConf.getWorkingDirectory()),job);
+  JobHelper.setupClasspath(JobHelper.distributedClassPath(jobConf.getWorkingDirectory()),JobHelper.distributedClassPath(getJobClassPathDir(job.getJobName(),jobConf.getWorkingDirectory())),job);
   Throwable throwable=null;
   try {
     job.submit();

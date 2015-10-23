@@ -1,0 +1,10 @@
+{
+  Job job=Job.getInstance(conf,"test-job");
+  DistributedFileSystem fs=miniCluster.getFileSystem();
+  Path intermediatePath=new Path("/tmp/classpath");
+  JobHelper.addSnapshotJarToClassPath(dummyJarFile,intermediatePath,fs,job);
+  Path expectedJarPath=new Path(intermediatePath,dummyJarFile.getName());
+  Assert.assertTrue(fs.exists(expectedJarPath));
+  Assert.assertEquals(expectedJarPath.toString(),job.getConfiguration().get(MRJobConfig.CLASSPATH_FILES));
+  Assert.assertEquals(dummyJarString,StringUtils.fromUtf8(IOUtils.toByteArray(fs.open(expectedJarPath))));
+}

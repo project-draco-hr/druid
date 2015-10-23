@@ -1,0 +1,25 @@
+{
+  final int concurrency=10;
+  ListeningExecutorService pool=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(concurrency));
+  final CyclicBarrier barrier=new CyclicBarrier(concurrency);
+  final DistributedFileSystem fs=miniCluster.getFileSystem();
+  final Path expectedJarPath=new Path(finalClasspath,dummyJarFile.getName());
+  List<ListenableFuture<Boolean>> futures=new ArrayList<>();
+  for (int i=0; i < concurrency; i++) {
+    futures.add(pool.submit(new Callable(){
+      @Override public Boolean call() throws Exception {
+        int id=barrier.await();
+        Job job=Job.getInstance(conf,"test-job-" + id);
+        Path intermediatePathForJob=new Path(intermediatePath,"job-" + id);
+        JobHelper.addJarToClassPath(dummyJarFile,finalClasspath,intermediatePathForJob,fs,job);
+        Assert.assertTrue(fs.exists(expectedJarPath));
+        Assert.assertFalse(fs.exists(new Path(intermediatePathForJob,dummyJarFile.getName())));
+        Assert.assertEquals(expectedJarPath.toString(),job.getConfiguration().get(MRJobConfig.CLASSPATH_FILES));
+        return true;
+      }
+    }
+));
+  }
+  Futures.allAsList(futures).get(30,TimeUnit.SECONDS);
+  pool.shutdownNow();
+}
