@@ -30,6 +30,8 @@ synchronized (hydrant) {
           }
         }
       }
+      final long mergeThreadCpuTime=VMUtils.safeGetThreadCpuTime();
+      final Stopwatch mergeStopwatch=Stopwatch.createStarted();
       try {
         List<QueryableIndex> indexes=Lists.newArrayList();
         for (        FireHydrant fireHydrant : sink) {
@@ -45,6 +47,8 @@ synchronized (hydrant) {
  else {
           mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
+        metrics.incrementMergeCpuTime(VMUtils.safeGetThreadCpuTime() - mergeThreadCpuTime);
+        metrics.incrementMergeTimeMillis(mergeStopwatch.elapsed(TimeUnit.MILLISECONDS));
         QueryableIndex index=IndexIO.loadIndex(mergedFile);
         log.info("Pushing [%s] to deep storage",sink.getSegment().getIdentifier());
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
@@ -61,6 +65,9 @@ synchronized (hydrant) {
           cleanShutdown=false;
           abandonSegment(truncatedTime,sink);
         }
+      }
+ finally {
+        mergeStopwatch.stop();
       }
     }
   }
