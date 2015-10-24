@@ -1,0 +1,13 @@
+{
+  Map<String,Object> properties=retVal.get(dataSegment.getInterval()).get(dataSource.getName());
+  if (properties == null) {
+    properties=Maps.newHashMap();
+    properties.put("size",dataSegment.getSize());
+    properties.put("count",1);
+    retVal.get(dataSegment.getInterval()).put(dataSource.getName(),properties);
+  }
+ else {
+    properties.put("size",MapUtils.getLong(properties,"size",0L) + dataSegment.getSize());
+    properties.put("count",MapUtils.getInt(properties,"count",0) + 1);
+  }
+}
