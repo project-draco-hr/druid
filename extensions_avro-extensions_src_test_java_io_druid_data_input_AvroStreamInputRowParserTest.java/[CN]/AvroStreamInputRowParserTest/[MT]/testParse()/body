@@ -1,0 +1,18 @@
+{
+  Repository repository=new InMemoryRepository(null);
+  AvroStreamInputRowParser parser=new AvroStreamInputRowParser(PARSE_SPEC,new SchemaRepoBasedAvroBytesDecoder<String,Integer>(new Avro1124SubjectAndIdConverter(TOPIC),repository));
+  ByteBufferInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsString(parser),ByteBufferInputRowParser.class);
+  repository=((SchemaRepoBasedAvroBytesDecoder)((AvroStreamInputRowParser)parser2).getAvroBytesDecoder()).getSchemaRepository();
+  GenericRecord someAvroDatum=buildSomeAvroDatum();
+  Avro1124SubjectAndIdConverter converter=new Avro1124SubjectAndIdConverter(TOPIC);
+  TypedSchemaRepository<Integer,Schema,String> repositoryClient=new TypedSchemaRepository<Integer,Schema,String>(repository,new IntegerConverter(),new AvroSchemaConverter(),new IdentityConverter());
+  Integer id=repositoryClient.registerSchema(TOPIC,SomeAvroDatum.getClassSchema());
+  ByteBuffer byteBuffer=ByteBuffer.allocate(4);
+  converter.putSubjectAndId(TOPIC,id,byteBuffer);
+  ByteArrayOutputStream out=new ByteArrayOutputStream();
+  out.write(byteBuffer.array());
+  DatumWriter<GenericRecord> writer=new GenericDatumWriter<GenericRecord>(someAvroDatum.getSchema());
+  writer.write(someAvroDatum,EncoderFactory.get().directBinaryEncoder(out,null));
+  InputRow inputRow=parser2.parse(ByteBuffer.wrap(out.toByteArray()));
+  assertInputRowCorrect(inputRow);
+}

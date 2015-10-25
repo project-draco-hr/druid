@@ -1,0 +1,7 @@
+{
+  jsonMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS,false);
+  jsonMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+  for (  com.fasterxml.jackson.databind.Module jacksonModule : new AvroExtensionsModule().getJacksonModules()) {
+    jsonMapper.registerModule(jacksonModule);
+  }
+}

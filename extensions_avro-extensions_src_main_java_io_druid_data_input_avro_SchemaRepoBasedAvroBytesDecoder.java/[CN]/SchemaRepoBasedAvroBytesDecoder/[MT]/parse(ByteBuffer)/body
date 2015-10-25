@@ -1,0 +1,12 @@
+{
+  Pair<SUBJECT,ID> subjectAndId=subjectAndIdConverter.getSubjectAndId(bytes);
+  Schema schema=typedRepository.getSchema(subjectAndId.lhs,subjectAndId.rhs);
+  DatumReader<GenericRecord> reader=new GenericDatumReader<GenericRecord>(schema);
+  ByteBufferInputStream inputStream=new ByteBufferInputStream(Collections.singletonList(bytes));
+  try {
+    return reader.read(null,DecoderFactory.get().binaryDecoder(inputStream,null));
+  }
+ catch (  IOException e) {
+    throw new ParseException(e,"Fail to decode avro message!");
+  }
+}
