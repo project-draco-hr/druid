@@ -1,17 +1,16 @@
 {
   final List<String> finalHadoopDependencyCoordinates=hadoopDependencyCoordinates != null ? hadoopDependencyCoordinates : toolbox.getConfig().getDefaultHadoopCoordinates();
-  final DefaultTeslaAether aetherClient=Initialization.getAetherClient(extensionsConfig);
   final List<URL> extensionURLs=Lists.newArrayList();
-  for (  String coordinate : extensionsConfig.getCoordinates()) {
-    final ClassLoader coordinateLoader=Initialization.getClassLoaderForCoordinates(aetherClient,coordinate,extensionsConfig.getDefaultVersion());
-    extensionURLs.addAll(Arrays.asList(((URLClassLoader)coordinateLoader).getURLs()));
+  for (  final File extension : Initialization.getExtensionFilesToLoad(extensionsConfig)) {
+    final ClassLoader extensionLoader=Initialization.getClassLoaderForExtension(extension);
+    extensionURLs.addAll(Arrays.asList(((URLClassLoader)extensionLoader).getURLs()));
   }
   final List<URL> nonHadoopURLs=Lists.newArrayList();
   nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)HadoopIndexTask.class.getClassLoader()).getURLs()));
   final List<URL> driverURLs=Lists.newArrayList();
   driverURLs.addAll(nonHadoopURLs);
-  for (  String hadoopDependencyCoordinate : finalHadoopDependencyCoordinates) {
-    final ClassLoader hadoopLoader=Initialization.getClassLoaderForCoordinates(aetherClient,hadoopDependencyCoordinate,extensionsConfig.getDefaultVersion());
+  for (  final File hadoopDependency : Initialization.getHadoopDependencyFilesToLoad(finalHadoopDependencyCoordinates,extensionsConfig)) {
+    final ClassLoader hadoopLoader=Initialization.getClassLoaderForExtension(hadoopDependency);
     driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
   }
   final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);

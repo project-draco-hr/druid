@@ -1,0 +1,10 @@
+{
+  final File extensionsDir=temporaryFolder.newFolder();
+  final ExtensionsConfig config=new ExtensionsConfig(){
+    @Override public String getDirectory(){
+      return extensionsDir.getAbsolutePath();
+    }
+  }
+;
+  Assert.assertArrayEquals("Empty root extensionsDir should return emply array of File",new File[]{},Initialization.getExtensionFilesToLoad(new ExtensionsConfig()));
+}

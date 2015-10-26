@@ -1,0 +1,15 @@
+{
+  DefaultArtifact versionedArtifact;
+  try {
+    versionedArtifact=new DefaultArtifact(coordinate);
+  }
+ catch (  IllegalArgumentException e) {
+    if (defaultVersion != null) {
+      versionedArtifact=new DefaultArtifact(coordinate + ":" + defaultVersion);
+    }
+ else {
+      throw e;
+    }
+  }
+  return versionedArtifact;
+}

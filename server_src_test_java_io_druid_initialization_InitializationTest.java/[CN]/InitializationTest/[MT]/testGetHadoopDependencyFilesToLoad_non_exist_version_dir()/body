@@ -1,0 +1,12 @@
+{
+  final File rootHadoopDependenciesDir=temporaryFolder.newFolder();
+  final ExtensionsConfig config=new ExtensionsConfig(){
+    @Override public String getHadoopDependenciesDir(){
+      return rootHadoopDependenciesDir.getAbsolutePath();
+    }
+  }
+;
+  final File hadoopClient=new File(rootHadoopDependenciesDir,"hadoop-client");
+  hadoopClient.mkdir();
+  Initialization.getHadoopDependencyFilesToLoad(ImmutableList.of("org.apache.hadoop:hadoop-client:2.3.0"),config);
+}
