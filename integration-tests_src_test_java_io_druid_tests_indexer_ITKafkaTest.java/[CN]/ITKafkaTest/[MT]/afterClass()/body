@@ -1,0 +1,15 @@
+{
+  LOG.info("teardown");
+  indexer.waitUntilTaskCompletes(taskID);
+  AdminUtils.deleteTopic(zkClient,TOPIC_NAME);
+  if (segmentsExist) {
+    try {
+      String first=DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000Z'").print(dtFirst);
+      String last=DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000Z'").print(dtFirst.plusDays(1));
+      unloadAndKillData(DATASOURCE,first,last);
+    }
+ catch (    Exception e) {
+      LOG.warn("exception while removing segments: [%s]",e.getMessage());
+    }
+  }
+}
