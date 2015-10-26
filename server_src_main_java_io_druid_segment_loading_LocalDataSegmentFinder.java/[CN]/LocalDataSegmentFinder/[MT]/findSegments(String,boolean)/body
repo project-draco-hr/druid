@@ -1,0 +1,9 @@
+{
+  final Set<DataSegment> segments=Sets.newHashSet();
+  final File workingDir=new File(workingDirPath);
+  if (!workingDir.isDirectory()) {
+    throw new SegmentLoadingException("Working directory [%s] didn't exist !?",workingDir);
+  }
+  recursiveSearchSegments(segments,workingDir,updateDescriptor);
+  return segments;
+}

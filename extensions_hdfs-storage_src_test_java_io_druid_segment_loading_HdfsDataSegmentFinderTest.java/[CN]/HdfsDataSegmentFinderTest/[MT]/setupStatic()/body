@@ -1,0 +1,13 @@
+{
+  mapper.registerSubtypes(new NamedType(NumberedShardSpec.class,"numbered"));
+  hdfsTmpDir=File.createTempFile("hdfsDataSource","dir");
+  hdfsTmpDir.deleteOnExit();
+  if (!hdfsTmpDir.delete()) {
+    throw new IOException(String.format("Unable to delete hdfsTmpDir [%s]",hdfsTmpDir.getAbsolutePath()));
+  }
+  conf=new Configuration(true);
+  conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,hdfsTmpDir.getAbsolutePath());
+  miniCluster=new MiniDFSCluster.Builder(conf).build();
+  uriBase=miniCluster.getURI();
+  fs=miniCluster.getFileSystem();
+}

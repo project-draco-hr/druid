@@ -1,0 +1,10 @@
+{
+  final LocalDataSegmentFinder localDataSegmentFinder=new LocalDataSegmentFinder(new DefaultObjectMapper());
+  try {
+    localDataSegmentFinder.findSegments(dataSourceDir.getAbsolutePath(),false);
+  }
+ catch (  SegmentLoadingException e) {
+    Assert.assertTrue(e.getCause() instanceof IOException);
+    throw e;
+  }
+}

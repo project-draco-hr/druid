@@ -1,0 +1,22 @@
+{
+  final Injector injector=makeInjector();
+  mapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
+  indexerMetadataStorageCoordinator=injector.getInstance(IndexerMetadataStorageCoordinator.class);
+  final DataSegmentFinder dataSegmentFinder=injector.getInstance(DataSegmentFinder.class);
+  log.info("Start seraching segments under [%s]",workingDirPath);
+  Set<DataSegment> segments=null;
+  try {
+    segments=dataSegmentFinder.findSegments(workingDirPath,updateDescriptor);
+  }
+ catch (  SegmentLoadingException e) {
+    Throwables.propagate(e);
+  }
+  log.info("Done searching segments under [%s], [%d] segments were found",workingDirPath,segments.size());
+  try {
+    insertSegments(segments);
+  }
+ catch (  IOException e) {
+    Throwables.propagate(e);
+  }
+  log.info("Done processing [%d] segments",segments.size());
+}

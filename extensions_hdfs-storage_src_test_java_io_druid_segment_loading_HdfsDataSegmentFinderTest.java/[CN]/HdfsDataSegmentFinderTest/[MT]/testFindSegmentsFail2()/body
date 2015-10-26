@@ -1,0 +1,10 @@
+{
+  final HdfsDataSegmentFinder hdfsDataSegmentFinder=new HdfsDataSegmentFinder(conf,new DefaultObjectMapper());
+  try {
+    hdfsDataSegmentFinder.findSegments(dataSourceDir.toString(),false);
+  }
+ catch (  SegmentLoadingException e) {
+    Assert.assertTrue(e.getCause() instanceof IOException);
+    throw e;
+  }
+}
