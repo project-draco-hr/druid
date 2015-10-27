@@ -9,7 +9,7 @@
   announcer.start();
   try {
     Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
-    announcer.announce(testPath,billy);
+    awaitAnnounce(announcer,testPath,billy,true);
     Assert.assertEquals(initialStat.getMzxid(),curator.checkExists().forPath(parent).getMzxid());
   }
   finally {

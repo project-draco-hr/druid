@@ -1,0 +1,98 @@
+{
+synchronized (toAnnounce) {
+    if (!started) {
+      toAnnounce.add(new Announceable(path,bytes,removeParentIfCreated));
+      return;
+    }
+  }
+  final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);
+  final String parentPath=pathAndNode.getPath();
+  boolean buildParentPath=false;
+  ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);
+  if (subPaths == null) {
+    try {
+      if (curator.checkExists().forPath(parentPath) == null) {
+        buildParentPath=true;
+      }
+    }
+ catch (    Exception e) {
+      log.debug(e,"Problem checking if the parent existed, ignoring.");
+    }
+    announcements.putIfAbsent(parentPath,new MapMaker().<String,byte[]>makeMap());
+    final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);
+synchronized (finalSubPaths) {
+      if (!listeners.containsKey(parentPath)) {
+        final PathChildrenCache cache=factory.make(curator,parentPath);
+        cache.getListenable().addListener(new PathChildrenCacheListener(){
+          private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);
+          @Override public void childEvent(          CuratorFramework client,          PathChildrenCacheEvent event) throws Exception {
+            log.debug("Path[%s] got event[%s]",parentPath,event);
+switch (event.getType()) {
+case CHILD_REMOVED:
+              final ChildData child=event.getData();
+            final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());
+          final byte[] value=finalSubPaths.get(childPath.getNode());
+        if (value != null) {
+          log.info("Node[%s] dropped, reinstating.",child.getPath());
+          createAnnouncement(child.getPath(),value);
+        }
+      break;
+case CONNECTION_LOST:
+    Set<String> pathsToReinstate=Sets.newHashSet();
+  for (  String node : finalSubPaths.keySet()) {
+    String path=ZKPaths.makePath(parentPath,node);
+    log.info("Node[%s] is added to reinstate.",path);
+    pathsToReinstate.add(path);
+  }
+if (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {
+  log.info("Already had a pathsLost set!?[%s]",parentPath);
+}
+break;
+case CONNECTION_RECONNECTED:
+final Set<String> thePathsLost=pathsLost.getAndSet(null);
+if (thePathsLost != null) {
+for (String path : thePathsLost) {
+log.info("Reinstating [%s]",path);
+final ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);
+createAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));
+}
+}
+break;
+}
+}
+}
+);
+synchronized (toAnnounce) {
+if (started) {
+if (buildParentPath) {
+createPath(parentPath,removeParentIfCreated);
+}
+startCache(cache);
+listeners.put(parentPath,cache);
+}
+}
+}
+}
+subPaths=finalSubPaths;
+}
+boolean created=false;
+synchronized (toAnnounce) {
+if (started) {
+byte[] oldBytes=subPaths.putIfAbsent(pathAndNode.getNode(),bytes);
+if (oldBytes == null) {
+created=true;
+}
+ else if (!Arrays.equals(oldBytes,bytes)) {
+throw new IAE("Cannot reannounce different values under the same path");
+}
+}
+}
+if (created) {
+try {
+createAnnouncement(path,bytes);
+}
+ catch (Exception e) {
+throw Throwables.propagate(e);
+}
+}
+}

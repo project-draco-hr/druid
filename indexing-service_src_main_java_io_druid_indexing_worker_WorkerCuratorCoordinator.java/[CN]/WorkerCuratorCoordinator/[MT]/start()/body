@@ -7,7 +7,7 @@ synchronized (lock) {
     makePathIfNotExisting(getTaskPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
     makePathIfNotExisting(getStatusPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
     announcer.start();
-    announcer.announce(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(worker));
+    announcer.announce(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(worker),false);
     started=true;
   }
 }
