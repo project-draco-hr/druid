@@ -1,8 +1,10 @@
 {
-  EqualToHavingSpec spec=new EqualToHavingSpec("metric",10);
-  assertTrue(spec.eval(ROW));
-  spec=new EqualToHavingSpec("metric",9);
-  assertFalse(spec.eval(ROW));
-  spec=new EqualToHavingSpec("metric",11);
-  assertFalse(spec.eval(ROW));
+  EqualToHavingSpec spec=new EqualToHavingSpec("metric",Long.valueOf(Long.MAX_VALUE - 10));
+  assertTrue(spec.eval(getTestRow(Long.valueOf(Long.MAX_VALUE - 10))));
+  assertFalse(spec.eval(getTestRow(Long.valueOf(Long.MAX_VALUE - 5))));
+  assertFalse(spec.eval(getTestRow(100.05f)));
+  spec=new EqualToHavingSpec("metric",100.56f);
+  assertTrue(spec.eval(getTestRow(100.56f)));
+  assertFalse(spec.eval(getTestRow(90.53f)));
+  assertFalse(spec.eval(getTestRow(Long.MAX_VALUE)));
 }

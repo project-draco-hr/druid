@@ -1,8 +1,14 @@
 {
-  GreaterThanHavingSpec spec=new GreaterThanHavingSpec("metric",10.003);
-  assertFalse(spec.eval(ROW));
-  spec=new GreaterThanHavingSpec("metric",10);
-  assertFalse(spec.eval(ROW));
-  spec=new GreaterThanHavingSpec("metric",9);
-  assertTrue(spec.eval(ROW));
+  GreaterThanHavingSpec spec=new GreaterThanHavingSpec("metric",Long.valueOf(Long.MAX_VALUE - 10));
+  assertFalse(spec.eval(getTestRow(Long.valueOf(Long.MAX_VALUE - 10))));
+  assertFalse(spec.eval(getTestRow(Long.valueOf(Long.MAX_VALUE - 15))));
+  assertTrue(spec.eval(getTestRow(Long.valueOf(Long.MAX_VALUE - 5))));
+  assertTrue(spec.eval(getTestRow(String.valueOf(Long.MAX_VALUE - 5))));
+  assertFalse(spec.eval(getTestRow(100.05f)));
+  spec=new GreaterThanHavingSpec("metric",100.56f);
+  assertFalse(spec.eval(getTestRow(100.56f)));
+  assertFalse(spec.eval(getTestRow(90.53f)));
+  assertFalse(spec.eval(getTestRow("90.53f")));
+  assertTrue(spec.eval(getTestRow(101.34f)));
+  assertTrue(spec.eval(getTestRow(Long.MAX_VALUE)));
 }
