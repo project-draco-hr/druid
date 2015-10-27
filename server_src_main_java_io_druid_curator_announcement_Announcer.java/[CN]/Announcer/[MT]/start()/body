@@ -4,12 +4,12 @@ synchronized (toAnnounce) {
       return;
     }
     started=true;
-    for (    Pair<String,byte[]> pair : toAnnounce) {
-      announce(pair.lhs,pair.rhs);
+    for (    Announceable announceable : toAnnounce) {
+      announce(announceable.path,announceable.bytes,announceable.removeParentsIfCreated);
     }
     toAnnounce.clear();
-    for (    Pair<String,byte[]> pair : toUpdate) {
-      update(pair.lhs,pair.rhs);
+    for (    Announceable announceable : toUpdate) {
+      update(announceable.path,announceable.bytes);
     }
     toUpdate.clear();
   }

@@ -7,11 +7,11 @@
   announcer.start();
   try {
     Assert.assertNull(curator.checkExists().forPath(parent));
-    awaitAnnounce(announcer,testPath,billy,true);
+    awaitAnnounce(announcer,testPath,billy,false);
     Assert.assertNotNull(curator.checkExists().forPath(parent));
   }
   finally {
     announcer.stop();
   }
-  Assert.assertNull(curator.checkExists().forPath(parent));
+  Assert.assertNotNull(curator.checkExists().forPath(parent));
 }

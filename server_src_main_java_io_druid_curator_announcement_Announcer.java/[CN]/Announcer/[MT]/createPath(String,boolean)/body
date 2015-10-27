@@ -1,7 +1,10 @@
 {
   try {
     curator.create().creatingParentsIfNeeded().forPath(parentPath);
-    parentsIBuilt.add(parentPath);
+    if (removeParentsIfCreated) {
+      parentsIBuilt.add(parentPath);
+    }
+    log.debug("Created parentPath[%s], %s remove on stop.",parentPath,removeParentsIfCreated ? "will" : "will not");
   }
  catch (  Exception e) {
     log.info(e,"Problem creating parentPath[%s], someone else created it first?",parentPath);
