@@ -1,0 +1,10 @@
+{
+  final int numTasks=100;
+  final List<ListenableFuture<?>> futures=Lists.newArrayListWithExpectedSize(numTasks);
+  final AtomicInteger hasRun=new AtomicInteger(0);
+  for (int i=0; i < numTasks; ++i) {
+    futures.add(exec.submit(getCheckingPrioritizedRunnable(i,hasRun)));
+  }
+  latch.countDown();
+  checkFutures(futures);
+}

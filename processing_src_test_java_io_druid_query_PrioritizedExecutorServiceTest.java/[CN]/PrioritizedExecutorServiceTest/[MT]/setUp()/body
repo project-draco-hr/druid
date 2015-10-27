@@ -1,10 +1,13 @@
 {
-  exec=PrioritizedExecutorService.create(new Lifecycle(),new ExecutorServiceConfig(){
+  exec=PrioritizedExecutorService.create(new Lifecycle(),new DruidProcessingConfig(){
     @Override public String getFormatString(){
       return "test";
     }
     @Override public int getNumThreads(){
       return 1;
+    }
+    @Override public boolean isFifo(){
+      return useFifo;
     }
   }
 );

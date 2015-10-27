@@ -1,0 +1,27 @@
+{
+  final int DEFAULT=0;
+  final int MIN=-1;
+  final int MAX=1;
+  exec=new PrioritizedExecutorService(exec.threadPoolExecutor,true,DEFAULT,config);
+  final int numTasks=999;
+  final int[] priorities=new int[]{MAX,DEFAULT,MIN};
+  final int tasksPerPriority=numTasks / priorities.length;
+  final int[] priorityOffsets=new int[]{0,tasksPerPriority,tasksPerPriority * 2};
+  final List<ListenableFuture<?>> futures=Lists.newArrayListWithExpectedSize(numTasks);
+  final AtomicInteger hasRun=new AtomicInteger(0);
+  final Random random=new Random(789401);
+  for (int i=0; i < numTasks; ++i) {
+    final int priorityBucket=i % priorities.length;
+    final int myPriority=priorities[priorityBucket];
+    final int priorityOffset=priorityOffsets[priorityBucket];
+    final int expectedPriorityOrder=i / priorities.length;
+    if (random.nextBoolean()) {
+      futures.add(exec.submit(getCheckingPrioritizedCallable(priorityOffset + expectedPriorityOrder,hasRun,myPriority)));
+    }
+ else {
+      futures.add(exec.submit(getCheckingPrioritizedRunnable(priorityOffset + expectedPriorityOrder,hasRun,myPriority)));
+    }
+  }
+  latch.countDown();
+  checkFutures(futures);
+}
