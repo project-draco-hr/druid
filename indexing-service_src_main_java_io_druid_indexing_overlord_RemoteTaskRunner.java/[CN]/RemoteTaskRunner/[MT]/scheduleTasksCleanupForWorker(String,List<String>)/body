@@ -1,5 +1,6 @@
 {
-  removedWorkerCleanups.put(worker,cleanupExec.schedule(new Runnable(){
+  cancelWorkerCleanup(worker);
+  final ListenableScheduledFuture<?> cleanupTask=cleanupExec.schedule(new Runnable(){
     @Override public void run(){
       log.info("Running scheduled cleanup for Worker[%s]",worker);
       try {
@@ -30,10 +31,17 @@
         log.makeAlert("Exception while cleaning up worker[%s]",worker).emit();
         throw Throwables.propagate(e);
       }
- finally {
-        removedWorkerCleanups.remove(worker);
-      }
     }
   }
-,config.getTaskCleanupTimeout().toStandardDuration().getMillis(),TimeUnit.MILLISECONDS));
+,config.getTaskCleanupTimeout().toStandardDuration().getMillis(),TimeUnit.MILLISECONDS);
+  removedWorkerCleanups.put(worker,cleanupTask);
+  Futures.addCallback(cleanupTask,new FutureCallback<Object>(){
+    @Override public void onSuccess(    Object result){
+      removedWorkerCleanups.remove(worker,cleanupTask);
+    }
+    @Override public void onFailure(    Throwable t){
+      removedWorkerCleanups.remove(worker,cleanupTask);
+    }
+  }
+);
 }

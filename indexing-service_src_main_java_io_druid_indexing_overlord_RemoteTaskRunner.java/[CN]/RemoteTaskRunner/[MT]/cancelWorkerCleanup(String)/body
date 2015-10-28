@@ -1,0 +1,8 @@
+{
+  ScheduledFuture previousCleanup=removedWorkerCleanups.remove(workerHost);
+  if (previousCleanup != null) {
+    log.info("Cancelling Worker[%s] scheduled task cleanup",workerHost);
+    previousCleanup.cancel(false);
+  }
+  return previousCleanup != null;
+}
