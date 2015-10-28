@@ -1,6 +1,5 @@
 {
   final long startTime=System.currentTimeMillis();
-  final File taskDir=toolbox.getTaskWorkDir();
   TaskStatus status;
   try {
     log.info("Running task: %s",task.getId());
@@ -17,15 +16,6 @@ catch (  Exception e) {
 catch (  Throwable t) {
     log.error(t,"Uncaught Throwable while running task[%s]",task);
     throw Throwables.propagate(t);
-  }
-  try {
-    if (taskDir.exists()) {
-      log.info("Removing task directory: %s",taskDir);
-      FileUtils.deleteDirectory(taskDir);
-    }
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Failed to delete task directory").addData("taskDir",taskDir.toString()).addData("task",task.getId()).emit();
   }
   try {
     return status.withDuration(System.currentTimeMillis() - startTime);

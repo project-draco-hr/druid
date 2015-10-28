@@ -1,0 +1,21 @@
+{
+  final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
+  final RealtimeIndexTask task=makeRealtimeTask(null);
+  final TaskToolbox taskToolbox=makeToolbox(task,mdc,tempFolder.newFolder());
+  final ListenableFuture<TaskStatus> statusFuture=runTask(task,taskToolbox);
+  while (task.getFirehose() == null) {
+    Thread.sleep(50);
+  }
+  final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task.getFirehose();
+  firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo")),new MapBasedInputRow(now,ImmutableList.of("dim2"),ImmutableMap.<String,Object>of("dim2","bar"))));
+  firehose.close();
+  while (mdc.getPublished().isEmpty()) {
+    Thread.sleep(50);
+  }
+  Assert.assertEquals(2,countEvents(task));
+  for (  DataSegment segment : mdc.getPublished()) {
+    ((TestServerView)taskToolbox.getNewSegmentServerView()).segmentAdded(dummyServer,segment);
+  }
+  final TaskStatus taskStatus=statusFuture.get();
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,taskStatus.getStatusCode());
+}

@@ -6,5 +6,5 @@
   this.jsonMapper=jsonMapper;
   this.node=node;
   this.portFinder=new PortFinder(config.getStartPort());
-  this.exec=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(workerConfig.getCapacity()));
+  this.exec=MoreExecutors.listeningDecorator(Execs.multiThreaded(workerConfig.getCapacity(),"forking-task-runner-%d"));
 }

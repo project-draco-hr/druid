@@ -1,0 +1,14 @@
+{
+  final File restoreFile=getRestoreFile();
+  final List<String> theTasks=Lists.newArrayList();
+  for (  ForkingTaskRunnerWorkItem forkingTaskRunnerWorkItem : tasks.values()) {
+    theTasks.add(forkingTaskRunnerWorkItem.getTaskId());
+  }
+  try {
+    Files.createParentDirs(restoreFile);
+    jsonMapper.writeValue(restoreFile,new TaskRestoreInfo(theTasks));
+  }
+ catch (  Exception e) {
+    log.warn(e,"Failed to save tasks to restore file[%s]. Skipping this save.",restoreFile);
+  }
+}

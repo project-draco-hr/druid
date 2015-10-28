@@ -18,15 +18,7 @@
     rows.add(parser.parse(event));
   }
   try {
-    for (    final InputRow row : rows) {
-      boolean added=false;
-      while (!closed && !added) {
-        added=buffer.offer(row,500,TimeUnit.MILLISECONDS);
-      }
-      if (!added) {
-        throw new IllegalStateException("Cannot add events to closed firehose!");
-      }
-    }
+    addRows(rows);
     return Response.ok(objectMapper.writeValueAsString(ImmutableMap.of("eventCount",events.size())),contentType).build();
   }
  catch (  InterruptedException e) {

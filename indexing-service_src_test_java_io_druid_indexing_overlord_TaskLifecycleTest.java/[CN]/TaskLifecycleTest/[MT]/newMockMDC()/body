@@ -1,3 +1,10 @@
 {
-  return new MockIndexerMetadataStorageCoordinator();
+  return new TestIndexerMetadataStorageCoordinator(){
+    @Override public Set<DataSegment> announceHistoricalSegments(    Set<DataSegment> segments){
+      Set<DataSegment> retVal=super.announceHistoricalSegments(segments);
+      publishCountDown.countDown();
+      return retVal;
+    }
+  }
+;
 }

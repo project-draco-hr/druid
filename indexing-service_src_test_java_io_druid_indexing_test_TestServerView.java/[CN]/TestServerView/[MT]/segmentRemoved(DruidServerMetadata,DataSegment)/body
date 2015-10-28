@@ -1,0 +1,13 @@
+{
+  for (  final Map.Entry<ServerView.SegmentCallback,Pair<Predicate<DataSegment>,Executor>> entry : callbacks.entrySet()) {
+    if (entry.getValue().lhs.apply(segment)) {
+      entry.getValue().rhs.execute(new Runnable(){
+        @Override public void run(){
+          entry.getKey().segmentRemoved(server,segment);
+        }
+      }
+);
+    }
+  }
+  return ServerView.CallbackAction.CONTINUE;
+}

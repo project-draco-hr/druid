@@ -1,0 +1,19 @@
+{
+  return taskExec.submit(new Callable<TaskStatus>(){
+    @Override public TaskStatus call() throws Exception {
+      try {
+        if (task.isReady(toolbox.getTaskActionClient())) {
+          return task.run(toolbox);
+        }
+ else {
+          throw new ISE("Task is not ready");
+        }
+      }
+ catch (      Exception e) {
+        log.warn(e,"Task failed");
+        throw e;
+      }
+    }
+  }
+);
+}

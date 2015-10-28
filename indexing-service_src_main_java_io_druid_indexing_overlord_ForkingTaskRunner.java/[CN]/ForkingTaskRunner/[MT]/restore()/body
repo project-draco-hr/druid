@@ -1,0 +1,35 @@
+{
+  final File restoreFile=getRestoreFile();
+  final TaskRestoreInfo taskRestoreInfo;
+  if (restoreFile.exists()) {
+    try {
+      taskRestoreInfo=jsonMapper.readValue(restoreFile,TaskRestoreInfo.class);
+    }
+ catch (    Exception e) {
+      log.error(e,"Failed to read restorable tasks from file[%s]. Skipping restore.",restoreFile);
+      return ImmutableList.of();
+    }
+  }
+ else {
+    return ImmutableList.of();
+  }
+  final List<Pair<Task,ListenableFuture<TaskStatus>>> retVal=Lists.newArrayList();
+  for (  final String taskId : taskRestoreInfo.getRunningTasks()) {
+    try {
+      final File taskFile=new File(taskConfig.getTaskDir(taskId),"task.json");
+      final Task task=jsonMapper.readValue(taskFile,Task.class);
+      if (!task.getId().equals(taskId)) {
+        throw new ISE("WTF?! Task[%s] restore file had wrong id[%s].",taskId,task.getId());
+      }
+      if (task.canRestore()) {
+        log.info("Restoring task[%s].",task.getId());
+        retVal.add(Pair.of(task,run(task)));
+      }
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to restore task[%s]. Trying to restore other tasks.",taskId);
+    }
+  }
+  log.info("Restored %,d tasks.",retVal.size());
+  return retVal;
+}

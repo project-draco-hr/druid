@@ -1,11 +1,34 @@
 {
+  stopping=true;
+  exec.shutdown();
 synchronized (tasks) {
-    exec.shutdown();
     for (    ForkingTaskRunnerWorkItem taskWorkItem : tasks.values()) {
       if (taskWorkItem.processHolder != null) {
-        log.info("Destroying process: %s",taskWorkItem.processHolder.process);
-        taskWorkItem.processHolder.process.destroy();
+        log.info("Closing output stream to task[%s].",taskWorkItem.getTask().getId());
+        try {
+          taskWorkItem.processHolder.process.getOutputStream().close();
+        }
+ catch (        Exception e) {
+          log.warn(e,"Failed to close stdout to task[%s]. Destroying task.",taskWorkItem.getTask().getId());
+          taskWorkItem.processHolder.process.destroy();
+        }
       }
     }
+  }
+  final DateTime start=new DateTime();
+  final long timeout=new Interval(start,taskConfig.getGracefulShutdownTimeout()).toDurationMillis();
+  log.info("Waiting %,dms for shutdown.",timeout);
+  if (timeout > 0) {
+    try {
+      exec.awaitTermination(timeout,TimeUnit.MILLISECONDS);
+      log.info("Finished stopping in %,dms.",System.currentTimeMillis() - start.getMillis());
+    }
+ catch (    InterruptedException e) {
+      log.warn(e,"Interrupted while waiting for executor to finish.");
+      Thread.currentThread().interrupt();
+    }
+  }
+ else {
+    log.warn("Ran out of time, not waiting for executor to finish!");
   }
 }

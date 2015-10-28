@@ -1,0 +1,11 @@
+{
+  for (  final InputRow row : rows) {
+    boolean added=false;
+    while (!closed && !added) {
+      added=buffer.offer(row,500,TimeUnit.MILLISECONDS);
+    }
+    if (!added) {
+      throw new IllegalStateException("Cannot add events to closed firehose!");
+    }
+  }
+}
