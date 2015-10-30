@@ -1,0 +1,16 @@
+{
+  VersionedIntervalTimeline<String,String> timeline=new VersionedIntervalTimeline<>(Ordering.natural());
+  Interval interval=new Interval("2000/3000");
+  String version="v1";
+  for (  PartitionChunk<String> chunk : chunks) {
+    timeline.add(interval,version,chunk);
+  }
+  Set<String> actualObjects=new HashSet<>();
+  List<TimelineObjectHolder<String,String>> entries=timeline.lookup(interval);
+  for (  TimelineObjectHolder<String,String> entry : entries) {
+    for (    PartitionChunk<String> chunk : entry.getObject()) {
+      actualObjects.add(chunk.getObject());
+    }
+  }
+  Assert.assertEquals(expectedObjects,actualObjects);
+}

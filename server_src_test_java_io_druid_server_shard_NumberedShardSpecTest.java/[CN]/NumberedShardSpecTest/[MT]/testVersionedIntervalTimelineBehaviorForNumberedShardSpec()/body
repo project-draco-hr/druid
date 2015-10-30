@@ -1,0 +1,17 @@
+{
+  PartitionChunk<String> chunk0=new NumberedShardSpec(0,2).createChunk("0");
+  PartitionChunk<String> chunk1=new NumberedShardSpec(1,2).createChunk("1");
+  PartitionChunk<String> chunk4=new NumberedShardSpec(4,2).createChunk("4");
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk0),Collections.EMPTY_SET);
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk1),Collections.EMPTY_SET);
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk4),Collections.EMPTY_SET);
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk0,chunk4),Collections.EMPTY_SET);
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk1,chunk4),Collections.EMPTY_SET);
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk1,chunk0),ImmutableSet.of("0","1"));
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk4,chunk1,chunk0),ImmutableSet.of("0","1","4"));
+  chunk0=new NumberedShardSpec(0,0).createChunk("0");
+  chunk4=new NumberedShardSpec(4,0).createChunk("4");
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk0),ImmutableSet.of("0"));
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk4),ImmutableSet.of("4"));
+  testVersionedIntervalTimelineBehaviorForNumberedShardSpec(ImmutableList.of(chunk4,chunk0),ImmutableSet.of("0","4"));
+}

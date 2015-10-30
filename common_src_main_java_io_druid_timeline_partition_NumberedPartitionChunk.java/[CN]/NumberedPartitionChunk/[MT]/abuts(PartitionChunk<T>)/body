@@ -1,3 +1,14 @@
 {
-  return other instanceof NumberedPartitionChunk && other.getChunkNumber() == chunkNumber + 1;
+  if (other instanceof NumberedPartitionChunk) {
+    NumberedPartitionChunk<T> castedOther=(NumberedPartitionChunk<T>)other;
+    if (castedOther.getChunkNumber() < castedOther.chunks) {
+      return other.getChunkNumber() == chunkNumber + 1;
+    }
+ else {
+      return other.getChunkNumber() > chunkNumber;
+    }
+  }
+ else {
+    return false;
+  }
 }
