@@ -7,7 +7,7 @@
     valuesBytesSize+=valuesBytes[index].length;
     ++index;
   }
-  final ByteBuffer queryCacheKey=ByteBuffer.allocate(1 + valuesBytesSize).put(CACHE_TYPE_ID);
+  final ByteBuffer queryCacheKey=ByteBuffer.allocate(2 + valuesBytesSize).put(caseSensitive ? (byte)1 : 0).put(CACHE_TYPE_ID);
   for (  byte[] bytes : valuesBytes) {
     queryCacheKey.put(bytes);
   }

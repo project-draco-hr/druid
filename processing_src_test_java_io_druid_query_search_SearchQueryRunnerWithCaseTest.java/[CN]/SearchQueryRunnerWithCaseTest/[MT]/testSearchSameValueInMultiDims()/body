@@ -1,0 +1,13 @@
+{
+  SearchQuery searchQuery;
+  Druids.SearchQueryBuilder builder=testBuilder().dimensions(Arrays.asList(placementDimension,placementishDimension));
+  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  searchQuery=builder.query("PREFERRED").build();
+  expectedResults.put(placementDimension,Sets.newHashSet("PREFERRED","preferred","PREFERRed"));
+  expectedResults.put(placementishDimension,Sets.newHashSet("preferred","Preferred"));
+  checkSearchQuery(searchQuery,expectedResults);
+  searchQuery=builder.query("preferred",true).build();
+  expectedResults.put(placementDimension,Sets.newHashSet("preferred"));
+  expectedResults.put(placementishDimension,Sets.newHashSet("preferred"));
+  checkSearchQuery(searchQuery,expectedResults);
+}

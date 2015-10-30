@@ -1,0 +1,9 @@
+{
+  SearchQueryRunnerFactory factory=new SearchQueryRunnerFactory(new SearchQueryQueryToolChest(new SearchQueryConfig(),NoopIntervalChunkingQueryRunnerDecorator()),NOOP_QUERYWATCHER);
+  CharSource input=CharSource.wrap("2011-01-12T00:00:00.000Z\tspot\tAutoMotive\tPREFERRED\ta\u0001preferred\t100.000000\n" + "2011-01-12T00:00:00.000Z\tSPot\tbusiness\tpreferred\tb\u0001Preferred\t100.000000\n" + "2011-01-12T00:00:00.000Z\tspot\tentertainment\tPREFERRed\te\u0001preferred\t100.000000\n"+ "2011-01-13T00:00:00.000Z\tspot\tautomotive\tpreferred\ta\u0001preferred\t94.874713");
+  IncrementalIndex index1=TestIndex.makeRealtimeIndex(input,true);
+  IncrementalIndex index2=TestIndex.makeRealtimeIndex(input,false);
+  QueryableIndex index3=TestIndex.persistRealtimeAndLoadMMapped(index1);
+  QueryableIndex index4=TestIndex.persistRealtimeAndLoadMMapped(index2);
+  return transformToConstructionFeeder(Arrays.asList(makeQueryRunner(factory,new IncrementalIndexSegment(index1,"index1")),makeQueryRunner(factory,new IncrementalIndexSegment(index2,"index2")),makeQueryRunner(factory,new QueryableIndexSegment("index3",index3)),makeQueryRunner(factory,new QueryableIndexSegment("index4",index4))));
+}
