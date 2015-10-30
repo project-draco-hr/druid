@@ -1,0 +1,7 @@
+{
+  String uri=super.rewriteURI(request,host).toString();
+  if (uri.contains("/druid/v2")) {
+    return URI.create(uri.replace("/druid/v2","/default"));
+  }
+  return URI.create(uri.replace("/proxy",""));
+}

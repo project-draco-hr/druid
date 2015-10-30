@@ -1,0 +1,13 @@
+{
+  Server server=new Server(port);
+  ServletHandler handler=new ServletHandler();
+  handler.addServletWithMapping(new ServletHolder(new HttpServlet(){
+    @Override protected void doDelete(    HttpServletRequest req,    HttpServletResponse resp) throws ServletException, IOException {
+      latch.countDown();
+      resp.setStatus(200);
+    }
+  }
+),"/default/*");
+  server.setHandler(handler);
+  return server;
+}
