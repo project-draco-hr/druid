@@ -1,0 +1,7 @@
+{
+  final Task task=new NoopTask(null,0,0,null,null,null);
+  taskActionTestKit.getMetadataStorageCoordinator().announceHistoricalSegments(ImmutableSet.of(DataSegment.builder().dataSource(DATA_SOURCE).interval(Granularity.HOUR.bucket(PARTY_TIME)).version(PARTY_TIME.toString()).shardSpec(new NumberedShardSpec(0,2)).build(),DataSegment.builder().dataSource(DATA_SOURCE).interval(Granularity.HOUR.bucket(PARTY_TIME)).version(PARTY_TIME.toString()).shardSpec(new NumberedShardSpec(1,2)).build()));
+  taskActionTestKit.getTaskLockbox().add(task);
+  final SegmentIdentifier id1=allocate(task,PARTY_TIME,QueryGranularity.DAY,Granularity.DAY,"s1",null);
+  Assert.assertNull(id1);
+}

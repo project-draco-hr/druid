@@ -1,0 +1,13 @@
+{
+  taskStorage=new HeapMemoryTaskStorage(new TaskStorageConfig(new Period("PT24H")));
+  taskLockbox=new TaskLockbox(taskStorage);
+  testDerbyConnector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),Suppliers.ofInstance(metadataStorageTablesConfig));
+  metadataStorageCoordinator=new IndexerSQLMetadataStorageCoordinator(new TestUtils().getTestObjectMapper(),metadataStorageTablesConfig,testDerbyConnector);
+  taskActionToolbox=new TaskActionToolbox(taskLockbox,metadataStorageCoordinator,new NoopServiceEmitter());
+  testDerbyConnector.createPendingSegmentsTable();
+  testDerbyConnector.createSegmentTable();
+  testDerbyConnector.createRulesTable();
+  testDerbyConnector.createConfigTable();
+  testDerbyConnector.createTaskTables();
+  testDerbyConnector.createAuditTable();
+}

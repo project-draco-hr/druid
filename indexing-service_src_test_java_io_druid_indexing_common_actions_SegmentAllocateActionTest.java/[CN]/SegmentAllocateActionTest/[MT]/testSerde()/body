@@ -1,0 +1,11 @@
+{
+  final SegmentAllocateAction action=new SegmentAllocateAction(DATA_SOURCE,PARTY_TIME,QueryGranularity.MINUTE,Granularity.HOUR,"s1","prev");
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final SegmentAllocateAction action2=(SegmentAllocateAction)objectMapper.readValue(objectMapper.writeValueAsBytes(action),TaskAction.class);
+  Assert.assertEquals(DATA_SOURCE,action2.getDataSource());
+  Assert.assertEquals(PARTY_TIME,action2.getTimestamp());
+  Assert.assertEquals(new DurationGranularity(60000,0),action2.getQueryGranularity());
+  Assert.assertSame(Granularity.HOUR,action2.getPreferredSegmentGranularity());
+  Assert.assertEquals("s1",action2.getSequenceName());
+  Assert.assertEquals("prev",action2.getPreviousSegmentId());
+}
