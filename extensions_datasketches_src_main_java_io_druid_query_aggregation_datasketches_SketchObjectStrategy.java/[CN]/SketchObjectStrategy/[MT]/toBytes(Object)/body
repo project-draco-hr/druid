@@ -1,0 +1,21 @@
+{
+  if (obj instanceof Sketch) {
+    Sketch sketch=(Sketch)obj;
+    if (sketch.isEmpty()) {
+      return EMPTY_BYTES;
+    }
+    return sketch.toByteArray();
+  }
+ else   if (obj instanceof Memory) {
+    Memory mem=(Memory)obj;
+    byte[] retVal=new byte[(int)mem.getCapacity()];
+    mem.getByteArray(0,retVal,0,(int)mem.getCapacity());
+    return retVal;
+  }
+ else   if (obj == null) {
+    return EMPTY_BYTES;
+  }
+ else {
+    throw new IAE("Unknown class[%s], toString[%s]",obj.getClass(),obj);
+  }
+}

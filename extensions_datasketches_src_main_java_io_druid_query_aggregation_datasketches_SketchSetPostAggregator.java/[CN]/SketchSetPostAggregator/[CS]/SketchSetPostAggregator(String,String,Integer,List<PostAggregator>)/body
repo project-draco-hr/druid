@@ -1,0 +1,10 @@
+{
+  this.name=name;
+  this.fields=fields;
+  this.func=SketchOperations.Func.valueOf(func);
+  this.maxSketchSize=maxSize == null ? SketchAggregatorFactory.DEFAULT_MAX_SKETCH_SIZE : maxSize;
+  Util.checkIfPowerOf2(this.maxSketchSize,"size");
+  if (fields.size() <= 1) {
+    throw new IAE("Illegal number of fields[%s], must be > 1",fields.size());
+  }
+}

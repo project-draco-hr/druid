@@ -1,0 +1,7 @@
+{
+  Sketch[] sketches=new Sketch[fields.size()];
+  for (int i=0; i < sketches.length; i++) {
+    sketches[i]=(Sketch)fields.get(i).compute(combinedAggregators);
+  }
+  return SketchOperations.sketchSetOperation(func,maxSketchSize,sketches);
+}

@@ -1,0 +1,12 @@
+{
+  if (serializedSketch instanceof String) {
+    return deserializeFromBase64EncodedString((String)serializedSketch);
+  }
+ else   if (serializedSketch instanceof byte[]) {
+    return deserializeFromByteArray((byte[])serializedSketch);
+  }
+ else   if (serializedSketch instanceof Sketch) {
+    return (Sketch)serializedSketch;
+  }
+  throw new IllegalStateException("Object is not of a type that can deserialize to sketch: " + serializedSketch.getClass());
+}

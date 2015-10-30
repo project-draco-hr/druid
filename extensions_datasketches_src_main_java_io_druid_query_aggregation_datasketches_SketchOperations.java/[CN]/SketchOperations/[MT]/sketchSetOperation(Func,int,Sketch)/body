@@ -1,0 +1,38 @@
+{
+switch (func) {
+case UNION:
+    Union union=(Union)SetOperation.builder().build(sketchSize,Family.UNION);
+  for (  Sketch sketch : sketches) {
+    SetOpReturnState success=union.update(sketch);
+    if (success != SetOpReturnState.Success) {
+      throw new IllegalStateException("Sketch operation failed " + func);
+    }
+  }
+return union.getResult(false,null);
+case INTERSECT:
+Intersection intersection=(Intersection)SetOperation.builder().build(sketchSize,Family.INTERSECTION);
+for (Sketch sketch : sketches) {
+SetOpReturnState success=intersection.update(sketch);
+if (success != SetOpReturnState.Success) {
+throw new IllegalStateException("Sketch operation failed " + func);
+}
+}
+return intersection.getResult(false,null);
+case NOT:
+if (sketches.length < 2) {
+throw new IllegalArgumentException("A-Not-B requires atleast 2 sketches");
+}
+Sketch result=sketches[0];
+for (int i=1; i < sketches.length; i++) {
+AnotB anotb=(AnotB)SetOperation.builder().build(sketchSize,Family.A_NOT_B);
+SetOpReturnState success=anotb.update(result,sketches[i]);
+if (success != SetOpReturnState.Success) {
+throw new IllegalStateException("Sketch operation failed " + func);
+}
+result=anotb.getResult(false,null);
+}
+return result;
+default :
+throw new IllegalArgumentException("Unknown sketch operation " + func);
+}
+}
