@@ -1,10 +1,12 @@
 {
-  if (dimVal == null) {
+  if (dimVal == null || values == null) {
     return false;
   }
-  final String input=caseSensitive ? dimVal : dimVal.toLowerCase();
-  for (  String value : target) {
-    if (!input.contains(value)) {
+  if (caseSensitive) {
+    return containsAny(target,dimVal);
+  }
+  for (  String search : target) {
+    if (!org.apache.commons.lang.StringUtils.containsIgnoreCase(dimVal,search)) {
       return false;
     }
   }

@@ -1,7 +1,9 @@
 {
-  if (dimVal == null) {
+  if (dimVal == null || value == null) {
     return false;
   }
-  final String input=caseSensitive ? dimVal : dimVal.toLowerCase();
-  return input.contains(target);
+  if (caseSensitive) {
+    return dimVal.contains(value);
+  }
+  return org.apache.commons.lang.StringUtils.containsIgnoreCase(dimVal,value);
 }
