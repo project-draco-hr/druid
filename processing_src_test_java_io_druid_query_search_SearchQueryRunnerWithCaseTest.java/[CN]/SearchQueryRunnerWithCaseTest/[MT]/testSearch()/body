@@ -1,0 +1,14 @@
+{
+  Druids.SearchQueryBuilder builder=testBuilder();
+  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  SearchQuery searchQuery;
+  searchQuery=builder.query("SPOT").build();
+  expectedResults.put(marketDimension,Sets.newHashSet("spot","SPot"));
+  checkSearchQuery(searchQuery,expectedResults);
+  searchQuery=builder.query("spot",true).build();
+  expectedResults.put(marketDimension,Sets.newHashSet("spot"));
+  checkSearchQuery(searchQuery,expectedResults);
+  searchQuery=builder.query("SPot",true).build();
+  expectedResults.put(marketDimension,Sets.newHashSet("SPot"));
+  checkSearchQuery(searchQuery,expectedResults);
+}

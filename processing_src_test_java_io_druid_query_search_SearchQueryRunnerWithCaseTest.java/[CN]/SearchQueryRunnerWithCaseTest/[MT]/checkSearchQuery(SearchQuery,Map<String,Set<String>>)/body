@@ -1,0 +1,20 @@
+{
+  HashMap<String,List> context=new HashMap<>();
+  Iterable<Result<SearchResultValue>> results=Sequences.toList(runner.run(searchQuery,context),Lists.<Result<SearchResultValue>>newArrayList());
+  for (  Result<SearchResultValue> result : results) {
+    Assert.assertEquals(new DateTime("2011-01-12T00:00:00.000Z"),result.getTimestamp());
+    Assert.assertNotNull(result.getValue());
+    Iterable<SearchHit> resultValues=result.getValue();
+    for (    SearchHit resultValue : resultValues) {
+      String dimension=resultValue.getDimension();
+      String theValue=resultValue.getValue();
+      Assert.assertTrue(String.format("Result had unknown dimension[%s]",dimension),expectedResults.containsKey(dimension));
+      Set<String> expectedSet=expectedResults.get(dimension);
+      Assert.assertTrue(String.format("Couldn't remove dim[%s], value[%s]",dimension,theValue),expectedSet.remove(theValue));
+    }
+  }
+  for (  Map.Entry<String,Set<String>> entry : expectedResults.entrySet()) {
+    Assert.assertTrue(String.format("Dimension[%s] should have had everything removed, still has[%s]",entry.getKey(),entry.getValue()),entry.getValue().isEmpty());
+  }
+  expectedResults.clear();
+}

@@ -6,8 +6,11 @@
     return false;
   }
   FragmentSearchQuerySpec that=(FragmentSearchQuerySpec)o;
-  if (values != null ? !values.equals(that.values) : that.values != null) {
+  if (caseSensitive ^ that.caseSensitive) {
     return false;
   }
-  return true;
+  if (values == null && that.values == null) {
+    return true;
+  }
+  return values != null && Arrays.equals(target,that.target);
 }

@@ -1,0 +1,11 @@
+{
+  Druids.SearchQueryBuilder builder=testBuilder();
+  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  SearchQuery searchQuery;
+  searchQuery=builder.fragments(Arrays.asList("auto","ve")).build();
+  expectedResults.put(qualityDimension,Sets.newHashSet("automotive","AutoMotive"));
+  checkSearchQuery(searchQuery,expectedResults);
+  searchQuery=builder.fragments(Arrays.asList("auto","ve"),true).build();
+  expectedResults.put(qualityDimension,Sets.newHashSet("automotive"));
+  checkSearchQuery(searchQuery,expectedResults);
+}
