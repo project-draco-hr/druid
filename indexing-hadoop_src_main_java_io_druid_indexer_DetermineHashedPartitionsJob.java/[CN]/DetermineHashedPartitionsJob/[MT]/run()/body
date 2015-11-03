@@ -36,7 +36,7 @@
       if (!Utils.exists(groupByJob,fileSystem,intervalInfoPath)) {
         throw new ISE("Path[%s] didn't exist!?",intervalInfoPath);
       }
-      List<Interval> intervals=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,intervalInfoPath),new TypeReference<List<Interval>>(){
+      List<Interval> intervals=config.JSON_MAPPER.readValue(Utils.openInputStream(groupByJob,intervalInfoPath),new TypeReference<List<Interval>>(){
       }
 );
       config.setGranularitySpec(new UniformGranularitySpec(config.getGranularitySpec().getSegmentGranularity(),config.getGranularitySpec().getQueryGranularity(),intervals));
@@ -51,7 +51,7 @@
         fileSystem=partitionInfoPath.getFileSystem(groupByJob.getConfiguration());
       }
       if (Utils.exists(groupByJob,fileSystem,partitionInfoPath)) {
-        final Long numRows=config.jsonMapper.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
+        final Long numRows=config.JSON_MAPPER.readValue(Utils.openInputStream(groupByJob,partitionInfoPath),new TypeReference<Long>(){
         }
 );
         log.info("Found approximately [%,d] rows in data.",numRows);
@@ -63,7 +63,7 @@
         }
  else {
           for (int i=0; i < numberOfShards; ++i) {
-            actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards,HadoopDruidIndexerConfig.jsonMapper),shardCount++));
+            actualSpecs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,numberOfShards,HadoopDruidIndexerConfig.JSON_MAPPER),shardCount++));
             log.info("DateTime[%s], partition[%d], spec[%s]",bucket,i,actualSpecs.get(i));
           }
         }

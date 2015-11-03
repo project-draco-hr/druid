@@ -16,7 +16,7 @@
         return Iterables.transform(timelineObjectHolder.getObject(),new Function<PartitionChunk<File>,IndexableAdapter>(){
           @Override public IndexableAdapter apply(          PartitionChunk<File> chunk){
             try {
-              return new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(IndexIO.loadIndex(chunk.getObject())),new Predicate<Rowboat>(){
+              return new RowboatFilteringIndexAdapter(new QueryableIndexIndexableAdapter(INDEX_IO.loadIndex(chunk.getObject())),new Predicate<Rowboat>(){
                 @Override public boolean apply(                Rowboat input){
                   return timelineObjectHolder.getInterval().contains(input.getTimestamp());
                 }
@@ -32,7 +32,7 @@
       }
     }
 )));
-    return IndexIO.loadIndex(IndexMerger.append(adapters,mergedFile,indexSpec));
+    return INDEX_IO.loadIndex(INDEX_MERGER.append(adapters,mergedFile,indexSpec));
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);

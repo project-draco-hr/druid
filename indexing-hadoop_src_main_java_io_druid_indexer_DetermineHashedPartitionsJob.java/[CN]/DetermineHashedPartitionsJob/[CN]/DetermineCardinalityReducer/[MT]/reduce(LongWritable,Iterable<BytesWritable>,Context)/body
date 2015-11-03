@@ -8,7 +8,7 @@
   final Path outPath=config.makeSegmentPartitionInfoPath(interval);
   final OutputStream out=Utils.makePathAndOutputStream(context,outPath,config.isOverwriteFiles());
   try {
-    HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<Long>(){
+    HadoopDruidIndexerConfig.JSON_MAPPER.writerWithType(new TypeReference<Long>(){
     }
 ).writeValue(out,new Double(aggregate.estimateCardinality()).longValue());
   }

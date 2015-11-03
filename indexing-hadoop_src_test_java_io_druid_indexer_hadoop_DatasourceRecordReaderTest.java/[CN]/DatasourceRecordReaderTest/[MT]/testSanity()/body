@@ -2,7 +2,7 @@
   DataSegment segment=new DefaultObjectMapper().readValue(this.getClass().getClassLoader().getResource("test-segment/descriptor.json"),DataSegment.class).withLoadSpec(ImmutableMap.<String,Object>of("type","local","path",this.getClass().getClassLoader().getResource("test-segment/index.zip").getPath()));
   InputSplit split=new DatasourceInputSplit(Lists.newArrayList(WindowedDataSegment.of(segment)));
   Configuration config=new Configuration();
-  config.set(DatasourceInputFormat.CONF_DRUID_SCHEMA,HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(new DatasourceIngestionSpec(segment.getDataSource(),segment.getInterval(),null,null,segment.getDimensions(),segment.getMetrics())));
+  config.set(DatasourceInputFormat.CONF_DRUID_SCHEMA,HadoopDruidIndexerConfig.JSON_MAPPER.writeValueAsString(new DatasourceIngestionSpec(segment.getDataSource(),segment.getInterval(),null,null,segment.getDimensions(),segment.getMetrics())));
   TaskAttemptContext context=EasyMock.createNiceMock(TaskAttemptContext.class);
   EasyMock.expect(context.getConfiguration()).andReturn(config).anyTimes();
   EasyMock.replay(context);

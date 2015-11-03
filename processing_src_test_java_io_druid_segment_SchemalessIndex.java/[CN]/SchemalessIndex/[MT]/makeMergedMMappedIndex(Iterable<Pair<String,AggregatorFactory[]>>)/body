@@ -6,10 +6,10 @@
     mergedFile.mkdirs();
     mergedFile.deleteOnExit();
     List<File> filesToMap=makeFilesToMap(tmpFile,files);
-    return IndexIO.loadIndex(IndexMerger.mergeQueryableIndex(Lists.newArrayList(Iterables.transform(filesToMap,new Function<File,QueryableIndex>(){
+    return INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Lists.newArrayList(Iterables.transform(filesToMap,new Function<File,QueryableIndex>(){
       @Override public QueryableIndex apply(      @Nullable File input){
         try {
-          return IndexIO.loadIndex(input);
+          return INDEX_IO.loadIndex(input);
         }
  catch (        IOException e) {
           throw Throwables.propagate(e);

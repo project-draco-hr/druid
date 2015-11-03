@@ -1,5 +1,5 @@
 {
-  spec=readAndVerifyDatasourceIngestionSpec(context.getConfiguration(),HadoopDruidIndexerConfig.jsonMapper);
+  spec=readAndVerifyDatasourceIngestionSpec(context.getConfiguration(),HadoopDruidIndexerConfig.JSON_MAPPER);
   List<WindowedDataSegment> segments=((DatasourceInputSplit)split).getSegments();
   List<WindowedStorageAdapter> adapters=Lists.transform(segments,new Function<WindowedDataSegment,WindowedStorageAdapter>(){
     @Override public WindowedStorageAdapter apply(    WindowedDataSegment segment){
@@ -12,7 +12,7 @@
         logger.info("Locally storing fetched segment at [%s]",dir);
         JobHelper.unzipNoGuava(path,context.getConfiguration(),dir,context);
         logger.info("finished fetching segment files");
-        QueryableIndex index=IndexIO.loadIndex(dir);
+        QueryableIndex index=HadoopDruidIndexerConfig.INDEX_IO.loadIndex(dir);
         indexes.add(index);
         numRows+=index.getNumRows();
         return new WindowedStorageAdapter(new QueryableIndexStorageAdapter(index),segment.getInterval());

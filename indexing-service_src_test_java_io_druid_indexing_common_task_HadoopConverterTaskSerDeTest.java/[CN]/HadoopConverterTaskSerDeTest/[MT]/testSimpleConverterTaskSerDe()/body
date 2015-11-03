@@ -1,8 +1,8 @@
 {
   HadoopConverterTask orig=new HadoopConverterTask(TASK_ID,DATA_SOURCE,INTERVAL,INDEX_SPEC,true,true,HADOOP_DEPENDENCY,DISTRIBUTED_CACHE,PRIORITY,OUTPUT_PATH,CLASSPATH_PREFIX,null);
-  final String strOrig=objectMapper.writeValueAsString(orig);
-  HadoopConverterTask other=objectMapper.readValue(strOrig,HadoopConverterTask.class);
-  Assert.assertEquals(strOrig,objectMapper.writeValueAsString(other));
+  final String strOrig=jsonMapper.writeValueAsString(orig);
+  HadoopConverterTask other=jsonMapper.readValue(strOrig,HadoopConverterTask.class);
+  Assert.assertEquals(strOrig,jsonMapper.writeValueAsString(other));
   Assert.assertFalse(orig == other);
   Assert.assertEquals(orig,other);
   assertExpectedTask(other);

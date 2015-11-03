@@ -26,10 +26,10 @@
   if (!outDir.mkdir() && (!outDir.exists() || !outDir.isDirectory())) {
     throw new IOException(String.format("Could not create output directory [%s]",outDir));
   }
-  IndexMerger.convert(inDir,outDir,config.getIndexSpec(),JobHelper.progressIndicatorForContext(context));
+  HadoopDruidConverterConfig.INDEX_MERGER.convert(inDir,outDir,config.getIndexSpec(),JobHelper.progressIndicatorForContext(context));
   if (config.isValidate()) {
     context.setStatus("Validating");
-    IndexIO.DefaultIndexIOHandler.validateTwoSegments(inDir,outDir);
+    HadoopDruidConverterConfig.INDEX_IO.validateTwoSegments(inDir,outDir);
   }
   context.progress();
   context.setStatus("Starting PUSH");

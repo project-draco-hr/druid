@@ -42,14 +42,14 @@ synchronized (hydrant) {
         }
         final File mergedFile;
         if (config.isPersistInHeap()) {
-          mergedFile=IndexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
+          mergedFile=indexMaker.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
  else {
-          mergedFile=IndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
+          mergedFile=indexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,config.getIndexSpec());
         }
         metrics.incrementMergeCpuTime(VMUtils.safeGetThreadCpuTime() - mergeThreadCpuTime);
         metrics.incrementMergeTimeMillis(mergeStopwatch.elapsed(TimeUnit.MILLISECONDS));
-        QueryableIndex index=IndexIO.loadIndex(mergedFile);
+        QueryableIndex index=indexIO.loadIndex(mergedFile);
         log.info("Pushing [%s] to deep storage",sink.getSegment().getIdentifier());
         DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
         log.info("Inserting [%s] to the metadata store",sink.getSegment().getIdentifier());

@@ -3,7 +3,7 @@
   IncrementalIndex toPersist=IncrementalIndexTest.createIndex(true,null);
   IncrementalIndexTest.populateIndex(timestamp,toPersist);
   final File tempDir=temporaryFolder.newFolder();
-  QueryableIndex index=closer.closeLater(IndexIO.loadIndex(IndexMaker.persist(toPersist,tempDir,null,indexSpec)));
+  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MAKER.persist(toPersist,tempDir,null,indexSpec)));
   Assert.assertEquals(2,index.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
   Assert.assertEquals(3,index.getColumnNames().size());

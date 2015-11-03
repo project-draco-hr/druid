@@ -23,14 +23,6 @@
     job.setOutputFormatClass(IndexGeneratorOutputFormat.class);
     FileOutputFormat.setOutputPath(job,config.makeIntermediatePath());
     config.addInputPaths(job);
-    final String bitmapProperty="druid.processing.bitmap.type";
-    final String bitmapType=HadoopDruidIndexerConfig.properties.getProperty(bitmapProperty);
-    if (bitmapType != null) {
-      for (      String property : new String[]{"mapreduce.reduce.java.opts","mapreduce.map.java.opts"}) {
-        String value=Strings.nullToEmpty(job.getConfiguration().get(property));
-        job.getConfiguration().set(property,String.format("-D%s=%s %s",bitmapProperty,bitmapType,value));
-      }
-    }
     config.intoConfiguration(job);
     JobHelper.setupClasspath(JobHelper.distributedClassPath(config.getWorkingPath()),JobHelper.distributedClassPath(config.makeIntermediatePath()),job);
     job.submit();

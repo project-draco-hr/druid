@@ -7,9 +7,10 @@
   announcedSinks=0;
   pushedSegments=0;
   tmpDir=temporaryFolder.newFolder();
-  tqc=new DefaultObjectMapper().readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\", \"storageSyncRate\":\"PT0.5S\"}",TaskQueueConfig.class);
+  TestUtils testUtils=new TestUtils();
+  mapper=testUtils.getTestObjectMapper();
+  tqc=mapper.readValue("{\"startDelay\":\"PT0S\", \"restartDelay\":\"PT1S\", \"storageSyncRate\":\"PT0.5S\"}",TaskQueueConfig.class);
   indexSpec=new IndexSpec();
-  mapper=new DefaultObjectMapper();
   if (taskStorageType.equals("HeapMemoryTaskStorage")) {
     ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
     }
@@ -18,7 +19,6 @@
  else   if (taskStorageType.equals("MetadataTaskStorage")) {
     testDerbyConnector=derbyConnectorRule.getConnector();
     mapper.registerSubtypes(new NamedType(MockExceptionalFirehoseFactory.class,"mockExcepFirehoseFactory"),new NamedType(MockFirehoseFactory.class,"mockFirehoseFactory"));
-    mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class,mapper));
     testDerbyConnector.createTaskTables();
     testDerbyConnector.createSegmentTable();
     ts=new MetadataTaskStorage(testDerbyConnector,new TaskStorageConfig(null),new SQLMetadataStorageActionHandlerFactory(testDerbyConnector,derbyConnectorRule.metadataTablesConfigSupplier().get(),mapper));

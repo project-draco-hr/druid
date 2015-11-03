@@ -13,7 +13,7 @@
     }
 ));
     final Map<DataSegment,File> gettedSegments=toolbox.fetchSegments(segments);
-    final File fileToUpload=merge(gettedSegments,new File(taskDir,"merged"));
+    final File fileToUpload=merge(toolbox,gettedSegments,new File(taskDir,"merged"));
     emitter.emit(builder.build("merger/numMerged",segments.size()));
     emitter.emit(builder.build("merger/mergeTime",System.currentTimeMillis() - startTime));
     log.info("[%s] : Merged %d segments in %,d millis",mergedSegment.getDataSource(),segments.size(),System.currentTimeMillis() - startTime);

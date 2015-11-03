@@ -5,7 +5,7 @@
     MetadataStorageUpdaterJobSpec metadataSpec=config.getSchema().getIOConfig().getMetadataUpdateSpec();
     Preconditions.checkNotNull(metadataSpec.getType(),"type in metadataUpdateSpec must not be null");
     injector.getInstance(Properties.class).setProperty("druid.metadata.storage.type",metadataSpec.getType());
-    config=HadoopDruidIndexerConfig.fromSpec(HadoopIngestionSpec.updateSegmentListIfDatasourcePathSpecIsUsed(config.getSchema(),HadoopDruidIndexerConfig.jsonMapper,new MetadataStoreBasedUsedSegmentLister(injector.getInstance(IndexerMetadataStorageCoordinator.class))));
+    config=HadoopDruidIndexerConfig.fromSpec(HadoopIngestionSpec.updateSegmentListIfDatasourcePathSpecIsUsed(config.getSchema(),HadoopDruidIndexerConfig.JSON_MAPPER,new MetadataStoreBasedUsedSegmentLister(injector.getInstance(IndexerMetadataStorageCoordinator.class))));
     List<Jobby> jobs=Lists.newArrayList();
     jobs.add(new HadoopDruidDetermineConfigurationJob(config));
     jobs.add(new HadoopDruidIndexerJob(config,injector.getInstance(MetadataStorageUpdaterJobHandler.class)));

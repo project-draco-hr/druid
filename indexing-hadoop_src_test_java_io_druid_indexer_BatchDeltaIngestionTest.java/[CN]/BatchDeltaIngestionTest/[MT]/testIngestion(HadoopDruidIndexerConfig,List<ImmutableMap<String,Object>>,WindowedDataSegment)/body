@@ -22,7 +22,7 @@
   Assert.assertEquals(1,spec.getPartitions());
   File tmpUnzippedSegmentDir=temporaryFolder.newFolder();
   new LocalDataSegmentPuller().getSegmentFiles(dataSegment,tmpUnzippedSegmentDir);
-  QueryableIndex index=IndexIO.loadIndex(tmpUnzippedSegmentDir);
+  QueryableIndex index=INDEX_IO.loadIndex(tmpUnzippedSegmentDir);
   StorageAdapter adapter=new QueryableIndexStorageAdapter(index);
   Firehose firehose=new IngestSegmentFirehose(ImmutableList.of(new WindowedStorageAdapter(adapter,windowedDataSegment.getInterval())),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),null,QueryGranularity.NONE);
   List<InputRow> rows=Lists.newArrayList();

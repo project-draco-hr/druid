@@ -1,10 +1,10 @@
 {
   HadoopConverterTask parent=new HadoopConverterTask(TASK_ID,DATA_SOURCE,INTERVAL,INDEX_SPEC,true,true,HADOOP_DEPENDENCY,DISTRIBUTED_CACHE,PRIORITY,OUTPUT_PATH,CLASSPATH_PREFIX,null);
   HadoopConverterTask.ConverterSubTask subTask=new HadoopConverterTask.ConverterSubTask(ImmutableList.of(DATA_SEGMENT),parent,null);
-  final String origString=objectMapper.writeValueAsString(subTask);
-  final HadoopConverterTask.ConverterSubTask otherSub=objectMapper.readValue(origString,HadoopConverterTask.ConverterSubTask.class);
+  final String origString=jsonMapper.writeValueAsString(subTask);
+  final HadoopConverterTask.ConverterSubTask otherSub=jsonMapper.readValue(origString,HadoopConverterTask.ConverterSubTask.class);
   Assert.assertEquals(subTask,otherSub);
-  Assert.assertEquals(origString,objectMapper.writeValueAsString(otherSub));
+  Assert.assertEquals(origString,jsonMapper.writeValueAsString(otherSub));
   Assert.assertEquals(ImmutableList.of(DATA_SEGMENT),otherSub.getSegments());
   Assert.assertFalse(parent == otherSub.getParent());
   Assert.assertEquals(parent,otherSub.getParent());

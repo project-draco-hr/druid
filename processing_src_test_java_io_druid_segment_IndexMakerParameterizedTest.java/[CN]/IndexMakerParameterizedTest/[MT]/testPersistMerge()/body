@@ -8,15 +8,15 @@
   final File tempDir1=temporaryFolder.newFolder();
   final File tempDir2=temporaryFolder.newFolder();
   final File mergedDir=temporaryFolder.newFolder();
-  QueryableIndex index1=closer.closeLater(IndexIO.loadIndex(IndexMaker.persist(toPersist1,tempDir1,null,indexSpec)));
+  QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MAKER.persist(toPersist1,tempDir1,null,indexSpec)));
   Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
   Assert.assertEquals(3,index1.getColumnNames().size());
-  QueryableIndex index2=closer.closeLater(IndexIO.loadIndex(IndexMaker.persist(toPersist2,tempDir2,null,indexSpec)));
+  QueryableIndex index2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MAKER.persist(toPersist2,tempDir2,null,indexSpec)));
   Assert.assertEquals(2,index2.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index2.getAvailableDimensions()));
   Assert.assertEquals(3,index2.getColumnNames().size());
-  QueryableIndex merged=closer.closeLater(IndexIO.loadIndex(IndexMaker.mergeQueryableIndex(Arrays.asList(index1,index2),new AggregatorFactory[]{new CountAggregatorFactory("count")},mergedDir,indexSpec)));
+  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MAKER.mergeQueryableIndex(Arrays.asList(index1,index2),new AggregatorFactory[]{new CountAggregatorFactory("count")},mergedDir,indexSpec)));
   Assert.assertEquals(3,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());

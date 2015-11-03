@@ -112,10 +112,10 @@
 );
   log.info("Chosen partitions:");
   for (  ShardSpec shardSpec : chosenShardSpecs) {
-    log.info("  %s",HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(shardSpec));
+    log.info("  %s",HadoopDruidIndexerConfig.JSON_MAPPER.writeValueAsString(shardSpec));
   }
   try {
-    HadoopDruidIndexerConfig.jsonMapper.writerWithType(new TypeReference<List<ShardSpec>>(){
+    HadoopDruidIndexerConfig.JSON_MAPPER.writerWithType(new TypeReference<List<ShardSpec>>(){
     }
 ).writeValue(out,chosenShardSpecs);
   }
