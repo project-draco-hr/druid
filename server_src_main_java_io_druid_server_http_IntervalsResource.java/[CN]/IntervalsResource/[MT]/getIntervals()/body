@@ -1,0 +1,16 @@
+{
+  final Comparator<Interval> comparator=Comparators.inverse(Comparators.intervalsByStartThenEnd());
+  final Set<DruidDataSource> datasources=InventoryViewUtils.getDataSources(serverInventoryView);
+  final Map<Interval,Map<String,Map<String,Object>>> retVal=Maps.newTreeMap(comparator);
+  for (  DruidDataSource dataSource : datasources) {
+    for (    DataSegment dataSegment : dataSource.getSegments()) {
+      Map<String,Map<String,Object>> interval=retVal.get(dataSegment.getInterval());
+      if (interval == null) {
+        Map<String,Map<String,Object>> tmp=Maps.newHashMap();
+        retVal.put(dataSegment.getInterval(),tmp);
+      }
+      setProperties(retVal,dataSource,dataSegment);
+    }
+  }
+  return Response.ok(retVal).build();
+}

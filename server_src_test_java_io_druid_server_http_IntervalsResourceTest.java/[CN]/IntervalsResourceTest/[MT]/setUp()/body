@@ -1,0 +1,12 @@
+{
+  inventoryView=EasyMock.createStrictMock(InventoryView.class);
+  server=EasyMock.createStrictMock(DruidServer.class);
+  dataSegmentList=new ArrayList<>();
+  dataSegmentList.add(new DataSegment("datasource1",new Interval("2010-01-01T00:00:00.000Z/P1D"),null,null,null,null,null,0x9,20));
+  dataSegmentList.add(new DataSegment("datasource1",new Interval("2010-01-22T00:00:00.000Z/P1D"),null,null,null,null,null,0x9,10));
+  dataSegmentList.add(new DataSegment("datasource2",new Interval("2010-01-01T00:00:00.000Z/P1D"),null,null,null,null,null,0x9,5));
+  server=new DruidServer("who","host",1234,"historical","tier1",0);
+  server.addDataSegment(dataSegmentList.get(0).getIdentifier(),dataSegmentList.get(0));
+  server.addDataSegment(dataSegmentList.get(1).getIdentifier(),dataSegmentList.get(1));
+  server.addDataSegment(dataSegmentList.get(2).getIdentifier(),dataSegmentList.get(2));
+}

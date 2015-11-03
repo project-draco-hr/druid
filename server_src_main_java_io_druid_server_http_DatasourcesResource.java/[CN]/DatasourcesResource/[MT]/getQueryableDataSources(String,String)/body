@@ -1,17 +1,18 @@
 {
   Response.ResponseBuilder builder=Response.ok();
+  final Set<DruidDataSource> datasources=InventoryViewUtils.getDataSources(serverInventoryView);
   if (full != null) {
-    return builder.entity(getDataSources()).build();
+    return builder.entity(datasources).build();
   }
  else   if (simple != null) {
-    return builder.entity(Lists.newArrayList(Iterables.transform(getDataSources(),new Function<DruidDataSource,Map<String,Object>>(){
+    return builder.entity(Lists.newArrayList(Iterables.transform(datasources,new Function<DruidDataSource,Map<String,Object>>(){
       @Override public Map<String,Object> apply(      DruidDataSource dataSource){
         return makeSimpleDatasource(dataSource);
       }
     }
 ))).build();
   }
-  return builder.entity(Lists.newArrayList(Iterables.transform(getDataSources(),new Function<DruidDataSource,String>(){
+  return builder.entity(Lists.newArrayList(Iterables.transform(datasources,new Function<DruidDataSource,String>(){
     @Override public String apply(    DruidDataSource dataSource){
       return dataSource.getName();
     }
