@@ -36,5 +36,15 @@
     final SpatialDimFilter spatialDimFilter=(SpatialDimFilter)dimFilter;
     filter=new SpatialFilter(spatialDimFilter.getDimension(),spatialDimFilter.getBound());
   }
+ else   if (dimFilter instanceof InDimFilter) {
+    final InDimFilter inDimFilter=(InDimFilter)dimFilter;
+    final List<Filter> listFilters=Lists.transform(inDimFilter.getValues(),new Function<String,Filter>(){
+      @Nullable @Override public Filter apply(      @Nullable String input){
+        return new SelectorFilter(inDimFilter.getDimension(),input);
+      }
+    }
+);
+    filter=new OrFilter(listFilters);
+  }
   return filter;
 }
