@@ -4,7 +4,7 @@
   if (iter.hasNext()) {
     SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
     Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
-    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,false,null);
+    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config);
     index.add(InputRowSerde.fromBytes(first.getBytes(),aggregators));
     while (iter.hasNext()) {
       context.progress();
@@ -12,7 +12,7 @@
       if (!index.canAppendRow()) {
         log.info("current index full due to [%s]. creating new index.",index.getOutOfRowsReason());
         flushIndexToContextAndClose(key,index,context);
-        index=makeIncrementalIndex(bucket,combiningAggs,config,false,null);
+        index=makeIncrementalIndex(bucket,combiningAggs,config);
       }
       index.add(value);
     }

@@ -14,8 +14,8 @@
   EasyMock.expectLastCall().anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,serverView,emitter);
-  tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null,null,null,null,null);
-  realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),TestHelper.getTestIndexMerger(),TestHelper.getTestIndexMaker(),TestHelper.getTestIndexIO());
+  tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null);
+  realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,serverView,MoreExecutors.sameThreadExecutor(),TestHelper.getTestIndexMerger(),TestHelper.getTestIndexIO());
   metrics=new FireDepartmentMetrics();
   plumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema,tuningConfig,metrics);
 }
