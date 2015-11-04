@@ -1,0 +1,8 @@
+{
+  log.info("Configuring CloudFilesStorageDruidModule...");
+  JsonConfigProvider.bind(binder,"druid.storage",CloudFilesDataSegmentPusherConfig.class);
+  JsonConfigProvider.bind(binder,"druid.cloudfiles",CloudFilesAccountConfig.class);
+  Binders.dataSegmentPullerBinder(binder).addBinding(SCHEME).to(CloudFilesDataSegmentPuller.class).in(LazySingleton.class);
+  Binders.dataSegmentPusherBinder(binder).addBinding(SCHEME).to(CloudFilesDataSegmentPusher.class).in(LazySingleton.class);
+  log.info("Configured CloudFilesStorageDruidModule.");
+}

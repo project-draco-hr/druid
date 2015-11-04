@@ -1,0 +1,18 @@
+{
+  log.info("Building Cloud Files Api...");
+  Iterable<com.google.inject.Module> modules=null;
+  if (config.getUseServiceNet()) {
+    log.info("Configuring Cloud Files Api to use the internal service network...");
+    modules=ImmutableSet.<com.google.inject.Module>of(new SLF4JLoggingModule(),new InternalUrlModule());
+  }
+ else {
+    log.info("Configuring Cloud Files Api to use the public network...");
+    modules=ImmutableSet.<com.google.inject.Module>of(new SLF4JLoggingModule());
+  }
+  ProviderRegistry.registerProvider(CloudFilesUSProviderMetadata.builder().build());
+  ProviderRegistry.registerProvider(CloudFilesUKProviderMetadata.builder().build());
+  ContextBuilder cb=ContextBuilder.newBuilder(config.getProvider()).credentials(config.getUserName(),config.getApiKey()).modules(modules);
+  CloudFilesApi cfa=cb.buildApi(CloudFilesApi.class);
+  log.info("Cloud Files Api built.");
+  return cfa;
+}

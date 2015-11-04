@@ -1,0 +1,15 @@
+{
+  log.info("Getting jackson modules...");
+  return ImmutableList.of(new Module(){
+    @Override public String getModuleName(){
+      return "CloudFiles-" + System.identityHashCode(this);
+    }
+    @Override public Version version(){
+      return Version.unknownVersion();
+    }
+    @Override public void setupModule(    SetupContext context){
+      context.registerSubtypes(CloudFilesLoadSpec.class);
+    }
+  }
+);
+}
