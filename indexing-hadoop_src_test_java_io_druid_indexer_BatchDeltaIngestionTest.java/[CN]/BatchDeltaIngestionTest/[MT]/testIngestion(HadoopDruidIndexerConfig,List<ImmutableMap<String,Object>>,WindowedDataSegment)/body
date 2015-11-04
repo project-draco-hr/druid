@@ -1,5 +1,5 @@
 {
-  IndexGeneratorJob job=new LegacyIndexGeneratorJob(config);
+  IndexGeneratorJob job=new IndexGeneratorJob(config);
   JobHelper.runJobs(ImmutableList.<Jobby>of(job),config);
   File segmentFolder=new File(String.format("%s/%s/%s_%s/%s/0",config.getSchema().getIOConfig().getSegmentOutputPath(),config.getSchema().getDataSchema().getDataSource(),INTERVAL_FULL.getStart().toString(),INTERVAL_FULL.getEnd().toString(),config.getSchema().getTuningConfig().getVersion()));
   Assert.assertTrue(segmentFolder.exists());

@@ -1,0 +1,16 @@
+{
+  this.schema=schema;
+  this.config=config;
+  this.rejectionPolicy=config.getRejectionPolicyFactory().create(config.getWindowPeriod());
+  this.metrics=metrics;
+  this.emitter=emitter;
+  this.conglomerate=conglomerate;
+  this.segmentAnnouncer=segmentAnnouncer;
+  this.queryExecutorService=queryExecutorService;
+  this.dataSegmentPusher=dataSegmentPusher;
+  this.segmentPublisher=segmentPublisher;
+  this.serverView=serverView;
+  this.indexMerger=Preconditions.checkNotNull(indexMerger,"Null IndexMerger");
+  this.indexIO=Preconditions.checkNotNull(indexIO,"Null IndexIO");
+  log.info("Creating plumber using rejectionPolicy[%s]",getRejectionPolicy());
+}

@@ -7,14 +7,8 @@ synchronized (indexToPersist) {
     log.info("DataSource[%s], Interval[%s], Metadata [%s] persisting Hydrant[%s]",schema.getDataSource(),interval,metaData,indexToPersist);
     try {
       int numRows=indexToPersist.getIndex().size();
-      final File persistedFile;
       final IndexSpec indexSpec=config.getIndexSpec();
-      if (config.isPersistInHeap()) {
-        persistedFile=indexMaker.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),metaData,indexSpec);
-      }
- else {
-        persistedFile=indexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),metaData,indexSpec);
-      }
+      final File persistedFile=indexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),metaData,indexSpec);
       indexToPersist.swapSegment(new QueryableIndexSegment(indexToPersist.getSegment().getIdentifier(),indexIO.loadIndex(persistedFile)));
       return numRows;
     }
