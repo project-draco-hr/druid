@@ -1,0 +1,16 @@
+{
+  byte[] dimensionBytes=StringUtils.toUtf8(dimension);
+  final byte[][] valuesBytes=new byte[values.size()][];
+  int valuesBytesSize=0;
+  int index=0;
+  for (  String value : values) {
+    valuesBytes[index]=StringUtils.toUtf8(value);
+    valuesBytesSize+=valuesBytes[index].length + 1;
+    ++index;
+  }
+  ByteBuffer filterCacheKey=ByteBuffer.allocate(2 + dimensionBytes.length + valuesBytesSize).put(DimFilterCacheHelper.IN_CACHE_ID).put(dimensionBytes).put((byte)0xFF);
+  for (  byte[] bytes : valuesBytes) {
+    filterCacheKey.put(bytes).put((byte)0xFF);
+  }
+  return filterCacheKey.array();
+}
