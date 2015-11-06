@@ -1,0 +1,29 @@
+{
+  return new CachingClusteredClient(WAREHOUSE,new TimelineServerView(){
+    @Override public void registerSegmentCallback(    Executor exec,    SegmentCallback callback){
+    }
+    @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    DataSource dataSource){
+      return timeline;
+    }
+    @Override public <T>QueryRunner<T> getQueryRunner(    DruidServer server){
+      return serverView.getQueryRunner(server);
+    }
+    @Override public void registerServerCallback(    Executor exec,    ServerCallback callback){
+    }
+  }
+,cache,jsonMapper,backgroundExecutorService,new CacheConfig(){
+    @Override public boolean isPopulateCache(){
+      return true;
+    }
+    @Override public boolean isUseCache(){
+      return true;
+    }
+    @Override public boolean isQueryCacheable(    Query query){
+      return true;
+    }
+    @Override public int getCacheBulkMergeLimit(){
+      return mergeLimit;
+    }
+  }
+);
+}

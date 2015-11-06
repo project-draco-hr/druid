@@ -47,7 +47,7 @@
     }
     final Map<Cache.NamedKey,byte[]> cachedValues;
     if (useCache) {
-      cachedValues=cache.getBulk(cacheKeys.values());
+      cachedValues=cache.getBulk(Iterables.limit(cacheKeys.values(),cacheConfig.getCacheBulkMergeLimit()));
     }
  else {
       cachedValues=ImmutableMap.of();

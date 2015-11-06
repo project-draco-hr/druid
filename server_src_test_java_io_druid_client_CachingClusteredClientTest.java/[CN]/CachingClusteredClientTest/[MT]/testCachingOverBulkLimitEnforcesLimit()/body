@@ -1,0 +1,32 @@
+{
+  final int limit=10;
+  final Interval interval=new Interval("2011-01-01/2011-01-02");
+  final TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).intervals(new MultipleIntervalSegmentSpec(ImmutableList.of(interval))).filters(DIM_FILTER).granularity(GRANULARITY).aggregators(AGGS).postAggregators(POST_AGGS).context(CONTEXT).build();
+  final Map<String,Object> context=new HashMap<>();
+  final Cache cache=EasyMock.createStrictMock(Cache.class);
+  final Capture<Iterable<Cache.NamedKey>> cacheKeyCapture=EasyMock.newCapture();
+  EasyMock.expect(cache.getBulk(EasyMock.capture(cacheKeyCapture))).andReturn(ImmutableMap.<Cache.NamedKey,byte[]>of()).once();
+  EasyMock.replay(cache);
+  client=makeClient(MoreExecutors.sameThreadExecutor(),cache,limit);
+  final DruidServer lastServer=servers[random.nextInt(servers.length)];
+  final DataSegment dataSegment=EasyMock.createNiceMock(DataSegment.class);
+  EasyMock.expect(dataSegment.getIdentifier()).andReturn(DATA_SOURCE).anyTimes();
+  EasyMock.replay(dataSegment);
+  final ServerSelector selector=new ServerSelector(dataSegment,new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()));
+  selector.addServer(new QueryableDruidServer(lastServer,null));
+  timeline.add(interval,"v",new SingleElementPartitionChunk<>(selector));
+  client.run(query,context);
+  Assert.assertTrue("Capture cache keys",cacheKeyCapture.hasCaptured());
+  Assert.assertTrue("Cache key below limit",ImmutableList.copyOf(cacheKeyCapture.getValue()).size() <= limit);
+  EasyMock.verify(cache);
+  EasyMock.reset(cache);
+  cacheKeyCapture.reset();
+  EasyMock.expect(cache.getBulk(EasyMock.capture(cacheKeyCapture))).andReturn(ImmutableMap.<Cache.NamedKey,byte[]>of()).once();
+  EasyMock.replay(cache);
+  client=makeClient(MoreExecutors.sameThreadExecutor(),cache,0);
+  client.run(query,context);
+  EasyMock.verify(cache);
+  EasyMock.verify(dataSegment);
+  Assert.assertTrue("Capture cache keys",cacheKeyCapture.hasCaptured());
+  Assert.assertTrue("Cache Keys empty",ImmutableList.copyOf(cacheKeyCapture.getValue()).isEmpty());
+}

@@ -1,32 +1,3 @@
 {
-  final Supplier<GroupByQueryConfig> groupByQueryConfigSupplier=Suppliers.ofInstance(new GroupByQueryConfig());
-  return new CachingClusteredClient(new MapQueryToolChestWarehouse(ImmutableMap.<Class<? extends Query>,QueryToolChest>builder().put(TimeseriesQuery.class,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(TopNQuery.class,new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(SearchQuery.class,new SearchQueryQueryToolChest(new SearchQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(SelectQuery.class,new SelectQueryQueryToolChest(jsonMapper,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(GroupByQuery.class,new GroupByQueryQueryToolChest(groupByQueryConfigSupplier,jsonMapper,new GroupByQueryEngine(groupByQueryConfigSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
-    @Override public ByteBuffer get(){
-      return ByteBuffer.allocate(1024 * 1024);
-    }
-  }
-)),TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator())).put(TimeBoundaryQuery.class,new TimeBoundaryQueryQueryToolChest()).build()),new TimelineServerView(){
-    @Override public void registerSegmentCallback(    Executor exec,    SegmentCallback callback){
-    }
-    @Override public VersionedIntervalTimeline<String,ServerSelector> getTimeline(    DataSource dataSource){
-      return timeline;
-    }
-    @Override public <T>QueryRunner<T> getQueryRunner(    DruidServer server){
-      return serverView.getQueryRunner(server);
-    }
-    @Override public void registerServerCallback(    Executor exec,    ServerCallback callback){
-    }
-  }
-,cache,jsonMapper,backgroundExecutorService,new CacheConfig(){
-    @Override public boolean isPopulateCache(){
-      return true;
-    }
-    @Override public boolean isUseCache(){
-      return true;
-    }
-    @Override public boolean isQueryCacheable(    Query query){
-      return true;
-    }
-  }
-);
+  return makeClient(backgroundExecutorService,cache,10);
 }
