@@ -1,0 +1,32 @@
+{
+  if (aggregatorsList == null || aggregatorsList.isEmpty()) {
+    return null;
+  }
+  Map<String,AggregatorFactory> mergedAggregators=new LinkedHashMap<>();
+  for (  AggregatorFactory[] aggregators : aggregatorsList) {
+    if (aggregators != null) {
+      for (      AggregatorFactory aggregator : aggregators) {
+        String name=aggregator.getName();
+        if (mergedAggregators.containsKey(name)) {
+          AggregatorFactory other=mergedAggregators.get(name);
+          try {
+            mergedAggregators.put(name,other.getMergingFactory(aggregator));
+          }
+ catch (          AggregatorFactoryNotMergeableException ex) {
+            log.warn(ex,"failed to merge aggregator factories");
+            mergedAggregators=null;
+            break;
+          }
+        }
+ else {
+          mergedAggregators.put(name,aggregator);
+        }
+      }
+    }
+ else {
+      mergedAggregators=null;
+      break;
+    }
+  }
+  return mergedAggregators == null ? null : mergedAggregators.values().toArray(new AggregatorFactory[mergedAggregators.size()]);
+}

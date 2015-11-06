@@ -4,7 +4,7 @@
   this.metrics=incrementalIndexSchema.getMetrics();
   this.rowTransformers=new CopyOnWriteArrayList<>();
   this.deserializeComplexMetrics=deserializeComplexMetrics;
-  this.metadata=new Metadata();
+  this.metadata=new Metadata().setAggregators(getCombiningAggregators(metrics));
   this.aggs=initAggs(metrics,rowSupplier,deserializeComplexMetrics);
   this.columnCapabilities=Maps.newHashMap();
   this.metricDescs=Maps.newLinkedHashMap();

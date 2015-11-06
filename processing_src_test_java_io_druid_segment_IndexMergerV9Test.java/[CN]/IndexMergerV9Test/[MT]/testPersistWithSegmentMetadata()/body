@@ -2,12 +2,12 @@
   final long timestamp=System.currentTimeMillis();
   IncrementalIndex toPersist=IncrementalIndexTest.createIndex(null);
   IncrementalIndexTest.populateIndex(timestamp,toPersist);
-  Map<String,Object> segmentMetadata=ImmutableMap.<String,Object>of("key","value");
+  toPersist.getMetadata().put("key","value");
   final File tempDir=temporaryFolder.newFolder();
-  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist,tempDir,segmentMetadata,indexSpec)));
+  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist,tempDir,indexSpec)));
   Assert.assertEquals(2,index.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
   Assert.assertEquals(3,index.getColumnNames().size());
   assertDimCompression(index,indexSpec.getDimensionCompressionStrategy());
-  Assert.assertEquals(segmentMetadata,index.getMetaData());
+  Assert.assertEquals("value",index.getMetadata().get("key"));
 }

@@ -4,7 +4,7 @@
   IncrementalIndexTest.populateIndex(timestamp,toPersist);
   final File tempDir=temporaryFolder.newFolder();
   final IndexableAdapter incrementalAdapter=new IncrementalIndexAdapter(toPersist.getInterval(),toPersist,INDEX_SPEC.getBitmapSerdeFactory().getBitmapFactory());
-  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist,tempDir,null,INDEX_SPEC)));
+  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist,tempDir,INDEX_SPEC)));
   IndexableAdapter adapter=new QueryableIndexIndexableAdapter(index);
   BitmapIndexSeeker bitmapIndexSeeker=adapter.getBitmapIndexSeeker("dim1");
   IndexedInts indexedInts0=bitmapIndexSeeker.seek("0");

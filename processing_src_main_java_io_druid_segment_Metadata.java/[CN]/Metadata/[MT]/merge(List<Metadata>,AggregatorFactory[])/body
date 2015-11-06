@@ -1,0 +1,32 @@
+{
+  if (toBeMerged == null || toBeMerged.size() == 0) {
+    return null;
+  }
+  boolean foundSomeMetadata=false;
+  Map<String,Object> mergedContainer=new HashMap<>();
+  List<AggregatorFactory[]> aggregatorsToMerge=overrideMergedAggregators == null ? new ArrayList<AggregatorFactory[]>() : null;
+  for (  Metadata metadata : toBeMerged) {
+    if (metadata != null) {
+      foundSomeMetadata=true;
+      if (aggregatorsToMerge != null) {
+        aggregatorsToMerge.add(metadata.getAggregators());
+      }
+      mergedContainer.putAll(metadata.container);
+    }
+ else {
+      aggregatorsToMerge=null;
+    }
+  }
+  if (!foundSomeMetadata) {
+    return null;
+  }
+  Metadata result=new Metadata();
+  if (aggregatorsToMerge != null) {
+    result.setAggregators(AggregatorFactory.mergeAggregators(aggregatorsToMerge));
+  }
+ else {
+    result.setAggregators(overrideMergedAggregators);
+  }
+  result.container.putAll(mergedContainer);
+  return result;
+}

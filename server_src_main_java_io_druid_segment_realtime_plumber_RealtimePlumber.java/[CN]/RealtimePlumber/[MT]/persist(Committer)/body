@@ -8,13 +8,13 @@
   log.info("Submitting persist runnable for dataSource[%s]",schema.getDataSource());
   final Stopwatch runExecStopwatch=Stopwatch.createStarted();
   final Stopwatch persistStopwatch=Stopwatch.createStarted();
-  final Metadata metadata=committer.getMetadata() == null ? null : new Metadata().put(COMMIT_METADATA_KEY,committer.getMetadata()).put(COMMIT_METADATA_TIMESTAMP_KEY,System.currentTimeMillis());
+  final Map<String,Object> metadataElems=committer.getMetadata() == null ? null : ImmutableMap.of(COMMIT_METADATA_KEY,committer.getMetadata(),COMMIT_METADATA_TIMESTAMP_KEY,System.currentTimeMillis());
   persistExecutor.execute(new ThreadRenamingRunnable(String.format("%s-incremental-persist",schema.getDataSource())){
     @Override public void doRun(){
       long persistThreadCpuTime=VMUtils.safeGetThreadCpuTime();
       try {
         for (        Pair<FireHydrant,Interval> pair : indexesToPersist) {
-          metrics.incrementRowOutputCount(persistHydrant(pair.lhs,schema,pair.rhs,metadata));
+          metrics.incrementRowOutputCount(persistHydrant(pair.lhs,schema,pair.rhs,metadataElems));
         }
         committer.run();
       }

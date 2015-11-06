@@ -12,7 +12,8 @@
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
   Assert.assertEquals(3,index1.getColumnNames().size());
   IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),"lz4".equals(indexSpec.getDimensionCompression()) ? "lzf" : "lz4","lz4".equals(indexSpec.getMetricCompression()) ? "lzf" : "lz4");
-  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),new AggregatorFactory[]{new CountAggregatorFactory("count")},mergedDir,newSpec)));
+  AggregatorFactory[] mergedAggregators=new AggregatorFactory[]{new CountAggregatorFactory("count")};
+  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),mergedAggregators,mergedDir,newSpec)));
   Assert.assertEquals(2,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());

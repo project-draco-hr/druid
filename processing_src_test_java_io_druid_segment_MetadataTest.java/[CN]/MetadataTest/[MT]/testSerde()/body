@@ -1,0 +1,9 @@
+{
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  Metadata metadata=new Metadata();
+  metadata.put("k","v");
+  AggregatorFactory[] aggregators=new AggregatorFactory[]{new LongSumAggregatorFactory("out","in")};
+  metadata.setAggregators(aggregators);
+  Metadata other=jsonMapper.readValue(jsonMapper.writeValueAsString(metadata),Metadata.class);
+  Assert.assertEquals(metadata,other);
+}

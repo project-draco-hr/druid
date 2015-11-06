@@ -23,7 +23,10 @@
     try {
       metadata=mapper.readValue(serializerUtils.readBytes(metadataBB,metadataBB.remaining()),Metadata.class);
     }
- catch (    IOException ex) {
+ catch (    JsonParseException|JsonMappingException ex) {
+      log.warn(ex,"Failed to load metadata for segment [%s]",inDir);
+    }
+catch (    IOException ex) {
       throw new IOException("Failed to read metadata",ex);
     }
   }

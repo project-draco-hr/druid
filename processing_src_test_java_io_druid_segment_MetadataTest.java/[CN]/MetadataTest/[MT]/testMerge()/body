@@ -1,0 +1,28 @@
+{
+  Assert.assertNull(Metadata.merge(null,null));
+  Assert.assertNull(Metadata.merge(ImmutableList.<Metadata>of(),null));
+  List<Metadata> metadataToBeMerged=new ArrayList<>();
+  metadataToBeMerged.add(null);
+  Assert.assertNull(Metadata.merge(metadataToBeMerged,null));
+  AggregatorFactory[] aggs=new AggregatorFactory[]{new LongMaxAggregatorFactory("n","f")};
+  Metadata m1=new Metadata();
+  m1.put("k","v");
+  m1.setAggregators(aggs);
+  Metadata m2=new Metadata();
+  m2.put("k","v");
+  m2.setAggregators(aggs);
+  Metadata merged=new Metadata();
+  merged.put("k","v");
+  merged.setAggregators(new AggregatorFactory[]{new LongMaxAggregatorFactory("n","n")});
+  Assert.assertEquals(merged,Metadata.merge(ImmutableList.of(m1,m2),null));
+  metadataToBeMerged.clear();
+  metadataToBeMerged.add(m1);
+  metadataToBeMerged.add(m2);
+  metadataToBeMerged.add(null);
+  merged.setAggregators(null);
+  Assert.assertEquals(merged,Metadata.merge(metadataToBeMerged,null));
+  AggregatorFactory[] explicitAggs=new AggregatorFactory[]{new DoubleMaxAggregatorFactory("x","y")};
+  merged.setAggregators(explicitAggs);
+  Assert.assertEquals(merged,Metadata.merge(metadataToBeMerged,explicitAggs));
+  Assert.assertEquals(merged,Metadata.merge(ImmutableList.of(m1,m2),explicitAggs));
+}
