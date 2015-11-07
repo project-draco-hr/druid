@@ -3,5 +3,5 @@
   }
 );
   DataSchema schema=new DataSchema("test",parser,new AggregatorFactory[]{new DoubleSumAggregatorFactory("metric1","col1"),new DoubleSumAggregatorFactory("metric2","col2")},new ArbitraryGranularitySpec(QueryGranularity.DAY,ImmutableList.of(Interval.parse("2014/2015"))),jsonMapper);
-  Assert.assertEquals(ImmutableSet.of("dimC","col1"),schema.getParser().getParseSpec().getDimensionsSpec().getDimensionExclusions());
+  Assert.assertEquals(ImmutableSet.of("dimC","col1","metric1","metric2"),schema.getParser().getParseSpec().getDimensionsSpec().getDimensionExclusions());
 }
