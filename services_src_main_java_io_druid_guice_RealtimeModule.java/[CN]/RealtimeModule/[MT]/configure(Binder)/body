@@ -11,6 +11,8 @@
   binder.bind(new TypeLiteral<List<FireDepartment>>(){
   }
 ).toProvider(FireDepartmentsProvider.class).in(LazySingleton.class);
+  JsonConfigProvider.bind(binder,"druid.realtime.cache",CacheConfig.class);
+  binder.install(new CacheModule());
   binder.bind(QuerySegmentWalker.class).to(RealtimeManager.class).in(ManageLifecycle.class);
   binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig("realtime"));
   binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);

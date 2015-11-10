@@ -25,6 +25,8 @@
       binder.bind(TaskRunner.class).to(ThreadPoolTaskRunner.class);
       binder.bind(QuerySegmentWalker.class).to(ThreadPoolTaskRunner.class);
       binder.bind(ThreadPoolTaskRunner.class).in(ManageLifecycle.class);
+      JsonConfigProvider.bind(binder,"druid.realtime.cache",CacheConfig.class);
+      binder.install(new CacheModule());
       binder.bind(SegmentLoaderConfig.class).toInstance(new SegmentLoaderConfig().withLocations(Arrays.<StorageLocationConfig>asList()));
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class);
       Jerseys.addResource(binder,QueryResource.class);
