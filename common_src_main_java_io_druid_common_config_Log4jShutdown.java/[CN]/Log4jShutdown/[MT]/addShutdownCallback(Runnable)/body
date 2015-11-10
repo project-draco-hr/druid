@@ -1,0 +1,29 @@
+{
+  if (callback == null) {
+    throw new NullPointerException("callback");
+  }
+  if (!isStarted()) {
+    throw new IllegalStateException("Not started");
+  }
+  final Cancellable cancellable=new Cancellable(){
+    private volatile boolean cancelled=false;
+    private final AtomicBoolean ran=new AtomicBoolean(false);
+    @Override public void cancel(){
+      cancelled=true;
+    }
+    @Override public void run(){
+      if (!cancelled) {
+        if (ran.compareAndSet(false,true)) {
+          callback.run();
+        }
+      }
+    }
+  }
+;
+  shutdownCallbacks.add(cancellable);
+  if (!isStarted()) {
+    callback.run();
+    throw new IllegalStateException("Shutting down while adding shutdown hook. Callback fired just in case");
+  }
+  return cancellable;
+}

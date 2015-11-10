@@ -1,0 +1,8 @@
+{
+  if (callbacksRun.get()) {
+    return;
+  }
+  if (!state.compareAndSet(State.STARTED,State.STOPPED)) {
+    throw new IllegalStateException(String.format("Expected state [%s] found [%s]",State.STARTED,state.get()));
+  }
+}
