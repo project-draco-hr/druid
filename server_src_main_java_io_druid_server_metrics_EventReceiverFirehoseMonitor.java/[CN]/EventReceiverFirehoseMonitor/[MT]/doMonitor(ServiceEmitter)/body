@@ -1,0 +1,9 @@
+{
+  for (  Map.Entry<String,EventReceiverFirehoseMetric> entry : register.getMetrics()) {
+    final String serviceName=entry.getKey();
+    final EventReceiverFirehoseMetric metric=entry.getValue();
+    final ServiceMetricEvent.Builder builder=ServiceMetricEvent.builder().setDimension("serviceName",serviceName).setDimension("bufferCapacity",String.valueOf(metric.getCapacity()));
+    emitter.emit(builder.build("ingest/events/buffered",metric.getCurrentBufferSize()));
+  }
+  return true;
+}

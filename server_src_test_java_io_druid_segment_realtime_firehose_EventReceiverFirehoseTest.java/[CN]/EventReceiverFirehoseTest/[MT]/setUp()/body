@@ -1,0 +1,5 @@
+{
+  req=EasyMock.createMock(HttpServletRequest.class);
+  eventReceiverFirehoseFactory=new EventReceiverFirehoseFactory(SERVICE_NAME,CAPACITY,null,new DefaultObjectMapper(),new DefaultObjectMapper(),register);
+  firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)eventReceiverFirehoseFactory.connect(new MapInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(ImmutableList.of("d1"),null,null))));
+}
