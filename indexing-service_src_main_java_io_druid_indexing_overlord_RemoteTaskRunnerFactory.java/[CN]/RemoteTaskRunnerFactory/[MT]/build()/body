@@ -1,3 +1,10 @@
 {
-  return new RemoteTaskRunner(jsonMapper,remoteTaskRunnerConfig,zkPaths,curator,new SimplePathChildrenCacheFactory.Builder().withCompressed(true).build(),httpClient,workerConfigRef,cleanupExec);
+  final ResourceManagementStrategy<RemoteTaskRunner> resourceManagementStrategy;
+  if (resourceManagementSchedulerConfig.isDoAutoscale()) {
+    resourceManagementStrategy=new SimpleResourceManagementStrategy(config,workerConfigRef,resourceManagementSchedulerConfig,exec);
+  }
+ else {
+    resourceManagementStrategy=new NoopResourceManagementStrategy<>();
+  }
+  return new RemoteTaskRunner(jsonMapper,remoteTaskRunnerConfig,zkPaths,curator,new SimplePathChildrenCacheFactory.Builder().withCompressed(true).build(),httpClient,workerConfigRef,cleanupExec,resourceManagementStrategy);
 }

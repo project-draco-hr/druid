@@ -1,5 +1,5 @@
 {
-  Collection<RemoteTaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
+  Collection<? extends TaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
 synchronized (lock) {
     final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
     if (workerConfig == null) {
@@ -21,7 +21,7 @@ synchronized (lock) {
     }
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
-    Collection<ZkWorker> workers=runner.getWorkers();
+    Collection<ZkWorker> workers=getWorkers(runner);
     updateTargetWorkerCount(workerConfig,pendingTasks,workers);
     if (currentlyTerminating.isEmpty()) {
       final int excessWorkers=(workers.size() + currentlyProvisioning.size()) - targetWorkerCount;

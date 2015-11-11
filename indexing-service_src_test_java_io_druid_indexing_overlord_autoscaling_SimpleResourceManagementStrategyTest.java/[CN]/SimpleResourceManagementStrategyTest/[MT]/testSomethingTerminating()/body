@@ -1,14 +1,14 @@
 {
   EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0).times(2);
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(1).times(2);
-  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip")).times(2);
-  EasyMock.expect(autoScaler.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.<String>newArrayList("ip")));
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.newArrayList("ip")).times(2);
+  EasyMock.expect(autoScaler.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.newArrayList("ip")));
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
-  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
-  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(testTask))).times(2);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Collections.<ZkWorker>singletonList(new TestZkWorker(testTask))).times(2);
   EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<ZkWorker>newArrayList()).times(2);
-  EasyMock.expect(runner.markWorkersLazy((Predicate<ZkWorker>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(testTask)));
+  EasyMock.expect(runner.markWorkersLazy(EasyMock.<Predicate<ZkWorker>>anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>singletonList(new TestZkWorker(testTask)));
   EasyMock.replay(runner);
   boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(runner);
   Assert.assertTrue(terminatedSomething);

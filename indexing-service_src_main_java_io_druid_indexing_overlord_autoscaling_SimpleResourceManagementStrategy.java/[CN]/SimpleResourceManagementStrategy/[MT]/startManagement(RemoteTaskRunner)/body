@@ -1,0 +1,24 @@
+{
+synchronized (lock) {
+    if (started) {
+      return;
+    }
+    log.info("Started Resource Management Scheduler");
+    ScheduledExecutors.scheduleAtFixedRate(exec,resourceManagementSchedulerConfig.getProvisionPeriod().toStandardDuration(),new Runnable(){
+      @Override public void run(){
+        doProvision(runner);
+      }
+    }
+);
+    Period period=resourceManagementSchedulerConfig.getTerminatePeriod();
+    PeriodGranularity granularity=new PeriodGranularity(period,resourceManagementSchedulerConfig.getOriginTime(),null);
+    final long startTime=granularity.next(granularity.truncate(new DateTime().getMillis()));
+    ScheduledExecutors.scheduleAtFixedRate(exec,new Duration(System.currentTimeMillis(),startTime),resourceManagementSchedulerConfig.getTerminatePeriod().toStandardDuration(),new Runnable(){
+      @Override public void run(){
+        doTerminate(runner);
+      }
+    }
+);
+    started=true;
+  }
+}

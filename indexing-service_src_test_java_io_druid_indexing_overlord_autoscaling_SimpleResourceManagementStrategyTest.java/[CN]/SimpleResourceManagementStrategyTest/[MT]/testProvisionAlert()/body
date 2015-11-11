@@ -8,11 +8,11 @@
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2).times(2);
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList()).times(2);
   EasyMock.expect(autoScaler.terminateWithIds(EasyMock.<List<String>>anyObject())).andReturn(null);
-  EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("fake")));
+  EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.newArrayList("fake")));
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
-  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
-  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(testTask))).times(2);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Collections.<ZkWorker>singletonList(new TestZkWorker(testTask))).times(2);
   EasyMock.replay(runner);
   boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertTrue(provisionedSomething);
