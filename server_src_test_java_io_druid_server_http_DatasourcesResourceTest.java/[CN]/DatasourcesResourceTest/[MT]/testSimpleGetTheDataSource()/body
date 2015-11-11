@@ -1,6 +1,6 @@
 {
   DruidDataSource dataSource1=new DruidDataSource("datasource1",new HashMap());
-  dataSource1.addSegment("partition",new DataSegment("datasegment1",new Interval("2010-01-01/P1D"),null,null,null,null,null,0x9,0));
+  dataSource1.addSegment("partition",new DataSegment("datasegment1",new Interval("2010-01-01/P1D"),null,null,null,null,null,0x9,10));
   EasyMock.expect(server.getDataSource("datasource1")).andReturn(dataSource1).atLeastOnce();
   EasyMock.expect(server.getTier()).andReturn(null).atLeastOnce();
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
@@ -10,8 +10,11 @@
   Assert.assertEquals(200,response.getStatus());
   Map<String,Map<String,Object>> result=(Map<String,Map<String,Object>>)response.getEntity();
   Assert.assertEquals(1,((Map)(result.get("tiers").get(null))).get("segmentCount"));
+  Assert.assertEquals(10L,((Map)(result.get("tiers").get(null))).get("size"));
   Assert.assertNotNull(result.get("segments"));
-  Assert.assertNotNull(result.get("segments").get("minTime").toString(),"2010-01-01T00:00:00.000Z");
-  Assert.assertNotNull(result.get("segments").get("maxTime").toString(),"2010-01-02T00:00:00.000Z");
+  Assert.assertEquals("2010-01-01T00:00:00.000Z",result.get("segments").get("minTime").toString());
+  Assert.assertEquals("2010-01-02T00:00:00.000Z",result.get("segments").get("maxTime").toString());
+  Assert.assertEquals(1,result.get("segments").get("count"));
+  Assert.assertEquals(10L,result.get("segments").get("size"));
   EasyMock.verify(inventoryView,server);
 }
