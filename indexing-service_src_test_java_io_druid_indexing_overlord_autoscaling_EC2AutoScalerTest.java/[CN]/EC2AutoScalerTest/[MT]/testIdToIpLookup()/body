@@ -1,0 +1,20 @@
+{
+  EC2AutoScaler autoScaler=new EC2AutoScaler(0,1,ENV_CONFIG,amazonEC2Client,managementConfig);
+  final int n=150;
+  Assert.assertTrue(n <= 2 * EC2AutoScaler.MAX_AWS_FILTER_VALUES);
+  List<String> ids=Lists.transform(ContiguousSet.create(Range.closedOpen(0,n),DiscreteDomain.integers()).asList(),Functions.toStringFunction());
+  EasyMock.expect(amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("instance-id",ids.subList(0,EC2AutoScaler.MAX_AWS_FILTER_VALUES))))).andReturn(describeInstancesResult);
+  EasyMock.expect(amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("instance-id",ids.subList(EC2AutoScaler.MAX_AWS_FILTER_VALUES,n))))).andReturn(describeInstancesResult);
+  EasyMock.replay(amazonEC2Client);
+  final Reservation[] chunk1=new Reservation[EC2AutoScaler.MAX_AWS_FILTER_VALUES];
+  Arrays.fill(chunk1,reservation);
+  final Reservation[] chunk2=new Reservation[n - EC2AutoScaler.MAX_AWS_FILTER_VALUES];
+  Arrays.fill(chunk2,reservation);
+  EasyMock.expect(describeInstancesResult.getReservations()).andReturn(Lists.newArrayList(chunk1));
+  EasyMock.expect(describeInstancesResult.getReservations()).andReturn(Lists.newArrayList(chunk2));
+  EasyMock.replay(describeInstancesResult);
+  EasyMock.expect(reservation.getInstances()).andReturn(Collections.singletonList(instance)).times(n);
+  EasyMock.replay(reservation);
+  List<String> ips=autoScaler.idToIpLookup(ids);
+  Assert.assertEquals(n,ips.size());
+}

@@ -1,14 +1,15 @@
 {
-  EC2AutoScaler autoScaler=new EC2AutoScaler(0,1,new EC2EnvironmentConfig("us-east-1a",new EC2NodeData(AMI_ID,INSTANCE_ID,1,1,Lists.<String>newArrayList(),"foo","mySubnet",null,null),new GalaxyEC2UserData(new DefaultObjectMapper(),"env","version","type")),amazonEC2Client,managementConfig);
+  RunInstancesResult runInstancesResult=EasyMock.createMock(RunInstancesResult.class);
+  EC2AutoScaler autoScaler=new EC2AutoScaler(0,1,ENV_CONFIG,amazonEC2Client,managementConfig);
   EasyMock.expect(amazonEC2Client.runInstances(EasyMock.anyObject(RunInstancesRequest.class))).andReturn(runInstancesResult);
   EasyMock.expect(amazonEC2Client.describeInstances(EasyMock.anyObject(DescribeInstancesRequest.class))).andReturn(describeInstancesResult);
   EasyMock.expect(amazonEC2Client.terminateInstances(EasyMock.anyObject(TerminateInstancesRequest.class))).andReturn(null);
   EasyMock.replay(amazonEC2Client);
   EasyMock.expect(runInstancesResult.getReservation()).andReturn(reservation).atLeastOnce();
   EasyMock.replay(runInstancesResult);
-  EasyMock.expect(describeInstancesResult.getReservations()).andReturn(Arrays.asList(reservation)).atLeastOnce();
+  EasyMock.expect(describeInstancesResult.getReservations()).andReturn(Collections.singletonList(reservation)).atLeastOnce();
   EasyMock.replay(describeInstancesResult);
-  EasyMock.expect(reservation.getInstances()).andReturn(Arrays.asList(instance)).atLeastOnce();
+  EasyMock.expect(reservation.getInstances()).andReturn(Collections.singletonList(instance)).atLeastOnce();
   EasyMock.replay(reservation);
   AutoScalingData created=autoScaler.provision();
   Assert.assertEquals(created.getNodeIds().size(),1);
@@ -16,4 +17,5 @@
   AutoScalingData deleted=autoScaler.terminate(Arrays.asList("dummyIP"));
   Assert.assertEquals(deleted.getNodeIds().size(),1);
   Assert.assertEquals(INSTANCE_ID,deleted.getNodeIds().get(0));
+  EasyMock.verify(runInstancesResult);
 }
