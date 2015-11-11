@@ -1,0 +1,8 @@
+{
+  exception.expect(IOException.class);
+  exception.expectMessage("Cannot create directory");
+  config.storageDirectory=new File(config.storageDirectory,"xxx");
+  Assert.assertTrue(config.storageDirectory.mkdir());
+  config.storageDirectory.setWritable(false);
+  localDataSegmentPusher.push(dataSegmentFiles,dataSegment);
+}
