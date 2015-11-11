@@ -1,10 +1,17 @@
 {
-  DataSegment returnSegment=localDataSegmentPusher.push(dataSegmentFiles,dataSegment);
-  Assert.assertNotNull(returnSegment);
-  Assert.assertEquals(dataSegment,returnSegment);
-  outDir=new File(new LocalDataSegmentPusherConfig().getStorageDirectory(),DataSegmentPusherUtil.getStorageDir(returnSegment));
-  File versionFile=new File(outDir,"index.zip");
-  File descriptorJson=new File(outDir,"descriptor.json");
-  Assert.assertTrue(versionFile.exists());
-  Assert.assertTrue(descriptorJson.exists());
+  final DataSegment dataSegment2=dataSegment.withVersion("v2");
+  DataSegment returnSegment1=localDataSegmentPusher.push(dataSegmentFiles,dataSegment);
+  DataSegment returnSegment2=localDataSegmentPusher.push(dataSegmentFiles,dataSegment2);
+  Assert.assertNotNull(returnSegment1);
+  Assert.assertEquals(dataSegment,returnSegment1);
+  Assert.assertNotNull(returnSegment2);
+  Assert.assertEquals(dataSegment2,returnSegment2);
+  Assert.assertNotEquals(DataSegmentPusherUtil.getStorageDir(dataSegment),DataSegmentPusherUtil.getStorageDir(dataSegment2));
+  for (  DataSegment returnSegment : ImmutableList.of(returnSegment1,returnSegment2)) {
+    File outDir=new File(config.getStorageDirectory(),DataSegmentPusherUtil.getStorageDir(returnSegment));
+    File versionFile=new File(outDir,"index.zip");
+    File descriptorJson=new File(outDir,"descriptor.json");
+    Assert.assertTrue(versionFile.exists());
+    Assert.assertTrue(descriptorJson.exists());
+  }
 }
