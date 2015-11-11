@@ -1,0 +1,13 @@
+{
+  Map<String,Object> responseBody=new HashMap<String,Object>();
+  responseBody.put("result",result);
+  String strResult=objectMapper.writeValueAsString(responseBody);
+  StatusResponseHolder responseHolder=new StatusResponseHolder(HttpResponseStatus.BAD_REQUEST,new StringBuilder().append(strResult));
+  expect(selector.pick()).andReturn(server);
+  replay(selector);
+  expect(httpClient.go(anyObject(Request.class),anyObject(StatusResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replay(httpClient);
+  Task task=new NoopTask("id",0,0,null,null,null);
+  RemoteTaskActionClient client=new RemoteTaskActionClient(task,httpClient,selector,new RetryPolicyFactory(objectMapper.readValue("{\"maxRetryCount\":0}",RetryPolicyConfig.class)),objectMapper);
+  result=client.submit(new LockListAction());
+}

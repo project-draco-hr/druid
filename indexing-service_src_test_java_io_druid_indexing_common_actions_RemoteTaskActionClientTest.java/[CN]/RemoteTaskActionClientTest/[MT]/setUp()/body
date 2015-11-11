@@ -1,0 +1,21 @@
+{
+  httpClient=createMock(HttpClient.class);
+  selector=createMock(ServerDiscoverySelector.class);
+  server=new Server(){
+    @Override public String getScheme(){
+      return "http";
+    }
+    @Override public int getPort(){
+      return 8080;
+    }
+    @Override public String getHost(){
+      return "localhost";
+    }
+    @Override public String getAddress(){
+      return "localhost";
+    }
+  }
+;
+  long now=System.currentTimeMillis();
+  result=Arrays.asList(new TaskLock("groupId","dataSource",new Interval(now - 30 * 1000,now),"version"));
+}
