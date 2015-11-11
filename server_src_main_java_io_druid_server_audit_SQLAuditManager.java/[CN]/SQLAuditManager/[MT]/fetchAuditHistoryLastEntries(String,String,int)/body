@@ -1,0 +1,29 @@
+{
+  final int theLimit=getLimit(limit);
+  String queryString=String.format("SELECT payload FROM %s WHERE type = :type",getAuditTable());
+  if (key != null) {
+    queryString+=" and audit_key = :audit_key";
+  }
+  queryString+=" ORDER BY created_date DESC";
+  final String theQueryString=queryString;
+  return dbi.withHandle(new HandleCallback<List<AuditEntry>>(){
+    @Override public List<AuditEntry> withHandle(    Handle handle) throws Exception {
+      Query<Map<String,Object>> query=handle.createQuery(theQueryString);
+      if (key != null) {
+        query.bind("audit_key",key);
+      }
+      return query.bind("type",type).setMaxRows(theLimit).map(new ResultSetMapper<AuditEntry>(){
+        @Override public AuditEntry map(        int index,        ResultSet r,        StatementContext ctx) throws SQLException {
+          try {
+            return jsonMapper.readValue(r.getBytes("payload"),AuditEntry.class);
+          }
+ catch (          IOException e) {
+            throw new SQLException(e);
+          }
+        }
+      }
+).list();
+    }
+  }
+);
+}

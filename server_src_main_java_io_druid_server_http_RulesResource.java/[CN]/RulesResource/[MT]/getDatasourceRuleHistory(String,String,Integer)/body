@@ -1,0 +1,12 @@
+{
+  Interval theInterval=interval == null ? null : new Interval(interval);
+  if (theInterval == null && count != null) {
+    try {
+      return Response.ok(auditManager.fetchAuditHistory(dataSourceName,"rules",count)).build();
+    }
+ catch (    IllegalArgumentException e) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ImmutableMap.<String,Object>of("error",e.getMessage())).build();
+    }
+  }
+  return Response.ok(auditManager.fetchAuditHistory(dataSourceName,"rules",theInterval)).build();
+}
