@@ -1,32 +1,37 @@
 {
-  return FunctionalIterable.create(index.getFacts().entrySet()).transform(new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
-    int count=0;
-    @Override public Rowboat apply(    @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Integer> input){
-      final IncrementalIndex.TimeAndDims timeAndDims=input.getKey();
-      final String[][] dimValues=timeAndDims.getDims();
-      final int rowOffset=input.getValue();
-      int[][] dims=new int[dimValues.length][];
-      for (      String dimension : index.getDimensions()) {
-        int dimIndex=index.getDimensionIndex(dimension);
-        final IncrementalIndex.DimDim dimDim=index.getDimension(dimension);
-        dimDim.sort();
-        if (dimIndex >= dimValues.length || dimValues[dimIndex] == null) {
-          continue;
-        }
-        dims[dimIndex]=new int[dimValues[dimIndex].length];
-        if (dimIndex >= dims.length || dims[dimIndex] == null) {
-          continue;
-        }
-        for (int i=0; i < dimValues[dimIndex].length; ++i) {
-          dims[dimIndex][i]=dimDim.getSortedId(dimValues[dimIndex][i]);
+  return new Iterable<Rowboat>(){
+    @Override public Iterator<Rowboat> iterator(){
+      return (Iterators.transform(index.getFacts().entrySet().iterator(),new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
+        int count=0;
+        @Override public Rowboat apply(        @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Integer> input){
+          final IncrementalIndex.TimeAndDims timeAndDims=input.getKey();
+          final String[][] dimValues=timeAndDims.getDims();
+          final int rowOffset=input.getValue();
+          int[][] dims=new int[dimValues.length][];
+          for (          String dimension : index.getDimensions()) {
+            int dimIndex=index.getDimensionIndex(dimension);
+            final IncrementalIndex.DimDim dimDim=index.getDimension(dimension);
+            dimDim.sort();
+            if (dimIndex >= dimValues.length || dimValues[dimIndex] == null) {
+              continue;
+            }
+            dims[dimIndex]=new int[dimValues[dimIndex].length];
+            if (dimIndex >= dims.length || dims[dimIndex] == null) {
+              continue;
+            }
+            for (int i=0; i < dimValues[dimIndex].length; ++i) {
+              dims[dimIndex][i]=dimDim.getSortedId(dimValues[dimIndex][i]);
+            }
+          }
+          Object[] metrics=new Object[index.getMetricAggs().length];
+          for (int i=0; i < metrics.length; i++) {
+            metrics[i]=index.getMetricObjectValue(rowOffset,i);
+          }
+          return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++);
         }
       }
-      Object[] metrics=new Object[index.getMetricAggs().length];
-      for (int i=0; i < metrics.length; i++) {
-        metrics[i]=index.getMetricObjectValue(rowOffset,i);
-      }
-      return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++);
+));
     }
   }
-);
+;
 }
