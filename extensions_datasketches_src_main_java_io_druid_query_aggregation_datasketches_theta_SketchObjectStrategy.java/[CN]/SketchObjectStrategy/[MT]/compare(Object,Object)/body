@@ -1,0 +1,25 @@
+{
+  if (s1 instanceof Sketch) {
+    if (s2 instanceof Sketch) {
+      return SketchAggregatorFactory.COMPARATOR.compare((Sketch)s1,(Sketch)s2);
+    }
+ else {
+      return -1;
+    }
+  }
+  if (s1 instanceof Memory) {
+    if (s2 instanceof Memory) {
+      Memory s1Mem=(Memory)s1;
+      Memory s2Mem=(Memory)s2;
+      int retVal=Longs.compare(s1Mem.getCapacity(),s2Mem.getCapacity());
+      if (retVal == 0) {
+        retVal=Longs.compare(s1Mem.getLong(s1Mem.getCapacity() - 8),s2Mem.getLong(s2Mem.getCapacity() - 8));
+      }
+      return retVal;
+    }
+ else {
+      return 1;
+    }
+  }
+  throw new IAE("Unknwon class[%s], toString[%s]",s1.getClass(),s1);
+}

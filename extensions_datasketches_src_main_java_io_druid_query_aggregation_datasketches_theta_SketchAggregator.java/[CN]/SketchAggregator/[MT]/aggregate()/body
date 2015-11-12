@@ -1,0 +1,16 @@
+{
+  Object update=selector.get();
+  if (update == null) {
+    return;
+  }
+  SetOpReturnState success;
+  if (update instanceof Memory) {
+    success=union.update((Memory)update);
+  }
+ else {
+    success=union.update((Sketch)update);
+  }
+  if (success != SetOpReturnState.Success) {
+    throw new IllegalStateException("Sketch Aggregation failed with state " + success);
+  }
+}

@@ -1,0 +1,15 @@
+{
+  return new ComplexMetricExtractor(){
+    @Override public Class<?> extractedClass(){
+      return Sketch.class;
+    }
+    @Override public Object extractValue(    InputRow inputRow,    String metricName){
+      final Object object=inputRow.getRaw(metricName);
+      if (object == null || object instanceof Sketch || object instanceof Memory) {
+        return object;
+      }
+      return SketchOperations.deserialize(object);
+    }
+  }
+;
+}

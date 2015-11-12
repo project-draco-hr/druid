@@ -1,0 +1,9 @@
+{
+  Sketch sketch=Sketches.updateSketchBuilder().build(128);
+  SketchMergeAggregatorFactory agg=new SketchMergeAggregatorFactory("name","fieldName",16,null,null);
+  Assert.assertEquals(0.0,((Double)agg.finalizeComputation(sketch)).doubleValue(),0.0001);
+  agg=new SketchMergeAggregatorFactory("name","fieldName",16,true,null);
+  Assert.assertEquals(0.0,((Double)agg.finalizeComputation(sketch)).doubleValue(),0.0001);
+  agg=new SketchMergeAggregatorFactory("name","fieldName",16,false,null);
+  Assert.assertEquals(sketch,agg.finalizeComputation(sketch));
+}

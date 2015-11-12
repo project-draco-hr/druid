@@ -1,0 +1,42 @@
+{
+  return new ComplexMetricExtractor(){
+    @Override public Class<?> extractedClass(){
+      return Object.class;
+    }
+    @Override public Object extractValue(    InputRow inputRow,    String metricName){
+      Object obj=inputRow.getRaw(metricName);
+      if (obj == null || obj instanceof Sketch || obj instanceof Memory) {
+        return obj;
+      }
+      UpdateSketch sketch=Sketches.updateSketchBuilder().build(4096);
+      if (obj instanceof String) {
+        sketch.update((String)obj);
+      }
+ else       if (obj instanceof byte[]) {
+        sketch.update((byte[])obj);
+      }
+ else       if (obj instanceof Double) {
+        sketch.update(((Double)obj));
+      }
+ else       if (obj instanceof Integer || obj instanceof Long) {
+        sketch.update(((Number)obj).longValue());
+      }
+ else       if (obj instanceof int[]) {
+        sketch.update((int[])obj);
+      }
+ else       if (obj instanceof long[]) {
+        sketch.update((long[])obj);
+      }
+ else       if (obj instanceof List) {
+        for (        Object entry : (List)obj) {
+          sketch.update(entry.toString());
+        }
+      }
+ else {
+        throw new IAE("Unknown object type[%s] received for ingestion.",obj.getClass());
+      }
+      return sketch;
+    }
+  }
+;
+}
