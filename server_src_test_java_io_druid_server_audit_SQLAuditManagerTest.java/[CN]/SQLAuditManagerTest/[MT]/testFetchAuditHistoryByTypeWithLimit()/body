@@ -1,0 +1,12 @@
+{
+  AuditEntry entry1=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment","127.0.0.1"),"testPayload",new DateTime("2013-01-01T00:00:00Z"));
+  AuditEntry entry2=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment","127.0.0.1"),"testPayload",new DateTime("2013-01-02T00:00:00Z"));
+  AuditEntry entry3=new AuditEntry("testKey","testType",new AuditInfo("testAuthor","testComment","127.0.0.1"),"testPayload",new DateTime("2013-01-03T00:00:00Z"));
+  auditManager.doAudit(entry1);
+  auditManager.doAudit(entry2);
+  auditManager.doAudit(entry3);
+  List<AuditEntry> auditEntries=auditManager.fetchAuditHistory("testType",2);
+  Assert.assertEquals(2,auditEntries.size());
+  Assert.assertEquals(entry3,auditEntries.get(0));
+  Assert.assertEquals(entry2,auditEntries.get(1));
+}
