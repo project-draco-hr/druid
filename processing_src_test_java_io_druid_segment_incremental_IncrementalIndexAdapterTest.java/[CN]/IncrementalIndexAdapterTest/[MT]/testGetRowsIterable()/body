@@ -1,0 +1,33 @@
+{
+  final long timestamp=System.currentTimeMillis();
+  IncrementalIndex toPersist1=IncrementalIndexTest.createIndex(null);
+  IncrementalIndexTest.populateIndex(timestamp,toPersist1);
+  final IndexableAdapter incrementalAdapter=new IncrementalIndexAdapter(toPersist1.getInterval(),toPersist1,INDEX_SPEC.getBitmapSerdeFactory().getBitmapFactory());
+  Iterable<Rowboat> boats=incrementalAdapter.getRows();
+  List<Rowboat> boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  Assert.assertEquals(2,boatList.size());
+  Assert.assertEquals(0,boatList.get(0).getRowNum());
+  Assert.assertEquals(1,boatList.get(1).getRowNum());
+  boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  Assert.assertEquals(2,boatList.size());
+  Assert.assertEquals(0,boatList.get(0).getRowNum());
+  Assert.assertEquals(1,boatList.get(1).getRowNum());
+}
