@@ -1,8 +1,9 @@
 {
-  return merge(Lists.transform(indexes,new Function<QueryableIndex,IndexableAdapter>(){
+  List<IndexableAdapter> indexAdapteres=Lists.newArrayList(Iterables.transform(indexes,new Function<QueryableIndex,IndexableAdapter>(){
     @Override public IndexableAdapter apply(    final QueryableIndex input){
       return new QueryableIndexIndexableAdapter(input);
     }
   }
-),metricAggs,outDir,null,indexSpec,progress);
+));
+  return merge(indexAdapteres,metricAggs,outDir,null,indexSpec,progress);
 }

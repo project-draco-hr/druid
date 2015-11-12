@@ -1,0 +1,49 @@
+{
+  final Column column=input.getColumn(dimension);
+  if (column == null) {
+    return new EmptyBitmapIndexSeeker();
+  }
+  final BitmapIndex bitmaps=column.getBitmapIndex();
+  if (bitmaps == null) {
+    return new EmptyBitmapIndexSeeker();
+  }
+  final Indexed<String> dimSet=getDimValueLookup(dimension);
+  return new BitmapIndexSeeker(){
+    private int currIndex=0;
+    private String currVal=null;
+    private String lastVal=null;
+    @Override public IndexedInts seek(    String value){
+      if (dimSet == null || dimSet.size() == 0) {
+        return new EmptyIndexedInts();
+      }
+      if (lastVal != null) {
+        if (GenericIndexed.STRING_STRATEGY.compare(value,lastVal) <= 0) {
+          throw new ISE("Value[%s] is less than the last value[%s] I have, cannot be.",value,lastVal);
+        }
+        return new EmptyIndexedInts();
+      }
+      if (currVal == null) {
+        currVal=dimSet.get(currIndex);
+      }
+      int compareResult=GenericIndexed.STRING_STRATEGY.compare(currVal,value);
+      if (compareResult == 0) {
+        IndexedInts ret=new BitmapCompressedIndexedInts(bitmaps.getBitmap(currIndex));
+        ++currIndex;
+        if (currIndex == dimSet.size()) {
+          lastVal=value;
+        }
+ else {
+          currVal=dimSet.get(currIndex);
+        }
+        return ret;
+      }
+ else       if (compareResult < 0) {
+        throw new ISE("Skipped currValue[%s], currIndex[%,d]; incoming value[%s]",currVal,currIndex,value);
+      }
+ else {
+        return new EmptyIndexedInts();
+      }
+    }
+  }
+;
+}

@@ -8,7 +8,9 @@
     }
     return;
   }
-  String currValue=dimSet.get(currIndex);
+  if (currValue == null) {
+    currValue=dimSet.get(currIndex);
+  }
   while (currValue == null) {
     conversionBuf.position(conversionBuf.position() + 1);
     ++currIndex;
@@ -23,6 +25,9 @@
     ++currIndex;
     if (currIndex == dimSet.size()) {
       lastVal=value;
+    }
+ else {
+      currValue=dimSet.get(currIndex);
     }
   }
  else   if (currValue.compareTo(value) < 0) {
