@@ -1,4 +1,5 @@
 {
+  final boolean skipIncrementalSegment=query.getContextValue(SKIP_INCREMENTAL_SEGMENT,false);
   final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
   final QueryToolChest<T,Query<T>> toolchest=factory.getToolchest();
   final Function<Query<T>,ServiceMetricEvent.Builder> builderFn=new Function<Query<T>,ServiceMetricEvent.Builder>(){
@@ -25,6 +26,9 @@
         @Override public QueryRunner<T> apply(        FireHydrant input){
           if (input == null || input.getSegment() == null) {
             return new ReportTimelineMissingSegmentQueryRunner<T>(descriptor);
+          }
+          if (skipIncrementalSegment && !input.hasSwapped()) {
+            return new NoopQueryRunner<T>();
           }
           final Closeable closeable=input.getSegment().increment();
           try {
