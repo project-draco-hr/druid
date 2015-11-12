@@ -1,5 +1,5 @@
 {
-  return new ServiceMetricEvent.Builder().setDimension(DATASOURCE,DataSourceUtil.getMetricName(query.getDataSource())).setDimension(TYPE,query.getType()).setDimension(INTERVAL,Lists.transform(query.getIntervals(),new Function<Interval,String>(){
+  return new ServiceMetricEvent.Builder().setDimension(VERSION,Strings.nullToEmpty(DruidMetrics.class.getPackage().getImplementationVersion())).setDimension(DATASOURCE,DataSourceUtil.getMetricName(query.getDataSource())).setDimension(TYPE,query.getType()).setDimension(INTERVAL,Lists.transform(query.getIntervals(),new Function<Interval,String>(){
     @Override public String apply(    Interval input){
       return input.toString();
     }
