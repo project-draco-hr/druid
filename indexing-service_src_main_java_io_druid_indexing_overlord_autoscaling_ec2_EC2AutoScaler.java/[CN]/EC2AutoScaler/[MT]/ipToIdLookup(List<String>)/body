@@ -1,15 +1,20 @@
 {
-  DescribeInstancesResult result=amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",ips)));
-  List<Instance> instances=Lists.newArrayList();
-  for (  Reservation reservation : result.getReservations()) {
-    instances.addAll(reservation.getInstances());
-  }
-  List<String> retVal=Lists.transform(instances,new Function<Instance,String>(){
-    @Override public String apply(    Instance input){
-      return input.getInstanceId();
+  final List<String> retVal=FluentIterable.from(Lists.partition(ips,MAX_AWS_FILTER_VALUES)).transformAndConcat(new Function<List<String>,Iterable<Reservation>>(){
+    @Override public Iterable<Reservation> apply(    List<String> input){
+      return amazonEC2Client.describeInstances(new DescribeInstancesRequest().withFilters(new Filter("private-ip-address",input))).getReservations();
     }
   }
-);
+).transformAndConcat(new Function<Reservation,Iterable<Instance>>(){
+    @Override public Iterable<Instance> apply(    Reservation reservation){
+      return reservation.getInstances();
+    }
+  }
+).transform(new Function<Instance,String>(){
+    @Override public String apply(    Instance instance){
+      return instance.getInstanceId();
+    }
+  }
+).toList();
   log.debug("Performing lookup: %s --> %s",ips,retVal);
   return retVal;
 }
