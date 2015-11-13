@@ -1,0 +1,9 @@
+{
+  Map<String,String[]> dimensions=new HashMap<>();
+  for (  String property : props.stringPropertyNames()) {
+    if (property.startsWith(MonitorsConfig.METRIC_DIMENSION_PREFIX)) {
+      dimensions.put(property.substring(MonitorsConfig.METRIC_DIMENSION_PREFIX.length()),new String[]{props.getProperty(property)});
+    }
+  }
+  return dimensions;
+}
