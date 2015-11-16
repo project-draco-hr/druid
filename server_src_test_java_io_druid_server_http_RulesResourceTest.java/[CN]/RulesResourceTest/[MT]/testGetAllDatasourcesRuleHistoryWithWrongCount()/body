@@ -1,0 +1,11 @@
+{
+  EasyMock.expect(auditManager.fetchAuditHistory(EasyMock.eq("rules"),EasyMock.eq(-1))).andThrow(new IllegalArgumentException("Limit must be greater than zero!")).once();
+  EasyMock.replay(auditManager);
+  RulesResource rulesResource=new RulesResource(databaseRuleManager,auditManager);
+  Response response=rulesResource.getDatasourceRuleHistory(null,-1);
+  Map<String,Object> rulesHistory=(Map)response.getEntity();
+  Assert.assertEquals(400,response.getStatus());
+  Assert.assertTrue(rulesHistory.containsKey("error"));
+  Assert.assertEquals("Limit must be greater than zero!",rulesHistory.get("error"));
+  EasyMock.verify(auditManager);
+}
