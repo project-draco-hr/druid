@@ -3,17 +3,7 @@
   if (!outDir.mkdirs()) {
     throw new ISE("Couldn't make outdir[%s].",outDir);
   }
-  final List<String> mergedDimensions=mergeIndexed(Lists.transform(indexes,new Function<IndexableAdapter,Iterable<String>>(){
-    @Override public Iterable<String> apply(    @Nullable IndexableAdapter input){
-      return Iterables.transform(input.getDimensionNames(),new Function<String,String>(){
-        @Override public String apply(        @Nullable String input){
-          return input;
-        }
-      }
-);
-    }
-  }
-));
+  final List<String> mergedDimensions=getMergedDimensions(indexes);
   final List<String> mergedMetrics=mergeIndexed(Lists.transform(indexes,new Function<IndexableAdapter,Iterable<String>>(){
     @Override public Iterable<String> apply(    @Nullable IndexableAdapter input){
       return Iterables.transform(input.getMetricNames(),new Function<String,String>(){

@@ -1,0 +1,28 @@
+{
+  IncrementalIndex toPersistA=getSingleDimIndex("dimA",Arrays.asList("1","2"));
+  IncrementalIndex toPersistB=getSingleDimIndex("dimB",Arrays.asList("1","2","3"));
+  final File tmpDirA=temporaryFolder.newFolder();
+  final File tmpDirB=temporaryFolder.newFolder();
+  final File tmpDirMerged=temporaryFolder.newFolder();
+  QueryableIndex indexA=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistA,tmpDirA,null,indexSpec)));
+  QueryableIndex indexB=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistB,tmpDirB,null,indexSpec)));
+  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
+  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
+  Iterable<Rowboat> boats=adapter.getRows();
+  List<Rowboat> boatList=new ArrayList<>();
+  for (  Rowboat boat : boats) {
+    boatList.add(boat);
+  }
+  Assert.assertEquals(ImmutableList.of("dimA","dimB"),ImmutableList.copyOf(adapter.getDimensionNames()));
+  Assert.assertEquals(5,boatList.size());
+  Assert.assertArrayEquals(new int[][]{{0},{1}},boatList.get(0).getDims());
+  Assert.assertArrayEquals(new Object[]{1L},boatList.get(0).getMetrics());
+  Assert.assertArrayEquals(new int[][]{{0},{2}},boatList.get(1).getDims());
+  Assert.assertArrayEquals(new Object[]{1L},boatList.get(1).getMetrics());
+  Assert.assertArrayEquals(new int[][]{{0},{3}},boatList.get(2).getDims());
+  Assert.assertArrayEquals(new Object[]{1L},boatList.get(2).getMetrics());
+  Assert.assertArrayEquals(new int[][]{{1},{0}},boatList.get(3).getDims());
+  Assert.assertArrayEquals(new Object[]{1L},boatList.get(3).getMetrics());
+  Assert.assertArrayEquals(new int[][]{{2},{0}},boatList.get(4).getDims());
+  Assert.assertArrayEquals(new Object[]{1L},boatList.get(4).getMetrics());
+}

@@ -1,0 +1,13 @@
+{
+  if (indexes.size() == 0) {
+    return ImmutableList.of();
+  }
+  Indexed<String> dimOrder=indexes.get(0).getDimensionNames();
+  for (  IndexableAdapter index : indexes) {
+    Indexed<String> dimOrder2=index.getDimensionNames();
+    if (!Iterators.elementsEqual(dimOrder.iterator(),dimOrder2.iterator())) {
+      return getLexicographicMergedDimensions(indexes);
+    }
+  }
+  return ImmutableList.copyOf(dimOrder);
+}
