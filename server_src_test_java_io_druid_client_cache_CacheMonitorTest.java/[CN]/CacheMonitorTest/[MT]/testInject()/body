@@ -1,0 +1,11 @@
+{
+  Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      JsonConfigProvider.bindInstance(binder,Key.get(DruidNode.class,Self.class),new DruidNode("test-inject",null,null));
+      binder.bind(Cache.class).toInstance(MapCache.create(0));
+    }
+  }
+));
+  CacheMonitor monitor=injector.getInstance(CacheMonitor.class);
+  Assert.assertNotNull(monitor.cache);
+}

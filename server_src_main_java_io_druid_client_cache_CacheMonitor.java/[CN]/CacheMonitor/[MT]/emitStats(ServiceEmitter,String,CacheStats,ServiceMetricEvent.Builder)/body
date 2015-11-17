@@ -1,11 +1,13 @@
 {
-  emitter.emit(builder.build(String.format("%s/numEntries",metricPrefix),cacheStats.getNumEntries()));
-  emitter.emit(builder.build(String.format("%s/sizeBytes",metricPrefix),cacheStats.getSizeInBytes()));
-  emitter.emit(builder.build(String.format("%s/hits",metricPrefix),cacheStats.getNumHits()));
-  emitter.emit(builder.build(String.format("%s/misses",metricPrefix),cacheStats.getNumMisses()));
-  emitter.emit(builder.build(String.format("%s/evictions",metricPrefix),cacheStats.getNumEvictions()));
-  emitter.emit(builder.build(String.format("%s/hitRate",metricPrefix),cacheStats.hitRate()));
-  emitter.emit(builder.build(String.format("%s/averageBytes",metricPrefix),cacheStats.averageBytes()));
-  emitter.emit(builder.build(String.format("%s/timeouts",metricPrefix),cacheStats.getNumTimeouts()));
-  emitter.emit(builder.build(String.format("%s/errors",metricPrefix),cacheStats.getNumErrors()));
+  if (cache != null) {
+    emitter.emit(builder.build(String.format("%s/numEntries",metricPrefix),cacheStats.getNumEntries()));
+    emitter.emit(builder.build(String.format("%s/sizeBytes",metricPrefix),cacheStats.getSizeInBytes()));
+    emitter.emit(builder.build(String.format("%s/hits",metricPrefix),cacheStats.getNumHits()));
+    emitter.emit(builder.build(String.format("%s/misses",metricPrefix),cacheStats.getNumMisses()));
+    emitter.emit(builder.build(String.format("%s/evictions",metricPrefix),cacheStats.getNumEvictions()));
+    emitter.emit(builder.build(String.format("%s/hitRate",metricPrefix),cacheStats.hitRate()));
+    emitter.emit(builder.build(String.format("%s/averageBytes",metricPrefix),cacheStats.averageBytes()));
+    emitter.emit(builder.build(String.format("%s/timeouts",metricPrefix),cacheStats.getNumTimeouts()));
+    emitter.emit(builder.build(String.format("%s/errors",metricPrefix),cacheStats.getNumErrors()));
+  }
 }
