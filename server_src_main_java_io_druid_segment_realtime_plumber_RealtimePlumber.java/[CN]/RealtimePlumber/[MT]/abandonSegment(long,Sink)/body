@@ -5,6 +5,9 @@
     log.info("Removing sinkKey %d for segment %s",truncatedTime,sink.getSegment().getIdentifier());
     sinks.remove(truncatedTime);
     sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<>(sink));
+    for (    FireHydrant hydrant : sink) {
+      cache.close(makeHydrantIdentifier(hydrant,hydrant.getSegment()));
+    }
 synchronized (handoffCondition) {
       handoffCondition.notifyAll();
     }

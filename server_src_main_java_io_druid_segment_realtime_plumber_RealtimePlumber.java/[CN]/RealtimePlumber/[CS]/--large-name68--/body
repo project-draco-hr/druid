@@ -12,5 +12,11 @@
   this.serverView=serverView;
   this.indexMerger=Preconditions.checkNotNull(indexMerger,"Null IndexMerger");
   this.indexIO=Preconditions.checkNotNull(indexIO,"Null IndexIO");
+  this.cache=cache;
+  this.cacheConfig=cacheConfig;
+  this.objectMapper=objectMapper;
+  if (!cache.isLocal()) {
+    log.error("Configured cache is not local, caching will not be enabled");
+  }
   log.info("Creating plumber using rejectionPolicy[%s]",getRejectionPolicy());
 }

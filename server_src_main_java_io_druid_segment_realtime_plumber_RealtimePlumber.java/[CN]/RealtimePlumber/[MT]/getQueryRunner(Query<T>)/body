@@ -26,9 +26,15 @@
           if (input == null || input.getSegment() == null) {
             return new ReportTimelineMissingSegmentQueryRunner<T>(descriptor);
           }
-          final Closeable closeable=input.getSegment().increment();
+          final ReferenceCountingSegment segment=input.getSegment();
+          final Closeable closeable=segment.increment();
           try {
-            return factory.createRunner(input.getSegment());
+            if (input.hasSwapped() && cache.isLocal()) {
+              return new CachingQueryRunner<>(makeHydrantIdentifier(input,segment),descriptor,objectMapper,cache,toolchest,factory.createRunner(segment),MoreExecutors.sameThreadExecutor(),cacheConfig);
+            }
+ else {
+              return factory.createRunner(input.getSegment());
+            }
           }
   finally {
             try {
