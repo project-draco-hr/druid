@@ -1,0 +1,23 @@
+{
+  JettyServerInitializer initializer=injector.getInstance(JettyServerInitializer.class);
+  try {
+    initializer.initialize(server,injector);
+  }
+ catch (  ConfigurationException e) {
+    throw new ProvisionException(Iterables.getFirst(e.getErrorMessages(),null).getMessage());
+  }
+  lifecycle.addHandler(new Lifecycle.Handler(){
+    @Override public void start() throws Exception {
+      server.start();
+    }
+    @Override public void stop(){
+      try {
+        server.stop();
+      }
+ catch (      Exception e) {
+        log.warn(e,"Unable to stop Jetty server.");
+      }
+    }
+  }
+);
+}

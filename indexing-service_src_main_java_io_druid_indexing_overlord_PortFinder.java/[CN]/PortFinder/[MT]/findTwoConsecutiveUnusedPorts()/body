@@ -1,0 +1,9 @@
+{
+  int firstPort=chooseNext(startPort);
+  while (!canBind(firstPort) || !canBind(firstPort + 1)) {
+    firstPort=chooseNext(firstPort + 1);
+  }
+  usedPorts.add(firstPort);
+  usedPorts.add(firstPort + 1);
+  return new Pair<>(firstPort,firstPort + 1);
+}

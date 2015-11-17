@@ -1,0 +1,12 @@
+{
+  if (properties.containsKey("druid.indexer.task.chathandler.port")) {
+    log.info("Spawning separate ingestion server at port [%s]",properties.get("druid.indexer.task.chathandler.port"));
+    JsonConfigProvider.bind(binder,"druid.indexer.task.chathandler",DruidNode.class,RemoteChatHandler.class);
+    JsonConfigProvider.bind(binder,"druid.indexer.server.chathandler.http",ServerConfig.class,RemoteChatHandler.class);
+    LifecycleModule.register(binder,Server.class,RemoteChatHandler.class);
+  }
+ else {
+    binder.bind(DruidNode.class).annotatedWith(RemoteChatHandler.class).to(Key.get(DruidNode.class,Self.class));
+    binder.bind(ServerConfig.class).annotatedWith(RemoteChatHandler.class).to(Key.get(ServerConfig.class));
+  }
+}
