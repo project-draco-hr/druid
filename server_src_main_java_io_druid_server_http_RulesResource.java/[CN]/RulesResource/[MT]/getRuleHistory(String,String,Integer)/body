@@ -1,0 +1,13 @@
+{
+  if (interval == null && count != null) {
+    if (dataSourceName != null) {
+      return auditManager.fetchAuditHistory(dataSourceName,"rules",count);
+    }
+    return auditManager.fetchAuditHistory("rules",count);
+  }
+  Interval theInterval=interval == null ? null : new Interval(interval);
+  if (dataSourceName != null) {
+    return auditManager.fetchAuditHistory(dataSourceName,"rules",theInterval);
+  }
+  return auditManager.fetchAuditHistory("rules",theInterval);
+}
