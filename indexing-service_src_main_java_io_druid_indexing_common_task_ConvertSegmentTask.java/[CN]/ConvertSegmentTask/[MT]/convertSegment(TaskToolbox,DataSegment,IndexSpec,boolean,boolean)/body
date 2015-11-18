@@ -1,7 +1,7 @@
 {
   log.info("Converting segment[%s]",segment);
   final TaskActionClient actionClient=toolbox.getTaskActionClient();
-  final List<DataSegment> currentSegments=actionClient.submit(new SegmentListUsedAction(segment.getDataSource(),segment.getInterval()));
+  final List<DataSegment> currentSegments=actionClient.submit(new SegmentListUsedAction(segment.getDataSource(),segment.getInterval(),null));
   for (  DataSegment currentSegment : currentSegments) {
     final String version=currentSegment.getVersion();
     final Integer binaryVersion=currentSegment.getBinaryVersion();

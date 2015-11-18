@@ -2,7 +2,7 @@
   log.info("Connecting firehose: dataSource[%s], interval[%s]",dataSource,interval);
   final TaskToolbox toolbox=injector.getInstance(TaskToolboxFactory.class).build(new NoopTask("reingest",0,0,null,null,null));
   try {
-    final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval));
+    final List<DataSegment> usedSegments=toolbox.getTaskActionClient().submit(new SegmentListUsedAction(dataSource,interval,null));
     final Map<DataSegment,File> segmentFileMap=toolbox.fetchSegments(usedSegments);
     VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<>(Ordering.<String>natural().nullsFirst());
     for (    DataSegment segment : usedSegments) {
