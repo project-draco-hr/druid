@@ -1,0 +1,8 @@
+{
+  coordinator.announceHistoricalSegments(segments);
+  coordinator.announceHistoricalSegments(ImmutableSet.of(defaultSegment3));
+  Assert.assertEquals(segments,ImmutableSet.copyOf(coordinator.getUsedSegmentsForIntervals(defaultSegment.getDataSource(),ImmutableList.of(defaultSegment.getInterval()))));
+  Assert.assertEquals(ImmutableSet.of(defaultSegment3),ImmutableSet.copyOf(coordinator.getUsedSegmentsForIntervals(defaultSegment.getDataSource(),ImmutableList.of(defaultSegment3.getInterval()))));
+  Assert.assertEquals(ImmutableSet.of(defaultSegment,defaultSegment2,defaultSegment3),ImmutableSet.copyOf(coordinator.getUsedSegmentsForIntervals(defaultSegment.getDataSource(),ImmutableList.of(defaultSegment.getInterval(),defaultSegment3.getInterval()))));
+  Assert.assertEquals(ImmutableList.of(defaultSegment3),coordinator.getUsedSegmentsForIntervals(defaultSegment.getDataSource(),ImmutableList.of(Interval.parse("2015-01-03T00Z/2015-01-03T05Z"),Interval.parse("2015-01-03T09Z/2015-01-04T00Z"))));
+}

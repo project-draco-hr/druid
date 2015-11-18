@@ -19,7 +19,7 @@
         }
       }
       final SegmentIdentifier newIdentifier;
-      final List<TimelineObjectHolder<String,DataSegment>> existingChunks=getTimelineForIntervalWithHandle(handle,dataSource,interval).lookup(interval);
+      final List<TimelineObjectHolder<String,DataSegment>> existingChunks=getTimelineForIntervalsWithHandle(handle,dataSource,ImmutableList.of(interval)).lookup(interval);
       if (existingChunks.size() > 1) {
         log.warn("Cannot allocate new segment for dataSource[%s], interval[%s], maxVersion[%s]: already have [%,d] chunks.",dataSource,interval,maxVersion,existingChunks.size());
         return null;
