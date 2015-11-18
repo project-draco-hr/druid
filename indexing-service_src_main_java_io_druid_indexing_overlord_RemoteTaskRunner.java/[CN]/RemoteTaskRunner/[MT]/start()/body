@@ -39,6 +39,25 @@ worker=jsonMapper.readValue(event.getData().getData(),Worker.class);
 removeWorker(worker);
 break;
 case INITIALIZED:
+List<String> workers;
+try {
+workers=cf.getChildren().forPath(indexerZkConfig.getStatusPath());
+}
+ catch (KeeperException.NoNodeException e) {
+workers=ImmutableList.of();
+}
+for (String workerId : workers) {
+final String workerAnnouncePath=JOINER.join(indexerZkConfig.getAnnouncementsPath(),workerId);
+final String workerStatusPath=JOINER.join(indexerZkConfig.getStatusPath(),workerId);
+if (!zkWorkers.containsKey(workerId) && cf.checkExists().forPath(workerAnnouncePath) == null) {
+try {
+scheduleTasksCleanupForWorker(workerId,cf.getChildren().forPath(workerStatusPath));
+}
+ catch (Exception e) {
+log.warn(e,"Could not schedule cleanup for worker[%s] during startup (maybe someone removed the status znode[%s]?). Skipping.",workerId,workerStatusPath);
+}
+}
+}
 synchronized (waitingForMonitor) {
 waitingFor.decrement();
 waitingForMonitor.notifyAll();
@@ -53,18 +72,6 @@ workerPathCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
 synchronized (waitingForMonitor) {
 while (waitingFor.intValue() > 0) {
 waitingForMonitor.wait();
-}
-}
-List<String> workers;
-try {
-workers=cf.getChildren().forPath(indexerZkConfig.getStatusPath());
-}
- catch (KeeperException.NoNodeException e) {
-workers=ImmutableList.of();
-}
-for (String worker : workers) {
-if (!zkWorkers.containsKey(worker) && cf.checkExists().forPath(JOINER.join(indexerZkConfig.getAnnouncementsPath(),worker)) == null) {
-scheduleTasksCleanupForWorker(worker,cf.getChildren().forPath(JOINER.join(indexerZkConfig.getStatusPath(),worker)));
 }
 }
 started=true;

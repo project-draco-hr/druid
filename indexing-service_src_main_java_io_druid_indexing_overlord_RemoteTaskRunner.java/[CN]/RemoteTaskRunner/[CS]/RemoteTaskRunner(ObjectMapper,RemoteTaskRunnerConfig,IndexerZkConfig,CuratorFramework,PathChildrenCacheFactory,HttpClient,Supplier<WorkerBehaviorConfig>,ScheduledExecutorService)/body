@@ -8,5 +8,5 @@
   this.workerPathCache=pathChildrenCacheFactory.make(cf,indexerZkConfig.getAnnouncementsPath());
   this.httpClient=httpClient;
   this.workerConfigRef=workerConfigRef;
-  this.cleanupExec=cleanupExec;
+  this.cleanupExec=MoreExecutors.listeningDecorator(cleanupExec);
 }

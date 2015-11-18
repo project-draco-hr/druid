@@ -1,11 +1,7 @@
 {
   log.info("Worker[%s] reportin' for duty!",worker.getHost());
   try {
-    ScheduledFuture previousCleanup=removedWorkerCleanups.remove(worker.getHost());
-    if (previousCleanup != null) {
-      log.info("Cancelling Worker[%s] scheduled task cleanup",worker.getHost());
-      previousCleanup.cancel(false);
-    }
+    cancelWorkerCleanup(worker.getHost());
     final String workerStatusPath=JOINER.join(indexerZkConfig.getStatusPath(),worker.getHost());
     final PathChildrenCache statusCache=pathChildrenCacheFactory.make(cf,workerStatusPath);
     final SettableFuture<ZkWorker> retVal=SettableFuture.create();
