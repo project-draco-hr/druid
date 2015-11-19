@@ -1,0 +1,28 @@
+{
+  final Task task=new NoopTask(null,0,0,null,null,null);
+  taskActionTestKit.getTaskLockbox().add(task);
+  final SegmentIdentifier id1=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",null);
+  final SegmentIdentifier id2=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s2",null);
+  final SegmentIdentifier id3=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",id1.getIdentifierAsString());
+  final SegmentIdentifier id4=allocate(task,THE_DISTANT_FUTURE,QueryGranularity.NONE,Granularity.HOUR,"s1",id3.getIdentifierAsString());
+  final SegmentIdentifier id5=allocate(task,THE_DISTANT_FUTURE,QueryGranularity.NONE,Granularity.HOUR,"s2",id2.getIdentifierAsString());
+  final SegmentIdentifier id6=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",null);
+  final TaskLock partyLock=Iterables.getOnlyElement(FluentIterable.from(taskActionTestKit.getTaskLockbox().findLocksForTask(task)).filter(new Predicate<TaskLock>(){
+    @Override public boolean apply(    TaskLock input){
+      return input.getInterval().contains(PARTY_TIME);
+    }
+  }
+));
+  final TaskLock futureLock=Iterables.getOnlyElement(FluentIterable.from(taskActionTestKit.getTaskLockbox().findLocksForTask(task)).filter(new Predicate<TaskLock>(){
+    @Override public boolean apply(    TaskLock input){
+      return input.getInterval().contains(THE_DISTANT_FUTURE);
+    }
+  }
+));
+  assertSameIdentifier(id1,new SegmentIdentifier(DATA_SOURCE,Granularity.HOUR.bucket(PARTY_TIME),partyLock.getVersion(),new NumberedShardSpec(0,0)));
+  assertSameIdentifier(id2,new SegmentIdentifier(DATA_SOURCE,Granularity.HOUR.bucket(PARTY_TIME),partyLock.getVersion(),new NumberedShardSpec(1,0)));
+  assertSameIdentifier(id3,new SegmentIdentifier(DATA_SOURCE,Granularity.HOUR.bucket(PARTY_TIME),partyLock.getVersion(),new NumberedShardSpec(2,0)));
+  assertSameIdentifier(id4,new SegmentIdentifier(DATA_SOURCE,Granularity.HOUR.bucket(THE_DISTANT_FUTURE),futureLock.getVersion(),new NumberedShardSpec(0,0)));
+  assertSameIdentifier(id5,new SegmentIdentifier(DATA_SOURCE,Granularity.HOUR.bucket(THE_DISTANT_FUTURE),futureLock.getVersion(),new NumberedShardSpec(1,0)));
+  assertSameIdentifier(id6,id1);
+}

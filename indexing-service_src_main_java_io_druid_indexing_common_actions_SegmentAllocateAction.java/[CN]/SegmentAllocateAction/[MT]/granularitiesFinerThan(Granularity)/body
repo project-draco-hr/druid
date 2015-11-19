@@ -1,0 +1,16 @@
+{
+  final DateTime epoch=new DateTime(0);
+  final List<Granularity> retVal=Lists.newArrayList();
+  for (  Granularity gran : Granularity.values()) {
+    if (gran.bucket(epoch).toDurationMillis() <= gran0.bucket(epoch).toDurationMillis()) {
+      retVal.add(gran);
+    }
+  }
+  Collections.sort(retVal,new Comparator<Granularity>(){
+    @Override public int compare(    Granularity g1,    Granularity g2){
+      return Longs.compare(g2.bucket(epoch).toDurationMillis(),g1.bucket(epoch).toDurationMillis());
+    }
+  }
+);
+  return retVal;
+}

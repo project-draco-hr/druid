@@ -1,0 +1,13 @@
+{
+  final List<SegmentIdentifier> identifiers=Lists.newArrayList();
+  final ResultIterator<byte[]> dbSegments=handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource AND start <= :end and \"end\" >= :start",dbTables.getPendingSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).map(ByteArrayMapper.FIRST).iterator();
+  while (dbSegments.hasNext()) {
+    final byte[] payload=dbSegments.next();
+    final SegmentIdentifier identifier=jsonMapper.readValue(payload,SegmentIdentifier.class);
+    if (interval.overlaps(identifier.getInterval())) {
+      identifiers.add(identifier);
+    }
+  }
+  dbSegments.close();
+  return identifiers;
+}

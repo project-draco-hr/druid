@@ -1,0 +1,59 @@
+{
+  int attempt=0;
+  while (true) {
+    attempt++;
+    if (!task.getDataSource().equals(dataSource)) {
+      throw new IAE("Task dataSource must match action dataSource, [%s] != [%s].",task.getDataSource(),dataSource);
+    }
+    final IndexerMetadataStorageCoordinator msc=toolbox.getIndexerMetadataStorageCoordinator();
+    final List<Interval> tryIntervals=Lists.newArrayList();
+    final Interval rowInterval=new Interval(queryGranularity.truncate(timestamp.getMillis()),queryGranularity.next(queryGranularity.truncate(timestamp.getMillis())));
+    final Set<DataSegment> usedSegmentsForRow=ImmutableSet.copyOf(msc.getUsedSegmentsForInterval(dataSource,rowInterval));
+    if (usedSegmentsForRow.isEmpty()) {
+      for (      Granularity gran : granularitiesFinerThan(preferredSegmentGranularity)) {
+        tryIntervals.add(gran.bucket(timestamp));
+      }
+    }
+ else {
+      tryIntervals.add(usedSegmentsForRow.iterator().next().getInterval());
+    }
+    for (    final Interval tryInterval : tryIntervals) {
+      if (tryInterval.contains(rowInterval)) {
+        log.debug("Trying to allocate pending segment for rowInterval[%s], segmentInterval[%s].",rowInterval,tryInterval);
+        final TaskLock tryLock=toolbox.getTaskLockbox().tryLock(task,tryInterval).orNull();
+        if (tryLock != null) {
+          final SegmentIdentifier identifier=msc.allocatePendingSegment(dataSource,sequenceName,previousSegmentId,tryInterval,tryLock.getVersion());
+          if (identifier != null) {
+            return Optional.of(identifier);
+          }
+ else {
+            log.debug("Could not allocate pending segment for rowInterval[%s], segmentInterval[%s].",rowInterval,tryInterval);
+          }
+        }
+ else {
+          log.debug("Could not acquire lock for rowInterval[%s], segmentInterval[%s].",rowInterval,tryInterval);
+        }
+      }
+    }
+    if (!ImmutableSet.copyOf(msc.getUsedSegmentsForInterval(dataSource,rowInterval)).equals(usedSegmentsForRow)) {
+      if (attempt < MAX_ATTEMPTS) {
+        final long shortRandomSleep=50 + (long)(Math.random() * 450);
+        log.debug("Used segment set changed for rowInterval[%s]. Retrying segment allocation in %,dms (attempt = %,d).",rowInterval,shortRandomSleep,attempt);
+        try {
+          Thread.sleep(shortRandomSleep);
+        }
+ catch (        InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw Throwables.propagate(e);
+        }
+      }
+ else {
+        log.error("Used segment set changed for rowInterval[%s]. Not trying again (attempt = %,d).",rowInterval,attempt);
+        return Optional.absent();
+      }
+    }
+ else {
+      return Optional.absent();
+    }
+  }
+}

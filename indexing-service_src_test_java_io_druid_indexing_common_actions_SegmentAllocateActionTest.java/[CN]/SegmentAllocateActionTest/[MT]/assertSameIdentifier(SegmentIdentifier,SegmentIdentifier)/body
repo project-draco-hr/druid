@@ -1,0 +1,12 @@
+{
+  Assert.assertEquals(one,other);
+  Assert.assertEquals(one.getShardSpec().getPartitionNum(),other.getShardSpec().getPartitionNum());
+  if (one.getShardSpec().getClass() == NumberedShardSpec.class && other.getShardSpec().getClass() == NumberedShardSpec.class) {
+    Assert.assertEquals(((NumberedShardSpec)one.getShardSpec()).getPartitions(),((NumberedShardSpec)other.getShardSpec()).getPartitions());
+  }
+ else   if (one.getShardSpec().getClass() == LinearShardSpec.class && other.getShardSpec().getClass() == LinearShardSpec.class) {
+  }
+ else {
+    throw new ISE("Unexpected shardSpecs [%s] and [%s]",one.getShardSpec().getClass(),other.getShardSpec().getClass());
+  }
+}

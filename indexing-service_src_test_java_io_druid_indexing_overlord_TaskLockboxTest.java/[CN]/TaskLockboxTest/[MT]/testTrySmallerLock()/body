@@ -1,0 +1,12 @@
+{
+  Task task=NoopTask.create();
+  lockbox.add(task);
+  Optional<TaskLock> lock1=lockbox.tryLock(task,new Interval("2015-01-01/2015-01-03"));
+  Assert.assertTrue(lock1.isPresent());
+  Assert.assertEquals(new Interval("2015-01-01/2015-01-03"),lock1.get().getInterval());
+  Assert.assertFalse(lockbox.tryLock(task,new Interval("2015-01-02/2015-01-04")).isPresent());
+  Optional<TaskLock> lock2=lockbox.tryLock(task,new Interval("2015-01-01/2015-01-02"));
+  Assert.assertTrue(lock2.isPresent());
+  Assert.assertEquals(new Interval("2015-01-01/2015-01-03"),lock2.get().getInterval());
+  Assert.assertEquals(ImmutableList.of(lock1.get()),lockbox.findLocksForTask(task));
+}
