@@ -4,14 +4,5 @@
     return;
   }
   Union union=getUnion(buf,position);
-  SetOpReturnState success;
-  if (update instanceof Memory) {
-    success=union.update((Memory)update);
-  }
- else {
-    success=union.update((Sketch)update);
-  }
-  if (success != SetOpReturnState.Success) {
-    throw new IllegalStateException("Sketch Buffer Aggregation failed with state " + update);
-  }
+  SketchAggregator.updateUnion(union,update);
 }

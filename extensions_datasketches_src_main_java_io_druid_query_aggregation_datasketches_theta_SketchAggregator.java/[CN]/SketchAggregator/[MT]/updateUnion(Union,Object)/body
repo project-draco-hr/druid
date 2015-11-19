@@ -1,0 +1,34 @@
+{
+  if (update instanceof Memory) {
+    union.update((Memory)update);
+  }
+ else   if (update instanceof Sketch) {
+    union.update((Sketch)update);
+  }
+ else   if (update instanceof String) {
+    union.update((String)update);
+  }
+ else   if (update instanceof byte[]) {
+    union.update((byte[])update);
+  }
+ else   if (update instanceof Double) {
+    union.update(((Double)update));
+  }
+ else   if (update instanceof Integer || update instanceof Long) {
+    union.update(((Number)update).longValue());
+  }
+ else   if (update instanceof int[]) {
+    union.update((int[])update);
+  }
+ else   if (update instanceof long[]) {
+    union.update((long[])update);
+  }
+ else   if (update instanceof List) {
+    for (    Object entry : (List)update) {
+      union.update(entry.toString());
+    }
+  }
+ else {
+    throw new ISE("Illegal type received while theta sketch merging [%s]",update.getClass());
+  }
+}
