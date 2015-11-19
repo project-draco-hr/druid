@@ -1,0 +1,12 @@
+{
+  int result=(int)(millisToWaitBeforeDeleting ^ (millisToWaitBeforeDeleting >>> 32));
+  result=31 * result + (int)(mergeBytesLimit ^ (mergeBytesLimit >>> 32));
+  result=31 * result + mergeSegmentsLimit;
+  result=31 * result + maxSegmentsToMove;
+  result=31 * result + replicantLifetime;
+  result=31 * result + replicationThrottleLimit;
+  result=31 * result + balancerComputeThreads;
+  result=31 * result + (emitBalancingStats ? 1 : 0);
+  result=31 * result + (killDataSourceWhitelist != null ? killDataSourceWhitelist.hashCode() : 0);
+  return result;
+}
