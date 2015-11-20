@@ -24,7 +24,7 @@
         if (tryLock != null) {
           final SegmentIdentifier identifier=msc.allocatePendingSegment(dataSource,sequenceName,previousSegmentId,tryInterval,tryLock.getVersion());
           if (identifier != null) {
-            return Optional.of(identifier);
+            return identifier;
           }
  else {
             log.debug("Could not allocate pending segment for rowInterval[%s], segmentInterval[%s].",rowInterval,tryInterval);
@@ -49,11 +49,11 @@
       }
  else {
         log.error("Used segment set changed for rowInterval[%s]. Not trying again (attempt = %,d).",rowInterval,attempt);
-        return Optional.absent();
+        return null;
       }
     }
  else {
-      return Optional.absent();
+      return null;
     }
   }
 }
