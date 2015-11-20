@@ -6,9 +6,9 @@
   }
  else {
     ChainedExtractionFn root=null;
-    for (int idx=0; idx < extractionFns.length; idx++) {
-      Preconditions.checkArgument(extractionFns[idx] != null,"empty function is not allowed");
-      root=new ChainedExtractionFn(extractionFns[idx],root);
+    for (    ExtractionFn fn : extractionFn) {
+      Preconditions.checkArgument(fn != null,"empty function is not allowed");
+      root=new ChainedExtractionFn(fn,root);
     }
     this.chainedExtractionFn=root;
   }
