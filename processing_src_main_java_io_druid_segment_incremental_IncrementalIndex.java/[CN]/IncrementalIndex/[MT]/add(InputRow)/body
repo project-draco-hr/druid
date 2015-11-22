@@ -28,6 +28,9 @@ synchronized (dimensionOrder) {
         }
         overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
       }
+ else       if (index > dims.length || dims[index] != null) {
+        throw new ISE("Dimension[%s] occurred more than once in InputRow",dimension);
+      }
  else {
         dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
       }
