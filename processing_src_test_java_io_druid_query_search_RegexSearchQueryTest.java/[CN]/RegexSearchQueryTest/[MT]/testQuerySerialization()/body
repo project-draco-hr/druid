@@ -1,0 +1,6 @@
+{
+  RegexSearchQuerySpec spec=new RegexSearchQuerySpec("(upfront|total_market)");
+  String json=jsonMapper.writeValueAsString(spec);
+  RegexSearchQuerySpec serdeQuery=(RegexSearchQuerySpec)jsonMapper.readValue(json,RegexSearchQuerySpec.class);
+  Assert.assertEquals(spec,serdeQuery);
+}
