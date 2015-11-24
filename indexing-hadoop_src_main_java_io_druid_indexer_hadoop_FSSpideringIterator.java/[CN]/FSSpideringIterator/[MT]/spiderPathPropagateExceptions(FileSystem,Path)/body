@@ -3,7 +3,10 @@
     final FileStatus[] statii=fs.listStatus(path);
     return new FSSpideringIterator(fs,statii == null ? new FileStatus[]{} : statii);
   }
- catch (  IOException e) {
+ catch (  FileNotFoundException e) {
+    return new FSSpideringIterator(fs,new FileStatus[]{});
+  }
+catch (  IOException e) {
     throw new RuntimeException(e);
   }
 }
