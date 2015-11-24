@@ -1,0 +1,11 @@
+{
+  for (  final Map.Entry<ServerView.SegmentCallback,Pair<Predicate<DataSegment>,Executor>> entry : callbacks.entrySet()) {
+    entry.getValue().rhs.execute(new Runnable(){
+      @Override public void run(){
+        entry.getKey().segmentViewInitialized();
+      }
+    }
+);
+  }
+  return ServerView.CallbackAction.CONTINUE;
+}

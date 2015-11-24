@@ -1,8 +1,9 @@
 {
-  return new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(new TaskConfig(Files.createTempDir().toString(),null,null,0,null),null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+  final TaskConfig taskConfig=new TaskConfig(Files.createTempDir().toString(),null,null,0,null,null,null);
+  return new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(taskConfig,null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }
   }
-,jsonMapper)),jsonMapper,indexMerger,indexIO,null,null),null),new WorkerConfig().setCapacity(1));
+,jsonMapper)),jsonMapper,indexMerger,indexIO,null,null),taskConfig,new NoopServiceEmitter()),new WorkerConfig().setCapacity(1));
 }

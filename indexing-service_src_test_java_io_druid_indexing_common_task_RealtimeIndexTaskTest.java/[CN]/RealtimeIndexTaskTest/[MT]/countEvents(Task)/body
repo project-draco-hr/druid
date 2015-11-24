@@ -1,0 +1,5 @@
+{
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("test_ds").aggregators(ImmutableList.<AggregatorFactory>of(new LongSumAggregatorFactory("rows","rows"))).granularity(QueryGranularity.ALL).intervals("2000/3000").build();
+  ArrayList<Result<TimeseriesResultValue>> results=Sequences.toList(task.getQueryRunner(query).run(query,ImmutableMap.<String,Object>of()),Lists.<Result<TimeseriesResultValue>>newArrayList());
+  return results.get(0).getValue().getLongMetric("rows");
+}

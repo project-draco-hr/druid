@@ -1,3 +1,11 @@
 {
   parentMonitorExec.shutdown();
+synchronized (this) {
+    if (taskLockFileLock != null) {
+      taskLockFileLock.release();
+    }
+    if (taskLockChannel != null) {
+      taskLockChannel.close();
+    }
+  }
 }

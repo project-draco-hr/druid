@@ -58,14 +58,15 @@
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
   final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getNewSegmentServerView(),toolbox.getQueryExecutorService(),toolbox.getIndexMerger(),toolbox.getIndexIO(),toolbox.getCache(),toolbox.getCacheConfig(),toolbox.getObjectMapper());
   this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
-  Firehose firehose=null;
   Supplier<Committer> committerSupplier=null;
   try {
     plumber.startJob();
     toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
-    firehose=spec.getIOConfig().getFirehoseFactory().connect(spec.getDataSchema().getParser());
+    final FirehoseFactory firehoseFactory=spec.getIOConfig().getFirehoseFactory();
+    final boolean firehoseDrainableByClosing=isFirehoseDrainableByClosing(firehoseFactory);
+    firehose=firehoseFactory.connect(spec.getDataSchema().getParser());
     committerSupplier=Committers.supplierFromFirehose(firehose);
-    while (firehose.hasMore()) {
+    while ((!stopped || firehoseDrainableByClosing) && firehose.hasMore()) {
       final InputRow inputRow;
       try {
         inputRow=firehose.nextRow();
@@ -97,8 +98,31 @@
  finally {
     if (normalExit) {
       try {
-        plumber.persist(committerSupplier.get());
-        plumber.finishJob();
+        if (!stopped) {
+          log.info("Persisting and handing off pending data.");
+          plumber.persist(committerSupplier.get());
+          plumber.finishJob();
+        }
+ else {
+          log.info("Persisting pending data without handoff, in preparation for restart.");
+          final Committer committer=committerSupplier.get();
+          final CountDownLatch persistLatch=new CountDownLatch(1);
+          plumber.persist(new Committer(){
+            @Override public Object getMetadata(){
+              return committer.getMetadata();
+            }
+            @Override public void run(){
+              try {
+                committer.run();
+              }
+  finally {
+                persistLatch.countDown();
+              }
+            }
+          }
+);
+          persistLatch.await();
+        }
       }
  catch (      Exception e) {
         log.makeAlert(e,"Failed to finish realtime task").emit();
@@ -110,5 +134,6 @@
       }
     }
   }
+  log.info("Job done!");
   return TaskStatus.success(getId());
 }

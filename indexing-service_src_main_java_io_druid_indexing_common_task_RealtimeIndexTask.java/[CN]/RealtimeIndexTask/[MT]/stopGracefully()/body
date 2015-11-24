@@ -1,0 +1,19 @@
+{
+  try {
+synchronized (this) {
+      if (!stopped) {
+        stopped=true;
+        log.info("Gracefully stopping.");
+        if (isFirehoseDrainableByClosing(spec.getIOConfig().getFirehoseFactory())) {
+          firehose.close();
+        }
+ else {
+          log.debug("Cannot drain firehose[%s] by closing, so skipping closing.",firehose);
+        }
+      }
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

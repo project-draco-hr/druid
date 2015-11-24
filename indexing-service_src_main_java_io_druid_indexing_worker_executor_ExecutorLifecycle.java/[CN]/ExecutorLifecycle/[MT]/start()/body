@@ -1,11 +1,39 @@
 {
-  final File taskFile=Preconditions.checkNotNull(config.getTaskFile(),"taskFile");
-  final File statusFile=Preconditions.checkNotNull(config.getStatusFile(),"statusFile");
-  final InputStream parentStream=Preconditions.checkNotNull(config.getParentStream(),"parentStream");
-  final Task task;
+  final File taskFile=Preconditions.checkNotNull(taskExecutorConfig.getTaskFile(),"taskFile");
+  final File statusFile=Preconditions.checkNotNull(taskExecutorConfig.getStatusFile(),"statusFile");
+  final InputStream parentStream=Preconditions.checkNotNull(taskExecutorConfig.getParentStream(),"parentStream");
   try {
     task=jsonMapper.readValue(taskFile,Task.class);
     log.info("Running with task: %s",jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  final File taskLockFile=taskConfig.getTaskLockFile(task.getId());
+  try {
+synchronized (this) {
+      if (taskLockChannel == null && taskLockFileLock == null) {
+        taskLockChannel=FileChannel.open(taskLockFile.toPath(),StandardOpenOption.CREATE,StandardOpenOption.WRITE);
+        log.info("Attempting to lock file[%s].",taskLockFile);
+        final long startLocking=System.currentTimeMillis();
+        final long timeout=new DateTime(startLocking).plus(taskConfig.getDirectoryLockTimeout()).getMillis();
+        while (taskLockFileLock == null && System.currentTimeMillis() < timeout) {
+          taskLockFileLock=taskLockChannel.tryLock();
+          if (taskLockFileLock == null) {
+            Thread.sleep(100);
+          }
+        }
+        if (taskLockFileLock == null) {
+          throw new ISE("Could not acquire lock file[%s] within %,dms.",taskLockFile,timeout - startLocking);
+        }
+ else {
+          log.info("Acquired lock file[%s] in %,dms.",taskLockFile,System.currentTimeMillis() - startLocking);
+        }
+      }
+ else {
+        throw new ISE("Already started!");
+      }
+    }
   }
  catch (  IOException e) {
     throw Throwables.propagate(e);

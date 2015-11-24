@@ -1,0 +1,34 @@
+{
+  final File directory=tempFolder.newFolder();
+  final RealtimeIndexTask task1=makeRealtimeTask(null);
+{
+    final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
+    final TaskToolbox taskToolbox=makeToolbox(task1,mdc,directory);
+    final ListenableFuture<TaskStatus> statusFuture=runTask(task1,taskToolbox);
+    while (task1.getFirehose() == null) {
+      Thread.sleep(50);
+    }
+    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task1.getFirehose();
+    firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo"))));
+    task1.stopGracefully();
+    final TaskStatus taskStatus=statusFuture.get();
+    Assert.assertEquals(TaskStatus.Status.SUCCESS,taskStatus.getStatusCode());
+    Assert.assertEquals(Sets.newHashSet(),mdc.getPublished());
+  }
+  final File smooshFile=new File(String.format("%s/persistent/task/%s/work/persist/%s/%s_%s/0/00000.smoosh",directory,task1.getId(),task1.getDataSource(),Granularity.DAY.truncate(now),Granularity.DAY.increment(Granularity.DAY.truncate(now))));
+  Files.write(smooshFile.toPath(),"oops!".getBytes(Charsets.UTF_8));
+{
+    final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
+    final RealtimeIndexTask task2=makeRealtimeTask(task1.getId());
+    final TaskToolbox taskToolbox=makeToolbox(task2,mdc,directory);
+    final ListenableFuture<TaskStatus> statusFuture=runTask(task2,taskToolbox);
+    boolean caught=false;
+    try {
+      statusFuture.get();
+    }
+ catch (    Exception e) {
+      caught=true;
+    }
+    Assert.assertTrue("expected exception",caught);
+  }
+}

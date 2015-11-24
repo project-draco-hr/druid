@@ -1,10 +1,10 @@
 {
 synchronized (tasks) {
     if (!tasks.containsKey(task.getId())) {
-      tasks.put(task.getId(),new ForkingTaskRunnerWorkItem(task.getId(),exec.submit(new Callable<TaskStatus>(){
+      tasks.put(task.getId(),new ForkingTaskRunnerWorkItem(task,exec.submit(new Callable<TaskStatus>(){
         @Override public TaskStatus call(){
           final String attemptUUID=UUID.randomUUID().toString();
-          final File taskDir=new File(taskConfig.getBaseTaskDir(),task.getId());
+          final File taskDir=taskConfig.getTaskDir(task.getId());
           final File attemptDir=new File(taskDir,attemptUUID);
           final ProcessHolder processHolder;
           final int childPort;
@@ -24,9 +24,9 @@ synchronized (tasks) {
               if (!attemptDir.mkdirs()) {
                 throw new IOException(String.format("Could not create directories: %s",attemptDir));
               }
-              final File taskFile=new File(attemptDir,"task.json");
+              final File taskFile=new File(taskDir,"task.json");
               final File statusFile=new File(attemptDir,"status.json");
-              final File logFile=new File(attemptDir,"log");
+              final File logFile=new File(taskDir,"log");
 synchronized (tasks) {
                 final ForkingTaskRunnerWorkItem taskWorkItem=tasks.get(task.getId());
                 if (taskWorkItem.shutdown) {
@@ -94,7 +94,9 @@ synchronized (tasks) {
                   command.add("--nodeType");
                   command.add(nodeType);
                 }
-                jsonMapper.writeValue(taskFile,task);
+                if (!taskFile.exists()) {
+                  jsonMapper.writeValue(taskFile,task);
+                }
                 log.info("Running command: %s",Joiner.on(" ").join(command));
                 taskWorkItem.processHolder=new ProcessHolder(new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,childPort);
                 processHolder=taskWorkItem.processHolder;
@@ -102,7 +104,8 @@ synchronized (tasks) {
               }
               log.info("Logging task %s output to: %s",task.getId(),logFile);
               boolean runFailed=true;
-              try (final OutputStream toLogfile=Files.asByteSink(logFile).openStream()){
+              final ByteSink logSink=Files.asByteSink(logFile,FileWriteMode.APPEND);
+              try (final OutputStream toLogfile=logSink.openStream()){
                 ByteStreams.copy(processHolder.process.getInputStream(),toLogfile);
                 final int statusCode=processHolder.process.waitFor();
                 log.info("Process exited with status[%d] for task: %s",statusCode,task.getId());
@@ -138,13 +141,22 @@ synchronized (tasks) {
                 if (taskWorkItem != null && taskWorkItem.processHolder != null) {
                   taskWorkItem.processHolder.process.destroy();
                 }
+                if (!stopping) {
+                  saveRunningTasks();
+                }
               }
-              portFinder.markPortUnused(childPort);
               if (childChatHandlerPort > 0) {
                 portFinder.markPortUnused(childChatHandlerPort);
               }
-              log.info("Removing temporary directory: %s",attemptDir);
-              FileUtils.deleteDirectory(attemptDir);
+              try {
+                if (!stopping && taskDir.exists()) {
+                  log.info("Removing task directory: %s",taskDir);
+                  FileUtils.deleteDirectory(taskDir);
+                }
+              }
+ catch (              Exception e) {
+                log.makeAlert(e,"Failed to delete task directory").addData("taskDir",taskDir.toString()).addData("task",task.getId()).emit();
+              }
             }
  catch (            Exception e) {
               log.error(e,"Suppressing exception caught while cleaning up task");
@@ -154,6 +166,7 @@ synchronized (tasks) {
       }
 )));
     }
+    saveRunningTasks();
     return tasks.get(task.getId()).getResult();
   }
 }
