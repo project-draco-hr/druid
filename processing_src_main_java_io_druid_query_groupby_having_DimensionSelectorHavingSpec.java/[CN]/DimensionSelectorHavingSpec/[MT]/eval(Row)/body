@@ -1,0 +1,15 @@
+{
+  List<String> dimRowValList=row.getDimension(this.dimension);
+  if (dimRowValList == null || dimRowValList.isEmpty()) {
+    return Strings.isNullOrEmpty(value);
+  }
+  for (  String rowVal : dimRowValList) {
+    if (this.value != null && this.value.equals(rowVal)) {
+      return true;
+    }
+    if (rowVal == null || rowVal.isEmpty()) {
+      return Strings.isNullOrEmpty(value);
+    }
+  }
+  return false;
+}
