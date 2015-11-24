@@ -2,7 +2,7 @@
   Optional<SortedSet<Interval>> intervals=spec.getDataSchema().getGranularitySpec().bucketIntervals();
   if (intervals.isPresent()) {
     Interval interval=JodaUtils.umbrellaInterval(JodaUtils.condenseIntervals(intervals.get()));
-    return taskActionClient.submit(new LockTryAcquireAction(interval)).isPresent();
+    return taskActionClient.submit(new LockTryAcquireAction(interval)) != null;
   }
  else {
     return true;
