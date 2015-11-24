@@ -1,17 +1,7 @@
 {
   final String[] strings={"a","b","c","d","e","f","g","h","i","j","k","l"};
   Indexed<String> indexed=GenericIndexed.fromArray(strings,GenericIndexed.STRING_STRATEGY);
-  Assert.assertEquals(strings.length,indexed.size());
-  for (int i=0; i < strings.length; i++) {
-    Assert.assertEquals(strings[i],indexed.get(i));
-  }
-  HashMap<String,Integer> mixedUp=Maps.newHashMap();
-  for (int i=0; i < strings.length; i++) {
-    mixedUp.put(strings[i],i);
-  }
-  for (  Map.Entry<String,Integer> entry : mixedUp.entrySet()) {
-    Assert.assertEquals(entry.getValue().intValue(),indexed.indexOf(entry.getKey()));
-  }
+  checkBasicAPIs(strings,indexed,true);
   Assert.assertEquals(-13,indexed.indexOf("q"));
   Assert.assertEquals(-9,indexed.indexOf("howdydo"));
   Assert.assertEquals(-1,indexed.indexOf("1111"));
