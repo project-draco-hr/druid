@@ -24,5 +24,8 @@
       }
     }
   }
+ else {
+    log.info("Found 0 availableSegments, skipping the cleanup of segments from historicals. This is done to prevent a race condition in which the coordinator would drop all segments if it started running cleanup before it finished polling the metadata storage for available segments for the first time.");
+  }
   return params.buildFromExisting().withCoordinatorStats(stats).build();
 }
