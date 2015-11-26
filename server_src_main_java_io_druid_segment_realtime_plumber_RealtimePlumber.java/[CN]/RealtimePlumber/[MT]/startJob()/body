@@ -1,8 +1,8 @@
 {
   computeBaseDir(schema).mkdirs();
   initializeExecutors();
+  handoffNotifier.start();
   Object retVal=bootstrapSinksFromDisk();
-  registerServerViewCallback();
   startPersistThread();
   mergeAndPush();
   resetNextFlush();

@@ -11,6 +11,9 @@
   binder.bind(new TypeLiteral<List<FireDepartment>>(){
   }
 ).toProvider(FireDepartmentsProvider.class).in(LazySingleton.class);
+  JsonConfigProvider.bind(binder,"druid.segment.handoff",CoordinatorBasedSegmentHandoffNotifierConfig.class);
+  binder.bind(SegmentHandoffNotifierFactory.class).to(CoordinatorBasedSegmentHandoffNotifierFactory.class).in(LazySingleton.class);
+  binder.bind(CoordinatorClient.class).in(LazySingleton.class);
   JsonConfigProvider.bind(binder,"druid.realtime.cache",CacheConfig.class);
   binder.install(new CacheModule());
   binder.bind(QuerySegmentWalker.class).to(RealtimeManager.class).in(ManageLifecycle.class);

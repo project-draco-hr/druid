@@ -1,0 +1,15 @@
+{
+  Assert.assertEquals(expected.size(),actual.size());
+  for (int i=0; i < expected.size(); ++i) {
+    Pair<Interval,Pair<String,Pair<DruidServer,DataSegment>>> expectedPair=expected.get(i);
+    TimelineObjectHolder<String,SegmentLoadInfo> actualTimelineObjectHolder=actual.get(i);
+    Assert.assertEquals(expectedPair.lhs,actualTimelineObjectHolder.getInterval());
+    Assert.assertEquals(expectedPair.rhs.lhs,actualTimelineObjectHolder.getVersion());
+    PartitionHolder<SegmentLoadInfo> actualPartitionHolder=actualTimelineObjectHolder.getObject();
+    Assert.assertTrue(actualPartitionHolder.isComplete());
+    Assert.assertEquals(1,Iterables.size(actualPartitionHolder));
+    SegmentLoadInfo segmentLoadInfo=actualPartitionHolder.iterator().next().getObject();
+    Assert.assertFalse(segmentLoadInfo.isEmpty());
+    Assert.assertEquals(expectedPair.rhs.rhs.lhs.getMetadata(),Iterables.getOnlyElement(segmentLoadInfo.toImmutableSegmentLoadInfo().getServers()));
+  }
+}

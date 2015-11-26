@@ -1,0 +1,9 @@
+{
+  scheduledExecutor=Execs.scheduledSingleThreaded("coordinator_handoff_scheduled_%d");
+  scheduledExecutor.scheduleAtFixedRate(new Runnable(){
+    @Override public void run(){
+      checkForSegmentHandoffs();
+    }
+  }
+,0L,pollDurationMillis,TimeUnit.MILLISECONDS);
+}

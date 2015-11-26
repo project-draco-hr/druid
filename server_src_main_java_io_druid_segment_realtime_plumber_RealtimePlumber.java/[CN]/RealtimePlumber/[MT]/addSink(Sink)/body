@@ -1,0 +1,10 @@
+{
+  sinks.put(sink.getInterval().getStartMillis(),sink);
+  sinkTimeline.add(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<Sink>(sink));
+  try {
+    segmentAnnouncer.announceSegment(sink.getSegment());
+  }
+ catch (  IOException e) {
+    log.makeAlert(e,"Failed to announce new segment[%s]",schema.getDataSource()).addData("interval",sink.getInterval()).emit();
+  }
+}

@@ -1,0 +1,6 @@
+{
+  Interval interval=new Interval("2011-04-01/2011-04-02");
+  Assert.assertFalse(CoordinatorBasedSegmentHandoffNotifier.isHandOffComplete(Lists.newArrayList(new ImmutableSegmentLoadInfo(createSegment(interval,"v1",2),Sets.newHashSet(createHistoricalServerMetadata("a")))),new SegmentDescriptor(interval,"v2",2)));
+  Assert.assertTrue(CoordinatorBasedSegmentHandoffNotifier.isHandOffComplete(Lists.newArrayList(new ImmutableSegmentLoadInfo(createSegment(interval,"v2",2),Sets.newHashSet(createHistoricalServerMetadata("a")))),new SegmentDescriptor(interval,"v1",2)));
+  Assert.assertTrue(CoordinatorBasedSegmentHandoffNotifier.isHandOffComplete(Lists.newArrayList(new ImmutableSegmentLoadInfo(createSegment(interval,"v1",2),Sets.newHashSet(createHistoricalServerMetadata("a")))),new SegmentDescriptor(interval,"v1",2)));
+}

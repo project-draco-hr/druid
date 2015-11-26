@@ -1,18 +1,20 @@
 {
-  try {
-    segmentAnnouncer.unannounceSegment(sink.getSegment());
-    removeSegment(sink,computePersistDir(schema,sink.getInterval()));
-    log.info("Removing sinkKey %d for segment %s",truncatedTime,sink.getSegment().getIdentifier());
-    sinks.remove(truncatedTime);
-    sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<>(sink));
-    for (    FireHydrant hydrant : sink) {
-      cache.close(makeHydrantIdentifier(hydrant,hydrant.getSegment()));
-    }
+  if (sinks.containsKey(truncatedTime)) {
+    try {
+      segmentAnnouncer.unannounceSegment(sink.getSegment());
+      removeSegment(sink,computePersistDir(schema,sink.getInterval()));
+      log.info("Removing sinkKey %d for segment %s",truncatedTime,sink.getSegment().getIdentifier());
+      sinks.remove(truncatedTime);
+      sinkTimeline.remove(sink.getInterval(),sink.getVersion(),new SingleElementPartitionChunk<>(sink));
+      for (      FireHydrant hydrant : sink) {
+        cache.close(makeHydrantIdentifier(hydrant,hydrant.getSegment()));
+      }
 synchronized (handoffCondition) {
-      handoffCondition.notifyAll();
+        handoffCondition.notifyAll();
+      }
     }
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Unable to abandon old segment for dataSource[%s]",schema.getDataSource()).addData("interval",sink.getInterval()).emit();
+ catch (    Exception e) {
+      log.makeAlert(e,"Unable to abandon old segment for dataSource[%s]",schema.getDataSource()).addData("interval",sink.getInterval()).emit();
+    }
   }
 }

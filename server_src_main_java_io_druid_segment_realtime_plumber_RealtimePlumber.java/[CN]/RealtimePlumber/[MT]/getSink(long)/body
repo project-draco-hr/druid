@@ -9,14 +9,7 @@
   if (retVal == null) {
     final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
     retVal=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval));
-    try {
-      segmentAnnouncer.announceSegment(retVal.getSegment());
-      sinks.put(truncatedTime,retVal);
-      sinkTimeline.add(retVal.getInterval(),retVal.getVersion(),new SingleElementPartitionChunk<Sink>(retVal));
-    }
- catch (    IOException e) {
-      log.makeAlert(e,"Failed to announce new segment[%s]",schema.getDataSource()).addData("interval",retVal.getInterval()).emit();
-    }
+    addSink(retVal);
   }
   return retVal;
 }

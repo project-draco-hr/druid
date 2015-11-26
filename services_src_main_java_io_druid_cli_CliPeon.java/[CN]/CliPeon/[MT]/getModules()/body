@@ -27,7 +27,10 @@
       binder.bind(ThreadPoolTaskRunner.class).in(ManageLifecycle.class);
       JsonConfigProvider.bind(binder,"druid.realtime.cache",CacheConfig.class);
       binder.install(new CacheModule());
+      JsonConfigProvider.bind(binder,"druid.segment.handoff",CoordinatorBasedSegmentHandoffNotifierConfig.class);
+      binder.bind(SegmentHandoffNotifierFactory.class).to(CoordinatorBasedSegmentHandoffNotifierFactory.class).in(LazySingleton.class);
       binder.bind(SegmentLoaderConfig.class).toInstance(new SegmentLoaderConfig().withLocations(Arrays.<StorageLocationConfig>asList()));
+      binder.bind(CoordinatorClient.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class);
       Jerseys.addResource(binder,QueryResource.class);
       Jerseys.addResource(binder,ChatHandlerResource.class);

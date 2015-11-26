@@ -1,0 +1,21 @@
+{
+  Interval interval=new Interval("2011-04-01/2011-04-02");
+  SegmentDescriptor descriptor=new SegmentDescriptor(interval,"v1",2);
+  DataSegment segment=new DataSegment("test_ds",interval,"v1",null,null,null,new NumberedShardSpec(2,3),0,0);
+  CoordinatorClient coordinatorClient=EasyMock.createMock(CoordinatorClient.class);
+  EasyMock.expect(coordinatorClient.fetchServerView("test_ds",interval,true)).andReturn(Lists.newArrayList(new ImmutableSegmentLoadInfo(segment,Sets.newHashSet(createRealtimeServerMetadata("a1"))))).anyTimes();
+  EasyMock.replay(coordinatorClient);
+  CoordinatorBasedSegmentHandoffNotifier notifier=new CoordinatorBasedSegmentHandoffNotifier("test_ds",coordinatorClient,notifierConfig);
+  final AtomicBoolean callbackCalled=new AtomicBoolean(false);
+  notifier.registerSegmentHandoffCallback(descriptor,MoreExecutors.sameThreadExecutor(),new Runnable(){
+    @Override public void run(){
+      callbackCalled.set(true);
+    }
+  }
+);
+  notifier.checkForSegmentHandoffs();
+  Assert.assertEquals(1,notifier.getHandOffCallbacks().size());
+  Assert.assertTrue(notifier.getHandOffCallbacks().containsKey(descriptor));
+  Assert.assertFalse(callbackCalled.get());
+  EasyMock.verify(coordinatorClient);
+}

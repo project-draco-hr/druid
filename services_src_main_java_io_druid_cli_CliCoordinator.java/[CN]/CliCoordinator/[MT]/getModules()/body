@@ -13,6 +13,7 @@
       binder.bind(MetadataRuleManager.class).toProvider(MetadataRuleManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(AuditManager.class).toProvider(AuditManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
+      binder.bind(CoordinatorServerView.class).in(LazySingleton.class);
       binder.bind(DruidCoordinator.class);
       LifecycleModule.register(binder,MetadataStorage.class);
       LifecycleModule.register(binder,DruidCoordinator.class);
@@ -26,6 +27,7 @@
       Jerseys.addResource(binder,MetadataResource.class);
       Jerseys.addResource(binder,IntervalsResource.class);
       LifecycleModule.register(binder,Server.class);
+      LifecycleModule.register(binder,DatasourcesResource.class);
     }
     @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
       return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),Executors.newSingleThreadExecutor(),config);

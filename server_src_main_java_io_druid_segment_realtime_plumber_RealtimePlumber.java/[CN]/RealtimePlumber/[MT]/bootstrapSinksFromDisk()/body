@@ -11,7 +11,7 @@
   Object metadata=null;
   long latestCommitTime=0;
   for (  File sinkDir : files) {
-    Interval sinkInterval=new Interval(sinkDir.getName().replace("_","/"));
+    final Interval sinkInterval=new Interval(sinkDir.getName().replace("_","/"));
     final File[] sinkFiles=sinkDir.listFiles(new FilenameFilter(){
       @Override public boolean accept(      File dir,      String fileName){
         return !(Ints.tryParse(fileName) == null);
@@ -31,59 +31,52 @@
     }
 );
     boolean isCorrupted=false;
-    try {
-      List<FireHydrant> hydrants=Lists.newArrayList();
-      for (      File segmentDir : sinkFiles) {
-        log.info("Loading previously persisted segment at [%s]",segmentDir);
-        if (Ints.tryParse(segmentDir.getName()) == null) {
-          continue;
-        }
-        QueryableIndex queryableIndex=null;
-        try {
-          queryableIndex=indexIO.loadIndex(segmentDir);
-        }
- catch (        IOException e) {
-          log.error(e,"Problem loading segmentDir from disk.");
-          isCorrupted=true;
-        }
-        if (isCorrupted) {
-          try {
-            File corruptSegmentDir=computeCorruptedFileDumpDir(segmentDir,schema);
-            log.info("Renaming %s to %s",segmentDir.getAbsolutePath(),corruptSegmentDir.getAbsolutePath());
-            FileUtils.copyDirectory(segmentDir,corruptSegmentDir);
-            FileUtils.deleteDirectory(segmentDir);
-          }
- catch (          Exception e1) {
-            log.error(e1,"Failed to rename %s",segmentDir.getAbsolutePath());
-          }
-          continue;
-        }
-        Map<String,Object> segmentMetadata=queryableIndex.getMetaData();
-        if (segmentMetadata != null) {
-          Object timestampObj=segmentMetadata.get(COMMIT_METADATA_TIMESTAMP_KEY);
-          if (timestampObj != null) {
-            long timestamp=((Long)timestampObj).longValue();
-            if (timestamp > latestCommitTime) {
-              log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetaData(),timestamp,latestCommitTime);
-              latestCommitTime=timestamp;
-              metadata=queryableIndex.getMetaData().get(COMMIT_METADATA_KEY);
-            }
-          }
-        }
-        hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),config.getShardSpec()),queryableIndex),Integer.parseInt(segmentDir.getName())));
-      }
-      if (hydrants.isEmpty()) {
-        log.warn("Found persisted segment directory with no intermediate segments present at %s, skipping sink creation.",sinkDir.getAbsolutePath());
+    List<FireHydrant> hydrants=Lists.newArrayList();
+    for (    File segmentDir : sinkFiles) {
+      log.info("Loading previously persisted segment at [%s]",segmentDir);
+      if (Ints.tryParse(segmentDir.getName()) == null) {
         continue;
       }
-      Sink currSink=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval),hydrants);
-      sinks.put(sinkInterval.getStartMillis(),currSink);
-      sinkTimeline.add(currSink.getInterval(),currSink.getVersion(),new SingleElementPartitionChunk<Sink>(currSink));
-      segmentAnnouncer.announceSegment(currSink.getSegment());
+      QueryableIndex queryableIndex=null;
+      try {
+        queryableIndex=indexIO.loadIndex(segmentDir);
+      }
+ catch (      IOException e) {
+        log.error(e,"Problem loading segmentDir from disk.");
+        isCorrupted=true;
+      }
+      if (isCorrupted) {
+        try {
+          File corruptSegmentDir=computeCorruptedFileDumpDir(segmentDir,schema);
+          log.info("Renaming %s to %s",segmentDir.getAbsolutePath(),corruptSegmentDir.getAbsolutePath());
+          FileUtils.copyDirectory(segmentDir,corruptSegmentDir);
+          FileUtils.deleteDirectory(segmentDir);
+        }
+ catch (        Exception e1) {
+          log.error(e1,"Failed to rename %s",segmentDir.getAbsolutePath());
+        }
+        continue;
+      }
+      Map<String,Object> segmentMetadata=queryableIndex.getMetaData();
+      if (segmentMetadata != null) {
+        Object timestampObj=segmentMetadata.get(COMMIT_METADATA_TIMESTAMP_KEY);
+        if (timestampObj != null) {
+          long timestamp=((Long)timestampObj).longValue();
+          if (timestamp > latestCommitTime) {
+            log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetaData(),timestamp,latestCommitTime);
+            latestCommitTime=timestamp;
+            metadata=queryableIndex.getMetaData().get(COMMIT_METADATA_KEY);
+          }
+        }
+      }
+      hydrants.add(new FireHydrant(new QueryableIndexSegment(DataSegment.makeDataSegmentIdentifier(schema.getDataSource(),sinkInterval.getStart(),sinkInterval.getEnd(),versioningPolicy.getVersion(sinkInterval),config.getShardSpec()),queryableIndex),Integer.parseInt(segmentDir.getName())));
     }
- catch (    IOException e) {
-      log.makeAlert(e,"Problem loading sink[%s] from disk.",schema.getDataSource()).addData("interval",sinkInterval).emit();
+    if (hydrants.isEmpty()) {
+      log.warn("Found persisted segment directory with no intermediate segments present at %s, skipping sink creation.",sinkDir.getAbsolutePath());
+      continue;
     }
+    final Sink currSink=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval),hydrants);
+    addSink(currSink);
   }
   return metadata;
 }
