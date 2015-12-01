@@ -7,7 +7,7 @@
   for (  Map.Entry<String,String> entry : renames.entrySet()) {
     insertValues(entry.getKey(),entry.getValue(),"2015-01-01 00:00:00");
   }
-  extractionCacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory(){
+  extractionCacheManager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,reverseFnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(JDBCExtractionNamespace.class,new JDBCExtractionNamespaceFunctionFactory(){
     @Override public Callable<String> getCachePopulator(    final JDBCExtractionNamespace namespace,    final String lastVersion,    final Map<String,String> cache){
       final Callable<String> cachePopulator=super.getCachePopulator(namespace,lastVersion,cache);
       return new Callable<String>(){

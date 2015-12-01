@@ -14,7 +14,7 @@
     }
   }
 ;
-  manager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(URIExtractionNamespace.class,factory)){
+  manager=new OnHeapNamespaceExtractionCacheManager(lifecycle,fnCache,reverseFnCache,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>of(URIExtractionNamespace.class,factory)){
     @Override protected <T extends ExtractionNamespace>Runnable getPostRunnable(    final T namespace,    final ExtractionNamespaceFunctionFactory<T> factory,    final String cacheId){
       final Runnable runnable=super.getPostRunnable(namespace,factory,cacheId);
       cacheUpdateAlerts.putIfAbsent(namespace.getNamespace(),new Object());

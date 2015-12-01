@@ -31,7 +31,7 @@
     }
   }
 });
-  final List<Constructor<? extends NamespaceExtractionCacheManager>> cacheConstructors=ImmutableList.<Constructor<? extends NamespaceExtractionCacheManager>>of(OnHeapNamespaceExtractionCacheManager.class.getConstructor(Lifecycle.class,ConcurrentMap.class,ServiceEmitter.class,Map.class),OffHeapNamespaceExtractionCacheManager.class.getConstructor(Lifecycle.class,ConcurrentMap.class,ServiceEmitter.class,Map.class));
+  final List<Constructor<? extends NamespaceExtractionCacheManager>> cacheConstructors=ImmutableList.<Constructor<? extends NamespaceExtractionCacheManager>>of(OnHeapNamespaceExtractionCacheManager.class.getConstructor(Lifecycle.class,ConcurrentMap.class,ConcurrentMap.class,ServiceEmitter.class,Map.class),OffHeapNamespaceExtractionCacheManager.class.getConstructor(Lifecycle.class,ConcurrentMap.class,ConcurrentMap.class,ServiceEmitter.class,Map.class));
   return new Iterable<Object[]>(){
     @Override public Iterator<Object[]> iterator(){
       return new Iterator<Object[]>(){
@@ -46,7 +46,7 @@
             Constructor<? extends NamespaceExtractionCacheManager> constructor=cacheConstructorIt.next();
             final NamespaceExtractionCacheManager manager;
             try {
-              manager=constructor.newInstance(new Lifecycle(),new ConcurrentHashMap<String,Function<String,String>>(),new NoopServiceEmitter(),new HashMap<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>());
+              manager=constructor.newInstance(new Lifecycle(),new ConcurrentHashMap<String,Function<String,String>>(),new ConcurrentHashMap<String,Function<String,String>>(),new NoopServiceEmitter(),new HashMap<Class<? extends ExtractionNamespace>,ExtractionNamespaceFunctionFactory<?>>());
             }
  catch (            Exception e) {
               throw Throwables.propagate(e);
