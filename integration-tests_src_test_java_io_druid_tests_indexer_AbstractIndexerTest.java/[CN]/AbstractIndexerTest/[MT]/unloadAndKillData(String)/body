@@ -1,3 +1,7 @@
 {
-  unloadAndKillData(dataSource,"2013-01-01T00:00:00.000Z","2013-12-01T00:00:00.000Z");
+  ArrayList<String> intervals=coordinator.getSegmentIntervals(dataSource);
+  Collections.sort(intervals);
+  String first=intervals.get(0).split("/")[0];
+  String last=intervals.get(intervals.size() - 1).split("/")[1];
+  unloadAndKillData(dataSource,first,last);
 }

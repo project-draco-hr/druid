@@ -17,7 +17,7 @@
       this.queryHelper.testQueriesFromString(getRouterURL(),queryStr,2);
     }
  catch (    Exception e) {
-      Throwables.propagate(e);
+      throw Throwables.propagate(e);
     }
     indexer.waitUntilTaskCompletes(taskID);
     RetryUtil.retryUntil(new Callable<Boolean>(){
@@ -29,11 +29,9 @@
     this.queryHelper.testQueriesFromString(getRouterURL(),queryStr,2);
   }
  catch (  Exception e) {
-    Throwables.propagate(e);
+    throw Throwables.propagate(e);
   }
  finally {
-    String first=DateTimeFormat.forPattern("yyyy-MM-dd'T'00:00:00.000'Z'").print(dtFirst);
-    String last=DateTimeFormat.forPattern("yyyy-MM-dd'T'00:00:00.000'Z'").print(dtFirst.plusDays(1));
-    unloadAndKillData(INDEX_DATASOURCE,first,last);
+    unloadAndKillData(INDEX_DATASOURCE);
   }
 }

@@ -58,7 +58,7 @@ catch (  Exception e) {
       producer.send(message);
     }
  catch (    Exception ioe) {
-      Throwables.propagate(ioe);
+      throw Throwables.propagate(ioe);
     }
     try {
       Thread.sleep(DELAY_BETWEEN_EVENTS_SECS * 1000);
@@ -85,7 +85,7 @@ catch (  Exception e) {
     this.queryHelper.testQueriesFromString(queryStr,2);
   }
  catch (  Exception e) {
-    Throwables.propagate(e);
+    throw Throwables.propagate(e);
   }
   try {
     RetryUtil.retryUntil(new Callable<Boolean>(){
@@ -96,7 +96,7 @@ catch (  Exception e) {
 ,true,30000,10,"Real-time generated segments loaded");
   }
  catch (  Exception e) {
-    Throwables.propagate(e);
+    throw Throwables.propagate(e);
   }
   LOG.info("segments are present");
   segmentsExist=true;
@@ -104,6 +104,6 @@ catch (  Exception e) {
     this.queryHelper.testQueriesFromString(queryStr,2);
   }
  catch (  Exception e) {
-    Throwables.propagate(e);
+    throw Throwables.propagate(e);
   }
 }
