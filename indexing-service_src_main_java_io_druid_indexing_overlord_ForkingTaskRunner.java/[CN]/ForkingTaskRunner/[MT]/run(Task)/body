@@ -77,6 +77,8 @@ synchronized (tasks) {
                     }
                   }
                 }
+                command.add(String.format("-D%s%s=%s",MonitorsConfig.METRIC_DIMENSION_PREFIX,DruidMetrics.DATASOURCE,task.getDataSource()));
+                command.add(String.format("-D%s%s=%s",MonitorsConfig.METRIC_DIMENSION_PREFIX,DruidMetrics.TASK_ID,task.getId()));
                 command.add(String.format("-Ddruid.host=%s",childHost));
                 command.add(String.format("-Ddruid.port=%d",childPort));
                 if (config.isSeparateIngestionEndpoint()) {
