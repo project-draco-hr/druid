@@ -1,0 +1,12 @@
+{
+  this.dataSource=dataSource;
+  Preconditions.checkArgument(interval == null || intervals == null,"please specify intervals only");
+  List<Interval> theIntervals=null;
+  if (interval != null) {
+    theIntervals=ImmutableList.of(interval);
+  }
+ else   if (intervals != null && intervals.size() > 0) {
+    theIntervals=JodaUtils.condenseIntervals(intervals);
+  }
+  this.intervals=Preconditions.checkNotNull(theIntervals,"no intervals found");
+}

@@ -1,0 +1,30 @@
+{
+  if (intervals == null || intervals.isEmpty()) {
+    throw new IAE("null/empty intervals");
+  }
+  final StringBuilder sb=new StringBuilder();
+  sb.append("SELECT payload FROM %s WHERE used = true AND dataSource = ? AND (");
+  for (int i=0; i < intervals.size(); i++) {
+    sb.append("(start <= ? AND \"end\" >= ?)");
+    if (i == intervals.size() - 1) {
+      sb.append(")");
+    }
+ else {
+      sb.append(" OR ");
+    }
+  }
+  Query<Map<String,Object>> sql=handle.createQuery(String.format(sb.toString(),dbTables.getSegmentsTable())).bind(0,dataSource);
+  for (int i=0; i < intervals.size(); i++) {
+    Interval interval=intervals.get(i);
+    sql=sql.bind(2 * i + 1,interval.getEnd().toString()).bind(2 * i + 2,interval.getStart().toString());
+  }
+  final ResultIterator<byte[]> dbSegments=sql.map(ByteArrayMapper.FIRST).iterator();
+  final VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<>(Ordering.natural());
+  while (dbSegments.hasNext()) {
+    final byte[] payload=dbSegments.next();
+    DataSegment segment=jsonMapper.readValue(payload,DataSegment.class);
+    timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
+  }
+  dbSegments.close();
+  return timeline;
+}

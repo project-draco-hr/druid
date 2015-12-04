@@ -1,14 +1,3 @@
 {
-  return connector.retryWithHandle(new HandleCallback<List<DataSegment>>(){
-    @Override public List<DataSegment> withHandle(    Handle handle) throws Exception {
-      final VersionedIntervalTimeline<String,DataSegment> timeline=getTimelineForIntervalWithHandle(handle,dataSource,interval);
-      return Lists.newArrayList(Iterables.concat(Iterables.transform(timeline.lookup(interval),new Function<TimelineObjectHolder<String,DataSegment>,Iterable<DataSegment>>(){
-        @Override public Iterable<DataSegment> apply(        TimelineObjectHolder<String,DataSegment> input){
-          return input.getObject().payloads();
-        }
-      }
-)));
-    }
-  }
-);
+  return getUsedSegmentsForIntervals(dataSource,ImmutableList.of(interval));
 }

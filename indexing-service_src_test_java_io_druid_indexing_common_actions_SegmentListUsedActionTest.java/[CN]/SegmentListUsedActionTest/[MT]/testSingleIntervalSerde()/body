@@ -1,0 +1,7 @@
+{
+  Interval interval=Interval.parse("2014/2015");
+  SegmentListUsedAction expected=new SegmentListUsedAction("dataSource",interval,null);
+  SegmentListUsedAction actual=MAPPER.readValue(MAPPER.writeValueAsString(expected),SegmentListUsedAction.class);
+  Assert.assertEquals(ImmutableList.of(interval),actual.getIntervals());
+  Assert.assertEquals(expected,actual);
+}

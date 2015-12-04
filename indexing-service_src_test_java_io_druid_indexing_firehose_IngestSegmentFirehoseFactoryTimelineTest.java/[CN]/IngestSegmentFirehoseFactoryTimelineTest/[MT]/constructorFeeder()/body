@@ -6,7 +6,7 @@
       @Override public <RetType>RetType submit(      TaskAction<RetType> taskAction) throws IOException {
         if (taskAction instanceof SegmentListUsedAction) {
           final SegmentListUsedAction action=(SegmentListUsedAction)taskAction;
-          if (action.getInterval().equals(testCase.interval)) {
+          if (action.getIntervals().equals(ImmutableList.of(testCase.interval))) {
             return (RetType)ImmutableList.copyOf(testCase.segments);
           }
  else {
