@@ -1,0 +1,21 @@
+{
+  SearchQueryDimFilter searchQueryDimFilter=new SearchQueryDimFilter("dim",new SearchQuerySpec(){
+    @Override public boolean accept(    String dimVal){
+      return false;
+    }
+    @Override public byte[] getCacheKey(){
+      return StringUtils.toUtf8("value");
+    }
+  }
+);
+  SearchQueryDimFilter searchQueryDimFilter2=new SearchQueryDimFilter("di",new SearchQuerySpec(){
+    @Override public boolean accept(    String dimVal){
+      return false;
+    }
+    @Override public byte[] getCacheKey(){
+      return StringUtils.toUtf8("mvalue");
+    }
+  }
+);
+  Assert.assertFalse(Arrays.equals(searchQueryDimFilter.getCacheKey(),searchQueryDimFilter2.getCacheKey()));
+}
