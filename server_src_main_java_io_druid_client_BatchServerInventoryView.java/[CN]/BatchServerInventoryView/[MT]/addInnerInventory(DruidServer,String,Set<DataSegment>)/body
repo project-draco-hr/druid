@@ -1,8 +1,6 @@
 {
-  Predicate<DataSegment> predicate=Predicates.or(defaultFilter,Predicates.or(segmentPredicates.values()));
-  Set<DataSegment> filteredInventory=Sets.newHashSet(Iterables.filter(inventory,predicate));
-  zNodes.put(inventoryKey,filteredInventory);
-  for (  DataSegment segment : filteredInventory) {
+  zNodes.put(inventoryKey,inventory);
+  for (  DataSegment segment : inventory) {
     addSingleInventory(container,segment);
   }
   return container;

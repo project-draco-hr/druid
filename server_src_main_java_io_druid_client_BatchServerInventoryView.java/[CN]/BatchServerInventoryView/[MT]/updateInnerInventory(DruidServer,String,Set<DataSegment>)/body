@@ -1,16 +1,14 @@
 {
-  Predicate<DataSegment> predicate=Predicates.or(defaultFilter,Predicates.or(segmentPredicates.values()));
-  Set<DataSegment> filteredInventory=Sets.newHashSet(Iterables.filter(inventory,predicate));
   Set<DataSegment> existing=zNodes.get(inventoryKey);
   if (existing == null) {
     throw new ISE("Trying to update an inventoryKey[%s] that didn't exist?!",inventoryKey);
   }
-  for (  DataSegment segment : Sets.difference(filteredInventory,existing)) {
+  for (  DataSegment segment : Sets.difference(inventory,existing)) {
     addSingleInventory(container,segment);
   }
-  for (  DataSegment segment : Sets.difference(existing,filteredInventory)) {
+  for (  DataSegment segment : Sets.difference(existing,inventory)) {
     removeSingleInventory(container,segment.getIdentifier());
   }
-  zNodes.put(inventoryKey,filteredInventory);
+  zNodes.put(inventoryKey,inventory);
   return container;
 }
