@@ -1,0 +1,7 @@
+{
+  final HadoopIngestionSpec schema=jsonReadWriteRead("{\"uniqueId\" : \"test_unique_id\"}",HadoopIngestionSpec.class);
+  Assert.assertEquals("test_unique_id",schema.getUniqueId());
+  final String id1=jsonReadWriteRead("{}",HadoopIngestionSpec.class).getUniqueId();
+  final String id2=jsonReadWriteRead("{}",HadoopIngestionSpec.class).getUniqueId();
+  Assert.assertNotEquals(id1,id2);
+}
