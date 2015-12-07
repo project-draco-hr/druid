@@ -4,6 +4,22 @@
     System.out.printf("File[%s] does not exist.%n",file);
   }
   final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final ClassLoader loader;
+  if (Thread.currentThread().getContextClassLoader() != null) {
+    loader=Thread.currentThread().getContextClassLoader();
+  }
+ else {
+    loader=DruidJsonValidator.class.getClassLoader();
+  }
+  if (toLogger) {
+    logWriter=new NullWriter(){
+      private final Logger logger=new Logger(DruidJsonValidator.class);
+      @Override public void write(      char[] cbuf,      int off,      int len){
+        logger.info(new String(cbuf,off,len));
+      }
+    }
+;
+  }
   try {
     if (type.equalsIgnoreCase("query")) {
       jsonMapper.readValue(file,Query.class);
@@ -13,6 +29,37 @@
     }
  else     if (type.equalsIgnoreCase("task")) {
       jsonMapper.readValue(file,Task.class);
+    }
+ else     if (type.equalsIgnoreCase("parse")) {
+      final StringInputRowParser parser;
+      if (file.isFile()) {
+        logWriter.write("loading parse spec from file '" + file + "'");
+        parser=jsonMapper.readValue(file,StringInputRowParser.class);
+      }
+ else       if (loader.getResource(jsonFile) != null) {
+        logWriter.write("loading parse spec from resource '" + jsonFile + "'");
+        parser=jsonMapper.readValue(loader.getResource(jsonFile),StringInputRowParser.class);
+      }
+ else {
+        logWriter.write("cannot find proper spec from 'file'.. regarding it as a json spec");
+        parser=jsonMapper.readValue(jsonFile,StringInputRowParser.class);
+      }
+      if (resource != null) {
+        final CharSource source;
+        if (new File(resource).isFile()) {
+          logWriter.write("loading data from file '" + resource + "'");
+          source=Resources.asByteSource(new File(resource).toURL()).asCharSource(Charset.forName(parser.getEncoding()));
+        }
+ else         if (loader.getResource(resource) != null) {
+          logWriter.write("loading data from resource '" + resource + "'");
+          source=Resources.asByteSource(loader.getResource(resource)).asCharSource(Charset.forName(parser.getEncoding()));
+        }
+ else {
+          logWriter.write("cannot find proper data from 'resource'.. regarding it as data string");
+          source=CharSource.wrap(resource);
+        }
+        readData(parser,source);
+      }
     }
  else {
       throw new UOE("Unknown type[%s]",type);
