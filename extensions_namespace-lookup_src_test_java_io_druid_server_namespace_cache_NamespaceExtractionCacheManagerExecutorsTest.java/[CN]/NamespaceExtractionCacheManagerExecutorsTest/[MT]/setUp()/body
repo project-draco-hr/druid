@@ -1,6 +1,7 @@
 {
   final Path tmpDir=temporaryFolder.newFolder().toPath();
   lifecycle=new Lifecycle();
+  lifecycle.start();
   final URIExtractionNamespaceFunctionFactory factory=new URIExtractionNamespaceFunctionFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder())){
     @Override public Callable<String> getCachePopulator(    final URIExtractionNamespace extractionNamespace,    final String lastVersion,    final Map<String,String> cache){
       return new Callable<String>(){
