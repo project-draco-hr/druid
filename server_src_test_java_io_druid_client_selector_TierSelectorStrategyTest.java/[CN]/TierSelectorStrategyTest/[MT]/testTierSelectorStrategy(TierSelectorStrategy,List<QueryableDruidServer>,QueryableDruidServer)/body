@@ -1,7 +1,7 @@
 {
   final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),com.google.common.collect.Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,0L),tierSelectorStrategy);
   for (  QueryableDruidServer server : servers) {
-    serverSelector.addServer(server);
+    serverSelector.addServerAndUpdateSegment(server,serverSelector.getSegment());
   }
   Assert.assertEquals(expectedSelection,serverSelector.pick());
 }

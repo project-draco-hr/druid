@@ -13,7 +13,7 @@
   EasyMock.expect(dataSegment.getIdentifier()).andReturn(DATA_SOURCE).anyTimes();
   EasyMock.replay(dataSegment);
   final ServerSelector selector=new ServerSelector(dataSegment,new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()));
-  selector.addServer(new QueryableDruidServer(lastServer,null));
+  selector.addServerAndUpdateSegment(new QueryableDruidServer(lastServer,null),dataSegment);
   timeline.add(interval,"v",new SingleElementPartitionChunk<>(selector));
   client.run(query,context);
   Assert.assertTrue("Capture cache keys",cacheKeyCapture.hasCaptured());
