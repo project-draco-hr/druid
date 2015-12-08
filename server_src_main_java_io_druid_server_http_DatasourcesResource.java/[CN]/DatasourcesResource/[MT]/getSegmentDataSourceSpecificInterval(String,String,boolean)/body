@@ -1,0 +1,21 @@
+{
+  TimelineLookup<String,SegmentLoadInfo> timeline=serverInventoryView.getTimeline(new TableDataSource(dataSourceName));
+  final Interval theInterval=new Interval(interval.replace("_","/"));
+  if (timeline == null) {
+    log.debug("No timeline found for datasource[%s]",dataSourceName);
+    return Response.ok(Lists.<ImmutableSegmentLoadInfo>newArrayList()).build();
+  }
+  Iterable<TimelineObjectHolder<String,SegmentLoadInfo>> lookup=timeline.lookupWithIncompletePartitions(theInterval);
+  FunctionalIterable<ImmutableSegmentLoadInfo> retval=FunctionalIterable.create(lookup).transformCat(new Function<TimelineObjectHolder<String,SegmentLoadInfo>,Iterable<ImmutableSegmentLoadInfo>>(){
+    @Override public Iterable<ImmutableSegmentLoadInfo> apply(    TimelineObjectHolder<String,SegmentLoadInfo> input){
+      return Iterables.transform(input.getObject(),new Function<PartitionChunk<SegmentLoadInfo>,ImmutableSegmentLoadInfo>(){
+        @Override public ImmutableSegmentLoadInfo apply(        PartitionChunk<SegmentLoadInfo> chunk){
+          return chunk.getObject().toImmutableSegmentLoadInfo();
+        }
+      }
+);
+    }
+  }
+);
+  return Response.ok(retval).build();
+}

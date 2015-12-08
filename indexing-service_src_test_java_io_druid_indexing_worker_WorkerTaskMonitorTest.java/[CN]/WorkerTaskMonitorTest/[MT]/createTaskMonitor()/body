@@ -1,6 +1,11 @@
 {
   final TaskConfig taskConfig=new TaskConfig(Files.createTempDir().toString(),null,null,0,null,null,null);
-  return new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(taskConfig,null,null,null,null,null,null,null,null,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+  TaskActionClientFactory taskActionClientFactory=EasyMock.createNiceMock(TaskActionClientFactory.class);
+  TaskActionClient taskActionClient=EasyMock.createNiceMock(TaskActionClient.class);
+  EasyMock.expect(taskActionClientFactory.create(EasyMock.<Task>anyObject())).andReturn(taskActionClient).anyTimes();
+  SegmentHandoffNotifierFactory notifierFactory=EasyMock.createNiceMock(SegmentHandoffNotifierFactory.class);
+  EasyMock.replay(taskActionClientFactory,taskActionClient,notifierFactory);
+  return new WorkerTaskMonitor(jsonMapper,cf,workerCuratorCoordinator,new ThreadPoolTaskRunner(new TaskToolboxFactory(taskConfig,taskActionClientFactory,null,null,null,null,null,null,notifierFactory,null,null,null,new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
     @Override public List<StorageLocationConfig> getLocations(){
       return Lists.newArrayList();
     }

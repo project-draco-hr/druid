@@ -8,7 +8,10 @@
   final String taskId=realtimeIndexTask.getId();
   tq.add(realtimeIndexTask);
   Assert.assertTrue(publishCountDown.await(1000,TimeUnit.MILLISECONDS));
-  segmentCallbacks.get(0).segmentAdded(new DruidServerMetadata("dummy","dummy_host",0,"historical","dummy_tier",0),mdc.getPublished().iterator().next());
+  Assert.assertEquals(1,handOffCallbacks.size());
+  Pair<Executor,Runnable> executorRunnablePair=Iterables.getOnlyElement(handOffCallbacks.values());
+  executorRunnablePair.lhs.execute(executorRunnablePair.rhs);
+  handOffCallbacks.clear();
   while (tsqa.getStatus(taskId).get().isRunnable()) {
     Thread.sleep(10);
   }

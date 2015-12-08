@@ -1,4 +1,4 @@
 {
   final File taskWorkDir=config.getTaskWorkDir(task.getId());
-  return new TaskToolbox(config,task,taskActionClientFactory,emitter,segmentPusher,dataSegmentKiller,dataSegmentMover,dataSegmentArchiver,segmentAnnouncer,newSegmentServerView,queryRunnerFactoryConglomerate,queryExecutorService,monitorScheduler,segmentLoaderFactory.manufacturate(taskWorkDir),objectMapper,taskWorkDir,indexMerger,indexIO,cache,cacheConfig);
+  return new TaskToolbox(config,task,taskActionClientFactory.create(task),emitter,segmentPusher,dataSegmentKiller,dataSegmentMover,dataSegmentArchiver,segmentAnnouncer,handoffNotifierFactory,queryRunnerFactoryConglomerate,queryExecutorService,monitorScheduler,segmentLoaderFactory.manufacturate(taskWorkDir),objectMapper,taskWorkDir,indexMerger,indexIO,cache,cacheConfig);
 }

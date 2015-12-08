@@ -1,0 +1,20 @@
+{
+  String segmentId=segment.getIdentifier();
+synchronized (lock) {
+    log.debug("Removing segment[%s] from server[%s].",segmentId,server);
+    final SegmentLoadInfo segmentLoadInfo=segmentLoadInfos.get(segmentId);
+    if (segmentLoadInfo == null) {
+      log.warn("Told to remove non-existant segment[%s]",segmentId);
+      return;
+    }
+    segmentLoadInfo.removeServer(server);
+    if (segmentLoadInfo.isEmpty()) {
+      VersionedIntervalTimeline<String,SegmentLoadInfo> timeline=timelines.get(segment.getDataSource());
+      segmentLoadInfos.remove(segmentId);
+      final PartitionChunk<SegmentLoadInfo> removedPartition=timeline.remove(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(new SegmentLoadInfo(segment)));
+      if (removedPartition == null) {
+        log.warn("Asked to remove timeline entry[interval: %s, version: %s] that doesn't exist",segment.getInterval(),segment.getVersion());
+      }
+    }
+  }
+}

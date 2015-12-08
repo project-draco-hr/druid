@@ -1,0 +1,26 @@
+{
+  try {
+    Iterator<Map.Entry<SegmentDescriptor,Pair<Executor,Runnable>>> itr=handOffCallbacks.entrySet().iterator();
+    while (itr.hasNext()) {
+      Map.Entry<SegmentDescriptor,Pair<Executor,Runnable>> entry=itr.next();
+      SegmentDescriptor descriptor=entry.getKey();
+      try {
+        List<ImmutableSegmentLoadInfo> loadedSegments=coordinatorClient.fetchServerView(dataSource,descriptor.getInterval(),true);
+        if (isHandOffComplete(loadedSegments,entry.getKey())) {
+          log.info("Segment Handoff complete for dataSource[%s] Segment[%s]",dataSource,descriptor);
+          entry.getValue().lhs.execute(entry.getValue().rhs);
+          itr.remove();
+        }
+      }
+ catch (      Exception e) {
+        log.error(e,"Exception while checking handoff for dataSource[%s] Segment[%s], Will try again after [%d]secs",dataSource,descriptor,pollDurationMillis);
+      }
+    }
+    if (!handOffCallbacks.isEmpty()) {
+      log.info("Still waiting for Handoff for Segments : [%s]",handOffCallbacks.keySet());
+    }
+  }
+ catch (  Throwable t) {
+    log.error(t,"Exception while checking handoff for dataSource[%s] Segment[%s], Will try again after [%d]secs",dataSource,pollDurationMillis);
+  }
+}

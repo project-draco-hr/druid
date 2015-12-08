@@ -1,0 +1,28 @@
+{
+  segmentViewInitLatch=new CountDownLatch(1);
+  segmentAddedLatch=new CountDownLatch(1);
+  segmentRemovedLatch=new CountDownLatch(1);
+  setupViews();
+  final DruidServer druidServer=new DruidServer("localhost:1234","localhost:1234",10000000L,"historical","default_tier",0);
+  setupZNodeForServer(druidServer);
+  final DataSegment segment=dataSegmentWithIntervalAndVersion("2014-10-20T00:00:00Z/P1D","v1");
+  announceSegmentForServer(druidServer,segment);
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentAddedLatch));
+  TimelineLookup timeline=overlordServerView.getTimeline(new TableDataSource("test_overlord_server_view"));
+  List<TimelineObjectHolder> serverLookupRes=(List<TimelineObjectHolder>)timeline.lookup(new Interval("2014-10-20T00:00:00Z/P1D"));
+  Assert.assertEquals(1,serverLookupRes.size());
+  TimelineObjectHolder<String,SegmentLoadInfo> actualTimelineObjectHolder=serverLookupRes.get(0);
+  Assert.assertEquals(new Interval("2014-10-20T00:00:00Z/P1D"),actualTimelineObjectHolder.getInterval());
+  Assert.assertEquals("v1",actualTimelineObjectHolder.getVersion());
+  PartitionHolder<SegmentLoadInfo> actualPartitionHolder=actualTimelineObjectHolder.getObject();
+  Assert.assertTrue(actualPartitionHolder.isComplete());
+  Assert.assertEquals(1,Iterables.size(actualPartitionHolder));
+  SegmentLoadInfo segmentLoadInfo=actualPartitionHolder.iterator().next().getObject();
+  Assert.assertFalse(segmentLoadInfo.isEmpty());
+  Assert.assertEquals(druidServer.getMetadata(),Iterables.getOnlyElement(segmentLoadInfo.toImmutableSegmentLoadInfo().getServers()));
+  unannounceSegmentForServer(druidServer,segment);
+  Assert.assertTrue(timing.forWaiting().awaitLatch(segmentRemovedLatch));
+  Assert.assertEquals(0,((List<TimelineObjectHolder>)timeline.lookup(new Interval("2014-10-20T00:00:00Z/P1D"))).size());
+  Assert.assertNull(timeline.findEntry(new Interval("2014-10-20T00:00:00Z/P1D"),"v1"));
+}

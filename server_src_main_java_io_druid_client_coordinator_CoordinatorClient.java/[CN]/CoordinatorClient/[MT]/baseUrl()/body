@@ -1,0 +1,12 @@
+{
+  try {
+    final Server instance=selector.pick();
+    if (instance == null) {
+      throw new ISE("Cannot find instance of coordinator");
+    }
+    return new URI(instance.getScheme(),null,instance.getAddress(),instance.getPort(),"/druid/coordinator/v1",null,null).toString();
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

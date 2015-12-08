@@ -1,0 +1,28 @@
+{
+  this.baseView=baseView;
+  this.segmentLoadInfos=Maps.newHashMap();
+  this.timelines=Maps.newHashMap();
+  ExecutorService exec=Execs.singleThreaded("CoordinatorServerView-%s");
+  baseView.registerSegmentCallback(exec,new ServerView.SegmentCallback(){
+    @Override public ServerView.CallbackAction segmentAdded(    DruidServerMetadata server,    DataSegment segment){
+      serverAddedSegment(server,segment);
+      return ServerView.CallbackAction.CONTINUE;
+    }
+    @Override public ServerView.CallbackAction segmentRemoved(    final DruidServerMetadata server,    DataSegment segment){
+      serverRemovedSegment(server,segment);
+      return ServerView.CallbackAction.CONTINUE;
+    }
+    @Override public ServerView.CallbackAction segmentViewInitialized(){
+      initialized=true;
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+);
+  baseView.registerServerCallback(exec,new ServerView.ServerCallback(){
+    @Override public ServerView.CallbackAction serverRemoved(    DruidServer server){
+      removeServer(server);
+      return ServerView.CallbackAction.CONTINUE;
+    }
+  }
+);
+}

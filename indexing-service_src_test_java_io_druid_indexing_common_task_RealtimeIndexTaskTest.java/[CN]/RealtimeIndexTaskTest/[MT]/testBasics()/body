@@ -13,9 +13,10 @@
     Thread.sleep(50);
   }
   Assert.assertEquals(2,countEvents(task));
-  for (  DataSegment segment : mdc.getPublished()) {
-    ((TestServerView)taskToolbox.getNewSegmentServerView()).segmentAdded(dummyServer,segment);
+  for (  Pair<Executor,Runnable> executorRunnablePair : handOffCallbacks.values()) {
+    executorRunnablePair.lhs.execute(executorRunnablePair.rhs);
   }
+  handOffCallbacks.clear();
   final TaskStatus taskStatus=statusFuture.get();
   Assert.assertEquals(TaskStatus.Status.SUCCESS,taskStatus.getStatusCode());
 }

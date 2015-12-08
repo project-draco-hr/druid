@@ -1,0 +1,13 @@
+{
+  for (  ImmutableSegmentLoadInfo segmentLoadInfo : serverView) {
+    if (segmentLoadInfo.getSegment().getInterval().contains(descriptor.getInterval()) && segmentLoadInfo.getSegment().getShardSpec().getPartitionNum() == descriptor.getPartitionNumber() && segmentLoadInfo.getSegment().getVersion().compareTo(descriptor.getVersion()) >= 0 && Iterables.any(segmentLoadInfo.getServers(),new Predicate<DruidServerMetadata>(){
+      @Override public boolean apply(      DruidServerMetadata input){
+        return input.isAssignable();
+      }
+    }
+)) {
+      return true;
+    }
+  }
+  return false;
+}
