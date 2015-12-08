@@ -1,0 +1,24 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
+  DimensionSelectorHavingSpec that=(DimensionSelectorHavingSpec)o;
+  boolean valEquals=false;
+  boolean dimEquals=false;
+  if (value != null && that.value != null) {
+    valEquals=value.equals(that.value);
+  }
+ else   if (value == null && that.value == null) {
+    valEquals=true;
+  }
+  if (dimension != null && that.dimension != null) {
+    dimEquals=dimension.equals(that.dimension);
+  }
+ else   if (dimension == null && that.dimension == null) {
+    dimEquals=true;
+  }
+  return (valEquals && dimEquals);
+}

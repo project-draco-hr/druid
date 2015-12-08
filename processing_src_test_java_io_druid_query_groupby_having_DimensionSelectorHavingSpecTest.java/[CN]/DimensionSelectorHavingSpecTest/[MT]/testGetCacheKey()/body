@@ -1,0 +1,12 @@
+{
+  byte[] dimBytes="dimension".getBytes(Charsets.UTF_8);
+  byte[] valBytes="v".getBytes(Charsets.UTF_8);
+  byte[] expected=ByteBuffer.allocate(12).put(CACHE_KEY).put(dimBytes).put(STRING_SEPARATOR).put(valBytes).array();
+  DimensionSelectorHavingSpec dfhs=new DimensionSelectorHavingSpec("dimension","v");
+  DimensionSelectorHavingSpec dfhs1=new DimensionSelectorHavingSpec("dimension","v");
+  DimensionSelectorHavingSpec dfhs2=new DimensionSelectorHavingSpec("dimensi","onv");
+  byte[] actual=dfhs.getCacheKey();
+  Assert.assertArrayEquals(expected,actual);
+  Assert.assertTrue(Arrays.equals(dfhs.getCacheKey(),dfhs1.getCacheKey()));
+  Assert.assertFalse(Arrays.equals(dfhs.getCacheKey(),dfhs2.getCacheKey()));
+}
