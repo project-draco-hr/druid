@@ -2,6 +2,13 @@
   if (dimValue == null) {
     return null;
   }
+  String retVal;
   Matcher matcher=pattern.matcher(dimValue);
-  return Strings.emptyToNull(matcher.find() ? matcher.group(1) : dimValue);
+  if (matcher.find()) {
+    retVal=matcher.group(1);
+  }
+ else {
+    retVal=replaceMissingValues ? replaceMissingValuesWith : dimValue;
+  }
+  return Strings.emptyToNull(retVal);
 }

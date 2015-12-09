@@ -1,13 +1,10 @@
 {
   String regex="^/([^/]+/[^/]+)(/|$)";
-  ExtractionFn extractionFn=new RegexDimExtractionFn(regex);
-  Set<String> extracted=Sets.newHashSet();
+  ExtractionFn extractionFn=new RegexDimExtractionFn(regex,false,null);
+  Set<String> extracted=Sets.newLinkedHashSet();
   for (  String path : paths) {
     extracted.add(extractionFn.apply(path));
   }
-  Assert.assertEquals(4,extracted.size());
-  Assert.assertTrue(extracted.contains("druid/prod"));
-  Assert.assertTrue(extracted.contains("druid/demo"));
-  Assert.assertTrue(extracted.contains("dash/aloe"));
-  Assert.assertTrue(extracted.contains("dash/baloo"));
+  Set<String> expected=Sets.newLinkedHashSet(ImmutableList.of("druid/prod","druid/demo","dash/aloe","dash/baloo"));
+  Assert.assertEquals(expected,extracted);
 }

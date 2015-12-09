@@ -1,4 +1,14 @@
 {
   byte[] exprBytes=StringUtils.toUtf8(expr);
-  return ByteBuffer.allocate(1 + exprBytes.length).put(CACHE_TYPE_ID).put(exprBytes).array();
+  byte[] replaceBytes=replaceMissingValues ? new byte[]{1} : new byte[]{0};
+  byte[] replaceStrBytes;
+  if (replaceMissingValuesWith == null) {
+    replaceStrBytes=new byte[]{};
+  }
+ else {
+    replaceStrBytes=StringUtils.toUtf8(replaceMissingValuesWith);
+  }
+  int totalLen=1 + exprBytes.length + replaceBytes.length+ replaceStrBytes.length;
+  totalLen+=2;
+  return ByteBuffer.allocate(totalLen).put(CACHE_TYPE_ID).put(exprBytes).put(CACHE_KEY_SEPARATOR).put(replaceStrBytes).put(CACHE_KEY_SEPARATOR).put(replaceBytes).array();
 }
