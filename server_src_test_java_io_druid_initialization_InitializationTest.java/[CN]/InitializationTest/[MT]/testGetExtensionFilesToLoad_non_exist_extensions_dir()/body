@@ -1,3 +1,10 @@
 {
-  Assert.assertArrayEquals("Non-exist root extensionsDir should return emply array of File",new File[]{},Initialization.getExtensionFilesToLoad(new ExtensionsConfig()));
+  final File tmpDir=temporaryFolder.newFolder();
+  Assert.assertTrue("could not create missing folder",!tmpDir.exists() || tmpDir.delete());
+  Assert.assertArrayEquals("Non-exist root extensionsDir should return emply array of File",new File[]{},Initialization.getExtensionFilesToLoad(new ExtensionsConfig(){
+    @Override public String getDirectory(){
+      return tmpDir.getAbsolutePath();
+    }
+  }
+));
 }
