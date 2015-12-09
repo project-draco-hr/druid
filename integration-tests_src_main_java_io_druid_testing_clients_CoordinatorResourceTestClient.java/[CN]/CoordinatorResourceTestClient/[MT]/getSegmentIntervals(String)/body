@@ -1,0 +1,13 @@
+{
+  ArrayList<String> segments=null;
+  try {
+    StatusResponseHolder response=makeRequest(HttpMethod.GET,getIntervalsURL(dataSource));
+    segments=jsonMapper.readValue(response.getContent(),new TypeReference<ArrayList<String>>(){
+    }
+);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  return segments;
+}
