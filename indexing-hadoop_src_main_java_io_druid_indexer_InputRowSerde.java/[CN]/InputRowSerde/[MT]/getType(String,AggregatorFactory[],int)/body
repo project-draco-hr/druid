@@ -1,0 +1,12 @@
+{
+  if (aggs[i].getName().equals(metric)) {
+    return aggs[i].getTypeName();
+  }
+  log.warn("Aggs disordered, fall backs to loop.");
+  for (  AggregatorFactory agg : aggs) {
+    if (agg.getName().equals(metric)) {
+      return agg.getTypeName();
+    }
+  }
+  return null;
+}
