@@ -6,7 +6,7 @@
   final ObjectMapper mapper=new DefaultObjectMapper();
   try (OutputStream ostream=outStreamSupplier.apply(tmpFile)){
     try (OutputStreamWriter out=new OutputStreamWriter(ostream)){
-      out.write(mapper.writeValueAsString(ImmutableMap.<String,String>of("foo","bar")));
+      out.write(mapper.writeValueAsString(ImmutableMap.<String,String>of("boo","bar","foo","bar","","MissingValue","emptyString","")));
     }
    }
    factory=new URIExtractionNamespaceFunctionFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder()));

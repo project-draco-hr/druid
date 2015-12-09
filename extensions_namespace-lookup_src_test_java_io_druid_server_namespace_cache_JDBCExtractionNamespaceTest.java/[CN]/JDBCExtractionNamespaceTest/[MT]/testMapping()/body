@@ -5,7 +5,7 @@
   for (  Map.Entry<String,String> entry : renames.entrySet()) {
     String key=entry.getKey();
     String val=entry.getValue();
-    Assert.assertEquals("non-null check",val,extractionFn.apply(key));
+    Assert.assertEquals("non-null check",Strings.emptyToNull(val),extractionFn.apply(key));
   }
   Assert.assertEquals("null check",null,extractionFn.apply("baz"));
 }
