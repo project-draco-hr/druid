@@ -3,32 +3,12 @@
     ByteArrayDataOutput out=ByteStreams.newDataOutput();
     out.writeLong(row.getTimestampFromEpoch());
     List<String> dimList=row.getDimensions();
-    Text[] dims=EMPTY_TEXT_ARRAY;
-    if (dimList != null) {
-      dims=new Text[dimList.size()];
-      for (int i=0; i < dims.length; i++) {
-        dims[i]=new Text(dimList.get(i));
-      }
-    }
-    StringArrayWritable sw=new StringArrayWritable(dims);
-    sw.write(out);
-    MapWritable mw=new MapWritable();
+    WritableUtils.writeVInt(out,dimList.size());
     if (dimList != null) {
       for (      String dim : dimList) {
-        List<String> dimValue=row.getDimension(dim);
-        if (dimValue == null || dimValue.size() == 0) {
-          continue;
-        }
-        if (dimValue.size() == 1) {
-          mw.put(new Text(dim),new Text(dimValue.get(0)));
-        }
- else {
-          Text[] dimValueArr=new Text[dimValue.size()];
-          for (int i=0; i < dimValueArr.length; i++) {
-            dimValueArr[i]=new Text(dimValue.get(i));
-          }
-          mw.put(new Text(dim),new StringArrayWritable(dimValueArr));
-        }
+        List<String> dimValues=row.getDimension(dim);
+        writeString(dim,out);
+        writeStringArray(dimValues,out);
       }
     }
     Supplier<InputRow> supplier=new Supplier<InputRow>(){
@@ -37,24 +17,25 @@
       }
     }
 ;
+    WritableUtils.writeVInt(out,aggs.length);
     for (    AggregatorFactory aggFactory : aggs) {
       String k=aggFactory.getName();
+      writeString(k,out);
       Aggregator agg=aggFactory.factorize(IncrementalIndex.makeColumnSelectorFactory(aggFactory,supplier,true));
       agg.aggregate();
       String t=aggFactory.getTypeName();
       if (t.equals("float")) {
-        mw.put(new Text(k),new FloatWritable(agg.getFloat()));
+        out.writeFloat(agg.getFloat());
       }
  else       if (t.equals("long")) {
-        mw.put(new Text(k),new LongWritable(agg.getLong()));
+        WritableUtils.writeVLong(out,agg.getLong());
       }
  else {
         Object val=agg.get();
         ComplexMetricSerde serde=getComplexMetricSerde(t);
-        mw.put(new Text(k),new BytesWritable(serde.toBytes(val)));
+        writeBytes(serde.toBytes(val),out);
       }
     }
-    mw.write(out);
     return out.toByteArray();
   }
  catch (  IOException ex) {

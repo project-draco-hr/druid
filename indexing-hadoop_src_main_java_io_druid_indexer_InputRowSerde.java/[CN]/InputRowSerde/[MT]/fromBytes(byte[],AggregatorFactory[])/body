@@ -2,44 +2,37 @@
   try {
     DataInput in=ByteStreams.newDataInput(data);
     long timestamp=in.readLong();
-    StringArrayWritable sw=new StringArrayWritable();
-    sw.readFields(in);
-    List<String> dimensions=Arrays.asList(sw.toStrings());
-    MapWritable mw=new MapWritable();
-    mw.readFields(in);
     Map<String,Object> event=Maps.newHashMap();
-    for (    String d : dimensions) {
-      Writable v=mw.get(new Text(d));
-      if (v == null) {
+    List<String> dimensions=Lists.newArrayList();
+    int dimNum=WritableUtils.readVInt(in);
+    for (int i=0; i < dimNum; i++) {
+      String dimension=readString(in);
+      dimensions.add(dimension);
+      List<String> dimensionValues=readStringArray(in);
+      if (dimensionValues == null) {
         continue;
       }
-      if (v instanceof Text) {
-        event.put(d,((Text)v).toString());
-      }
- else       if (v instanceof StringArrayWritable) {
-        event.put(d,Arrays.asList(((StringArrayWritable)v).toStrings()));
+      if (dimensionValues.size() == 1) {
+        event.put(dimension,dimensionValues.get(0));
       }
  else {
-        throw new ISE("unknown dim value type %s",v.getClass().getName());
+        event.put(dimension,dimensionValues);
       }
     }
-    for (    AggregatorFactory aggFactory : aggs) {
-      String k=aggFactory.getName();
-      Writable v=mw.get(new Text(k));
-      if (v == null) {
-        continue;
+    int metricSize=WritableUtils.readVInt(in);
+    for (int i=0; i < metricSize; i++) {
+      String metric=readString(in);
+      String type=getType(metric,aggs,i);
+      if (type.equals("float")) {
+        event.put(metric,in.readFloat());
       }
-      String t=aggFactory.getTypeName();
-      if (t.equals("float")) {
-        event.put(k,((FloatWritable)v).get());
-      }
- else       if (t.equals("long")) {
-        event.put(k,((LongWritable)v).get());
+ else       if (type.equals("long")) {
+        event.put(metric,WritableUtils.readVLong(in));
       }
  else {
-        ComplexMetricSerde serde=getComplexMetricSerde(t);
-        BytesWritable bw=(BytesWritable)v;
-        event.put(k,serde.fromBytes(bw.getBytes(),0,bw.getLength()));
+        ComplexMetricSerde serde=getComplexMetricSerde(type);
+        byte[] value=readBytes(in);
+        event.put(metric,serde.fromBytes(value,0,value.length));
       }
     }
     return new MapBasedInputRow(timestamp,dimensions,event);
