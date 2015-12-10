@@ -5,13 +5,17 @@
         return runner.run(query,responseContext);
       }
  else {
-        final TopNQuery topNQuery=(TopNQuery)query;
-        if (TopNQueryEngine.canApplyExtractionInPost(topNQuery)) {
-          final DimensionSpec dimensionSpec=topNQuery.getDimensionSpec();
-          return runner.run(topNQuery.withDimensionSpec(new DefaultDimensionSpec(dimensionSpec.getDimension(),dimensionSpec.getOutputName())),responseContext);
+        TopNQuery topNQuery=(TopNQuery)query;
+        if (topNQuery.getDimensionsFilter() != null) {
+          topNQuery=topNQuery.withDimFilter(topNQuery.getDimensionsFilter().optimize());
+        }
+        final TopNQuery delegateTopNQuery=topNQuery;
+        if (TopNQueryEngine.canApplyExtractionInPost(delegateTopNQuery)) {
+          final DimensionSpec dimensionSpec=delegateTopNQuery.getDimensionSpec();
+          return runner.run(delegateTopNQuery.withDimensionSpec(new DefaultDimensionSpec(dimensionSpec.getDimension(),dimensionSpec.getOutputName())),responseContext);
         }
  else {
-          return runner.run(query,responseContext);
+          return runner.run(delegateTopNQuery,responseContext);
         }
       }
     }
