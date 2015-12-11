@@ -1,10 +1,16 @@
 {
-  if (dictId >= 0) {
-    final Indexed<String> dimValues=getDimValueLookup(dimension);
-    String value=Strings.nullToEmpty(dimValues.get(dictId));
-    return getBitmapIndex(dimension,value);
-  }
- else {
+  DimensionIndexer accessor=indexers.get(dimension);
+  if (accessor == null) {
     return EmptyIndexedInts.EMPTY_INDEXED_INTS;
   }
+  IncrementalIndex.SortedDimLookup dimLookup=accessor.getDimLookup();
+  final int id=dimLookup.indexToId(index);
+  if (id < 0 || id >= dimLookup.size()) {
+    return EmptyIndexedInts.EMPTY_INDEXED_INTS;
+  }
+  MutableBitmap bitmapIndex=accessor.invertedIndexes[id];
+  if (bitmapIndex == null) {
+    return EmptyIndexedInts.EMPTY_INDEXED_INTS;
+  }
+  return new BitmapIndexedInts(bitmapIndex);
 }

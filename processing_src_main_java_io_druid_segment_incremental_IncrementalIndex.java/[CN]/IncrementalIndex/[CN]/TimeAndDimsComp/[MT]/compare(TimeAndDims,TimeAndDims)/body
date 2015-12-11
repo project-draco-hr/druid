@@ -1,0 +1,40 @@
+{
+  int retVal=Longs.compare(lhs.timestamp,rhs.timestamp);
+  int numComparisons=Math.min(lhs.dims.length,rhs.dims.length);
+  int index=0;
+  while (retVal == 0 && index < numComparisons) {
+    final int[] lhsIdxs=lhs.dims[index];
+    final int[] rhsIdxs=rhs.dims[index];
+    if (lhsIdxs == null) {
+      if (rhsIdxs == null) {
+        ++index;
+        continue;
+      }
+      return -1;
+    }
+    if (rhsIdxs == null) {
+      return 1;
+    }
+    retVal=Ints.compare(lhsIdxs.length,rhsIdxs.length);
+    int valsIndex=0;
+    while (retVal == 0 && valsIndex < lhsIdxs.length) {
+      if (lhsIdxs[valsIndex] != rhsIdxs[valsIndex]) {
+        final DimDim dimLookup=dimValues.get(index);
+        final String lhsVal=dimLookup.getValue(lhsIdxs[valsIndex]);
+        final String rhsVal=dimLookup.getValue(rhsIdxs[valsIndex]);
+        if (lhsVal != null && rhsVal != null) {
+          retVal=lhsVal.compareTo(rhsVal);
+        }
+ else         if (lhsVal == null ^ rhsVal == null) {
+          retVal=lhsVal == null ? -1 : 1;
+        }
+      }
+      ++valsIndex;
+    }
+    ++index;
+  }
+  if (retVal == 0) {
+    return Ints.compare(lhs.dims.length,rhs.dims.length);
+  }
+  return retVal;
+}

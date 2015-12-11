@@ -1,21 +1,34 @@
 {
-  final List<String> dimensions=getDimensionNames();
-  final ConcurrentNavigableMap<TimeAndDims,Integer> facts=descending ? getFacts().descendingMap() : getFacts();
   return new Iterable<Row>(){
     @Override public Iterator<Row> iterator(){
+      final List<DimensionDesc> dimensions=getDimensions();
+      final ConcurrentNavigableMap<TimeAndDims,Integer> facts=descending ? getFacts().descendingMap() : getFacts();
       return Iterators.transform(facts.entrySet().iterator(),new Function<Map.Entry<TimeAndDims,Integer>,Row>(){
         @Override public Row apply(        final Map.Entry<TimeAndDims,Integer> input){
           final TimeAndDims timeAndDims=input.getKey();
           final int rowOffset=input.getValue();
-          String[][] theDims=timeAndDims.getDims();
+          int[][] theDims=timeAndDims.getDims();
           Map<String,Object> theVals=Maps.newLinkedHashMap();
           for (int i=0; i < theDims.length; ++i) {
-            String[] dim=theDims[i];
-            if (dim != null && dim.length != 0) {
-              theVals.put(dimensions.get(i),dim.length == 1 ? dim[0] : Arrays.asList(dim));
+            int[] dim=theDims[i];
+            DimensionDesc dimensionDesc=dimensions.get(i);
+            if (dimensionDesc == null) {
+              continue;
+            }
+            String dimensionName=dimensionDesc.getName();
+            if (dim == null || dim.length == 0) {
+              theVals.put(dimensionName,null);
+              continue;
+            }
+            if (dim.length == 1) {
+              theVals.put(dimensionName,Strings.nullToEmpty(dimensionDesc.getValues().getValue(dim[0])));
             }
  else {
-              theVals.put(dimensions.get(i),null);
+              String[] dimStringValue=new String[dim.length];
+              for (int j=0; j < dimStringValue.length; j++) {
+                dimStringValue[j]=Strings.nullToEmpty(dimensionDesc.getValues().getValue(dim[j]));
+              }
+              theVals.put(dimensionName,dimStringValue);
             }
           }
           AggregatorType[] aggs=getAggsForRow(rowOffset);

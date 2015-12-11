@@ -12,10 +12,10 @@
   QueryableIndex indexB2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistB2,tmpDirB2,indexSpec)));
   final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
   final QueryableIndex merged2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB2),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
-  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
-  List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
-  final IndexableAdapter adapter2=new QueryableIndexIndexableAdapter(merged2);
-  List<Rowboat> boatList2=ImmutableList.copyOf(adapter2.getRows());
+  final QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
+  final List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
+  final QueryableIndexIndexableAdapter adapter2=new QueryableIndexIndexableAdapter(merged2);
+  final List<Rowboat> boatList2=ImmutableList.copyOf(adapter2.getRows());
   Assert.assertEquals(ImmutableList.of("dimA","dimB"),ImmutableList.copyOf(adapter.getDimensionNames()));
   Assert.assertEquals(5,boatList.size());
   Assert.assertArrayEquals(new int[][]{{0},{1}},boatList.get(0).getDims());

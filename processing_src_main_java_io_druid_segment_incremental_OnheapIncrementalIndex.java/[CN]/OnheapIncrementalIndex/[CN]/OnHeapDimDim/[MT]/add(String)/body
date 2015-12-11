@@ -1,5 +1,12 @@
 {
-  int id=falseIds.size();
-  falseIds.put(value,id);
-  return id;
+synchronized (lock) {
+    Integer prev=valueToId.get(value);
+    if (prev != null) {
+      return prev;
+    }
+    final int index=size();
+    valueToId.put(value,index);
+    idToValue.add(value);
+    return index;
+  }
 }

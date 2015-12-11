@@ -1,17 +1,18 @@
 {
-  Integer dimIndexObject=index.getDimensionIndex(dimension);
-  if (dimIndexObject == null) {
+  IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
+  if (dimensionDesc == null) {
     return new BooleanValueMatcher(false);
   }
-  final int dimIndex=dimIndexObject;
+  final int dimIndex=dimensionDesc.getIndex();
+  final IncrementalIndex.DimDim dimDim=dimensionDesc.getValues();
   return new ValueMatcher(){
     @Override public boolean matches(){
-      String[][] dims=holder.getKey().getDims();
+      int[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         return false;
       }
-      for (      String dimVal : dims[dimIndex]) {
-        List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
+      for (      int dimVal : dims[dimIndex]) {
+        List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimDim.getValue(dimVal)));
         float[] coords=new float[stringCoords.size()];
         for (int j=0; j < coords.length; j++) {
           coords[j]=Float.valueOf(stringCoords.get(j));

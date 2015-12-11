@@ -1,20 +1,16 @@
 {
-  final String[] retVal=new String[dimValues.size()];
   if (dimValues.size() == 0) {
-    if (!dimLookup.contains(null)) {
-      dimLookup.add(null);
-    }
+    dimLookup.add(null);
     return null;
   }
-  int count=0;
-  for (  String dimValue : dimValues) {
-    String canonicalDimValue=dimLookup.get(dimValue);
-    if (!dimLookup.contains(canonicalDimValue)) {
-      dimLookup.add(dimValue);
-    }
-    retVal[count]=canonicalDimValue;
-    count++;
+  if (dimValues.size() == 1) {
+    return new int[]{dimLookup.add(dimValues.get(0))};
   }
-  Arrays.sort(retVal);
+  String[] dimArray=dimValues.toArray(new String[dimValues.size()]);
+  Arrays.sort(dimArray);
+  final int[] retVal=new int[dimArray.length];
+  for (int i=0; i < dimArray.length; i++) {
+    retVal[i]=dimLookup.add(dimArray[i]);
+  }
   return retVal;
 }

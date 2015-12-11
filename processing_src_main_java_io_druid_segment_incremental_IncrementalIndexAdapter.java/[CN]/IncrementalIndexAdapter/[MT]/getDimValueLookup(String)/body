@@ -1,30 +1,27 @@
 {
-  final IncrementalIndex.DimDim dimDim=index.getDimensionValues(dimension);
-  if (dimDim != null) {
-    if (hasNullValueDimensions.contains(dimension) && !dimDim.contains(null)) {
-      dimDim.add(null);
-    }
-    dimDim.sort();
-    return new Indexed<String>(){
-      @Override public Class<? extends String> getClazz(){
-        return String.class;
-      }
-      @Override public int size(){
-        return dimDim.size();
-      }
-      @Override public String get(      int index){
-        return dimDim.getSortedValue(index);
-      }
-      @Override public int indexOf(      String value){
-        return dimDim.getSortedId(value);
-      }
-      @Override public Iterator<String> iterator(){
-        return IndexedIterable.create(this).iterator();
-      }
-    }
-;
-  }
- else {
+  final DimensionIndexer indexer=indexers.get(dimension);
+  if (indexer == null) {
     return null;
   }
+  final IncrementalIndex.DimDim dimDim=indexer.getDimValues();
+  final IncrementalIndex.SortedDimLookup dimLookup=indexer.getDimLookup();
+  return new Indexed<String>(){
+    @Override public Class<? extends String> getClazz(){
+      return String.class;
+    }
+    @Override public int size(){
+      return dimLookup.size();
+    }
+    @Override public String get(    int index){
+      return dimLookup.getValue(index);
+    }
+    @Override public int indexOf(    String value){
+      int id=dimDim.getId(value);
+      return id < 0 ? -1 : dimLookup.idToIndex(id);
+    }
+    @Override public Iterator<String> iterator(){
+      return IndexedIterable.create(this).iterator();
+    }
+  }
+;
 }

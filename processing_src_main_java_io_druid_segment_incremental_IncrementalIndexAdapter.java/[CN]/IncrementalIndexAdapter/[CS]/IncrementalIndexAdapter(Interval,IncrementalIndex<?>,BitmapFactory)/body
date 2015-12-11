@@ -1,38 +1,33 @@
 {
   this.dataInterval=dataInterval;
   this.index=index;
-  this.metadata=index.getMetadata();
-  this.invertedIndexes=Maps.newHashMap();
   this.hasNullValueDimensions=Sets.newHashSet();
   final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
+  indexers=Maps.newHashMapWithExpectedSize(dimensions.size());
   for (  IncrementalIndex.DimensionDesc dimension : dimensions) {
-    invertedIndexes.put(dimension.getName(),Maps.<String,MutableBitmap>newHashMap());
+    indexers.put(dimension.getName(),new DimensionIndexer(dimension));
   }
   int rowNum=0;
   for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
-    final String[][] dims=timeAndDims.getDims();
+    final int[][] dims=timeAndDims.getDims();
     for (    IncrementalIndex.DimensionDesc dimension : dimensions) {
       final int dimIndex=dimension.getIndex();
-      final Map<String,MutableBitmap> bitmapIndexes=invertedIndexes.get(dimension.getName());
-      if (bitmapIndexes == null || dims == null) {
-        log.error("bitmapIndexes and dims are null!");
-        continue;
-      }
+      DimensionIndexer indexer=indexers.get(dimension.getName());
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         hasNullValueDimensions.add(dimension.getName());
         continue;
       }
-      if (hasNullValue(dims[dimIndex])) {
+      final IncrementalIndex.DimDim values=dimension.getValues();
+      if (hasNullValue(values,dims[dimIndex])) {
         hasNullValueDimensions.add(dimension.getName());
       }
-      for (      String dimValue : dims[dimIndex]) {
-        MutableBitmap mutableBitmap=bitmapIndexes.get(dimValue);
-        if (mutableBitmap == null) {
-          mutableBitmap=bitmapFactory.makeEmptyMutableBitmap();
-          bitmapIndexes.put(dimValue,mutableBitmap);
+      final MutableBitmap[] bitmapIndexes=indexer.invertedIndexes;
+      for (      int dimIdx : dims[dimIndex]) {
+        if (bitmapIndexes[dimIdx] == null) {
+          bitmapIndexes[dimIdx]=bitmapFactory.makeEmptyMutableBitmap();
         }
         try {
-          mutableBitmap.add(rowNum);
+          bitmapIndexes[dimIdx].add(rowNum);
         }
  catch (        Exception e) {
           log.info(e.toString());

@@ -1,15 +1,16 @@
 {
-  Integer dimIndexObject=index.getDimensionIndex(dimension);
-  if (dimIndexObject == null) {
+  IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
+  if (dimensionDesc == null) {
     return new BooleanValueMatcher(Strings.isNullOrEmpty(value));
   }
-  final IncrementalIndex.DimDim dimDim=index.getDimensionValues(dimension);
-  if (!dimDim.contains(value)) {
+  final int dimIndex=dimensionDesc.getIndex();
+  final IncrementalIndex.DimDim dimDim=dimensionDesc.getValues();
+  final Integer id=dimDim.getId(value);
+  if (id == null) {
     if (Strings.isNullOrEmpty(value)) {
-      final int dimIndex=dimIndexObject;
       return new ValueMatcher(){
         @Override public boolean matches(){
-          String[][] dims=holder.getKey().getDims();
+          int[][] dims=holder.getKey().getDims();
           if (dimIndex >= dims.length || dims[dimIndex] == null) {
             return true;
           }
@@ -20,20 +21,13 @@
     }
     return new BooleanValueMatcher(false);
   }
-  final int dimIndex=dimIndexObject;
-  final String id=dimDim.get(value);
   return new ValueMatcher(){
     @Override public boolean matches(){
-      String[][] dims=holder.getKey().getDims();
+      int[][] dims=holder.getKey().getDims();
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
         return Strings.isNullOrEmpty(value);
       }
-      for (      String dimVal : dims[dimIndex]) {
-        if (dimDim.compareCanonicalValues(id,dimVal)) {
-          return true;
-        }
-      }
-      return false;
+      return Ints.indexOf(dims[dimIndex],id) >= 0;
     }
   }
 ;

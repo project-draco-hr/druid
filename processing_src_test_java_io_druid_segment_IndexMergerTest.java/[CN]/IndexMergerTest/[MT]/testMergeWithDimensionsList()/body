@@ -14,12 +14,8 @@
   QueryableIndex index2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist2,tmpDir2,indexSpec)));
   QueryableIndex index3=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist3,tmpDir3,indexSpec)));
   final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2,index3),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
-  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
-  Iterable<Rowboat> boats=adapter.getRows();
-  List<Rowboat> boatList=new ArrayList<>();
-  for (  Rowboat boat : boats) {
-    boatList.add(boat);
-  }
+  final QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
+  final List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
   Assert.assertEquals(ImmutableList.of("dimA","dimC"),ImmutableList.copyOf(adapter.getDimensionNames()));
   Assert.assertEquals(4,boatList.size());
   Assert.assertArrayEquals(new int[][]{{0},{1}},boatList.get(0).getDims());
