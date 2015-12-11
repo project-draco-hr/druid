@@ -1,0 +1,15 @@
+{
+  int i=0;
+  for (  Integer val : list) {
+    if (val < 0) {
+      throw new IAE("integer values must be positive, got[%d], i[%d]",val,i);
+    }
+    if (val > maxValue) {
+      throw new IAE("val[%d] > maxValue[%d], please don't lie about maxValue.  i[%d]",val,maxValue,i);
+    }
+    byte[] intAsBytes=Ints.toByteArray(val);
+    buffer.put(intAsBytes,intAsBytes.length - numBytes,numBytes);
+    ++i;
+  }
+  buffer.position(0);
+}
