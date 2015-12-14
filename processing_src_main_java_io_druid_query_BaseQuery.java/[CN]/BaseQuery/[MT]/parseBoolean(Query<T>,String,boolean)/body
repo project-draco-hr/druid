@@ -1,0 +1,15 @@
+{
+  Object val=query.getContextValue(key);
+  if (val == null) {
+    return defaultValue;
+  }
+  if (val instanceof String) {
+    return Boolean.parseBoolean((String)val);
+  }
+ else   if (val instanceof Boolean) {
+    return (boolean)val;
+  }
+ else {
+    throw new ISE("Unknown type [%s]. Cannot parse!",val.getClass());
+  }
+}

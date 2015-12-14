@@ -7,7 +7,7 @@
   if (query.getThreshold() > minTopNThreshold) {
     return runner.run(query,responseContext);
   }
-  final boolean isBySegment=query.getContextBySegment(false);
+  final boolean isBySegment=BaseQuery.getContextBySegment(query,false);
   return Sequences.map(runner.run(query.withThreshold(minTopNThreshold),responseContext),new Function<Result<TopNResultValue>,Result<TopNResultValue>>(){
     @Override public Result<TopNResultValue> apply(    Result<TopNResultValue> input){
       if (isBySegment) {

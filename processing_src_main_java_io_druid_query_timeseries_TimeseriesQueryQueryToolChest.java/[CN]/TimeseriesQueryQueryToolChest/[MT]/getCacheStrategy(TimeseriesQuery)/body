@@ -6,7 +6,8 @@
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
       final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
       final byte[] granularityBytes=query.getGranularity().cacheKey();
-      return ByteBuffer.allocate(1 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
+      final byte descending=query.isDescending() ? (byte)1 : 0;
+      return ByteBuffer.allocate(2 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(descending).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
     }
     @Override public TypeReference<Object> getCacheObjectClazz(){
       return OBJECT_TYPE_REFERENCE;
@@ -42,9 +43,6 @@
         }
       }
 ;
-    }
-    @Override public Sequence<Result<TimeseriesResultValue>> mergeSequences(    Sequence<Sequence<Result<TimeseriesResultValue>>> seqOfSequences){
-      return new MergeSequence<Result<TimeseriesResultValue>>(getOrdering(),seqOfSequences);
     }
   }
 ;

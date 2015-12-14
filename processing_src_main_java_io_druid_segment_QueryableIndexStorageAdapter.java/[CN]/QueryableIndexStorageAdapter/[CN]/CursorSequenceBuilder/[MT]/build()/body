@@ -5,14 +5,29 @@
   final Map<String,ComplexColumn> complexColumnCache=Maps.newHashMap();
   final Map<String,Object> objectColumnCache=Maps.newHashMap();
   final GenericColumn timestamps=index.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
-  return Sequences.withBaggage(Sequences.map(Sequences.simple(gran.iterable(interval.getStartMillis(),interval.getEndMillis())),new Function<Long,Cursor>(){
+  Iterable<Long> iterable=gran.iterable(interval.getStartMillis(),interval.getEndMillis());
+  if (descending) {
+    iterable=Lists.reverse(ImmutableList.copyOf(iterable));
+  }
+  return Sequences.withBaggage(Sequences.map(Sequences.simple(iterable),new Function<Long,Cursor>(){
     @Override public Cursor apply(    final Long input){
       final long timeStart=Math.max(interval.getStartMillis(),input);
-      while (baseOffset.withinBounds() && timestamps.getLongSingleValueRow(baseOffset.getOffset()) < timeStart) {
-        baseOffset.increment();
+      final long timeEnd=Math.min(interval.getEndMillis(),gran.next(input));
+      if (descending) {
+        for (; baseOffset.withinBounds(); baseOffset.increment()) {
+          if (timestamps.getLongSingleValueRow(baseOffset.getOffset()) < timeEnd) {
+            break;
+          }
+        }
       }
-      long threshold=Math.min(interval.getEndMillis(),gran.next(input));
-      final Offset offset=new TimestampCheckingOffset(baseOffset,timestamps,threshold,maxDataTimestamp < threshold);
+ else {
+        for (; baseOffset.withinBounds(); baseOffset.increment()) {
+          if (timestamps.getLongSingleValueRow(baseOffset.getOffset()) >= timeStart) {
+            break;
+          }
+        }
+      }
+      final Offset offset=descending ? new DescendingTimestampCheckingOffset(baseOffset,timestamps,timeStart,minDataTimestamp >= timeStart) : new AscendingTimestampCheckingOffset(baseOffset,timestamps,timeEnd,maxDataTimestamp < timeEnd);
       return new Cursor(){
         private final Offset initOffset=offset.clone();
         private final DateTime myBucket=gran.toDateTime(input);
@@ -50,7 +65,7 @@
             return NULL_DIMENSION_SELECTOR;
           }
           if (dimension.equals(Column.TIME_COLUMN_NAME)) {
-            return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn);
+            return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn,descending);
           }
           DictionaryEncodedColumn cachedColumn=dictionaryColumnCache.get(dimension);
           if (cachedColumn == null) {

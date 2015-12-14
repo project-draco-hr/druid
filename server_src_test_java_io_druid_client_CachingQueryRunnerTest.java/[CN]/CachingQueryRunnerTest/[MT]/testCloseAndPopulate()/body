@@ -1,47 +1,8 @@
 {
-  Iterable<Result<TopNResultValue>> expectedRes=makeTopNResults(false,objects);
-  final TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(AllGranularity.ALL);
-  final AssertingClosable closable=new AssertingClosable();
-  final Sequence resultSeq=new ResourceClosingSequence(Sequences.simple(expectedRes),closable){
-    @Override public Yielder toYielder(    Object initValue,    YieldingAccumulator accumulator){
-      Assert.assertFalse(closable.isClosed());
-      return super.toYielder(initValue,accumulator);
-    }
-  }
-;
-  Cache cache=MapCache.create(1024 * 1024);
-  String segmentIdentifier="segment";
-  SegmentDescriptor segmentDescriptor=new SegmentDescriptor(new Interval("2011/2012"),"version",0);
-  TopNQueryQueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
-  DefaultObjectMapper objectMapper=new DefaultObjectMapper();
-  CachingQueryRunner runner=new CachingQueryRunner(segmentIdentifier,segmentDescriptor,objectMapper,cache,toolchest,new QueryRunner(){
-    @Override public Sequence run(    Query query,    Map responseContext){
-      return resultSeq;
-    }
-  }
-,MoreExecutors.sameThreadExecutor(),new CacheConfig(){
-    @Override public boolean isPopulateCache(){
-      return true;
-    }
-    @Override public boolean isUseCache(){
-      return true;
-    }
-  }
-);
-  TopNQuery query=builder.build();
-  CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> cacheStrategy=toolchest.getCacheStrategy(query);
-  Cache.NamedKey cacheKey=CacheUtil.computeSegmentCacheKey(segmentIdentifier,segmentDescriptor,cacheStrategy.computeCacheKey(query));
-  HashMap<String,Object> context=new HashMap<String,Object>();
-  Sequence res=runner.run(query,context);
-  Assert.assertFalse("sequence must not be closed",closable.isClosed());
-  Assert.assertNull("cache must be empty",cache.get(cacheKey));
-  ArrayList results=Sequences.toList(res,new ArrayList());
-  Assert.assertTrue(closable.isClosed());
-  Assert.assertEquals(expectedRes,results);
-  Iterable<Result<TopNResultValue>> expectedCacheRes=makeTopNResults(true,objects);
-  byte[] cacheValue=cache.get(cacheKey);
-  Assert.assertNotNull(cacheValue);
-  Function<Object,Result<TopNResultValue>> fn=cacheStrategy.pullFromCache();
-  List<Result<TopNResultValue>> cacheResults=Lists.newArrayList(Iterators.transform(objectMapper.readValues(objectMapper.getFactory().createParser(cacheValue),cacheStrategy.getCacheObjectClazz()),fn));
-  Assert.assertEquals(expectedCacheRes,cacheResults);
+  List<Result> expectedRes=makeTopNResults(false,objects);
+  List<Result> expectedCacheRes=makeTopNResults(true,objects);
+  TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(AllGranularity.ALL);
+  QueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
+  testCloseAndPopulate(expectedRes,expectedCacheRes,builder.build(),toolchest);
+  testUseCache(expectedCacheRes,builder.build(),toolchest);
 }

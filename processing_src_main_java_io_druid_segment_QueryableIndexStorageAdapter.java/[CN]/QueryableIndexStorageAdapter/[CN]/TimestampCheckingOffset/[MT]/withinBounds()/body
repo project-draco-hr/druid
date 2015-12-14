@@ -1,3 +1,9 @@
 {
-  return baseOffset.withinBounds() && (allWithinThreshold || timestamps.getLongSingleValueRow(baseOffset.getOffset()) < threshold);
+  if (!baseOffset.withinBounds()) {
+    return false;
+  }
+  if (allWithinThreshold) {
+    return true;
+  }
+  return timeInRange(timestamps.getLongSingleValueRow(baseOffset.getOffset()));
 }

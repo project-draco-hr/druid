@@ -1,11 +1,8 @@
 {
-  List<Object> retVal=Lists.newArrayList();
-  retVal.addAll(QueryRunnerTestHelper.makeUnionQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),QueryRunnerTestHelper.NOOP_QUERYWATCHER),QueryRunnerTestHelper.unionDataSource));
-  retVal.addAll(QueryRunnerTestHelper.makeUnionQueryRunners(new TopNQueryRunnerFactory(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+  return QueryRunnerTestHelper.cartesian(Iterables.concat(QueryRunnerTestHelper.makeUnionQueryRunners(new TopNQueryRunnerFactory(TestQueryRunners.getPool(),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),QueryRunnerTestHelper.NOOP_QUERYWATCHER),QueryRunnerTestHelper.unionDataSource),QueryRunnerTestHelper.makeUnionQueryRunners(new TopNQueryRunnerFactory(new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
     @Override public ByteBuffer get(){
       return ByteBuffer.allocate(2000);
     }
   }
-),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),QueryRunnerTestHelper.NOOP_QUERYWATCHER),QueryRunnerTestHelper.unionDataSource));
-  return retVal;
+),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),QueryRunnerTestHelper.NOOP_QUERYWATCHER),QueryRunnerTestHelper.unionDataSource)));
 }

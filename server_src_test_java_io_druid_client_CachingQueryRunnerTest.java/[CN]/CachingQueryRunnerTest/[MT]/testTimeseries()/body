@@ -1,0 +1,17 @@
+{
+  for (  boolean descending : new boolean[]{false,true}) {
+    TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).intervals(QueryRunnerTestHelper.firstToThird).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"),QueryRunnerTestHelper.qualityUniques)).descending(descending).build();
+    Result row1=new Result(new DateTime("2011-04-01"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"idx",6619L,"uniques",QueryRunnerTestHelper.UNIQUES_9)));
+    Result row2=new Result<>(new DateTime("2011-04-02"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"idx",5827L,"uniques",QueryRunnerTestHelper.UNIQUES_9)));
+    List<Result> expectedResults;
+    if (descending) {
+      expectedResults=Lists.newArrayList(row2,row1);
+    }
+ else {
+      expectedResults=Lists.newArrayList(row1,row2);
+    }
+    QueryToolChest toolChest=new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
+    testCloseAndPopulate(expectedResults,expectedResults,query,toolChest);
+    testUseCache(expectedResults,query,toolChest);
+  }
+}

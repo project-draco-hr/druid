@@ -1,5 +1,5 @@
 {
-  return Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs())),new Function<Row,Row>(){
+  return Sequences.map(Sequences.simple(index.iterableWithPostAggregations(query.getPostAggregatorSpecs(),query.isDescending())),new Function<Row,Row>(){
     @Override public Row apply(    Row input){
       final MapBasedRow row=(MapBasedRow)input;
       return new MapBasedRow(query.getGranularity().toDateTime(row.getTimestampFromEpoch()),row.getEvent());

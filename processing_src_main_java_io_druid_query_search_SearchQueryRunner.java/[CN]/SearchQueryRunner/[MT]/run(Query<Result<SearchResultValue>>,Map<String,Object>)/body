@@ -7,6 +7,7 @@
   final List<DimensionSpec> dimensions=query.getDimensions();
   final SearchQuerySpec searchQuerySpec=query.getQuery();
   final int limit=query.getLimit();
+  final boolean descending=query.isDescending();
   final QueryableIndex index=segment.asQueryableIndex();
   if (index != null) {
     final TreeSet<SearchHit> retVal=Sets.newTreeSet(query.getSort().getComparator());
@@ -62,7 +63,7 @@
  else {
     dimsToSearch=dimensions;
   }
-  final Sequence<Cursor> cursors=adapter.makeCursors(filter,segment.getDataInterval(),QueryGranularity.ALL);
+  final Sequence<Cursor> cursors=adapter.makeCursors(filter,segment.getDataInterval(),QueryGranularity.ALL,descending);
   final TreeSet<SearchHit> retVal=cursors.accumulate(Sets.newTreeSet(query.getSort().getComparator()),new Accumulator<TreeSet<SearchHit>,Cursor>(){
     @Override public TreeSet<SearchHit> accumulate(    TreeSet<SearchHit> set,    Cursor cursor){
       if (set.size() >= limit) {

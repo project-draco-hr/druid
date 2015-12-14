@@ -4,11 +4,11 @@
   final Map<DruidServer,List<SegmentDescriptor>> serverSegments=Maps.newTreeMap();
   final List<Pair<Interval,byte[]>> cachedResults=Lists.newArrayList();
   final Map<String,CachePopulator> cachePopulatorMap=Maps.newHashMap();
-  final boolean useCache=query.getContextUseCache(true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
-  final boolean populateCache=query.getContextPopulateCache(true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
-  final boolean isBySegment=query.getContextBySegment(false);
+  final boolean useCache=BaseQuery.getContextUseCache(query,true) && strategy != null && cacheConfig.isUseCache() && cacheConfig.isQueryCacheable(query);
+  final boolean populateCache=BaseQuery.getContextPopulateCache(query,true) && strategy != null && cacheConfig.isPopulateCache() && cacheConfig.isQueryCacheable(query);
+  final boolean isBySegment=BaseQuery.getContextBySegment(query,false);
   final ImmutableMap.Builder<String,Object> contextBuilder=new ImmutableMap.Builder<>();
-  final int priority=query.getContextPriority(0);
+  final int priority=BaseQuery.getContextPriority(query,0);
   contextBuilder.put("priority",priority);
   if (populateCache) {
     contextBuilder.put(CacheConfig.POPULATE_CACHE,false);
@@ -105,7 +105,7 @@
       ArrayList<Sequence<T>> sequencesByInterval=Lists.newArrayList();
       addSequencesFromCache(sequencesByInterval);
       addSequencesFromServer(sequencesByInterval);
-      return mergeCachedAndUncachedSequences(sequencesByInterval,toolChest);
+      return mergeCachedAndUncachedSequences(query,sequencesByInterval);
     }
     private void addSequencesFromCache(    ArrayList<Sequence<T>> listOfSequences){
       if (strategy == null) {
@@ -136,7 +136,7 @@
     }
     private void addSequencesFromServer(    ArrayList<Sequence<T>> listOfSequences){
       listOfSequences.ensureCapacity(listOfSequences.size() + serverSegments.size());
-      final Query<Result<BySegmentResultValueClass<T>>> rewrittenQuery=(Query<Result<BySegmentResultValueClass<T>>>)query.withOverriddenContext(contextBuilder.build());
+      final Query<T> rewrittenQuery=query.withOverriddenContext(contextBuilder.build());
       for (      Map.Entry<DruidServer,List<SegmentDescriptor>> entry : serverSegments.entrySet()) {
         final DruidServer server=entry.getKey();
         final List<SegmentDescriptor> descriptors=entry.getValue();
@@ -152,7 +152,7 @@
             resultSeqToAdd=clientQueryable.run(query.withQuerySegmentSpec(segmentSpec),responseContext);
           }
  else {
-            @SuppressWarnings("unchecked") final Query<Result<BySegmentResultValueClass<T>>> bySegmentQuery=(Query<Result<BySegmentResultValueClass<T>>>)query;
+            @SuppressWarnings("unchecked") final Query<Result<BySegmentResultValueClass<T>>> bySegmentQuery=(Query<Result<BySegmentResultValueClass<T>>>)((Query)query);
             @SuppressWarnings("unchecked") final Sequence<Result<BySegmentResultValueClass<T>>> resultSequence=clientQueryable.run(bySegmentQuery.withQuerySegmentSpec(segmentSpec),responseContext);
             resultSeqToAdd=(Sequence)Sequences.map(resultSequence,new Function<Result<BySegmentResultValueClass<T>>,Result<BySegmentResultValueClass<T>>>(){
               @Override public Result<BySegmentResultValueClass<T>> apply(              Result<BySegmentResultValueClass<T>> input){
@@ -165,7 +165,7 @@
         }
  else {
           @SuppressWarnings("unchecked") final Sequence<Result<BySegmentResultValueClass<T>>> runningSequence=clientQueryable.run(rewrittenQuery.withQuerySegmentSpec(segmentSpec),responseContext);
-          resultSeqToAdd=toolChest.mergeSequencesUnordered(Sequences.<Result<BySegmentResultValueClass<T>>,Sequence<T>>map(runningSequence,new Function<Result<BySegmentResultValueClass<T>>,Sequence<T>>(){
+          resultSeqToAdd=new MergeSequence(query.getResultOrdering(),Sequences.<Result<BySegmentResultValueClass<T>>,Sequence<T>>map(runningSequence,new Function<Result<BySegmentResultValueClass<T>>,Sequence<T>>(){
             private final Function<T,Object> cacheFn=strategy.prepareForCache();
             @Override public Sequence<T> apply(            Result<BySegmentResultValueClass<T>> input){
               final BySegmentResultValueClass<T> value=input.getValue();
