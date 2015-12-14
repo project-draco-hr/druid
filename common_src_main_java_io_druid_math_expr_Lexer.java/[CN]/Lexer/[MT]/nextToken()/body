@@ -1,0 +1,88 @@
+{
+  if (currPos >= input.length()) {
+    return new Token(Token.EOF);
+  }
+  char c=input.charAt(currPos);
+  while (c == ' ') {
+    currPos++;
+    if (currPos >= input.length()) {
+      return new Token(Token.EOF);
+    }
+    c=input.charAt(currPos);
+  }
+switch (c) {
+case '<':
+    currPos++;
+  if (currPos < input.length() && input.charAt(currPos) == '=') {
+    currPos++;
+    return new Token(Token.LEQ,"<=");
+  }
+ else {
+    return new Token(Token.LT,"<");
+  }
+case '>':
+currPos++;
+if (currPos < input.length() && input.charAt(currPos) == '=') {
+currPos++;
+return new Token(Token.GEQ,">=");
+}
+ else {
+return new Token(Token.GT,">");
+}
+case '=':
+currPos++;
+if (currPos < input.length() && input.charAt(currPos) == '=') {
+currPos++;
+return new Token(Token.EQ,"==");
+}
+ else {
+throw new IllegalArgumentException("unknown operator '='");
+}
+case '!':
+currPos++;
+if (currPos < input.length() && input.charAt(currPos) == '=') {
+currPos++;
+return new Token(Token.NEQ,"!=");
+}
+ else {
+return new Token(Token.NOT,"!");
+}
+case '+':
+currPos++;
+return new Token(Token.PLUS,"+");
+case '-':
+currPos++;
+return new Token(Token.MINUS,"-");
+case '*':
+currPos++;
+return new Token(Token.MUL,"*");
+case '/':
+currPos++;
+return new Token(Token.DIV,"/");
+case '%':
+currPos++;
+return new Token(Token.MODULO,"%");
+case '^':
+currPos++;
+return new Token(Token.CARROT,"^");
+case '(':
+currPos++;
+return new Token(Token.LPAREN,"(");
+case ')':
+currPos++;
+return new Token(Token.RPAREN,")");
+case ',':
+currPos++;
+return new Token(Token.COMMA,",");
+default :
+if (isNumberStartingChar(c)) {
+return parseNumber();
+}
+ else if (isIdentifierStartingChar(c)) {
+return parseIdentifierOrKeyword();
+}
+ else {
+throw new RuntimeException("Illegal expression " + toString());
+}
+}
+}

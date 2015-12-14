@@ -1,0 +1,26 @@
+{
+  boolean isLong=true;
+  StringBuilder sb=new StringBuilder();
+  char c=input.charAt(currPos++);
+  while (('0' <= c && c <= '9') || c == '.') {
+    if (c == '.') {
+      isLong=false;
+    }
+    sb.append(c);
+    if (currPos < input.length()) {
+      c=input.charAt(currPos++);
+    }
+ else {
+      currPos++;
+      break;
+    }
+  }
+  ;
+  currPos--;
+  if (isLong) {
+    return new Token(Token.LONG,sb.toString());
+  }
+ else {
+    return new Token(Token.DOUBLE,sb.toString());
+  }
+}

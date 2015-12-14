@@ -1,0 +1,26 @@
+{
+  StringBuilder sb=new StringBuilder();
+  char c=input.charAt(currPos++);
+  while (isIdentifierChar(c)) {
+    sb.append(c);
+    if (currPos < input.length()) {
+      c=input.charAt(currPos++);
+    }
+ else {
+      currPos++;
+      break;
+    }
+  }
+  ;
+  currPos--;
+  String str=sb.toString();
+  if (str.equals("and")) {
+    return new Token(Token.AND,str);
+  }
+ else   if (str.equals("or")) {
+    return new Token(Token.OR,str);
+  }
+ else {
+    return new Token(Token.IDENTIFIER,sb.toString());
+  }
+}

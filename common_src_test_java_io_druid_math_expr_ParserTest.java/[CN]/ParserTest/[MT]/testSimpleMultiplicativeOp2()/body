@@ -1,0 +1,14 @@
+{
+  String actual=Parser.parse("1*2*3").toString();
+  String expected="(* (* 1 2) 3)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("1*2/3").toString();
+  expected="(/ (* 1 2) 3)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("1/2*3").toString();
+  expected="(* (/ 1 2) 3)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("1/2/3").toString();
+  expected="(/ (/ 1 2) 3)";
+  Assert.assertEquals(expected,actual);
+}

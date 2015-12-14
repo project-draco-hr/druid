@@ -1,0 +1,10 @@
+{
+  Expr result=new SimpleExpr(parseAtom());
+  Token t=lexer.peek();
+  while (t.getType() < Token.NUM_BINARY_OPERATORS && Token.PRECEDENCE[t.getType()] >= p) {
+    lexer.consume();
+    result=new BinExpr(t,result,parseExpr(Token.R_PRECEDENCE[t.getType()]));
+    t=lexer.peek();
+  }
+  return result;
+}
