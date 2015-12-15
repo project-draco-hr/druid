@@ -1,0 +1,24 @@
+{
+  String regex="(a\\w*)";
+  ExtractionFn extractionFn=new RegexDimExtractionFn(regex,true,"foobar");
+  Set<String> extracted=Sets.newLinkedHashSet();
+  for (  String testString : testStrings) {
+    extracted.add(extractionFn.apply(testString));
+  }
+  Set<String> expected=Sets.newLinkedHashSet(ImmutableList.of("apple","awesome","asylum","foobar"));
+  Assert.assertEquals(expected,extracted);
+  byte[] cacheKey=extractionFn.getCacheKey();
+  byte[] expectedCacheKey=new byte[]{0x01,0x28,0x61,0x5C,0x77,0x2A,0x29,(byte)0xFF,0x66,0x6F,0x6F,0x62,0x61,0x72,(byte)0xFF,0x01};
+  Assert.assertArrayEquals(expectedCacheKey,cacheKey);
+  ExtractionFn nullExtractionFn=new RegexDimExtractionFn(regex,true,null);
+  Set<String> extracted2=Sets.newLinkedHashSet();
+  for (  String testString : testStrings) {
+    extracted2.add(nullExtractionFn.apply(testString));
+  }
+  Set<String> expected2=Sets.newLinkedHashSet(ImmutableList.of("apple","awesome","asylum"));
+  expected2.add(null);
+  Assert.assertEquals(expected2,extracted2);
+  cacheKey=nullExtractionFn.getCacheKey();
+  expectedCacheKey=new byte[]{0x01,0x28,0x61,0x5C,0x77,0x2A,0x29,(byte)0xFF,(byte)0xFF,0x01};
+  Assert.assertArrayEquals(expectedCacheKey,cacheKey);
+}
