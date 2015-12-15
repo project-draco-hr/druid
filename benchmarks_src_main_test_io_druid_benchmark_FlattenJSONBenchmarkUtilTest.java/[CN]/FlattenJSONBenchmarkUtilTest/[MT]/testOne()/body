@@ -1,0 +1,11 @@
+{
+  FlattenJSONBenchmarkUtil eventGen=new FlattenJSONBenchmarkUtil();
+  String newEvent=eventGen.generateFlatEvent();
+  String newEvent2=eventGen.generateNestedEvent();
+  Parser flatParser=eventGen.getFlatParser();
+  Parser nestedParser=eventGen.getNestedParser();
+  Map<String,Object> event=flatParser.parse(newEvent);
+  Map<String,Object> event2=nestedParser.parse(newEvent2);
+  checkEvent1(event);
+  checkEvent2(event2);
+}
