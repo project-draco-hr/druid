@@ -1,0 +1,8 @@
+{
+  String fnName=ctx.getChild(0).getText();
+  if (!Parser.func.containsKey(fnName)) {
+    throw new RuntimeException("function " + fnName + " is not defined.");
+  }
+  List<Expr> args=ctx.getChildCount() > 3 ? (List<Expr>)nodes.get(ctx.getChild(2)) : Collections.<Expr>emptyList();
+  nodes.put(ctx,new FunctionExpr(fnName,args));
+}

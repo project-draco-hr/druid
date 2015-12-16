@@ -1,0 +1,13 @@
+{
+  int opCode=((TerminalNode)ctx.getChild(0)).getSymbol().getType();
+switch (opCode) {
+case ExprParser.MINUS:
+    nodes.put(ctx,new UnaryMinusExpr((Expr)nodes.get(ctx.getChild(1))));
+  break;
+case ExprParser.NOT:
+nodes.put(ctx,new UnaryNotExpr((Expr)nodes.get(ctx.getChild(1))));
+break;
+default :
+throw new RuntimeException("Unrecognized unary operator " + ctx.getChild(0).getText());
+}
+}
