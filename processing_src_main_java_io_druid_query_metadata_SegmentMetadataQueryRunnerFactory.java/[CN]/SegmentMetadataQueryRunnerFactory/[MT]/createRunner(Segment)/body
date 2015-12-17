@@ -30,7 +30,8 @@
           columns.put(columnName,column);
         }
       }
-      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),Arrays.asList(segment.getDataInterval()),columns,totalSize,numRows)));
+      List<Interval> retIntervals=query.hasInterval() ? Arrays.asList(segment.getDataInterval()) : null;
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows)));
     }
   }
 ;
