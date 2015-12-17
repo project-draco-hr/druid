@@ -12,8 +12,8 @@
         @Override public void run(){
           try {
             log.info("Loading segment[%d/%d][%s]",counter.getAndIncrement(),numSegments,segment.getIdentifier());
-            final boolean loaded=loadSegment(segment,callback);
-            if (loaded) {
+            loadSegment(segment,callback);
+            if (!announcer.isAnnounced(segment)) {
               try {
                 backgroundSegmentAnnouncer.announceSegment(segment);
               }

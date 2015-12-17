@@ -1,7 +1,13 @@
 {
   try {
     log.info("Loading segment %s",segment.getIdentifier());
-    if (loadSegment(segment,callback)) {
+    if (segmentsToDelete.contains(segment)) {
+synchronized (lock) {
+        segmentsToDelete.remove(segment);
+      }
+    }
+    loadSegment(segment,callback);
+    if (!announcer.isAnnounced(segment)) {
       try {
         announcer.announceSegment(segment);
       }
