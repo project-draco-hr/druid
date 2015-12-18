@@ -1,13 +1,14 @@
 {
-  List<String> dimRowValList=row.getDimension(this.dimension);
+  List<String> dimRowValList=row.getDimension(dimension);
   if (dimRowValList == null || dimRowValList.isEmpty()) {
     return Strings.isNullOrEmpty(value);
   }
   for (  String rowVal : dimRowValList) {
-    if (this.value != null && this.value.equals(rowVal)) {
+    String extracted=getExtractionFn().apply(rowVal);
+    if (value != null && value.equals(extracted)) {
       return true;
     }
-    if (rowVal == null || rowVal.isEmpty()) {
+    if (extracted == null || extracted.isEmpty()) {
       return Strings.isNullOrEmpty(value);
     }
   }

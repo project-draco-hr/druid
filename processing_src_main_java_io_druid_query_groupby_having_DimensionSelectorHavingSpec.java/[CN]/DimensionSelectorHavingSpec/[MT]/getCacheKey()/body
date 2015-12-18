@@ -1,5 +1,6 @@
 {
-  byte[] dimBytes=StringUtils.toUtf8(this.dimension);
-  byte[] valBytes=StringUtils.toUtf8(this.value);
-  return ByteBuffer.allocate(2 + dimBytes.length + valBytes.length).put(CACHE_KEY).put(dimBytes).put(STRING_SEPARATOR).put(valBytes).array();
+  byte[] dimBytes=StringUtils.toUtf8(dimension);
+  byte[] valBytes=StringUtils.toUtf8(value);
+  byte[] extractionFnBytes=this.getExtractionFn().getCacheKey();
+  return ByteBuffer.allocate(3 + dimBytes.length + valBytes.length+ extractionFnBytes.length).put(CACHE_KEY).put(dimBytes).put(STRING_SEPARATOR).put(valBytes).put(STRING_SEPARATOR).put(extractionFnBytes).array();
 }
