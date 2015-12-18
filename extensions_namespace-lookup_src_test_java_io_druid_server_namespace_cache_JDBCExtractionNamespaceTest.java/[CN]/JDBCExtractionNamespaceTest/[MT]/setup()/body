@@ -12,7 +12,8 @@
       final Callable<String> cachePopulator=super.getCachePopulator(namespace,lastVersion,cache);
       return new Callable<String>(){
         @Override public String call() throws Exception {
-synchronized (updateLock) {
+          updateLock.lockInterruptibly();
+          try {
             log.debug("Running cache populator");
             try {
               return cachePopulator.call();
@@ -20,6 +21,9 @@ synchronized (updateLock) {
   finally {
               updates.incrementAndGet();
             }
+          }
+  finally {
+            updateLock.unlock();
           }
         }
       }

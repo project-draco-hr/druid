@@ -1,16 +1,24 @@
 {
   long startTime=System.currentTimeMillis();
   long pre=0L;
-synchronized (updateLock) {
+  updateLock.lockInterruptibly();
+  try {
     pre=updates.get();
+  }
+  finally {
+    updateLock.unlock();
   }
   long post=0L;
   do {
     Thread.sleep(5);
     log.debug("Waiting for updateLock");
-synchronized (updateLock) {
+    updateLock.lockInterruptibly();
+    try {
       Assert.assertTrue("Failed waiting for update",System.currentTimeMillis() - startTime < timeout);
       post=updates.get();
+    }
+  finally {
+      updateLock.unlock();
     }
   }
  while (post < pre + numUpdates);
