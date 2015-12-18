@@ -1,5 +1,7 @@
 {
-  final MergeTask task=new MergeTask(null,"foo",ImmutableList.<DataSegment>of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build()),ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("cnt")),indexSpec,null);
+  final List<DataSegment> segments=ImmutableList.<DataSegment>of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build());
+  final List<AggregatorFactory> aggregators=ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("cnt"));
+  final MergeTask task=new MergeTask(null,"foo",segments,aggregators,indexSpec,null);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final MergeTask task2=(MergeTask)jsonMapper.readValue(json,Task.class);
@@ -11,4 +13,9 @@
   Assert.assertEquals(task.getInterval(),task2.getInterval());
   Assert.assertEquals(task.getSegments(),task2.getSegments());
   Assert.assertEquals(task.getAggregators().get(0).getName(),task2.getAggregators().get(0).getName());
+  final MergeTask task3=(MergeTask)jsonMapper.readValue(jsonMapper.writeValueAsString(new ClientMergeQuery("foo",segments,aggregators)),Task.class);
+  Assert.assertEquals("foo",task3.getDataSource());
+  Assert.assertEquals(new Interval("2010-01-01/P1D"),task3.getInterval());
+  Assert.assertEquals(segments,task3.getSegments());
+  Assert.assertEquals(aggregators,task3.getAggregators());
 }

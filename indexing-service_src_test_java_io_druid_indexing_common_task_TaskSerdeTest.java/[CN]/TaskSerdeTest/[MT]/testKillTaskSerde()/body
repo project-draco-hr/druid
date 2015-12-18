@@ -9,4 +9,7 @@
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
   Assert.assertEquals(task.getInterval(),task2.getInterval());
+  final KillTask task3=(KillTask)jsonMapper.readValue(jsonMapper.writeValueAsString(new ClientKillQuery("foo",new Interval("2010-01-01/P1D"))),Task.class);
+  Assert.assertEquals("foo",task3.getDataSource());
+  Assert.assertEquals(new Interval("2010-01-01/P1D"),task3.getInterval());
 }
