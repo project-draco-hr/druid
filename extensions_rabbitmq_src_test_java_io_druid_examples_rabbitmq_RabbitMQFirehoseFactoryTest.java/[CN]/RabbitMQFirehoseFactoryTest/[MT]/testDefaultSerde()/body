@@ -1,7 +1,7 @@
 {
   RabbitMQFirehoseConfig config=RabbitMQFirehoseConfig.makeDefaultConfig();
   JacksonifiedConnectionFactory connectionFactory=JacksonifiedConnectionFactory.makeDefaultConnectionFactory();
-  RabbitMQFirehoseFactory factory=new RabbitMQFirehoseFactory(connectionFactory,config);
+  RabbitMQFirehoseFactory factory=new RabbitMQFirehoseFactory(connectionFactory,config,null);
   byte[] bytes=mapper.writeValueAsBytes(factory);
   RabbitMQFirehoseFactory factory2=mapper.readValue(bytes,RabbitMQFirehoseFactory.class);
   byte[] bytes2=mapper.writeValueAsBytes(factory2);
