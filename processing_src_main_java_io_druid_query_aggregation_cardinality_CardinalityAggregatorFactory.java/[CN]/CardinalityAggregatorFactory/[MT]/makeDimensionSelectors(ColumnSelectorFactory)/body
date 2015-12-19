@@ -1,7 +1,7 @@
 {
   return Lists.newArrayList(Iterables.filter(Iterables.transform(fieldNames,new Function<String,DimensionSelector>(){
     @Nullable @Override public DimensionSelector apply(    @Nullable String input){
-      return columnFactory.makeDimensionSelector(input,null);
+      return columnFactory.makeDimensionSelector(new DefaultDimensionSpec(input,input));
     }
   }
 ),Predicates.notNull()));
