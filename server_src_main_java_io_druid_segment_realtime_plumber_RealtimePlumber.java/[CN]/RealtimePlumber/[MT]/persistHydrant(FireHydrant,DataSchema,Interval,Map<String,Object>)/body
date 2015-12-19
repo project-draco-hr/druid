@@ -8,7 +8,7 @@ synchronized (indexToPersist) {
     try {
       int numRows=indexToPersist.getIndex().size();
       final IndexSpec indexSpec=config.getIndexSpec();
-      final File persistedFile=indexMerger.persist(indexToPersist.getIndex(),new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),metaData,indexSpec);
+      final File persistedFile=indexMerger.persist(indexToPersist.getIndex(),interval,new File(computePersistDir(schema,interval),String.valueOf(indexToPersist.getCount())),metaData,indexSpec);
       indexToPersist.swapSegment(new QueryableIndexSegment(indexToPersist.getSegment().getIdentifier(),indexIO.loadIndex(persistedFile)));
       return numRows;
     }
