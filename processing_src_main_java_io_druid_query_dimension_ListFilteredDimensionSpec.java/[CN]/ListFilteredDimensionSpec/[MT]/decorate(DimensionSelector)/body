@@ -1,0 +1,42 @@
+{
+  if (selector == null) {
+    return selector;
+  }
+  final Set<Integer> matched=new HashSet<>(values.size());
+  for (  String value : values) {
+    int i=selector.lookupId(value);
+    if (i >= 0) {
+      matched.add(i);
+    }
+  }
+  ;
+  return new DimensionSelector(){
+    @Override public IndexedInts getRow(){
+      IndexedInts baseRow=selector.getRow();
+      List<Integer> result=new ArrayList<>(baseRow.size());
+      for (      int i : baseRow) {
+        if (matched.contains(i)) {
+          if (isWhitelist) {
+            result.add(i);
+          }
+        }
+ else {
+          if (!isWhitelist) {
+            result.add(i);
+          }
+        }
+      }
+      return new ListBasedIndexedInts(result);
+    }
+    @Override public int getValueCardinality(){
+      return matched.size();
+    }
+    @Override public String lookupName(    int id){
+      return selector.lookupName(id);
+    }
+    @Override public int lookupId(    String name){
+      return selector.lookupId(name);
+    }
+  }
+;
+}
