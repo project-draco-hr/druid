@@ -22,7 +22,7 @@
 ;
   announceCount=new AtomicInteger(0);
   announcer=new DataSegmentAnnouncer(){
-    private final DataSegmentAnnouncer delegate=new SingleDataSegmentAnnouncer(me,zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
+    private final DataSegmentAnnouncer delegate=new BatchDataSegmentAnnouncer(me,new BatchDataSegmentAnnouncerConfig(),zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
     @Override public void announceSegment(    DataSegment segment) throws IOException {
       announceCount.incrementAndGet();
       delegate.announceSegment(segment);
