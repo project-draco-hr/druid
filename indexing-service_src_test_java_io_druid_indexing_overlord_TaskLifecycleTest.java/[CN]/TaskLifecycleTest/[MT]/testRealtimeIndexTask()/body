@@ -7,7 +7,7 @@
   RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
   final String taskId=realtimeIndexTask.getId();
   tq.add(realtimeIndexTask);
-  Assert.assertTrue(publishCountDown.await(1000,TimeUnit.MILLISECONDS));
+  publishCountDown.await();
   Assert.assertEquals(1,handOffCallbacks.size());
   Pair<Executor,Runnable> executorRunnablePair=Iterables.getOnlyElement(handOffCallbacks.values());
   executorRunnablePair.lhs.execute(executorRunnablePair.rhs);
