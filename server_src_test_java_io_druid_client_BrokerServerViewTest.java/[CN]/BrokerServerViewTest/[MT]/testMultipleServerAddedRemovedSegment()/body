@@ -10,7 +10,7 @@
   }
 );
   for (  DruidServer druidServer : druidServers) {
-    setupZNodeForServer(druidServer);
+    setupZNodeForServer(druidServer,zkPathsConfig,jsonMapper);
   }
   final List<DataSegment> segments=Lists.transform(ImmutableList.<Pair<String,String>>of(Pair.of("2011-04-01/2011-04-03","v1"),Pair.of("2011-04-03/2011-04-06","v1"),Pair.of("2011-04-01/2011-04-09","v2"),Pair.of("2011-04-06/2011-04-09","v3"),Pair.of("2011-04-01/2011-04-02","v3")),new Function<Pair<String,String>,DataSegment>(){
     @Override public DataSegment apply(    Pair<String,String> input){
