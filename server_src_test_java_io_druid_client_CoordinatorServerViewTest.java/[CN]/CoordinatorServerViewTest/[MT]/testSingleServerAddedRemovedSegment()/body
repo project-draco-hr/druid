@@ -4,7 +4,7 @@
   segmentRemovedLatch=new CountDownLatch(1);
   setupViews();
   final DruidServer druidServer=new DruidServer("localhost:1234","localhost:1234",10000000L,"historical","default_tier",0);
-  setupZNodeForServer(druidServer);
+  setupZNodeForServer(druidServer,zkPathsConfig,jsonMapper);
   final DataSegment segment=dataSegmentWithIntervalAndVersion("2014-10-20T00:00:00Z/P1D","v1");
   announceSegmentForServer(druidServer,segment);
   Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
