@@ -1,8 +1,15 @@
 {
-  if (callbacksRun.get()) {
+  if (!state.compareAndSet(State.STARTED,State.STOPPING)) {
+    State current=state.waitForTransition(State.STOPPING,State.STOPPED,SHUTDOWN_WAIT_TIMEOUT);
+    if (current != State.STOPPED) {
+      throw new IllegalStateException(String.format("Expected state [%s] found [%s]",State.STARTED,current));
+    }
     return;
   }
-  if (!state.compareAndSet(State.STARTED,State.STOPPED)) {
-    throw new IllegalStateException(String.format("Expected state [%s] found [%s]",State.STARTED,state.get()));
+  try {
+    runCallbacks();
+  }
+  finally {
+    state.compareAndSet(State.STOPPING,State.STOPPED);
   }
 }
