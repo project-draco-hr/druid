@@ -96,6 +96,7 @@ synchronized (done) {
         long stopTime=System.currentTimeMillis();
         log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount.get(),stopTime - responseStartTime,byteCount.get() / (0.0001 * (stopTime - responseStartTime)));
         emitter.emit(builder.build("query/node/time",stopTime - requestStartTime));
+        emitter.emit(builder.build("query/node/bytes",byteCount.get()));
 synchronized (done) {
           try {
             queue.put(ByteSource.empty().openStream());
