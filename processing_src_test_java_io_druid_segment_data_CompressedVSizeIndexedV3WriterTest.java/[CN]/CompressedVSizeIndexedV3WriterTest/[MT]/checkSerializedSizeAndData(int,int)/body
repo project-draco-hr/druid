@@ -1,0 +1,31 @@
+{
+  int maxValue=vals.size() > 0 ? getMaxValue(vals) : 0;
+  CompressedIntsIndexedWriter offsetWriter=new CompressedIntsIndexedWriter(ioPeon,"offset",offsetChunkFactor,byteOrder,compressionStrategy);
+  CompressedVSizeIntsIndexedWriter valueWriter=new CompressedVSizeIntsIndexedWriter(ioPeon,"value",maxValue,valueChunkFactor,byteOrder,compressionStrategy);
+  CompressedVSizeIndexedV3Writer writer=new CompressedVSizeIndexedV3Writer(offsetWriter,valueWriter);
+  CompressedVSizeIndexedV3Supplier supplierFromIterable=CompressedVSizeIndexedV3Supplier.fromIterable(Iterables.transform(vals,new Function<int[],IndexedInts>(){
+    @Nullable @Override public IndexedInts apply(    @Nullable final int[] input){
+      return new ArrayBasedIndexedInts(input);
+    }
+  }
+),offsetChunkFactor,maxValue,byteOrder,compressionStrategy);
+  writer.open();
+  for (  int[] val : vals) {
+    writer.add(val);
+  }
+  final WritableByteChannel outputChannel=Channels.newChannel(ioPeon.makeOutputStream("output"));
+  long writtenLength=writer.closeAndWriteToChannel(outputChannel);
+  outputChannel.close();
+  assertEquals(writtenLength,supplierFromIterable.getSerializedSize());
+  CompressedVSizeIndexedV3Supplier supplierFromByteBuffer=CompressedVSizeIndexedV3Supplier.fromByteBuffer(ByteBuffer.wrap(IOUtils.toByteArray(ioPeon.makeInputStream("output"))),byteOrder);
+  IndexedMultivalue<IndexedInts> indexedMultivalue=supplierFromByteBuffer.get();
+  assertEquals(indexedMultivalue.size(),vals.size());
+  for (int i=0; i < vals.size(); ++i) {
+    IndexedInts subVals=indexedMultivalue.get(i);
+    assertEquals(subVals.size(),vals.get(i).length);
+    for (int j=0; j < subVals.size(); ++j) {
+      assertEquals(subVals.get(j),vals.get(i)[j]);
+    }
+  }
+  CloseQuietly.close(indexedMultivalue);
+}

@@ -1,0 +1,9 @@
+{
+  for (  int offsetChunk : OFFSET_CHUNK_FACTORS) {
+    for (    int maxValue : MAX_VALUES) {
+      final int valueChunk=CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForValue(maxValue);
+      generateVals((rand.nextInt(2) + 1) * valueChunk + rand.nextInt(valueChunk),maxValue);
+      checkSerializedSizeAndData(offsetChunk,valueChunk);
+    }
+  }
+}

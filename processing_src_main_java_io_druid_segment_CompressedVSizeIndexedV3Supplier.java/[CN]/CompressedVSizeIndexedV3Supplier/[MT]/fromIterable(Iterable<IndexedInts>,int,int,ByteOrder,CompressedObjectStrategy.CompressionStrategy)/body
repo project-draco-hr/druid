@@ -1,0 +1,18 @@
+{
+  Iterator<IndexedInts> objects=objectsIterable.iterator();
+  List<Integer> offsetList=new ArrayList<>();
+  List<Integer> values=new ArrayList<>();
+  int offset=0;
+  while (objects.hasNext()) {
+    IndexedInts next=objects.next();
+    offsetList.add(offset);
+    for (int i=0; i < next.size(); i++) {
+      values.add(next.get(i));
+    }
+    offset+=next.size();
+  }
+  offsetList.add(offset);
+  CompressedIntsIndexedSupplier headerSupplier=CompressedIntsIndexedSupplier.fromList(offsetList,offsetChunkFactor,byteOrder,compression);
+  CompressedVSizeIntsIndexedSupplier valuesSupplier=CompressedVSizeIntsIndexedSupplier.fromList(values,maxValue,CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForValue(maxValue),byteOrder,compression);
+  return new CompressedVSizeIndexedV3Supplier(headerSupplier,valuesSupplier);
+}

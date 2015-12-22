@@ -1,0 +1,12 @@
+{
+  this.numBytes=VSizeIndexedInts.getNumBytesForMax(maxValue);
+  this.chunkFactor=chunkFactor;
+  this.chunkBytes=chunkFactor * numBytes + CompressedVSizeIntsIndexedSupplier.bufferPadding(numBytes);
+  this.byteOrder=byteOrder;
+  this.compression=compression;
+  this.flattener=new GenericIndexedWriter<>(ioPeon,filenameBase,CompressedByteBufferObjectStrategy.getBufferForOrder(byteOrder,compression,chunkBytes));
+  this.intBuffer=ByteBuffer.allocate(Ints.BYTES).order(byteOrder);
+  this.endBuffer=ByteBuffer.allocate(chunkBytes).order(byteOrder);
+  this.endBuffer.limit(numBytes * chunkFactor);
+  this.numInserted=0;
+}

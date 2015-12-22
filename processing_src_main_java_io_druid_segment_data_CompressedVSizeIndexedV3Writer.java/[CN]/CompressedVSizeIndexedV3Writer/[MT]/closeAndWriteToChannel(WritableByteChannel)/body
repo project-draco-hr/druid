@@ -1,0 +1,7 @@
+{
+  channel.write(ByteBuffer.wrap(new byte[]{version}));
+  offsetWriter.add(offset);
+  long offsetLen=offsetWriter.closeAndWriteToChannel(channel);
+  long dataLen=valueWriter.closeAndWriteToChannel(channel);
+  return 1 + offsetLen + dataLen;
+}

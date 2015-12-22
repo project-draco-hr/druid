@@ -1,0 +1,19 @@
+{
+  CompressedIntsIndexedWriter writer=new CompressedIntsIndexedWriter(ioPeon,"test",chunkFactor,byteOrder,compressionStrategy);
+  CompressedIntsIndexedSupplier supplierFromList=CompressedIntsIndexedSupplier.fromList(Ints.asList(vals),chunkFactor,byteOrder,compressionStrategy);
+  writer.open();
+  for (  int val : vals) {
+    writer.add(val);
+  }
+  final WritableByteChannel outputChannel=Channels.newChannel(ioPeon.makeOutputStream("output"));
+  long writtenLength=writer.closeAndWriteToChannel(outputChannel);
+  outputChannel.close();
+  assertEquals(writtenLength,supplierFromList.getSerializedSize());
+  CompressedIntsIndexedSupplier supplierFromByteBuffer=CompressedIntsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(IOUtils.toByteArray(ioPeon.makeInputStream("output"))),byteOrder);
+  IndexedInts indexedInts=supplierFromByteBuffer.get();
+  assertEquals(vals.length,indexedInts.size());
+  for (int i=0; i < vals.length; ++i) {
+    assertEquals(vals[i],indexedInts.get(i));
+  }
+  CloseQuietly.close(indexedInts);
+}

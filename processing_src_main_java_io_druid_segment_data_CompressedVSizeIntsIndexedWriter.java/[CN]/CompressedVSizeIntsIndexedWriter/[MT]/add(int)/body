@@ -1,0 +1,16 @@
+{
+  if (!endBuffer.hasRemaining()) {
+    endBuffer.rewind();
+    flattener.write(StupidResourceHolder.create(endBuffer));
+    endBuffer.rewind();
+    endBuffer.limit(numBytes * chunkFactor);
+  }
+  intBuffer.putInt(0,val);
+  if (byteOrder.equals(ByteOrder.BIG_ENDIAN)) {
+    endBuffer.put(intBuffer.array(),Ints.BYTES - numBytes,numBytes);
+  }
+ else {
+    endBuffer.put(intBuffer.array(),0,numBytes);
+  }
+  numInserted++;
+}
