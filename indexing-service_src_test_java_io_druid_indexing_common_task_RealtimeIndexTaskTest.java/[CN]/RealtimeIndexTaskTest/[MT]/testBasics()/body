@@ -3,6 +3,7 @@
   final RealtimeIndexTask task=makeRealtimeTask(null);
   final TaskToolbox taskToolbox=makeToolbox(task,mdc,tempFolder.newFolder());
   final ListenableFuture<TaskStatus> statusFuture=runTask(task,taskToolbox);
+  final DataSegment publishedSegment;
   while (task.getFirehose() == null) {
     Thread.sleep(50);
   }
@@ -12,8 +13,11 @@
   while (mdc.getPublished().isEmpty()) {
     Thread.sleep(50);
   }
+  publishedSegment=Iterables.getOnlyElement(mdc.getPublished());
   Assert.assertEquals(2,countEvents(task));
-  for (  Pair<Executor,Runnable> executorRunnablePair : handOffCallbacks.values()) {
+  for (  Map.Entry<SegmentDescriptor,Pair<Executor,Runnable>> entry : handOffCallbacks.entrySet()) {
+    final Pair<Executor,Runnable> executorRunnablePair=entry.getValue();
+    Assert.assertEquals(new SegmentDescriptor(publishedSegment.getInterval(),publishedSegment.getVersion(),publishedSegment.getShardSpec().getPartitionNum()),entry.getKey());
     executorRunnablePair.lhs.execute(executorRunnablePair.rhs);
   }
   handOffCallbacks.clear();

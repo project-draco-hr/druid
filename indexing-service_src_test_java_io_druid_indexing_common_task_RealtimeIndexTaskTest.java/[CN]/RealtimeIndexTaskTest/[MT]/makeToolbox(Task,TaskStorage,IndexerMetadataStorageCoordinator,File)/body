@@ -1,0 +1,50 @@
+{
+  final TaskConfig taskConfig=new TaskConfig(directory.getPath(),null,null,50000,null,false,null,null);
+  final TaskLockbox taskLockbox=new TaskLockbox(taskStorage);
+  try {
+    taskStorage.insert(task,TaskStatus.running(task.getId()));
+  }
+ catch (  EntryExistsException e) {
+  }
+  taskLockbox.syncFromStorage();
+  final TaskActionToolbox taskActionToolbox=new TaskActionToolbox(taskLockbox,mdc,emitter);
+  final TaskActionClientFactory taskActionClientFactory=new LocalTaskActionClientFactory(taskStorage,taskActionToolbox);
+  final QueryRunnerFactoryConglomerate conglomerate=new DefaultQueryRunnerFactoryConglomerate(ImmutableMap.<Class<? extends Query>,QueryRunnerFactory>of(TimeseriesQuery.class,new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(new IntervalChunkingQueryRunnerDecorator(null,null,null){
+    @Override public <T>QueryRunner<T> decorate(    QueryRunner<T> delegate,    QueryToolChest<T,? extends Query<T>> toolChest){
+      return delegate;
+    }
+  }
+),new TimeseriesQueryEngine(),new QueryWatcher(){
+    @Override public void registerQuery(    Query query,    ListenableFuture future){
+    }
+  }
+)));
+  handOffCallbacks=Maps.newConcurrentMap();
+  handoffNotifierFactory=new SegmentHandoffNotifierFactory(){
+    @Override public SegmentHandoffNotifier createSegmentHandoffNotifier(    String dataSource){
+      return new SegmentHandoffNotifier(){
+        @Override public boolean registerSegmentHandoffCallback(        SegmentDescriptor descriptor,        Executor exec,        Runnable handOffRunnable){
+          handOffCallbacks.put(descriptor,new Pair<>(exec,handOffRunnable));
+          return true;
+        }
+        @Override public void start(){
+        }
+        @Override public void stop(){
+        }
+        Map<SegmentDescriptor,Pair<Executor,Runnable>> getHandOffCallbacks(){
+          return handOffCallbacks;
+        }
+      }
+;
+    }
+  }
+;
+  final TestUtils testUtils=new TestUtils();
+  final TaskToolboxFactory toolboxFactory=new TaskToolboxFactory(taskConfig,taskActionClientFactory,emitter,new TestDataSegmentPusher(),new TestDataSegmentKiller(),null,null,new TestDataSegmentAnnouncer(),handoffNotifierFactory,conglomerate,MoreExecutors.sameThreadExecutor(),EasyMock.createMock(MonitorScheduler.class),new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+    @Override public List<StorageLocationConfig> getLocations(){
+      return Lists.newArrayList();
+    }
+  }
+,testUtils.getTestObjectMapper())),testUtils.getTestObjectMapper(),testUtils.getTestIndexMerger(),testUtils.getTestIndexIO(),MapCache.create(1024),new CacheConfig());
+  return toolboxFactory.build(task);
+}

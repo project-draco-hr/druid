@@ -1,38 +1,41 @@
 {
+  final TaskStorage taskStorage=new HeapMemoryTaskStorage(new TaskStorageConfig(null));
+  final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
   final File directory=tempFolder.newFolder();
   final RealtimeIndexTask task1=makeRealtimeTask(null);
   final DataSegment publishedSegment;
 {
-    final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
-    final TaskToolbox taskToolbox=makeToolbox(task1,mdc,directory);
+    final TaskToolbox taskToolbox=makeToolbox(task1,taskStorage,mdc,directory);
     final ListenableFuture<TaskStatus> statusFuture=runTask(task1,taskToolbox);
     while (task1.getFirehose() == null) {
       Thread.sleep(50);
     }
     final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task1.getFirehose();
     firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo"))));
-    task1.stopGracefully();
-    final TaskStatus taskStatus=statusFuture.get();
-    Assert.assertEquals(TaskStatus.Status.SUCCESS,taskStatus.getStatusCode());
-    Assert.assertEquals(Sets.newHashSet(),mdc.getPublished());
-  }
-{
-    final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
-    final RealtimeIndexTask task2=makeRealtimeTask(task1.getId());
-    final TaskToolbox taskToolbox=makeToolbox(task2,mdc,directory);
-    final ListenableFuture<TaskStatus> statusFuture=runTask(task2,taskToolbox);
-    while (task2.getFirehose() == null) {
-      Thread.sleep(50);
-    }
-    Assert.assertEquals(1,countEvents(task2));
-    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task2.getFirehose();
-    firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim2"),ImmutableMap.<String,Object>of("dim2","bar"))));
     firehose.close();
     while (mdc.getPublished().isEmpty()) {
       Thread.sleep(50);
     }
     publishedSegment=Iterables.getOnlyElement(mdc.getPublished());
-    Assert.assertEquals(2,countEvents(task2));
+    Assert.assertEquals(1,countEvents(task1));
+    task1.stopGracefully();
+    while (!statusFuture.isDone()) {
+      Thread.sleep(50);
+    }
+  }
+{
+    final RealtimeIndexTask task2=makeRealtimeTask(task1.getId());
+    final TaskToolbox taskToolbox=makeToolbox(task2,taskStorage,mdc,directory);
+    final ListenableFuture<TaskStatus> statusFuture=runTask(task2,taskToolbox);
+    while (task2.getFirehose() == null) {
+      Thread.sleep(50);
+    }
+    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task2.getFirehose();
+    firehose.close();
+    Assert.assertEquals(ImmutableSet.of(publishedSegment),mdc.getPublished());
+    while (handOffCallbacks.isEmpty()) {
+      Thread.sleep(50);
+    }
     for (    Map.Entry<SegmentDescriptor,Pair<Executor,Runnable>> entry : handOffCallbacks.entrySet()) {
       final Pair<Executor,Runnable> executorRunnablePair=entry.getValue();
       Assert.assertEquals(new SegmentDescriptor(publishedSegment.getInterval(),publishedSegment.getVersion(),publishedSegment.getShardSpec().getPartitionNum()),entry.getKey());
