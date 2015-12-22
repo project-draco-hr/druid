@@ -1,13 +1,7 @@
 {
   return new ResultMergeQueryRunner<SegmentAnalysis>(runner){
-    private Function<SegmentAnalysis,SegmentAnalysis> transformFn=new Function<SegmentAnalysis,SegmentAnalysis>(){
-      @Override public SegmentAnalysis apply(      SegmentAnalysis analysis){
-        return new SegmentAnalysis(analysis.getId(),JodaUtils.condenseIntervals(analysis.getIntervals()),analysis.getColumns(),analysis.getSize(),analysis.getNumRows());
-      }
-    }
-;
     @Override public Sequence<SegmentAnalysis> doRun(    QueryRunner<SegmentAnalysis> baseRunner,    Query<SegmentAnalysis> query,    Map<String,Object> context){
-      return CombiningSequence.create(baseRunner.run(query,context),makeOrdering(query),createMergeFn(query),transformFn);
+      return new MappedSequence<>(CombiningSequence.create(baseRunner.run(query,context),makeOrdering(query),createMergeFn(query)),MERGE_TRANSFORM_FN);
     }
     @Override protected Ordering<SegmentAnalysis> makeOrdering(    Query<SegmentAnalysis> query){
       if (((SegmentMetadataQuery)query).isMerge()) {
