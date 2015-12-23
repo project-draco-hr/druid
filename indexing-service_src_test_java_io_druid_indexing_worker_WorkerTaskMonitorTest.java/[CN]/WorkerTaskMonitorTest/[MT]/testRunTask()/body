@@ -1,5 +1,4 @@
 {
-  cf.create().creatingParentsIfNeeded().forPath(joiner.join(tasksPath,task.getId()),jsonMapper.writeValueAsBytes(task));
   Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
     @Override public boolean isValid(){
       try {
@@ -11,6 +10,7 @@
     }
   }
 ));
+  cf.create().creatingParentsIfNeeded().forPath(joiner.join(tasksPath,task.getId()),jsonMapper.writeValueAsBytes(task));
   Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
     @Override public boolean isValid(){
       try {
