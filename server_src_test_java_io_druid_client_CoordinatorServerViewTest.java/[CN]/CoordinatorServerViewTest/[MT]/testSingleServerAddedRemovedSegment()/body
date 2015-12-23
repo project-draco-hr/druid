@@ -6,7 +6,7 @@
   final DruidServer druidServer=new DruidServer("localhost:1234","localhost:1234",10000000L,"historical","default_tier",0);
   setupZNodeForServer(druidServer,zkPathsConfig,jsonMapper);
   final DataSegment segment=dataSegmentWithIntervalAndVersion("2014-10-20T00:00:00Z/P1D","v1");
-  announceSegmentForServer(druidServer,segment);
+  announceSegmentForServer(druidServer,segment,zkPathsConfig,jsonMapper);
   Assert.assertTrue(timing.forWaiting().awaitLatch(segmentViewInitLatch));
   Assert.assertTrue(timing.forWaiting().awaitLatch(segmentAddedLatch));
   TimelineLookup timeline=overlordServerView.getTimeline(new TableDataSource("test_overlord_server_view"));
