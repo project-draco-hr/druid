@@ -6,6 +6,7 @@
       previous=new FireDepartmentMetrics();
     }
     final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE,fireDepartment.getDataSchema().getDataSource());
+    MonitorUtils.addDimensionsToBuilder(builder,dimensions);
     final long thrownAway=metrics.thrownAway() - previous.thrownAway();
     if (thrownAway > 0) {
       log.warn("[%,d] events thrown away because they are outside the window period!",thrownAway);
