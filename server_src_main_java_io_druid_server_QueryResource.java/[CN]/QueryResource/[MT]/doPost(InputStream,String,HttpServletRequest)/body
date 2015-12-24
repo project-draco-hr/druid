@@ -45,7 +45,7 @@
           os.flush();
           os.close();
           final long queryTime=System.currentTimeMillis() - start;
-          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/time",queryTime));
+          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).setDimension("success","true").build("query/time",queryTime));
           emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/bytes",os.getCount()));
           requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"query/bytes",os.getCount(),"success",true))));
         }
@@ -62,7 +62,9 @@
  catch (  QueryInterruptedException e) {
     try {
       log.info("%s [%s]",e.getMessage(),queryId);
-      requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"interrupted",true,"reason",e.toString()))));
+      final long queryTime=System.currentTimeMillis() - start;
+      emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
+      requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",false,"interrupted",true,"reason",e.toString()))));
     }
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",query);
@@ -73,7 +75,9 @@ catch (  Exception e) {
     final String queryString=query == null ? "unparsable query" : query.toString();
     log.warn(e,"Exception occurred on request [%s]",queryString);
     try {
-      requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("success",false,"exception",e.toString()))));
+      final long queryTime=System.currentTimeMillis() - start;
+      emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
+      requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",false,"exception",e.toString()))));
     }
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",queryString);
