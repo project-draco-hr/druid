@@ -1,5 +1,6 @@
 {
   curator.start();
+  curator.blockUntilConnected();
   List<String> serviceNames=ImmutableList.of("druid/overlord","druid/coordinator","druid/firehose/tranquility_test-50-0000-0000");
   final ServiceDiscovery serviceDiscovery=createAndAnnounceServices(serviceNames);
   Assert.assertTrue(Iterators.all(serviceNames.iterator(),new Predicate<String>(){

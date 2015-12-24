@@ -2,6 +2,7 @@
   final MapStrategy strategy=new MapStrategy();
   CuratorInventoryManager<Map<String,Integer>,Integer> manager=new CuratorInventoryManager<Map<String,Integer>,Integer>(curator,new StringInventoryManagerConfig("/container","/inventory"),exec,strategy);
   curator.start();
+  curator.blockUntilConnected();
   manager.start();
   Assert.assertTrue(Iterables.isEmpty(manager.getInventory()));
   CountDownLatch containerLatch=new CountDownLatch(1);

@@ -3,6 +3,7 @@
   testingCluster.start();
   cf=CuratorFrameworkFactory.builder().connectString(testingCluster.getConnectString()).retryPolicy(new ExponentialBackoffRetry(1,10)).compressionProvider(new PotentiallyGzippedCompressionProvider(true)).build();
   cf.start();
+  cf.blockUntilConnected();
   cf.create().creatingParentsIfNeeded().forPath(testBasePath);
   jsonMapper=new DefaultObjectMapper();
   announcer=new Announcer(cf,MoreExecutors.sameThreadExecutor());
