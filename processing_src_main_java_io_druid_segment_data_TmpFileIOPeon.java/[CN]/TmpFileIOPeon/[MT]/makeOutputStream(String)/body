@@ -4,6 +4,12 @@
     retFile=File.createTempFile("filePeon",filename);
     retFile.deleteOnExit();
     createdFiles.put(filename,retFile);
+    return new BufferedOutputStream(new FileOutputStream(retFile));
   }
-  return new BufferedOutputStream(new FileOutputStream(retFile));
+ else   if (allowOverwrite) {
+    return new BufferedOutputStream(new FileOutputStream(retFile));
+  }
+ else {
+    throw new IOException("tmp file conflicts, file[" + filename + "] already exist!");
+  }
 }

@@ -1,0 +1,11 @@
+{
+  try (QueryableIndex index=indexIO.loadIndex(inDir)){
+    final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(index);
+    return makeIndexFiles(ImmutableList.of(adapter),outDir,progress,Lists.newArrayList(adapter.getDimensionNames()),Lists.newArrayList(adapter.getMetricNames()),null,new Function<ArrayList<Iterable<Rowboat>>,Iterable<Rowboat>>(){
+      @Nullable @Override public Iterable<Rowboat> apply(      ArrayList<Iterable<Rowboat>> input){
+        return input.get(0);
+      }
+    }
+,indexSpec);
+  }
+ }

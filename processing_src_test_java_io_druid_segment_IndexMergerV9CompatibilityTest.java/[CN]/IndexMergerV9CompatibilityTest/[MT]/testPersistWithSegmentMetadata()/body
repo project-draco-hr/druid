@@ -1,0 +1,19 @@
+{
+  File outDir=Files.createTempDir();
+  QueryableIndex index=null;
+  try {
+    outDir=Files.createTempDir();
+    Map<String,Object> segmentMetadata=ImmutableMap.<String,Object>of("key","value");
+    index=INDEX_IO.loadIndex(INDEX_MERGER_V9.persist(toPersist,outDir,segmentMetadata,INDEX_SPEC));
+    Assert.assertEquals(segmentMetadata,index.getMetaData());
+  }
+  finally {
+    if (index != null) {
+      index.close();
+      ;
+    }
+    if (outDir != null) {
+      FileUtils.deleteDirectory(outDir);
+    }
+  }
+}

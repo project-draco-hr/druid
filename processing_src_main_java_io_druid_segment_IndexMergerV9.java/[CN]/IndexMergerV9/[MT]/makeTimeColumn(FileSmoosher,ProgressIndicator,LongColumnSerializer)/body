@@ -1,0 +1,10 @@
+{
+  final String section="make time column";
+  progress.startSection(section);
+  long startTime=System.currentTimeMillis();
+  timeWriter.close();
+  final ColumnDescriptor serdeficator=ColumnDescriptor.builder().setValueType(ValueType.LONG).addSerde(LongGenericColumnPartSerde.serializerBuilder().withByteOrder(IndexIO.BYTE_ORDER).withDelegate(timeWriter).build()).build();
+  makeColumn(v9Smoosher,Column.TIME_COLUMN_NAME,serdeficator);
+  log.info("Completed time column in %,d millis.",System.currentTimeMillis() - startTime);
+  progress.stopSection(section);
+}

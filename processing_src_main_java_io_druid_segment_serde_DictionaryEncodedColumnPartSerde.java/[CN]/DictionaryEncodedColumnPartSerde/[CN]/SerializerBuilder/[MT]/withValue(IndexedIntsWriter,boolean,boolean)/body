@@ -1,0 +1,22 @@
+{
+  this.valueWriter=valueWriter;
+  if (hasMultiValue) {
+    if (compressed) {
+      this.version=VERSION.COMPRESSED;
+      this.flags|=Feature.MULTI_VALUE_V3.getMask();
+    }
+ else {
+      this.version=VERSION.UNCOMPRESSED_MULTI_VALUE;
+      this.flags|=Feature.MULTI_VALUE.getMask();
+    }
+  }
+ else {
+    if (compressed) {
+      this.version=VERSION.COMPRESSED;
+    }
+ else {
+      this.version=VERSION.UNCOMPRESSED_SINGLE_VALUE;
+    }
+  }
+  return this;
+}

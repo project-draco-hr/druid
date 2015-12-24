@@ -1,0 +1,13 @@
+{
+  ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));
+  byte[] specBytes=baos.toByteArray();
+  final SmooshedWriter channel=v9Smoosher.addWithSmooshedWriter(columnName,serdeficator.numBytes() + specBytes.length);
+  try {
+    channel.write(ByteBuffer.wrap(specBytes));
+    serdeficator.write(channel);
+  }
+  finally {
+    channel.close();
+  }
+}

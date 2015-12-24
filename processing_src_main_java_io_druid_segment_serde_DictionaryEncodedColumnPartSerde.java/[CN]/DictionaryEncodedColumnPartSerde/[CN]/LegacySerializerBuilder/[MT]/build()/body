@@ -1,0 +1,46 @@
+{
+  Preconditions.checkArgument(singleValuedColumn != null ^ multiValuedColumn != null,"Exactly one of singleValCol[%s] or multiValCol[%s] must be set",singleValuedColumn,multiValuedColumn);
+  return new DictionaryEncodedColumnPartSerde(byteOrder,bitmapSerdeFactory,new Serializer(){
+    @Override public long numBytes(){
+      long size=1 + (version.compareTo(VERSION.COMPRESSED) >= 0 ? Ints.BYTES : 0);
+      size+=dictionary.getSerializedSize();
+      if (Feature.MULTI_VALUE.isSet(flags)) {
+        size+=multiValuedColumn.getSerializedSize();
+      }
+ else {
+        size+=singleValuedColumn.getSerializedSize();
+      }
+      size+=bitmaps.getSerializedSize();
+      if (spatialIndex != null) {
+        size+=spatialIndex.size() + Ints.BYTES;
+      }
+      return size;
+    }
+    @Override public void write(    WritableByteChannel channel) throws IOException {
+      channel.write(ByteBuffer.wrap(new byte[]{version.asByte()}));
+      if (version.compareTo(VERSION.COMPRESSED) >= 0) {
+        channel.write(ByteBuffer.wrap(Ints.toByteArray(flags)));
+      }
+      if (dictionary != null) {
+        dictionary.writeToChannel(channel);
+      }
+      if (Feature.MULTI_VALUE.isSet(flags)) {
+        if (multiValuedColumn != null) {
+          multiValuedColumn.writeToChannel(channel);
+        }
+      }
+ else {
+        if (singleValuedColumn != null) {
+          singleValuedColumn.writeToChannel(channel);
+        }
+      }
+      if (bitmaps != null) {
+        bitmaps.writeToChannel(channel);
+      }
+      if (spatialIndex != null) {
+        ByteBufferSerializer.writeToChannel(spatialIndex,new IndexedRTree.ImmutableRTreeObjectStrategy(bitmapSerdeFactory.getBitmapFactory()),channel);
+      }
+    }
+  }
+);
+}

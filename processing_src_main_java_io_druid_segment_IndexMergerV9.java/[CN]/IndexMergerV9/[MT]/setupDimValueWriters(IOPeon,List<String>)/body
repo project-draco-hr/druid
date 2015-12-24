@@ -1,0 +1,9 @@
+{
+  ArrayList<GenericIndexedWriter<String>> dimValueWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  for (  String dimension : mergedDimensions) {
+    final GenericIndexedWriter<String> writer=new GenericIndexedWriter<>(ioPeon,String.format("%s.dim_values",dimension),GenericIndexed.STRING_STRATEGY);
+    writer.open();
+    dimValueWriters.add(writer);
+  }
+  return dimValueWriters;
+}

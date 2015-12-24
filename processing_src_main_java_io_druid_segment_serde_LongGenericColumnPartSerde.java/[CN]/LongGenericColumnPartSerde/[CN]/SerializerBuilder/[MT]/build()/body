@@ -1,0 +1,11 @@
+{
+  return new LongGenericColumnPartSerde(byteOrder,new Serializer(){
+    @Override public long numBytes(){
+      return delegate.getSerializedSize();
+    }
+    @Override public void write(    WritableByteChannel channel) throws IOException {
+      delegate.writeToChannel(channel);
+    }
+  }
+);
+}

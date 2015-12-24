@@ -9,6 +9,7 @@
       if (value != null && GenericIndexed.STRING_STRATEGY.compare(value,lastVal) <= 0) {
         throw new ISE("Value[%s] is less than the last value[%s] I have, cannot be.",value,lastVal);
       }
+      value=Strings.nullToEmpty(value);
       lastVal=value;
       final MutableBitmap bitmapIndex=dimInverted.get(value);
       if (bitmapIndex == null) {

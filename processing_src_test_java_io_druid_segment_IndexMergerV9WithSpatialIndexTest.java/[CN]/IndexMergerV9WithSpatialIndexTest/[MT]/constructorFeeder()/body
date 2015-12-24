@@ -1,0 +1,7 @@
+{
+  final IndexSpec indexSpec=new IndexSpec();
+  final IncrementalIndex rtIndex=makeIncrementalIndex();
+  final QueryableIndex mMappedTestIndex=makeQueryableIndex(indexSpec);
+  final QueryableIndex mergedRealtimeIndex=makeMergedQueryableIndex(indexSpec);
+  return Arrays.asList(new Object[][]{{new IncrementalIndexSegment(rtIndex,null)},{new QueryableIndexSegment(null,mMappedTestIndex)},{new QueryableIndexSegment(null,mergedRealtimeIndex)}});
+}

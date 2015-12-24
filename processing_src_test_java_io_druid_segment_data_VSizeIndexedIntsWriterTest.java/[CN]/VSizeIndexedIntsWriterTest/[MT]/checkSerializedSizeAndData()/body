@@ -1,0 +1,20 @@
+{
+  int maxValue=vals.length == 0 ? 0 : Ints.max(vals);
+  VSizeIndexedIntsWriter writer=new VSizeIndexedIntsWriter(ioPeon,"test",maxValue);
+  VSizeIndexedInts intsFromList=VSizeIndexedInts.fromList(Ints.asList(vals),maxValue);
+  writer.open();
+  for (  int val : vals) {
+    writer.add(val);
+  }
+  writer.close();
+  long writtenLength=writer.getSerializedSize();
+  final WritableByteChannel outputChannel=Channels.newChannel(ioPeon.makeOutputStream("output"));
+  writer.writeToChannel(outputChannel);
+  outputChannel.close();
+  assertEquals(writtenLength,intsFromList.getSerializedSize());
+  VSizeIndexedInts intsFromByteBuffer=VSizeIndexedInts.readFromByteBuffer(ByteBuffer.wrap(IOUtils.toByteArray(ioPeon.makeInputStream("output"))));
+  assertEquals(vals.length,intsFromByteBuffer.size());
+  for (int i=0; i < vals.length; ++i) {
+    assertEquals(vals[i],intsFromByteBuffer.get(i));
+  }
+}

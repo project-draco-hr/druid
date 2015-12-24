@@ -1,0 +1,26 @@
+{
+  final Map<String,ColumnCapabilitiesImpl> capabilitiesMap=Maps.newHashMap();
+  for (  IndexableAdapter adapter : adapters) {
+    for (    String dimension : adapter.getDimensionNames()) {
+      ColumnCapabilitiesImpl mergedCapabilities=capabilitiesMap.get(dimension);
+      if (mergedCapabilities == null) {
+        mergedCapabilities=new ColumnCapabilitiesImpl();
+        mergedCapabilities.setType(ValueType.STRING);
+      }
+      capabilitiesMap.put(dimension,mergedCapabilities.merge(adapter.getCapabilities(dimension)));
+    }
+    for (    String metric : adapter.getMetricNames()) {
+      ColumnCapabilitiesImpl mergedCapabilities=capabilitiesMap.get(metric);
+      ColumnCapabilities capabilities=adapter.getCapabilities(metric);
+      if (mergedCapabilities == null) {
+        mergedCapabilities=new ColumnCapabilitiesImpl();
+      }
+      capabilitiesMap.put(metric,mergedCapabilities.merge(capabilities));
+      metricsValueTypes.put(metric,capabilities.getType());
+      metricTypeNames.put(metric,adapter.getMetricType(metric));
+    }
+  }
+  for (  String dim : mergedDimensions) {
+    dimCapabilities.add(capabilitiesMap.get(dim));
+  }
+}

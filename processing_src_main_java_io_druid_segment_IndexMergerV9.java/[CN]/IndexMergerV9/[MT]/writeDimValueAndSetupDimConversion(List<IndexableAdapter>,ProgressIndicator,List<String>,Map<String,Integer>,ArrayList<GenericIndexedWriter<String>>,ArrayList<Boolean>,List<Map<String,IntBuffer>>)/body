@@ -1,0 +1,72 @@
+{
+  final String section="setup dimension conversions";
+  progress.startSection(section);
+  for (int i=0; i < adapters.size(); ++i) {
+    dimConversions.add(Maps.<String,IntBuffer>newHashMap());
+  }
+  for (int dimIndex=0; dimIndex < mergedDimensions.size(); ++dimIndex) {
+    long dimStartTime=System.currentTimeMillis();
+    String dimension=mergedDimensions.get(dimIndex);
+    List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(adapters.size());
+    IndexMerger.DimValueConverter[] converters=new IndexMerger.DimValueConverter[adapters.size()];
+    boolean existNullColumn=false;
+    for (int i=0; i < adapters.size(); i++) {
+      Indexed<String> dimValues=adapters.get(i).getDimValueLookup(dimension);
+      if (!IndexMerger.isNullColumn(dimValues)) {
+        dimValueLookups.add(dimValues);
+        converters[i]=new IndexMerger.DimValueConverter(dimValues);
+      }
+ else {
+        existNullColumn=true;
+      }
+    }
+    Iterable<Indexed<String>> bumpedDimValueLookups;
+    if (!dimValueLookups.isEmpty() && existNullColumn) {
+      log.info("dim[%s] are null in some indexes, append null value to dim values",dimension);
+      bumpedDimValueLookups=Iterables.concat(Arrays.asList(new ArrayIndexed<>(new String[]{null},String.class)),dimValueLookups);
+    }
+ else {
+      bumpedDimValueLookups=dimValueLookups;
+    }
+    Iterable<String> dimensionValues=CombiningIterable.createSplatted(Iterables.transform(bumpedDimValueLookups,new Function<Indexed<String>,Iterable<String>>(){
+      @Override public Iterable<String> apply(      @Nullable Indexed<String> indexed){
+        return Iterables.transform(indexed,new Function<String,String>(){
+          @Override public String apply(          @Nullable String input){
+            return (input == null) ? "" : input;
+          }
+        }
+);
+      }
+    }
+),Ordering.<String>natural().nullsFirst());
+    GenericIndexedWriter<String> writer=dimValueWriters.get(dimIndex);
+    int cardinality=0;
+    for (    String value : dimensionValues) {
+      value=value == null ? "" : value;
+      writer.write(value);
+      for (int i=0; i < adapters.size(); i++) {
+        IndexMerger.DimValueConverter converter=converters[i];
+        if (converter != null) {
+          converter.convert(value,cardinality);
+        }
+      }
+      ++cardinality;
+    }
+    log.info("Completed dim[%s] conversions with cardinality[%,d] in %,d millis.",dimension,cardinality,System.currentTimeMillis() - dimStartTime);
+    dimensionCardinalities.put(dimension,cardinality);
+    writer.close();
+    if (cardinality == 0) {
+      log.info(String.format("Skipping [%s], it is empty!",dimension));
+      dimensionSkipFlag.add(true);
+      continue;
+    }
+    dimensionSkipFlag.add(false);
+    for (int i=0; i < adapters.size(); ++i) {
+      IndexMerger.DimValueConverter converter=converters[i];
+      if (converter != null) {
+        dimConversions.get(i).put(dimension,converters[i].getConversionBuffer());
+      }
+    }
+  }
+  progress.stopSection(section);
+}

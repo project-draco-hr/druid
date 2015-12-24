@@ -1,0 +1,20 @@
+{
+  if (obj == null) {
+    addValue(0);
+  }
+ else   if (obj instanceof Integer) {
+    addValue(((Number)obj).intValue());
+  }
+ else   if (obj instanceof int[]) {
+    int[] vals=(int[])obj;
+    if (vals.length == 0) {
+      addValue(0);
+    }
+ else {
+      addValue(vals[0]);
+    }
+  }
+ else {
+    throw new IAE("Unsupported single value type: " + obj.getClass());
+  }
+}

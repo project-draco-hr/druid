@@ -1,9 +1,5 @@
 {
-  endBuffer.limit(endBuffer.position());
-  endBuffer.rewind();
-  flattener.write(StupidResourceHolder.create(endBuffer));
-  endBuffer=null;
-  flattener.close();
+  close();
   try (OutputStream out=consolidatedOut.getOutput()){
     out.write(CompressedLongsIndexedSupplier.version);
     out.write(Ints.toByteArray(numInserted));
