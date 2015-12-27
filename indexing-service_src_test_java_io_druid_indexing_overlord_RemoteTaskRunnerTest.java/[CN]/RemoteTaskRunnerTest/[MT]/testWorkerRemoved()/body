@@ -7,11 +7,12 @@
   cf.delete().forPath(announcementsPath);
   TaskStatus status=future.get(TIMEOUT_SECONDS,TimeUnit.SECONDS);
   Assert.assertEquals(TaskStatus.Status.FAILED,status.getStatusCode());
+  RemoteTaskRunnerConfig config=remoteTaskRunner.getRemoteTaskRunnerConfig();
   Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
     @Override public boolean isValid(){
       return remoteTaskRunner.getRemovedWorkerCleanups().isEmpty();
     }
   }
-));
+,config.getTaskCleanupTimeout().toStandardDuration().getMillis() * 2));
   Assert.assertNull(cf.checkExists().forPath(statusPath));
 }
