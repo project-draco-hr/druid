@@ -1,0 +1,11 @@
+{
+  while (!future.isDone()) {
+    try {
+      future.get();
+    }
+ catch (    ExecutionException e) {
+      log.error(e.getCause(),"Error waiting");
+      throw Throwables.propagate(e.getCause());
+    }
+  }
+}
