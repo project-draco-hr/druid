@@ -1,0 +1,7 @@
+{
+  final Function<String,List<String>> extractionFn=lookup.get(namespace);
+  while (!extractionFn.apply(key).equals(expected)) {
+    Thread.sleep(100);
+  }
+  Assert.assertEquals("update check",expected,extractionFn.apply(key));
+}
