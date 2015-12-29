@@ -2,15 +2,16 @@
   this.dataInterval=dataInterval;
   this.index=index;
   this.invertedIndexes=Maps.newHashMap();
-  for (  String dimension : index.getDimensions()) {
-    invertedIndexes.put(dimension,Maps.<String,MutableBitmap>newHashMap());
+  final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
+  for (  IncrementalIndex.DimensionDesc dimension : dimensions) {
+    invertedIndexes.put(dimension.getName(),Maps.<String,MutableBitmap>newHashMap());
   }
   int rowNum=0;
   for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
     final String[][] dims=timeAndDims.getDims();
-    for (    String dimension : index.getDimensions()) {
-      int dimIndex=index.getDimensionIndex(dimension);
-      Map<String,MutableBitmap> bitmapIndexes=invertedIndexes.get(dimension);
+    for (    IncrementalIndex.DimensionDesc dimension : dimensions) {
+      final int dimIndex=dimension.getIndex();
+      final Map<String,MutableBitmap> bitmapIndexes=invertedIndexes.get(dimension.getName());
       if (bitmapIndexes == null || dims == null) {
         log.error("bitmapIndexes and dims are null!");
         continue;

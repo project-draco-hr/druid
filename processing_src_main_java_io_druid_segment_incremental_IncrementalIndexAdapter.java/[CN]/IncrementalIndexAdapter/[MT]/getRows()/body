@@ -1,6 +1,7 @@
 {
   return new Iterable<Rowboat>(){
     @Override public Iterator<Rowboat> iterator(){
+      final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
       return (Iterators.transform(index.getFacts().entrySet().iterator(),new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
         int count=0;
         @Override public Rowboat apply(        @Nullable Map.Entry<IncrementalIndex.TimeAndDims,Integer> input){
@@ -8,9 +9,9 @@
           final String[][] dimValues=timeAndDims.getDims();
           final int rowOffset=input.getValue();
           int[][] dims=new int[dimValues.length][];
-          for (          String dimension : index.getDimensions()) {
-            int dimIndex=index.getDimensionIndex(dimension);
-            final IncrementalIndex.DimDim dimDim=index.getDimension(dimension);
+          for (          IncrementalIndex.DimensionDesc dimension : dimensions) {
+            final int dimIndex=dimension.getIndex();
+            final IncrementalIndex.DimDim dimDim=dimension.getValues();
             dimDim.sort();
             if (dimIndex >= dimValues.length || dimValues[dimIndex] == null) {
               continue;

@@ -6,33 +6,39 @@
   final List<String> rowDimensions=row.getDimensions();
   String[][] dims;
   List<String[]> overflow=null;
-synchronized (dimensionOrder) {
-    dims=new String[dimensionOrder.size()][];
+synchronized (dimensionDescs) {
+    dims=new String[dimensionDescs.size()][];
     for (    String dimension : rowDimensions) {
       List<String> dimensionValues=row.getDimension(dimension);
-      ColumnCapabilitiesImpl capabilities=columnCapabilities.get(dimension);
-      if (capabilities == null) {
-        capabilities=new ColumnCapabilitiesImpl();
-        capabilities.setType(ValueType.STRING);
-        columnCapabilities.put(dimension,capabilities);
+      ColumnCapabilitiesImpl capabilities;
+      DimensionDesc desc=dimensionDescs.get(dimension);
+      if (desc != null) {
+        capabilities=desc.getCapabilities();
       }
-      if (dimensionValues.size() > 1) {
+ else {
+        capabilities=columnCapabilities.get(dimension);
+        if (capabilities == null) {
+          capabilities=new ColumnCapabilitiesImpl();
+          capabilities.setType(ValueType.STRING);
+          columnCapabilities.put(dimension,capabilities);
+        }
+      }
+      if (!capabilities.hasMultipleValues() && dimensionValues.size() > 1) {
         capabilities.setHasMultipleValues(true);
       }
-      Integer index=dimensionOrder.get(dimension);
-      if (index == null) {
-        dimensionOrder.put(dimension,dimensionOrder.size());
-        dimensions.add(dimension);
+      if (desc == null) {
+        desc=new DimensionDesc(dimensionDescs.size(),dimension,newDimDim(dimension),capabilities);
+        dimensionDescs.put(dimension,desc);
         if (overflow == null) {
           overflow=Lists.newArrayList();
         }
-        overflow.add(getDimVals(dimValues.add(dimension),dimensionValues));
+        overflow.add(getDimVals(desc.getValues(),dimensionValues));
       }
- else       if (index > dims.length || dims[index] != null) {
+ else       if (desc.getIndex() > dims.length || dims[desc.getIndex()] != null) {
         throw new ISE("Dimension[%s] occurred more than once in InputRow",dimension);
       }
  else {
-        dims[index]=getDimVals(dimValues.get(dimension),dimensionValues);
+        dims[desc.getIndex()]=getDimVals(desc.getValues(),dimensionValues);
       }
     }
   }

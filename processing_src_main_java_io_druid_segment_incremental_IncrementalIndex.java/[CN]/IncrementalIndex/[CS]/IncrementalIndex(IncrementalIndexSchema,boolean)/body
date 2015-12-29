@@ -4,48 +4,25 @@
   this.metrics=incrementalIndexSchema.getMetrics();
   this.rowTransformers=new CopyOnWriteArrayList<>();
   this.deserializeComplexMetrics=deserializeComplexMetrics;
-  final ImmutableList.Builder<String> metricNamesBuilder=ImmutableList.builder();
-  final ImmutableMap.Builder<String,Integer> metricIndexesBuilder=ImmutableMap.builder();
-  final ImmutableMap.Builder<String,String> metricTypesBuilder=ImmutableMap.builder();
   this.aggs=initAggs(metrics,rowSupplier,deserializeComplexMetrics);
-  for (int i=0; i < metrics.length; i++) {
-    final String metricName=metrics[i].getName();
-    metricNamesBuilder.add(metricName);
-    metricIndexesBuilder.put(metricName,i);
-    metricTypesBuilder.put(metricName,metrics[i].getTypeName());
-  }
-  metricNames=metricNamesBuilder.build();
-  metricIndexes=metricIndexesBuilder.build();
-  metricTypes=metricTypesBuilder.build();
-  this.dimensionOrder=Maps.newLinkedHashMap();
-  this.dimensions=new CopyOnWriteArrayList<>(incrementalIndexSchema.getDimensionsSpec().getDimensions());
-  List<SpatialDimensionSchema> spatialDimensions=incrementalIndexSchema.getDimensionsSpec().getSpatialDimensions();
-  if (!spatialDimensions.isEmpty()) {
-    this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
-  }
   this.columnCapabilities=Maps.newHashMap();
-  for (  Map.Entry<String,String> entry : metricTypes.entrySet()) {
-    ValueType type;
-    if (entry.getValue().equalsIgnoreCase("float")) {
-      type=ValueType.FLOAT;
-    }
- else     if (entry.getValue().equalsIgnoreCase("long")) {
-      type=ValueType.LONG;
-    }
- else {
-      type=ValueType.COMPLEX;
-    }
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(type);
-    columnCapabilities.put(entry.getKey(),capabilities);
+  this.metricDescs=Maps.newLinkedHashMap();
+  for (  AggregatorFactory metric : metrics) {
+    MetricDesc metricDesc=new MetricDesc(metricDescs.size(),metric);
+    metricDescs.put(metricDesc.getName(),metricDesc);
+    columnCapabilities.put(metricDesc.getName(),metricDesc.getCapabilities());
   }
-  this.dimValues=new DimensionHolder();
-  for (  String dimension : dimensions) {
+  DimensionsSpec dimensionsSpec=incrementalIndexSchema.getDimensionsSpec();
+  this.dimensionDescs=Maps.newLinkedHashMap();
+  for (  String dimension : dimensionsSpec.getDimensions()) {
     ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
     capabilities.setType(ValueType.STRING);
+    dimensionDescs.put(dimension,new DimensionDesc(dimensionDescs.size(),dimension,newDimDim(dimension),capabilities));
     columnCapabilities.put(dimension,capabilities);
-    dimensionOrder.put(dimension,dimensionOrder.size());
-    dimValues.add(dimension);
+  }
+  List<SpatialDimensionSchema> spatialDimensions=dimensionsSpec.getSpatialDimensions();
+  if (!spatialDimensions.isEmpty()) {
+    this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
   }
   for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
     ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
