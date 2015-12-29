@@ -1,0 +1,52 @@
+{
+  final LocalDataSegmentFinder localDataSegmentFinder=new LocalDataSegmentFinder(mapper);
+  final Set<DataSegment> segments=localDataSegmentFinder.findSegments(dataSourceDir.getAbsolutePath(),false);
+  Assert.assertEquals(5,segments.size());
+  DataSegment updatedSegment1=null;
+  DataSegment updatedSegment2=null;
+  DataSegment updatedSegment3=null;
+  DataSegment updatedSegment4_0=null;
+  DataSegment updatedSegment4_1=null;
+  for (  DataSegment dataSegment : segments) {
+    if (dataSegment.getIdentifier().equals(SEGMENT_1.getIdentifier())) {
+      updatedSegment1=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_2.getIdentifier())) {
+      updatedSegment2=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_3.getIdentifier())) {
+      updatedSegment3=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_4_0.getIdentifier())) {
+      updatedSegment4_0=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_4_1.getIdentifier())) {
+      updatedSegment4_1=dataSegment;
+    }
+ else {
+      Assert.fail("Unexpected segment");
+    }
+  }
+  Assert.assertEquals(descriptor1.getAbsolutePath(),getDescriptorPath(updatedSegment1));
+  Assert.assertEquals(descriptor2.getAbsolutePath(),getDescriptorPath(updatedSegment2));
+  Assert.assertEquals(descriptor3.getAbsolutePath(),getDescriptorPath(updatedSegment3));
+  Assert.assertEquals(descriptor4_0.getAbsolutePath(),getDescriptorPath(updatedSegment4_0));
+  Assert.assertEquals(descriptor4_1.getAbsolutePath(),getDescriptorPath(updatedSegment4_1));
+  final String serializedSegment1=mapper.writeValueAsString(updatedSegment1);
+  final String serializedSegment2=mapper.writeValueAsString(updatedSegment2);
+  final String serializedSegment3=mapper.writeValueAsString(updatedSegment3);
+  final String serializedSegment4_0=mapper.writeValueAsString(updatedSegment4_0);
+  final String serializedSegment4_1=mapper.writeValueAsString(updatedSegment4_1);
+  Assert.assertNotEquals(serializedSegment1,FileUtils.readFileToString(descriptor1));
+  Assert.assertNotEquals(serializedSegment2,FileUtils.readFileToString(descriptor2));
+  Assert.assertNotEquals(serializedSegment3,FileUtils.readFileToString(descriptor3));
+  Assert.assertNotEquals(serializedSegment4_0,FileUtils.readFileToString(descriptor4_0));
+  Assert.assertNotEquals(serializedSegment4_1,FileUtils.readFileToString(descriptor4_1));
+  final Set<DataSegment> segments2=localDataSegmentFinder.findSegments(dataSourceDir.getAbsolutePath(),true);
+  Assert.assertEquals(segments,segments2);
+  Assert.assertEquals(serializedSegment1,FileUtils.readFileToString(descriptor1));
+  Assert.assertEquals(serializedSegment2,FileUtils.readFileToString(descriptor2));
+  Assert.assertEquals(serializedSegment3,FileUtils.readFileToString(descriptor3));
+  Assert.assertEquals(serializedSegment4_0,FileUtils.readFileToString(descriptor4_0));
+  Assert.assertEquals(serializedSegment4_1,FileUtils.readFileToString(descriptor4_1));
+}

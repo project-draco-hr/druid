@@ -1,0 +1,52 @@
+{
+  final HdfsDataSegmentFinder hdfsDataSegmentFinder=new HdfsDataSegmentFinder(conf,mapper);
+  final Set<DataSegment> segments=hdfsDataSegmentFinder.findSegments(dataSourceDir.toString(),false);
+  Assert.assertEquals(5,segments.size());
+  DataSegment updatedSegment1=null;
+  DataSegment updatedSegment2=null;
+  DataSegment updatedSegment3=null;
+  DataSegment updatedSegment4_0=null;
+  DataSegment updatedSegment4_1=null;
+  for (  DataSegment dataSegment : segments) {
+    if (dataSegment.getIdentifier().equals(SEGMENT_1.getIdentifier())) {
+      updatedSegment1=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_2.getIdentifier())) {
+      updatedSegment2=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_3.getIdentifier())) {
+      updatedSegment3=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_4_0.getIdentifier())) {
+      updatedSegment4_0=dataSegment;
+    }
+ else     if (dataSegment.getIdentifier().equals(SEGMENT_4_1.getIdentifier())) {
+      updatedSegment4_1=dataSegment;
+    }
+ else {
+      Assert.fail("Unexpected segment");
+    }
+  }
+  Assert.assertEquals(descriptor1.toUri().getPath(),getDescriptorPath(updatedSegment1));
+  Assert.assertEquals(descriptor2.toUri().getPath(),getDescriptorPath(updatedSegment2));
+  Assert.assertEquals(descriptor3.toUri().getPath(),getDescriptorPath(updatedSegment3));
+  Assert.assertEquals(descriptor4_0.toUri().getPath(),getDescriptorPath(updatedSegment4_0));
+  Assert.assertEquals(descriptor4_1.toUri().getPath(),getDescriptorPath(updatedSegment4_1));
+  final String serializedSegment1=mapper.writeValueAsString(updatedSegment1);
+  final String serializedSegment2=mapper.writeValueAsString(updatedSegment2);
+  final String serializedSegment3=mapper.writeValueAsString(updatedSegment3);
+  final String serializedSegment4_0=mapper.writeValueAsString(updatedSegment4_0);
+  final String serializedSegment4_1=mapper.writeValueAsString(updatedSegment4_1);
+  Assert.assertNotEquals(serializedSegment1,readContent(descriptor1));
+  Assert.assertNotEquals(serializedSegment2,readContent(descriptor2));
+  Assert.assertNotEquals(serializedSegment3,readContent(descriptor3));
+  Assert.assertNotEquals(serializedSegment4_0,readContent(descriptor4_0));
+  Assert.assertNotEquals(serializedSegment4_1,readContent(descriptor4_1));
+  final Set<DataSegment> segments2=hdfsDataSegmentFinder.findSegments(dataSourceDir.toString(),true);
+  Assert.assertEquals(segments,segments2);
+  Assert.assertEquals(serializedSegment1,readContent(descriptor1));
+  Assert.assertEquals(serializedSegment2,readContent(descriptor2));
+  Assert.assertEquals(serializedSegment3,readContent(descriptor3));
+  Assert.assertEquals(serializedSegment4_0,readContent(descriptor4_0));
+  Assert.assertEquals(serializedSegment4_1,readContent(descriptor4_1));
+}
