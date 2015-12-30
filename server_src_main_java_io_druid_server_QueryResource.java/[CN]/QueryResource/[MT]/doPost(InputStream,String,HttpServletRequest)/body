@@ -40,12 +40,14 @@
       final Query theQuery=query;
       return Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
-          jsonWriter.writeValue(outputStream,yielder);
-          outputStream.flush();
-          outputStream.close();
+          CountingOutputStream os=new CountingOutputStream(outputStream);
+          jsonWriter.writeValue(os,yielder);
+          os.flush();
+          os.close();
           final long queryTime=System.currentTimeMillis() - start;
           emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/time",queryTime));
-          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",true))));
+          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/bytes",os.getCount()));
+          requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"query/bytes",os.getCount(),"success",true))));
         }
       }
 ,contentType).header("X-Druid-Query-Id",queryId).header("X-Druid-Response-Context",jsonMapper.writeValueAsString(responseContext)).build();
