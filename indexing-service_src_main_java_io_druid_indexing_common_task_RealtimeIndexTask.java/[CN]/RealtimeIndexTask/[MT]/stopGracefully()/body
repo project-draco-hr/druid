@@ -1,14 +1,19 @@
 {
   try {
 synchronized (this) {
-      if (!stopped) {
-        stopped=true;
-        log.info("Gracefully stopping.");
-        if (isFirehoseDrainableByClosing(spec.getIOConfig().getFirehoseFactory())) {
+      if (!gracefullyStopped) {
+        gracefullyStopped=true;
+        if (finishingJob) {
+          log.info("stopGracefully: Interrupting finishJob.");
+          runThread.interrupt();
+        }
+ else         if (isFirehoseDrainableByClosing(spec.getIOConfig().getFirehoseFactory())) {
+          log.info("stopGracefully: Draining firehose.");
           firehose.close();
         }
  else {
-          log.debug("Cannot drain firehose[%s] by closing, so skipping closing.",firehose);
+          log.info("stopGracefully: Cannot drain firehose by closing, interrupting run thread.");
+          runThread.interrupt();
         }
       }
     }
