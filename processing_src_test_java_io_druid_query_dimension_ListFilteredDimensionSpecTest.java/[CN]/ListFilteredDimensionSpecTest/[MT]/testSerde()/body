@@ -1,0 +1,11 @@
+{
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  String jsonStr="{\n" + "  \"type\": \"listFiltered\",\n" + "  \"delegate\": {\n"+ "    \"type\": \"default\",\n"+ "    \"dimension\": \"foo\",\n"+ "    \"outputName\": \"bar\"\n"+ "  },\n"+ "  \"values\": [\"xxx\"]\n"+ "}";
+  ListFilteredDimensionSpec actual=(ListFilteredDimensionSpec)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,DimensionSpec.class)),DimensionSpec.class);
+  ListFilteredDimensionSpec expected=new ListFilteredDimensionSpec(new DefaultDimensionSpec("foo","bar"),ImmutableList.of("xxx"),true);
+  Assert.assertEquals(expected,actual);
+  jsonStr="{\n" + "  \"type\": \"listFiltered\",\n" + "  \"delegate\": {\n"+ "    \"type\": \"default\",\n"+ "    \"dimension\": \"foo\",\n"+ "    \"outputName\": \"bar\"\n"+ "  },\n"+ "  \"values\": [\"xxx\"],\n"+ "  \"isWhitelist\": false\n"+ "}";
+  actual=(ListFilteredDimensionSpec)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,DimensionSpec.class)),DimensionSpec.class);
+  expected=new ListFilteredDimensionSpec(new DefaultDimensionSpec("foo","bar"),ImmutableList.of("xxx"),false);
+  Assert.assertEquals(expected,actual);
+}

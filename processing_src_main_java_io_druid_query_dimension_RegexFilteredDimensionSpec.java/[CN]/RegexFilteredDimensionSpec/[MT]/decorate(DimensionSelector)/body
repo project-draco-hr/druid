@@ -1,0 +1,33 @@
+{
+  if (selector == null) {
+    return selector;
+  }
+  final BitSet bitSetOfIds=new BitSet(selector.getValueCardinality());
+  for (int i=0; i < selector.getValueCardinality(); i++) {
+    if (compiledRegex.matcher(Strings.nullToEmpty(selector.lookupName(i))).matches()) {
+      bitSetOfIds.set(i);
+    }
+  }
+  return new DimensionSelector(){
+    @Override public IndexedInts getRow(){
+      IndexedInts baseRow=selector.getRow();
+      List<Integer> result=new ArrayList<>(baseRow.size());
+      for (      int i : baseRow) {
+        if (bitSetOfIds.get(i)) {
+          result.add(i);
+        }
+      }
+      return new ListBasedIndexedInts(result);
+    }
+    @Override public int getValueCardinality(){
+      return bitSetOfIds.cardinality();
+    }
+    @Override public String lookupName(    int id){
+      return selector.lookupName(id);
+    }
+    @Override public int lookupId(    String name){
+      return selector.lookupId(name);
+    }
+  }
+;
+}

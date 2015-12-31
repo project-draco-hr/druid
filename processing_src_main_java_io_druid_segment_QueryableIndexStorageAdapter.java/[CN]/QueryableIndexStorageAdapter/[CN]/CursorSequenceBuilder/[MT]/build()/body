@@ -39,7 +39,12 @@
         @Override public void reset(){
           cursorOffset=initOffset.clone();
         }
-        @Override public DimensionSelector makeDimensionSelector(        final String dimension,        @Nullable final ExtractionFn extractionFn){
+        @Override public DimensionSelector makeDimensionSelector(        DimensionSpec dimensionSpec){
+          return dimensionSpec.decorate(makeDimensionSelectorUndecorated(dimensionSpec));
+        }
+        private DimensionSelector makeDimensionSelectorUndecorated(        DimensionSpec dimensionSpec){
+          final String dimension=dimensionSpec.getDimension();
+          final ExtractionFn extractionFn=dimensionSpec.getExtractionFn();
           final Column columnDesc=index.getColumn(dimension);
           if (columnDesc == null) {
             return NULL_DIMENSION_SELECTOR;
