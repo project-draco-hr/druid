@@ -6,6 +6,7 @@
   EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
   RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
   final String taskId=realtimeIndexTask.getId();
+  tq.start();
   tq.add(realtimeIndexTask);
   publishCountDown.await();
   Assert.assertEquals(1,handOffCallbacks.size());

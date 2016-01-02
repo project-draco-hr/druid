@@ -1,5 +1,5 @@
 {
-  setUpAndStartTaskQueue(new DataSegmentPusher(){
+  setUpTaskQueue(new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String s){
       throw new UnsupportedOperationException();
     }
@@ -15,6 +15,7 @@
   EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
   RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
   final String taskId=realtimeIndexTask.getId();
+  tq.start();
   tq.add(realtimeIndexTask);
   while (tsqa.getStatus(taskId).get().isRunnable()) {
     Thread.sleep(10);

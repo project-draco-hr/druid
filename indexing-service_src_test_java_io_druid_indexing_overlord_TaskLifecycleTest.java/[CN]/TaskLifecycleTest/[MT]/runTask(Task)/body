@@ -2,6 +2,7 @@
   final Task dummyTask=new DefaultObjectMapper().readValue("{\"type\":\"noop\", \"isReadyResult\":\"exception\"}\"",Task.class);
   final long startTime=System.currentTimeMillis();
   Preconditions.checkArgument(!task.getId().equals(dummyTask.getId()));
+  tq.start();
   tq.add(dummyTask);
   tq.add(task);
   TaskStatus retVal=null;
