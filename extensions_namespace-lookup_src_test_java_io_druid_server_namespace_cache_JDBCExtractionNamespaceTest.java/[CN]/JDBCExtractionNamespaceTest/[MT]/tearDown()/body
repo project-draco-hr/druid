@@ -4,7 +4,7 @@
     @Override public void close() throws IOException {
       setupTeardownService.shutdownNow();
       try {
-        setupTeardownService.awaitTermination(10,TimeUnit.SECONDS);
+        setupTeardownService.awaitTermination(60,TimeUnit.SECONDS);
       }
  catch (      InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -24,7 +24,7 @@
         }
       }
     }
-).get(10,TimeUnit.SECONDS);
+).get(60,TimeUnit.SECONDS);
   }
  catch (  Throwable t) {
     throw closer.rethrow(t);
