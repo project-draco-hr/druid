@@ -22,7 +22,7 @@ synchronized (implDatum.enabled) {
           tasksStarted.incrementAndGet();
           final String newVersion=runnable.call();
           if (preVersion != null && preVersion.equals(newVersion)) {
-            throw new IllegalStateException("Already exists");
+            throw new CancellationException(String.format("Version `%s` already exists",preVersion));
           }
           if (newVersion != null) {
             lastVersion.put(namespaceName,newVersion);
@@ -38,6 +38,9 @@ synchronized (implDatum.enabled) {
         }
  else {
           log.error(t,"Failed update namespace [%s]",namespace);
+        }
+        if (Thread.currentThread().isInterrupted()) {
+          throw Throwables.propagate(t);
         }
       }
     }

@@ -8,18 +8,18 @@
       handle.commit();
       closer.register(new Closeable(){
         @Override public void close() throws IOException {
-          final NamespaceExtractionCacheManager.NamespaceImplData implData=extractionCacheManager.implData.get(namespace);
-          if (implData != null && implData.future != null) {
-            implData.future.cancel(true);
-            Assert.assertTrue(implData.future.isDone());
-          }
+          handle.createStatement("DROP TABLE " + tableName).setQueryTimeout(1).execute();
+          handle.close();
         }
       }
 );
       closer.register(new Closeable(){
         @Override public void close() throws IOException {
-          handle.createStatement("DROP TABLE " + tableName).setQueryTimeout(1).execute();
-          handle.close();
+          final NamespaceExtractionCacheManager.NamespaceImplData implData=extractionCacheManager.implData.get(namespace);
+          if (implData != null && implData.future != null) {
+            implData.future.cancel(true);
+            Assert.assertTrue(implData.future.isDone());
+          }
         }
       }
 );
