@@ -1,0 +1,10 @@
+{
+  Object field=record.get(key.toString());
+  if (fromPigAvroStorage && field instanceof GenericData.Array) {
+    return Lists.transform((List)field,PIG_AVRO_STORAGE_ARRAY_TO_STRING_INCLUDING_NULL);
+  }
+  if (field instanceof ByteBuffer) {
+    return Arrays.toString(((ByteBuffer)field).array());
+  }
+  return field;
+}

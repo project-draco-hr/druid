@@ -1,0 +1,6 @@
+{
+  Repository repository=new Avro1124RESTRepositoryClientWrapper("http://github.io");
+  AvroStreamInputRowParser parser=new AvroStreamInputRowParser(PARSE_SPEC,new SchemaRepoBasedAvroBytesDecoder<String,Integer>(new Avro1124SubjectAndIdConverter(TOPIC),repository));
+  ByteBufferInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsString(parser),ByteBufferInputRowParser.class);
+  assertEquals(parser,parser2);
+}

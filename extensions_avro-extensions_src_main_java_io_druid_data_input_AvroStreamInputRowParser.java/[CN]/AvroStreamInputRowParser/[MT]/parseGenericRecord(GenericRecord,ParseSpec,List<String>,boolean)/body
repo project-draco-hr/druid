@@ -1,0 +1,6 @@
+{
+  GenericRecordAsMap genericRecordAsMap=new GenericRecordAsMap(record,fromPigAvroStorage);
+  TimestampSpec timestampSpec=parseSpec.getTimestampSpec();
+  DateTime dateTime=timestampSpec.extractTimestamp(genericRecordAsMap);
+  return new MapBasedInputRow(dateTime,dimensions,genericRecordAsMap);
+}

@@ -1,0 +1,25 @@
+{
+  final File tmpDir=Files.createTempDir();
+  FileReader<GenericRecord> reader=null;
+  PigServer pigServer=null;
+  try {
+    File someAvroDatumFile=new File(tmpDir,"someAvroDatum.avro");
+    DataFileWriter<GenericRecord> dataFileWriter=new DataFileWriter<GenericRecord>(new GenericDatumWriter<GenericRecord>());
+    dataFileWriter.create(SomeAvroDatum.getClassSchema(),someAvroDatumFile);
+    dataFileWriter.append(datum);
+    dataFileWriter.close();
+    pigServer=new PigServer(ExecType.LOCAL);
+    pigServer.registerQuery(String.format("A = LOAD '%s' USING %s;",someAvroDatumFile,inputStorage));
+    File outputDir=new File(tmpDir,"output");
+    pigServer.store("A",String.valueOf(outputDir),outputStorage);
+    reader=DataFileReader.openReader(new File(outputDir,"part-m-00000.avro"),new GenericDatumReader<GenericRecord>());
+    return reader.next();
+  }
+  finally {
+    if (pigServer != null) {
+      pigServer.shutdown();
+    }
+    Closeables.close(reader,true);
+    FileUtils.deleteDirectory(tmpDir);
+  }
+}

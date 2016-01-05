@@ -1,0 +1,6 @@
+{
+  AvroHadoopInputRowParser parser=new AvroHadoopInputRowParser(PARSE_SPEC,fromPigAvroStorage);
+  AvroHadoopInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(parser),AvroHadoopInputRowParser.class);
+  InputRow inputRow=parser2.parse(record);
+  assertInputRowCorrect(inputRow);
+}

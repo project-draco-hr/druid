@@ -1,0 +1,28 @@
+{
+  Collections.sort(DIMENSIONS);
+  assertEquals(DIMENSIONS,inputRow.getDimensions());
+  assertEquals(DATE_TIME.getMillis(),inputRow.getTimestampFromEpoch());
+  assertEquals(Collections.singletonList(String.valueOf(EVENT_TYPE_VALUE)),inputRow.getDimension(EVENT_TYPE));
+  assertEquals(Collections.singletonList(String.valueOf(ID_VALUE)),inputRow.getDimension(ID));
+  assertEquals(Collections.singletonList(String.valueOf(SOME_OTHER_ID_VALUE)),inputRow.getDimension(SOME_OTHER_ID));
+  assertEquals(Collections.singletonList(String.valueOf(true)),inputRow.getDimension(IS_VALID));
+  assertEquals(Lists.transform(SOME_INT_ARRAY_VALUE,TO_STRING_INCLUDING_NULL),inputRow.getDimension("someIntArray"));
+  assertEquals(Lists.transform(SOME_STRING_ARRAY_VALUE,TO_STRING_INCLUDING_NULL),inputRow.getDimension("someStringArray"));
+  assertEquals(1,inputRow.getDimension("someIntValueMap").size());
+  assertEquals(SOME_INT_VALUE_MAP_VALUE,new HashMap<CharSequence,Integer>(Maps.transformValues(Splitter.on(",").withKeyValueSeparator("=").split(inputRow.getDimension("someIntValueMap").get(0).replaceAll("[\\{\\} ]","")),new Function<String,Integer>(){
+    @Nullable @Override public Integer apply(    @Nullable String input){
+      return Integer.valueOf(input);
+    }
+  }
+)));
+  assertEquals(SOME_STRING_VALUE_MAP_VALUE,new HashMap<CharSequence,CharSequence>(Splitter.on(",").withKeyValueSeparator("=").split(inputRow.getDimension("someIntValueMap").get(0).replaceAll("[\\{\\} ]",""))));
+  assertEquals(Collections.singletonList(SOME_UNION_VALUE),inputRow.getDimension("someUnion"));
+  assertEquals(Collections.emptyList(),inputRow.getDimension("someNull"));
+  assertEquals(Collections.singletonList(String.valueOf(SOME_FIXED_VALUE)),inputRow.getDimension("someFixed"));
+  assertEquals(Collections.singletonList(Arrays.toString(SOME_BYTES_VALUE.array())),inputRow.getDimension("someBytes"));
+  assertEquals(Collections.singletonList(String.valueOf(MyEnum.ENUM1)),inputRow.getDimension("someEnum"));
+  assertEquals(Collections.singletonList(String.valueOf(SOME_RECORD_VALUE)),inputRow.getDimension("someRecord"));
+  assertEquals(SOME_FLOAT_VALUE,inputRow.getFloatMetric("someFloat"),0);
+  assertEquals(SOME_LONG_VALUE,inputRow.getLongMetric("someLong"));
+  assertEquals(SOME_INT_VALUE,inputRow.getLongMetric("someInt"));
+}

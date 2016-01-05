@@ -1,0 +1,21 @@
+{
+  Schema readerSchema=AvroJob.getInputValueSchema(context.getConfiguration());
+  if (readerSchema == null) {
+    String schemaFilePath=context.getConfiguration().get(CONF_INPUT_VALUE_SCHEMA_PATH);
+    if (StringUtils.isNotBlank(schemaFilePath)) {
+      log.info("Using file: %s as reader schema.",schemaFilePath);
+      FSDataInputStream inputStream=FileSystem.get(context.getConfiguration()).open(new Path(schemaFilePath));
+      try {
+        readerSchema=new Schema.Parser().parse(inputStream);
+      }
+  finally {
+        inputStream.close();
+      }
+    }
+  }
+  if (null == readerSchema) {
+    log.warn("Reader schema was not set. Use AvroJob.setInputKeySchema() if desired.");
+    log.info("Using a reader schema equal to the writer schema.");
+  }
+  return new AvroValueRecordReader(readerSchema);
+}
