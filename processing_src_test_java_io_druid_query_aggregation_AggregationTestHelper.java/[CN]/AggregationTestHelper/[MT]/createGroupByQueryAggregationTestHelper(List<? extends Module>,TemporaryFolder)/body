@@ -1,8 +1,5 @@
 {
-  this.tempFolder=tempFoler;
-  mapper=new DefaultObjectMapper();
-  indexIO=TestHelper.getTestIndexIO();
-  indexMerger=TestHelper.getTestIndexMerger();
+  ObjectMapper mapper=new DefaultObjectMapper();
   for (  Module mod : jsonModulesToRegister) {
     mapper.registerModule(mod);
   }
@@ -19,6 +16,7 @@
   }
 ;
   GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,pool);
-  toolChest=new GroupByQueryQueryToolChest(configSupplier,mapper,engine,pool,NoopIntervalChunkingQueryRunnerDecorator());
-  factory=new GroupByQueryRunnerFactory(engine,noopQueryWatcher,configSupplier,toolChest,pool);
+  GroupByQueryQueryToolChest toolchest=new GroupByQueryQueryToolChest(configSupplier,mapper,engine,pool,NoopIntervalChunkingQueryRunnerDecorator());
+  GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,noopQueryWatcher,configSupplier,toolchest,pool);
+  return new AggregationTestHelper(mapper,TestHelper.getTestIndexMerger(),TestHelper.getTestIndexIO(),toolchest,factory,tempFolder,jsonModulesToRegister);
 }

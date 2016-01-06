@@ -11,9 +11,9 @@
         }
 );
         String resultStr=mapper.writer().writeValueAsString(yielder);
-        List resultRows=Lists.transform((List<Row>)mapper.readValue(resultStr,new TypeReference<List<Row>>(){
-        }
-),toolChest.makePreComputeManipulatorFn(query,MetricManipulatorFns.deserializing()));
+        TypeFactory typeFactory=mapper.getTypeFactory();
+        JavaType baseType=typeFactory.constructType(toolChest.getResultTypeReference());
+        List resultRows=Lists.transform(readQueryResultArrayFromString(resultStr),toolChest.makePreComputeManipulatorFn(query,MetricManipulatorFns.deserializing()));
         return Sequences.simple(resultRows);
       }
  catch (      Exception ex) {

@@ -1,0 +1,6 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  SelectQueryQueryToolChest toolchest=new SelectQueryQueryToolChest(new DefaultObjectMapper(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
+  SelectQueryRunnerFactory factory=new SelectQueryRunnerFactory(new SelectQueryQueryToolChest(new DefaultObjectMapper(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new SelectQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+  return new AggregationTestHelper(mapper,TestHelper.getTestIndexMerger(),TestHelper.getTestIndexIO(),toolchest,factory,tempFolder,jsonModulesToRegister);
+}
