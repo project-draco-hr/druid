@@ -1,0 +1,14 @@
+{
+  Configuration conf=new Configuration(true);
+  File segmentDir=tempFolder.newFolder();
+  File tmp=new File(segmentDir,"version.bin");
+  final byte[] data=new byte[]{0x0,0x0,0x0,0x1};
+  Files.write(data,tmp);
+  final long size=data.length;
+  HdfsDataSegmentPusherConfig config=new HdfsDataSegmentPusherConfig();
+  config.setStorageDirectory(tempFolder.newFolder().getAbsolutePath());
+  HdfsDataSegmentPusher pusher=new HdfsDataSegmentPusher(config,conf,new DefaultObjectMapper());
+  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,size);
+  DataSegment segment=pusher.push(segmentDir,segmentToPush);
+  Assert.assertEquals(segmentToPush.getSize(),segment.getSize());
+}

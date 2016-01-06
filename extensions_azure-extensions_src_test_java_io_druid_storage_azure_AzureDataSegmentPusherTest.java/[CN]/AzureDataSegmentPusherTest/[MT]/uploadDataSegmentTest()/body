@@ -4,13 +4,12 @@
   final File compressedSegmentData=new File("index.zip");
   final File descriptorFile=new File("descriptor.json");
   final Map<String,String> azurePaths=pusher.getAzurePaths(dataSegment);
-  expect(azureAccountConfig.getContainer()).andReturn(containerName).times(3);
   azureStorage.uploadBlob(compressedSegmentData,containerName,azurePaths.get("index"));
   expectLastCall();
   azureStorage.uploadBlob(descriptorFile,containerName,azurePaths.get("descriptor"));
   expectLastCall();
   replayAll();
-  DataSegment pushedDataSegment=pusher.uploadDataSegment(dataSegment,version,compressedSegmentData,descriptorFile,azurePaths);
+  DataSegment pushedDataSegment=pusher.uploadDataSegment(dataSegment,version,0,compressedSegmentData,descriptorFile,azurePaths);
   assertEquals(compressedSegmentData.length(),pushedDataSegment.getSize());
   assertEquals(version,(int)pushedDataSegment.getBinaryVersion());
   Map<String,Object> loadSpec=pushedDataSegment.getLoadSpec();
