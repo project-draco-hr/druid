@@ -1,8 +1,4 @@
 {
-  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis(differentIds ? "merged" : "testSegment",ImmutableList.of(expectedSegmentAnalysis1.getIntervals().get(0)),ImmutableMap.of("__time",new ColumnAnalysis(ValueType.LONG.toString(),false,12090 * 2,null,null),"placement",new ColumnAnalysis(ValueType.STRING.toString(),false,10881 * ((mmap1 ? 1 : 0) + (mmap2 ? 1 : 0)),1,null),"index",new ColumnAnalysis(ValueType.FLOAT.toString(),false,9672 * 2,null,null)),expectedSegmentAnalysis1.getSize() + expectedSegmentAnalysis2.getSize(),expectedSegmentAnalysis1.getNumRows() + expectedSegmentAnalysis2.getNumRows(),null);
-  QueryToolChest toolChest=FACTORY.getToolchest();
-  ExecutorService exec=Executors.newCachedThreadPool();
-  QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(FACTORY.mergeRunners(MoreExecutors.sameThreadExecutor(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(toolChest.preMergeQueryDecoration(runner1),toolChest.preMergeQueryDecoration(runner2)))),toolChest);
-  TestHelper.assertExpectedObjects(ImmutableList.of(mergedSegmentAnalysis),myRunner.run(testQuery,Maps.newHashMap()),"failed SegmentMetadata merging query");
-  exec.shutdownNow();
+  ColumnAnalysis analysis=new ColumnAnalysis(ValueType.STRING.toString(),false,(mmap1 ? 10881 : 10764) + (mmap2 ? 10881 : 10764),1,"preferred","preferred",null);
+  testSegmentMetadataQueryWithDefaultAnalysisMerge("placement",analysis);
 }

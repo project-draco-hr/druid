@@ -1,0 +1,8 @@
+{
+  Column column=index.getColumn(dimension);
+  if (column != null && column.getCapabilities().hasBitmapIndexes()) {
+    BitmapIndex bitmap=column.getBitmapIndex();
+    return bitmap.getCardinality() > 0 ? bitmap.getValue(0) : null;
+  }
+  return null;
+}

@@ -20,7 +20,12 @@ case FLOAT:
   analysis=analyzeNumericColumn(capabilities,length,NUM_BYTES_IN_TEXT_FLOAT);
 break;
 case STRING:
-analysis=analyzeStringColumn(capabilities,column,storageAdapter.getDimensionCardinality(columnName));
+if (index != null) {
+analysis=analyzeStringColumn(capabilities,column);
+}
+ else {
+analysis=analyzeStringColumn(capabilities,storageAdapter,columnName);
+}
 break;
 case COMPLEX:
 analysis=analyzeComplexColumn(capabilities,column,storageAdapter.getColumnTypeName(columnName));
