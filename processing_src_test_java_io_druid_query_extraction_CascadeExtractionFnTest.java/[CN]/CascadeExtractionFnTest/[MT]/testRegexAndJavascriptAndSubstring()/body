@@ -1,0 +1,13 @@
+{
+  ExtractionFn[] fns=new ExtractionFn[3];
+  fns[0]=regexDimExtractionFn;
+  fns[1]=javascriptExtractionFn;
+  fns[2]=substringDimExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn=new CascadeExtractionFn(fns);
+  Set<String> extracted=Sets.newLinkedHashSet();
+  for (  String path : paths) {
+    extracted.add(cascadeExtractionFn.apply(path));
+  }
+  Set<String> expected=Sets.newLinkedHashSet(ImmutableList.of("the dru","the das"));
+  Assert.assertEquals(expected,extracted);
+}

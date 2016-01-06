@@ -1,0 +1,11 @@
+{
+  ExtractionFn[] fns1=new ExtractionFn[1];
+  fns1[0]=javascriptExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn1=new CascadeExtractionFn(fns1);
+  ExtractionFn[] fns2=new ExtractionFn[2];
+  fns2[0]=regexDimExtractionFn;
+  fns2[1]=javascriptExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn2=new CascadeExtractionFn(fns2);
+  Assert.assertTrue(cascadeExtractionFn1.getExtractionType() == ExtractionFn.ExtractionType.ONE_TO_ONE);
+  Assert.assertTrue(cascadeExtractionFn2.getExtractionType() == ExtractionFn.ExtractionType.MANY_TO_ONE);
+}

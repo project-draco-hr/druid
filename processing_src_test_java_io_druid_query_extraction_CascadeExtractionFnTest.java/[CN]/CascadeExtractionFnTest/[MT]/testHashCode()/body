@@ -1,0 +1,18 @@
+{
+  ExtractionFn[] fns1=new ExtractionFn[2];
+  fns1[0]=javascriptExtractionFn;
+  fns1[1]=regexDimExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn1=new CascadeExtractionFn(fns1);
+  ExtractionFn[] fns2=new ExtractionFn[2];
+  fns2[0]=regexDimExtractionFn;
+  fns2[1]=javascriptExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn2=new CascadeExtractionFn(fns2);
+  ExtractionFn[] fns3=new ExtractionFn[3];
+  fns3[0]=regexDimExtractionFn;
+  fns3[1]=javascriptExtractionFn;
+  fns3[2]=substringDimExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn3=new CascadeExtractionFn(fns3);
+  Assert.assertNotEquals(cascadeExtractionFn1.hashCode(),cascadeExtractionFn2.hashCode());
+  Assert.assertNotEquals(cascadeExtractionFn1.hashCode(),cascadeExtractionFn3.hashCode());
+  Assert.assertNotEquals(cascadeExtractionFn2.hashCode(),cascadeExtractionFn3.hashCode());
+}
