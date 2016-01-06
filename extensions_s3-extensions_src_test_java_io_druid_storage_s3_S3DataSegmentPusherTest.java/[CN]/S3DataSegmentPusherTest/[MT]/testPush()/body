@@ -1,0 +1,17 @@
+{
+  RestS3Service s3Client=EasyMock.createStrictMock(RestS3Service.class);
+  EasyMock.expect(s3Client.putObject(EasyMock.anyString(),EasyMock.<S3Object>anyObject())).andReturn(null).atLeastOnce();
+  EasyMock.replay(s3Client);
+  S3DataSegmentPusherConfig config=new S3DataSegmentPusherConfig();
+  config.setBucket("bucket");
+  config.setBaseKey("key");
+  S3DataSegmentPusher pusher=new S3DataSegmentPusher(s3Client,config,new DefaultObjectMapper());
+  File tmp=tempFolder.newFile("version.bin");
+  final byte[] data=new byte[]{0x0,0x0,0x0,0x1};
+  Files.write(data,tmp);
+  final long size=data.length;
+  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,size);
+  DataSegment segment=pusher.push(tempFolder.getRoot(),segmentToPush);
+  Assert.assertEquals(segmentToPush.getSize(),segment.getSize());
+  EasyMock.verify(s3Client);
+}

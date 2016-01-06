@@ -1,18 +1,31 @@
 {
   log.info("Uploading [%s] to Azure.",indexFilesDir);
   final int version=SegmentUtils.getVersionFromDir(indexFilesDir);
-  final File compressedSegmentData=createCompressedSegmentDataFile(indexFilesDir);
-  final File descriptorFile=createSegmentDescriptorFile(jsonMapper,segment);
-  final Map<String,String> azurePaths=getAzurePaths(segment);
+  File zipOutFile=null;
+  File descriptorFile=null;
   try {
+    final File outFile=zipOutFile=File.createTempFile("index",".zip");
+    final long size=CompressionUtils.zip(indexFilesDir,zipOutFile);
+    final File descFile=descriptorFile=createSegmentDescriptorFile(jsonMapper,segment);
+    final Map<String,String> azurePaths=getAzurePaths(segment);
     return AzureUtils.retryAzureOperation(new Callable<DataSegment>(){
       @Override public DataSegment call() throws Exception {
-        return uploadDataSegment(segment,version,compressedSegmentData,descriptorFile,azurePaths);
+        return uploadDataSegment(segment,version,size,outFile,descFile,azurePaths);
       }
     }
 ,config.getMaxTries());
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
+  }
+ finally {
+    if (zipOutFile != null) {
+      log.info("Deleting zipped index File[%s]",zipOutFile);
+      zipOutFile.delete();
+    }
+    if (descriptorFile != null) {
+      log.info("Deleting descriptor file[%s]",descriptorFile);
+      descriptorFile.delete();
+    }
   }
 }

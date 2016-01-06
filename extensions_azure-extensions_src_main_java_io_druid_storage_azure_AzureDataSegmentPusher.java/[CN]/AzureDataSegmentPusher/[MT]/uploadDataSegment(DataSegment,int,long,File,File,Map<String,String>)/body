@@ -1,7 +1,7 @@
 {
   azureStorage.uploadBlob(compressedSegmentData,config.getContainer(),azurePaths.get("index"));
   azureStorage.uploadBlob(descriptorFile,config.getContainer(),azurePaths.get("descriptor"));
-  final DataSegment outSegment=segment.withSize(compressedSegmentData.length()).withLoadSpec(ImmutableMap.<String,Object>of("type",AzureStorageDruidModule.SCHEME,"containerName",config.getContainer(),"blobPath",azurePaths.get("index"))).withBinaryVersion(version);
+  final DataSegment outSegment=segment.withSize(size).withLoadSpec(ImmutableMap.<String,Object>of("type",AzureStorageDruidModule.SCHEME,"containerName",config.getContainer(),"blobPath",azurePaths.get("index"))).withBinaryVersion(version);
   log.info("Deleting file [%s]",compressedSegmentData);
   compressedSegmentData.delete();
   log.info("Deleting file [%s]",descriptorFile);
