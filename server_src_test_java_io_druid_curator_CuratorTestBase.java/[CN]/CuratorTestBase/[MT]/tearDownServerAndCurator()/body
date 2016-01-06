@@ -1,4 +1,9 @@
 {
-  CloseQuietly.close(curator);
-  CloseQuietly.close(server);
+  try {
+    curator.close();
+    server.close();
+  }
+ catch (  IOException ex) {
+    throw Throwables.propagate(ex);
+  }
 }
