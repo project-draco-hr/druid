@@ -1,0 +1,11 @@
+{
+  ObjectColumnSelector existing=objectColumnSelectorMap.get(columnName);
+  if (existing != null) {
+    return existing;
+  }
+ else {
+    ObjectColumnSelector newSelector=delegate.makeObjectColumnSelector(columnName);
+    ObjectColumnSelector prev=objectColumnSelectorMap.putIfAbsent(columnName,newSelector);
+    return prev != null ? prev : newSelector;
+  }
+}
