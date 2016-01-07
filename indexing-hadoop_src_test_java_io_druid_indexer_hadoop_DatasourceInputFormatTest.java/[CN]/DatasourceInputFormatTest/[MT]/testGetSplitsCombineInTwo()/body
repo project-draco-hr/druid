@@ -1,7 +1,9 @@
 {
   config.set(DatasourceInputFormat.CONF_MAX_SPLIT_SIZE,"6");
-  List<InputSplit> splits=new DatasourceInputFormat().getSplits(context);
+  List<InputSplit> splits=new DatasourceInputFormat().setSupplier(testFormatter).getSplits(context);
   Assert.assertEquals(2,splits.size());
   Assert.assertEquals(Sets.newHashSet(segments.get(0),segments.get(2)),Sets.newHashSet((((DatasourceInputSplit)splits.get(0)).getSegments())));
+  Assert.assertArrayEquals(new String[]{"s2","s1","s3"},splits.get(0).getLocations());
   Assert.assertEquals(Sets.newHashSet(segments.get(1)),Sets.newHashSet((((DatasourceInputSplit)splits.get(1)).getSegments())));
+  Assert.assertArrayEquals(new String[]{"s1","s2"},splits.get(1).getLocations());
 }

@@ -20,9 +20,11 @@
   List<InputSplit> splits=Lists.newArrayList();
   List<WindowedDataSegment> list=new ArrayList<>();
   long size=0;
+  JobConf dummyConf=new JobConf();
+  org.apache.hadoop.mapred.InputFormat fio=supplier.get();
   for (  WindowedDataSegment segment : segments) {
     if (size + segment.getSegment().getSize() > maxSize && size > 0) {
-      splits.add(new DatasourceInputSplit(list));
+      splits.add(toDataSourceSplit(list,fio,dummyConf));
       list=Lists.newArrayList();
       size=0;
     }
@@ -30,7 +32,7 @@
     size+=segment.getSegment().getSize();
   }
   if (list.size() > 0) {
-    splits.add(new DatasourceInputSplit(list));
+    splits.add(toDataSourceSplit(list,fio,dummyConf));
   }
   logger.info("Number of splits [%d]",splits.size());
   return splits;
