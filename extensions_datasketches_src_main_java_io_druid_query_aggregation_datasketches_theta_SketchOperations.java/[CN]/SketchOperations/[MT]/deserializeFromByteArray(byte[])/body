@@ -1,9 +1,3 @@
 {
-  NativeMemory mem=new NativeMemory(data);
-  if (Sketch.getSerializationVersion(mem) < 3) {
-    return Sketches.heapifySketch(mem);
-  }
- else {
-    return Sketches.wrapSketch(mem);
-  }
+  return deserializeFromMemory(new NativeMemory(data));
 }

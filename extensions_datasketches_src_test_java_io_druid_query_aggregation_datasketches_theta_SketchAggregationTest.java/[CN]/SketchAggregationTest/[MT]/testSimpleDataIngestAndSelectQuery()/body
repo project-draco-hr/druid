@@ -1,0 +1,10 @@
+{
+  SketchModule sm=new SketchModule();
+  sm.configure(null);
+  AggregationTestHelper selectQueryAggregationTestHelper=AggregationTestHelper.createSelectQueryAggregationTestHelper(sm.getJacksonModules(),tempFolder);
+  Sequence seq=selectQueryAggregationTestHelper.createIndexAndRunQueryOnSegment(new File(this.getClass().getClassLoader().getResource("simple_test_data.tsv").getFile()),readFileFromClasspathAsString("simple_test_data_record_parser.json"),readFileFromClasspathAsString("simple_test_data_aggregators.json"),0,QueryGranularity.NONE,5000,readFileFromClasspathAsString("select_query.json"));
+  Result<SelectResultValue> result=(Result<SelectResultValue>)Iterables.getOnlyElement(Sequences.toList(seq,Lists.newArrayList()));
+  Assert.assertEquals(new DateTime("2014-10-20T00:00:00.000Z"),result.getTimestamp());
+  Assert.assertEquals(100,result.getValue().getEvents().size());
+  Assert.assertEquals("AgMDAAAazJMBAAAAAACAPzz9j7pWTMdR",result.getValue().getEvents().get(0).getEvent().get("pty_country"));
+}

@@ -1,0 +1,12 @@
+{
+  List result=new ArrayList();
+  JsonParser jp=mapper.getFactory().createParser(str);
+  if (jp.nextToken() != JsonToken.START_ARRAY) {
+    throw new IAE("not an array [%s]",str);
+  }
+  ObjectCodec objectCodec=jp.getCodec();
+  while (jp.nextToken() != JsonToken.END_ARRAY) {
+    result.add(objectCodec.readValue(jp,toolChest.getResultTypeReference()));
+  }
+  return result;
+}
