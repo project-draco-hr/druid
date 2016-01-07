@@ -3,14 +3,18 @@
   final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType);
   final String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
   ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
+  CountingInputStream countingInputStream=new CountingInputStream(in);
   Collection<Map<String,Object>> events=null;
   try {
-    events=objectMapper.readValue(in,new TypeReference<Collection<Map<String,Object>>>(){
+    events=objectMapper.readValue(countingInputStream,new TypeReference<Collection<Map<String,Object>>>(){
     }
 );
   }
  catch (  IOException e) {
     return Response.serverError().entity(ImmutableMap.<String,Object>of("error",e.getMessage())).build();
+  }
+ finally {
+    bytesReceived.addAndGet(countingInputStream.getCount());
   }
   log.debug("Adding %,d events to firehose: %s",events.size(),serviceName);
   final List<InputRow> rows=Lists.newArrayList();
