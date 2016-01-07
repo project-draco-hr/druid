@@ -1,0 +1,21 @@
+{
+  UserGroupInformation.setLoginUser(UserGroupInformation.createUserForTesting("test",new String[]{"testGroup"}));
+  HadoopIngestionSpec spec=new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.DAY,QueryGranularity.MINUTE,ImmutableList.of(new Interval("2015-11-06T00:00Z/2015-11-07T00:00Z"))),jsonMapper),new HadoopIOConfig(null,null,null),new HadoopTuningConfig(null,null,null,null,null,null,false,false,false,false,null,false,false,null));
+  granularityPathSpec.setDataGranularity(Granularity.HOUR);
+  granularityPathSpec.setFilePattern(".*");
+  granularityPathSpec.setInputFormat(TextInputFormat.class);
+  Job job=Job.getInstance();
+  String formatStr="file:%s/%s;org.apache.hadoop.mapreduce.lib.input.TextInputFormat";
+  testFolder.newFolder("test","y=2015","m=11","d=06","H=00");
+  testFolder.newFolder("test","y=2015","m=11","d=06","H=02");
+  testFolder.newFolder("test","y=2015","m=11","d=06","H=05");
+  testFolder.newFile("test/y=2015/m=11/d=06/H=00/file1");
+  testFolder.newFile("test/y=2015/m=11/d=06/H=02/file2");
+  testFolder.newFile("test/y=2015/m=11/d=06/H=05/file3");
+  testFolder.newFile("test/y=2015/m=11/d=06/H=05/file4");
+  granularityPathSpec.setInputPath(testFolder.getRoot().getPath() + "/test");
+  granularityPathSpec.addInputPaths(HadoopDruidIndexerConfig.fromSpec(spec),job);
+  String actual=job.getConfiguration().get("mapreduce.input.multipleinputs.dir.formats");
+  String expected=Joiner.on(",").join(Lists.newArrayList(String.format(formatStr,testFolder.getRoot(),"test/y=2015/m=11/d=06/H=00/file1"),String.format(formatStr,testFolder.getRoot(),"test/y=2015/m=11/d=06/H=02/file2"),String.format(formatStr,testFolder.getRoot(),"test/y=2015/m=11/d=06/H=05/file3"),String.format(formatStr,testFolder.getRoot(),"test/y=2015/m=11/d=06/H=05/file4")));
+  Assert.assertEquals("Did not find expected input paths",expected,actual);
+}
