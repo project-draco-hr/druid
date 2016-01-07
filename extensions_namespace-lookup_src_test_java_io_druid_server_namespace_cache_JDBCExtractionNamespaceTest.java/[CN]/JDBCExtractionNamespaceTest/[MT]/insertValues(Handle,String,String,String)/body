@@ -1,13 +1,13 @@
 {
   final String query;
   if (tsColumn == null) {
-    handleRef.get().createStatement(String.format("DELETE FROM %s WHERE %s='%s'",tableName,keyName,key)).setQueryTimeout(1).execute();
+    handle.createStatement(String.format("DELETE FROM %s WHERE %s='%s'",tableName,keyName,key)).setQueryTimeout(1).execute();
     query=String.format("INSERT INTO %s (%s, %s) VALUES ('%s', '%s')",tableName,keyName,valName,key,val);
   }
  else {
     query=String.format("INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s')",tableName,tsColumn,keyName,valName,updateTs,key,val);
   }
-  Assert.assertEquals(1,handleRef.get().createStatement(query).setQueryTimeout(1).execute());
-  handleRef.get().commit();
+  Assert.assertEquals(1,handle.createStatement(query).setQueryTimeout(1).execute());
+  handle.commit();
   Thread.sleep(2);
 }

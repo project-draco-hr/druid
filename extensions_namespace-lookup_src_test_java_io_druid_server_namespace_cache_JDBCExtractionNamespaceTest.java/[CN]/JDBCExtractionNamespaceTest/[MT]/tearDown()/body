@@ -1,10 +1,22 @@
 {
-  final Closer tearDownCloser=Closer.create();
-  tearDownCloser.register(new Closeable(){
+  final ListenableFuture<?> tearDownFuture=setupTeardownService.submit(new Runnable(){
+    @Override public void run(){
+      try {
+        closer.close();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+);
+  try (final Closeable closeable=new Closeable(){
     @Override public void close() throws IOException {
       setupTeardownService.shutdownNow();
       try {
-        setupTeardownService.awaitTermination(60,TimeUnit.SECONDS);
+        if (!setupTeardownService.awaitTermination(60,TimeUnit.SECONDS)) {
+          log.error("Tear down service didn't finish");
+        }
       }
  catch (      InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -12,24 +24,12 @@
       }
     }
   }
-);
-  try {
-    setupTeardownService.submit(new Runnable(){
-      @Override public void run(){
-        try {
-          closer.close();
-        }
- catch (        IOException e) {
-          throw Throwables.propagate(e);
-        }
-      }
+){
+    tearDownFuture.get(60,TimeUnit.SECONDS);
+  }
+  finally {
+    if (Thread.interrupted()) {
+      log.info("Thread was interrupted. Clearing interrupt and continuing.");
     }
-).get(60,TimeUnit.SECONDS);
-  }
- catch (  Throwable t) {
-    throw closer.rethrow(t);
-  }
- finally {
-    closer.close();
   }
 }
