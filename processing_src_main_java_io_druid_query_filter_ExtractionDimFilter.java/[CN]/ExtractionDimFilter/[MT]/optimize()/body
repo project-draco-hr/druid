@@ -1,0 +1,16 @@
+{
+  if (this.getExtractionFn() instanceof LookupExtractionFn && ((LookupExtractionFn)this.getExtractionFn()).isOptimize()) {
+    LookupExtractor lookup=((LookupExtractionFn)this.getExtractionFn()).getLookup();
+    final List<String> keys=lookup.unapply(this.getValue());
+    final String dimensionName=this.getDimension();
+    if (!keys.isEmpty()) {
+      return new OrDimFilter(Lists.transform(keys,new Function<String,DimFilter>(){
+        @Override public DimFilter apply(        String input){
+          return new SelectorDimFilter(dimensionName,input);
+        }
+      }
+));
+    }
+  }
+  return this;
+}

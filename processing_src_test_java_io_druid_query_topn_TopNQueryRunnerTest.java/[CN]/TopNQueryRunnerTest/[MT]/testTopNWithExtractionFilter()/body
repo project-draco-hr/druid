@@ -2,8 +2,10 @@
   Map<String,String> extractionMap=new HashMap<>();
   extractionMap.put("spot","spot0");
   MapLookupExtractor mapLookupExtractor=new MapLookupExtractor(extractionMap);
-  LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(mapLookupExtractor,false,null,true);
+  LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(mapLookupExtractor,false,null,true,false);
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(QueryRunnerTestHelper.marketDimension).metric("rows").threshold(3).intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).filters(new ExtractionDimFilter(QueryRunnerTestHelper.marketDimension,"spot0",lookupExtractionFn,null)).build();
   List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of(QueryRunnerTestHelper.marketDimension,"spot","rows",18L,"index",2231.8768157958984D,"addRowsIndexConstant",2250.8768157958984D,"uniques",QueryRunnerTestHelper.UNIQUES_9)))));
   assertExpectedResults(expectedResults,query);
+  final Sequence<Result<TopNResultValue>> retval=runWithPreMergeAndMerge(query);
+  TestHelper.assertExpectedResults(expectedResults,retval);
 }

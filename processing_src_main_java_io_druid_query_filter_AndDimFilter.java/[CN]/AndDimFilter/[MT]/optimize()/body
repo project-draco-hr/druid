@@ -1,0 +1,8 @@
+{
+  return Druids.newAndDimFilterBuilder().fields(Lists.transform(this.getFields(),new Function<DimFilter,DimFilter>(){
+    @Override public DimFilter apply(    DimFilter input){
+      return input.optimize();
+    }
+  }
+)).build();
+}
