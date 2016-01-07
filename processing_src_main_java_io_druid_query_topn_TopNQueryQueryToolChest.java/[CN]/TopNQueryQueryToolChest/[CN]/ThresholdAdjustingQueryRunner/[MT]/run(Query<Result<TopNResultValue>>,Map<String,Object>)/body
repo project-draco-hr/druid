@@ -3,6 +3,7 @@
     throw new ISE("Can only handle [%s], got [%s]",TopNQuery.class,input.getClass());
   }
   final TopNQuery query=(TopNQuery)input;
+  final int minTopNThreshold=query.getContextValue("minTopNThreshold",config.getMinTopNThreshold());
   if (query.getThreshold() > minTopNThreshold) {
     return runner.run(query,responseContext);
   }

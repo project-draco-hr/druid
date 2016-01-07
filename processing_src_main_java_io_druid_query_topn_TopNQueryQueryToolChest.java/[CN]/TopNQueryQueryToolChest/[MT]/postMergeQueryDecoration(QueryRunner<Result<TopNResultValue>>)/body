@@ -1,5 +1,5 @@
 {
-  final ThresholdAdjustingQueryRunner thresholdRunner=new ThresholdAdjustingQueryRunner(runner,config.getMinTopNThreshold());
+  final ThresholdAdjustingQueryRunner thresholdRunner=new ThresholdAdjustingQueryRunner(runner,config);
   return new QueryRunner<Result<TopNResultValue>>(){
     @Override public Sequence<Result<TopNResultValue>> run(    final Query<Result<TopNResultValue>> query,    final Map<String,Object> responseContext){
       final Sequence<Result<TopNResultValue>> resultSequence=thresholdRunner.run(query,responseContext);
