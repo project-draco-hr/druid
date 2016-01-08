@@ -69,6 +69,7 @@ synchronized (hydrant) {
   handoffNotifier.registerSegmentHandoffCallback(new SegmentDescriptor(sink.getInterval(),sink.getVersion(),config.getShardSpec().getPartitionNum()),mergeExecutor,new Runnable(){
     @Override public void run(){
       abandonSegment(sink.getInterval().getStartMillis(),sink);
+      metrics.incrementHandOffCount();
     }
   }
 );
