@@ -1,11 +1,11 @@
 {
-  return new Predicate<ZkWorker>(){
-    @Override public boolean apply(    ZkWorker zkWorker){
+  return new Predicate<Worker>(){
+    @Override public boolean apply(    Worker worker){
       final String minVersion=config.getWorkerVersion();
       if (minVersion == null) {
         throw new ISE("No minVersion found! It should be set in your runtime properties or configuration database.");
       }
-      return zkWorker.isValidVersion(minVersion);
+      return worker.isValidVersion(minVersion);
     }
   }
 ;

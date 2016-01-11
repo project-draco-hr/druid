@@ -1,0 +1,30 @@
+{
+synchronized (lock) {
+    final Collection<Worker> validWorkers=Collections2.filter(zkWorkers,createValidWorkerPredicate(config));
+    final Predicate<Worker> isLazyWorker=createLazyWorkerPredicate(config);
+    final int minWorkerCount=workerConfig.getAutoScaler().getMinNumWorkers();
+    final int maxWorkerCount=workerConfig.getAutoScaler().getMaxNumWorkers();
+    if (minWorkerCount > maxWorkerCount) {
+      log.error("Huh? minWorkerCount[%d] > maxWorkerCount[%d]. I give up!",minWorkerCount,maxWorkerCount);
+      return;
+    }
+    if (targetWorkerCount < 0) {
+      targetWorkerCount=Math.max(Math.min(zkWorkers.size(),maxWorkerCount),minWorkerCount);
+      log.info("Starting with a target of %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),minWorkerCount,maxWorkerCount);
+    }
+    final boolean notTakingActions=currentlyProvisioning.isEmpty() && currentlyTerminating.isEmpty();
+    final boolean shouldScaleUp=notTakingActions && validWorkers.size() >= targetWorkerCount && targetWorkerCount < maxWorkerCount && (hasTaskPendingBeyondThreshold(pendingTasks) || targetWorkerCount < minWorkerCount);
+    final boolean shouldScaleDown=notTakingActions && validWorkers.size() == targetWorkerCount && targetWorkerCount > minWorkerCount && Iterables.any(validWorkers,isLazyWorker);
+    if (shouldScaleUp) {
+      targetWorkerCount=Math.max(targetWorkerCount + 1,minWorkerCount);
+      log.info("I think we should scale up to %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),minWorkerCount,maxWorkerCount);
+    }
+ else     if (shouldScaleDown) {
+      targetWorkerCount=Math.min(targetWorkerCount - 1,maxWorkerCount);
+      log.info("I think we should scale down to %,d workers (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),minWorkerCount,maxWorkerCount);
+    }
+ else {
+      log.info("Our target is %,d workers, and I'm okay with that (current = %,d, min = %,d, max = %,d).",targetWorkerCount,validWorkers.size(),minWorkerCount,maxWorkerCount);
+    }
+  }
+}

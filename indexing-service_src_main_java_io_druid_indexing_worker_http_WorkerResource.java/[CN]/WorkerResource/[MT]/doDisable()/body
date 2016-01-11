@@ -1,5 +1,6 @@
 {
   try {
+    final Worker disabledWorker=new Worker(enabledWorker.getHost(),enabledWorker.getIp(),enabledWorker.getCapacity(),DISABLED_VERSION,enabledWorker.getLastCompletedTaskTime());
     curatorCoordinator.updateWorkerAnnouncement(disabledWorker);
     return Response.ok(ImmutableMap.of(disabledWorker.getHost(),"disabled")).build();
   }

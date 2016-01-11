@@ -3,7 +3,7 @@
   cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(statusPath,"second"),jsonMapper.writeValueAsBytes(TaskStatus.running("second")));
   doSetup();
   final Set<String> existingTasks=Sets.newHashSet();
-  for (  ZkWorker zkWorker : remoteTaskRunner.getWorkers()) {
+  for (  ZkWorker zkWorker : remoteTaskRunner.getZkWorkers()) {
     existingTasks.addAll(zkWorker.getRunningTasks().keySet());
   }
   Assert.assertEquals("existingTasks",ImmutableSet.of("first","second"),existingTasks);
