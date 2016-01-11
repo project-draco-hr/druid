@@ -11,7 +11,7 @@
     final MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().getServersByTier(tier);
     if (serverQueue == null) {
       log.makeAlert("Tier[%s] has no servers! Check your cluster configuration!",tier).emit();
-      return stats;
+      continue;
     }
     final List<ServerHolder> serverHolderList=Lists.newArrayList(serverQueue);
     final DateTime referenceTimestamp=params.getBalancerReferenceTimestamp();

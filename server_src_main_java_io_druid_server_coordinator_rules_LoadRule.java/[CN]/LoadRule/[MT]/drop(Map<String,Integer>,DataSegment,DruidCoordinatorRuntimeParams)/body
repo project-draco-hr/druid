@@ -15,7 +15,7 @@
     MinMaxPriorityQueue<ServerHolder> serverQueue=params.getDruidCluster().get(tier);
     if (serverQueue == null) {
       log.makeAlert("No holders found for tier[%s]",entry.getKey()).emit();
-      return stats;
+      continue;
     }
     List<ServerHolder> droppedServers=Lists.newArrayList();
     while (loadedNumReplicantsForTier > expectedNumReplicantsForTier) {
