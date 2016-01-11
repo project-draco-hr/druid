@@ -1,12 +1,12 @@
 {
   return Arrays.asList(new Object[][]{{new IndexCreator(){
     @Override public IncrementalIndex createIndex(){
-      return new OnheapIncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},1000);
+      return new OnheapIncrementalIndex(0,QueryGranularity.MINUTE,new AggregatorFactory[]{new FilteredAggregatorFactory(new CountAggregatorFactory("cnt"),new SelectorDimFilter("billy","A"))},1000);
     }
   }
 },{new IndexCreator(){
     @Override public IncrementalIndex createIndex(){
-      return new OffheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},1000000,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+      return new OffheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new FilteredAggregatorFactory(new CountAggregatorFactory("cnt"),new SelectorDimFilter("billy","A"))},1000000,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
         @Override public ByteBuffer get(){
           return ByteBuffer.allocate(256 * 1024);
         }
