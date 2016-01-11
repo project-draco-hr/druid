@@ -11,6 +11,12 @@
       }
 ));
       injector.getInstance(ExecutorLifecycle.class).join();
+      final Set<Thread> threadSet=Thread.getAllStackTraces().keySet();
+      for (      Thread thread : threadSet) {
+        if (!thread.isDaemon() && thread != Thread.currentThread()) {
+          log.info("Thread [%s] is non daemon.",thread);
+        }
+      }
       lifecycle.stop();
     }
  catch (    Throwable t) {
