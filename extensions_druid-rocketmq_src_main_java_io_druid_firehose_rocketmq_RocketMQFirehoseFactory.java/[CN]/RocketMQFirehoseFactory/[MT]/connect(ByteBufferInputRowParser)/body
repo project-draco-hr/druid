@@ -11,16 +11,11 @@
     defaultMQPullConsumer.setMessageModel(MessageModel.CLUSTERING);
     topicQueueMap=new ConcurrentHashMap<>();
     pullMessageService=new DruidPullMessageService(defaultMQPullConsumer);
-    String[] topics=feed.split(",");
-    for (    String topic : topics) {
-      topic=topic.trim();
-      if (topic.isEmpty()) {
-        continue;
-      }
-      defaultMQPullConsumer.fetchSubscribeMessageQueues(topic);
-      topicQueueMap.put(topic,defaultMQPullConsumer.fetchMessageQueuesInBalance(topic));
+    for (    String topic : feed) {
+      Validators.checkTopic(topic);
+      topicQueueMap.put(topic,defaultMQPullConsumer.fetchSubscribeMessageQueues(topic));
     }
-    DruidMessageQueueListener druidMessageQueueListener=new DruidMessageQueueListener(Sets.newHashSet(topics),topicQueueMap,defaultMQPullConsumer);
+    DruidMessageQueueListener druidMessageQueueListener=new DruidMessageQueueListener(Sets.newHashSet(feed),topicQueueMap,defaultMQPullConsumer);
     defaultMQPullConsumer.setMessageQueueListener(druidMessageQueueListener);
     defaultMQPullConsumer.start();
     pullMessageService.start();
@@ -39,20 +34,17 @@
             hasMore=true;
           }
  else {
-            DruidPullRequest newPullRequest=new DruidPullRequest();
-            newPullRequest.setMessageQueue(messageQueue);
             try {
               long offset=defaultMQPullConsumer.fetchConsumeOffset(messageQueue,false);
-              newPullRequest.setNextBeginOffset(offset);
+              int batchSize=(null == pullBatchSize || pullBatchSize.isEmpty()) ? DEFAULT_PULL_BATCH_SIZE : Integer.parseInt(pullBatchSize);
+              DruidPullRequest newPullRequest=new DruidPullRequest(messageQueue,null,offset,batchSize,!hasMessagesPending());
+              pullMessageService.putRequest(newPullRequest);
+              if (null == earliestPullRequest) {
+                earliestPullRequest=newPullRequest;
+              }
             }
  catch (            MQClientException e) {
               LOGGER.error("Failed to fetch consume offset for queue: {}",entry.getKey());
-              continue;
-            }
-            newPullRequest.setLongPull(!hasMessagesPending());
-            pullMessageService.putRequest(newPullRequest);
-            if (null == earliestPullRequest) {
-              earliestPullRequest=newPullRequest;
             }
           }
         }
@@ -80,7 +72,7 @@
           return inputRow;
         }
       }
-      return null;
+      throw new RuntimeException("Unexpected Fatal Error! There should have been one row available.");
     }
     @Override public Runnable commit(){
       return new Runnable(){
