@@ -10,7 +10,9 @@
  catch (  InterruptedException e) {
     LOGGER.error("",e);
   }
-  swapRequests();
+synchronized (this) {
+    swapRequests();
+  }
   doPull();
   LOGGER.info(getServiceName() + " terminated.");
 }
