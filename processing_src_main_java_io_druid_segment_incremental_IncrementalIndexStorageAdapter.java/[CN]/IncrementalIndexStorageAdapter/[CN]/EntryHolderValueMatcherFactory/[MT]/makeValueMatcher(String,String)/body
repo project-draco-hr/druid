@@ -3,7 +3,7 @@
   if (dimIndexObject == null) {
     return new BooleanValueMatcher(Strings.isNullOrEmpty(value));
   }
-  final IncrementalIndex.DimDim dimDim=index.getDimension(dimension);
+  final IncrementalIndex.DimDim dimDim=index.getDimensionValues(dimension);
   if (!dimDim.contains(value)) {
     if (Strings.isNullOrEmpty(value)) {
       final int dimIndex=dimIndexObject;
@@ -29,7 +29,7 @@
         return Strings.isNullOrEmpty(value);
       }
       for (      String dimVal : dims[dimIndex]) {
-        if (dimDim.compareCannonicalValues(id,dimVal)) {
+        if (dimDim.compareCanonicalValues(id,dimVal)) {
           return true;
         }
       }
