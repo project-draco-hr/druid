@@ -1,5 +1,5 @@
 {
-  final Task indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P2D"))),mapper),new IndexTask.IndexIOConfig(new MockFirehoseFactory(false)),new IndexTask.IndexTuningConfig(10000,10,-1,indexSpec)),mapper,null);
+  final Task indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[]{new DoubleSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.DAY,null,ImmutableList.of(new Interval("2010-01-01/P2D"))),mapper),new IndexTask.IndexIOConfig(new MockFirehoseFactory(false)),new IndexTask.IndexTuningConfig(10000,10,-1,indexSpec,null)),mapper,null);
   final long startTime=System.currentTimeMillis();
   tq.start();
   ts.insert(indexTask,TaskStatus.running(indexTask.getId()));

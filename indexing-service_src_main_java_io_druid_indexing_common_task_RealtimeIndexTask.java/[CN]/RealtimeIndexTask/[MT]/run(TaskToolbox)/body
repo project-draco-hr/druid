@@ -54,7 +54,8 @@
   final FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,tuningConfig);
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment),ImmutableMap.of(DruidMetrics.TASK_ID,new String[]{getId()}));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
-  final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getSegmentHandoffNotifierFactory(),toolbox.getQueryExecutorService(),toolbox.getIndexMerger(),toolbox.getIndexIO(),toolbox.getCache(),toolbox.getCacheConfig(),toolbox.getObjectMapper());
+  IndexMerger indexMerger=spec.getTuningConfig().getBuildV9Directly() ? toolbox.getIndexMergerV9() : toolbox.getIndexMerger();
+  final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getSegmentHandoffNotifierFactory(),toolbox.getQueryExecutorService(),indexMerger,toolbox.getIndexIO(),toolbox.getCache(),toolbox.getCacheConfig(),toolbox.getObjectMapper());
   this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
   Supplier<Committer> committerSupplier=null;
   try {

@@ -30,7 +30,7 @@
       progress.progress();
       List<Iterable<Integer>> convertedInverteds=Lists.newArrayListWithCapacity(adapters.size());
       for (int j=0; j < adapters.size(); ++j) {
-        convertedInverteds.add(new IndexMerger.ConvertingIndexedInts(bitmapIndexSeeker[j].seek(dimVal),rowNumConversions.get(j)));
+        convertedInverteds.add(new ConvertingIndexedInts(bitmapIndexSeeker[j].seek(dimVal),rowNumConversions.get(j)));
       }
       MutableBitmap bitset=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
       for (      Integer row : CombiningIterable.createSplatted(convertedInverteds,Ordering.<Integer>natural().nullsFirst())) {
