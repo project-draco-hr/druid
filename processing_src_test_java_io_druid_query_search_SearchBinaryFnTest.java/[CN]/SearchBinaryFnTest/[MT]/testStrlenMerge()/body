@@ -1,8 +1,10 @@
 {
-  Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:thisislong")));
-  Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:short")));
-  Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:short","blah:thisislong")));
-  Result<SearchResultValue> actual=new SearchBinaryFn(new StrlenSearchSortSpec(),QueryGranularity.ALL,Integer.MAX_VALUE).apply(r1,r2);
+  StrlenSearchSortSpec searchSortSpec=new StrlenSearchSortSpec();
+  Comparator<SearchHit> c=searchSortSpec.getComparator();
+  Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:thisislong")));
+  Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:short")));
+  Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:short","blah:thisislong")));
+  Result<SearchResultValue> actual=new SearchBinaryFn(searchSortSpec,QueryGranularity.ALL,Integer.MAX_VALUE).apply(r1,r2);
   Assert.assertEquals(expected.getTimestamp(),actual.getTimestamp());
   assertSearchMergeResult(expected.getValue(),actual.getValue());
 }

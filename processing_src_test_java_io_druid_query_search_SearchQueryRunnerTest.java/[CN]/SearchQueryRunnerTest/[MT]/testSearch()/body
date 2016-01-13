@@ -1,9 +1,13 @@
 {
   SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build();
-  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
-  expectedResults.put(QueryRunnerTestHelper.qualityDimension,Sets.newHashSet("automotive","mezzanine","travel","health","entertainment"));
-  expectedResults.put(QueryRunnerTestHelper.marketDimension,Sets.newHashSet("total_market"));
-  expectedResults.put(QueryRunnerTestHelper.placementishDimension,Sets.newHashSet("a"));
-  expectedResults.put("partial_null_column",Sets.newHashSet("value"));
-  checkSearchQuery(searchQuery,expectedResults);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"automotive",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"mezzanine",279));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"travel",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"health",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"entertainment",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.marketDimension,"total_market",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.placementishDimension,"a",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.partialNullDimension,"value",186));
+  checkSearchQuery(searchQuery,expectedHits);
 }

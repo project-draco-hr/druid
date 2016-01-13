@@ -1,6 +1,6 @@
 {
   SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).query(new FragmentSearchQuerySpec(Arrays.asList("auto","ve"))).build();
-  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
-  expectedResults.put(QueryRunnerTestHelper.qualityDimension,Sets.newHashSet("automotive"));
-  checkSearchQuery(searchQuery,expectedResults);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"automotive",93));
+  checkSearchQuery(searchQuery,expectedHits);
 }

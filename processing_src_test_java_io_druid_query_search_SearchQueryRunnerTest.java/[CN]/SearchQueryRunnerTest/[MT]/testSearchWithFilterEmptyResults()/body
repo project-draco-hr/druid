@@ -1,5 +1,5 @@
 {
-  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
   DimFilter filter=Druids.newAndDimFilterBuilder().fields(Arrays.<DimFilter>asList(Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.marketDimension).value("total_market").build(),Druids.newSelectorDimFilterBuilder().dimension(QueryRunnerTestHelper.qualityDimension).value("automotive").build())).build();
-  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(filter).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build(),expectedResults);
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(filter).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build(),expectedHits);
 }

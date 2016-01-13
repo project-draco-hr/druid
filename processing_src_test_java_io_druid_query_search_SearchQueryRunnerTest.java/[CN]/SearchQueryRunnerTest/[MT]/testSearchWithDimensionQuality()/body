@@ -1,5 +1,9 @@
 {
-  Map<String,Set<String>> expectedResults=new HashMap<String,Set<String>>();
-  expectedResults.put(QueryRunnerTestHelper.qualityDimension,new HashSet<String>(Arrays.asList("automotive","mezzanine","travel","health","entertainment")));
-  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimensions("quality").intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build(),expectedResults);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"automotive",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"mezzanine",279));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"travel",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"health",93));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"entertainment",93));
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimensions("quality").intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build(),expectedHits);
 }
