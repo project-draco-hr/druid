@@ -6,7 +6,7 @@
   if (query.getLimit() < config.getMaxSearchLimit()) {
     return runner.run(query,responseContext);
   }
-  final boolean isBySegment=query.getContextBySegment(false);
+  final boolean isBySegment=BaseQuery.getContextBySegment(query,false);
   return Sequences.map(runner.run(query.withLimit(config.getMaxSearchLimit()),responseContext),new Function<Result<SearchResultValue>,Result<SearchResultValue>>(){
     @Override public Result<SearchResultValue> apply(    Result<SearchResultValue> input){
       if (isBySegment) {

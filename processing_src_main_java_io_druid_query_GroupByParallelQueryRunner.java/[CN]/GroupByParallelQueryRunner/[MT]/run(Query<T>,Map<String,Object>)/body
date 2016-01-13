@@ -2,8 +2,8 @@
   final GroupByQuery query=(GroupByQuery)queryParam;
   final Pair<IncrementalIndex,Accumulator<IncrementalIndex,T>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(query,configSupplier.get(),bufferPool);
   final Pair<Queue,Accumulator<Queue,T>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
-  final boolean bySegment=query.getContextBySegment(false);
-  final int priority=query.getContextPriority(0);
+  final boolean bySegment=BaseQuery.getContextBySegment(query,false);
+  final int priority=BaseQuery.getContextPriority(query,0);
   ListenableFuture<List<Void>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,ListenableFuture<Void>>(){
     @Override public ListenableFuture<Void> apply(    final QueryRunner<T> input){
       if (input == null) {
@@ -66,7 +66,7 @@ catch (  ExecutionException e) {
   if (bySegment) {
     return Sequences.simple(bySegmentAccumulatorPair.lhs);
   }
-  return new ResourceClosingSequence<T>(Sequences.simple(Iterables.transform(indexAccumulatorPair.lhs.iterableWithPostAggregations(null),new Function<Row,T>(){
+  return new ResourceClosingSequence<T>(Sequences.simple(Iterables.transform(indexAccumulatorPair.lhs.iterableWithPostAggregations(null,query.isDescending()),new Function<Row,T>(){
     @Override public T apply(    Row input){
       return (T)input;
     }

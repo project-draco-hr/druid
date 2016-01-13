@@ -1,13 +1,13 @@
 {
   return new QueryRunner<Row>(){
-    @Override public Sequence<Row> run(    Query<Row> input,    Map<String,Object> responseContext){
-      if (input.getContextBySegment(false)) {
-        return runner.run(input,responseContext);
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
+      if (BaseQuery.getContextBySegment(query,false)) {
+        return runner.run(query,responseContext);
       }
-      if (Boolean.valueOf(input.getContextValue(GROUP_BY_MERGE_KEY,"true"))) {
-        return mergeGroupByResults((GroupByQuery)input,runner,responseContext);
+      if (Boolean.valueOf(query.getContextValue(GROUP_BY_MERGE_KEY,"true"))) {
+        return mergeGroupByResults((GroupByQuery)query,runner,responseContext);
       }
-      return runner.run(input,responseContext);
+      return runner.run(query,responseContext);
     }
   }
 ;

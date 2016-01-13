@@ -1,0 +1,24 @@
+{
+  Interval actualInterval=interval;
+  long minDataTimestamp=getMinTime().getMillis();
+  long maxDataTimestamp=getMaxTime().getMillis();
+  final Interval dataInterval=new Interval(minDataTimestamp,gran.next(gran.truncate(maxDataTimestamp)));
+  if (!actualInterval.overlaps(dataInterval)) {
+    return Sequences.empty();
+  }
+  if (actualInterval.getStart().isBefore(dataInterval.getStart())) {
+    actualInterval=actualInterval.withStart(dataInterval.getStart());
+  }
+  if (actualInterval.getEnd().isAfter(dataInterval.getEnd())) {
+    actualInterval=actualInterval.withEnd(dataInterval.getEnd());
+  }
+  final Offset offset;
+  if (filter == null) {
+    offset=new NoFilterOffset(0,index.getNumRows(),descending);
+  }
+ else {
+    final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
+    offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector),descending);
+  }
+  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset,minDataTimestamp,maxDataTimestamp,descending).build(),Predicates.<Cursor>notNull());
+}

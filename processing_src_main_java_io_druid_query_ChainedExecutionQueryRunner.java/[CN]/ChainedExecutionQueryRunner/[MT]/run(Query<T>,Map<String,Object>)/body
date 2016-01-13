@@ -1,5 +1,6 @@
 {
-  final int priority=query.getContextPriority(0);
+  final int priority=BaseQuery.getContextPriority(query,0);
+  final Ordering ordering=query.getResultOrdering();
   return new BaseSequence<T,Iterator<T>>(new BaseSequence.IteratorMaker<T,Iterator<T>>(){
     @Override public Iterator<T> make(){
       ListenableFuture<List<Iterable<T>>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<T>,ListenableFuture<Iterable<T>>>(){

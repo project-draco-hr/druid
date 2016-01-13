@@ -1,5 +1,5 @@
 {
-  if (query.getContextBySegment(false)) {
+  if (BaseQuery.getContextBySegment(query,false)) {
     final Sequence<T> baseSequence=base.run(query,responseContext);
     final List<T> results=Sequences.toList(baseSequence,Lists.<T>newArrayList());
     return Sequences.simple(Arrays.asList((T)new Result<BySegmentResultValueClass<T>>(timestamp,new BySegmentResultValueClass<T>(results,segmentIdentifier,query.getIntervals().get(0)))));

@@ -24,7 +24,7 @@
   EasyMock.replay(watcher);
   ArrayBlockingQueue<DyingQueryRunner> interrupted=new ArrayBlockingQueue<>(3);
   Set<DyingQueryRunner> runners=Sets.newHashSet(new DyingQueryRunner(queriesStarted,queriesInterrupted,interrupted),new DyingQueryRunner(queriesStarted,queriesInterrupted,interrupted),new DyingQueryRunner(queriesStarted,queriesInterrupted,interrupted));
-  ChainedExecutionQueryRunner chainedRunner=new ChainedExecutionQueryRunner<>(exec,Ordering.<Integer>natural(),watcher,Lists.<QueryRunner<Integer>>newArrayList(runners));
+  ChainedExecutionQueryRunner chainedRunner=new ChainedExecutionQueryRunner<>(exec,watcher,Lists.<QueryRunner<Integer>>newArrayList(runners));
   Map<String,Object> context=ImmutableMap.<String,Object>of();
   final Sequence seq=chainedRunner.run(Druids.newTimeseriesQueryBuilder().dataSource("test").intervals("2014/2015").aggregators(Lists.<AggregatorFactory>newArrayList(new CountAggregatorFactory("count"))).build(),context);
   Future resultFuture=Executors.newFixedThreadPool(1).submit(new Runnable(){

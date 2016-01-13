@@ -1,0 +1,15 @@
+{
+  Object val=query.getContextValue(key);
+  if (val == null) {
+    return defaultValue;
+  }
+  if (val instanceof String) {
+    return Integer.parseInt((String)val);
+  }
+ else   if (val instanceof Integer) {
+    return (int)val;
+  }
+ else {
+    throw new ISE("Unknown type [%s]",val.getClass());
+  }
+}

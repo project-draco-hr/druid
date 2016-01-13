@@ -1,0 +1,37 @@
+{
+  final List<String> dimensions=getDimensionNames();
+  final ConcurrentNavigableMap<TimeAndDims,Integer> facts=descending ? getFacts().descendingMap() : getFacts();
+  return new Iterable<Row>(){
+    @Override public Iterator<Row> iterator(){
+      return Iterators.transform(facts.entrySet().iterator(),new Function<Map.Entry<TimeAndDims,Integer>,Row>(){
+        @Override public Row apply(        final Map.Entry<TimeAndDims,Integer> input){
+          final TimeAndDims timeAndDims=input.getKey();
+          final int rowOffset=input.getValue();
+          String[][] theDims=timeAndDims.getDims();
+          Map<String,Object> theVals=Maps.newLinkedHashMap();
+          for (int i=0; i < theDims.length; ++i) {
+            String[] dim=theDims[i];
+            if (dim != null && dim.length != 0) {
+              theVals.put(dimensions.get(i),dim.length == 1 ? dim[0] : Arrays.asList(dim));
+            }
+ else {
+              theVals.put(dimensions.get(i),null);
+            }
+          }
+          AggregatorType[] aggs=getAggsForRow(rowOffset);
+          for (int i=0; i < aggs.length; ++i) {
+            theVals.put(metrics[i].getName(),getAggVal(aggs[i],rowOffset,i));
+          }
+          if (postAggs != null) {
+            for (            PostAggregator postAgg : postAggs) {
+              theVals.put(postAgg.getName(),postAgg.compute(theVals));
+            }
+          }
+          return new MapBasedRow(timeAndDims.getTimestamp(),theVals);
+        }
+      }
+);
+    }
+  }
+;
+}

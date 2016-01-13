@@ -1,11 +1,11 @@
 {
   return new ResultMergeQueryRunner<Result<SelectResultValue>>(queryRunner){
     @Override protected Ordering<Result<SelectResultValue>> makeOrdering(    Query<Result<SelectResultValue>> query){
-      return Ordering.from(new ResultGranularTimestampComparator<SelectResultValue>(((SelectQuery)query).getGranularity()));
+      return ResultGranularTimestampComparator.create(((SelectQuery)query).getGranularity(),query.isDescending());
     }
     @Override protected BinaryFn<Result<SelectResultValue>,Result<SelectResultValue>,Result<SelectResultValue>> createMergeFn(    Query<Result<SelectResultValue>> input){
       SelectQuery query=(SelectQuery)input;
-      return new SelectBinaryFn(query.getGranularity(),query.getPagingSpec());
+      return new SelectBinaryFn(query.getGranularity(),query.getPagingSpec(),query.isDescending());
     }
   }
 ;

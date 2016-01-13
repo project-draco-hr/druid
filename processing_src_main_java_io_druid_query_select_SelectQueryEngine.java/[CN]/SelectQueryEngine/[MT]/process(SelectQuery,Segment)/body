@@ -17,9 +17,9 @@
  else {
     metrics=query.getMetrics();
   }
-  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
+  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
     @Override public Result<SelectResultValue> apply(    Cursor cursor){
-      final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec().getThreshold());
+      final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec().getThreshold(),query.isDescending());
       final LongColumnSelector timestampColumnSelector=cursor.makeLongColumnSelector(Column.TIME_COLUMN_NAME);
       final Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
       for (      String dim : dims) {

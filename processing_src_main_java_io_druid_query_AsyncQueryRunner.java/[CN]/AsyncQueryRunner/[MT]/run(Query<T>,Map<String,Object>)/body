@@ -1,5 +1,5 @@
 {
-  final int priority=query.getContextPriority(0);
+  final int priority=BaseQuery.getContextPriority(query,0);
   final ListenableFuture<Sequence<T>> future=executor.submit(new AbstractPrioritizedCallable<Sequence<T>>(priority){
     @Override public Sequence<T> call() throws Exception {
       return baseRunner.run(query,responseContext);

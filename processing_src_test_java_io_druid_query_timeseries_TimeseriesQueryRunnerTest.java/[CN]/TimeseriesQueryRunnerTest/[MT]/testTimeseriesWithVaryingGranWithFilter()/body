@@ -1,10 +1,10 @@
 {
-  TimeseriesQuery query1=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).filters(QueryRunnerTestHelper.marketDimension,"spot","upfront","total_market").granularity(new PeriodGranularity(new Period("P1M"),null,null)).intervals(Arrays.asList(new Interval("2011-04-02T00:00:00.000Z/2011-04-03T00:00:00.000Z"))).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"),QueryRunnerTestHelper.qualityUniques)).build();
+  TimeseriesQuery query1=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).filters(QueryRunnerTestHelper.marketDimension,"spot","upfront","total_market").granularity(new PeriodGranularity(new Period("P1M"),null,null)).intervals(Arrays.asList(new Interval("2011-04-02T00:00:00.000Z/2011-04-03T00:00:00.000Z"))).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"),QueryRunnerTestHelper.qualityUniques)).descending(descending).build();
   List<Result<TimeseriesResultValue>> expectedResults1=Arrays.asList(new Result<>(new DateTime("2011-04-01"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"idx",5827L,"uniques",QueryRunnerTestHelper.UNIQUES_9))));
   Iterable<Result<TimeseriesResultValue>> results1=Sequences.toList(runner.run(query1,CONTEXT),Lists.<Result<TimeseriesResultValue>>newArrayList());
-  TestHelper.assertExpectedResults(expectedResults1,results1);
+  assertExpectedResults(expectedResults1,results1);
   TimeseriesQuery query2=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).filters(QueryRunnerTestHelper.marketDimension,"spot","upfront","total_market").granularity("DAY").intervals(Arrays.asList(new Interval("2011-04-02T00:00:00.000Z/2011-04-03T00:00:00.000Z"))).aggregators(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"),QueryRunnerTestHelper.qualityUniques)).build();
   List<Result<TimeseriesResultValue>> expectedResults2=Arrays.asList(new Result<>(new DateTime("2011-04-02"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",13L,"idx",5827L,"uniques",QueryRunnerTestHelper.UNIQUES_9))));
   Iterable<Result<TimeseriesResultValue>> results2=Sequences.toList(runner.run(query2,CONTEXT),Lists.<Result<TimeseriesResultValue>>newArrayList());
-  TestHelper.assertExpectedResults(expectedResults2,results2);
+  assertExpectedResults(expectedResults2,results2);
 }

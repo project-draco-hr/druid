@@ -7,7 +7,7 @@
     timeValues.put(index,currentValue);
   }
  else   if (timestamp != currentTimestamp) {
-    if (timestamp < currentTimestamp) {
+    if (descending ? timestamp > currentTimestamp : timestamp < currentTimestamp) {
       throw new IllegalStateException("cannot re-use time dimension selector for multiple scans");
     }
     currentTimestamp=timestamp;

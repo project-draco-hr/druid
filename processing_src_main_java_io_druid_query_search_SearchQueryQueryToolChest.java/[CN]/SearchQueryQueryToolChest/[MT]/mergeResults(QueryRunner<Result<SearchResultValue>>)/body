@@ -1,7 +1,7 @@
 {
   return new ResultMergeQueryRunner<Result<SearchResultValue>>(runner){
     @Override protected Ordering<Result<SearchResultValue>> makeOrdering(    Query<Result<SearchResultValue>> query){
-      return Ordering.from(new ResultGranularTimestampComparator<SearchResultValue>(((SearchQuery)query).getGranularity()));
+      return ResultGranularTimestampComparator.create(((SearchQuery)query).getGranularity(),query.isDescending());
     }
     @Override protected BinaryFn<Result<SearchResultValue>,Result<SearchResultValue>,Result<SearchResultValue>> createMergeFn(    Query<Result<SearchResultValue>> input){
       SearchQuery query=(SearchQuery)input;

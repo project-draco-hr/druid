@@ -1,6 +1,6 @@
 {
   final QueryToolChest<T,Query<T>> toolChest=warehouse.getToolChest(query);
-  final QueryRunner<T> baseRunner=CPUTimeMetricQueryRunner.safeBuild(new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(new UnionQueryRunner<T>(toolChest.preMergeQueryDecoration(new RetryQueryRunner<T>(baseClient,toolChest,retryConfig,objectMapper)),toolChest))),toolChest),new Function<Query<T>,ServiceMetricEvent.Builder>(){
+  final QueryRunner<T> baseRunner=CPUTimeMetricQueryRunner.safeBuild(new FinalizeResultsQueryRunner<T>(toolChest.postMergeQueryDecoration(toolChest.mergeResults(new UnionQueryRunner<T>(toolChest.preMergeQueryDecoration(new RetryQueryRunner<T>(baseClient,toolChest,retryConfig,objectMapper))))),toolChest),new Function<Query<T>,ServiceMetricEvent.Builder>(){
     @Nullable @Override public ServiceMetricEvent.Builder apply(    Query<T> tQuery){
       return toolChest.makeMetricBuilder(tQuery);
     }

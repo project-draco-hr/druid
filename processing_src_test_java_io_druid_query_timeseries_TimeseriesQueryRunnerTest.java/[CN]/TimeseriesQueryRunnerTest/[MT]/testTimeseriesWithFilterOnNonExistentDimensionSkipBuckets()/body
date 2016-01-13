@@ -1,6 +1,6 @@
 {
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters("bobby","billy").intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).context(ImmutableMap.<String,Object>of("skipEmptyBuckets","true")).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.dayGran).filters("bobby","billy").intervals(QueryRunnerTestHelper.firstToThird).aggregators(QueryRunnerTestHelper.commonAggregators).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).context(ImmutableMap.<String,Object>of("skipEmptyBuckets","true")).descending(descending).build();
   List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList();
   Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,new HashMap<String,Object>()),Lists.<Result<TimeseriesResultValue>>newArrayList());
-  TestHelper.assertExpectedResults(expectedResults,results);
+  assertExpectedResults(expectedResults,results);
 }

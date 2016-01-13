@@ -2,7 +2,7 @@
   if (adapter == null) {
     throw new SegmentMissingException("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
   }
-  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
+  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<TimeseriesResultValue>>(){
     private final boolean skipEmptyBuckets=query.isSkipEmptyBuckets();
     private final List<AggregatorFactory> aggregatorSpecs=query.getAggregatorSpecs();
     @Override public Result<TimeseriesResultValue> apply(    Cursor cursor){

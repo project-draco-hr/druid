@@ -19,7 +19,7 @@
         if (!config.isReturnPartialResults() && !finalMissingSegs.isEmpty()) {
           throw new SegmentMissingException("No results found for segments[%s]",finalMissingSegs);
         }
-        return toolChest.mergeSequencesUnordered(Sequences.simple(listOfSequences)).toYielder(initValue,accumulator);
+        return new MergeSequence<>(query.getResultOrdering(),Sequences.simple(listOfSequences)).toYielder(initValue,accumulator);
       }
  else {
         return Iterables.getOnlyElement(listOfSequences).toYielder(initValue,accumulator);

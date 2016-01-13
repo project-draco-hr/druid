@@ -1,7 +1,7 @@
 {
   return new ResultMergeQueryRunner<Result<TopNResultValue>>(runner){
     @Override protected Ordering<Result<TopNResultValue>> makeOrdering(    Query<Result<TopNResultValue>> query){
-      return Ordering.from(new ResultGranularTimestampComparator<TopNResultValue>(((TopNQuery)query).getGranularity()));
+      return ResultGranularTimestampComparator.create(((TopNQuery)query).getGranularity(),query.isDescending());
     }
     @Override protected BinaryFn<Result<TopNResultValue>,Result<TopNResultValue>,Result<TopNResultValue>> createMergeFn(    Query<Result<TopNResultValue>> input){
       TopNQuery query=(TopNQuery)input;
