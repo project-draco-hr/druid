@@ -4,22 +4,14 @@
     throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
   }
 synchronized (lock) {
-    if (availableZNodes.isEmpty()) {
-      SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath());
-      availableZNode.addSegment(segment);
-      log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
-      announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
-      segmentLookup.put(segment,availableZNode);
-      availableZNodes.add(availableZNode);
-    }
- else {
+    boolean done=false;
+    if (!availableZNodes.isEmpty()) {
       Iterator<SegmentZNode> iter=availableZNodes.iterator();
-      boolean done=false;
       while (iter.hasNext() && !done) {
         SegmentZNode availableZNode=iter.next();
         if (availableZNode.getBytes().length + newBytesLen < config.getMaxBytesPerNode()) {
           availableZNode.addSegment(segment);
-          log.info("Announcing segment[%s] at path[%s]",segment.getIdentifier(),availableZNode.getPath());
+          log.info("Announcing segment[%s] at existing path[%s]",segment.getIdentifier(),availableZNode.getPath());
           announcer.update(availableZNode.getPath(),availableZNode.getBytes());
           segmentLookup.put(segment,availableZNode);
           if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
@@ -27,7 +19,19 @@ synchronized (lock) {
           }
           done=true;
         }
+ else {
+          availableZNodes.remove(availableZNode);
+        }
       }
+    }
+    if (!done) {
+      assert(availableZNodes.isEmpty());
+      SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath());
+      availableZNode.addSegment(segment);
+      log.info("Announcing segment[%s] at new path[%s]",segment.getIdentifier(),availableZNode.getPath());
+      announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
+      segmentLookup.put(segment,availableZNode);
+      availableZNodes.add(availableZNode);
     }
   }
 }
