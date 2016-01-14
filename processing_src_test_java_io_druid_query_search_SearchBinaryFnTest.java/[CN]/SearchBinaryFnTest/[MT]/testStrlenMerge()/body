@@ -1,7 +1,7 @@
 {
-  Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah","thisislong"))));
-  Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah","short"))));
-  Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah","short"),new SearchHit("blah","thisislong"))));
+  Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:thisislong")));
+  Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:short")));
+  Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits("blah:short","blah:thisislong")));
   Result<SearchResultValue> actual=new SearchBinaryFn(new StrlenSearchSortSpec(),QueryGranularity.ALL,Integer.MAX_VALUE).apply(r1,r2);
   Assert.assertEquals(expected.getTimestamp(),actual.getTimestamp());
   assertSearchMergeResult(expected.getValue(),actual.getValue());
