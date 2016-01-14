@@ -2,41 +2,27 @@
   if (selector == null) {
     return selector;
   }
-  final Set<Integer> matched=new HashSet<>(values.size());
-  for (  String value : values) {
-    int i=selector.lookupId(value);
-    if (i >= 0) {
-      matched.add(i);
-    }
-  }
-  ;
-  return new DimensionSelector(){
-    @Override public IndexedInts getRow(){
-      IndexedInts baseRow=selector.getRow();
-      List<Integer> result=new ArrayList<>(baseRow.size());
-      for (      int i : baseRow) {
-        if (matched.contains(i)) {
-          if (isWhitelist) {
-            result.add(i);
-          }
-        }
- else {
-          if (!isWhitelist) {
-            result.add(i);
-          }
-        }
+  int selectorCardinality=selector.getValueCardinality();
+  int cardinality=isWhitelist ? values.size() : selectorCardinality - values.size();
+  int count=0;
+  final Map<Integer,Integer> forwardMapping=new HashMap<>(cardinality);
+  final int[] reverseMapping=new int[cardinality];
+  if (isWhitelist) {
+    for (    String value : values) {
+      int i=selector.lookupId(value);
+      if (i >= 0) {
+        forwardMapping.put(i,count);
+        reverseMapping[count++]=i;
       }
-      return new ListBasedIndexedInts(result);
-    }
-    @Override public int getValueCardinality(){
-      return selector.getValueCardinality();
-    }
-    @Override public String lookupName(    int id){
-      return selector.lookupName(id);
-    }
-    @Override public int lookupId(    String name){
-      return selector.lookupId(name);
     }
   }
-;
+ else {
+    for (int i=0; i < selectorCardinality; i++) {
+      if (!values.contains(Strings.nullToEmpty(selector.lookupName(i)))) {
+        forwardMapping.put(i,count);
+        reverseMapping[count++]=i;
+      }
+    }
+  }
+  return BaseFilteredDimensionSpec.decorate(selector,forwardMapping,reverseMapping);
 }
