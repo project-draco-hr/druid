@@ -1,10 +1,8 @@
 {
-  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),new LegacySegmentSpec(new Interval("2011-01-12/2011-01-14")),null,QueryRunnerTestHelper.allGran,Lists.<String>newArrayList("foo"),Lists.<String>newArrayList("foo2"),new PagingSpec(null,3),null);
+  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),I_0112_0114,descending,null,QueryRunnerTestHelper.allGran,Lists.<String>newArrayList("foo"),Lists.<String>newArrayList("foo2"),new PagingSpec(null,3),null);
   Iterable<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,Maps.newHashMap()),Lists.<Result<SelectResultValue>>newArrayList());
-  Map<String,Object> res=Maps.newHashMap();
-  res.put("timestamp",new DateTime("2011-01-12T00:00:00.000Z"));
-  res.put("foo",null);
-  res.put("foo2",null);
-  List<Result<SelectResultValue>> expectedResults=Arrays.asList(new Result<SelectResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new SelectResultValue(ImmutableMap.of(QueryRunnerTestHelper.segmentId,2),Arrays.asList(new EventHolder(QueryRunnerTestHelper.segmentId,0,res),new EventHolder(QueryRunnerTestHelper.segmentId,1,res),new EventHolder(QueryRunnerTestHelper.segmentId,2,res)))));
+  final List<List<Map<String,Object>>> events=toEvents(new String[]{EventHolder.timestampKey + ":TIME","foo:NULL","foo2:NULL"},V_0112_0114);
+  PagingOffset offset=query.getPagingOffset(QueryRunnerTestHelper.segmentId);
+  List<Result<SelectResultValue>> expectedResults=toExpected(events,offset.startOffset(),offset.threshold());
   verify(expectedResults,results);
 }

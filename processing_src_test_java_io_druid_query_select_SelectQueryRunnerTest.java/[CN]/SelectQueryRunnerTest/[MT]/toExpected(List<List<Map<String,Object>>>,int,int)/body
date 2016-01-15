@@ -1,0 +1,26 @@
+{
+  if (offset < 0) {
+    targets=Lists.reverse(targets);
+  }
+  List<Result<SelectResultValue>> expected=Lists.newArrayListWithExpectedSize(targets.size());
+  for (  List<Map<String,Object>> group : targets) {
+    List<EventHolder> holders=Lists.newArrayListWithExpectedSize(threshold);
+    int newOffset=offset;
+    if (offset < 0) {
+      int start=group.size() + offset;
+      int end=Math.max(-1,start - threshold);
+      for (int i=start; i > end; i--) {
+        holders.add(new EventHolder(QueryRunnerTestHelper.segmentId,newOffset--,group.get(i)));
+      }
+    }
+ else {
+      int end=Math.min(group.size(),offset + threshold);
+      for (int i=offset; i < end; i++) {
+        holders.add(new EventHolder(QueryRunnerTestHelper.segmentId,newOffset++,group.get(i)));
+      }
+    }
+    int lastOffset=holders.isEmpty() ? offset : holders.get(holders.size() - 1).getOffset();
+    expected.add(new Result(new DateTime(group.get(0).get(EventHolder.timestampKey)),new SelectResultValue(ImmutableMap.of(QueryRunnerTestHelper.segmentId,lastOffset),holders)));
+  }
+  return expected;
+}

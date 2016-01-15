@@ -1,0 +1,21 @@
+{
+  List<List<Map<String,Object>>> events=Lists.newArrayList();
+  for (  String[] values : valueSet) {
+    events.add(Lists.newArrayList(Iterables.transform(Arrays.asList(values),new Function<String,Map<String,Object>>(){
+      @Override public Map<String,Object> apply(      String input){
+        Map<String,Object> event=Maps.newHashMap();
+        String[] values=input.split("\\t");
+        for (int i=0; i < dimSpecs.length; i++) {
+          if (dimSpecs[i] == null || i >= dimSpecs.length) {
+            continue;
+          }
+          String[] specs=dimSpecs[i].split(":");
+          event.put(specs[0],specs[1].equals("TIME") ? new DateTime(values[i]) : specs[1].equals("FLOAT") ? Float.valueOf(values[i]) : specs[1].equals("DOUBLE") ? Double.valueOf(values[i]) : specs[1].equals("LONG") ? Long.valueOf(values[i]) : specs[1].equals("NULL") ? null : values[i]);
+        }
+        return event;
+      }
+    }
+)));
+  }
+  return events;
+}
