@@ -1,0 +1,9 @@
+{
+  final String serviceName="serviceName";
+  final String host="some.host";
+  final int port=9898;
+  Assert.assertEquals(new DruidNode(serviceName,host,port),new DruidNode(serviceName,host,port));
+  Assert.assertNotEquals(new DruidNode(serviceName,host,port),new DruidNode(serviceName,host,-1));
+  Assert.assertNotEquals(new DruidNode(serviceName,host,port),new DruidNode(serviceName,"other.host",port));
+  Assert.assertNotEquals(new DruidNode(serviceName,host,port),new DruidNode("otherServiceName",host,port));
+}
