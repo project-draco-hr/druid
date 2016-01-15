@@ -1,0 +1,22 @@
+{
+  Set<String> whitelist=params.getCoordinatorDynamicConfig().getKillDataSourceWhitelist();
+  if (whitelist != null && whitelist.size() > 0 && (lastKillTime + period) < System.currentTimeMillis()) {
+    lastKillTime=System.currentTimeMillis();
+    for (    String dataSource : whitelist) {
+      final Interval intervalToKill=findIntervalForKillTask(dataSource,maxSegmentsToKill);
+      if (intervalToKill != null) {
+        try {
+          indexingServiceClient.killSegments(dataSource,intervalToKill);
+        }
+ catch (        Exception ex) {
+          log.error(ex,"Failed to submit kill task for dataSource [%s]",dataSource);
+          if (Thread.currentThread().isInterrupted()) {
+            log.warn("skipping kill task scheduling because thread is interrupted.");
+            break;
+          }
+        }
+      }
+    }
+  }
+  return params;
+}

@@ -2,7 +2,7 @@
   final DataSegment segment=dataSegmentWithInterval("2014-10-22T00:00:00Z/P1D");
   final CountDownLatch loadRequestSignal=new CountDownLatch(1);
   final CountDownLatch segmentLoadedSignal=new CountDownLatch(1);
-  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,new Duration(1),null,false,false));
+  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,new Duration(1),null,null,10,null,false,false));
   loadQueueCache.getListenable().addListener(new PathChildrenCacheListener(){
     @Override public void childEvent(    CuratorFramework client,    PathChildrenCacheEvent event) throws Exception {
       if (event.getType() == PathChildrenCacheEvent.Type.CHILD_ADDED) {

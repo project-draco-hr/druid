@@ -1,0 +1,23 @@
+{
+  return dbi.withHandle(new HandleCallback<List<Interval>>(){
+    @Override public List<Interval> withHandle(    Handle handle) throws IOException, SQLException {
+      Iterator<Interval> iter=handle.createQuery(String.format("SELECT start, \"end\" FROM %s WHERE dataSource = :dataSource and start >= :start and \"end\" <= :end and used = false ORDER BY start, \"end\"",getSegmentsTable())).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).map(new BaseResultSetMapper<Interval>(){
+        @Override protected Interval mapInternal(        int index,        Map<String,Object> row){
+          return new Interval(DateTime.parse((String)row.get("start")),DateTime.parse((String)row.get("end")));
+        }
+      }
+).iterator();
+      List<Interval> result=Lists.newArrayListWithCapacity(limit);
+      for (int i=0; i < limit && iter.hasNext(); i++) {
+        try {
+          result.add(iter.next());
+        }
+ catch (        Exception e) {
+          throw Throwables.propagate(e);
+        }
+      }
+      return result;
+    }
+  }
+);
+}

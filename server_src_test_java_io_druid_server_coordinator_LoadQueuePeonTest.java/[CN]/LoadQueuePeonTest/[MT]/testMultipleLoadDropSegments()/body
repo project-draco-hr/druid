@@ -1,7 +1,7 @@
 {
   final AtomicInteger requestSignalIdx=new AtomicInteger(0);
   final AtomicInteger segmentSignalIdx=new AtomicInteger(0);
-  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,null,null,false,false));
+  loadQueuePeon=new LoadQueuePeon(curator,LOAD_QUEUE_PATH,jsonMapper,Execs.scheduledSingleThreaded("test_load_queue_peon_scheduled-%d"),Execs.singleThreaded("test_load_queue_peon-%d"),new TestDruidCoordinatorConfig(null,null,null,null,null,null,10,null,false,false));
   final CountDownLatch[] loadRequestSignal=new CountDownLatch[5];
   final CountDownLatch[] dropRequestSignal=new CountDownLatch[5];
   final CountDownLatch[] segmentLoadedSignal=new CountDownLatch[5];

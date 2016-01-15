@@ -16,5 +16,8 @@
     }
 );
   }
+  if (config.isKillSegments()) {
+    helpers.add(new DruidCoordinatorSegmentKiller(metadataSegmentManager,indexingServiceClient,config.getCoordinatorKillDurationToRetain(),config.getCoordinatorKillPeriod(),config.getCoordinatorKillMaxSegments()));
+  }
   return ImmutableList.copyOf(helpers);
 }
