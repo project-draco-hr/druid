@@ -1,0 +1,18 @@
+{
+  if (current == expected) {
+    long remaining=timeout;
+    try {
+      long prev=System.currentTimeMillis();
+      while (current != transition && remaining > 0) {
+        wait(remaining);
+        long now=System.currentTimeMillis();
+        remaining-=now - prev;
+        prev=now;
+      }
+    }
+ catch (    InterruptedException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  return current;
+}

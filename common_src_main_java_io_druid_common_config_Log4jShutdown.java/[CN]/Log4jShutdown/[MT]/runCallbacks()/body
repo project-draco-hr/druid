@@ -1,8 +1,4 @@
 {
-  if (!callbacksRun.compareAndSet(false,true)) {
-    return;
-  }
-  stop();
   RuntimeException e=null;
   for (Runnable callback=shutdownCallbacks.poll(); callback != null; callback=shutdownCallbacks.poll()) {
     try {
