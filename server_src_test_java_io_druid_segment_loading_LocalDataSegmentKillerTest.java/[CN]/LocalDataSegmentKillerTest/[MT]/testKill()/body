@@ -1,4 +1,31 @@
 {
-  killer.kill(segment);
-  Assert.assertTrue(!segmentDir.exists());
+  LocalDataSegmentKiller killer=new LocalDataSegmentKiller();
+  File dataSourceDir=temporaryFolder.newFolder();
+  File interval1Dir=new File(dataSourceDir,"interval1");
+  File version11Dir=new File(interval1Dir,"v1");
+  File partition011Dir=new File(version11Dir,"0");
+  File partition111Dir=new File(version11Dir,"1");
+  makePartitionDirWithIndex(partition011Dir);
+  makePartitionDirWithIndex(partition111Dir);
+  File version21Dir=new File(interval1Dir,"v2");
+  File partition021Dir=new File(version21Dir,"0");
+  makePartitionDirWithIndex(partition021Dir);
+  File interval2Dir=new File(dataSourceDir,"interval2");
+  File version12Dir=new File(interval2Dir,"v1");
+  File partition012Dir=new File(version12Dir,"0");
+  makePartitionDirWithIndex(partition012Dir);
+  killer.kill(getSegmentWithPath(new File(partition011Dir,"index.zip").toString()));
+  Assert.assertFalse(partition011Dir.exists());
+  Assert.assertTrue(partition111Dir.exists());
+  Assert.assertTrue(partition021Dir.exists());
+  Assert.assertTrue(partition012Dir.exists());
+  killer.kill(getSegmentWithPath(new File(partition111Dir,"index.zip").toString()));
+  Assert.assertFalse(version11Dir.exists());
+  Assert.assertTrue(partition021Dir.exists());
+  Assert.assertTrue(partition012Dir.exists());
+  killer.kill(getSegmentWithPath(new File(partition021Dir,"index.zip").toString()));
+  Assert.assertFalse(interval1Dir.exists());
+  Assert.assertTrue(partition012Dir.exists());
+  killer.kill(getSegmentWithPath(new File(partition012Dir,"index.zip").toString()));
+  Assert.assertFalse(dataSourceDir.exists());
 }

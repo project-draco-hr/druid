@@ -1,31 +1,24 @@
 {
-  final File path=getDirectory(segment);
-  log.info("segment[%s] maps to path[%s]",segment.getIdentifier(),path);
-  if (!path.isDirectory()) {
-    if (!path.delete()) {
-      log.error("Unable to delete file[%s].",path);
-      throw new SegmentLoadingException("Couldn't kill segment[%s]",segment.getIdentifier());
-    }
-    return;
-  }
-  final File[] files=path.listFiles();
-  int success=0;
-  for (  File file : files) {
-    if (!file.delete()) {
-      log.error("Unable to delete file[%s].",file);
+  final File path=getPath(segment);
+  log.info("killing segment[%s] mapped to path[%s]",segment.getIdentifier(),path);
+  try {
+    if (path.getName().endsWith(".zip")) {
+      File partitionNumDir=path.getParentFile();
+      FileUtils.deleteDirectory(partitionNumDir);
+      File versionDir=partitionNumDir.getParentFile();
+      if (versionDir.delete()) {
+        File intervalDir=versionDir.getParentFile();
+        if (intervalDir.delete()) {
+          File dataSourceDir=intervalDir.getParentFile();
+          dataSourceDir.delete();
+        }
+      }
     }
  else {
-      ++success;
+      throw new SegmentLoadingException("Unknown file type[%s]",path);
     }
   }
-  if (success == 0 && files.length != 0) {
-    throw new SegmentLoadingException("Couldn't kill segment[%s]",segment.getIdentifier());
-  }
-  if (success < files.length) {
-    log.warn("Couldn't completely kill segment[%s]",segment.getIdentifier());
-  }
- else   if (!path.delete()) {
-    log.warn("Unable to delete directory[%s].",path);
-    log.warn("Couldn't completely kill segment[%s]",segment.getIdentifier());
+ catch (  IOException e) {
+    throw new SegmentLoadingException(e,"Unable to kill segment");
   }
 }
