@@ -1,0 +1,13 @@
+{
+  RegexFilteredDimensionSpec spec=new RegexFilteredDimensionSpec(new DefaultDimensionSpec("foo","bar"),"[c,g]");
+  DimensionSelector selector=spec.decorate(TestDimensionSelector.instance);
+  Assert.assertEquals(2,selector.getValueCardinality());
+  IndexedInts row=selector.getRow();
+  Assert.assertEquals(2,row.size());
+  Assert.assertEquals(0,row.get(0));
+  Assert.assertEquals(1,row.get(1));
+  Assert.assertEquals("c",selector.lookupName(0));
+  Assert.assertEquals("g",selector.lookupName(1));
+  Assert.assertEquals(0,selector.lookupId("c"));
+  Assert.assertEquals(1,selector.lookupId("g"));
+}

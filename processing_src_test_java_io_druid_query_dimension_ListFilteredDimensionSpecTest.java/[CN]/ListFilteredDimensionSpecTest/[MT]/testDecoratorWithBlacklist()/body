@@ -1,0 +1,12 @@
+{
+  ListFilteredDimensionSpec spec=new ListFilteredDimensionSpec(new DefaultDimensionSpec("foo","bar"),ImmutableSet.of("c","g"),false);
+  DimensionSelector selector=spec.decorate(TestDimensionSelector.instance);
+  Assert.assertEquals(24,selector.getValueCardinality());
+  IndexedInts row=selector.getRow();
+  Assert.assertEquals(1,row.size());
+  Assert.assertEquals(3,row.get(0));
+  Assert.assertEquals("a",selector.lookupName(0));
+  Assert.assertEquals("z",selector.lookupName(23));
+  Assert.assertEquals(0,selector.lookupId("a"));
+  Assert.assertEquals(23,selector.lookupId("z"));
+}
