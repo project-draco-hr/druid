@@ -1,0 +1,12 @@
+{
+  String interval="2010-01-01_P1D";
+  Interval theInterval=new Interval(interval.replace("_","/"));
+  IndexingServiceClient indexingServiceClient=EasyMock.createStrictMock(IndexingServiceClient.class);
+  indexingServiceClient.killSegments("datasource1",theInterval);
+  EasyMock.expectLastCall().once();
+  EasyMock.replay(indexingServiceClient,server);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,indexingServiceClient);
+  Response response=datasourcesResource.deleteDataSourceSpecificInterval("datasource1",interval,"true");
+  Assert.assertEquals(200,response.getStatus());
+  EasyMock.verify(indexingServiceClient,server);
+}
