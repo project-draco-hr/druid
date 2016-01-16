@@ -6,9 +6,9 @@
   final long numBytesWritten=headerOut.getCount() + valuesOut.getCount();
   Preconditions.checkState(headerOut.getCount() == (numWritten * 4),"numWritten[%s] number of rows should have [%s] bytes written to headerOut, had[%s]",numWritten,numWritten * 4,headerOut.getCount());
   Preconditions.checkState(numBytesWritten < Integer.MAX_VALUE,"Wrote[%s] bytes, which is too many.",numBytesWritten);
-  OutputStream metaOut=ioPeon.makeOutputStream(makeFilename("meta"));
+  OutputStream metaOut=ioPeon.makeOutputStream(metaFileName);
   try {
-    metaOut.write(new byte[]{version,numBytesForMax});
+    metaOut.write(new byte[]{VERSION,numBytesForMax});
     metaOut.write(Ints.toByteArray((int)numBytesWritten + 4));
     metaOut.write(Ints.toByteArray(numWritten));
   }

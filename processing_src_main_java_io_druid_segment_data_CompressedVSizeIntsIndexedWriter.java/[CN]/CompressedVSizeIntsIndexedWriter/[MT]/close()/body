@@ -1,0 +1,13 @@
+{
+  try {
+    if (numInserted > 0) {
+      endBuffer.limit(endBuffer.position());
+      endBuffer.rewind();
+      flattener.write(StupidResourceHolder.create(endBuffer));
+    }
+    endBuffer=null;
+  }
+  finally {
+    flattener.close();
+  }
+}

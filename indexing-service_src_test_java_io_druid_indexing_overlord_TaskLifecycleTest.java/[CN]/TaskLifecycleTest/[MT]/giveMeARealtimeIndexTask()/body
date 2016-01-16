@@ -2,7 +2,7 @@
   String taskId=String.format("rt_task_%s",System.currentTimeMillis());
   DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new LongSumAggregatorFactory("count","rows")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null),mapper);
   RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new MockFirehoseFactory(true),null,null);
-  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),null,null,null,null,null,null,null);
+  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),null,null,null,null,null,null,null,null);
   FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig);
   return new RealtimeIndexTask(taskId,new TaskResource(taskId,1),fireDepartment,null);
 }

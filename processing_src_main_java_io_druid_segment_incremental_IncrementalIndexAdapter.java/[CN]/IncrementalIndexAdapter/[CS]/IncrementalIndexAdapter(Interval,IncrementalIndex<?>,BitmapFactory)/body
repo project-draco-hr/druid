@@ -2,6 +2,7 @@
   this.dataInterval=dataInterval;
   this.index=index;
   this.invertedIndexes=Maps.newHashMap();
+  this.hasNullValueDimensions=Sets.newHashSet();
   final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
   for (  IncrementalIndex.DimensionDesc dimension : dimensions) {
     invertedIndexes.put(dimension.getName(),Maps.<String,MutableBitmap>newHashMap());
@@ -17,7 +18,11 @@
         continue;
       }
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
+        hasNullValueDimensions.add(dimension.getName());
         continue;
+      }
+      if (hasNullValue(dims[dimIndex])) {
+        hasNullValueDimensions.add(dimension.getName());
       }
       for (      String dimValue : dims[dimIndex]) {
         MutableBitmap mutableBitmap=bitmapIndexes.get(dimValue);

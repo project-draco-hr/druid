@@ -1,0 +1,9 @@
+{
+  return new Deserializer(){
+    @Override public void read(    ByteBuffer buffer,    ColumnBuilder builder,    ColumnConfig columnConfig){
+      final CompressedLongsIndexedSupplier column=CompressedLongsIndexedSupplier.fromByteBuffer(buffer,byteOrder);
+      builder.setType(ValueType.LONG).setHasMultipleValues(false).setGenericColumn(new LongGenericColumnSupplier(column));
+    }
+  }
+;
+}

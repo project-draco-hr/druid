@@ -1,7 +1,7 @@
 {
   final ColumnBuilder builder=new ColumnBuilder().setType(valueType).setHasMultipleValues(hasMultipleValues);
   for (  ColumnPartSerde part : parts) {
-    part.read(buffer,builder,columnConfig);
+    part.getDeserializer().read(buffer,builder,columnConfig);
   }
   return builder.build();
 }

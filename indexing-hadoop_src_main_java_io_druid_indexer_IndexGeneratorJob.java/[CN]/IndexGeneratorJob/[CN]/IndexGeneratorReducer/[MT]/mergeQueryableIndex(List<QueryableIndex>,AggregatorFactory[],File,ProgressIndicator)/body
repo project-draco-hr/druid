@@ -1,3 +1,8 @@
 {
-  return HadoopDruidIndexerConfig.INDEX_MERGER.mergeQueryableIndex(indexes,aggs,file,config.getIndexSpec(),progressIndicator);
+  if (config.isBuildV9Directly()) {
+    return HadoopDruidIndexerConfig.INDEX_MERGER_V9.mergeQueryableIndex(indexes,aggs,file,config.getIndexSpec(),progressIndicator);
+  }
+ else {
+    return HadoopDruidIndexerConfig.INDEX_MERGER.mergeQueryableIndex(indexes,aggs,file,config.getIndexSpec(),progressIndicator);
+  }
 }

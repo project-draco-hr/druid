@@ -1,0 +1,12 @@
+{
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("test").granularity(QueryGranularity.DAY).intervals(Arrays.asList(new Interval("2013-01-01/2013-01-07"))).filters(new SpatialDimFilter("dim.geo",new RectangularBound(new float[]{0.0f,0.0f},new float[]{9.0f,9.0f}))).aggregators(Arrays.<AggregatorFactory>asList(new CountAggregatorFactory("rows"),new LongSumAggregatorFactory("val","val"))).build();
+  List<Result<TimeseriesResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2013-01-01T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("val",17L).build())),new Result<>(new DateTime("2013-01-02T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("val",29L).build())),new Result<>(new DateTime("2013-01-03T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("val",13L).build())),new Result<>(new DateTime("2013-01-04T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("val",91L).build())),new Result<>(new DateTime("2013-01-05T00:00:00.000Z"),new TimeseriesResultValue(ImmutableMap.<String,Object>builder().put("rows",1L).put("val",47L).build())));
+  try {
+    TimeseriesQueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
+    QueryRunner runner=new FinalizeResultsQueryRunner(factory.createRunner(segment),factory.getToolchest());
+    TestHelper.assertExpectedResults(expectedResults,runner.run(query,Maps.newHashMap()));
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

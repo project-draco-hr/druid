@@ -1,5 +1,8 @@
 {
   final IncrementalIndex.DimDim dimDim=index.getDimensionValues(dimension);
+  if (hasNullValueDimensions.contains(dimension) && !dimDim.contains(null)) {
+    dimDim.add(null);
+  }
   dimDim.sort();
   return new Indexed<String>(){
     @Override public Class<? extends String> getClazz(){

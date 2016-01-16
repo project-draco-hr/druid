@@ -14,6 +14,7 @@
     }
   }
 );
+  Assert.assertEquals(baos.size(),serializer.getSerializedSize());
   IndexedFloats floats=CompressedFloatsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(baos.toByteArray()),order).get();
   Assert.assertEquals(numElements,floats.size());
   for (int i=0; i < numElements; ++i) {

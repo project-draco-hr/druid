@@ -1,0 +1,9 @@
+{
+  IncrementalIndex theIndex=makeIncrementalIndex();
+  File tmpFile=File.createTempFile("billy","yay");
+  tmpFile.delete();
+  tmpFile.mkdirs();
+  tmpFile.deleteOnExit();
+  INDEX_MERGER_V9.persist(theIndex,tmpFile,null,indexSpec);
+  return INDEX_IO.loadIndex(tmpFile);
+}

@@ -1,0 +1,34 @@
+{
+  final String section="make metric columns";
+  progress.startSection(section);
+  long startTime=System.currentTimeMillis();
+  for (int i=0; i < mergedMetrics.size(); ++i) {
+    String metric=mergedMetrics.get(i);
+    long metricStartTime=System.currentTimeMillis();
+    GenericColumnSerializer writer=metWriters.get(i);
+    writer.close();
+    final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
+    ValueType type=metricsValueTypes.get(metric);
+switch (type) {
+case LONG:
+      builder.setValueType(ValueType.LONG);
+    builder.addSerde(LongGenericColumnPartSerde.serializerBuilder().withByteOrder(IndexIO.BYTE_ORDER).withDelegate((LongColumnSerializer)writer).build());
+  break;
+case FLOAT:
+builder.setValueType(ValueType.FLOAT);
+builder.addSerde(FloatGenericColumnPartSerde.serializerBuilder().withByteOrder(IndexIO.BYTE_ORDER).withDelegate((FloatColumnSerializer)writer).build());
+break;
+case COMPLEX:
+final String typeName=metricTypeNames.get(metric);
+builder.setValueType(ValueType.COMPLEX);
+builder.addSerde(ComplexColumnPartSerde.serializerBuilder().withTypeName(typeName).withDelegate((ComplexColumnSerializer)writer).build());
+break;
+default :
+throw new ISE("Unknown type[%s]",type);
+}
+makeColumn(v9Smoosher,metric,builder.build());
+log.info("Completed metric column[%s] in %,d millis.",metric,System.currentTimeMillis() - metricStartTime);
+}
+log.info("Completed metric columns in %,d millis.",System.currentTimeMillis() - startTime);
+progress.stopSection(section);
+}

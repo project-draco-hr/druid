@@ -110,7 +110,7 @@
         builder.setHasMultipleValues(true);
       }
       final CompressedObjectStrategy.CompressionStrategy compressionStrategy=indexSpec.getDimensionCompressionStrategy();
-      final DictionaryEncodedColumnPartSerde.Builder columnPartBuilder=DictionaryEncodedColumnPartSerde.builder().withDictionary(dictionary).withBitmapSerdeFactory(bitmapSerdeFactory).withBitmaps(bitmaps).withSpatialIndex(spatialIndex).withByteOrder(BYTE_ORDER);
+      final DictionaryEncodedColumnPartSerde.LegacySerializerBuilder columnPartBuilder=DictionaryEncodedColumnPartSerde.legacySerializerBuilder().withDictionary(dictionary).withBitmapSerdeFactory(bitmapSerdeFactory).withBitmaps(bitmaps).withSpatialIndex(spatialIndex).withByteOrder(BYTE_ORDER);
       if (singleValCol != null) {
         if (compressionStrategy != null) {
           columnPartBuilder.withSingleValuedColumn(CompressedVSizeIntsIndexedSupplier.fromList(singleValCol,dictionary.size(),CompressedVSizeIntsIndexedSupplier.maxIntsInBufferForValue(dictionary.size()),BYTE_ORDER,compressionStrategy));
@@ -145,11 +145,11 @@
 switch (holder.getType()) {
 case LONG:
         builder.setValueType(ValueType.LONG);
-      builder.addSerde(new LongGenericColumnPartSerde(holder.longType,BYTE_ORDER));
+      builder.addSerde(LongGenericColumnPartSerde.legacySerializerBuilder().withByteOrder(BYTE_ORDER).withDelegate(holder.longType).build());
     break;
 case FLOAT:
   builder.setValueType(ValueType.FLOAT);
-builder.addSerde(new FloatGenericColumnPartSerde(holder.floatType,BYTE_ORDER));
+builder.addSerde(FloatGenericColumnPartSerde.legacySerializerBuilder().withByteOrder(BYTE_ORDER).withDelegate(holder.floatType).build());
 break;
 case COMPLEX:
 if (!(holder.complexType instanceof GenericIndexed)) {
@@ -158,7 +158,7 @@ throw new ISE("Serialized complex types must be GenericIndexed objects.");
 final GenericIndexed column=(GenericIndexed)holder.complexType;
 final String complexType=holder.getTypeName();
 builder.setValueType(ValueType.COMPLEX);
-builder.addSerde(new ComplexColumnPartSerde(column,complexType));
+builder.addSerde(ComplexColumnPartSerde.legacySerializerBuilder().withTypeName(complexType).withDelegate(column).build());
 break;
 default :
 throw new ISE("Unknown type[%s]",holder.getType());
@@ -176,7 +176,7 @@ channel.close();
 CompressedLongsIndexedSupplier timestamps=CompressedLongsIndexedSupplier.fromByteBuffer(v8SmooshedFiles.mapFile(filename),BYTE_ORDER);
 final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
 builder.setValueType(ValueType.LONG);
-builder.addSerde(new LongGenericColumnPartSerde(timestamps,BYTE_ORDER));
+builder.addSerde(LongGenericColumnPartSerde.legacySerializerBuilder().withByteOrder(BYTE_ORDER).withDelegate(timestamps).build());
 final ColumnDescriptor serdeficator=builder.build();
 ByteArrayOutputStream baos=new ByteArrayOutputStream();
 serializerUtils.writeString(baos,mapper.writeValueAsString(serdeficator));

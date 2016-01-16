@@ -1,0 +1,9 @@
+{
+  byte versionFromBuffer=buffer.get();
+  if (versionFromBuffer == VERSION) {
+    CompressedIntsIndexedSupplier offsetSupplier=CompressedIntsIndexedSupplier.fromByteBuffer(buffer,order);
+    CompressedVSizeIntsIndexedSupplier valueSupplier=CompressedVSizeIntsIndexedSupplier.fromByteBuffer(buffer,order);
+    return new CompressedVSizeIndexedV3Supplier(offsetSupplier,valueSupplier);
+  }
+  throw new IAE("Unknown version[%s]",versionFromBuffer);
+}

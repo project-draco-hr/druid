@@ -1,0 +1,39 @@
+{
+  return new DictionaryEncodedColumnPartSerde(byteOrder,bitmapSerdeFactory,new Serializer(){
+    @Override public long numBytes(){
+      long size=1 + (version.compareTo(VERSION.COMPRESSED) >= 0 ? Ints.BYTES : 0);
+      if (dictionaryWriter != null) {
+        size+=dictionaryWriter.getSerializedSize();
+      }
+      if (valueWriter != null) {
+        size+=valueWriter.getSerializedSize();
+      }
+      if (bitmapIndexWriter != null) {
+        size+=bitmapIndexWriter.getSerializedSize();
+      }
+      if (spatialIndexWriter != null) {
+        size+=spatialIndexWriter.getSerializedSize();
+      }
+      return size;
+    }
+    @Override public void write(    WritableByteChannel channel) throws IOException {
+      channel.write(ByteBuffer.wrap(new byte[]{version.asByte()}));
+      if (version.compareTo(VERSION.COMPRESSED) >= 0) {
+        channel.write(ByteBuffer.wrap(Ints.toByteArray(flags)));
+      }
+      if (dictionaryWriter != null) {
+        dictionaryWriter.writeToChannel(channel);
+      }
+      if (valueWriter != null) {
+        valueWriter.writeToChannel(channel);
+      }
+      if (bitmapIndexWriter != null) {
+        bitmapIndexWriter.writeToChannel(channel);
+      }
+      if (spatialIndexWriter != null) {
+        spatialIndexWriter.writeToChannel(channel);
+      }
+    }
+  }
+);
+}
