@@ -1,0 +1,12 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String json="{\"type\" : \"cascade\", \"extractionFns\": [" + regexDimExtractionFnJson + ","+ javascriptExtractionFnJson+ ","+ substringDimExtractionFnJson+ "]}";
+  CascadeExtractionFn cascadeExtractionFn=(CascadeExtractionFn)objectMapper.readValue(json,ExtractionFn.class);
+  RegexDimExtractionFn regexDimExtractionFn=(RegexDimExtractionFn)objectMapper.readValue(regexDimExtractionFnJson,ExtractionFn.class);
+  JavaScriptExtractionFn javascriptExtractionFn=(JavaScriptExtractionFn)objectMapper.readValue(javascriptExtractionFnJson,ExtractionFn.class);
+  SubstringDimExtractionFn substringDimExtractionFn=(SubstringDimExtractionFn)objectMapper.readValue(substringDimExtractionFnJson,ExtractionFn.class);
+  Assert.assertEquals(regexDimExtractionFn,cascadeExtractionFn.getExtractionFns()[0]);
+  Assert.assertEquals(javascriptExtractionFn,cascadeExtractionFn.getExtractionFns()[1]);
+  Assert.assertEquals(substringDimExtractionFn,cascadeExtractionFn.getExtractionFns()[2]);
+  Assert.assertEquals(cascadeExtractionFn,objectMapper.readValue(objectMapper.writeValueAsBytes(cascadeExtractionFn),ExtractionFn.class));
+}

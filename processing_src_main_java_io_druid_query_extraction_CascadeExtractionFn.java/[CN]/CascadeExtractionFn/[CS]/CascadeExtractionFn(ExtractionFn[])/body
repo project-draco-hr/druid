@@ -1,0 +1,15 @@
+{
+  Preconditions.checkArgument(extractionFn != null,"extractionFns should not be null");
+  this.extractionFns=extractionFn;
+  if (extractionFns.length == 0) {
+    this.chainedExtractionFn=DEFAULT_CHAINED_EXTRACTION_FN;
+  }
+ else {
+    ChainedExtractionFn root=null;
+    for (int idx=0; idx < extractionFns.length; idx++) {
+      Preconditions.checkArgument(extractionFns[idx] != null,"empty function is not allowed");
+      root=new ChainedExtractionFn(extractionFns[idx],root);
+    }
+    this.chainedExtractionFn=root;
+  }
+}

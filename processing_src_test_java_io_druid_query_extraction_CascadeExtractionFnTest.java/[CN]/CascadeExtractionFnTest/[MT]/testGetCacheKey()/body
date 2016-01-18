@@ -1,0 +1,18 @@
+{
+  ExtractionFn[] fns1=new ExtractionFn[2];
+  fns1[0]=javascriptExtractionFn;
+  fns1[1]=regexDimExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn1=new CascadeExtractionFn(fns1);
+  ExtractionFn[] fns2=new ExtractionFn[2];
+  fns2[0]=regexDimExtractionFn;
+  fns2[1]=javascriptExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn2=new CascadeExtractionFn(fns2);
+  ExtractionFn[] fns3=new ExtractionFn[3];
+  fns3[0]=regexDimExtractionFn;
+  fns3[1]=javascriptExtractionFn;
+  fns3[2]=substringDimExtractionFn;
+  CascadeExtractionFn cascadeExtractionFn3=new CascadeExtractionFn(fns3);
+  Assert.assertFalse(Arrays.equals(cascadeExtractionFn1.getCacheKey(),cascadeExtractionFn2.getCacheKey()));
+  Assert.assertFalse(Arrays.equals(cascadeExtractionFn1.getCacheKey(),cascadeExtractionFn3.getCacheKey()));
+  Assert.assertFalse(Arrays.equals(cascadeExtractionFn2.getCacheKey(),cascadeExtractionFn3.getCacheKey()));
+}
