@@ -1,0 +1,31 @@
+{
+  int maxSize=0;
+  Iterable<String> orderingCandidate=null;
+  for (  IndexableAdapter index : indexes) {
+    int iterSize=index.getDimensionNames().size();
+    if (iterSize > maxSize) {
+      maxSize=iterSize;
+      orderingCandidate=index.getDimensionNames();
+    }
+  }
+  if (orderingCandidate == null) {
+    return null;
+  }
+  for (  IndexableAdapter index : indexes) {
+    Iterator<String> candidateIter=orderingCandidate.iterator();
+    for (    String matchDim : index.getDimensionNames()) {
+      boolean matched=false;
+      while (candidateIter.hasNext()) {
+        String nextDim=candidateIter.next();
+        if (matchDim.equals(nextDim)) {
+          matched=true;
+          break;
+        }
+      }
+      if (!matched) {
+        return null;
+      }
+    }
+  }
+  return ImmutableList.copyOf(orderingCandidate);
+}

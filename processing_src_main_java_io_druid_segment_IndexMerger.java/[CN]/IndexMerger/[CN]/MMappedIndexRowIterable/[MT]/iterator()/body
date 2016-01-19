@@ -11,10 +11,17 @@
       int[][] newDims=new int[convertedDims.size()][];
       for (int i=0; i < convertedDims.size(); ++i) {
         IntBuffer converter=converterArray[i];
+        String dimName=convertedDims.get(i);
         if (converter == null) {
           continue;
         }
-        if (i >= dims.length || dims[i] == null) {
+        if (i >= dims.length) {
+          continue;
+        }
+        if (dims[i] == null) {
+          if (dimCardinalities.get(dimName) > 0) {
+            newDims[i]=EMPTY_STR_DIM;
+          }
           continue;
         }
         newDims[i]=new int[dims[i].length];

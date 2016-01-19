@@ -1,0 +1,39 @@
+{
+  List<List<String>> expectedDims=ImmutableList.<List<String>>of(ImmutableList.of("dimD"),ImmutableList.of("dimC"),ImmutableList.of("dimA"),ImmutableList.of("dimB"),ImmutableList.of("dimE"),ImmutableList.of("dimD","dimC","dimA","dimB","dimE"));
+  QueryableIndex qindex;
+  FireHydrant hydrant;
+  Map<Long,Sink> sinks;
+  RealtimePlumber plumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema2,tuningConfig,metrics);
+  Assert.assertNull(plumber.startJob());
+  final CountDownLatch doneSignal=new CountDownLatch(1);
+  final Committer committer=new Committer(){
+    @Override public Object getMetadata(){
+      return commitMetadata;
+    }
+    @Override public void run(){
+      doneSignal.countDown();
+    }
+  }
+;
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimD"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimC"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimA"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimB"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimE"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.add(getTestInputRowFull("1970-01-01",ImmutableList.of("dimA","dimB","dimC","dimD","dimE"),ImmutableList.of("1")),Suppliers.ofInstance(committer));
+  plumber.persist(committer);
+  doneSignal.await();
+  plumber.getSinks().clear();
+  plumber.finishJob();
+  RealtimePlumber restoredPlumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema2,tuningConfig,metrics);
+  restoredPlumber.bootstrapSinksFromDisk();
+  sinks=restoredPlumber.getSinks();
+  Assert.assertEquals(1,sinks.size());
+  List<FireHydrant> hydrants=Lists.newArrayList(sinks.get(0L));
+  for (int i=0; i < hydrants.size(); i++) {
+    hydrant=hydrants.get(i);
+    qindex=hydrant.getSegment().asQueryableIndex();
+    Assert.assertEquals(i,hydrant.getCount());
+    Assert.assertEquals(expectedDims.get(i),ImmutableList.copyOf(qindex.getAvailableDimensions()));
+  }
+}

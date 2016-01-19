@@ -1,0 +1,9 @@
+{
+  final HadoopTuningConfig tuningConfig=config.getSchema().getTuningConfig();
+  final IncrementalIndexSchema indexSchema=new IncrementalIndexSchema.Builder().withMinTimestamp(theBucket.time.getMillis()).withDimensionsSpec(config.getSchema().getDataSchema().getParser()).withQueryGranularity(config.getSchema().getDataSchema().getGranularitySpec().getQueryGranularity()).withMetrics(aggs).build();
+  OnheapIncrementalIndex newIndex=new OnheapIncrementalIndex(indexSchema,tuningConfig.getRowFlushBoundary());
+  if (oldDimOrder != null && !indexSchema.getDimensionsSpec().hasCustomDimensions()) {
+    newIndex.loadDimensionIterable(oldDimOrder);
+  }
+  return newIndex;
+}

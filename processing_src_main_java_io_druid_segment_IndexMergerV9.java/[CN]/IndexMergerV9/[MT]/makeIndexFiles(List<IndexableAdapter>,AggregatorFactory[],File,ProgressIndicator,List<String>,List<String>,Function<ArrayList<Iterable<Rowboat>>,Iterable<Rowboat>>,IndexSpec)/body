@@ -40,7 +40,7 @@
   writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions);
   log.info("Completed dim conversions in %,d millis.",System.currentTimeMillis() - startTime);
   progress.progress();
-  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,rowMergerFn);
+  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,dimCardinalities,rowMergerFn);
   final LongColumnSerializer timeWriter=setupTimeWriter(ioPeon);
   final ArrayList<IndexedIntsWriter> dimWriters=setupDimensionWriters(ioPeon,mergedDimensions,dimCapabilities,dimCardinalities,indexSpec);
   final ArrayList<GenericColumnSerializer> metWriters=setupMetricsWriters(ioPeon,mergedMetrics,metricsValueTypes,metricTypeNames,indexSpec);

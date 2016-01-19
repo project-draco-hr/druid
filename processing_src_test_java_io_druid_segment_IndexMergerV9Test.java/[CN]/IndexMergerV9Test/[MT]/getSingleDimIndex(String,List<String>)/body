@@ -1,7 +1,5 @@
 {
   IncrementalIndex toPersist1=new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
-  for (  String val : values) {
-    toPersist1.add(new MapBasedInputRow(1,Arrays.asList(dimName),ImmutableMap.<String,Object>of(dimName,val)));
-  }
+  addDimValuesToIndex(toPersist1,dimName,values);
   return toPersist1;
 }

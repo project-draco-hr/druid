@@ -9,6 +9,19 @@ synchronized (hydrantLock) {
     if (numHydrants > 0) {
       FireHydrant lastHydrant=hydrants.get(numHydrants - 1);
       newCount=lastHydrant.getCount() + 1;
+      if (!indexSchema.getDimensionsSpec().hasCustomDimensions()) {
+        if (lastHydrant.hasSwapped()) {
+          QueryableIndex oldIndex=lastHydrant.getSegment().asQueryableIndex();
+          for (          String dim : oldIndex.getAvailableDimensions()) {
+            dimOrder.add(dim);
+          }
+        }
+ else {
+          IncrementalIndex oldIndex=lastHydrant.getIndex();
+          dimOrder.addAll(oldIndex.getDimensionOrder());
+        }
+        newIndex.loadDimensionIterable(dimOrder);
+      }
     }
     currHydrant=new FireHydrant(newIndex,newCount,getSegment().getIdentifier());
     hydrants.add(currHydrant);

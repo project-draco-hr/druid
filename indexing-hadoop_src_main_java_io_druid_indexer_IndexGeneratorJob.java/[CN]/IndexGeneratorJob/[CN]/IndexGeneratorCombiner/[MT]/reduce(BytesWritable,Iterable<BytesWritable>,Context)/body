@@ -2,17 +2,19 @@
   Iterator<BytesWritable> iter=values.iterator();
   BytesWritable first=iter.next();
   if (iter.hasNext()) {
+    LinkedHashSet<String> dimOrder=Sets.newLinkedHashSet();
     SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
     Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
-    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config);
+    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,null);
     index.add(InputRowSerde.fromBytes(first.getBytes(),aggregators));
     while (iter.hasNext()) {
       context.progress();
       InputRow value=InputRowSerde.fromBytes(iter.next().getBytes(),aggregators);
       if (!index.canAppendRow()) {
+        dimOrder.addAll(index.getDimensionOrder());
         log.info("current index full due to [%s]. creating new index.",index.getOutOfRowsReason());
         flushIndexToContextAndClose(key,index,context);
-        index=makeIncrementalIndex(bucket,combiningAggs,config);
+        index=makeIncrementalIndex(bucket,combiningAggs,config,dimOrder);
       }
       index.add(value);
     }
