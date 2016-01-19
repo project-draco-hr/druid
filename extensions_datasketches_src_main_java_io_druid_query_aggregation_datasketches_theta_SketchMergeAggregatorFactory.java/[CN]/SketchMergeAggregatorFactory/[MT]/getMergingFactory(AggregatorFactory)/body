@@ -1,0 +1,9 @@
+{
+  if (other.getName().equals(this.getName()) && other instanceof SketchMergeAggregatorFactory) {
+    SketchMergeAggregatorFactory castedOther=(SketchMergeAggregatorFactory)other;
+    return new SketchMergeAggregatorFactory(name,name,Math.max(size,castedOther.size),shouldFinalize,true);
+  }
+ else {
+    throw new AggregatorFactoryNotMergeableException(this,other);
+  }
+}

@@ -6,9 +6,9 @@
   final File tmpDir2=temporaryFolder.newFolder();
   final File tmpDir3=temporaryFolder.newFolder();
   final File tmpDirMerged=temporaryFolder.newFolder();
-  QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist1,tmpDir,null,indexSpec)));
-  QueryableIndex index2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist2,tmpDir2,null,indexSpec)));
-  QueryableIndex index3=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist3,tmpDir3,null,indexSpec)));
+  QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist1,tmpDir,indexSpec)));
+  QueryableIndex index2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist2,tmpDir2,indexSpec)));
+  QueryableIndex index3=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist3,tmpDir3,indexSpec)));
   final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2,index3),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
   final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
   Iterable<Rowboat> boats=adapter.getRows();

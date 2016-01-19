@@ -57,15 +57,15 @@
         }
         continue;
       }
-      Map<String,Object> segmentMetadata=queryableIndex.getMetaData();
+      Metadata segmentMetadata=queryableIndex.getMetadata();
       if (segmentMetadata != null) {
         Object timestampObj=segmentMetadata.get(COMMIT_METADATA_TIMESTAMP_KEY);
         if (timestampObj != null) {
           long timestamp=((Long)timestampObj).longValue();
           if (timestamp > latestCommitTime) {
-            log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetaData(),timestamp,latestCommitTime);
+            log.info("Found metaData [%s] with latestCommitTime [%s] greater than previous recorded [%s]",queryableIndex.getMetadata(),timestamp,latestCommitTime);
             latestCommitTime=timestamp;
-            metadata=queryableIndex.getMetaData().get(COMMIT_METADATA_KEY);
+            metadata=queryableIndex.getMetadata().get(COMMIT_METADATA_KEY);
           }
         }
       }

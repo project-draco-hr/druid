@@ -1,11 +1,12 @@
 {
   final long timestamp=System.currentTimeMillis();
-  IncrementalIndex toPersist1=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("longSum1","dim1"),new LongSumAggregatorFactory("longSum2","dim2")});
+  final AggregatorFactory[] aggregators=new AggregatorFactory[]{new LongSumAggregatorFactory("longSum1","dim1"),new LongSumAggregatorFactory("longSum2","dim2")};
+  IncrementalIndex toPersist1=IncrementalIndexTest.createIndex(aggregators);
   IncrementalIndexTest.populateIndex(timestamp,toPersist1);
   final File tempDir1=temporaryFolder.newFolder();
   final File convertDir=temporaryFolder.newFolder();
   final IndexableAdapter incrementalAdapter=new IncrementalIndexAdapter(toPersist1.getInterval(),toPersist1,indexSpec.getBitmapSerdeFactory().getBitmapFactory());
-  QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist1,tempDir1,null,indexSpec)));
+  QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist1,tempDir1,indexSpec)));
   final IndexableAdapter queryableAdapter=new QueryableIndexIndexableAdapter(index1);
   INDEX_IO.validateTwoSegments(incrementalAdapter,queryableAdapter);
   Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
@@ -19,4 +20,5 @@
   INDEX_IO.validateTwoSegments(tempDir1,convertDir);
   assertDimCompression(index1,indexSpec.getDimensionCompressionStrategy());
   assertDimCompression(converted,newSpec.getDimensionCompressionStrategy());
+  Assert.assertArrayEquals(getCombiningAggregators(aggregators),converted.getMetadata().getAggregators());
 }

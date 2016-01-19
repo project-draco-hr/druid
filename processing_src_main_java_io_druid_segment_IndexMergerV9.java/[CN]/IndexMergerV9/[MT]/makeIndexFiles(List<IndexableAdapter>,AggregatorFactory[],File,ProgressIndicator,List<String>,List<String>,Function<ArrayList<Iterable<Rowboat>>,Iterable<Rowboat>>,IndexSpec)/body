@@ -1,0 +1,69 @@
+{
+  progress.start();
+  progress.progress();
+  List<Metadata> metadataList=Lists.transform(adapters,new Function<IndexableAdapter,Metadata>(){
+    @Nullable @Override public Metadata apply(    IndexableAdapter input){
+      return input.getMetadata();
+    }
+  }
+);
+  Metadata segmentMetadata=null;
+  if (metricAggs != null) {
+    AggregatorFactory[] combiningMetricAggs=new AggregatorFactory[metricAggs.length];
+    for (int i=0; i < metricAggs.length; i++) {
+      combiningMetricAggs[i]=metricAggs[i].getCombiningFactory();
+    }
+    segmentMetadata=Metadata.merge(metadataList,combiningMetricAggs);
+  }
+ else {
+    segmentMetadata=Metadata.merge(metadataList,null);
+  }
+  final IOPeon ioPeon=new TmpFileIOPeon(false);
+  final FileSmoosher v9Smoosher=new FileSmoosher(outDir);
+  final File v9TmpDir=new File(outDir,"v9-tmp");
+  v9TmpDir.mkdirs();
+  log.info("Start making v9 index files, outDir:%s",outDir);
+  long startTime=System.currentTimeMillis();
+  ByteStreams.write(Ints.toByteArray(IndexIO.V9_VERSION),Files.newOutputStreamSupplier(new File(outDir,"version.bin")));
+  log.info("Completed version.bin in %,d millis.",System.currentTimeMillis() - startTime);
+  progress.progress();
+  final Map<String,ValueType> metricsValueTypes=Maps.newTreeMap(Ordering.<String>natural().nullsFirst());
+  final Map<String,String> metricTypeNames=Maps.newTreeMap(Ordering.<String>natural().nullsFirst());
+  final List<ColumnCapabilitiesImpl> dimCapabilities=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  mergeCapabilities(adapters,mergedDimensions,metricsValueTypes,metricTypeNames,dimCapabilities);
+  progress.progress();
+  startTime=System.currentTimeMillis();
+  final Map<String,Integer> dimCardinalities=Maps.newHashMap();
+  final ArrayList<GenericIndexedWriter<String>> dimValueWriters=setupDimValueWriters(ioPeon,mergedDimensions);
+  final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(adapters.size());
+  final ArrayList<Boolean> dimensionSkipFlag=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions);
+  log.info("Completed dim conversions in %,d millis.",System.currentTimeMillis() - startTime);
+  progress.progress();
+  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,rowMergerFn);
+  final LongColumnSerializer timeWriter=setupTimeWriter(ioPeon);
+  final ArrayList<IndexedIntsWriter> dimWriters=setupDimensionWriters(ioPeon,mergedDimensions,dimCapabilities,dimCardinalities,indexSpec);
+  final ArrayList<GenericColumnSerializer> metWriters=setupMetricsWriters(ioPeon,mergedMetrics,metricsValueTypes,metricTypeNames,indexSpec);
+  final List<IntBuffer> rowNumConversions=Lists.newArrayListWithCapacity(adapters.size());
+  final ArrayList<MutableBitmap> nullRowsList=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  for (int i=0; i < mergedDimensions.size(); ++i) {
+    nullRowsList.add(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap());
+  }
+  mergeIndexesAndWriteColumns(adapters,progress,theRows,timeWriter,dimWriters,metWriters,dimensionSkipFlag,rowNumConversions,nullRowsList);
+  progress.progress();
+  final ArrayList<GenericIndexedWriter<ImmutableBitmap>> bitmapIndexWriters=setupBitmapIndexWriters(ioPeon,mergedDimensions,indexSpec);
+  final ArrayList<ByteBufferWriter<ImmutableRTree>> spatialIndexWriters=setupSpatialIndexWriters(ioPeon,mergedDimensions,indexSpec,dimCapabilities);
+  makeInvertedIndexes(adapters,progress,mergedDimensions,indexSpec,v9TmpDir,rowNumConversions,nullRowsList,dimValueWriters,bitmapIndexWriters,spatialIndexWriters);
+  progress.progress();
+  makeTimeColumn(v9Smoosher,progress,timeWriter);
+  makeMetricsColumns(v9Smoosher,progress,mergedMetrics,metricsValueTypes,metricTypeNames,metWriters);
+  makeDimensionColumns(v9Smoosher,progress,indexSpec,mergedDimensions,dimensionSkipFlag,dimCapabilities,dimValueWriters,dimWriters,bitmapIndexWriters,spatialIndexWriters);
+  progress.progress();
+  makeIndexBinary(v9Smoosher,adapters,outDir,mergedDimensions,dimensionSkipFlag,mergedMetrics,progress,indexSpec);
+  makeMetadataBinary(v9Smoosher,progress,segmentMetadata);
+  v9Smoosher.close();
+  ioPeon.cleanup();
+  FileUtils.deleteDirectory(v9TmpDir);
+  progress.stop();
+  return outDir;
+}

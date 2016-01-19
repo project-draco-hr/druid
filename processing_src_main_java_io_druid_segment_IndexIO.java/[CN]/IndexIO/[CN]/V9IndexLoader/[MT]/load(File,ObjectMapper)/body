@@ -17,15 +17,16 @@
  else {
     segmentBitmapSerdeFactory=new BitmapSerde.LegacyBitmapSerdeFactory();
   }
-  Map<String,Object> metadata=null;
+  Metadata metadata=null;
   ByteBuffer metadataBB=smooshedFiles.mapFile("metadata.drd");
   if (metadataBB != null) {
     try {
-      metadata=mapper.readValue(serializerUtils.readBytes(metadataBB,metadataBB.remaining()),new TypeReference<Map<String,Object>>(){
-      }
-);
+      metadata=mapper.readValue(serializerUtils.readBytes(metadataBB,metadataBB.remaining()),Metadata.class);
     }
- catch (    IOException ex) {
+ catch (    JsonParseException|JsonMappingException ex) {
+      log.warn(ex,"Failed to load metadata for segment [%s]",inDir);
+    }
+catch (    IOException ex) {
       throw new IOException("Failed to read metadata",ex);
     }
   }
