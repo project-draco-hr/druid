@@ -1,10 +1,8 @@
 {
   int retVal=Longs.compare(timestamp,rhs.timestamp);
-  if (retVal == 0) {
-    retVal=Ints.compare(dims.length,rhs.dims.length);
-  }
+  int numComparisons=Math.min(dims.length,rhs.dims.length);
   int index=0;
-  while (retVal == 0 && index < dims.length) {
+  while (retVal == 0 && index < numComparisons) {
     String[] lhsVals=dims[index];
     String[] rhsVals=rhs.dims[index];
     if (lhsVals == null) {
@@ -24,6 +22,9 @@
       ++valsIndex;
     }
     ++index;
+  }
+  if (retVal == 0) {
+    return Ints.compare(dims.length,rhs.dims.length);
   }
   return retVal;
 }

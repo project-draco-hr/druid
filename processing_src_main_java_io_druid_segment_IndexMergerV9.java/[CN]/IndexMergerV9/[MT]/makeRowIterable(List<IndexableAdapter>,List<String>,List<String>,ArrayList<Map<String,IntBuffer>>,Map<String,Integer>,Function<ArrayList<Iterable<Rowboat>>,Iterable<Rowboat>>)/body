@@ -1,0 +1,37 @@
+{
+  ArrayList<Iterable<Rowboat>> boats=Lists.newArrayListWithCapacity(adapters.size());
+  for (int i=0; i < adapters.size(); ++i) {
+    final IndexableAdapter adapter=adapters.get(i);
+    final int[] dimLookup=new int[mergedDimensions.size()];
+    int count=0;
+    for (    String dim : adapter.getDimensionNames()) {
+      dimLookup[count]=mergedDimensions.indexOf(dim);
+      count++;
+    }
+    final int[] metricLookup=new int[mergedMetrics.size()];
+    count=0;
+    for (    String metric : adapter.getMetricNames()) {
+      metricLookup[count]=mergedMetrics.indexOf(metric);
+      count++;
+    }
+    boats.add(new MMappedIndexRowIterable(Iterables.transform(adapters.get(i).getRows(),new Function<Rowboat,Rowboat>(){
+      @Override public Rowboat apply(      Rowboat input){
+        int[][] newDims=new int[mergedDimensions.size()][];
+        int j=0;
+        for (        int[] dim : input.getDims()) {
+          newDims[dimLookup[j]]=dim;
+          j++;
+        }
+        Object[] newMetrics=new Object[mergedMetrics.size()];
+        j=0;
+        for (        Object met : input.getMetrics()) {
+          newMetrics[metricLookup[j]]=met;
+          j++;
+        }
+        return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum());
+      }
+    }
+),mergedDimensions,dimConversions.get(i),i,dimCardinalities));
+  }
+  return rowMergerFn.apply(boats);
+}

@@ -74,13 +74,28 @@
   for (  String dimension : mergedDimensions) {
     final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
     writer.open();
-    List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size());
+    List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size() + 1);
     DimValueConverter[] converters=new DimValueConverter[indexes.size()];
+    boolean dimHasValues=false;
+    boolean[] dimHasValuesByIndex=new boolean[indexes.size()];
     for (int i=0; i < indexes.size(); i++) {
       Indexed<String> dimValues=indexes.get(i).getDimValueLookup(dimension);
       if (!isNullColumn(dimValues)) {
+        dimHasValues=true;
+        dimHasValuesByIndex[i]=true;
         dimValueLookups.add(dimValues);
         converters[i]=new DimValueConverter(dimValues);
+      }
+ else {
+        dimHasValuesByIndex[i]=false;
+      }
+    }
+    if (dimHasValues) {
+      dimValueLookups.add(EMPTY_STR_DIM_VAL);
+      for (int i=0; i < indexes.size(); i++) {
+        if (!dimHasValuesByIndex[i]) {
+          converters[i]=new DimValueConverter(EMPTY_STR_DIM_VAL);
+        }
       }
     }
     Iterable<String> dimensionValues=CombiningIterable.createSplatted(Iterables.transform(dimValueLookups,new Function<Indexed<String>,Iterable<String>>(){
@@ -155,7 +170,7 @@
         return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum());
       }
     }
-),mergedDimensions,dimConversions.get(i),i));
+),mergedDimensions,dimConversions.get(i),i,dimensionCardinalities));
   }
   Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
   CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);

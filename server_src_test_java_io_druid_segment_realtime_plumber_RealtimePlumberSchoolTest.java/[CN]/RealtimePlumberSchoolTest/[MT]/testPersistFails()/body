@@ -1,5 +1,4 @@
 {
-  final AtomicBoolean committed=new AtomicBoolean(false);
   plumber.getSinks().put(0L,new Sink(new Interval(0,TimeUnit.HOURS.toMillis(1)),schema,tuningConfig,new DateTime("2014-12-01T12:34:56.789").toString()));
   plumber.startJob();
   final InputRow row=EasyMock.createNiceMock(InputRow.class);
@@ -7,16 +6,15 @@
   EasyMock.expect(row.getDimensions()).andReturn(new ArrayList<String>());
   EasyMock.replay(row);
   plumber.add(row,Committers.supplierOf(Committers.nil()));
+  final CountDownLatch doneSignal=new CountDownLatch(1);
   plumber.persist(Committers.supplierFromRunnable(new Runnable(){
     @Override public void run(){
-      committed.set(true);
+      doneSignal.countDown();
       throw new RuntimeException();
     }
   }
 ).get());
-  while (!committed.get()) {
-    Thread.sleep(100);
-  }
+  doneSignal.await();
   while (metrics.failedPersists() < 1) {
     Thread.sleep(100);
   }
