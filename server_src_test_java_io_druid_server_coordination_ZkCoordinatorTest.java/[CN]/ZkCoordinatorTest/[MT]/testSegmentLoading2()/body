@@ -1,0 +1,27 @@
+{
+  zkCoordinator.start();
+  final DataSegment segment=makeSegment("test","1",new Interval("P1d/2011-04-01"));
+  zkCoordinator.addSegment(segment,new DataSegmentChangeCallback(){
+    @Override public void execute(){
+    }
+  }
+);
+  Assert.assertTrue(segmentsAnnouncedByMe.contains(segment));
+  zkCoordinator.removeSegment(segment,new DataSegmentChangeCallback(){
+    @Override public void execute(){
+    }
+  }
+);
+  Assert.assertFalse(segmentsAnnouncedByMe.contains(segment));
+  zkCoordinator.addSegment(segment,new DataSegmentChangeCallback(){
+    @Override public void execute(){
+    }
+  }
+);
+  for (  Runnable runnable : scheduledRunnable) {
+    runnable.run();
+  }
+  Assert.assertTrue(segmentsAnnouncedByMe.contains(segment));
+  Assert.assertFalse("segment files shouldn't be deleted",segmentLoader.getSegmentsInTrash().contains(segment));
+  zkCoordinator.stop();
+}

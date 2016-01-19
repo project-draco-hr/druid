@@ -1,14 +1,19 @@
 {
   try {
     announcer.unannounceSegment(segment);
+    segmentsToDelete.add(segment);
     log.info("Completely removing [%s] in [%,d] millis",segment.getIdentifier(),config.getDropSegmentDelayMillis());
     exec.schedule(new Runnable(){
       @Override public void run(){
         try {
-          serverManager.dropSegment(segment);
-          File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
-          if (!segmentInfoCacheFile.delete()) {
-            log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
+synchronized (lock) {
+            if (segmentsToDelete.remove(segment)) {
+              serverManager.dropSegment(segment);
+              File segmentInfoCacheFile=new File(config.getInfoDir(),segment.getIdentifier());
+              if (!segmentInfoCacheFile.delete()) {
+                log.warn("Unable to delete segmentInfoCacheFile[%s]",segmentInfoCacheFile);
+              }
+            }
           }
         }
  catch (        Exception e) {

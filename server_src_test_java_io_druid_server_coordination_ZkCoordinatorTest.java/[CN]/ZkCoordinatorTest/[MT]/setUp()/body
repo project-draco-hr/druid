@@ -13,32 +13,45 @@
  catch (  IOException e) {
     throw new RuntimeException(e);
   }
-  serverManager=new ServerManager(new CacheTestSegmentLoader(),new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor(),MoreExecutors.sameThreadExecutor(),new DefaultObjectMapper(),new LocalCacheProvider().get(),new CacheConfig());
-  final DruidServerMetadata me=new DruidServerMetadata("dummyServer","dummyHost",0,"dummyType","normal",0);
+  scheduledRunnable=Lists.newArrayList();
+  segmentLoader=new CacheTestSegmentLoader();
+  serverManager=new ServerManager(segmentLoader,new NoopQueryRunnerFactoryConglomerate(),new NoopServiceEmitter(),MoreExecutors.sameThreadExecutor(),MoreExecutors.sameThreadExecutor(),new DefaultObjectMapper(),new LocalCacheProvider().get(),new CacheConfig());
   final ZkPathsConfig zkPaths=new ZkPathsConfig(){
     @Override public String getBase(){
       return "/druid";
     }
   }
 ;
+  segmentsAnnouncedByMe=new ConcurrentSkipListSet<>();
   announceCount=new AtomicInteger(0);
   announcer=new DataSegmentAnnouncer(){
     private final DataSegmentAnnouncer delegate=new BatchDataSegmentAnnouncer(me,new BatchDataSegmentAnnouncerConfig(),zkPaths,new Announcer(curator,Execs.singleThreaded("blah")),jsonMapper);
     @Override public void announceSegment(    DataSegment segment) throws IOException {
+      segmentsAnnouncedByMe.add(segment);
       announceCount.incrementAndGet();
       delegate.announceSegment(segment);
     }
     @Override public void unannounceSegment(    DataSegment segment) throws IOException {
+      segmentsAnnouncedByMe.remove(segment);
       announceCount.decrementAndGet();
       delegate.unannounceSegment(segment);
     }
     @Override public void announceSegments(    Iterable<DataSegment> segments) throws IOException {
+      for (      DataSegment segment : segments) {
+        segmentsAnnouncedByMe.add(segment);
+      }
       announceCount.addAndGet(Iterables.size(segments));
       delegate.announceSegments(segments);
     }
     @Override public void unannounceSegments(    Iterable<DataSegment> segments) throws IOException {
+      for (      DataSegment segment : segments) {
+        segmentsAnnouncedByMe.remove(segment);
+      }
       announceCount.addAndGet(-Iterables.size(segments));
       delegate.unannounceSegments(segments);
+    }
+    @Override public boolean isAnnounced(    DataSegment segment){
+      return segmentsAnnouncedByMe.contains(segment);
     }
   }
 ;
@@ -52,6 +65,20 @@
     @Override public int getAnnounceIntervalMillis(){
       return 50;
     }
+    @Override public int getDropSegmentDelayMillis(){
+      return 0;
+    }
   }
-,zkPaths,me,announcer,curator,serverManager,ScheduledExecutors.createFactory(new Lifecycle()));
+,zkPaths,me,announcer,curator,serverManager,new ScheduledExecutorFactory(){
+    @Override public ScheduledExecutorService create(    int corePoolSize,    String nameFormat){
+      return new ScheduledThreadPoolExecutor(corePoolSize,new ThreadFactoryBuilder().setDaemon(true).setNameFormat(nameFormat).build()){
+        @Override public ScheduledFuture<?> schedule(        Runnable command,        long delay,        TimeUnit unit){
+          scheduledRunnable.add(command);
+          return null;
+        }
+      }
+;
+    }
+  }
+);
 }
