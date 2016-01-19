@@ -1,3 +1,11 @@
 {
-  return Arrays.asList(new Object[][]{{new NoopRejectionPolicyFactory()},{new MessageTimeRejectionPolicyFactory()}});
+  final RejectionPolicyFactory[] rejectionPolicies=new RejectionPolicyFactory[]{new NoopRejectionPolicyFactory(),new MessageTimeRejectionPolicyFactory()};
+  final boolean[] buildV9Directlies=new boolean[]{true,false};
+  final List<Object[]> constructors=Lists.newArrayList();
+  for (  RejectionPolicyFactory rejectionPolicy : rejectionPolicies) {
+    for (    boolean buildV9Directly : buildV9Directlies) {
+      constructors.add(new Object[]{rejectionPolicy,buildV9Directly});
+    }
+  }
+  return constructors;
 }
