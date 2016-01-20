@@ -21,7 +21,10 @@
       if (dimensionSkipFlag.get(i)) {
         continue;
       }
-      if (dims[i] == null || dims[i].length == 0 || (dims[i].length == 1 && dims[i][0] == 0)) {
+      if (dims[i] == null || dims[i].length == 0) {
+        nullRowsList.get(i).add(rowCount);
+      }
+ else       if (dimHasNullFlags.get(i) && dims[i].length == 1 && dims[i][0] == 0) {
         nullRowsList.get(i).add(rowCount);
       }
       dimWriters.get(i).add(dims[i]);

@@ -37,10 +37,12 @@
   final ArrayList<GenericIndexedWriter<String>> dimValueWriters=setupDimValueWriters(ioPeon,mergedDimensions);
   final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(adapters.size());
   final ArrayList<Boolean> dimensionSkipFlag=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions);
+  final ArrayList<Boolean> dimHasNullFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
+  writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions,convertMissingDimsFlags,dimHasNullFlags);
   log.info("Completed dim conversions in %,d millis.",System.currentTimeMillis() - startTime);
   progress.progress();
-  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,dimCardinalities,rowMergerFn);
+  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,dimCardinalities,convertMissingDimsFlags,rowMergerFn);
   final LongColumnSerializer timeWriter=setupTimeWriter(ioPeon);
   final ArrayList<IndexedIntsWriter> dimWriters=setupDimensionWriters(ioPeon,mergedDimensions,dimCapabilities,dimCardinalities,indexSpec);
   final ArrayList<GenericColumnSerializer> metWriters=setupMetricsWriters(ioPeon,mergedMetrics,metricsValueTypes,metricTypeNames,indexSpec);
@@ -49,7 +51,7 @@
   for (int i=0; i < mergedDimensions.size(); ++i) {
     nullRowsList.add(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap());
   }
-  mergeIndexesAndWriteColumns(adapters,progress,theRows,timeWriter,dimWriters,metWriters,dimensionSkipFlag,rowNumConversions,nullRowsList);
+  mergeIndexesAndWriteColumns(adapters,progress,theRows,timeWriter,dimWriters,metWriters,dimensionSkipFlag,rowNumConversions,nullRowsList,dimHasNullFlags);
   progress.progress();
   final ArrayList<GenericIndexedWriter<ImmutableBitmap>> bitmapIndexWriters=setupBitmapIndexWriters(ioPeon,mergedDimensions,indexSpec);
   final ArrayList<ByteBufferWriter<ImmutableRTree>> spatialIndexWriters=setupSpatialIndexWriters(ioPeon,mergedDimensions,indexSpec,dimCapabilities);
