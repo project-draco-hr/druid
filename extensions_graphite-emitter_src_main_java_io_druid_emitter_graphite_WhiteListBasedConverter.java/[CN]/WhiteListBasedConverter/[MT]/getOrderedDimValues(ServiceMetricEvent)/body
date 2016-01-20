@@ -1,0 +1,18 @@
+{
+  String prefixKey=getPrefixKey(event.getMetric(),whiteListDimsMapper);
+  if (prefixKey == null) {
+    return null;
+  }
+  ImmutableList.Builder<String> outputList=new ImmutableList.Builder();
+  Set<String> dimensions=whiteListDimsMapper.get(prefixKey);
+  if (dimensions == null) {
+    return Collections.emptyList();
+  }
+  for (  String dimKey : dimensions) {
+    String dimValue=(String)event.getUserDims().get(dimKey);
+    if (dimValue != null) {
+      outputList.add(GraphiteEmitter.sanitize(dimValue));
+    }
+  }
+  return outputList.build();
+}

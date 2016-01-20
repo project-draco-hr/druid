@@ -1,0 +1,19 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof WhiteListBasedConverter)) {
+    return false;
+  }
+  WhiteListBasedConverter that=(WhiteListBasedConverter)o;
+  if (isIgnoreHostname() != that.isIgnoreHostname()) {
+    return false;
+  }
+  if (isIgnoreServiceName() != that.isIgnoreServiceName()) {
+    return false;
+  }
+  if (!getNamespacePrefix().equals(that.getNamespacePrefix())) {
+    return false;
+  }
+  return mapPath != null ? mapPath.equals(that.mapPath) : that.mapPath == null;
+}

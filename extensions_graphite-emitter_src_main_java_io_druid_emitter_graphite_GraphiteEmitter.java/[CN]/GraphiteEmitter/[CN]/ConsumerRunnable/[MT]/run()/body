@@ -1,0 +1,30 @@
+{
+  try {
+    if (!pickledGraphite.isConnected()) {
+      log.info("trying to connect to graphite server");
+      pickledGraphite.connect();
+    }
+    while (eventsQueue.size() > 0 && !exec.isShutdown()) {
+      try {
+        final GraphiteEvent graphiteEvent=eventsQueue.poll(DEFAULT_PUT_GET_TIMEOUT,TimeUnit.MILLISECONDS);
+        if (graphiteEvent != null) {
+          log.debug("sent [%s] with value [%s] and time [%s]",graphiteEvent.getEventPath(),graphiteEvent.getValue(),graphiteEvent.getTimestamp());
+          pickledGraphite.send(graphiteEvent.getEventPath(),graphiteEvent.getValue(),graphiteEvent.getTimestamp());
+        }
+      }
+ catch (      InterruptedException|IOException e) {
+        log.error(e,e.getMessage());
+        if (e instanceof InterruptedException) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+    pickledGraphite.flush();
+  }
+ catch (  Exception e) {
+    log.error(e,e.getMessage());
+    if (e instanceof InterruptedException) {
+      Thread.currentThread().interrupt();
+    }
+  }
+}

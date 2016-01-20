@@ -1,0 +1,14 @@
+{
+  if (started.get()) {
+    Future future=exec.schedule(new ConsumerRunnable(),0,TimeUnit.MILLISECONDS);
+    try {
+      future.get(FLUSH_TIMEOUT,TimeUnit.MILLISECONDS);
+    }
+ catch (    InterruptedException|ExecutionException|TimeoutException e) {
+      if (e instanceof InterruptedException) {
+        throw new RuntimeException("interrupted flushing elements from queue",e);
+      }
+      log.error(e,e.getMessage());
+    }
+  }
+}
