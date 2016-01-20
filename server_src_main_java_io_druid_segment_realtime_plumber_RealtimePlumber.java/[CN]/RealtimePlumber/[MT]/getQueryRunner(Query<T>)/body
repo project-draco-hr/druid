@@ -24,9 +24,6 @@
       final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum());
       return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        FireHydrant input){
-          if (input == null || input.getSegment() == null) {
-            return new ReportTimelineMissingSegmentQueryRunner<T>(descriptor);
-          }
           if (skipIncrementalSegment && !input.hasSwapped()) {
             return new NoopQueryRunner<T>();
           }
