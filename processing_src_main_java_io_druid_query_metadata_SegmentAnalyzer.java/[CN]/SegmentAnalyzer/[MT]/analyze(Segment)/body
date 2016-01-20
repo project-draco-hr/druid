@@ -1,0 +1,40 @@
+{
+  Preconditions.checkNotNull(segment,"segment");
+  final QueryableIndex index=segment.asQueryableIndex();
+  final StorageAdapter storageAdapter=segment.asStorageAdapter();
+  final int length=storageAdapter.getNumRows();
+  final Set<String> columnNames=Sets.newHashSet();
+  Iterables.addAll(columnNames,storageAdapter.getAvailableDimensions());
+  Iterables.addAll(columnNames,storageAdapter.getAvailableMetrics());
+  Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
+  for (  String columnName : columnNames) {
+    final Column column=index == null ? null : index.getColumn(columnName);
+    final ColumnCapabilities capabilities=column != null ? column.getCapabilities() : storageAdapter.getColumnCapabilities(columnName);
+    final ColumnAnalysis analysis;
+    final ValueType type=capabilities.getType();
+switch (type) {
+case LONG:
+      analysis=analyzeNumericColumn(capabilities,length,Longs.BYTES);
+    break;
+case FLOAT:
+  analysis=analyzeNumericColumn(capabilities,length,NUM_BYTES_IN_TEXT_FLOAT);
+break;
+case STRING:
+analysis=analyzeStringColumn(capabilities,column,storageAdapter.getDimensionCardinality(columnName));
+break;
+case COMPLEX:
+analysis=analyzeComplexColumn(capabilities,column,storageAdapter.getColumnTypeName(columnName));
+break;
+default :
+log.warn("Unknown column type[%s].",type);
+analysis=ColumnAnalysis.error(String.format("unknown_type_%s",type));
+}
+columns.put(columnName,analysis);
+}
+ColumnCapabilities timeCapabilities=storageAdapter.getColumnCapabilities(Column.TIME_COLUMN_NAME);
+if (timeCapabilities == null) {
+timeCapabilities=new ColumnCapabilitiesImpl().setType(ValueType.LONG).setHasMultipleValues(false);
+}
+columns.put(Column.TIME_COLUMN_NAME,analyzeNumericColumn(timeCapabilities,length,NUM_BYTES_IN_TIMESTAMP));
+return columns;
+}
