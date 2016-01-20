@@ -30,4 +30,11 @@
   Assert.assertArrayEquals(new Object[]{2L},boatList.get(2).getMetrics());
   Assert.assertArrayEquals(new int[][]{{2},{0}},boatList.get(3).getDims());
   Assert.assertArrayEquals(new Object[]{2L},boatList.get(3).getMetrics());
+  checkBitmapIndex(Lists.newArrayList(0,1),adapter.getBitmapIndex("dimA",""));
+  checkBitmapIndex(Lists.newArrayList(2),adapter.getBitmapIndex("dimA","1"));
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("dimA","2"));
+  checkBitmapIndex(new ArrayList<Integer>(),adapter.getBitmapIndex("dimB",""));
+  checkBitmapIndex(Lists.newArrayList(2,3),adapter.getBitmapIndex("dimC",""));
+  checkBitmapIndex(Lists.newArrayList(0),adapter.getBitmapIndex("dimC","1"));
+  checkBitmapIndex(Lists.newArrayList(1),adapter.getBitmapIndex("dimC","2"));
 }
