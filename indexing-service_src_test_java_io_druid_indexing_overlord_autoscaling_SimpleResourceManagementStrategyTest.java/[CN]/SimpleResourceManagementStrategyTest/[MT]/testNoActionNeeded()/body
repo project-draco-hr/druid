@@ -2,13 +2,13 @@
   EasyMock.reset(autoScaler);
   EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
-  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.newArrayList("ip"));
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
-  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
   EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create()),new TestZkWorker(NoopTask.create()))).times(2);
   EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<ZkWorker>newArrayList());
-  EasyMock.expect(runner.markWorkersLazy((Predicate<ZkWorker>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>emptyList());
+  EasyMock.expect(runner.markWorkersLazy(EasyMock.<Predicate<ZkWorker>>anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>emptyList());
   EasyMock.replay(runner);
   boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(runner);
   Assert.assertFalse(terminatedSomething);
@@ -16,7 +16,7 @@
   EasyMock.reset(autoScaler);
   EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
   EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
-  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.newArrayList("ip"));
   EasyMock.replay(autoScaler);
   boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertFalse(provisionedSomething);

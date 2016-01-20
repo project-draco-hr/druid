@@ -1,0 +1,13 @@
+{
+  this.jsonMapper=jsonMapper;
+  this.config=config;
+  this.shutdownTimeout=config.getTaskShutdownLinkTimeout().toStandardDuration();
+  this.indexerZkConfig=indexerZkConfig;
+  this.cf=cf;
+  this.pathChildrenCacheFactory=pathChildrenCacheFactory;
+  this.workerPathCache=pathChildrenCacheFactory.make(cf,indexerZkConfig.getAnnouncementsPath());
+  this.httpClient=httpClient;
+  this.workerConfigRef=workerConfigRef;
+  this.cleanupExec=MoreExecutors.listeningDecorator(cleanupExec);
+  this.resourceManagement=resourceManagement;
+}

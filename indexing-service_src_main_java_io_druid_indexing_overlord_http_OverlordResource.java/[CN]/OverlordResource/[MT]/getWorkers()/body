@@ -1,7 +1,13 @@
 {
   return asLeaderWith(taskMaster.getTaskRunner(),new Function<TaskRunner,Response>(){
     @Override public Response apply(    TaskRunner taskRunner){
-      return Response.ok(taskRunner.getWorkers()).build();
+      if (taskRunner instanceof RemoteTaskRunner) {
+        return Response.ok(((RemoteTaskRunner)taskRunner).getWorkers()).build();
+      }
+ else {
+        log.debug("Task runner [%s] of type [%s] does not support listing workers",taskRunner,taskRunner.getClass().getCanonicalName());
+        return Response.serverError().entity(ImmutableMap.of("error","Task Runner does not support worker listing")).build();
+      }
     }
   }
 );

@@ -1,8 +1,9 @@
 {
   autoScaler=EasyMock.createMock(AutoScaler.class);
   final IndexSpec indexSpec=new IndexSpec();
-  testTask=new TestMergeTask("task1","dummyDs",Lists.<DataSegment>newArrayList(new DataSegment("dummyDs",new Interval("2012-01-01/2012-01-02"),new DateTime().toString(),null,null,null,null,0,0)),Lists.<AggregatorFactory>newArrayList(),indexSpec);
-  simpleResourceManagementConfig=new SimpleResourceManagementConfig().setWorkerIdleTimeout(new Period(0)).setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(1).setPendingTaskTimeout(new Period(0)).setWorkerVersion("");
+  testTask=new TestMergeTask("task1","dummyDs",Lists.newArrayList(new DataSegment("dummyDs",new Interval("2012-01-01/2012-01-02"),new DateTime().toString(),null,null,null,null,0,0)),Lists.<AggregatorFactory>newArrayList(),indexSpec);
+  final SimpleResourceManagementConfig simpleResourceManagementConfig=new SimpleResourceManagementConfig().setWorkerIdleTimeout(new Period(0)).setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(1).setPendingTaskTimeout(new Period(0)).setWorkerVersion("");
+  final ResourceManagementSchedulerConfig schedulerConfig=new ResourceManagementSchedulerConfig();
   workerConfig=new AtomicReference<>(new WorkerBehaviorConfig(null,autoScaler));
-  simpleResourceManagementStrategy=new SimpleResourceManagementStrategy(simpleResourceManagementConfig,DSuppliers.of(workerConfig));
+  simpleResourceManagementStrategy=new SimpleResourceManagementStrategy(simpleResourceManagementConfig,DSuppliers.of(workerConfig),schedulerConfig,executorService);
 }

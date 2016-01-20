@@ -28,14 +28,9 @@
   curator.create().creatingParentsIfNeeded().forPath(indexerZkConfig.getLeaderLatchPath());
   druidNode=new DruidNode("hey","what",1234);
   ServiceEmitter serviceEmitter=new NoopServiceEmitter();
-  taskMaster=new TaskMaster(new TaskQueueConfig(null,new Period(1),null,new Period(10)),taskLockbox,taskStorage,taskActionClientFactory,druidNode,indexerZkConfig,new TaskRunnerFactory(){
-    @Override public TaskRunner build(){
+  taskMaster=new TaskMaster(new TaskQueueConfig(null,new Period(1),null,new Period(10)),taskLockbox,taskStorage,taskActionClientFactory,druidNode,indexerZkConfig,new TaskRunnerFactory<MockTaskRunner>(){
+    @Override public MockTaskRunner build(){
       return new MockTaskRunner(runTaskCountDownLatches,taskCompletionCountDownLatches);
-    }
-  }
-,new ResourceManagementSchedulerFactory(){
-    @Override public ResourceManagementScheduler build(    RemoteTaskRunner runner,    ScheduledExecutorFactory executorFactory){
-      return new NoopResourceManagementScheduler();
     }
   }
 ,curator,new NoopServiceAnnouncer(){
