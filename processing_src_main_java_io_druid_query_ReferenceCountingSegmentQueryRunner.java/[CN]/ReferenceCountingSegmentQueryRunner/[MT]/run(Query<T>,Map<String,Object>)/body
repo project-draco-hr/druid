@@ -1,11 +1,16 @@
 {
   final Closeable closeable=adapter.increment();
-  try {
-    final Sequence<T> baseSequence=factory.createRunner(adapter).run(query,responseContext);
-    return new ResourceClosingSequence<T>(baseSequence,closeable);
+  if (closeable != null) {
+    try {
+      final Sequence<T> baseSequence=factory.createRunner(adapter).run(query,responseContext);
+      return new ResourceClosingSequence<T>(baseSequence,closeable);
+    }
+ catch (    RuntimeException e) {
+      CloseQuietly.close(closeable);
+      throw e;
+    }
   }
- catch (  RuntimeException e) {
-    CloseQuietly.close(closeable);
-    throw e;
+ else {
+    return new ReportTimelineMissingSegmentQueryRunner<T>(descriptor).run(query,responseContext);
   }
 }

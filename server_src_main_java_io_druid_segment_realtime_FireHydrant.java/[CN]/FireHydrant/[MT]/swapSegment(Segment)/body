@@ -1,12 +1,14 @@
 {
-  if (this.adapter != null) {
-    try {
-      this.adapter.close();
+synchronized (swapLock) {
+    if (this.adapter != null) {
+      try {
+        this.adapter.close();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
     }
- catch (    IOException e) {
-      throw Throwables.propagate(e);
-    }
+    this.adapter=new ReferenceCountingSegment(adapter);
+    this.index=null;
   }
-  this.adapter=new ReferenceCountingSegment(adapter);
-  this.index=null;
 }
