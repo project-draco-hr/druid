@@ -28,6 +28,13 @@
   Assert.assertArrayEquals(new Object[]{1L},boatList.get(3).getMetrics());
   Assert.assertArrayEquals(new int[][]{{2},{0}},boatList.get(4).getDims());
   Assert.assertArrayEquals(new Object[]{1L},boatList.get(4).getMetrics());
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("dimA",""));
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("dimA","1"));
+  checkBitmapIndex(Lists.newArrayList(4),adapter.getBitmapIndex("dimA","2"));
+  checkBitmapIndex(Lists.newArrayList(3,4),adapter.getBitmapIndex("dimB",""));
+  checkBitmapIndex(Lists.newArrayList(0),adapter.getBitmapIndex("dimB","1"));
+  checkBitmapIndex(Lists.newArrayList(1),adapter.getBitmapIndex("dimB","2"));
+  checkBitmapIndex(Lists.newArrayList(2),adapter.getBitmapIndex("dimB","3"));
   Assert.assertEquals(ImmutableList.of("dimA","dimB"),ImmutableList.copyOf(adapter2.getDimensionNames()));
   Assert.assertEquals(5,boatList2.size());
   Assert.assertArrayEquals(new int[][]{{0},{1}},boatList2.get(0).getDims());
@@ -40,11 +47,11 @@
   Assert.assertArrayEquals(new Object[]{1L},boatList2.get(3).getMetrics());
   Assert.assertArrayEquals(new int[][]{{2},{0}},boatList2.get(4).getDims());
   Assert.assertArrayEquals(new Object[]{1L},boatList2.get(4).getMetrics());
-  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("dimA",""));
-  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("dimA","1"));
-  checkBitmapIndex(Lists.newArrayList(4),adapter.getBitmapIndex("dimA","2"));
-  checkBitmapIndex(Lists.newArrayList(3,4),adapter.getBitmapIndex("dimB",""));
-  checkBitmapIndex(Lists.newArrayList(0),adapter.getBitmapIndex("dimB","1"));
-  checkBitmapIndex(Lists.newArrayList(1),adapter.getBitmapIndex("dimB","2"));
-  checkBitmapIndex(Lists.newArrayList(2),adapter.getBitmapIndex("dimB","3"));
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter2.getBitmapIndex("dimA",""));
+  checkBitmapIndex(Lists.newArrayList(3),adapter2.getBitmapIndex("dimA","1"));
+  checkBitmapIndex(Lists.newArrayList(4),adapter2.getBitmapIndex("dimA","2"));
+  checkBitmapIndex(Lists.newArrayList(3,4),adapter2.getBitmapIndex("dimB",""));
+  checkBitmapIndex(Lists.newArrayList(0),adapter2.getBitmapIndex("dimB","1"));
+  checkBitmapIndex(Lists.newArrayList(1),adapter2.getBitmapIndex("dimB","2"));
+  checkBitmapIndex(Lists.newArrayList(2),adapter2.getBitmapIndex("dimB","3"));
 }
