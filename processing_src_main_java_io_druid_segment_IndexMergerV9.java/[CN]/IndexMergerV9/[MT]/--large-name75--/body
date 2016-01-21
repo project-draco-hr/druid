@@ -23,9 +23,6 @@
       bitmapIndexSeeker[j]=adapters.get(j).getBitmapIndexSeeker(dimension);
     }
     ImmutableBitmap nullRowBitmap=bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(nullRowsList.get(dimIndex));
-    if (Iterables.getFirst(dimVals,"") != null && !nullRowsList.get(dimIndex).isEmpty()) {
-      bitmapIndexWriters.get(dimIndex).write(nullRowBitmap);
-    }
     for (    String dimVal : IndexedIterable.create(dimVals)) {
       progress.progress();
       List<Iterable<Integer>> convertedInverteds=Lists.newArrayListWithCapacity(adapters.size());

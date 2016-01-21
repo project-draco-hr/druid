@@ -68,6 +68,7 @@
   ArrayList<FileOutputSupplier> dimOuts=Lists.newArrayListWithCapacity(mergedDimensions.size());
   Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
   ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
+  final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
   for (  IndexableAdapter index : indexes) {
     dimConversions.add(Maps.<String,IntBuffer>newHashMap());
   }
@@ -77,6 +78,7 @@
     List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size() + 1);
     DimValueConverter[] converters=new DimValueConverter[indexes.size()];
     boolean dimHasValues=false;
+    boolean dimAbsentFromSomeIndex=false;
     boolean[] dimHasValuesByIndex=new boolean[indexes.size()];
     for (int i=0; i < indexes.size(); i++) {
       Indexed<String> dimValues=indexes.get(i).getDimValueLookup(dimension);
@@ -87,10 +89,13 @@
         converters[i]=new DimValueConverter(dimValues);
       }
  else {
+        dimAbsentFromSomeIndex=true;
         dimHasValuesByIndex[i]=false;
       }
     }
-    if (dimHasValues) {
+    boolean convertMissingDims=dimHasValues && dimAbsentFromSomeIndex;
+    convertMissingDimsFlags.add(convertMissingDims);
+    if (convertMissingDims) {
       dimValueLookups.add(EMPTY_STR_DIM_VAL);
       for (int i=0; i < indexes.size(); i++) {
         if (!dimHasValuesByIndex[i]) {
@@ -170,7 +175,7 @@
         return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum());
       }
     }
-),mergedDimensions,dimConversions.get(i),i,dimensionCardinalities));
+),mergedDimensions,dimConversions.get(i),i,convertMissingDimsFlags));
   }
   Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
   CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
