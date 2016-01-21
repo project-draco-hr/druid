@@ -1,0 +1,10 @@
+{
+  SendAllGraphiteEventConverter sendAllGraphiteEventConverter=new SendAllGraphiteEventConverter("prefix",true,true);
+  String noopGraphiteEventConverterString=mapper.writeValueAsString(sendAllGraphiteEventConverter);
+  DruidToGraphiteEventConverter druidToGraphiteEventConverter=mapper.reader(DruidToGraphiteEventConverter.class).readValue(noopGraphiteEventConverterString);
+  Assert.assertEquals(druidToGraphiteEventConverter,sendAllGraphiteEventConverter);
+  WhiteListBasedConverter whiteListBasedConverter=new WhiteListBasedConverter("prefix",true,true,"",new DefaultObjectMapper());
+  String whiteListBasedConverterString=mapper.writeValueAsString(whiteListBasedConverter);
+  druidToGraphiteEventConverter=mapper.reader(DruidToGraphiteEventConverter.class).readValue(whiteListBasedConverterString);
+  Assert.assertEquals(druidToGraphiteEventConverter,whiteListBasedConverter);
+}

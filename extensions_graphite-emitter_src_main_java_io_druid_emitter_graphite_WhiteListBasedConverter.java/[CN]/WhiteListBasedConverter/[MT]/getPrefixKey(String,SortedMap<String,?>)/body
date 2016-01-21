@@ -1,0 +1,11 @@
+{
+  String prefixKey=null;
+  if (whiteList.containsKey(key)) {
+    return key;
+  }
+  SortedMap<String,?> headMap=whiteList.headMap(key);
+  if (!headMap.isEmpty() && key.startsWith(headMap.lastKey())) {
+    prefixKey=headMap.lastKey();
+  }
+  return prefixKey;
+}

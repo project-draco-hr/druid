@@ -1,0 +1,17 @@
+{
+  if (!this.isInWhiteList(serviceMetricEvent)) {
+    return null;
+  }
+  final ImmutableList.Builder<String> metricPathBuilder=new ImmutableList.Builder<>();
+  metricPathBuilder.add(this.getNamespacePrefix());
+  if (!this.isIgnoreServiceName()) {
+    metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getService()));
+  }
+  if (!this.isIgnoreHostname()) {
+    metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getHost()));
+  }
+  metricPathBuilder.addAll(this.getOrderedDimValues(serviceMetricEvent));
+  metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getMetric()));
+  final GraphiteEvent graphiteEvent=new GraphiteEvent(Joiner.on(".").join(metricPathBuilder.build()),String.valueOf(serviceMetricEvent.getValue()),TimeUnit.MILLISECONDS.toSeconds(serviceMetricEvent.getCreatedTime().getMillis()));
+  return graphiteEvent;
+}

@@ -1,0 +1,9 @@
+{
+  log.info("Starting Graphite Emitter.");
+synchronized (started) {
+    if (!started.get()) {
+      exec.scheduleAtFixedRate(new ConsumerRunnable(),graphiteEmitterConfig.getFlushPeriod(),graphiteEmitterConfig.getFlushPeriod(),TimeUnit.MILLISECONDS);
+      started.set(true);
+    }
+  }
+}

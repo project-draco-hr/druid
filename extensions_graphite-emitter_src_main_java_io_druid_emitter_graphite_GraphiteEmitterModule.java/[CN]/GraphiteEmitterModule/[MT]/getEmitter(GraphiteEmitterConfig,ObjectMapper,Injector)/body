@@ -1,0 +1,9 @@
+{
+  List<Emitter> emitters=Lists.transform(graphiteEmitterConfig.getAlertEmitters(),new Function<String,Emitter>(){
+    @Override public Emitter apply(    String s){
+      return injector.getInstance(Key.get(Emitter.class,Names.named(s)));
+    }
+  }
+);
+  return new GraphiteEmitter(graphiteEmitterConfig,emitters,mapper);
+}

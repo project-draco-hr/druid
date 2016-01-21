@@ -1,0 +1,32 @@
+{
+  if (!started.get()) {
+    throw new ISE("WTF emit was called while service is not started yet");
+  }
+  if (event instanceof ServiceMetricEvent) {
+    final GraphiteEvent graphiteEvent=graphiteEventConverter.druidEventToGraphite((ServiceMetricEvent)event);
+    if (graphiteEvent == null) {
+      return;
+    }
+    try {
+      final boolean isSuccessful=eventsQueue.offer(graphiteEvent,DEFAULT_PUT_GET_TIMEOUT,TimeUnit.MILLISECONDS);
+      if (!isSuccessful) {
+        log.error("Throwing event [%s] on the floor Graphite queue is full please increase the capacity or/and the consumer frequency",mapper.writeValueAsString(event));
+      }
+    }
+ catch (    InterruptedException e) {
+      log.error(e,"got interrupted with message [%s]",e.getMessage());
+      Thread.currentThread().interrupt();
+    }
+catch (    JsonProcessingException e) {
+      log.error(e,e.getMessage());
+    }
+  }
+ else   if (!emitterList.isEmpty() && event instanceof AlertEvent) {
+    for (    Emitter emitter : emitterList) {
+      emitter.emit(event);
+    }
+  }
+ else {
+    throw new ISE("unknown event type [%s]",event.getClass());
+  }
+}

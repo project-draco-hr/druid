@@ -1,0 +1,16 @@
+{
+  ImmutableList.Builder metricPathBuilder=new ImmutableList.Builder<String>();
+  metricPathBuilder.add(this.getNamespacePrefix());
+  if (!this.isIgnoreServiceName()) {
+    metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getService()));
+  }
+  if (!this.isIgnoreHostname()) {
+    metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getHost()));
+  }
+  ImmutableSortedSet<String> dimNames=ImmutableSortedSet.copyOf(serviceMetricEvent.getUserDims().keySet());
+  for (  String dimName : dimNames) {
+    metricPathBuilder.add(GraphiteEmitter.sanitize(String.valueOf(serviceMetricEvent.getUserDims().get(dimName))));
+  }
+  metricPathBuilder.add(GraphiteEmitter.sanitize(serviceMetricEvent.getMetric()));
+  return new GraphiteEvent(Joiner.on(".").join(metricPathBuilder.build()),serviceMetricEvent.getValue().toString(),TimeUnit.MILLISECONDS.toSeconds(serviceMetricEvent.getCreatedTime().getMillis()));
+}
