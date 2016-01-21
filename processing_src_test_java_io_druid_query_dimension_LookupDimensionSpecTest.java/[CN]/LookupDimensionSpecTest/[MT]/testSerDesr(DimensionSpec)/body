@@ -1,0 +1,6 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  InjectableValues injectableValues=new InjectableValues.Std().addValue(LookupReferencesManager.class,LOOKUP_REF_MANAGER);
+  String serLookup=mapper.writeValueAsString(lookupDimSpec);
+  Assert.assertEquals(lookupDimSpec,mapper.reader(DimensionSpec.class).with(injectableValues).readValue(serLookup));
+}
