@@ -1,5 +1,12 @@
 {
-  exec.shutdown();
+  for (  Map.Entry<Integer,ListeningExecutorService> entry : exec.entrySet()) {
+    try {
+      entry.getValue().shutdown();
+    }
+ catch (    SecurityException ex) {
+      log.wtf(ex,"I can't control my own threads!");
+    }
+  }
   for (  ThreadPoolTaskRunnerWorkItem item : runningItems) {
     final Task task=item.getTask();
     final long start=System.currentTimeMillis();
@@ -28,5 +35,12 @@
     emitter.emit(metricBuilder.build("task/interrupt/count",1L));
     emitter.emit(metricBuilder.build("task/interrupt/elapsed",elapsed));
   }
-  exec.shutdownNow();
+  for (  Map.Entry<Integer,ListeningExecutorService> entry : exec.entrySet()) {
+    try {
+      entry.getValue().shutdownNow();
+    }
+ catch (    SecurityException ex) {
+      log.wtf(ex,"I can't control my own threads!");
+    }
+  }
 }
