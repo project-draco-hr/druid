@@ -1,0 +1,10 @@
+{
+  Iterable<String> locations=Collections.emptyList();
+  for (  WindowedDataSegment segment : segments) {
+    FileInputFormat.setInputPaths(conf,new Path(JobHelper.getURIFromSegment(segment.getSegment())));
+    for (    org.apache.hadoop.mapred.InputSplit split : fio.getSplits(conf,1)) {
+      locations=Iterables.concat(locations,Arrays.asList(split.getLocations()));
+    }
+  }
+  return getFrequentLocations(locations);
+}

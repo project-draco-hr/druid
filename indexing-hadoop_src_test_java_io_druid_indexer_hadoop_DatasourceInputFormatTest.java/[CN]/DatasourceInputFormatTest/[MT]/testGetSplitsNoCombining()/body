@@ -1,7 +1,12 @@
 {
-  List<InputSplit> splits=new DatasourceInputFormat().getSplits(context);
+  DatasourceInputFormat inputFormat=new DatasourceInputFormat().setSupplier(testFormatter);
+  List<InputSplit> splits=inputFormat.getSplits(context);
   Assert.assertEquals(segments.size(),splits.size());
   for (int i=0; i < segments.size(); i++) {
-    Assert.assertEquals(segments.get(i),((DatasourceInputSplit)splits.get(i)).getSegments().get(0));
+    DatasourceInputSplit split=(DatasourceInputSplit)splits.get(i);
+    Assert.assertEquals(segments.get(i),split.getSegments().get(0));
   }
+  Assert.assertArrayEquals(new String[]{"s1","s2"},splits.get(0).getLocations());
+  Assert.assertArrayEquals(new String[]{"s1","s2"},splits.get(1).getLocations());
+  Assert.assertArrayEquals(new String[]{"s2","s3"},splits.get(2).getLocations());
 }

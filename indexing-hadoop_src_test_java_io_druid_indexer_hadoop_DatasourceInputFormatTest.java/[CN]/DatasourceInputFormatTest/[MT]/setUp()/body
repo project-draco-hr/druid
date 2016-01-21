@@ -1,5 +1,9 @@
 {
   segments=ImmutableList.of(WindowedDataSegment.of(new DataSegment("test1",Interval.parse("2000/3000"),"ver",ImmutableMap.<String,Object>of("type","local","path","/tmp/index1.zip"),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),new NoneShardSpec(),9,2)),WindowedDataSegment.of(new DataSegment("test2",Interval.parse("2050/3000"),"ver",ImmutableMap.<String,Object>of("type","hdfs","path","/tmp/index2.zip"),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),new NoneShardSpec(),9,11)),WindowedDataSegment.of(new DataSegment("test3",Interval.parse("2030/3000"),"ver",ImmutableMap.<String,Object>of("type","hdfs","path","/tmp/index3.zip"),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),new NoneShardSpec(),9,4)));
+  Path path1=new Path(JobHelper.getURIFromSegment(segments.get(0).getSegment()));
+  Path path2=new Path(JobHelper.getURIFromSegment(segments.get(1).getSegment()));
+  Path path3=new Path(JobHelper.getURIFromSegment(segments.get(2).getSegment()));
+  locations=ImmutableList.of(new LocatedFileStatus(1000,false,0,0,0,0,null,null,null,null,path1,new BlockLocation[]{new BlockLocation(null,new String[]{"s1","s2"},0,600),new BlockLocation(null,new String[]{"s2","s3"},600,400)}),new LocatedFileStatus(4000,false,0,0,0,0,null,null,null,null,path2,new BlockLocation[]{new BlockLocation(null,new String[]{"s1","s2"},0,1000),new BlockLocation(null,new String[]{"s1","s3"},1000,1200),new BlockLocation(null,new String[]{"s2","s3"},2200,1100),new BlockLocation(null,new String[]{"s1","s2"},3300,700)}),new LocatedFileStatus(500,false,0,0,0,0,null,null,null,null,path3,new BlockLocation[]{new BlockLocation(null,new String[]{"s2","s3"},0,500)}));
   config=new Configuration();
   config.set(DatasourceInputFormat.CONF_INPUT_SEGMENTS,new DefaultObjectMapper().writeValueAsString(segments));
   context=EasyMock.createMock(JobContext.class);

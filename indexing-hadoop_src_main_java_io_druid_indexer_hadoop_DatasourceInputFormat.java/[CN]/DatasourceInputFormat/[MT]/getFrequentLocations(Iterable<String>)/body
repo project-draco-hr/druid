@@ -1,0 +1,24 @@
+{
+  final CountingMap<String> counter=new CountingMap<>();
+  for (  String location : hosts) {
+    counter.add(location,1);
+  }
+  final TreeSet<Pair<Long,String>> sorted=Sets.<Pair<Long,String>>newTreeSet(new Comparator<Pair<Long,String>>(){
+    @Override public int compare(    Pair<Long,String> o1,    Pair<Long,String> o2){
+      int compare=o2.lhs.compareTo(o1.lhs);
+      if (compare == 0) {
+        compare=o1.rhs.compareTo(o2.rhs);
+      }
+      return compare;
+    }
+  }
+);
+  for (  Map.Entry<String,AtomicLong> entry : counter.entrySet()) {
+    sorted.add(Pair.of(entry.getValue().get(),entry.getKey()));
+  }
+  final List<String> locations=Lists.newArrayListWithCapacity(3);
+  for (  Pair<Long,String> frequent : Iterables.limit(sorted,3)) {
+    locations.add(frequent.rhs);
+  }
+  return locations.toArray(new String[locations.size()]);
+}
