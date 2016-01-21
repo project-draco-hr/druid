@@ -1,0 +1,13 @@
+{
+  IncrementalIndex index1=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("A","A")});
+  index1.add(new MapBasedInputRow(1L,Lists.newArrayList("d1","d2"),ImmutableMap.<String,Object>of("d1","a","d2","z","A",1)));
+  closer.closeLater(index1);
+  IncrementalIndex index2=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("C","C")});
+  index2.add(new MapBasedInputRow(1l,Lists.newArrayList("d2"),ImmutableMap.<String,Object>of("d2","z","A",2,"C",100)));
+  closer.closeLater(index2);
+  Interval interval=new Interval(0,new DateTime().getMillis());
+  RoaringBitmapFactory factory=new RoaringBitmapFactory();
+  ArrayList<IndexableAdapter> toMerge=Lists.<IndexableAdapter>newArrayList(new IncrementalIndexAdapter(interval,index1,factory),new IncrementalIndexAdapter(interval,index2,factory));
+  final File tmpDirMerged=temporaryFolder.newFolder();
+  INDEX_MERGER.merge(toMerge,new AggregatorFactory[]{new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("C","C")},tmpDirMerged,indexSpec);
+}
