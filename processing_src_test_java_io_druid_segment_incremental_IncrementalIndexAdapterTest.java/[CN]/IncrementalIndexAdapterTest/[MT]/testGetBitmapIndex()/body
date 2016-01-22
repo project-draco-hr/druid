@@ -1,0 +1,11 @@
+{
+  final long timestamp=System.currentTimeMillis();
+  IncrementalIndex incrementalIndex=IncrementalIndexTest.createIndex(null);
+  IncrementalIndexTest.populateIndex(timestamp,incrementalIndex);
+  IndexableAdapter adapter=new IncrementalIndexAdapter(incrementalIndex.getInterval(),incrementalIndex,INDEX_SPEC.getBitmapSerdeFactory().getBitmapFactory());
+  String dimension="dim1";
+  for (int i=0; i < adapter.getDimValueLookup(dimension).size(); i++) {
+    IndexedInts indexedInts=adapter.getBitmapIndex(dimension,i);
+    Assert.assertEquals(1,indexedInts.size());
+  }
+}

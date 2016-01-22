@@ -292,15 +292,24 @@ spatialWriter=new ByteBufferWriter<ImmutableRTree>(spatialIoPeon,dimension,new I
 spatialWriter.open();
 tree=new RTree(2,new LinearGutmanSplitStrategy(0,50,bitmapFactory),bitmapFactory);
 }
-BitmapIndexSeeker[] bitmapIndexSeeker=new BitmapIndexSeeker[indexes.size()];
+DictIdSeeker[] dictIdSeeker=new DictIdSeeker[indexes.size()];
 for (int j=0; j < indexes.size(); j++) {
-bitmapIndexSeeker[j]=indexes.get(j).getBitmapIndexSeeker(dimension);
+IntBuffer dimConversion=dimConversions.get(j).get(dimension);
+if (dimConversion != null) {
+dictIdSeeker[j]=new DictIdSeeker((IntBuffer)dimConversion.asReadOnlyBuffer().rewind());
 }
-for (String dimVal : IndexedIterable.create(dimVals)) {
+ else {
+dictIdSeeker[j]=new DictIdSeeker(null);
+}
+}
+for (int dictId=0; dictId < dimVals.size(); dictId++) {
 progress.progress();
 List<Iterable<Integer>> convertedInverteds=Lists.newArrayListWithCapacity(indexes.size());
 for (int j=0; j < indexes.size(); ++j) {
-convertedInverteds.add(new ConvertingIndexedInts(bitmapIndexSeeker[j].seek(dimVal),rowNumConversions.get(j)));
+int seekedDictId=dictIdSeeker[j].seek(dictId);
+if (seekedDictId != DictIdSeeker.NOT_EXIST) {
+convertedInverteds.add(new ConvertingIndexedInts(indexes.get(j).getBitmapIndex(dimension,seekedDictId),rowNumConversions.get(j)));
+}
 }
 MutableBitmap bitset=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
 for (Integer row : CombiningIterable.createSplatted(convertedInverteds,Ordering.<Integer>natural().nullsFirst())) {
@@ -309,13 +318,16 @@ bitset.add(row);
 }
 }
 writer.write(bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(bitset));
-if (isSpatialDim && dimVal != null) {
+if (isSpatialDim) {
+String dimVal=dimVals.get(dictId);
+if (dimVal != null) {
 List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
 float[] coords=new float[stringCoords.size()];
 for (int j=0; j < coords.length; j++) {
 coords[j]=Float.valueOf(stringCoords.get(j));
 }
 tree.insert(coords,bitset);
+}
 }
 }
 writer.close();

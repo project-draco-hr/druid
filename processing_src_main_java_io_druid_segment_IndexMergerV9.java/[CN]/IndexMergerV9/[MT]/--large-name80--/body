@@ -1,0 +1,73 @@
+{
+  final String section="build inverted index";
+  progress.startSection(section);
+  long startTime=System.currentTimeMillis();
+  final BitmapSerdeFactory bitmapSerdeFactory=indexSpec.getBitmapSerdeFactory();
+  for (int dimIndex=0; dimIndex < mergedDimensions.size(); ++dimIndex) {
+    String dimension=mergedDimensions.get(dimIndex);
+    long dimStartTime=System.currentTimeMillis();
+    File dimValueFile=IndexIO.makeDimFile(v9OutDir,dimension);
+    FileOutputStream fos=new FileOutputStream(dimValueFile);
+    ByteStreams.copy(dimValueWriters.get(dimIndex).combineStreams(),fos);
+    fos.close();
+    final MappedByteBuffer dimValsMapped=Files.map(dimValueFile);
+    Indexed<String> dimVals=GenericIndexed.read(dimValsMapped,GenericIndexed.STRING_STRATEGY);
+    ByteBufferWriter<ImmutableRTree> spatialIndexWriter=spatialIndexWriters.get(dimIndex);
+    RTree tree=null;
+    if (spatialIndexWriter != null) {
+      BitmapFactory bitmapFactory=bitmapSerdeFactory.getBitmapFactory();
+      tree=new RTree(2,new LinearGutmanSplitStrategy(0,50,bitmapFactory),bitmapFactory);
+    }
+    DictIdSeeker[] dictIdSeeker=new DictIdSeeker[adapters.size()];
+    for (int j=0; j < adapters.size(); j++) {
+      IntBuffer dimConversion=dimConversions.get(j).get(dimension);
+      if (dimConversion != null) {
+        dictIdSeeker[j]=new DictIdSeeker((IntBuffer)dimConversion.asReadOnlyBuffer().rewind());
+      }
+ else {
+        dictIdSeeker[j]=new DictIdSeeker(null);
+      }
+    }
+    ImmutableBitmap nullRowBitmap=bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(nullRowsList.get(dimIndex));
+    for (int dictId=0; dictId < dimVals.size(); dictId++) {
+      progress.progress();
+      List<Iterable<Integer>> convertedInverteds=Lists.newArrayListWithCapacity(adapters.size());
+      for (int j=0; j < adapters.size(); ++j) {
+        int seekedDictId=dictIdSeeker[j].seek(dictId);
+        if (seekedDictId != DictIdSeeker.NOT_EXIST) {
+          convertedInverteds.add(new ConvertingIndexedInts(adapters.get(j).getBitmapIndex(dimension,seekedDictId),rowNumConversions.get(j)));
+        }
+      }
+      MutableBitmap bitset=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
+      for (      Integer row : CombiningIterable.createSplatted(convertedInverteds,Ordering.<Integer>natural().nullsFirst())) {
+        if (row != INVALID_ROW) {
+          bitset.add(row);
+        }
+      }
+      ImmutableBitmap bitmapToWrite=bitmapSerdeFactory.getBitmapFactory().makeImmutableBitmap(bitset);
+      if ((dictId == 0) && (Iterables.getFirst(dimVals,"") == null)) {
+        bitmapIndexWriters.get(dimIndex).write(nullRowBitmap.union(bitmapToWrite));
+      }
+ else {
+        bitmapIndexWriters.get(dimIndex).write(bitmapToWrite);
+      }
+      if (spatialIndexWriter != null) {
+        String dimVal=dimVals.get(dictId);
+        if (dimVal != null) {
+          List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimVal));
+          float[] coords=new float[stringCoords.size()];
+          for (int j=0; j < coords.length; j++) {
+            coords[j]=Float.valueOf(stringCoords.get(j));
+          }
+          tree.insert(coords,bitset);
+        }
+      }
+    }
+    if (spatialIndexWriter != null) {
+      spatialIndexWriter.write(ImmutableRTree.newImmutableFromMutable(tree));
+    }
+    log.info("Completed dim[%s] inverted with cardinality[%,d] in %,d millis.",dimension,dimVals.size(),System.currentTimeMillis() - dimStartTime);
+  }
+  log.info("Completed inverted index in %,d millis.",System.currentTimeMillis() - startTime);
+  progress.stopSection(section);
+}
