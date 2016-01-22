@@ -1,0 +1,13 @@
+{
+  IncrementalIndex index2=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("C","C")});
+  closer.closeLater(index2);
+  IncrementalIndex index5=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("C","C"),new LongSumAggregatorFactory("B","B")});
+  closer.closeLater(index5);
+  Interval interval=new Interval(0,new DateTime().getMillis());
+  RoaringBitmapFactory factory=new RoaringBitmapFactory();
+  ArrayList<IndexableAdapter> toMerge=Lists.<IndexableAdapter>newArrayList(new IncrementalIndexAdapter(interval,index2,factory));
+  final File tmpDirMerged=temporaryFolder.newFolder();
+  final File merged=INDEX_MERGER.merge(toMerge,new AggregatorFactory[]{new LongSumAggregatorFactory("B","B"),new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("D","D")},tmpDirMerged,indexSpec);
+  final QueryableIndexStorageAdapter adapter=new QueryableIndexStorageAdapter(closer.closeLater(INDEX_IO.loadIndex(merged)));
+  Assert.assertEquals(ImmutableSet.of("A","B","C"),ImmutableSet.copyOf(adapter.getAvailableMetrics()));
+}
