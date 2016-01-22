@@ -58,7 +58,8 @@
           return null;
         }
       }
-      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", sequence_name, sequence_prev_id, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :sequence_name, :sequence_prev_id, :payload)",dbTables.getPendingSegmentsTable())).bind("id",newIdentifier.getIdentifierAsString()).bind("dataSource",dataSource).bind("created_date",new DateTime().toString()).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).bind("sequence_name",sequenceName).bind("sequence_prev_id",previousSegmentIdNotNull).bind("payload",jsonMapper.writeValueAsBytes(newIdentifier)).execute();
+      final String sequenceNamePrevIdSha1=BaseEncoding.base16().encode(Hashing.sha1().newHasher().putBytes(StringUtils.toUtf8(sequenceName)).putByte((byte)0xff).putBytes(StringUtils.toUtf8(previousSegmentIdNotNull)).hash().asBytes());
+      handle.createStatement(String.format("INSERT INTO %s (id, dataSource, created_date, start, \"end\", sequence_name, sequence_prev_id, sequence_name_prev_id_sha1, payload) " + "VALUES (:id, :dataSource, :created_date, :start, :end, :sequence_name, :sequence_prev_id, :sequence_name_prev_id_sha1, :payload)",dbTables.getPendingSegmentsTable())).bind("id",newIdentifier.getIdentifierAsString()).bind("dataSource",dataSource).bind("created_date",new DateTime().toString()).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).bind("sequence_name",sequenceName).bind("sequence_prev_id",previousSegmentIdNotNull).bind("sequence_name_prev_id_sha1",sequenceNamePrevIdSha1).bind("payload",jsonMapper.writeValueAsBytes(newIdentifier)).execute();
       log.info("Allocated pending segment [%s] for sequence[%s] (previous = [%s]) in DB",newIdentifier.getIdentifierAsString(),sequenceName,previousSegmentIdNotNull);
       return newIdentifier;
     }
