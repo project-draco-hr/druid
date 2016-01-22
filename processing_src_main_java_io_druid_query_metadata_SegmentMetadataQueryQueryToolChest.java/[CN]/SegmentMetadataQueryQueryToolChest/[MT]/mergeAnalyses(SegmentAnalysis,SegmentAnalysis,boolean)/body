@@ -1,0 +1,64 @@
+{
+  if (arg1 == null) {
+    return arg2;
+  }
+  if (arg2 == null) {
+    return arg1;
+  }
+  List<Interval> newIntervals=null;
+  if (arg1.getIntervals() != null) {
+    newIntervals=Lists.newArrayList();
+    newIntervals.addAll(arg1.getIntervals());
+  }
+  if (arg2.getIntervals() != null) {
+    if (newIntervals == null) {
+      newIntervals=Lists.newArrayList();
+    }
+    newIntervals.addAll(arg2.getIntervals());
+  }
+  final Map<String,ColumnAnalysis> leftColumns=arg1.getColumns();
+  final Map<String,ColumnAnalysis> rightColumns=arg2.getColumns();
+  Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
+  Set<String> rightColumnNames=Sets.newHashSet(rightColumns.keySet());
+  for (  Map.Entry<String,ColumnAnalysis> entry : leftColumns.entrySet()) {
+    final String columnName=entry.getKey();
+    columns.put(columnName,entry.getValue().fold(rightColumns.get(columnName)));
+    rightColumnNames.remove(columnName);
+  }
+  for (  String columnName : rightColumnNames) {
+    columns.put(columnName,rightColumns.get(columnName));
+  }
+  final Map<String,AggregatorFactory> aggregators=Maps.newHashMap();
+  if (lenientAggregatorMerge) {
+    for (    SegmentAnalysis analysis : ImmutableList.of(arg1,arg2)) {
+      if (analysis.getAggregators() != null) {
+        for (        AggregatorFactory aggregator : analysis.getAggregators().values()) {
+          AggregatorFactory merged=aggregators.get(aggregator.getName());
+          if (merged != null) {
+            try {
+              merged=merged.getMergingFactory(aggregator);
+            }
+ catch (            AggregatorFactoryNotMergeableException e) {
+              merged=null;
+            }
+          }
+ else {
+            merged=aggregator;
+          }
+          aggregators.put(aggregator.getName(),merged);
+        }
+      }
+    }
+  }
+ else {
+    final AggregatorFactory[] aggs1=arg1.getAggregators() != null ? arg1.getAggregators().values().toArray(new AggregatorFactory[arg1.getAggregators().size()]) : null;
+    final AggregatorFactory[] aggs2=arg2.getAggregators() != null ? arg2.getAggregators().values().toArray(new AggregatorFactory[arg2.getAggregators().size()]) : null;
+    final AggregatorFactory[] merged=AggregatorFactory.mergeAggregators(Arrays.asList(aggs1,aggs2));
+    if (merged != null) {
+      for (      AggregatorFactory aggregator : merged) {
+        aggregators.put(aggregator.getName(),aggregator);
+      }
+    }
+  }
+  return new SegmentAnalysis("merged",newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows(),aggregators.isEmpty() ? null : aggregators);
+}

@@ -18,30 +18,7 @@
       return new BinaryFn<SegmentAnalysis,SegmentAnalysis,SegmentAnalysis>(){
         private final SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
         @Override public SegmentAnalysis apply(        SegmentAnalysis arg1,        SegmentAnalysis arg2){
-          if (arg1 == null) {
-            return arg2;
-          }
-          if (arg2 == null) {
-            return arg1;
-          }
-          List<Interval> newIntervals=null;
-          if (query.analyzingInterval()) {
-            newIntervals=new ArrayList<>(arg1.getIntervals());
-            newIntervals.addAll(arg2.getIntervals());
-          }
-          final Map<String,ColumnAnalysis> leftColumns=arg1.getColumns();
-          final Map<String,ColumnAnalysis> rightColumns=arg2.getColumns();
-          Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
-          Set<String> rightColumnNames=Sets.newHashSet(rightColumns.keySet());
-          for (          Map.Entry<String,ColumnAnalysis> entry : leftColumns.entrySet()) {
-            final String columnName=entry.getKey();
-            columns.put(columnName,entry.getValue().fold(rightColumns.get(columnName)));
-            rightColumnNames.remove(columnName);
-          }
-          for (          String columnName : rightColumnNames) {
-            columns.put(columnName,rightColumns.get(columnName));
-          }
-          return new SegmentAnalysis("merged",newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows());
+          return mergeAnalyses(arg1,arg2,query.isLenientAggregatorMerge());
         }
       }
 ;

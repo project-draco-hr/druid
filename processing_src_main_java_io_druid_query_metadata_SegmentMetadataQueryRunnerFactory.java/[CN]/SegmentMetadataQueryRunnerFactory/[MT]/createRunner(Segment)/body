@@ -22,7 +22,23 @@
         }
       }
       List<Interval> retIntervals=query.analyzingInterval() ? Arrays.asList(segment.getDataInterval()) : null;
-      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows)));
+      final Map<String,AggregatorFactory> aggregators;
+      if (query.hasAggregators()) {
+        final Metadata metadata=segment.asStorageAdapter().getMetadata();
+        if (metadata != null && metadata.getAggregators() != null) {
+          aggregators=Maps.newHashMap();
+          for (          AggregatorFactory aggregator : metadata.getAggregators()) {
+            aggregators.put(aggregator.getName(),aggregator);
+          }
+        }
+ else {
+          aggregators=null;
+        }
+      }
+ else {
+        aggregators=null;
+      }
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators)));
     }
   }
 ;
