@@ -3,6 +3,7 @@
   JsonConfigProvider.bind(binder,"druid.server.http",ServerConfig.class);
   binder.bind(GuiceContainer.class).to(DruidGuiceContainer.class);
   binder.bind(DruidGuiceContainer.class).in(Scopes.SINGLETON);
+  binder.bind(CustomExceptionMapper.class).in(Singleton.class);
   serve("/*").with(DruidGuiceContainer.class);
   Jerseys.addResource(binder,StatusResource.class);
   binder.bind(StatusResource.class).in(LazySingleton.class);
