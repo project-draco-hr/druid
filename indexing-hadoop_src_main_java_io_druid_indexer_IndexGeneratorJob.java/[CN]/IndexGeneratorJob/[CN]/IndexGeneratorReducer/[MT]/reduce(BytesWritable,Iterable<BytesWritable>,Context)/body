@@ -16,10 +16,10 @@
     long startTime=System.currentTimeMillis();
     Set<String> allDimensionNames=Sets.newLinkedHashSet();
     final ProgressIndicator progressIndicator=makeProgressIndicator(context);
-    int persistBackgroundCount=config.getSchema().getTuningConfig().getPersistBackgroundCount();
-    if (persistBackgroundCount > 0) {
+    int numBackgroundPersistThreads=config.getSchema().getTuningConfig().getNumBackgroundPersistThreads();
+    if (numBackgroundPersistThreads > 0) {
       final BlockingQueue<Runnable> queue=new SynchronousQueue<>();
-      ExecutorService executorService=new ThreadPoolExecutor(persistBackgroundCount,persistBackgroundCount,0L,TimeUnit.MILLISECONDS,queue,Execs.makeThreadFactory("IndexGeneratorJob_persist_%d"),new RejectedExecutionHandler(){
+      ExecutorService executorService=new ThreadPoolExecutor(numBackgroundPersistThreads,numBackgroundPersistThreads,0L,TimeUnit.MILLISECONDS,queue,Execs.makeThreadFactory("IndexGeneratorJob_persist_%d"),new RejectedExecutionHandler(){
         @Override public void rejectedExecution(        Runnable r,        ThreadPoolExecutor executor){
           try {
             executor.getQueue().put(r);
