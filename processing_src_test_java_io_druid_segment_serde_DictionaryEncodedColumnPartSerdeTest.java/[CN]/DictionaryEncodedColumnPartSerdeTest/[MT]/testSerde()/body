@@ -1,0 +1,11 @@
+{
+  String json="{\n" + " \"type\": \"stringDictionary\",\n" + " \"byteOrder\": \"BIG_ENDIAN\"\n"+ "}\n";
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  DictionaryEncodedColumnPartSerde serde=(DictionaryEncodedColumnPartSerde)mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,ColumnPartSerde.class)),ColumnPartSerde.class);
+  Assert.assertEquals(ByteOrder.BIG_ENDIAN,serde.getByteOrder());
+  Assert.assertTrue(serde.getBitmapSerdeFactory() instanceof ConciseBitmapSerdeFactory);
+  json="{\n" + "\"type\": \"stringDictionary\",\n" + "\"byteOrder\": \"LITTLE_ENDIAN\",\n"+ "\"bitmapSerdeFactory\": { \"type\": \"roaring\" }\n"+ "}";
+  serde=(DictionaryEncodedColumnPartSerde)mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,ColumnPartSerde.class)),ColumnPartSerde.class);
+  Assert.assertEquals(ByteOrder.LITTLE_ENDIAN,serde.getByteOrder());
+  Assert.assertTrue(serde.getBitmapSerdeFactory() instanceof RoaringBitmapSerdeFactory);
+}
