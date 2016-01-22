@@ -1,0 +1,31 @@
+{
+  if (dimConversions == null) {
+    return NOT_EXIST;
+  }
+  if (lastVal != NOT_INIT) {
+    if (dictId <= lastVal) {
+      throw new ISE("Value dictId[%d] is less than the last value dictId[%d] I have, cannot be.",dictId,lastVal);
+    }
+    return NOT_EXIST;
+  }
+  if (currVal == NOT_INIT) {
+    currVal=dimConversions.get();
+  }
+  if (currVal == dictId) {
+    int ret=currIndex;
+    ++currIndex;
+    if (dimConversions.hasRemaining()) {
+      currVal=dimConversions.get();
+    }
+ else {
+      lastVal=dictId;
+    }
+    return ret;
+  }
+ else   if (currVal < dictId) {
+    throw new ISE("Skipped currValue dictId[%d], currIndex[%d]; incoming value dictId[%d]",currVal,currIndex,dictId);
+  }
+ else {
+    return NOT_EXIST;
+  }
+}
