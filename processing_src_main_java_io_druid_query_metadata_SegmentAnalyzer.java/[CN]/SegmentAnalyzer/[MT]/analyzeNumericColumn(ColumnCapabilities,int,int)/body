@@ -1,0 +1,10 @@
+{
+  long size=0;
+  if (analyzingSize()) {
+    if (capabilities.hasMultipleValues()) {
+      return ColumnAnalysis.error("multi_value");
+    }
+    size=((long)length) * sizePerRow;
+  }
+  return new ColumnAnalysis(capabilities.getType().name(),capabilities.hasMultipleValues(),size,null,null);
+}

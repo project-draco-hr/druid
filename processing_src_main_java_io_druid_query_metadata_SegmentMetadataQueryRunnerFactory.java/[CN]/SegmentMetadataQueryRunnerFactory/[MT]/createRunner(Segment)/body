@@ -2,20 +2,11 @@
   return new QueryRunner<SegmentAnalysis>(){
     @Override public Sequence<SegmentAnalysis> run(    Query<SegmentAnalysis> inQ,    Map<String,Object> responseContext){
       SegmentMetadataQuery query=(SegmentMetadataQuery)inQ;
-      final QueryableIndex index=segment.asQueryableIndex();
-      final Map<String,ColumnAnalysis> analyzedColumns;
-      final int numRows;
+      final SegmentAnalyzer analyzer=new SegmentAnalyzer(query.getAnalysisTypes());
+      final Map<String,ColumnAnalysis> analyzedColumns=analyzer.analyze(segment);
+      final int numRows=analyzer.numRows(segment);
       long totalSize=0;
-      if (index == null) {
-        StorageAdapter segmentAdapter=segment.asStorageAdapter();
-        analyzedColumns=analyzer.analyze(segmentAdapter,query.getAnalysisTypes());
-        numRows=segmentAdapter.getNumRows();
-      }
- else {
-        analyzedColumns=analyzer.analyze(index,query.getAnalysisTypes());
-        numRows=index.getNumRows();
-      }
-      if (query.hasSize()) {
+      if (analyzer.analyzingSize()) {
         totalSize=analyzedColumns.size() * numRows;
       }
       Map<String,ColumnAnalysis> columns=Maps.newTreeMap();
@@ -30,7 +21,7 @@
           columns.put(columnName,column);
         }
       }
-      List<Interval> retIntervals=query.hasInterval() ? Arrays.asList(segment.getDataInterval()) : null;
+      List<Interval> retIntervals=query.analyzingInterval() ? Arrays.asList(segment.getDataInterval()) : null;
       return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows)));
     }
   }

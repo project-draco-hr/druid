@@ -2,7 +2,7 @@
   TopNQueryConfig config=new TopNQueryConfig();
   final TopNQueryQueryToolChest chest=new TopNQueryQueryToolChest(config,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
   QueryRunnerFactory factory=new TopNQueryRunnerFactory(TestQueryRunners.getPool(),chest,QueryRunnerTestHelper.NOOP_QUERYWATCHER);
-  QueryRunner<Result<TopNResultValue>> runner=QueryRunnerTestHelper.makeQueryRunner(factory,new IncrementalIndexSegment(TestIndex.getIncrementalTestIndex(false),segmentId));
+  QueryRunner<Result<TopNResultValue>> runner=QueryRunnerTestHelper.makeQueryRunner(factory,new IncrementalIndexSegment(TestIndex.getIncrementalTestIndex(),segmentId));
   Map<String,Object> context=Maps.newHashMap();
   context.put("minTopNThreshold",500);
   TopNQueryBuilder builder=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(QueryRunnerTestHelper.placementishDimension).metric(QueryRunnerTestHelper.indexMetric).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(QueryRunnerTestHelper.commonAggregators);
