@@ -3,7 +3,12 @@
     log.warn(new ISE("Already Closed!"),"Already closed");
     return;
   }
-  if (!objects.offer(object)) {
-    log.warn(new ISE("Queue offer failed"),"Could not offer object [%s] back into the queue",object);
+  if (objects.size() < objectsCacheMaxCount) {
+    if (!objects.offer(object)) {
+      log.warn(new ISE("Queue offer failed"),"Could not offer object [%s] back into the queue",object);
+    }
+  }
+ else {
+    log.debug("cache num entries is exceeding max limit [%s]",objectsCacheMaxCount);
   }
 }
