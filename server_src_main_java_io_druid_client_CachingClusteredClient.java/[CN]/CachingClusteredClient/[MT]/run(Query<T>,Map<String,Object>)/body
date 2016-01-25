@@ -21,26 +21,46 @@
   }
   Set<Pair<ServerSelector,SegmentDescriptor>> segments=Sets.newLinkedHashSet();
   List<TimelineObjectHolder<String,ServerSelector>> serversLookup=Lists.newLinkedList();
-  List<Interval> uncoveredIntervals=Lists.newLinkedList();
-  for (  Interval interval : query.getIntervals()) {
-    Iterable<TimelineObjectHolder<String,ServerSelector>> lookup=timeline.lookup(interval);
-    long startMillis=interval.getStartMillis();
-    long endMillis=interval.getEndMillis();
-    for (    TimelineObjectHolder<String,ServerSelector> holder : lookup) {
-      Interval holderInterval=holder.getInterval();
-      long intervalStart=holderInterval.getStartMillis();
-      if (startMillis != intervalStart) {
-        uncoveredIntervals.add(new Interval(startMillis,intervalStart));
+  int uncoveredIntervalsLimit=BaseQuery.getContextUncoveredIntervalsLimit(query,0);
+  if (uncoveredIntervalsLimit > 0) {
+    List<Interval> uncoveredIntervals=Lists.newArrayListWithCapacity(uncoveredIntervalsLimit);
+    boolean uncoveredIntervalsOverflowed=false;
+    for (    Interval interval : query.getIntervals()) {
+      Iterable<TimelineObjectHolder<String,ServerSelector>> lookup=timeline.lookup(interval);
+      long startMillis=interval.getStartMillis();
+      long endMillis=interval.getEndMillis();
+      for (      TimelineObjectHolder<String,ServerSelector> holder : lookup) {
+        Interval holderInterval=holder.getInterval();
+        long intervalStart=holderInterval.getStartMillis();
+        if (!uncoveredIntervalsOverflowed && startMillis != intervalStart) {
+          if (uncoveredIntervalsLimit > uncoveredIntervals.size()) {
+            uncoveredIntervals.add(new Interval(startMillis,intervalStart));
+          }
+ else {
+            uncoveredIntervalsOverflowed=true;
+          }
+        }
+        startMillis=holderInterval.getEndMillis();
+        serversLookup.add(holder);
       }
-      startMillis=holderInterval.getEndMillis();
-      serversLookup.add(holder);
+      if (!uncoveredIntervalsOverflowed && startMillis < endMillis) {
+        if (uncoveredIntervalsLimit > uncoveredIntervals.size()) {
+          uncoveredIntervals.add(new Interval(startMillis,endMillis));
+        }
+ else {
+          uncoveredIntervalsOverflowed=true;
+        }
+      }
     }
-    if (startMillis < endMillis) {
-      uncoveredIntervals.add(new Interval(startMillis,endMillis));
+    if (!uncoveredIntervals.isEmpty()) {
+      responseContext.put("uncoveredIntervals",uncoveredIntervals);
+      responseContext.put("uncoveredIntervalsOverflowed",uncoveredIntervalsOverflowed);
     }
   }
-  if (!uncoveredIntervals.isEmpty()) {
-    responseContext.put("uncoveredIntervals",uncoveredIntervals);
+ else {
+    for (    Interval interval : query.getIntervals()) {
+      Iterables.addAll(serversLookup,timeline.lookup(interval));
+    }
   }
   final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
   for (  TimelineObjectHolder<String,ServerSelector> holder : filteredServersLookup) {
