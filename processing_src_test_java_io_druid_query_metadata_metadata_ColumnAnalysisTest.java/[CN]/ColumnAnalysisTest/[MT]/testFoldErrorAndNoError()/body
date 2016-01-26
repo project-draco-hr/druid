@@ -1,0 +1,7 @@
+{
+  final ColumnAnalysis analysis1=ColumnAnalysis.error("foo");
+  final ColumnAnalysis analysis2=new ColumnAnalysis("STRING",false,2L,2,null);
+  final ColumnAnalysis expected=new ColumnAnalysis("STRING",false,-1L,null,"error:foo");
+  Assert.assertEquals(expected,analysis1.fold(analysis2));
+  Assert.assertEquals(expected,analysis2.fold(analysis1));
+}
