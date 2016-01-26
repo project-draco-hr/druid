@@ -1,5 +1,5 @@
 {
-  PathSpec pathSpec=new DatasourcePathSpec(jsonMapper,null,new DatasourceIngestionSpec(testDatasource,testDatasourceInterval,null,null,null,null,null),null);
+  PathSpec pathSpec=new DatasourcePathSpec(jsonMapper,null,new DatasourceIngestionSpec(testDatasource,testDatasourceInterval,null,null,null,null,null,false),null);
   HadoopDruidIndexerConfig config=testRunUpdateSegmentListIfDatasourcePathSpecIsUsed(pathSpec,testDatasourceInterval);
   Assert.assertEquals(ImmutableList.of(WindowedDataSegment.of(SEGMENT)),((DatasourcePathSpec)config.getPathSpec()).getSegments());
 }

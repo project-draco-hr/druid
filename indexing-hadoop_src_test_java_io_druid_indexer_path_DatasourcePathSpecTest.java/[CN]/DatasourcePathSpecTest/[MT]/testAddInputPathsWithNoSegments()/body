@@ -1,0 +1,19 @@
+{
+  HadoopDruidIndexerConfig hadoopIndexerConfig=makeHadoopDruidIndexerConfig();
+  ObjectMapper mapper=new DefaultObjectMapper();
+  DatasourcePathSpec pathSpec=new DatasourcePathSpec(mapper,null,ingestionSpec,null);
+  Configuration config=new Configuration();
+  Job job=EasyMock.createNiceMock(Job.class);
+  EasyMock.expect(job.getConfiguration()).andReturn(config).anyTimes();
+  EasyMock.replay(job);
+  try {
+    pathSpec.addInputPaths(hadoopIndexerConfig,job);
+    Assert.fail("should've been ISE");
+  }
+ catch (  ISE ex) {
+  }
+  pathSpec=new DatasourcePathSpec(mapper,null,ingestionSpec.withIgnoreWhenNoSegments(true),null);
+  pathSpec.addInputPaths(hadoopIndexerConfig,job);
+  Assert.assertNull(config.get(DatasourceInputFormat.CONF_INPUT_SEGMENTS));
+  Assert.assertNull(config.get(DatasourceInputFormat.CONF_DRUID_SCHEMA));
+}
