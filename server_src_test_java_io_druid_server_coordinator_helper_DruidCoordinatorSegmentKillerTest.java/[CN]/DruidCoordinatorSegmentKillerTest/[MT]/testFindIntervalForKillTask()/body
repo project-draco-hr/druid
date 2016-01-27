@@ -1,0 +1,11 @@
+{
+  testFindIntervalForKillTask(null,null);
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(),null);
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2014/2015")),Interval.parse("2014/2015"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2014/2015"),Interval.parse("2016/2017")),Interval.parse("2014/2017"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2014/2015"),Interval.parse("2015/2016")),Interval.parse("2014/2016"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2015/2016"),Interval.parse("2014/2015")),Interval.parse("2014/2016"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2015/2017"),Interval.parse("2014/2016")),Interval.parse("2014/2017"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2015/2019"),Interval.parse("2014/2016"),Interval.parse("2018/2020")),Interval.parse("2014/2020"));
+  testFindIntervalForKillTask(ImmutableList.<Interval>of(Interval.parse("2015/2019"),Interval.parse("2014/2016"),Interval.parse("2018/2020"),Interval.parse("2021/2022")),Interval.parse("2014/2022"));
+}
