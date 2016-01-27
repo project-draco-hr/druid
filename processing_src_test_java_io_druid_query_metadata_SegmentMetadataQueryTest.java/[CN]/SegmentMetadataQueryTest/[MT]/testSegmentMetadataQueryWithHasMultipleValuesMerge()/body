@@ -1,9 +1,8 @@
 {
-  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis("merged",null,ImmutableMap.of("placement",new ColumnAnalysis(ValueType.STRING.toString(),false,0,1,null),"placementish",new ColumnAnalysis(ValueType.STRING.toString(),true,0,9,null)),0,expectedSegmentAnalysis.getNumRows() * 2,null);
+  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis("merged",null,ImmutableMap.of("placement",new ColumnAnalysis(ValueType.STRING.toString(),false,0,1,null),"placementish",new ColumnAnalysis(ValueType.STRING.toString(),true,0,9,null)),0,expectedSegmentAnalysis1.getNumRows() + expectedSegmentAnalysis2.getNumRows(),null);
   QueryToolChest toolChest=FACTORY.getToolchest();
-  QueryRunner singleSegmentQueryRunner=toolChest.preMergeQueryDecoration(runner);
   ExecutorService exec=Executors.newCachedThreadPool();
-  QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(FACTORY.mergeRunners(MoreExecutors.sameThreadExecutor(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(singleSegmentQueryRunner,singleSegmentQueryRunner))),toolChest);
+  QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(FACTORY.mergeRunners(MoreExecutors.sameThreadExecutor(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(toolChest.preMergeQueryDecoration(runner1),toolChest.preMergeQueryDecoration(runner2)))),toolChest);
   TestHelper.assertExpectedObjects(ImmutableList.of(mergedSegmentAnalysis),myRunner.run(Druids.newSegmentMetadataQueryBuilder().dataSource("testing").intervals("2013/2014").toInclude(new ListColumnIncluderator(Arrays.asList("placement","placementish"))).analysisTypes(SegmentMetadataQuery.AnalysisType.CARDINALITY).merge(true).build(),Maps.newHashMap()),"failed SegmentMetadata merging query");
   exec.shutdownNow();
 }

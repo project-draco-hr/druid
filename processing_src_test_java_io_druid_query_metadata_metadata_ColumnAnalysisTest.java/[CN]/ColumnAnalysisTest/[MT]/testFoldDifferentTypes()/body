@@ -1,0 +1,7 @@
+{
+  final ColumnAnalysis analysis1=new ColumnAnalysis("hyperUnique",false,1L,1,null);
+  final ColumnAnalysis analysis2=new ColumnAnalysis("COMPLEX",false,2L,2,null);
+  final ColumnAnalysis expected=new ColumnAnalysis("STRING",false,-1L,null,"error:cannot_merge_diff_types");
+  Assert.assertEquals(expected,analysis1.fold(analysis2));
+  Assert.assertEquals(expected,analysis2.fold(analysis1));
+}
