@@ -1,5 +1,13 @@
 {
-  Preconditions.checkArgument(segments != null && !segments.isEmpty(),"no segments provided");
+  if (segments == null || segments.isEmpty()) {
+    if (ingestionSpec.isIgnoreWhenNoSegments()) {
+      logger.warn("No segments found for ingestionSpec [%s]",ingestionSpec);
+      return job;
+    }
+ else {
+      throw new ISE("No segments found for ingestion spec [%s]",ingestionSpec);
+    }
+  }
   logger.info("Found total [%d] segments for [%s]  in interval [%s]",segments.size(),ingestionSpec.getDataSource(),ingestionSpec.getIntervals());
   DatasourceIngestionSpec updatedIngestionSpec=ingestionSpec;
   if (updatedIngestionSpec.getDimensions() == null) {
