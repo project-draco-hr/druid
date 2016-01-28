@@ -1,5 +1,5 @@
 {
-  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),I_0112_0114,descending,new AndDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"spot"),new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"foo"))),QueryRunnerTestHelper.allGran,Lists.<String>newArrayList(),Lists.<String>newArrayList(),new PagingSpec(null,3),null);
+  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),I_0112_0114,descending,new AndDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"spot"),new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"foo"))),QueryRunnerTestHelper.allGran,DefaultDimensionSpec.toSpec(Lists.<String>newArrayList()),Lists.<String>newArrayList(),new PagingSpec(null,3),null);
   Iterable<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,Maps.newHashMap()),Lists.<Result<SelectResultValue>>newArrayList());
   List<Result<SelectResultValue>> expectedResults=Arrays.asList(new Result<SelectResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new SelectResultValue(ImmutableMap.<String,Integer>of(),Lists.<EventHolder>newArrayList())));
   verify(expectedResults,results);
