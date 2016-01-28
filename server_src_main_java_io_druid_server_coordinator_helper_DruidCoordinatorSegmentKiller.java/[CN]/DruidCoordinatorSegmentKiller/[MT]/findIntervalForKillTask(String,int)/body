@@ -1,0 +1,9 @@
+{
+  List<Interval> unusedSegmentIntervals=segmentManager.getUnusedSegmentIntervals(dataSource,new Interval(0,System.currentTimeMillis() - retainDuration),limit);
+  if (unusedSegmentIntervals != null && unusedSegmentIntervals.size() > 0) {
+    return JodaUtils.umbrellaInterval(unusedSegmentIntervals);
+  }
+ else {
+    return null;
+  }
+}

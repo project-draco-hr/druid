@@ -1,0 +1,8 @@
+{
+  MetadataSegmentManager segmentManager=EasyMock.createMock(MetadataSegmentManager.class);
+  EasyMock.expect(segmentManager.getUnusedSegmentIntervals(EasyMock.anyString(),EasyMock.anyObject(Interval.class),EasyMock.anyInt())).andReturn(segmentManagerResult);
+  EasyMock.replay(segmentManager);
+  IndexingServiceClient indexingServiceClient=EasyMock.createMock(IndexingServiceClient.class);
+  DruidCoordinatorSegmentKiller coordinatorSegmentKiller=new DruidCoordinatorSegmentKiller(segmentManager,indexingServiceClient,Duration.parse("PT86400S"),Duration.parse("PT86400S"),1000);
+  Assert.assertEquals(expected,coordinatorSegmentKiller.findIntervalForKillTask("test",10000));
+}
