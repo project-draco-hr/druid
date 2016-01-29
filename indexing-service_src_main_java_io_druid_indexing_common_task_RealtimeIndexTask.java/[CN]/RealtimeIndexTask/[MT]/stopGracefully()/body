@@ -3,7 +3,10 @@
 synchronized (this) {
       if (!gracefullyStopped) {
         gracefullyStopped=true;
-        if (finishingJob) {
+        if (firehose == null) {
+          log.info("stopGracefully: Firehose not started yet, so nothing to stop.");
+        }
+ else         if (finishingJob) {
           log.info("stopGracefully: Interrupting finishJob.");
           runThread.interrupt();
         }
