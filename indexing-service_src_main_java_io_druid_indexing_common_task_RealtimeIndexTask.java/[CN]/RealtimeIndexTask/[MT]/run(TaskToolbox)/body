@@ -65,9 +65,13 @@
     toolbox.getMonitorScheduler().addMonitor(metricsMonitor);
     final FirehoseFactory firehoseFactory=spec.getIOConfig().getFirehoseFactory();
     final boolean firehoseDrainableByClosing=isFirehoseDrainableByClosing(firehoseFactory);
-    firehose=firehoseFactory.connect(spec.getDataSchema().getParser());
-    committerSupplier=Committers.supplierFromFirehose(firehose);
-    while ((!gracefullyStopped || firehoseDrainableByClosing) && firehose.hasMore()) {
+synchronized (this) {
+      if (!gracefullyStopped) {
+        firehose=firehoseFactory.connect(spec.getDataSchema().getParser());
+        committerSupplier=Committers.supplierFromFirehose(firehose);
+      }
+    }
+    while (firehose != null && (!gracefullyStopped || firehoseDrainableByClosing) && firehose.hasMore()) {
       final InputRow inputRow;
       try {
         inputRow=firehose.nextRow();
@@ -99,24 +103,26 @@
  finally {
     if (normalExit) {
       try {
-        log.info("Persisting remaining data.");
-        final Committer committer=committerSupplier.get();
-        final CountDownLatch persistLatch=new CountDownLatch(1);
-        plumber.persist(new Committer(){
-          @Override public Object getMetadata(){
-            return committer.getMetadata();
-          }
-          @Override public void run(){
-            try {
-              committer.run();
+        if (firehose != null) {
+          log.info("Persisting remaining data.");
+          final Committer committer=committerSupplier.get();
+          final CountDownLatch persistLatch=new CountDownLatch(1);
+          plumber.persist(new Committer(){
+            @Override public Object getMetadata(){
+              return committer.getMetadata();
             }
+            @Override public void run(){
+              try {
+                committer.run();
+              }
   finally {
-              persistLatch.countDown();
+                persistLatch.countDown();
+              }
             }
           }
-        }
 );
-        persistLatch.await();
+          persistLatch.await();
+        }
         if (gracefullyStopped) {
           log.info("Gracefully stopping.");
         }
@@ -143,7 +149,9 @@ catch (      Exception e) {
         throw e;
       }
  finally {
-        CloseQuietly.close(firehose);
+        if (firehose != null) {
+          CloseQuietly.close(firehose);
+        }
         toolbox.getMonitorScheduler().removeMonitor(metricsMonitor);
       }
     }
