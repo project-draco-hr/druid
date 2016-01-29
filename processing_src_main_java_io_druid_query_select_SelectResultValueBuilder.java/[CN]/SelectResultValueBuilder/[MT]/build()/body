@@ -6,5 +6,8 @@
     pagingIdentifiers.put(event.getSegmentId(),event.getOffset());
     values.add(event);
   }
+  if (pagingIdentifiers.isEmpty()) {
+    pagingIdentifiers.putAll(pagingSpec.getPagingIdentifiers());
+  }
   return new Result<SelectResultValue>(timestamp,new SelectResultValue(pagingIdentifiers,values));
 }

@@ -19,7 +19,7 @@
   }
   return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
     @Override public Result<SelectResultValue> apply(    Cursor cursor){
-      final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec().getThreshold(),query.isDescending());
+      final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec(),query.isDescending());
       final LongColumnSelector timestampColumnSelector=cursor.makeLongColumnSelector(Column.TIME_COLUMN_NAME);
       final Map<String,DimensionSelector> dimSelectors=Maps.newHashMap();
       for (      String dim : dims) {
@@ -31,17 +31,9 @@
         final ObjectColumnSelector metricSelector=cursor.makeObjectColumnSelector(metric);
         metSelectors.put(metric,metricSelector);
       }
-      int startOffset;
-      if (query.getPagingSpec().getPagingIdentifiers() == null) {
-        startOffset=0;
-      }
- else {
-        Integer offset=query.getPagingSpec().getPagingIdentifiers().get(segment.getIdentifier());
-        startOffset=(offset == null) ? 0 : offset;
-      }
-      cursor.advanceTo(startOffset);
-      int offset=0;
-      while (!cursor.isDone() && offset < query.getPagingSpec().getThreshold()) {
+      final PagingOffset offset=query.getPagingOffset(segment.getIdentifier());
+      cursor.advanceTo(offset.startDelta());
+      for (; !cursor.isDone() && offset.hasNext(); cursor.advance(), offset.next()) {
         final Map<String,Object> theEvent=Maps.newLinkedHashMap();
         theEvent.put(EventHolder.timestampKey,new DateTime(timestampColumnSelector.get()));
         for (        Map.Entry<String,DimensionSelector> dimSelector : dimSelectors.entrySet()) {
@@ -75,9 +67,7 @@
             theEvent.put(metric,selector.get());
           }
         }
-        builder.addEntry(new EventHolder(segment.getIdentifier(),startOffset + offset,theEvent));
-        cursor.advance();
-        offset++;
+        builder.addEntry(new EventHolder(segment.getIdentifier(),offset.current(),theEvent));
       }
       return builder.build();
     }

@@ -1,0 +1,10 @@
+{
+  super(dataSource,querySegmentSpec,descending,context);
+  this.dimFilter=dimFilter;
+  this.granularity=granularity;
+  this.dimensions=dimensions;
+  this.metrics=metrics;
+  this.pagingSpec=pagingSpec;
+  Preconditions.checkNotNull(pagingSpec,"must specify a pagingSpec");
+  Preconditions.checkArgument(checkPagingSpec(pagingSpec,descending),"invalid pagingSpec");
+}
