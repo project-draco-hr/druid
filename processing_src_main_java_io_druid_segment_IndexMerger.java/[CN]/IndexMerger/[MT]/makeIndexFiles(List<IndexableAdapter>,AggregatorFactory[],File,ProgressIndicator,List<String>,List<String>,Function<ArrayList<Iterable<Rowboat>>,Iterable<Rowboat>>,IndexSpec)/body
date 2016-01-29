@@ -69,115 +69,67 @@
   Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
   ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
   final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  for (  IndexableAdapter index : indexes) {
+  for (int i=0; i < indexes.size(); ++i) {
     dimConversions.add(Maps.<String,IntBuffer>newHashMap());
   }
   for (  String dimension : mergedDimensions) {
     final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
     writer.open();
-    List<Indexed<String>> dimValueLookups=Lists.newArrayListWithCapacity(indexes.size() + 1);
-    DimValueConverter[] converters=new DimValueConverter[indexes.size()];
+    boolean dimHasNull=false;
     boolean dimHasValues=false;
     boolean dimAbsentFromSomeIndex=false;
-    boolean[] dimHasValuesByIndex=new boolean[indexes.size()];
+    int numMergeIndex=0;
+    Indexed<String> dimValueLookup=null;
+    Indexed<String>[] dimValueLookups=new Indexed[indexes.size() + 1];
     for (int i=0; i < indexes.size(); i++) {
       Indexed<String> dimValues=indexes.get(i).getDimValueLookup(dimension);
       if (!isNullColumn(dimValues)) {
         dimHasValues=true;
-        dimHasValuesByIndex[i]=true;
-        dimValueLookups.add(dimValues);
-        converters[i]=new DimValueConverter(dimValues);
+        dimHasNull|=dimValues.indexOf(null) >= 0;
+        dimValueLookups[i]=dimValueLookup=dimValues;
+        numMergeIndex++;
       }
  else {
         dimAbsentFromSomeIndex=true;
-        dimHasValuesByIndex[i]=false;
       }
     }
     boolean convertMissingDims=dimHasValues && dimAbsentFromSomeIndex;
     convertMissingDimsFlags.add(convertMissingDims);
-    if (convertMissingDims) {
-      dimValueLookups.add(EMPTY_STR_DIM_VAL);
+    if (convertMissingDims && !dimHasNull) {
+      dimValueLookups[indexes.size()]=dimValueLookup=EMPTY_STR_DIM_VAL;
+      numMergeIndex++;
+    }
+    int cardinality=0;
+    if (numMergeIndex > 1) {
+      DictionaryMergeIterator iterator=new DictionaryMergeIterator(dimValueLookups,true);
+      while (iterator.hasNext()) {
+        writer.write(iterator.next());
+      }
       for (int i=0; i < indexes.size(); i++) {
-        if (!dimHasValuesByIndex[i]) {
-          converters[i]=new DimValueConverter(EMPTY_STR_DIM_VAL);
+        if (dimValueLookups[i] != null && iterator.needConversion(i)) {
+          dimConversions.get(i).put(dimension,iterator.conversions[i]);
         }
       }
+      cardinality=iterator.counter;
     }
-    Iterable<String> dimensionValues=CombiningIterable.createSplatted(Iterables.transform(dimValueLookups,new Function<Indexed<String>,Iterable<String>>(){
-      @Override public Iterable<String> apply(      @Nullable Indexed<String> indexed){
-        return Iterables.transform(indexed,new Function<String,String>(){
-          @Override public String apply(          @Nullable String input){
-            return (input == null) ? "" : input;
-          }
-        }
-);
+ else     if (numMergeIndex == 1) {
+      for (      String value : dimValueLookup) {
+        writer.write(value);
       }
+      cardinality=dimValueLookup.size();
     }
-),Ordering.<String>natural().nullsFirst());
-    int count=0;
-    for (    String value : dimensionValues) {
-      value=value == null ? "" : value;
-      writer.write(value);
-      for (int i=0; i < indexes.size(); i++) {
-        DimValueConverter converter=converters[i];
-        if (converter != null) {
-          converter.convert(value,count);
-        }
-      }
-      ++count;
-    }
-    dimensionCardinalities.put(dimension,count);
+    dimensionCardinalities.put(dimension,cardinality);
     FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir,dimension),true);
     dimOuts.add(dimOut);
     writer.close();
     serializerUtils.writeString(dimOut,dimension);
     ByteStreams.copy(writer.combineStreams(),dimOut);
-    for (int i=0; i < indexes.size(); ++i) {
-      DimValueConverter converter=converters[i];
-      if (converter != null) {
-        dimConversions.get(i).put(dimension,converters[i].getConversionBuffer());
-      }
-    }
     ioPeon.cleanup();
   }
   log.info("outDir[%s] completed dim conversions in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
   progress.progress();
   startTime=System.currentTimeMillis();
-  ArrayList<Iterable<Rowboat>> boats=Lists.newArrayListWithCapacity(indexes.size());
-  for (int i=0; i < indexes.size(); ++i) {
-    final IndexableAdapter adapter=indexes.get(i);
-    final int[] dimLookup=new int[mergedDimensions.size()];
-    int count=0;
-    for (    String dim : adapter.getDimensionNames()) {
-      dimLookup[count]=mergedDimensions.indexOf(dim);
-      count++;
-    }
-    final int[] metricLookup=new int[mergedMetrics.size()];
-    count=0;
-    for (    String metric : adapter.getMetricNames()) {
-      metricLookup[count]=mergedMetrics.indexOf(metric);
-      count++;
-    }
-    boats.add(new MMappedIndexRowIterable(Iterables.transform(indexes.get(i).getRows(),new Function<Rowboat,Rowboat>(){
-      @Override public Rowboat apply(      @Nullable Rowboat input){
-        int[][] newDims=new int[mergedDimensions.size()][];
-        int j=0;
-        for (        int[] dim : input.getDims()) {
-          newDims[dimLookup[j]]=dim;
-          j++;
-        }
-        Object[] newMetrics=new Object[mergedMetrics.size()];
-        j=0;
-        for (        Object met : input.getMetrics()) {
-          newMetrics[metricLookup[j]]=met;
-          j++;
-        }
-        return new Rowboat(input.getTimestamp(),newDims,newMetrics,input.getRowNum());
-      }
-    }
-),mergedDimensions,dimConversions.get(i),i,convertMissingDimsFlags));
-  }
-  Iterable<Rowboat> theRows=rowMergerFn.apply(boats);
+  Iterable<Rowboat> theRows=makeRowIterable(indexes,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
   CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
   timeWriter.open();
   ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
@@ -292,22 +244,13 @@ spatialWriter=new ByteBufferWriter<ImmutableRTree>(spatialIoPeon,dimension,new I
 spatialWriter.open();
 tree=new RTree(2,new LinearGutmanSplitStrategy(0,50,bitmapFactory),bitmapFactory);
 }
-DictIdSeeker[] dictIdSeeker=new DictIdSeeker[indexes.size()];
-for (int j=0; j < indexes.size(); j++) {
-IntBuffer dimConversion=dimConversions.get(j).get(dimension);
-if (dimConversion != null) {
-dictIdSeeker[j]=new DictIdSeeker((IntBuffer)dimConversion.asReadOnlyBuffer().rewind());
-}
- else {
-dictIdSeeker[j]=new DictIdSeeker(null);
-}
-}
+IndexSeeker[] dictIdSeeker=toIndexSeekers(indexes,dimConversions,dimension);
 for (int dictId=0; dictId < dimVals.size(); dictId++) {
 progress.progress();
 List<Iterable<Integer>> convertedInverteds=Lists.newArrayListWithCapacity(indexes.size());
 for (int j=0; j < indexes.size(); ++j) {
 int seekedDictId=dictIdSeeker[j].seek(dictId);
-if (seekedDictId != DictIdSeeker.NOT_EXIST) {
+if (seekedDictId != IndexSeeker.NOT_EXIST) {
 convertedInverteds.add(new ConvertingIndexedInts(indexes.get(j).getBitmapIndex(dimension,seekedDictId),rowNumConversions.get(j)));
 }
 }

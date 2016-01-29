@@ -1,0 +1,30 @@
+{
+  pQueue=new PriorityQueue<>(dimValueLookups.length,new Comparator<Pair<Integer,PeekingIterator<String>>>(){
+    @Override public int compare(    Pair<Integer,PeekingIterator<String>> lhs,    Pair<Integer,PeekingIterator<String>> rhs){
+      return lhs.rhs.peek().compareTo(rhs.rhs.peek());
+    }
+  }
+);
+  conversions=new IntBuffer[dimValueLookups.length];
+  for (int i=0; i < conversions.length; i++) {
+    if (dimValueLookups[i] == null) {
+      continue;
+    }
+    Indexed<String> indexed=dimValueLookups[i];
+    if (useDirect) {
+      conversions[i]=ByteBuffer.allocateDirect(indexed.size() * Ints.BYTES).asIntBuffer();
+    }
+ else {
+      conversions[i]=IntBuffer.allocate(indexed.size());
+    }
+    final PeekingIterator<String> iter=Iterators.peekingIterator(Iterators.transform(indexed.iterator(),new Function<String,String>(){
+      @Override public String apply(      @Nullable String input){
+        return Strings.nullToEmpty(input);
+      }
+    }
+));
+    if (iter.hasNext()) {
+      pQueue.add(Pair.of(i,iter));
+    }
+  }
+}

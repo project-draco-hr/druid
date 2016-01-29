@@ -1,0 +1,12 @@
+{
+  Pair<Integer,PeekingIterator<String>> smallest=pQueue.remove();
+  if (smallest == null) {
+    throw new NoSuchElementException();
+  }
+  final String value=writeTranslate(smallest,counter);
+  while (!pQueue.isEmpty() && value.equals(pQueue.peek().rhs.peek())) {
+    writeTranslate(pQueue.remove(),counter);
+  }
+  counter++;
+  return value;
+}

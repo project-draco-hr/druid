@@ -2,7 +2,7 @@
   progress.start();
   progress.progress();
   List<Metadata> metadataList=Lists.transform(adapters,new Function<IndexableAdapter,Metadata>(){
-    @Nullable @Override public Metadata apply(    IndexableAdapter input){
+    @Override public Metadata apply(    IndexableAdapter input){
       return input.getMetadata();
     }
   }
@@ -42,7 +42,7 @@
   writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions,convertMissingDimsFlags,dimHasNullFlags);
   log.info("Completed dim conversions in %,d millis.",System.currentTimeMillis() - startTime);
   progress.progress();
-  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,dimCardinalities,convertMissingDimsFlags,rowMergerFn);
+  final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
   final LongColumnSerializer timeWriter=setupTimeWriter(ioPeon);
   final ArrayList<IndexedIntsWriter> dimWriters=setupDimensionWriters(ioPeon,mergedDimensions,dimCapabilities,dimCardinalities,indexSpec);
   final ArrayList<GenericColumnSerializer> metWriters=setupMetricsWriters(ioPeon,mergedMetrics,metricsValueTypes,metricTypeNames,indexSpec);

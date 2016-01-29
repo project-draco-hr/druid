@@ -11,24 +11,19 @@
       int[][] newDims=new int[convertedDims.size()][];
       for (int i=0; i < convertedDims.size(); ++i) {
         IntBuffer converter=converterArray[i];
-        String dimName=convertedDims.get(i);
-        if (converter == null) {
-          continue;
-        }
         if (i >= dims.length) {
           continue;
         }
-        if (dims[i] == null) {
-          if (convertMissingDimsFlags.get(i)) {
-            newDims[i]=EMPTY_STR_DIM;
-          }
+        if (dims[i] == null && convertMissingDimsFlags.get(i)) {
+          newDims[i]=EMPTY_STR_DIM;
+          continue;
+        }
+        if (converter == null) {
+          newDims[i]=dims[i];
           continue;
         }
         newDims[i]=new int[dims[i].length];
         for (int j=0; j < dims[i].length; ++j) {
-          if (!converter.hasRemaining()) {
-            log.error("Converter mismatch! wtfbbq!");
-          }
           newDims[i][j]=converter.get(dims[i][j]);
         }
       }
