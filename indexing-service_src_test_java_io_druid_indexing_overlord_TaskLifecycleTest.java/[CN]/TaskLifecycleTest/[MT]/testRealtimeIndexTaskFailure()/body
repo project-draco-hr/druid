@@ -1,5 +1,5 @@
 {
-  setUpTaskQueue(new DataSegmentPusher(){
+  dataSegmentPusher=new DataSegmentPusher(){
     @Override public String getPathForHadoop(    String s){
       throw new UnsupportedOperationException();
     }
@@ -7,16 +7,19 @@
       throw new RuntimeException("FAILURE");
     }
   }
-);
+;
+  tb=setUpTaskToolboxFactory(dataSegmentPusher,handoffNotifierFactory,mdc);
+  taskRunner=setUpThreadPoolTaskRunner(tb);
+  taskQueue=setUpTaskQueue(taskStorage,taskRunner);
   monitorScheduler.addMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().atLeastOnce();
   monitorScheduler.removeMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
-  RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
+  RealtimeIndexTask realtimeIndexTask=newRealtimeIndexTask();
   final String taskId=realtimeIndexTask.getId();
-  tq.start();
-  tq.add(realtimeIndexTask);
+  taskQueue.start();
+  taskQueue.add(realtimeIndexTask);
   while (tsqa.getStatus(taskId).get().isRunnable()) {
     Thread.sleep(10);
   }

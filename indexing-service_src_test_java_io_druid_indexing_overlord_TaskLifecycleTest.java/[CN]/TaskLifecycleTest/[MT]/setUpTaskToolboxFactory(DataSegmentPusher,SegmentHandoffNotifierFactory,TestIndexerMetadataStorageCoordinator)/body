@@ -1,10 +1,13 @@
 {
-  final TaskConfig taskConfig=new TaskConfig(tmpDir.toString(),null,null,50000,null,false,null,null);
-  tsqa=new TaskStorageQueryAdapter(ts);
-  tl=new TaskLockbox(ts);
-  mdc=newMockMDC();
-  tac=new LocalTaskActionClientFactory(ts,new TaskActionToolbox(tl,mdc,newMockEmitter()));
-  tb=new TaskToolboxFactory(taskConfig,tac,newMockEmitter(),dataSegmentPusher,new LocalDataSegmentKiller(),new DataSegmentMover(){
+  Preconditions.checkNotNull(queryRunnerFactoryConglomerate);
+  Preconditions.checkNotNull(monitorScheduler);
+  Preconditions.checkNotNull(taskStorage);
+  Preconditions.checkNotNull(emitter);
+  taskLockbox=new TaskLockbox(taskStorage);
+  tac=new LocalTaskActionClientFactory(taskStorage,new TaskActionToolbox(taskLockbox,mdc,emitter));
+  File tmpDir=temporaryFolder.newFolder();
+  taskConfig=new TaskConfig(tmpDir.toString(),null,null,50000,null,false,null,null);
+  return new TaskToolboxFactory(taskConfig,tac,emitter,dataSegmentPusher,new LocalDataSegmentKiller(),new DataSegmentMover(){
     @Override public DataSegment move(    DataSegment dataSegment,    Map<String,Object> targetLoadSpec) throws SegmentLoadingException {
       return dataSegment;
     }
@@ -37,6 +40,4 @@
     }
   }
 ,new DefaultObjectMapper())),MAPPER,INDEX_MERGER,INDEX_IO,MapCache.create(0),FireDepartmentTest.NO_CACHE_CONFIG,INDEX_MERGER_V9);
-  tr=new ThreadPoolTaskRunner(tb,taskConfig,emitter);
-  tq=new TaskQueue(tqc,ts,tr,tac,tl,emitter);
 }

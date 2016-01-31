@@ -1,13 +1,14 @@
 {
+  publishCountDown=new CountDownLatch(1);
   monitorScheduler.addMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().atLeastOnce();
   monitorScheduler.removeMonitor(EasyMock.anyObject(Monitor.class));
   EasyMock.expectLastCall().anyTimes();
   EasyMock.replay(monitorScheduler,queryRunnerFactoryConglomerate);
-  RealtimeIndexTask realtimeIndexTask=giveMeARealtimeIndexTask();
+  RealtimeIndexTask realtimeIndexTask=newRealtimeIndexTask();
   final String taskId=realtimeIndexTask.getId();
-  tq.start();
-  tq.add(realtimeIndexTask);
+  taskQueue.start();
+  taskQueue.add(realtimeIndexTask);
   publishCountDown.await();
   Assert.assertEquals(1,handOffCallbacks.size());
   Pair<Executor,Runnable> executorRunnablePair=Iterables.getOnlyElement(handOffCallbacks.values());

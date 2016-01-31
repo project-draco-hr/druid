@@ -1,2 +1,18 @@
 {
+  queryRunnerFactoryConglomerate=EasyMock.createStrictMock(QueryRunnerFactoryConglomerate.class);
+  monitorScheduler=EasyMock.createStrictMock(MonitorScheduler.class);
+  announcedSinks=0;
+  pushedSegments=0;
+  indexSpec=new IndexSpec();
+  emitter=newMockEmitter();
+  EmittingLogger.registerEmitter(emitter);
+  mapper=TEST_UTILS.getTestObjectMapper();
+  handOffCallbacks=Maps.newConcurrentMap();
+  taskStorage=setUpTaskStorage();
+  handoffNotifierFactory=setUpSegmentHandOffNotifierFactory();
+  dataSegmentPusher=setUpDataSegmentPusher();
+  mdc=setUpMetadataStorageCoordinator();
+  tb=setUpTaskToolboxFactory(dataSegmentPusher,handoffNotifierFactory,mdc);
+  taskRunner=setUpThreadPoolTaskRunner(tb);
+  taskQueue=setUpTaskQueue(taskStorage,taskRunner);
 }
