@@ -1,0 +1,22 @@
+{
+  Preconditions.checkNotNull(handOffCallbacks);
+  return new SegmentHandoffNotifierFactory(){
+    @Override public SegmentHandoffNotifier createSegmentHandoffNotifier(    String dataSource){
+      return new SegmentHandoffNotifier(){
+        @Override public boolean registerSegmentHandoffCallback(        SegmentDescriptor descriptor,        Executor exec,        Runnable handOffRunnable){
+          handOffCallbacks.put(descriptor,new Pair<>(exec,handOffRunnable));
+          return true;
+        }
+        @Override public void start(){
+        }
+        @Override public void stop(){
+        }
+        Map<SegmentDescriptor,Pair<Executor,Runnable>> getHandOffCallbacks(){
+          return handOffCallbacks;
+        }
+      }
+;
+    }
+  }
+;
+}

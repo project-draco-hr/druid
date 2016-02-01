@@ -2,9 +2,13 @@
   final Task dummyTask=new DefaultObjectMapper().readValue("{\"type\":\"noop\", \"isReadyResult\":\"exception\"}\"",Task.class);
   final long startTime=System.currentTimeMillis();
   Preconditions.checkArgument(!task.getId().equals(dummyTask.getId()));
-  tq.start();
-  tq.add(dummyTask);
-  tq.add(task);
+synchronized (this) {
+    if (!taskQueue.isActive()) {
+      taskQueue.start();
+    }
+  }
+  taskQueue.add(dummyTask);
+  taskQueue.add(task);
   TaskStatus retVal=null;
   for (  final String taskId : ImmutableList.of(dummyTask.getId(),task.getId())) {
     try {
