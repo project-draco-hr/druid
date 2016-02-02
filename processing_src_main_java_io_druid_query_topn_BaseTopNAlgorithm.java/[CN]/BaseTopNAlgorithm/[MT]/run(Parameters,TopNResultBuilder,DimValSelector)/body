@@ -3,12 +3,15 @@
   final int cardinality=params.getCardinality();
   int numProcessed=0;
   while (numProcessed < cardinality) {
-    final int numToProcess=Math.min(params.getNumValuesPerPass(),cardinality - numProcessed);
+    final int numToProcess;
+    int maxNumToProcess=Math.min(params.getNumValuesPerPass(),cardinality - numProcessed);
     DimValSelector theDimValSelector;
     if (!hasDimValSelector) {
+      numToProcess=maxNumToProcess;
       theDimValSelector=makeDimValSelector(params,numProcessed,numToProcess);
     }
  else {
+      numToProcess=computeNewLength(dimValSelector,numProcessed,maxNumToProcess);
       theDimValSelector=updateDimValSelector(dimValSelector,numProcessed,numToProcess);
     }
     DimValAggregateStore aggregatesStore=makeDimValAggregateStore(params);
