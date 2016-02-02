@@ -11,35 +11,36 @@
   }
   final int aggSize=theAggregators.length;
   final int aggExtra=aggSize % AGG_UNROLL_COUNT;
+  final AtomicInteger currentPosition=new AtomicInteger(0);
   while (!cursor.isDone()) {
     final IndexedInts dimValues=dimSelector.getRow();
     final int dimSize=dimValues.size();
     final int dimExtra=dimSize % AGG_UNROLL_COUNT;
 switch (dimExtra) {
 case 7:
-      aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(6));
+      aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(6),currentPosition);
 case 6:
-    aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(5));
+    aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(5),currentPosition);
 case 5:
-  aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(4));
+  aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(4),currentPosition);
 case 4:
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(3));
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(3),currentPosition);
 case 3:
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(2));
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(2),currentPosition);
 case 2:
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(1));
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(1),currentPosition);
 case 1:
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(0));
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(0),currentPosition);
 }
 for (int i=dimExtra; i < dimSize; i+=AGG_UNROLL_COUNT) {
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 1));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 2));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 3));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 4));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 5));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 6));
-aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 7));
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 1),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 2),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 3),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 4),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 5),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 6),currentPosition);
+aggregateDimValue(positions,theAggregators,numProcessed,resultsBuf,numBytesPerRecord,aggregatorOffsets,aggSize,aggExtra,dimValues.get(i + 7),currentPosition);
 }
 cursor.advance();
 }

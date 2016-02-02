@@ -3,7 +3,7 @@
     return;
   }
   if (INIT_POSITION_VALUE == positions[dimIndex]) {
-    positions[dimIndex]=(dimIndex - numProcessed) * numBytesPerRecord;
+    positions[dimIndex]=currentPosition.getAndIncrement() * numBytesPerRecord;
     final int pos=positions[dimIndex];
     for (int j=0; j < aggSize; ++j) {
       theAggregators[j].init(resultsBuf,pos + aggregatorOffsets[j]);
