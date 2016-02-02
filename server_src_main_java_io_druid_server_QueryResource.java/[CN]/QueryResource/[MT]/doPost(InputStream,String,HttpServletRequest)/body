@@ -38,7 +38,7 @@
 );
     try {
       final Query theQuery=query;
-      return Response.ok(new StreamingOutput(){
+      Response.ResponseBuilder builder=Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
           CountingOutputStream os=new CountingOutputStream(outputStream);
           jsonWriter.writeValue(os,yielder);
@@ -50,7 +50,13 @@
           requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"query/bytes",os.getCount(),"success",true))));
         }
       }
-,contentType).header("X-Druid-Query-Id",queryId).header("X-Druid-Response-Context",jsonMapper.writeValueAsString(responseContext)).build();
+,contentType).header("X-Druid-Query-Id",queryId);
+      String responseCtxString=jsonMapper.writeValueAsString(responseContext);
+      if (responseCtxString.length() > RESPONSE_CTX_HEADER_LEN_LIMIT) {
+        log.warn("Response Context truncated for id [%s] . Full context is [%s].",queryId,responseCtxString);
+        responseCtxString=responseCtxString.substring(0,RESPONSE_CTX_HEADER_LEN_LIMIT);
+      }
+      return builder.header("X-Druid-Response-Context",responseCtxString).build();
     }
  catch (    Exception e) {
       yielder.close();
