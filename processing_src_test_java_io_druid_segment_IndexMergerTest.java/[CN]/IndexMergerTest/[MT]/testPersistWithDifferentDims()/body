@@ -8,12 +8,8 @@
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
   Assert.assertEquals(3,index.getColumnNames().size());
   assertDimCompression(index,indexSpec.getDimensionCompressionStrategy());
-  final IndexableAdapter adapter=new QueryableIndexIndexableAdapter(index);
-  Iterable<Rowboat> boats=adapter.getRows();
-  List<Rowboat> boatList=new ArrayList<>();
-  for (  Rowboat boat : boats) {
-    boatList.add(boat);
-  }
+  final QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(index);
+  final List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
   Assert.assertEquals(2,boatList.size());
   Assert.assertArrayEquals(new int[][]{{0},{1}},boatList.get(0).getDims());
   Assert.assertArrayEquals(new int[][]{{1},{0}},boatList.get(1).getDims());

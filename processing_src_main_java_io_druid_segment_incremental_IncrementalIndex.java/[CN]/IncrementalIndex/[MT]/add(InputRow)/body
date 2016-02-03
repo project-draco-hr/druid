@@ -1,57 +1,6 @@
 {
-  row=formatRow(row);
-  if (row.getTimestampFromEpoch() < minTimestamp) {
-    throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
-  }
-  final List<String> rowDimensions=row.getDimensions();
-  String[][] dims;
-  List<String[]> overflow=null;
-synchronized (dimensionDescs) {
-    dims=new String[dimensionDescs.size()][];
-    for (    String dimension : rowDimensions) {
-      List<String> dimensionValues=row.getDimension(dimension);
-      ColumnCapabilitiesImpl capabilities;
-      DimensionDesc desc=dimensionDescs.get(dimension);
-      if (desc != null) {
-        capabilities=desc.getCapabilities();
-      }
- else {
-        capabilities=columnCapabilities.get(dimension);
-        if (capabilities == null) {
-          capabilities=new ColumnCapabilitiesImpl();
-          capabilities.setType(ValueType.STRING);
-          columnCapabilities.put(dimension,capabilities);
-        }
-      }
-      if (!capabilities.hasMultipleValues() && dimensionValues.size() > 1) {
-        capabilities.setHasMultipleValues(true);
-      }
-      if (desc == null) {
-        desc=new DimensionDesc(dimensionDescs.size(),dimension,newDimDim(dimension),capabilities);
-        dimensionDescs.put(dimension,desc);
-        if (overflow == null) {
-          overflow=Lists.newArrayList();
-        }
-        overflow.add(getDimVals(desc.getValues(),dimensionValues));
-      }
- else       if (desc.getIndex() > dims.length || dims[desc.getIndex()] != null) {
-        throw new ISE("Dimension[%s] occurred more than once in InputRow",dimension);
-      }
- else {
-        dims[desc.getIndex()]=getDimVals(desc.getValues(),dimensionValues);
-      }
-    }
-  }
-  if (overflow != null) {
-    String[][] newDims=new String[dims.length + overflow.size()][];
-    System.arraycopy(dims,0,newDims,0,dims.length);
-    for (int i=0; i < overflow.size(); ++i) {
-      newDims[dims.length + i]=overflow.get(i);
-    }
-    dims=newDims;
-  }
-  final TimeAndDims key=new TimeAndDims(Math.max(gran.truncate(row.getTimestampFromEpoch()),minTimestamp),dims);
-  final Integer rv=addToFacts(metrics,deserializeComplexMetrics,row,numEntries,key,in,rowSupplier);
+  TimeAndDims key=toTimeAndDims(row);
+  final int rv=addToFacts(metrics,deserializeComplexMetrics,row,numEntries,key,in,rowSupplier);
   updateMaxIngestedTime(row.getTimestamp());
   return rv;
 }

@@ -33,7 +33,7 @@
         int numAdvanced=-1;
         boolean done;
 {
-          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new String[][]{}),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new String[][]{}));
+          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new int[][]{}),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new int[][]{}));
           if (descending) {
             cursorMap=cursorMap.descendingMap();
           }
@@ -102,41 +102,33 @@
           if (dimension.equals(Column.TIME_COLUMN_NAME)) {
             return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn,descending);
           }
-          final IncrementalIndex.DimDim dimValLookup=index.getDimensionValues(dimension);
-          if (dimValLookup == null) {
+          final IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
+          if (dimensionDesc == null) {
             return NULL_DIMENSION_SELECTOR;
           }
+          final int dimIndex=dimensionDesc.getIndex();
+          final IncrementalIndex.DimDim dimValLookup=dimensionDesc.getValues();
           final int maxId=dimValLookup.size();
-          final int dimIndex=index.getDimensionIndex(dimension);
           return new DimensionSelector(){
             @Override public IndexedInts getRow(){
-              final ArrayList<Integer> vals=Lists.newArrayList();
-              if (dimIndex < currEntry.getKey().getDims().length) {
-                final String[] dimVals=currEntry.getKey().getDims()[dimIndex];
-                if (dimVals != null) {
-                  for (                  String dimVal : dimVals) {
-                    int id=dimValLookup.getId(dimVal);
-                    if (id < maxId) {
-                      vals.add(id);
-                    }
-                  }
-                }
+              final int[][] dims=currEntry.getKey().getDims();
+              int[] indices=dimIndex < dims.length ? dims[dimIndex] : null;
+              if (indices == null) {
+                indices=new int[0];
               }
-              if (vals.isEmpty() && dimValLookup.contains(null)) {
-                int id=dimValLookup.getId(null);
-                if (id < maxId) {
-                  vals.add(id);
-                }
+              if (indices.length == 0 && dimValLookup.contains(null)) {
+                indices=new int[]{dimValLookup.getId(null)};
               }
+              final int[] vals=indices;
               return new IndexedInts(){
                 @Override public int size(){
-                  return vals.size();
+                  return vals.length;
                 }
                 @Override public int get(                int index){
-                  return vals.get(index);
+                  return vals[index];
                 }
                 @Override public Iterator<Integer> iterator(){
-                  return vals.iterator();
+                  return Ints.asList(vals).iterator();
                 }
                 @Override public void fill(                int index,                int[] toFill){
                   throw new UnsupportedOperationException("fill not supported");
@@ -232,9 +224,10 @@
             }
 ;
           }
-          final Integer dimensionIndexInt=index.getDimensionIndex(column);
-          if (dimensionIndexInt != null) {
-            final int dimensionIndex=dimensionIndexInt;
+          IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(column);
+          if (dimensionDesc != null) {
+            final int dimensionIndex=dimensionDesc.getIndex();
+            final IncrementalIndex.DimDim dimDim=dimensionDesc.getValues();
             return new ObjectColumnSelector<Object>(){
               @Override public Class classOfObject(){
                 return Object.class;
@@ -244,16 +237,20 @@
                 if (key == null) {
                   return null;
                 }
-                String[][] dims=key.getDims();
+                int[][] dims=key.getDims();
                 if (dimensionIndex >= dims.length) {
                   return null;
                 }
-                final String[] dimVals=dims[dimensionIndex];
-                if (dimVals == null || dimVals.length == 0) {
+                final int[] dimIdx=dims[dimensionIndex];
+                if (dimIdx == null || dimIdx.length == 0) {
                   return null;
                 }
-                if (dimVals.length == 1) {
-                  return dimVals[0];
+                if (dimIdx.length == 1) {
+                  return dimDim.getValue(dimIdx[0]);
+                }
+                String[] dimVals=new String[dimIdx.length];
+                for (int i=0; i < dimIdx.length; i++) {
+                  dimVals[i]=dimDim.getValue(dimIdx[i]);
                 }
                 return dimVals;
               }
