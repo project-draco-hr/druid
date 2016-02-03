@@ -1,6 +1,6 @@
 {
   long timestamp=System.currentTimeMillis();
-  IncrementalIndex index=indexCreator.createIndex(defaultAggregatorFactories);
+  IncrementalIndex index=closer.closeLater(indexCreator.createIndex(defaultAggregatorFactories));
   populateIndex(timestamp,index);
   Assert.assertEquals(Arrays.asList("dim1","dim2"),index.getDimensionNames());
   Assert.assertEquals(2,index.size());
@@ -13,5 +13,4 @@
   Assert.assertEquals(timestamp,row.getTimestampFromEpoch());
   Assert.assertEquals(Arrays.asList("3"),row.getDimension("dim1"));
   Assert.assertEquals(Arrays.asList("4"),row.getDimension("dim2"));
-  index.close();
 }

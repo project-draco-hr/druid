@@ -1,3 +1,8 @@
 {
-  return IncrementalIndexTest.createIndex(factories);
+  return new OffheapIncrementalIndex(0L,QueryGranularity.NONE,factories,1000000,new StupidPool<ByteBuffer>(new Supplier<ByteBuffer>(){
+    @Override public ByteBuffer get(){
+      return ByteBuffer.allocate(256 * 1024);
+    }
+  }
+));
 }

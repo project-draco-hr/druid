@@ -1,0 +1,26 @@
+{
+  super.close();
+  facts.clear();
+  indexAndOffsets.clear();
+  if (selectors != null) {
+    selectors.clear();
+  }
+  RuntimeException ex=null;
+  for (  ResourceHolder<ByteBuffer> buffHolder : aggBuffers) {
+    try {
+      buffHolder.close();
+    }
+ catch (    IOException ioe) {
+      if (ex == null) {
+        ex=Throwables.propagate(ioe);
+      }
+ else {
+        ex.addSuppressed(ioe);
+      }
+    }
+  }
+  aggBuffers.clear();
+  if (ex != null) {
+    throw ex;
+  }
+}
