@@ -6,7 +6,7 @@
   metadataRuleManager.stop();
   EasyMock.expectLastCall().once();
   EasyMock.replay(metadataRuleManager);
-  DruidDataSource[] druidDataSources={new DruidDataSource(dataSource,new HashMap())};
+  DruidDataSource[] druidDataSources={new DruidDataSource(dataSource,Collections.<String,String>emptyMap())};
   final DataSegment dataSegment=new DataSegment(dataSource,new Interval("2010-01-01/P1D"),"v1",null,null,null,null,0x9,0);
   druidDataSources[0].addSegment("0",dataSegment);
   EasyMock.expect(databaseSegmentManager.isStarted()).andReturn(true).anyTimes();
@@ -18,24 +18,14 @@
   druidServer=new DruidServer("server1","localhost",5L,"historical",tier,0);
   loadManagementPeons.put("server1",loadQueuePeon);
   EasyMock.expect(serverInventoryView.getInventory()).andReturn(ImmutableList.of(druidServer)).atLeastOnce();
-  try {
-    serverInventoryView.start();
-    EasyMock.expectLastCall().atLeastOnce();
-  }
- catch (  Exception ex) {
-    throw ex;
-  }
+  serverInventoryView.start();
+  EasyMock.expectLastCall().atLeastOnce();
   EasyMock.expect(serverInventoryView.isStarted()).andReturn(true).anyTimes();
   serverInventoryView.stop();
   EasyMock.expectLastCall().once();
   EasyMock.replay(serverInventoryView);
   coordinator.start();
-  try {
-    leaderAnnouncerLatch.await();
-  }
- catch (  InterruptedException ex) {
-    throw ex;
-  }
+  leaderAnnouncerLatch.await();
   Assert.assertTrue(coordinator.isLeader());
   Assert.assertEquals(druidNode.getHostAndPort(),coordinator.getCurrentLeader());
   final CountDownLatch assignSegmentLatch=new CountDownLatch(1);
@@ -48,13 +38,8 @@
     }
   }
 );
-  try {
-    pathChildrenCache.start();
-  }
- catch (  Exception ex) {
-    throw ex;
-  }
-  Assert.assertTrue(assignSegmentLatch.await(2,TimeUnit.SECONDS));
+  pathChildrenCache.start();
+  assignSegmentLatch.await();
   Assert.assertEquals(ImmutableMap.of(dataSource,100.0),coordinator.getLoadStatus());
   curator.delete().guaranteed().forPath(ZKPaths.makePath(LOADPATH,dataSegment.getIdentifier()));
   while (coordinator.getSegmentAvailability().snapshot().get(dataSource) != 0) {
@@ -66,7 +51,11 @@
   while (coordinator.getLoadPendingDatasources().get(dataSource).get() > 0) {
     Thread.sleep(50);
   }
-  Thread.sleep(druidCoordinatorConfig.getCoordinatorPeriod().getMillis());
+  long startMillis=System.currentTimeMillis();
+  long coordinatorRunPeriodMillis=druidCoordinatorConfig.getCoordinatorPeriod().getMillis();
+  while (System.currentTimeMillis() - startMillis < coordinatorRunPeriodMillis) {
+    Thread.sleep(100);
+  }
   Map<String,CountingMap<String>> replicationStatus=coordinator.getReplicationStatus();
   Assert.assertNotNull(replicationStatus);
   Assert.assertEquals(1,replicationStatus.entrySet().size());
