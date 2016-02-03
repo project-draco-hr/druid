@@ -1,6 +1,11 @@
 {
   try {
-    final Class<?> logManagerClazz=Class.forName("org.apache.logging.log4j.LogManager");
+    ClassLoader loader=Thread.currentThread().getContextClassLoader();
+    if (loader == null) {
+      loader=getClass().getClassLoader();
+    }
+    final Class<?> logManagerClazz=Class.forName("org.apache.logging.log4j.LogManager",false,loader);
+    final Class<?> callbackRegistryClazz=Class.forName("org.apache.logging.log4j.core.util.ShutdownCallbackRegistry",false,loader);
     final LoggerContextFactory contextFactory=LogManager.getFactory();
     if (!(contextFactory instanceof Log4jContextFactory)) {
       log.warn("Expected [%s] found [%s]. Unknown class for context factory. Not logging shutdown",Log4jContextFactory.class.getCanonicalName(),contextFactory.getClass().getCanonicalName());
