@@ -1,0 +1,7 @@
+{
+  selectors=Maps.newHashMap();
+  for (  AggregatorFactory agg : metrics) {
+    selectors.put(agg.getName(),new ObjectCachingColumnSelectorFactory(makeColumnSelectorFactory(agg,rowSupplier,deserializeComplexMetrics)));
+  }
+  return new Aggregator[metrics.length];
+}

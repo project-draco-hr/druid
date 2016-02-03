@@ -1,0 +1,35 @@
+{
+  final Integer priorIndex=facts.get(key);
+  Aggregator[] aggs;
+  if (null != priorIndex) {
+    aggs=concurrentGet(priorIndex);
+  }
+ else {
+    aggs=new Aggregator[metrics.length];
+    for (int i=0; i < metrics.length; i++) {
+      final AggregatorFactory agg=metrics[i];
+      aggs[i]=agg.factorize(selectors.get(agg.getName()));
+    }
+    final Integer rowIndex=indexIncrement.getAndIncrement();
+    concurrentSet(rowIndex,aggs);
+    if (numEntries.get() >= maxRowCount && !facts.containsKey(key)) {
+      throw new IndexSizeExceededException("Maximum number of rows [%d] reached",maxRowCount);
+    }
+    final Integer prev=facts.putIfAbsent(key,rowIndex);
+    if (null == prev) {
+      numEntries.incrementAndGet();
+    }
+ else {
+      aggs=concurrentGet(prev);
+      concurrentRemove(rowIndex);
+    }
+  }
+  rowContainer.set(row);
+  for (  Aggregator agg : aggs) {
+synchronized (agg) {
+      agg.aggregate();
+    }
+  }
+  rowContainer.set(null);
+  return numEntries.get();
+}

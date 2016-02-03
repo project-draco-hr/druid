@@ -1,0 +1,11 @@
+{
+  FloatColumnSelector existing=floatColumnSelectorMap.get(columnName);
+  if (existing != null) {
+    return existing;
+  }
+ else {
+    FloatColumnSelector newSelector=delegate.makeFloatColumnSelector(columnName);
+    FloatColumnSelector prev=floatColumnSelectorMap.putIfAbsent(columnName,newSelector);
+    return prev != null ? prev : newSelector;
+  }
+}
