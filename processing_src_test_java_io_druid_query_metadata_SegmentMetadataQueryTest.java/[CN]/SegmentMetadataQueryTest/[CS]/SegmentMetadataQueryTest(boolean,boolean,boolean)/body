@@ -1,0 +1,12 @@
+{
+  final String id1=differentIds ? "testSegment1" : "testSegment";
+  final String id2=differentIds ? "testSegment2" : "testSegment";
+  this.runner1=mmap1 ? makeMMappedQueryRunner(id1,FACTORY) : makeIncrementalIndexQueryRunner(id1,FACTORY);
+  this.runner2=mmap2 ? makeMMappedQueryRunner(id2,FACTORY) : makeIncrementalIndexQueryRunner(id2,FACTORY);
+  this.mmap1=mmap1;
+  this.mmap2=mmap2;
+  this.differentIds=differentIds;
+  testQuery=Druids.newSegmentMetadataQueryBuilder().dataSource("testing").intervals("2013/2014").toInclude(new ListColumnIncluderator(Arrays.asList("__time","index","placement"))).analysisTypes(null).merge(true).build();
+  expectedSegmentAnalysis1=new SegmentAnalysis(id1,ImmutableList.of(new Interval("2011-01-12T00:00:00.000Z/2011-04-15T00:00:00.001Z")),ImmutableMap.of("__time",new ColumnAnalysis(ValueType.LONG.toString(),false,12090,null,null),"placement",new ColumnAnalysis(ValueType.STRING.toString(),false,mmap1 ? 10881 : 0,1,null),"index",new ColumnAnalysis(ValueType.FLOAT.toString(),false,9672,null,null)),mmap1 ? 71982 : 32643,1209,null);
+  expectedSegmentAnalysis2=new SegmentAnalysis(id2,ImmutableList.of(new Interval("2011-01-12T00:00:00.000Z/2011-04-15T00:00:00.001Z")),ImmutableMap.of("__time",new ColumnAnalysis(ValueType.LONG.toString(),false,12090,null,null),"placement",new ColumnAnalysis(ValueType.STRING.toString(),false,mmap2 ? 10881 : 0,1,null),"index",new ColumnAnalysis(ValueType.FLOAT.toString(),false,9672,null,null)),mmap2 ? 71982 : 32643,1209,null);
+}

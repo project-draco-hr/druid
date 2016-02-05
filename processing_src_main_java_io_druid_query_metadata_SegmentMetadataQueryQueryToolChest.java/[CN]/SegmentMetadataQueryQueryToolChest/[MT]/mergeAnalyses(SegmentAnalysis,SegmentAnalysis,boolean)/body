@@ -60,5 +60,12 @@
       }
     }
   }
-  return new SegmentAnalysis("merged",newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows(),aggregators.isEmpty() ? null : aggregators);
+  final String mergedId;
+  if (arg1.getId() != null && arg2.getId() != null && arg1.getId().equals(arg2.getId())) {
+    mergedId=arg1.getId();
+  }
+ else {
+    mergedId="merged";
+  }
+  return new SegmentAnalysis(mergedId,newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows(),aggregators.isEmpty() ? null : aggregators);
 }
