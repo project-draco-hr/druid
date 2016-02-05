@@ -1,0 +1,19 @@
+{
+  selectors=Maps.newHashMap();
+  aggOffsetInBuffer=new int[metrics.length];
+  BufferAggregator[] aggregators=new BufferAggregator[metrics.length];
+  for (int i=0; i < metrics.length; i++) {
+    AggregatorFactory agg=metrics[i];
+    ColumnSelectorFactory columnSelectorFactory=makeColumnSelectorFactory(agg,rowSupplier,deserializeComplexMetrics);
+    selectors.put(agg.getName(),new OnheapIncrementalIndex.ObjectCachingColumnSelectorFactory(columnSelectorFactory));
+    aggregators[i]=agg.factorizeBuffered(columnSelectorFactory);
+    if (i == 0) {
+      aggOffsetInBuffer[i]=0;
+    }
+ else {
+      aggOffsetInBuffer[i]=aggOffsetInBuffer[i - 1] + metrics[i - 1].getMaxIntermediateSize();
+    }
+  }
+  aggsTotalSize=aggOffsetInBuffer[metrics.length - 1] + metrics[metrics.length - 1].getMaxIntermediateSize();
+  return aggregators;
+}

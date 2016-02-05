@@ -1,0 +1,18 @@
+{
+  super(incrementalIndexSchema,deserializeComplexMetrics);
+  this.maxRowCount=maxRowCount;
+  this.bufferPool=bufferPool;
+  this.facts=new ConcurrentSkipListMap<>(dimsComparator());
+  ResourceHolder<ByteBuffer> bb=bufferPool.take();
+  if (bb.get().capacity() < aggsTotalSize) {
+    RuntimeException ex=new IAE("bufferPool buffers capacity must be >= [%s]",aggsTotalSize);
+    try {
+      bb.close();
+    }
+ catch (    IOException ioe) {
+      ex.addSuppressed(ioe);
+    }
+    throw ex;
+  }
+  aggBuffers.add(bb);
+}

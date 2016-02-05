@@ -6,7 +6,7 @@
     ingestAggregatorFactories.add(new LongSumAggregatorFactory(String.format("sumResult%s",i),String.format("Dim_%s",i)));
     ingestAggregatorFactories.add(new DoubleSumAggregatorFactory(String.format("doubleSumResult%s",i),String.format("Dim_%s",i)));
   }
-  final IncrementalIndex index=indexCreator.createIndex(ingestAggregatorFactories.toArray(new AggregatorFactory[ingestAggregatorFactories.size()]));
+  final IncrementalIndex index=closer.closeLater(indexCreator.createIndex(ingestAggregatorFactories.toArray(new AggregatorFactory[ingestAggregatorFactories.size()])));
   final long timestamp=System.currentTimeMillis();
   final int rows=50;
   for (int i=0; i < rows; i++) {
@@ -32,5 +32,4 @@
     Assert.assertEquals(String.format("Failed long sum on dimension %d",i),2 * rows,result.getValue().getLongMetric(String.format("sumResult%s",i)).intValue());
     Assert.assertEquals(String.format("Failed double sum on dimension %d",i),2 * rows,result.getValue().getDoubleMetric(String.format("doubleSumResult%s",i)).intValue());
   }
-  index.close();
 }
