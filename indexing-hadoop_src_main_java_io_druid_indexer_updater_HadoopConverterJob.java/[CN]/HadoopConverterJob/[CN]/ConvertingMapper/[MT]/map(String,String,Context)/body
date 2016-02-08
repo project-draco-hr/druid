@@ -36,7 +36,7 @@
   final Path baseOutputPath=new Path(config.getSegmentOutputPath());
   final FileSystem outputFS=baseOutputPath.getFileSystem(context.getConfiguration());
   final DataSegment finalSegmentTemplate=segment.withVersion(segment.getVersion() + "_converted");
-  final DataSegment finalSegment=JobHelper.serializeOutIndex(finalSegmentTemplate,context.getConfiguration(),context,context.getTaskAttemptID(),outDir,JobHelper.makeSegmentOutputPath(baseOutputPath,outputFS,finalSegmentTemplate.getDataSource(),finalSegmentTemplate.getVersion(),finalSegmentTemplate.getInterval(),finalSegmentTemplate.getShardSpec().getPartitionNum()));
+  final DataSegment finalSegment=JobHelper.serializeOutIndex(finalSegmentTemplate,context.getConfiguration(),context,context.getTaskAttemptID(),outDir,JobHelper.makeSegmentOutputPath(baseOutputPath,outputFS,finalSegmentTemplate));
   context.progress();
   context.setStatus("Finished PUSH");
   final String finalSegmentString=HadoopDruidConverterConfig.jsonMapper.writeValueAsString(finalSegment);
