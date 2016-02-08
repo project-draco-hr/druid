@@ -1,10 +1,15 @@
 {
-  try {
-    pathChildrenCache.close();
-    exec.shutdownNow();
-    taskRunner.stop();
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Exception stopping WorkerTaskMonitor").addData("exception",e.toString()).emit();
+synchronized (lifecycleLock) {
+    Preconditions.checkState(started,"not started");
+    try {
+      exec.shutdownNow();
+      pathChildrenCache.close();
+      taskRunner.stop();
+      started=false;
+      log.info("Stopped WorkerTaskMonitor.");
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Exception stopping WorkerTaskMonitor").emit();
+    }
   }
 }

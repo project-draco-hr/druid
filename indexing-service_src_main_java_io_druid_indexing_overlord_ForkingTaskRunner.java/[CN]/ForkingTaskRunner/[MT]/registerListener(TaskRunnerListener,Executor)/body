@@ -1,0 +1,9 @@
+{
+  final Pair<TaskRunnerListener,Executor> listenerPair=Pair.of(listener,executor);
+synchronized (tasks) {
+    for (    ForkingTaskRunnerWorkItem item : tasks.values()) {
+      TaskRunnerUtils.notifyLocationChanged(ImmutableList.of(listenerPair),item.getTaskId(),item.getLocation());
+    }
+    listeners.add(listenerPair);
+  }
+}

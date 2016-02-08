@@ -3,7 +3,9 @@
   Assert.assertTrue(TestUtils.conditionValid(new IndexingServiceCondition(){
     @Override public boolean isValid(){
       try {
-        return cf.checkExists().forPath(joiner.join(statusPath,task.getId())) != null;
+        final byte[] bytes=cf.getData().forPath(joiner.join(statusPath,task.getId()));
+        final TaskAnnouncement announcement=jsonMapper.readValue(bytes,TaskAnnouncement.class);
+        return announcement.getTaskStatus().isComplete();
       }
  catch (      Exception e) {
         return false;
@@ -14,5 +16,7 @@
   List<TaskAnnouncement> announcements=workerCuratorCoordinator.getAnnouncements();
   Assert.assertEquals(1,announcements.size());
   Assert.assertEquals(task.getId(),announcements.get(0).getTaskStatus().getId());
-  Assert.assertEquals(TaskStatus.Status.RUNNING,announcements.get(0).getTaskStatus().getStatusCode());
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,announcements.get(0).getTaskStatus().getStatusCode());
+  Assert.assertEquals(DUMMY_NODE.getHost(),announcements.get(0).getTaskLocation().getHost());
+  Assert.assertEquals(DUMMY_NODE.getPort(),announcements.get(0).getTaskLocation().getPort());
 }

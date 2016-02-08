@@ -3,6 +3,7 @@
   TaskStatus status;
   try {
     log.info("Running task: %s",task.getId());
+    TaskRunnerUtils.notifyLocationChanged(listeners,task.getId(),location);
     status=task.run(toolbox);
   }
  catch (  InterruptedException e) {

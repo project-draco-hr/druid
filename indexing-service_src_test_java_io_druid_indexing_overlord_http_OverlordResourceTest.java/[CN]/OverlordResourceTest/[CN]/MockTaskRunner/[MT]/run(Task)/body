@@ -11,7 +11,12 @@
     }
   }
 );
-  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(taskId,future);
+  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(taskId,future){
+    @Override public TaskLocation getLocation(){
+      return TASK_LOCATION;
+    }
+  }
+;
   taskRunnerWorkItems.put(taskId,taskRunnerWorkItem);
   return future;
 }

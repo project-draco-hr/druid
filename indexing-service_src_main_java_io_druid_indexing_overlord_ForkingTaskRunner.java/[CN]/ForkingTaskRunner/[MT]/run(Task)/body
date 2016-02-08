@@ -7,6 +7,7 @@ synchronized (tasks) {
           final File taskDir=taskConfig.getTaskDir(task.getId());
           final File attemptDir=new File(taskDir,attemptUUID);
           final ProcessHolder processHolder;
+          final String childHost=node.getHost();
           final int childPort;
           final int childChatHandlerPort;
           if (config.isSeparateIngestionEndpoint()) {
@@ -18,6 +19,7 @@ synchronized (tasks) {
             childPort=portFinder.findUnusedPort();
             childChatHandlerPort=-1;
           }
+          final TaskLocation taskLocation=TaskLocation.create(childHost,childPort);
           try {
             final Closer closer=Closer.create();
             try {
@@ -41,7 +43,6 @@ synchronized (tasks) {
                   throw new ISE("TaskInfo already has processHolder for task[%s]!",task.getId());
                 }
                 final List<String> command=Lists.newArrayList();
-                final String childHost=node.getHost();
                 final String taskClasspath;
                 if (task.getClasspathPrefix() != null && !task.getClasspathPrefix().isEmpty()) {
                   taskClasspath=Joiner.on(File.pathSeparator).join(task.getClasspathPrefix(),config.getClasspath());
@@ -100,10 +101,11 @@ synchronized (tasks) {
                   jsonMapper.writeValue(taskFile,task);
                 }
                 log.info("Running command: %s",Joiner.on(" ").join(command));
-                taskWorkItem.processHolder=new ProcessHolder(new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,childPort);
+                taskWorkItem.processHolder=new ProcessHolder(new ProcessBuilder(ImmutableList.copyOf(command)).redirectErrorStream(true).start(),logFile,taskLocation.getHost(),taskLocation.getPort());
                 processHolder=taskWorkItem.processHolder;
                 processHolder.registerWithCloser(closer);
               }
+              TaskRunnerUtils.notifyLocationChanged(listeners,task.getId(),taskLocation);
               log.info("Logging task %s output to: %s",task.getId(),logFile);
               boolean runFailed=true;
               final ByteSink logSink=Files.asByteSink(logFile,FileWriteMode.APPEND);

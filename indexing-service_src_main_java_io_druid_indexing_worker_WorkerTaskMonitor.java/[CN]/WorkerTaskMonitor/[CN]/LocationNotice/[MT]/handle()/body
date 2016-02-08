@@ -1,0 +1,17 @@
+{
+  final TaskDetails details=running.get(taskId);
+  if (details == null) {
+    log.warn("Got location notice for task [%s] that isn't running...",taskId);
+    return;
+  }
+  if (!Objects.equals(details.location,location)) {
+    details.location=location;
+    try {
+      log.info("Updating task [%s] announcement with location [%s]",taskId,location);
+      workerCuratorCoordinator.updateTaskStatusAnnouncement(TaskAnnouncement.create(details.task,details.status,details.location));
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Failed to update task announcement").addData("task",taskId).emit();
+    }
+  }
+}

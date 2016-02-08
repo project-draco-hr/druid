@@ -21,8 +21,8 @@
       executorService.shutdownNow();
     }
   }
-  final ListenableFuture<TaskStatus> statusFuture=exec.get(taskPriority).submit(new ThreadPoolTaskRunnerCallable(task,toolbox));
-  final ThreadPoolTaskRunnerWorkItem taskRunnerWorkItem=new ThreadPoolTaskRunnerWorkItem(task,statusFuture);
+  final ListenableFuture<TaskStatus> statusFuture=exec.get(taskPriority).submit(new ThreadPoolTaskRunnerCallable(task,location,toolbox));
+  final ThreadPoolTaskRunnerWorkItem taskRunnerWorkItem=new ThreadPoolTaskRunnerWorkItem(task,location,statusFuture);
   runningItems.add(taskRunnerWorkItem);
   Futures.addCallback(statusFuture,new FutureCallback<TaskStatus>(){
     @Override public void onSuccess(    TaskStatus result){

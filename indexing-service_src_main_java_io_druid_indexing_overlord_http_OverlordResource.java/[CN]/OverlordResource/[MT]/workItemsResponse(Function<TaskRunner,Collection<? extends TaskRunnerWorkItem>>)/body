@@ -3,7 +3,7 @@
     @Override public Response apply(    TaskRunner taskRunner){
       return Response.ok(Lists.transform(Lists.newArrayList(fn.apply(taskRunner)),new Function<TaskRunnerWorkItem,TaskResponseObject>(){
         @Override public TaskResponseObject apply(        TaskRunnerWorkItem workItem){
-          return new TaskResponseObject(workItem.getTaskId(),workItem.getCreatedTime(),workItem.getQueueInsertionTime(),Optional.<TaskStatus>absent());
+          return new TaskResponseObject(workItem.getTaskId(),workItem.getCreatedTime(),workItem.getQueueInsertionTime(),Optional.<TaskStatus>absent(),workItem.getLocation());
         }
       }
 )).build();
