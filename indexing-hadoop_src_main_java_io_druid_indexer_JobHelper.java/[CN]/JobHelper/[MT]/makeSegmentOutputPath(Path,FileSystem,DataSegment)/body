@@ -1,0 +1,4 @@
+{
+  String segmentDir="hdfs".equals(fileSystem.getScheme()) ? DataSegmentPusherUtil.getHdfsStorageDir(segment) : DataSegmentPusherUtil.getStorageDir(segment);
+  return new Path(prependFSIfNullScheme(fileSystem,basePath),String.format("./%s",segmentDir));
+}
