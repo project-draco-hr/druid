@@ -7,16 +7,20 @@
   }
   final List<URL> nonHadoopURLs=Lists.newArrayList();
   nonHadoopURLs.addAll(Arrays.asList(((URLClassLoader)HadoopIndexTask.class.getClassLoader()).getURLs()));
-  final List<URL> driverURLs=Lists.newArrayList();
-  driverURLs.addAll(nonHadoopURLs);
+  final List<URL> druidURLs=ImmutableList.copyOf(Collections2.filter(nonHadoopURLs,IS_DRUID_URL));
+  final List<URL> nonHadoopNotDruidURLs=Lists.newArrayList(nonHadoopURLs);
+  nonHadoopNotDruidURLs.removeAll(druidURLs);
+  ClassLoader classLoader=null;
+  classLoader=new URLClassLoader(nonHadoopNotDruidURLs.toArray(new URL[nonHadoopNotDruidURLs.size()]),classLoader);
   for (  final File hadoopDependency : Initialization.getHadoopDependencyFilesToLoad(finalHadoopDependencyCoordinates,extensionsConfig)) {
     final ClassLoader hadoopLoader=Initialization.getClassLoaderForExtension(hadoopDependency);
-    driverURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
+    classLoader=new URLClassLoader(((URLClassLoader)hadoopLoader).getURLs(),classLoader);
   }
-  final URLClassLoader loader=new URLClassLoader(driverURLs.toArray(new URL[driverURLs.size()]),null);
+  classLoader=new URLClassLoader(druidURLs.toArray(new URL[druidURLs.size()]),classLoader);
+  classLoader=new URLClassLoader(extensionURLs.toArray(new URL[extensionURLs.size()]),classLoader);
   final List<URL> jobUrls=Lists.newArrayList();
   jobUrls.addAll(nonHadoopURLs);
   jobUrls.addAll(extensionURLs);
   System.setProperty("druid.hadoop.internal.classpath",Joiner.on(File.pathSeparator).join(jobUrls));
-  return loader;
+  return classLoader;
 }
