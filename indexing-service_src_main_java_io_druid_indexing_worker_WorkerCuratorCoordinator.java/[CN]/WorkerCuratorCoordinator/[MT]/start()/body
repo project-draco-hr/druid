@@ -4,8 +4,8 @@ synchronized (lock) {
     if (started) {
       return;
     }
-    makePathIfNotExisting(getTaskPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
-    makePathIfNotExisting(getStatusPathForWorker(),CreateMode.PERSISTENT,ImmutableMap.of("created",new DateTime().toString()));
+    CuratorUtils.createIfNotExists(curatorFramework,getTaskPathForWorker(),CreateMode.PERSISTENT,jsonMapper.writeValueAsBytes(ImmutableMap.of("created",new DateTime().toString())),config.getMaxZnodeBytes());
+    CuratorUtils.createIfNotExists(curatorFramework,getStatusPathForWorker(),CreateMode.PERSISTENT,jsonMapper.writeValueAsBytes(ImmutableMap.of("created",new DateTime().toString())),config.getMaxZnodeBytes());
     announcer.start();
     announcer.announce(getAnnouncementsPathForWorker(),jsonMapper.writeValueAsBytes(worker),false);
     started=true;

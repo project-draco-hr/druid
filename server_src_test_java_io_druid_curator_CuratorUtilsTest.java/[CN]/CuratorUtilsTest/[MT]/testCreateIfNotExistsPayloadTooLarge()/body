@@ -1,0 +1,13 @@
+{
+  curator.start();
+  curator.blockUntilConnected();
+  Exception thrown=null;
+  try {
+    CuratorUtils.createIfNotExists(curator,"/foo/bar",CreateMode.PERSISTENT,"baz".getBytes(),2);
+  }
+ catch (  Exception e) {
+    thrown=e;
+  }
+  Assert.assertTrue(thrown instanceof IllegalArgumentException);
+  Assert.assertNull(curator.checkExists().forPath("/foo/bar"));
+}

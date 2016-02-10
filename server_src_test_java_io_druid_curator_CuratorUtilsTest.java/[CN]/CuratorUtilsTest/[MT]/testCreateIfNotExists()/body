@@ -1,0 +1,8 @@
+{
+  curator.start();
+  curator.blockUntilConnected();
+  CuratorUtils.createIfNotExists(curator,"/foo/bar",CreateMode.PERSISTENT,"baz".getBytes(),CuratorUtils.DEFAULT_MAX_ZNODE_BYTES);
+  Assert.assertEquals("baz",new String(curator.getData().forPath("/foo/bar")));
+  CuratorUtils.createIfNotExists(curator,"/foo/bar",CreateMode.PERSISTENT,"qux".getBytes(),CuratorUtils.DEFAULT_MAX_ZNODE_BYTES);
+  Assert.assertEquals("baz",new String(curator.getData().forPath("/foo/bar")));
+}

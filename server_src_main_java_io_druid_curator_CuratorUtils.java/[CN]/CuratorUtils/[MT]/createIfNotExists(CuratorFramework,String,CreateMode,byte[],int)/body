@@ -1,0 +1,11 @@
+{
+  verifySize(path,rawBytes,maxZnodeBytes);
+  if (curatorFramework.checkExists().forPath(path) == null) {
+    try {
+      curatorFramework.create().creatingParentsIfNeeded().withMode(mode).forPath(path,rawBytes);
+    }
+ catch (    KeeperException.NodeExistsException e) {
+      log.info("Skipping create path[%s], since it already exists.",path);
+    }
+  }
+}
