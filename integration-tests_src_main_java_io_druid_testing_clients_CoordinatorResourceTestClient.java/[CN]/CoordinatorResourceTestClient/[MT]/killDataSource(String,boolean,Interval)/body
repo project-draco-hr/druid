@@ -1,6 +1,6 @@
 {
   try {
-    makeRequest(HttpMethod.DELETE,String.format("%sdatasources/%s?kill=%s&interval=%s",getCoordinatorURL(),dataSource,kill,URLEncoder.encode(interval.toString(),"UTF-8")));
+    makeRequest(HttpMethod.DELETE,String.format("%sdatasources/%s/intervals/%s?kill=%s",getCoordinatorURL(),dataSource,interval.toString().replace("/","_"),kill));
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);
