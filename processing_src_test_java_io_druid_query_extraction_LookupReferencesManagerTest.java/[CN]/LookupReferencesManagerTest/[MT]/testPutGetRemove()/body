@@ -1,0 +1,11 @@
+{
+  LookupExtractorFactory lookupExtractorFactory=EasyMock.createMock(LookupExtractorFactory.class);
+  EasyMock.expect(lookupExtractorFactory.start()).andReturn(true).once();
+  EasyMock.expect(lookupExtractorFactory.close()).andReturn(true).once();
+  EasyMock.replay(lookupExtractorFactory);
+  Assert.assertNull(lookupReferencesManager.get("test"));
+  lookupReferencesManager.put("test",lookupExtractorFactory);
+  Assert.assertEquals(lookupExtractorFactory,lookupReferencesManager.get("test"));
+  Assert.assertTrue(lookupReferencesManager.remove("test"));
+  Assert.assertNull(lookupReferencesManager.get("test"));
+}

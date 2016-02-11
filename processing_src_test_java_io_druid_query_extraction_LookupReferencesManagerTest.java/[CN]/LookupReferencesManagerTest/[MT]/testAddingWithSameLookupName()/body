@@ -1,0 +1,12 @@
+{
+  LookupExtractorFactory lookupExtractorFactory=EasyMock.createNiceMock(LookupExtractorFactory.class);
+  EasyMock.expect(lookupExtractorFactory.start()).andReturn(true).once();
+  LookupExtractorFactory lookupExtractorFactory2=EasyMock.createNiceMock(LookupExtractorFactory.class);
+  EasyMock.expect(lookupExtractorFactory2.start()).andReturn(true).times(2);
+  EasyMock.replay(lookupExtractorFactory,lookupExtractorFactory2);
+  Assert.assertTrue(lookupReferencesManager.put("testName",lookupExtractorFactory));
+  Assert.assertFalse(lookupReferencesManager.put("testName",lookupExtractorFactory2));
+  ImmutableMap<String,LookupExtractorFactory> extractorImmutableMap=ImmutableMap.of("testName",lookupExtractorFactory2);
+  lookupReferencesManager.put(extractorImmutableMap);
+  Assert.assertEquals(lookupExtractorFactory,lookupReferencesManager.get("testName"));
+}
