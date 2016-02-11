@@ -52,10 +52,10 @@ synchronized (tasks) {
                 command.add(config.getJavaCommand());
                 command.add("-cp");
                 command.add(taskClasspath);
-                Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts()));
+                Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts(),jsonMapper));
                 Object taskJavaOpts=task.getContextValue(ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY);
                 if (taskJavaOpts != null) {
-                  Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts));
+                  Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts,jsonMapper));
                 }
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
