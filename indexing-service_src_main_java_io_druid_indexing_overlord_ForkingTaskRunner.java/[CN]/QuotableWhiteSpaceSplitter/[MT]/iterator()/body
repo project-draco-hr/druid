@@ -1,4 +1,16 @@
 {
+  try (JsonParser parser=mapper.getFactory().createParser(string)){
+    final JsonToken token=parser.nextToken();
+    if (JsonToken.START_ARRAY.equals(token)) {
+      return mapper.<List<String>>readValue(string,new TypeReference<List<String>>(){
+      }
+).iterator();
+    }
+  }
+ catch (  IOException e) {
+    LOG.debug(e,"Could not parse %s",string);
+  }
+  LOG.debug("Not json, hoping it is a good string : %s",string);
   return Splitter.on(new CharMatcher(){
     private boolean inQuotes=false;
     @Override public boolean matches(    char c){

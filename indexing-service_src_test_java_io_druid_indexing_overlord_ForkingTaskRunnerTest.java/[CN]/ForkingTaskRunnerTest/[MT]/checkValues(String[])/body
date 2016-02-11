@@ -1,3 +1,9 @@
 {
-  Assert.assertEquals(ImmutableList.copyOf(strings),ImmutableList.copyOf(new QuotableWhiteSpaceSplitter(Joiner.on(" ").join(strings))));
+  try {
+    Assert.assertEquals(ImmutableList.copyOf(strings),ImmutableList.copyOf(new QuotableWhiteSpaceSplitter(mapper.writeValueAsString(Arrays.asList(strings)),mapper)));
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+  Assert.assertEquals(ImmutableList.copyOf(strings),ImmutableList.copyOf(new QuotableWhiteSpaceSplitter(Joiner.on(" ").join(strings),mapper)));
 }
