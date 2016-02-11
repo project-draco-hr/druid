@@ -1,0 +1,21 @@
+{
+  verifySize(path,rawBytes,maxZnodeBytes);
+  boolean created=false;
+  if (curatorFramework.checkExists().forPath(path) == null) {
+    try {
+      curatorFramework.create().creatingParentsIfNeeded().withMode(mode).forPath(path,rawBytes);
+      created=true;
+    }
+ catch (    KeeperException.NodeExistsException e) {
+      log.debug("Path [%s] created while we were running, will setData instead.",path);
+    }
+  }
+  if (!created) {
+    try {
+      curatorFramework.setData().forPath(path,rawBytes);
+    }
+ catch (    KeeperException.NoNodeException e) {
+      log.warn("Someone deleted path[%s] while we were trying to set it. Leaving it deleted.",path);
+    }
+  }
+}

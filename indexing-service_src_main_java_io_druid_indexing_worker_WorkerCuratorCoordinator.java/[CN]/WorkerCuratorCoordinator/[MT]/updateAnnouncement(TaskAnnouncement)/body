@@ -4,15 +4,7 @@ synchronized (lock) {
       return;
     }
     try {
-      if (curatorFramework.checkExists().forPath(getStatusPathForId(announcement.getTaskStatus().getId())) == null) {
-        announceTaskAnnouncement(announcement);
-        return;
-      }
-      byte[] rawBytes=jsonMapper.writeValueAsBytes(announcement);
-      if (rawBytes.length > config.getMaxZnodeBytes()) {
-        throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxZnodeBytes());
-      }
-      curatorFramework.setData().forPath(getStatusPathForId(announcement.getTaskStatus().getId()),rawBytes);
+      CuratorUtils.createOrSet(curatorFramework,getStatusPathForId(announcement.getTaskStatus().getId()),CreateMode.PERSISTENT,jsonMapper.writeValueAsBytes(announcement),config.getMaxZnodeBytes());
     }
  catch (    Exception e) {
       throw Throwables.propagate(e);

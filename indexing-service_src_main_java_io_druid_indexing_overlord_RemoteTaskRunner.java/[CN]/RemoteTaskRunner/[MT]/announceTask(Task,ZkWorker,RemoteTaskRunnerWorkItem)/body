@@ -7,14 +7,7 @@ synchronized (statusLock) {
       return false;
     }
     log.info("Coordinator asking Worker[%s] to add task[%s]",worker,task.getId());
-    byte[] rawBytes=jsonMapper.writeValueAsBytes(task);
-    if (rawBytes.length > config.getMaxZnodeBytes()) {
-      throw new ISE("Length of raw bytes for task too large[%,d > %,d]",rawBytes.length,config.getMaxZnodeBytes());
-    }
-    String taskPath=JOINER.join(indexerZkConfig.getTasksPath(),worker,task.getId());
-    if (cf.checkExists().forPath(taskPath) == null) {
-      cf.create().withMode(CreateMode.EPHEMERAL).forPath(taskPath,rawBytes);
-    }
+    CuratorUtils.createIfNotExists(cf,JOINER.join(indexerZkConfig.getTasksPath(),worker,task.getId()),CreateMode.EPHEMERAL,jsonMapper.writeValueAsBytes(task),config.getMaxZnodeBytes());
     RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(task.getId());
     if (workItem == null) {
       log.makeAlert("WTF?! Got a null work item from pending tasks?! How can this be?!").addData("taskId",task.getId()).emit();
