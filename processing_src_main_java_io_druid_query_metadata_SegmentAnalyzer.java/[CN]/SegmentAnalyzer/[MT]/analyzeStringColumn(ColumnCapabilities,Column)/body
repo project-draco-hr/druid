@@ -1,0 +1,23 @@
+{
+  long size=0;
+  Comparable min=null;
+  Comparable max=null;
+  if (!capabilities.hasBitmapIndexes()) {
+    return ColumnAnalysis.error("string_no_bitmap");
+  }
+  final BitmapIndex bitmapIndex=column.getBitmapIndex();
+  final int cardinality=bitmapIndex.getCardinality();
+  if (analyzingSize()) {
+    for (int i=0; i < cardinality; ++i) {
+      String value=bitmapIndex.getValue(i);
+      if (value != null) {
+        size+=StringUtils.toUtf8(value).length * bitmapIndex.getBitmap(value).size();
+      }
+    }
+  }
+  if (analyzingMinMax() && cardinality > 0) {
+    min=Strings.nullToEmpty(bitmapIndex.getValue(0));
+    max=Strings.nullToEmpty(bitmapIndex.getValue(cardinality - 1));
+  }
+  return new ColumnAnalysis(capabilities.getType().name(),capabilities.hasMultipleValues(),size,analyzingCardinality() ? cardinality : 0,min,max,null);
+}

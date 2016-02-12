@@ -1,0 +1,40 @@
+{
+  int cardinality=0;
+  long size=0;
+  Comparable min=null;
+  Comparable max=null;
+  if (analyzingCardinality()) {
+    cardinality=storageAdapter.getDimensionCardinality(columnName);
+  }
+  if (analyzingSize()) {
+    final long start=storageAdapter.getMinTime().getMillis();
+    final long end=storageAdapter.getMaxTime().getMillis();
+    final Sequence<Cursor> cursors=storageAdapter.makeCursors(null,new Interval(start,end),QueryGranularity.ALL,false);
+    size=cursors.accumulate(0L,new Accumulator<Long,Cursor>(){
+      @Override public Long accumulate(      Long accumulated,      Cursor cursor){
+        DimensionSelector selector=cursor.makeDimensionSelector(new DefaultDimensionSpec(columnName,columnName));
+        if (selector == null) {
+          return accumulated;
+        }
+        long current=accumulated;
+        while (!cursor.isDone()) {
+          final IndexedInts vals=selector.getRow();
+          for (int i=0; i < vals.size(); ++i) {
+            final String dimVal=selector.lookupName(vals.get(i));
+            if (dimVal != null && !dimVal.isEmpty()) {
+              current+=StringUtils.toUtf8(dimVal).length;
+            }
+          }
+          cursor.advance();
+        }
+        return current;
+      }
+    }
+);
+  }
+  if (analyzingMinMax()) {
+    min=storageAdapter.getMinValue(columnName);
+    max=storageAdapter.getMaxValue(columnName);
+  }
+  return new ColumnAnalysis(capabilities.getType().name(),capabilities.hasMultipleValues(),size,cardinality,min,max,null);
+}
