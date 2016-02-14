@@ -3,11 +3,6 @@
   indexer.waitUntilTaskCompletes(taskID);
   AdminUtils.deleteTopic(zkClient,TOPIC_NAME);
   if (segmentsExist) {
-    try {
-      unloadAndKillData(DATASOURCE);
-    }
- catch (    Exception e) {
-      LOG.warn("exception while removing segments: [%s]",e.getMessage());
-    }
+    unloadAndKillData(DATASOURCE);
   }
 }

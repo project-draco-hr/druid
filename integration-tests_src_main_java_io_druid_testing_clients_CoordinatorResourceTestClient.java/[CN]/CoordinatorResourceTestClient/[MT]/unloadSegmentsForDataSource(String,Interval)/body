@@ -1,3 +1,8 @@
 {
-  killDataSource(dataSource,false,interval);
+  try {
+    makeRequest(HttpMethod.DELETE,String.format("%sdatasources/%s",getCoordinatorURL(),dataSource));
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
 }

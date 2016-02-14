@@ -1,3 +1,8 @@
 {
-  killDataSource(dataSource,true,interval);
+  try {
+    makeRequest(HttpMethod.DELETE,String.format("%sdatasources/%s/intervals/%s?kill=true",getCoordinatorURL(),dataSource,interval.toString().replace("/","_")));
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
 }
