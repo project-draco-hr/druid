@@ -1,7 +1,11 @@
 {
   final TreeSet<ImmutableZkWorker> sortedWorkers=Sets.newTreeSet(new Comparator<ImmutableZkWorker>(){
     @Override public int compare(    ImmutableZkWorker zkWorker,    ImmutableZkWorker zkWorker2){
-      return -Ints.compare(zkWorker2.getCurrCapacityUsed(),zkWorker.getCurrCapacityUsed());
+      int retVal=-Ints.compare(zkWorker2.getCurrCapacityUsed(),zkWorker.getCurrCapacityUsed());
+      if (retVal == 0) {
+        retVal=zkWorker2.getWorker().getVersion().compareTo(zkWorker.getWorker().getVersion());
+      }
+      return retVal;
     }
   }
 );
