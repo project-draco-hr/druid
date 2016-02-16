@@ -1,5 +1,5 @@
 {
-  return Ordering.natural().nullsFirst().onResultOf(new Function<Row,String>(){
+  return Ordering.from(comparator).nullsFirst().onResultOf(new Function<Row,String>(){
     @Override public String apply(    Row input){
       final List<String> dimList=input.getDimension(dimension);
       return dimList.isEmpty() ? null : dimList.get(0);

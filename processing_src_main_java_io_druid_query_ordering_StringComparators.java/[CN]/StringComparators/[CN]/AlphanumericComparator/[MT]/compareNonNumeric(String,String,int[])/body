@@ -1,0 +1,15 @@
+{
+  int start0=pos[0];
+  int ch0=str0.codePointAt(pos[0]);
+  pos[0]+=Character.charCount(ch0);
+  while (pos[0] < str0.length() && !isDigit(ch0=str0.codePointAt(pos[0]))) {
+    pos[0]+=Character.charCount(ch0);
+  }
+  int start1=pos[1];
+  int ch1=str1.codePointAt(pos[1]);
+  pos[1]+=Character.charCount(ch1);
+  while (pos[1] < str1.length() && !isDigit(ch1=str1.codePointAt(pos[1]))) {
+    pos[1]+=Character.charCount(ch1);
+  }
+  return String.CASE_INSENSITIVE_ORDER.compare(str0.substring(start0,pos[0]),str1.substring(start1,pos[1]));
+}

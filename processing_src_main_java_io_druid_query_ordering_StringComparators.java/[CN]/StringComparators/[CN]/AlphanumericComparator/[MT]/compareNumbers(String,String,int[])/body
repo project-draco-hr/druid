@@ -1,0 +1,53 @@
+{
+  int delta=0;
+  int zeroes0=0, zeroes1=0;
+  int ch0=-1, ch1=-1;
+  while (pos[0] < str0.length() && isZero(ch0=str0.codePointAt(pos[0]))) {
+    zeroes0++;
+    pos[0]+=Character.charCount(ch0);
+  }
+  while (pos[1] < str1.length() && isZero(ch1=str1.codePointAt(pos[1]))) {
+    zeroes1++;
+    pos[1]+=Character.charCount(ch1);
+  }
+  while (true) {
+    boolean noMoreDigits0=(ch0 < 0) || !isDigit(ch0);
+    boolean noMoreDigits1=(ch1 < 0) || !isDigit(ch1);
+    if (noMoreDigits0 && noMoreDigits1) {
+      return delta != 0 ? delta : zeroes0 - zeroes1;
+    }
+ else     if (noMoreDigits0) {
+      return -1;
+    }
+ else     if (noMoreDigits1) {
+      return 1;
+    }
+ else     if (delta == 0 && ch0 != ch1) {
+      delta=valueOf(ch0) - valueOf(ch1);
+    }
+    if (pos[0] < str0.length()) {
+      ch0=str0.codePointAt(pos[0]);
+      if (isDigit(ch0)) {
+        pos[0]+=Character.charCount(ch0);
+      }
+ else {
+        ch0=-1;
+      }
+    }
+ else {
+      ch0=-1;
+    }
+    if (pos[1] < str1.length()) {
+      ch1=str1.codePointAt(pos[1]);
+      if (isDigit(ch1)) {
+        pos[1]+=Character.charCount(ch1);
+      }
+ else {
+        ch1=-1;
+      }
+    }
+ else {
+      ch1=-1;
+    }
+  }
+}
