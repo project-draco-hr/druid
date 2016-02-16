@@ -4,11 +4,11 @@
   }
   final Map<String,String> weirdMap=Maps.newHashMap();
   weirdMap.put("foobar",null);
-  final LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar")),retainMissing,replaceMissing,injective,false);
+  final LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar"),false),retainMissing,replaceMissing,injective,false);
   if (Strings.isNullOrEmpty(replaceMissing) || retainMissing) {
     Assert.assertFalse(Arrays.equals(lookupExtractionFn.getCacheKey(),new LookupExtractionFn(lookupExtractionFn.getLookup(),!lookupExtractionFn.isRetainMissingValue(),lookupExtractionFn.getReplaceMissingValueWith(),lookupExtractionFn.isInjective(),false).getCacheKey()));
     Assert.assertFalse(Arrays.equals(lookupExtractionFn.getCacheKey(),new LookupExtractionFn(lookupExtractionFn.getLookup(),!lookupExtractionFn.isRetainMissingValue(),lookupExtractionFn.getReplaceMissingValueWith(),!lookupExtractionFn.isInjective(),false).getCacheKey()));
   }
-  Assert.assertFalse(Arrays.equals(lookupExtractionFn.getCacheKey(),new LookupExtractionFn(new MapLookupExtractor(weirdMap),lookupExtractionFn.isRetainMissingValue(),lookupExtractionFn.getReplaceMissingValueWith(),lookupExtractionFn.isInjective(),false).getCacheKey()));
+  Assert.assertFalse(Arrays.equals(lookupExtractionFn.getCacheKey(),new LookupExtractionFn(new MapLookupExtractor(weirdMap,false),lookupExtractionFn.isRetainMissingValue(),lookupExtractionFn.getReplaceMissingValueWith(),lookupExtractionFn.isInjective(),false).getCacheKey()));
   Assert.assertFalse(Arrays.equals(lookupExtractionFn.getCacheKey(),new LookupExtractionFn(lookupExtractionFn.getLookup(),lookupExtractionFn.isRetainMissingValue(),lookupExtractionFn.getReplaceMissingValueWith(),!lookupExtractionFn.isInjective(),false).getCacheKey()));
 }

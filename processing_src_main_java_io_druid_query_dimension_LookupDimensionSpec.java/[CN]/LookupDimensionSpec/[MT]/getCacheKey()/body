@@ -1,0 +1,7 @@
+{
+  byte[] dimensionBytes=StringUtils.toUtf8(dimension);
+  byte[] dimExtractionFnBytes=Strings.isNullOrEmpty(name) ? getLookup().getCacheKey() : StringUtils.toUtf8(name);
+  byte[] outputNameBytes=StringUtils.toUtf8(outputName);
+  byte[] replaceWithBytes=StringUtils.toUtf8(Strings.nullToEmpty(replaceMissingValueWith));
+  return ByteBuffer.allocate(6 + dimensionBytes.length + outputNameBytes.length+ dimExtractionFnBytes.length+ replaceWithBytes.length).put(CACHE_TYPE_ID).put(dimensionBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(outputNameBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(dimExtractionFnBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(replaceWithBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(retainMissingValue == true ? (byte)1 : (byte)0).array();
+}

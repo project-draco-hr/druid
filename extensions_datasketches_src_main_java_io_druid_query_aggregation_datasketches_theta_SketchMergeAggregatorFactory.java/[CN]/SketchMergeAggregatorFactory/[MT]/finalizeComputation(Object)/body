@@ -1,6 +1,13 @@
 {
   if (shouldFinalize) {
-    return ((Sketch)object).getEstimate();
+    Sketch sketch=(Sketch)object;
+    if (errorBoundsStdDev != null) {
+      SketchEstimateWithErrorBounds result=new SketchEstimateWithErrorBounds(sketch.getEstimate(),sketch.getUpperBound(errorBoundsStdDev),sketch.getLowerBound(errorBoundsStdDev),errorBoundsStdDev);
+      return result;
+    }
+ else {
+      return sketch.getEstimate();
+    }
   }
  else {
     return object;

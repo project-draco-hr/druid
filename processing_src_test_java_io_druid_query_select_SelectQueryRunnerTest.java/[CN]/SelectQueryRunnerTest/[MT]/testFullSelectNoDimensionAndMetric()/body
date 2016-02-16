@@ -1,5 +1,5 @@
 {
-  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),I_0112_0114,descending,null,QueryRunnerTestHelper.allGran,Lists.<String>newArrayList("foo"),Lists.<String>newArrayList("foo2"),new PagingSpec(null,3),null);
+  SelectQuery query=new SelectQuery(new TableDataSource(QueryRunnerTestHelper.dataSource),I_0112_0114,descending,null,QueryRunnerTestHelper.allGran,DefaultDimensionSpec.toSpec(Lists.<String>newArrayList("foo")),Lists.<String>newArrayList("foo2"),new PagingSpec(null,3),null);
   Iterable<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,Maps.newHashMap()),Lists.<Result<SelectResultValue>>newArrayList());
   final List<List<Map<String,Object>>> events=toEvents(new String[]{EventHolder.timestampKey + ":TIME","foo:NULL","foo2:NULL"},V_0112_0114);
   PagingOffset offset=query.getPagingOffset(QueryRunnerTestHelper.segmentId);

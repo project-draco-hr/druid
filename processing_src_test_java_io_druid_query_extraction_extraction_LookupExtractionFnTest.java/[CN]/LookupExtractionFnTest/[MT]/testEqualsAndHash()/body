@@ -2,9 +2,9 @@
   if (retainMissing && !Strings.isNullOrEmpty(replaceMissing)) {
     return;
   }
-  final LookupExtractionFn lookupExtractionFn1=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar")),retainMissing,replaceMissing,injective,false);
-  final LookupExtractionFn lookupExtractionFn2=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar")),retainMissing,replaceMissing,injective,false);
-  final LookupExtractionFn lookupExtractionFn3=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar2")),retainMissing,replaceMissing,injective,false);
+  final LookupExtractionFn lookupExtractionFn1=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar"),false),retainMissing,replaceMissing,injective,false);
+  final LookupExtractionFn lookupExtractionFn2=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar"),false),retainMissing,replaceMissing,injective,false);
+  final LookupExtractionFn lookupExtractionFn3=new LookupExtractionFn(new MapLookupExtractor(ImmutableMap.of("foo","bar2"),false),retainMissing,replaceMissing,injective,false);
   Assert.assertEquals(lookupExtractionFn1,lookupExtractionFn2);
   Assert.assertEquals(lookupExtractionFn1.hashCode(),lookupExtractionFn2.hashCode());
   Assert.assertNotEquals(lookupExtractionFn1,lookupExtractionFn3);

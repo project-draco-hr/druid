@@ -1,4 +1,10 @@
 {
   Sketch sketch=(Sketch)field.compute(combinedAggregators);
-  return sketch.getEstimate();
+  if (errorBoundsStdDev != null) {
+    SketchEstimateWithErrorBounds result=new SketchEstimateWithErrorBounds(sketch.getEstimate(),sketch.getUpperBound(errorBoundsStdDev),sketch.getLowerBound(errorBoundsStdDev),errorBoundsStdDev);
+    return result;
+  }
+ else {
+    return sketch.getEstimate();
+  }
 }

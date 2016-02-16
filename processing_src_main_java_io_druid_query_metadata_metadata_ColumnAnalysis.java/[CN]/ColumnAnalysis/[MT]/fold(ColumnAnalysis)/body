@@ -19,10 +19,11 @@
   if (cardinality == null) {
     cardinality=rhsCardinality;
   }
- else {
-    if (rhsCardinality != null) {
-      cardinality=Math.max(cardinality,rhsCardinality);
-    }
+ else   if (rhsCardinality != null) {
+    cardinality=Math.max(cardinality,rhsCardinality);
   }
-  return new ColumnAnalysis(type,hasMultipleValues || rhs.isHasMultipleValues(),size + rhs.getSize(),cardinality,null);
+  final boolean multipleValues=hasMultipleValues || rhs.isHasMultipleValues();
+  Comparable newMin=choose(minValue,rhs.minValue,false);
+  Comparable newMax=choose(maxValue,rhs.maxValue,true);
+  return new ColumnAnalysis(type,multipleValues,size + rhs.getSize(),cardinality,newMin,newMax,null);
 }

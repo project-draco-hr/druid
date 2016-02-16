@@ -9,7 +9,7 @@
   extractionMap.put("premium","premium0");
   extractionMap.put("technology","technology0");
   extractionMap.put("travel","travel0");
-  MapLookupExtractor mapLookupExtractor=new MapLookupExtractor(extractionMap);
+  MapLookupExtractor mapLookupExtractor=new MapLookupExtractor(extractionMap,false);
   LookupExtractionFn lookupExtractionFn=new LookupExtractionFn(mapLookupExtractor,false,"missing",true,false);
   DimFilter filter=new ExtractionDimFilter("quality","mezzanineANDnews",lookupExtractionFn,null);
   GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(new FilteredAggregatorFactory(QueryRunnerTestHelper.rowsCount,filter),(AggregatorFactory)new FilteredAggregatorFactory(new LongSumAggregatorFactory("idx","index"),filter))).setGranularity(QueryRunnerTestHelper.dayGran).build();
