@@ -33,6 +33,7 @@
       }
       final PagingOffset offset=query.getPagingOffset(segment.getIdentifier());
       cursor.advanceTo(offset.startDelta());
+      int lastOffset=offset.startOffset();
       for (; !cursor.isDone() && offset.hasNext(); cursor.advance(), offset.next()) {
         final Map<String,Object> theEvent=Maps.newLinkedHashMap();
         theEvent.put(EventHolder.timestampKey,new DateTime(timestampColumnSelector.get()));
@@ -67,8 +68,9 @@
             theEvent.put(metric,selector.get());
           }
         }
-        builder.addEntry(new EventHolder(segment.getIdentifier(),offset.current(),theEvent));
+        builder.addEntry(new EventHolder(segment.getIdentifier(),lastOffset=offset.current(),theEvent));
       }
+      builder.finished(segment.getIdentifier(),lastOffset);
       return builder.build();
     }
   }

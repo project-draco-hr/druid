@@ -1,0 +1,35 @@
+{
+  PagingSpec pagingSpec=query.getPagingSpec();
+  Map<String,Integer> paging=pagingSpec.getPagingIdentifiers();
+  if (paging == null || paging.isEmpty()) {
+    return segments;
+  }
+  List<Interval> intervals=Lists.newArrayList(Iterables.transform(paging.keySet(),SegmentDesc.INTERVAL_EXTRACTOR));
+  Collections.sort(intervals,new Comparator<Interval>(){
+    @Override public int compare(    Interval o1,    Interval o2){
+      return Longs.compare(o1.getStartMillis(),o2.getStartMillis());
+    }
+  }
+);
+  List<T> queryIntervals=Lists.newArrayList(segments);
+  Iterator<T> it=queryIntervals.iterator();
+  if (query.isDescending()) {
+    final long lastEnd=intervals.get(intervals.size() - 1).getEndMillis();
+    while (it.hasNext()) {
+      T segment=it.next();
+      if (segment.getInterval().getStartMillis() > lastEnd) {
+        it.remove();
+      }
+    }
+  }
+ else {
+    final long firstStart=intervals.get(0).getStartMillis();
+    while (it.hasNext()) {
+      T segment=it.next();
+      if (segment.getInterval().getEndMillis() < firstStart) {
+        it.remove();
+      }
+    }
+  }
+  return queryIntervals;
+}
