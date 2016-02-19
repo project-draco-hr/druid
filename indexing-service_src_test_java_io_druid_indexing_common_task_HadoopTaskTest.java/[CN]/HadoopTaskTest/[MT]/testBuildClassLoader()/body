@@ -1,0 +1,23 @@
+{
+  final HadoopTask task=new HadoopTask("taskId","dataSource",ImmutableList.<String>of(),ImmutableMap.<String,Object>of()){
+    @Override public String getType(){
+      return null;
+    }
+    @Override public boolean isReady(    TaskActionClient taskActionClient) throws Exception {
+      return false;
+    }
+    @Override public TaskStatus run(    TaskToolbox toolbox) throws Exception {
+      return null;
+    }
+  }
+;
+  final TaskToolbox toolbox=EasyMock.createStrictMock(TaskToolbox.class);
+  EasyMock.expect(toolbox.getConfig()).andReturn(new TaskConfig(temporaryFolder.newFolder().toString(),null,null,null,ImmutableList.of("something:hadoop:1"),false,null,null)).once();
+  EasyMock.replay(toolbox);
+  final ClassLoader classLoader=task.buildClassLoader(toolbox);
+  assertClassLoaderIsSingular(classLoader);
+  final Class<?> hadoopClazz=Class.forName("org.apache.hadoop.fs.FSDataInputStream",false,classLoader);
+  assertClassLoaderIsSingular(hadoopClazz.getClassLoader());
+  final Class<?> druidHadoopConfigClazz=Class.forName("io.druid.indexer.HadoopDruidIndexerConfig",false,classLoader);
+  assertClassLoaderIsSingular(druidHadoopConfigClazz.getClassLoader());
+}
