@@ -1,0 +1,7 @@
+{
+  Assert.assertNull(classLoader.getParent());
+  Assert.assertFalse(classLoader instanceof ApplicationClassLoader);
+  Assert.assertTrue(classLoader instanceof URLClassLoader);
+  final ClassLoader appLoader=HadoopDruidConverterConfig.class.getClassLoader();
+  Assert.assertNotEquals(String.format("ClassLoader [%s] is not isolated!",classLoader),appLoader,classLoader);
+}
