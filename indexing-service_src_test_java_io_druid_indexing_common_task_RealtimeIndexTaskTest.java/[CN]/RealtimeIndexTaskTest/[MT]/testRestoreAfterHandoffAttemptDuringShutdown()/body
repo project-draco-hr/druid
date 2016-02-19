@@ -10,14 +10,14 @@
     while (task1.getFirehose() == null) {
       Thread.sleep(50);
     }
-    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task1.getFirehose();
+    final TestFirehose firehose=(TestFirehose)task1.getFirehose();
     firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo"))));
     firehose.close();
     while (mdc.getPublished().isEmpty()) {
       Thread.sleep(50);
     }
     publishedSegment=Iterables.getOnlyElement(mdc.getPublished());
-    Assert.assertEquals(1,countEvents(task1));
+    Assert.assertEquals(1,sumMetric(task1,"rows"));
     task1.stopGracefully();
     while (!statusFuture.isDone()) {
       Thread.sleep(50);
@@ -30,7 +30,7 @@
     while (task2.getFirehose() == null) {
       Thread.sleep(50);
     }
-    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task2.getFirehose();
+    final TestFirehose firehose=(TestFirehose)task2.getFirehose();
     firehose.close();
     Assert.assertEquals(ImmutableSet.of(publishedSegment),mdc.getPublished());
     while (handOffCallbacks.isEmpty()) {

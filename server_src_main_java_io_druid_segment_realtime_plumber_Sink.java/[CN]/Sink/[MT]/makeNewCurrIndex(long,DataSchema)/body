@@ -1,6 +1,6 @@
 {
   final IncrementalIndexSchema indexSchema=new IncrementalIndexSchema.Builder().withMinTimestamp(minTimestamp).withQueryGranularity(schema.getGranularitySpec().getQueryGranularity()).withDimensionsSpec(schema.getParser()).withMetrics(schema.getAggregators()).build();
-  final IncrementalIndex newIndex=new OnheapIncrementalIndex(indexSchema,config.getMaxRowsInMemory());
+  final IncrementalIndex newIndex=new OnheapIncrementalIndex(indexSchema,config.isReportParseExceptions(),config.getMaxRowsInMemory());
   final FireHydrant old;
 synchronized (hydrantLock) {
     old=currHydrant;

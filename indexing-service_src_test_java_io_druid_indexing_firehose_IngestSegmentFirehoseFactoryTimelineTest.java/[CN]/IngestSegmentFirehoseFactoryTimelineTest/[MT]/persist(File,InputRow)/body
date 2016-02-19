@@ -1,7 +1,7 @@
 {
   final File persistDir=new File(tmpDir,UUID.randomUUID().toString());
   final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withQueryGranularity(QueryGranularity.NONE).withMinTimestamp(JodaUtils.MIN_INSTANT).withDimensionsSpec(ROW_PARSER).withMetrics(new AggregatorFactory[]{new LongSumAggregatorFactory(METRICS[0],METRICS[0])}).build();
-  final OnheapIncrementalIndex index=new OnheapIncrementalIndex(schema,rows.length);
+  final OnheapIncrementalIndex index=new OnheapIncrementalIndex(schema,true,rows.length);
   for (  InputRow row : rows) {
     try {
       index.add(row);

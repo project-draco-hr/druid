@@ -1,0 +1,16 @@
+{
+  final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
+  final RealtimeIndexTask task=makeRealtimeTask(null,true);
+  final TaskToolbox taskToolbox=makeToolbox(task,mdc,tempFolder.newFolder());
+  final ListenableFuture<TaskStatus> statusFuture=runTask(task,taskToolbox);
+  while (task.getFirehose() == null) {
+    Thread.sleep(50);
+  }
+  final TestFirehose firehose=(TestFirehose)task.getFirehose();
+  firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1","1")),new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1","foo")),new MapBasedInputRow(now.minus(new Period("P1D")),ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1","foo")),new MapBasedInputRow(now,ImmutableList.of("dim2"),ImmutableMap.<String,Object>of("dim2","bar","met1",2.0))));
+  firehose.close();
+  expectedException.expect(ExecutionException.class);
+  expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(ParseException.class));
+  expectedException.expectCause(ThrowableMessageMatcher.hasMessage(CoreMatchers.containsString("Unable to parse metrics[met1], value[foo]")));
+  statusFuture.get();
+}
