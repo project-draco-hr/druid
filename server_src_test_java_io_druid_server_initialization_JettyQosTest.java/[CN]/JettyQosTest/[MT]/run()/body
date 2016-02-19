@@ -1,0 +1,18 @@
+{
+  for (int i=0; i < fastRequestsPerThread; i++) {
+    long startTime=System.currentTimeMillis();
+    try {
+      ListenableFuture<StatusResponseHolder> go=fastClient.go(new Request(HttpMethod.GET,new URL("http://localhost:" + port + "/default")),new StatusResponseHandler(Charset.defaultCharset()));
+      go.get();
+      fastCount.incrementAndGet();
+      fastElapsed.addAndGet(System.currentTimeMillis() - startTime);
+      latch.countDown();
+    }
+ catch (    InterruptedException e) {
+    }
+catch (    Exception e) {
+      e.printStackTrace();
+      throw Throwables.propagate(e);
+    }
+  }
+}
