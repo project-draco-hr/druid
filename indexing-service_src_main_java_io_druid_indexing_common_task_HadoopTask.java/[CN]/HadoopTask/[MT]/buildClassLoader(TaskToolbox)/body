@@ -10,14 +10,15 @@
   final List<URL> druidURLs=ImmutableList.copyOf(Collections2.filter(nonHadoopURLs,IS_DRUID_URL));
   final List<URL> nonHadoopNotDruidURLs=Lists.newArrayList(nonHadoopURLs);
   nonHadoopNotDruidURLs.removeAll(druidURLs);
-  ClassLoader classLoader=null;
-  classLoader=new URLClassLoader(nonHadoopNotDruidURLs.toArray(new URL[nonHadoopNotDruidURLs.size()]),classLoader);
+  final List<URL> localClassLoaderURLs=new ArrayList<>();
+  localClassLoaderURLs.addAll(nonHadoopNotDruidURLs);
   for (  final File hadoopDependency : Initialization.getHadoopDependencyFilesToLoad(finalHadoopDependencyCoordinates,extensionsConfig)) {
     final ClassLoader hadoopLoader=Initialization.getClassLoaderForExtension(hadoopDependency);
-    classLoader=new URLClassLoader(((URLClassLoader)hadoopLoader).getURLs(),classLoader);
+    localClassLoaderURLs.addAll(Arrays.asList(((URLClassLoader)hadoopLoader).getURLs()));
   }
-  classLoader=new URLClassLoader(druidURLs.toArray(new URL[druidURLs.size()]),classLoader);
-  classLoader=new URLClassLoader(extensionURLs.toArray(new URL[extensionURLs.size()]),classLoader);
+  localClassLoaderURLs.addAll(druidURLs);
+  localClassLoaderURLs.addAll(extensionURLs);
+  final ClassLoader classLoader=new URLClassLoader(localClassLoaderURLs.toArray(new URL[localClassLoaderURLs.size()]),null);
   final List<URL> jobUrls=Lists.newArrayList();
   jobUrls.addAll(nonHadoopURLs);
   jobUrls.addAll(extensionURLs);
