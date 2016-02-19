@@ -17,11 +17,19 @@ synchronized (tasks) {
   }
   final DateTime start=new DateTime();
   final long timeout=new Interval(start,taskConfig.getGracefulShutdownTimeout()).toDurationMillis();
-  log.info("Waiting %,dms for shutdown.",timeout);
+  log.info("Waiting up to %,dms for shutdown.",timeout);
   if (timeout > 0) {
     try {
-      exec.awaitTermination(timeout,TimeUnit.MILLISECONDS);
-      log.info("Finished stopping in %,dms.",System.currentTimeMillis() - start.getMillis());
+      final boolean terminated=exec.awaitTermination(timeout,TimeUnit.MILLISECONDS);
+      final long elapsed=System.currentTimeMillis() - start.getMillis();
+      if (terminated) {
+        log.info("Finished stopping in %,dms.",elapsed);
+      }
+ else {
+        final Set<String> stillRunning=ImmutableSet.copyOf(tasks.keySet());
+        log.makeAlert("Failed to stop forked tasks").addData("stillRunning",stillRunning).addData("elapsed",elapsed).emit();
+        log.warn("Executor failed to stop after %,dms, not waiting for it! Tasks still running: [%s]",elapsed,Joiner.on("; ").join(stillRunning));
+      }
     }
  catch (    InterruptedException e) {
       log.warn(e,"Interrupted while waiting for executor to finish.");
