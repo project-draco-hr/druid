@@ -1,0 +1,10 @@
+{
+  File directory=temporaryFolder.newFolder();
+  directory.setReadOnly();
+  LookupSnapshotTaker lookupSnapshotTaker=new LookupSnapshotTaker(mapper,directory.getAbsolutePath());
+  LookupBean lookupBean=new LookupBean();
+  lookupBean.name="name";
+  lookupBean.factory=new LookupFactoryMock();
+  List<LookupBean> lookupBeanList=Lists.newArrayList(lookupBean);
+  lookupSnapshotTaker.takeSnapshot(lookupBeanList);
+}

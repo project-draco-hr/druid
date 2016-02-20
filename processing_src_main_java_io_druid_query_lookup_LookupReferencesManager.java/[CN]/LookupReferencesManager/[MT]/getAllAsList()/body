@@ -1,0 +1,11 @@
+{
+  return Lists.newArrayList(Collections2.transform(lookupMap.entrySet(),new Function<Map.Entry<String,LookupExtractorFactory>,LookupBean>(){
+    @Nullable @Override public LookupBean apply(    @Nullable Map.Entry<String,LookupExtractorFactory> input){
+      final LookupBean lookupBean=new LookupBean();
+      lookupBean.factory=input.getValue();
+      lookupBean.name=input.getKey();
+      return lookupBean;
+    }
+  }
+));
+}

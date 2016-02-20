@@ -14,11 +14,10 @@
       binder.bind(JettyServerInitializer.class).to(RouterJettyServerInitializer.class).in(LazySingleton.class);
       LifecycleModule.register(binder,Server.class);
       DiscoveryModule.register(binder,Self.class);
-      LifecycleModule.register(binder,LookupReferencesManager.class);
     }
     @Provides @ManageLifecycle public ServerDiscoverySelector getCoordinatorServerDiscoverySelector(    TieredBrokerConfig config,    ServerDiscoveryFactory factory){
       return factory.createSelector(config.getCoordinatorServiceName());
     }
   }
-);
+,new LookupModule());
 }
