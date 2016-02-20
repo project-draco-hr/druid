@@ -1,8 +1,8 @@
 {
   return new Function<Result<TimeseriesResultValue>,Result<TimeseriesResultValue>>(){
     @Override public Result<TimeseriesResultValue> apply(    Result<TimeseriesResultValue> result){
-      final Map<String,Object> values=Maps.newHashMap();
       final TimeseriesResultValue holder=result.getValue();
+      final Map<String,Object> values=Maps.newHashMap(holder.getBaseObject());
       if (calculatePostAggs) {
         for (        AggregatorFactory agg : query.getAggregatorSpecs()) {
           values.put(agg.getName(),holder.getMetric(agg.getName()));
