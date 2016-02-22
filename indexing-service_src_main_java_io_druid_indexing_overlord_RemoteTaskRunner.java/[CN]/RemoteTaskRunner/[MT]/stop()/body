@@ -9,6 +9,9 @@
       zkWorker.close();
     }
     workerPathCache.close();
+    if (runPendingTasksExec != null) {
+      runPendingTasksExec.shutdown();
+    }
   }
  catch (  Exception e) {
     throw Throwables.propagate(e);

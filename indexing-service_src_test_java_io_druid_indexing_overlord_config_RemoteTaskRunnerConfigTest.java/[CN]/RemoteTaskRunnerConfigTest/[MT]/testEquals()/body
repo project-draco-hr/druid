@@ -1,12 +1,14 @@
 {
-  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT)),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT)));
+  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)));
   final Period timeout=Period.years(999);
   final String version="someVersion";
   final long max=20 * 1024;
-  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)));
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,timeout,version,max,timeout)));
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(timeout,DEFAULT_TIMEOUT,version,max,timeout)));
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,DEFAULT_VERSION,max,timeout)));
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,DEFAULT_MAX_ZNODE,timeout)));
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,DEFAULT_TIMEOUT)));
+  final int pendingTasksRunnerNumThreads=20;
+  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,timeout,version,max,timeout,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,DEFAULT_TIMEOUT,version,max,timeout,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,DEFAULT_VERSION,max,timeout,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,DEFAULT_MAX_ZNODE,timeout,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,DEFAULT_TIMEOUT,pendingTasksRunnerNumThreads)));
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)));
 }
