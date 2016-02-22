@@ -1,6 +1,6 @@
 {
   Interval interval=Interval.parse("2014/2015");
-  DatasourceIngestionSpec expected=new DatasourceIngestionSpec("test",interval,null,new SelectorDimFilter("dim","value"),QueryGranularity.DAY,Lists.newArrayList("d1","d2"),Lists.newArrayList("m1","m2","m3"),false);
+  DatasourceIngestionSpec expected=new DatasourceIngestionSpec("test",interval,null,null,new SelectorDimFilter("dim","value"),QueryGranularity.DAY,Lists.newArrayList("d1","d2"),Lists.newArrayList("m1","m2","m3"),false);
   DatasourceIngestionSpec actual=MAPPER.readValue(MAPPER.writeValueAsString(expected),DatasourceIngestionSpec.class);
   Assert.assertEquals(ImmutableList.of(interval),actual.getIntervals());
   Assert.assertEquals(expected,actual);

@@ -1,0 +1,19 @@
+{
+  List<DataSegment> segments=null;
+  try {
+    segments=metadataStorageCoordinator.getUsedSegmentsForIntervals(dataSourceName,intervals);
+  }
+ catch (  IOException ex) {
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.getMessage()).build();
+  }
+  Response.ResponseBuilder builder=Response.status(Response.Status.OK);
+  if (full != null) {
+    return builder.entity(segments).build();
+  }
+  return builder.entity(Iterables.transform(segments,new Function<DataSegment,String>(){
+    @Override public String apply(    DataSegment segment){
+      return segment.getIdentifier();
+    }
+  }
+)).build();
+}

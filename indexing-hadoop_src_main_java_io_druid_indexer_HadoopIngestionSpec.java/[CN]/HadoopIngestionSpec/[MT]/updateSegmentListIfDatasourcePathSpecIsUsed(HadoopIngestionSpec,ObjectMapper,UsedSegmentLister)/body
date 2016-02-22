@@ -23,6 +23,20 @@
     Map<String,Object> ingestionSpecMap=(Map<String,Object>)datasourcePathSpec.get(ingestionSpec);
     DatasourceIngestionSpec ingestionSpecObj=jsonMapper.convertValue(ingestionSpecMap,DatasourceIngestionSpec.class);
     List<DataSegment> segmentsList=segmentLister.getUsedSegmentsForIntervals(ingestionSpecObj.getDataSource(),ingestionSpecObj.getIntervals());
+    if (ingestionSpecObj.getSegments() != null) {
+      List<DataSegment> userSuppliedSegmentsList=ingestionSpecObj.getSegments();
+      if (segmentsList.size() == userSuppliedSegmentsList.size()) {
+        Set<DataSegment> segmentsSet=new HashSet<>(segmentsList);
+        for (        DataSegment userSegment : userSuppliedSegmentsList) {
+          if (!segmentsSet.contains(userSegment)) {
+            throw new IOException("user supplied segments list did not match with segments list obtained from db");
+          }
+        }
+      }
+ else {
+        throw new IOException("user supplied segments list did not match with segments list obtained from db");
+      }
+    }
     VersionedIntervalTimeline<String,DataSegment> timeline=new VersionedIntervalTimeline<>(Ordering.natural());
     for (    DataSegment segment : segmentsList) {
       timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
