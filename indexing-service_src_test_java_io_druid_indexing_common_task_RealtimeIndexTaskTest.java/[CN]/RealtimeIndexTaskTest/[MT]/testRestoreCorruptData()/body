@@ -8,7 +8,7 @@
     while (task1.getFirehose() == null) {
       Thread.sleep(50);
     }
-    final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task1.getFirehose();
+    final TestFirehose firehose=(TestFirehose)task1.getFirehose();
     firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo"))));
     task1.stopGracefully();
     final TaskStatus taskStatus=statusFuture.get();

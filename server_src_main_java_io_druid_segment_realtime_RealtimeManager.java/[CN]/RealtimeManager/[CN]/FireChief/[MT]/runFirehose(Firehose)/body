@@ -1,6 +1,6 @@
 {
   final Supplier<Committer> committerSupplier=Committers.supplierFromFirehose(firehose);
   while (firehose.hasMore()) {
-    Plumbers.addNextRow(committerSupplier,firehose,plumber,metrics);
+    Plumbers.addNextRow(committerSupplier,firehose,plumber,config.isReportParseExceptions(),metrics);
   }
 }

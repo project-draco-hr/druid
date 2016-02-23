@@ -7,14 +7,18 @@
   while (task.getFirehose() == null) {
     Thread.sleep(50);
   }
-  final EventReceiverFirehoseFactory.EventReceiverFirehose firehose=(EventReceiverFirehoseFactory.EventReceiverFirehose)task.getFirehose();
-  firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo")),new MapBasedInputRow(now,ImmutableList.of("dim2"),ImmutableMap.<String,Object>of("dim2","bar"))));
+  final TestFirehose firehose=(TestFirehose)task.getFirehose();
+  firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1","1")),new MapBasedInputRow(now.minus(new Period("P1D")),ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1",2.0)),new MapBasedInputRow(now,ImmutableList.of("dim2"),ImmutableMap.<String,Object>of("dim2","bar","met1",2.0))));
   firehose.close();
   while (mdc.getPublished().isEmpty()) {
     Thread.sleep(50);
   }
   publishedSegment=Iterables.getOnlyElement(mdc.getPublished());
-  Assert.assertEquals(2,countEvents(task));
+  Assert.assertEquals(2,task.getMetrics().processed());
+  Assert.assertEquals(1,task.getMetrics().thrownAway());
+  Assert.assertEquals(0,task.getMetrics().unparseable());
+  Assert.assertEquals(2,sumMetric(task,"rows"));
+  Assert.assertEquals(3,sumMetric(task,"met1"));
   for (  Map.Entry<SegmentDescriptor,Pair<Executor,Runnable>> entry : handOffCallbacks.entrySet()) {
     final Pair<Executor,Runnable> executorRunnablePair=entry.getValue();
     Assert.assertEquals(new SegmentDescriptor(publishedSegment.getInterval(),publishedSegment.getVersion(),publishedSegment.getShardSpec().getPartitionNum()),entry.getKey());

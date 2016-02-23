@@ -15,7 +15,7 @@
   EasyMock.expect(handoffNotifier.registerSegmentHandoffCallback(EasyMock.<SegmentDescriptor>anyObject(),EasyMock.<Executor>anyObject(),EasyMock.<Runnable>anyObject())).andReturn(true).anyTimes();
   emitter=EasyMock.createMock(ServiceEmitter.class);
   EasyMock.replay(announcer,segmentPublisher,dataSegmentPusher,handoffNotifierFactory,handoffNotifier,emitter);
-  tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null,buildV9Directly,0,0);
+  tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),rejectionPolicy,null,null,null,buildV9Directly,0,0,false);
   realtimePlumberSchool=new RealtimePlumberSchool(emitter,new DefaultQueryRunnerFactoryConglomerate(Maps.<Class<? extends Query>,QueryRunnerFactory>newHashMap()),dataSegmentPusher,announcer,segmentPublisher,handoffNotifierFactory,MoreExecutors.sameThreadExecutor(),TestHelper.getTestIndexMerger(),TestHelper.getTestIndexMergerV9(),TestHelper.getTestIndexIO(),MapCache.create(0),FireDepartmentTest.NO_CACHE_CONFIG,TestHelper.getObjectMapper());
   metrics=new FireDepartmentMetrics();
   plumber=(RealtimePlumber)realtimePlumberSchool.findPlumber(schema,tuningConfig,metrics);

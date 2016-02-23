@@ -55,10 +55,11 @@
   RealtimeIOConfig realtimeIOConfig=spec.getIOConfig();
   RealtimeTuningConfig tuningConfig=spec.getTuningConfig().withBasePersistDirectory(new File(toolbox.getTaskWorkDir(),"persist")).withVersioningPolicy(versioningPolicy);
   final FireDepartment fireDepartment=new FireDepartment(dataSchema,realtimeIOConfig,tuningConfig);
+  this.metrics=fireDepartment.getMetrics();
   final RealtimeMetricsMonitor metricsMonitor=new RealtimeMetricsMonitor(ImmutableList.of(fireDepartment),ImmutableMap.of(DruidMetrics.TASK_ID,new String[]{getId()}));
   this.queryRunnerFactoryConglomerate=toolbox.getQueryRunnerFactoryConglomerate();
   final PlumberSchool plumberSchool=new RealtimePlumberSchool(toolbox.getEmitter(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentPusher(),lockingSegmentAnnouncer,segmentPublisher,toolbox.getSegmentHandoffNotifierFactory(),toolbox.getQueryExecutorService(),toolbox.getIndexMerger(),toolbox.getIndexMergerV9(),toolbox.getIndexIO(),toolbox.getCache(),toolbox.getCacheConfig(),toolbox.getObjectMapper());
-  this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,fireDepartment.getMetrics());
+  this.plumber=plumberSchool.findPlumber(dataSchema,tuningConfig,metrics);
   Supplier<Committer> committerSupplier=null;
   try {
     plumber.startJob();
@@ -72,7 +73,7 @@ synchronized (this) {
       }
     }
     while (firehose != null && (!gracefullyStopped || firehoseDrainableByClosing) && firehose.hasMore()) {
-      Plumbers.addNextRow(committerSupplier,firehose,plumber,fireDepartment.getMetrics());
+      Plumbers.addNextRow(committerSupplier,firehose,plumber,tuningConfig.isReportParseExceptions(),metrics);
     }
   }
  catch (  Throwable e) {

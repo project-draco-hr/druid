@@ -4,7 +4,7 @@
       return null;
     }
   }
-,null),new RealtimeTuningConfig(1,new Period("PT10M"),null,null,null,null,1,new NoneShardSpec(),indexSpec,null,0,0)),null);
+,null),new RealtimeTuningConfig(1,new Period("PT10M"),null,null,null,null,1,new NoneShardSpec(),indexSpec,null,0,0,true)),null);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final RealtimeIndexTask task2=(RealtimeIndexTask)jsonMapper.readValue(json,Task.class);
@@ -13,6 +13,7 @@
   Assert.assertEquals("rofl",task.getTaskResource().getAvailabilityGroup());
   Assert.assertEquals(new Period("PT10M"),task.getRealtimeIngestionSchema().getTuningConfig().getWindowPeriod());
   Assert.assertEquals(Granularity.HOUR,task.getRealtimeIngestionSchema().getDataSchema().getGranularitySpec().getSegmentGranularity());
+  Assert.assertTrue(task.getRealtimeIngestionSchema().getTuningConfig().isReportParseExceptions());
   Assert.assertEquals(task.getId(),task2.getId());
   Assert.assertEquals(task.getGroupId(),task2.getGroupId());
   Assert.assertEquals(task.getDataSource(),task2.getDataSource());
