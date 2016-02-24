@@ -1,15 +1,18 @@
 {
-  final Optional<ByteSource> stream=taskRunner.streamTaskLog(taskid,offset);
-  if (stream.isPresent()) {
-    try {
+  if (!(taskRunner instanceof TaskLogStreamer)) {
+    return Response.status(501).entity(String.format("Log streaming not supported by [%s]",taskRunner.getClass().getCanonicalName())).build();
+  }
+  try {
+    final Optional<ByteSource> stream=((TaskLogStreamer)taskRunner).streamTaskLog(taskid,offset);
+    if (stream.isPresent()) {
       return Response.ok(stream.get().openStream()).build();
     }
- catch (    IOException e) {
-      log.warn(e,"Failed to read log for task: %s",taskid);
-      return Response.serverError().build();
+ else {
+      return Response.status(Response.Status.NOT_FOUND).build();
     }
   }
- else {
-    return Response.status(Response.Status.NOT_FOUND).build();
+ catch (  IOException e) {
+    log.warn(e,"Failed to read log for task: %s",taskid);
+    return Response.serverError().build();
   }
 }

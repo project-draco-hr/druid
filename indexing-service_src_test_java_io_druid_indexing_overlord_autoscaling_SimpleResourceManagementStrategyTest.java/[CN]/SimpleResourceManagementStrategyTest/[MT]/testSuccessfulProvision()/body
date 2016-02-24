@@ -5,7 +5,7 @@
   EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.newArrayList("aNode")));
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
   EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())));
-  EasyMock.expect(runner.getWorkers()).andReturn(Collections.<ZkWorker>singletonList(new TestZkWorker(testTask)));
+  EasyMock.expect(runner.getWorkers()).andReturn(Collections.singletonList(new TestZkWorker(testTask).getWorker()));
   EasyMock.replay(runner);
   EasyMock.replay(autoScaler);
   boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);

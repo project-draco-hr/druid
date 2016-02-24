@@ -1,5 +1,5 @@
 {
-  List<String> assignedTasks=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost())));
+  final List<String> assignedTasks=Lists.newArrayList(cf.getChildren().forPath(JOINER.join(indexerZkConfig.getTasksPath(),worker.getHost())));
   for (  Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
     if (entry.getValue() == null) {
       log.error("Huh? null work item for [%s]",entry.getKey());

@@ -5,7 +5,7 @@
   cf.start();
   cf.blockUntilConnected();
   cf.create().creatingParentsIfNeeded().forPath(basePath);
-  worker=new Worker("worker","localhost",3,"0");
+  worker=new Worker("worker","localhost",3,"0",DateTime.now());
   workerCuratorCoordinator=new WorkerCuratorCoordinator(jsonMapper,new IndexerZkConfig(new ZkPathsConfig(){
     @Override public String getBase(){
       return basePath;

@@ -6,9 +6,9 @@
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
   EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
-  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ZkWorker>asList(new TestZkWorker(NoopTask.create()),new TestZkWorker(NoopTask.create()))).times(2);
-  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<ZkWorker>newArrayList());
-  EasyMock.expect(runner.markWorkersLazy(EasyMock.<Predicate<ZkWorker>>anyObject(),EasyMock.anyInt())).andReturn(Collections.<ZkWorker>emptyList());
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.asList(new TestZkWorker(NoopTask.create()).getWorker(),new TestZkWorker(NoopTask.create()).getWorker())).times(2);
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<Worker>newArrayList());
+  EasyMock.expect(runner.markWorkersLazy(EasyMock.<Predicate<Worker>>anyObject(),EasyMock.anyInt())).andReturn(Collections.<Worker>emptyList());
   EasyMock.replay(runner);
   boolean terminatedSomething=simpleResourceManagementStrategy.doTerminate(runner);
   Assert.assertFalse(terminatedSomething);

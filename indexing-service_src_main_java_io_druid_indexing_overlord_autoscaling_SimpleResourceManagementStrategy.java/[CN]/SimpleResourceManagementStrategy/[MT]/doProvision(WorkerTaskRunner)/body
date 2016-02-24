@@ -1,0 +1,47 @@
+{
+  Collection<? extends TaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
+  Collection<Worker> workers=getWorkers(runner);
+synchronized (lock) {
+    boolean didProvision=false;
+    final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
+    if (workerConfig == null || workerConfig.getAutoScaler() == null) {
+      log.warn("No workerConfig available, cannot provision new workers.");
+      return false;
+    }
+    final Predicate<Worker> isValidWorker=createValidWorkerPredicate(config);
+    final int currValidWorkers=Collections2.filter(workers,isValidWorker).size();
+    final List<String> workerNodeIds=workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(workers,new Function<Worker,String>(){
+      @Override public String apply(      Worker input){
+        return input.getIp();
+      }
+    }
+)));
+    currentlyProvisioning.removeAll(workerNodeIds);
+    updateTargetWorkerCount(workerConfig,pendingTasks,workers);
+    int want=targetWorkerCount - (currValidWorkers + currentlyProvisioning.size());
+    while (want > 0) {
+      final AutoScalingData provisioned=workerConfig.getAutoScaler().provision();
+      final List<String> newNodes;
+      if (provisioned == null || (newNodes=provisioned.getNodeIds()).isEmpty()) {
+        break;
+      }
+ else {
+        currentlyProvisioning.addAll(newNodes);
+        lastProvisionTime=new DateTime();
+        scalingStats.addProvisionEvent(provisioned);
+        want-=provisioned.getNodeIds().size();
+        didProvision=true;
+      }
+    }
+    if (!currentlyProvisioning.isEmpty()) {
+      Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
+      log.info("%s provisioning. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
+      if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
+        log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+        workerConfig.getAutoScaler().terminateWithIds(Lists.newArrayList(currentlyProvisioning));
+        currentlyProvisioning.clear();
+      }
+    }
+    return didProvision;
+  }
+}
