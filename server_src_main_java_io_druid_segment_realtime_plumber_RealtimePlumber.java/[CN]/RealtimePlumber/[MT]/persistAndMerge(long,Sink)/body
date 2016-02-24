@@ -1,38 +1,39 @@
 {
   final String threadName=String.format("%s-%s-persist-n-merge",schema.getDataSource(),new DateTime(truncatedTime));
   mergeExecutor.execute(new ThreadRenamingRunnable(threadName){
+    final Interval interval=sink.getInterval();
+    Stopwatch mergeStopwatch=null;
     @Override public void doRun(){
-      final Interval interval=sink.getInterval();
-      if (sinks.get(truncatedTime) != sink) {
-        log.info("Sink[%s] was abandoned, bailing out of persist-n-merge.",sink);
-        return;
-      }
-      final File persistDir=computePersistDir(schema,interval);
-      final File mergedTarget=new File(persistDir,"merged");
-      final File isPushedMarker=new File(persistDir,"isPushedMarker");
-      if (!isPushedMarker.exists()) {
-        removeSegment(sink,mergedTarget);
-        if (mergedTarget.exists()) {
-          log.wtf("Merged target[%s] exists?!",mergedTarget);
+      try {
+        if (sinks.get(truncatedTime) != sink) {
+          log.info("Sink[%s] was abandoned, bailing out of persist-n-merge.",sink);
           return;
         }
-      }
- else {
-        log.info("Already pushed sink[%s]",sink);
-        return;
-      }
-      for (      FireHydrant hydrant : sink) {
-synchronized (hydrant) {
-          if (!hydrant.hasSwapped()) {
-            log.info("Hydrant[%s] hasn't swapped yet, swapping. Sink[%s]",hydrant,sink);
-            final int rowCount=persistHydrant(hydrant,schema,interval,null);
-            metrics.incrementRowOutputCount(rowCount);
+        final File persistDir=computePersistDir(schema,interval);
+        final File mergedTarget=new File(persistDir,"merged");
+        final File isPushedMarker=new File(persistDir,"isPushedMarker");
+        if (!isPushedMarker.exists()) {
+          removeSegment(sink,mergedTarget);
+          if (mergedTarget.exists()) {
+            log.wtf("Merged target[%s] exists?!",mergedTarget);
+            return;
           }
         }
-      }
-      final long mergeThreadCpuTime=VMUtils.safeGetThreadCpuTime();
-      final Stopwatch mergeStopwatch=Stopwatch.createStarted();
-      try {
+ else {
+          log.info("Already pushed sink[%s]",sink);
+          return;
+        }
+        for (        FireHydrant hydrant : sink) {
+synchronized (hydrant) {
+            if (!hydrant.hasSwapped()) {
+              log.info("Hydrant[%s] hasn't swapped yet, swapping. Sink[%s]",hydrant,sink);
+              final int rowCount=persistHydrant(hydrant,schema,interval,null);
+              metrics.incrementRowOutputCount(rowCount);
+            }
+          }
+        }
+        final long mergeThreadCpuTime=VMUtils.safeGetThreadCpuTime();
+        mergeStopwatch=Stopwatch.createStarted();
         List<QueryableIndex> indexes=Lists.newArrayList();
         for (        FireHydrant fireHydrant : sink) {
           Segment segment=fireHydrant.getSegment();
@@ -61,7 +62,9 @@ synchronized (hydrant) {
         }
       }
  finally {
-        mergeStopwatch.stop();
+        if (mergeStopwatch != null) {
+          mergeStopwatch.stop();
+        }
       }
     }
   }
