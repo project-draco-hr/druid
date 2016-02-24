@@ -13,11 +13,13 @@
       return dimLookup.size();
     }
     @Override public String get(    int index){
-      return dimLookup.getValue(index);
+      Comparable val=dimLookup.getValueFromSortedId(index);
+      String strVal=val != null ? val.toString() : null;
+      return strVal;
     }
     @Override public int indexOf(    String value){
       int id=dimDim.getId(value);
-      return id < 0 ? -1 : dimLookup.idToIndex(id);
+      return id < 0 ? -1 : dimLookup.getSortedIdFromUnsortedId(id);
     }
     @Override public Iterator<String> iterator(){
       return IndexedIterable.create(this).iterator();

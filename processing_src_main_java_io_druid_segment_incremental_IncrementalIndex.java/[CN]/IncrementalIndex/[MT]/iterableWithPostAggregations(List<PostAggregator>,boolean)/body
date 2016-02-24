@@ -8,9 +8,11 @@
           final TimeAndDims timeAndDims=input.getKey();
           final int rowOffset=input.getValue();
           int[][] theDims=timeAndDims.getDims();
+          ValueType[] types=timeAndDims.getTypes();
           Map<String,Object> theVals=Maps.newLinkedHashMap();
           for (int i=0; i < theDims.length; ++i) {
             int[] dim=theDims[i];
+            ValueType type=types[i];
             DimensionDesc dimensionDesc=dimensions.get(i);
             if (dimensionDesc == null) {
               continue;
@@ -21,14 +23,22 @@
               continue;
             }
             if (dim.length == 1) {
-              theVals.put(dimensionName,Strings.nullToEmpty(dimensionDesc.getValues().getValue(dim[0])));
+              Comparable val=dimensionDesc.getValues().getValue(dim[0]);
+              if (type == ValueType.STRING) {
+                val=Strings.nullToEmpty((String)val);
+              }
+              theVals.put(dimensionName,val);
             }
  else {
-              String[] dimStringValue=new String[dim.length];
-              for (int j=0; j < dimStringValue.length; j++) {
-                dimStringValue[j]=Strings.nullToEmpty(dimensionDesc.getValues().getValue(dim[j]));
+              Comparable[] dimVals=new Comparable[dim.length];
+              for (int j=0; j < dimVals.length; j++) {
+                Comparable val=dimensionDesc.getValues().getValue(dim[j]);
+                if (type == ValueType.STRING) {
+                  val=Strings.nullToEmpty((String)val);
+                }
+                dimVals[j]=val;
               }
-              theVals.put(dimensionName,dimStringValue);
+              theVals.put(dimensionName,dimVals);
             }
           }
           AggregatorType[] aggs=getAggsForRow(rowOffset);

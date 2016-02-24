@@ -5,12 +5,16 @@
   }
   final List<String> rowDimensions=row.getDimensions();
   int[][] dims;
+  ValueType[] types;
   List<int[]> overflow=null;
+  List<ValueType> overflowTypes=null;
 synchronized (dimensionDescs) {
     dims=new int[dimensionDescs.size()][];
+    types=new ValueType[dimensionDescs.size()];
     for (    String dimension : rowDimensions) {
-      List<String> dimensionValues=row.getDimension(dimension);
+      List<Comparable> dimensionValues;
       ColumnCapabilitiesImpl capabilities;
+      ValueType valType=null;
       DimensionDesc desc=dimensionDescs.get(dimension);
       if (desc != null) {
         capabilities=desc.getCapabilities();
@@ -19,10 +23,15 @@ synchronized (dimensionDescs) {
         capabilities=columnCapabilities.get(dimension);
         if (capabilities == null) {
           capabilities=new ColumnCapabilitiesImpl();
-          capabilities.setType(ValueType.STRING);
+          if (valType == null) {
+            valType=ValueType.STRING;
+          }
+          capabilities.setType(valType);
           columnCapabilities.put(dimension,capabilities);
         }
       }
+      valType=capabilities.getType();
+      dimensionValues=getRowDimensionAsComparables(row,dimension,valType);
       if (!capabilities.hasMultipleValues() && dimensionValues.size() > 1) {
         capabilities.setHasMultipleValues(true);
       }
@@ -30,25 +39,32 @@ synchronized (dimensionDescs) {
         desc=addNewDimension(dimension,capabilities);
         if (overflow == null) {
           overflow=Lists.newArrayList();
+          overflowTypes=Lists.newArrayList();
         }
         overflow.add(getDimVals(desc.getValues(),dimensionValues));
+        overflowTypes.add(valType);
       }
  else       if (desc.getIndex() > dims.length || dims[desc.getIndex()] != null) {
         throw new ISE("Dimension[%s] occurred more than once in InputRow",dimension);
       }
  else {
         dims[desc.getIndex()]=getDimVals(desc.getValues(),dimensionValues);
+        types[desc.getIndex()]=valType;
       }
     }
   }
   if (overflow != null) {
     int[][] newDims=new int[dims.length + overflow.size()][];
+    ValueType[] newTypes=new ValueType[dims.length + overflow.size()];
     System.arraycopy(dims,0,newDims,0,dims.length);
+    System.arraycopy(types,0,newTypes,0,dims.length);
     for (int i=0; i < overflow.size(); ++i) {
       newDims[dims.length + i]=overflow.get(i);
+      newTypes[dims.length + i]=overflowTypes.get(i);
     }
     dims=newDims;
+    types=newTypes;
   }
   long truncated=gran.truncate(row.getTimestampFromEpoch());
-  return new TimeAndDims(Math.max(truncated,minTimestamp),dims);
+  return new TimeAndDims(Math.max(truncated,minTimestamp),dims,types);
 }

@@ -33,7 +33,7 @@
         int numAdvanced=-1;
         boolean done;
 {
-          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new int[][]{}),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new int[][]{}));
+          cursorMap=index.getSubMap(new IncrementalIndex.TimeAndDims(timeStart,new int[][]{},null),new IncrementalIndex.TimeAndDims(Math.min(actualInterval.getEndMillis(),gran.next(input)),new int[][]{},null));
           if (descending) {
             cursorMap=cursorMap.descendingMap();
           }
@@ -142,8 +142,9 @@
               return maxId;
             }
             @Override public String lookupName(            int id){
-              final String value=dimValLookup.getValue(id);
-              return extractionFn == null ? value : extractionFn.apply(value);
+              final Comparable value=dimValLookup.getValue(id);
+              final String strValue=value == null ? null : value.toString();
+              return extractionFn == null ? strValue : extractionFn.apply(strValue);
             }
             @Override public int lookupId(            String name){
               if (extractionFn != null) {
@@ -248,7 +249,7 @@
                 if (dimIdx.length == 1) {
                   return dimDim.getValue(dimIdx[0]);
                 }
-                String[] dimVals=new String[dimIdx.length];
+                Comparable[] dimVals=new String[dimIdx.length];
                 for (int i=0; i < dimIdx.length; i++) {
                   dimVals[i]=dimDim.getValue(dimIdx[i]);
                 }

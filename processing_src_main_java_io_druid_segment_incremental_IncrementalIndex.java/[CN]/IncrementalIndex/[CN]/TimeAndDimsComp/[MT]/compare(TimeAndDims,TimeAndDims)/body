@@ -3,6 +3,22 @@
   int numComparisons=Math.min(lhs.dims.length,rhs.dims.length);
   int index=0;
   while (retVal == 0 && index < numComparisons) {
+    ValueType lhsType=lhs.types[index];
+    ValueType rhsType=rhs.types[index];
+    if (lhsType == null) {
+      if (rhsType == null) {
+        ++index;
+        continue;
+      }
+      return -1;
+    }
+    if (rhsType == null) {
+      return 1;
+    }
+    retVal=lhsType.compareTo(rhsType);
+    if (retVal != 0) {
+      return retVal;
+    }
     final int[] lhsIdxs=lhs.dims[index];
     final int[] rhsIdxs=rhs.dims[index];
     if (lhsIdxs == null) {
@@ -20,8 +36,8 @@
     while (retVal == 0 && valsIndex < lhsIdxs.length) {
       if (lhsIdxs[valsIndex] != rhsIdxs[valsIndex]) {
         final DimDim dimLookup=dimValues.get(index);
-        final String lhsVal=dimLookup.getValue(lhsIdxs[valsIndex]);
-        final String rhsVal=dimLookup.getValue(rhsIdxs[valsIndex]);
+        final Comparable lhsVal=dimLookup.getValue(lhsIdxs[valsIndex]);
+        final Comparable rhsVal=dimLookup.getValue(rhsIdxs[valsIndex]);
         if (lhsVal != null && rhsVal != null) {
           retVal=lhsVal.compareTo(rhsVal);
         }
