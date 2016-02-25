@@ -1,13 +1,13 @@
 {
   for (  final FireDepartment fireDepartment : fireDepartments) {
-    DataSchema schema=fireDepartment.getDataSchema();
-    final FireChief chief=new FireChief(fireDepartment);
-    Map<Integer,FireChief> chiefs=this.chiefs.get(schema.getDataSource());
-    if (chiefs == null) {
-      chiefs=new HashMap<Integer,FireChief>();
-      this.chiefs.put(schema.getDataSource(),chiefs);
+    final DataSchema schema=fireDepartment.getDataSchema();
+    final FireChief chief=new FireChief(fireDepartment,conglomerate);
+    Map<Integer,FireChief> partitionChiefs=chiefs.get(schema.getDataSource());
+    if (partitionChiefs == null) {
+      partitionChiefs=new HashMap<>();
+      chiefs.put(schema.getDataSource(),partitionChiefs);
     }
-    chiefs.put(fireDepartment.getTuningConfig().getShardSpec().getPartitionNum(),chief);
+    partitionChiefs.put(fireDepartment.getTuningConfig().getShardSpec().getPartitionNum(),chief);
     chief.setName(String.format("chief-%s[%s]",schema.getDataSource(),fireDepartment.getTuningConfig().getShardSpec().getPartitionNum()));
     chief.setDaemon(true);
     chief.start();
