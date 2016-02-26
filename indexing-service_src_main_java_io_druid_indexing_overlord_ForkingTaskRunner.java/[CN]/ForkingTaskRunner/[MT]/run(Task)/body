@@ -53,14 +53,15 @@ synchronized (tasks) {
                 command.add(config.getJavaCommand());
                 command.add("-cp");
                 command.add(taskClasspath);
-                Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts(),jsonMapper));
+                Iterables.addAll(command,new QuotableWhiteSpaceSplitter(config.getJavaOpts()));
+                Iterables.addAll(command,config.getJavaOptsArray());
                 Object taskJavaOpts=task.getContextValue(ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY);
                 if (taskJavaOpts != null) {
-                  Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts,jsonMapper));
+                  Iterables.addAll(command,new QuotableWhiteSpaceSplitter((String)taskJavaOpts));
                 }
                 for (                String propName : props.stringPropertyNames()) {
                   for (                  String allowedPrefix : config.getAllowedPrefixes()) {
-                    if (propName.startsWith(allowedPrefix) && !ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY.equals(propName)) {
+                    if (propName.startsWith(allowedPrefix) && !ForkingTaskRunnerConfig.JAVA_OPTS_PROPERTY.equals(propName) && !ForkingTaskRunnerConfig.JAVA_OPTS_ARRAY_PROPERTY.equals(propName)) {
                       command.add(String.format("-D%s=%s",propName,props.getProperty(propName)));
                     }
                   }
