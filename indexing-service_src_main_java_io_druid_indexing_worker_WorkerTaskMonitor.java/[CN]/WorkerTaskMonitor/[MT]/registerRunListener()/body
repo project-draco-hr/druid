@@ -1,0 +1,11 @@
+{
+  pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
+    @Override public void childEvent(    CuratorFramework curatorFramework,    PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+      if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
+        final Task task=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
+        notices.add(new RunNotice(task));
+      }
+    }
+  }
+);
+}

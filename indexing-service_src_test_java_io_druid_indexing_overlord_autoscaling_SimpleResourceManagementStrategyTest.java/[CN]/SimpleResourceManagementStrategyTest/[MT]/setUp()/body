@@ -1,7 +1,6 @@
 {
   autoScaler=EasyMock.createMock(AutoScaler.class);
-  final IndexSpec indexSpec=new IndexSpec();
-  testTask=new TestMergeTask("task1","dummyDs",Lists.newArrayList(new DataSegment("dummyDs",new Interval("2012-01-01/2012-01-02"),new DateTime().toString(),null,null,null,null,0,0)),Lists.<AggregatorFactory>newArrayList(),indexSpec);
+  testTask=TestTasks.immediateSuccess("task1");
   final SimpleResourceManagementConfig simpleResourceManagementConfig=new SimpleResourceManagementConfig().setWorkerIdleTimeout(new Period(0)).setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(1).setPendingTaskTimeout(new Period(0)).setWorkerVersion("");
   final ResourceManagementSchedulerConfig schedulerConfig=new ResourceManagementSchedulerConfig();
   workerConfig=new AtomicReference<>(new WorkerBehaviorConfig(null,autoScaler));

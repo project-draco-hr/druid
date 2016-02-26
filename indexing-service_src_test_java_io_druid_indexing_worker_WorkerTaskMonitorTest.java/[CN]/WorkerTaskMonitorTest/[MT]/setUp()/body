@@ -14,8 +14,8 @@
 ,null,null,null,null,null),new TestRemoteTaskRunnerConfig(new Period("PT1S")),cf,worker);
   workerCuratorCoordinator.start();
   workerTaskMonitor=createTaskMonitor();
-  jsonMapper.registerSubtypes(new NamedType(TestMergeTask.class,"test"));
+  TestTasks.registerSubtypes(jsonMapper);
   jsonMapper.registerSubtypes(new NamedType(TestRealtimeTask.class,"test_realtime"));
   workerTaskMonitor.start();
-  task=TestMergeTask.createDummyTask("test");
+  task=TestTasks.immediateSuccess("test");
 }

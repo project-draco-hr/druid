@@ -30,6 +30,9 @@
   runTaskCountDownLatches[Integer.parseInt(taskId_1)].await();
   response=overlordResource.getRunningTasks();
   Assert.assertEquals(1,(((List)response.getEntity()).size()));
+  final OverlordResource.TaskResponseObject taskResponseObject=((List<OverlordResource.TaskResponseObject>)response.getEntity()).get(0);
+  Assert.assertEquals(taskId_1,taskResponseObject.toJson().get("id"));
+  Assert.assertEquals(TASK_LOCATION,taskResponseObject.toJson().get("location"));
   taskCompletionCountDownLatches[Integer.parseInt(taskId_1)].countDown();
   waitForTaskStatus(taskId_1,TaskStatus.Status.SUCCESS);
   response=overlordResource.getCompleteTasks();

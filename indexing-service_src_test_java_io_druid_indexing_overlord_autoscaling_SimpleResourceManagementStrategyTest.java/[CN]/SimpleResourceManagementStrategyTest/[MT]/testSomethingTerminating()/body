@@ -5,7 +5,7 @@
   EasyMock.expect(autoScaler.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.newArrayList("ip")));
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
-  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime()))).times(2);
   EasyMock.expect(runner.getWorkers()).andReturn(Collections.singletonList(new TestZkWorker(testTask).getWorker())).times(2);
   EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<Worker>newArrayList()).times(2);
   EasyMock.expect(runner.markWorkersLazy(EasyMock.<Predicate<Worker>>anyObject(),EasyMock.anyInt())).andReturn(Collections.singletonList(new TestZkWorker(testTask).getWorker()));

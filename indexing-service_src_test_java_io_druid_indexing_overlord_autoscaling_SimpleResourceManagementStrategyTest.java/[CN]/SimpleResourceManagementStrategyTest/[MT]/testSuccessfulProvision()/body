@@ -4,7 +4,7 @@
   EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList());
   EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.newArrayList("aNode")));
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
-  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null).withQueueInsertionTime(new DateTime())));
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime())));
   EasyMock.expect(runner.getWorkers()).andReturn(Collections.singletonList(new TestZkWorker(testTask).getWorker()));
   EasyMock.replay(runner);
   EasyMock.replay(autoScaler);

@@ -1,0 +1,13 @@
+{
+  if (running.containsKey(task.getId())) {
+    log.warn("Got run notice for task [%s] that I am already running...",task.getId());
+    workerCuratorCoordinator.removeTaskRunZnode(task.getId());
+    return;
+  }
+  log.info("Submitting runnable for task[%s]",task.getId());
+  workerCuratorCoordinator.updateTaskStatusAnnouncement(TaskAnnouncement.create(task,TaskStatus.running(task.getId()),TaskLocation.unknown()));
+  log.info("Affirmative. Running task [%s]",task.getId());
+  workerCuratorCoordinator.removeTaskRunZnode(task.getId());
+  final ListenableFuture<TaskStatus> future=taskRunner.run(task);
+  addRunningTask(task,future);
+}

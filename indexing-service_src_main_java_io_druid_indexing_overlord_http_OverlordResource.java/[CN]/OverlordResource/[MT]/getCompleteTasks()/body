@@ -1,7 +1,7 @@
 {
   final List<TaskResponseObject> completeTasks=Lists.transform(taskStorageQueryAdapter.getRecentlyFinishedTaskStatuses(),new Function<TaskStatus,TaskResponseObject>(){
     @Override public TaskResponseObject apply(    TaskStatus taskStatus){
-      return new TaskResponseObject(taskStatus.getId(),new DateTime(0),new DateTime(0),Optional.of(taskStatus));
+      return new TaskResponseObject(taskStatus.getId(),new DateTime(0),new DateTime(0),Optional.of(taskStatus),TaskLocation.unknown());
     }
   }
 );

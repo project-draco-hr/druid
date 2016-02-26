@@ -1,0 +1,22 @@
+{
+  final TaskDetails details=running.get(task.getId());
+  if (details == null) {
+    log.warn("Got status notice for task [%s] that isn't running...",task.getId());
+    return;
+  }
+  if (!status.isComplete()) {
+    log.warn("WTF?! Got status notice for task [%s] that isn't complete (status = [%s])...",task.getId(),status.getStatusCode());
+    return;
+  }
+  details.status=status.withDuration(System.currentTimeMillis() - details.startTime);
+  try {
+    workerCuratorCoordinator.updateTaskStatusAnnouncement(TaskAnnouncement.create(details.task,details.status,details.location));
+    log.info("Job's finished. Completed [%s] with status [%s]",task.getId(),status.getStatusCode());
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Failed to update task announcement").addData("task",task.getId()).emit();
+  }
+ finally {
+    running.remove(task.getId());
+  }
+}

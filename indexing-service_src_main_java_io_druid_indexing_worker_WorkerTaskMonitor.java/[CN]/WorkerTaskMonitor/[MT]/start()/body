@@ -1,26 +1,26 @@
 {
-  try {
-    final List<Pair<Task,ListenableFuture<TaskStatus>>> restored=taskRunner.restore();
-    for (    Pair<Task,ListenableFuture<TaskStatus>> pair : restored) {
-      submitTaskRunnable(pair.lhs,pair.rhs);
-    }
-    for (    TaskAnnouncement announcement : workerCuratorCoordinator.getAnnouncements()) {
-      if (!isTaskRunning(announcement.getTaskStatus().getId()) && announcement.getTaskStatus().isRunnable()) {
-        workerCuratorCoordinator.updateAnnouncement(TaskAnnouncement.create(announcement.getTaskStatus().getId(),announcement.getTaskResource(),TaskStatus.failure(announcement.getTaskStatus().getId())));
-      }
-    }
-    pathChildrenCache.getListenable().addListener(new PathChildrenCacheListener(){
-      @Override public void childEvent(      CuratorFramework curatorFramework,      PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
-        if (pathChildrenCacheEvent.getType().equals(PathChildrenCacheEvent.Type.CHILD_ADDED)) {
-          final Task task=jsonMapper.readValue(cf.getData().forPath(pathChildrenCacheEvent.getData().getPath()),Task.class);
-          submitTaskRunnable(task,null);
+synchronized (lifecycleLock) {
+    Preconditions.checkState(!started,"already started");
+    Preconditions.checkState(!exec.isShutdown(),"already stopped");
+    started=true;
+    try {
+      restoreRestorableTasks();
+      cleanupStaleAnnouncements();
+      registerRunListener();
+      registerLocationListener();
+      pathChildrenCache.start();
+      exec.submit(new Runnable(){
+        @Override public void run(){
+          mainLoop();
         }
       }
-    }
 );
-    pathChildrenCache.start();
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Exception starting WorkerTaskMonitor").addData("exception",e.toString()).emit();
+      log.info("Started WorkerTaskMonitor.");
+      started=true;
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Exception starting WorkerTaskMonitor").emit();
+      throw Throwables.propagate(e);
+    }
   }
 }

@@ -13,7 +13,7 @@ synchronized (statusLock) {
       log.makeAlert("WTF?! Got a null work item from pending tasks?! How can this be?!").addData("taskId",task.getId()).emit();
       return false;
     }
-    RemoteTaskRunnerWorkItem newWorkItem=workItem.withWorker(theZkWorker.getWorker());
+    RemoteTaskRunnerWorkItem newWorkItem=workItem.withWorker(theZkWorker.getWorker(),null);
     runningTasks.put(task.getId(),newWorkItem);
     log.info("Task %s switched from pending to running (on [%s])",task.getId(),newWorkItem.getWorker().getHost());
     Stopwatch timeoutStopwatch=Stopwatch.createStarted();

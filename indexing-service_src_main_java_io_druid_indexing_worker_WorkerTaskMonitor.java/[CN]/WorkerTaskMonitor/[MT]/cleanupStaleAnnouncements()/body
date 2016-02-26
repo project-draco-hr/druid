@@ -1,0 +1,8 @@
+{
+  for (  TaskAnnouncement announcement : workerCuratorCoordinator.getAnnouncements()) {
+    if (!running.containsKey(announcement.getTaskStatus().getId()) && announcement.getTaskStatus().isRunnable()) {
+      log.info("Cleaning up stale announcement for task [%s].",announcement.getTaskStatus().getId());
+      workerCuratorCoordinator.updateTaskStatusAnnouncement(TaskAnnouncement.create(announcement.getTaskStatus().getId(),announcement.getTaskResource(),TaskStatus.failure(announcement.getTaskStatus().getId()),TaskLocation.unknown()));
+    }
+  }
+}

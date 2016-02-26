@@ -1,0 +1,16 @@
+{
+  try {
+    while (!Thread.currentThread().isInterrupted()) {
+      final Notice notice=notices.take();
+      try {
+        notice.handle();
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to handle notice").addData("noticeClass",notice.getClass().getSimpleName()).addData("noticeTaskId",notice.getTaskId()).emit();
+      }
+    }
+  }
+ catch (  InterruptedException e) {
+    log.info("WorkerTaskMonitor interrupted, exiting.");
+  }
+}

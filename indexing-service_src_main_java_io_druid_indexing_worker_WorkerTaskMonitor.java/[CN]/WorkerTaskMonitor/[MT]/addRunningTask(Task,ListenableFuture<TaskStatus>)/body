@@ -1,0 +1,12 @@
+{
+  running.put(task.getId(),new TaskDetails(task));
+  Futures.addCallback(future,new FutureCallback<TaskStatus>(){
+    @Override public void onSuccess(    TaskStatus result){
+      notices.add(new StatusNotice(task,result));
+    }
+    @Override public void onFailure(    Throwable t){
+      notices.add(new StatusNotice(task,TaskStatus.failure(task.getId())));
+    }
+  }
+);
+}

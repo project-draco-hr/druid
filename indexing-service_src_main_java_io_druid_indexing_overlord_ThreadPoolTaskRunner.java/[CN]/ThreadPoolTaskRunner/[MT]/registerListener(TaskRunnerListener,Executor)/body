@@ -1,0 +1,7 @@
+{
+  final Pair<TaskRunnerListener,Executor> listenerPair=Pair.of(listener,executor);
+  listeners.add(listenerPair);
+  for (  ThreadPoolTaskRunnerWorkItem item : runningItems) {
+    TaskRunnerUtils.notifyLocationChanged(ImmutableList.of(listenerPair),item.getTaskId(),item.getLocation());
+  }
+}

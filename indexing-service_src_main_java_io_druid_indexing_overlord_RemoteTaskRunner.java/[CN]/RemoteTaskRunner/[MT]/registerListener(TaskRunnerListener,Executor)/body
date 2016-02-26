@@ -1,0 +1,9 @@
+{
+  final Pair<TaskRunnerListener,Executor> listenerPair=Pair.of(listener,executor);
+synchronized (statusLock) {
+    for (    Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
+      TaskRunnerUtils.notifyLocationChanged(ImmutableList.of(listenerPair),entry.getKey(),entry.getValue().getLocation());
+    }
+    listeners.add(listenerPair);
+  }
+}
