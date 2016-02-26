@@ -2,6 +2,8 @@
   final Path path=getTaskLogFileFromId(taskId);
   log.info("Writing task log to: %s",path);
   final FileSystem fs=path.getFileSystem(hadoopConfig);
-  FileUtil.copy(logFile,fs,path,false,hadoopConfig);
-  log.info("Wrote task log to: %s",path);
-}
+  try (final InputStream in=new FileInputStream(logFile);final OutputStream out=fs.create(path,true)){
+    ByteStreams.copy(in,out);
+    log.info("Wrote task log to: %s",path);
+  }
+ }

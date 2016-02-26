@@ -1,0 +1,12 @@
+{
+  final File tmpDir=tempFolder.newFolder();
+  final File logDir=new File(tmpDir,"logs");
+  final File logFile=new File(tmpDir,"log");
+  final TaskLogs taskLogs=new HdfsTaskLogs(new HdfsTaskLogsConfig(logDir.toString()),new Configuration());
+  Files.write("blah",logFile,Charsets.UTF_8);
+  taskLogs.pushTaskLog("foo",logFile);
+  Assert.assertEquals("blah",readLog(taskLogs,0));
+  Files.write("blah blah",logFile,Charsets.UTF_8);
+  taskLogs.pushTaskLog("foo",logFile);
+  Assert.assertEquals("blah blah",readLog(taskLogs,0));
+}
