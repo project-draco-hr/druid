@@ -1,0 +1,31 @@
+{
+  Preconditions.checkNotNull(cloudFilesApi,"null cloudFilesApi");
+  final LinkedList<CloudFilesBlob> objectQueue=Lists.newLinkedList(blobs);
+  return new FileIteratingFirehose(new Iterator<LineIterator>(){
+    @Override public boolean hasNext(){
+      return !objectQueue.isEmpty();
+    }
+    @Override public LineIterator next(){
+      final CloudFilesBlob nextURI=objectQueue.poll();
+      final String region=nextURI.getRegion();
+      final String container=nextURI.getContainer();
+      final String path=nextURI.getPath();
+      log.info("Retrieving file from region[%s], container[%s] and path [%s]",region,container,path);
+      CloudFilesObjectApiProxy objectApi=new CloudFilesObjectApiProxy(cloudFilesApi,region,container);
+      final CloudFilesByteSource byteSource=new CloudFilesByteSource(objectApi,path);
+      try {
+        final InputStream innerInputStream=byteSource.openStream();
+        final InputStream outerInputStream=path.endsWith(".gz") ? CompressionUtils.gzipInputStream(innerInputStream) : innerInputStream;
+        return IOUtils.lineIterator(new BufferedReader(new InputStreamReader(outerInputStream,Charsets.UTF_8)));
+      }
+ catch (      IOException e) {
+        log.error(e,"Exception opening container[%s] blob[%s] from region[%s]",container,path,region);
+        throw Throwables.propagate(e);
+      }
+    }
+    @Override public void remove(){
+      throw new UnsupportedOperationException();
+    }
+  }
+,stringInputRowParser);
+}
