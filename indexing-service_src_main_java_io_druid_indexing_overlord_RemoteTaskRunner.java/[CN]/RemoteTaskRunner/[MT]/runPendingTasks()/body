@@ -5,15 +5,20 @@
         List<RemoteTaskRunnerWorkItem> copy=Lists.newArrayList(pendingTasks.values());
         for (        RemoteTaskRunnerWorkItem taskRunnerWorkItem : copy) {
           String taskId=taskRunnerWorkItem.getTaskId();
-          try {
-            if (tryAssignTask(pendingTaskPayloads.get(taskId),taskRunnerWorkItem)) {
-              pendingTaskPayloads.remove(taskId);
+          if (tryAssignTasks.putIfAbsent(taskId,taskId) == null) {
+            try {
+              if (tryAssignTask(pendingTaskPayloads.get(taskId),taskRunnerWorkItem)) {
+                pendingTaskPayloads.remove(taskId);
+              }
             }
-          }
- catch (          Exception e) {
-            log.makeAlert(e,"Exception while trying to assign task").addData("taskId",taskRunnerWorkItem.getTaskId()).emit();
-            RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(taskId);
-            taskComplete(workItem,null,TaskStatus.failure(taskId));
+ catch (            Exception e) {
+              log.makeAlert(e,"Exception while trying to assign task").addData("taskId",taskRunnerWorkItem.getTaskId()).emit();
+              RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(taskId);
+              taskComplete(workItem,null,TaskStatus.failure(taskId));
+            }
+ finally {
+              tryAssignTasks.remove(taskId);
+            }
           }
         }
       }

@@ -1,12 +1,14 @@
 {
-  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT)).hashCode(),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT)).hashCode());
+  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)).hashCode(),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,DEFAULT_TIMEOUT,DEFAULT_VERSION,DEFAULT_MAX_ZNODE,DEFAULT_TIMEOUT,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)).hashCode());
   final Period timeout=Period.years(999);
   final String version="someVersion";
   final long max=20 * 1024;
-  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode());
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,timeout,version,max,timeout)).hashCode());
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,DEFAULT_TIMEOUT,version,max,timeout)).hashCode());
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,DEFAULT_VERSION,max,timeout)).hashCode());
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,DEFAULT_MAX_ZNODE,timeout)).hashCode());
-  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,DEFAULT_TIMEOUT)).hashCode());
+  final int pendingTasksRunnerNumThreads=20;
+  Assert.assertEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(DEFAULT_TIMEOUT,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,DEFAULT_TIMEOUT,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,DEFAULT_VERSION,max,timeout,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,DEFAULT_MAX_ZNODE,timeout,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,DEFAULT_TIMEOUT,pendingTasksRunnerNumThreads)).hashCode());
+  Assert.assertNotEquals(reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,pendingTasksRunnerNumThreads)).hashCode(),reflect(generateRemoteTaskRunnerConfig(timeout,timeout,version,max,timeout,DEFAULT_PENDING_TASKS_RUNNER_NUM_THREADS)).hashCode());
 }

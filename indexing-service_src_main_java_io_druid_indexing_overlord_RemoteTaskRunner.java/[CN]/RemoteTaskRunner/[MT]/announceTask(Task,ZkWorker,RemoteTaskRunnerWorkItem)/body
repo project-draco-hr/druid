@@ -22,7 +22,7 @@ synchronized (statusLock) {
       statusLock.wait(waitMs);
       long elapsed=timeoutStopwatch.elapsed(TimeUnit.MILLISECONDS);
       if (elapsed >= waitMs) {
-        log.error("Something went wrong! [%s] never ran task [%s]! Timeout: (%s >= %s)!",worker,task.getId(),elapsed,config.getTaskAssignmentTimeout());
+        log.makeAlert("Task assignment timed out on worker [%s], never ran task [%s]! Timeout: (%s >= %s)!",worker,task.getId(),elapsed,config.getTaskAssignmentTimeout());
         taskComplete(taskRunnerWorkItem,theZkWorker,TaskStatus.failure(task.getId()));
         break;
       }

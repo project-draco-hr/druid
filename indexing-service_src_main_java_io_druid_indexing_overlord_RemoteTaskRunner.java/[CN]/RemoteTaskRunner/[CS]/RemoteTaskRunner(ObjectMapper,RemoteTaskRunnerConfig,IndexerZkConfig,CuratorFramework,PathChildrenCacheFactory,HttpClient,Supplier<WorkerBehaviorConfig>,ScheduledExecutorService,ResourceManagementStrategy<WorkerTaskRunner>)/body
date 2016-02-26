@@ -10,4 +10,5 @@
   this.workerConfigRef=workerConfigRef;
   this.cleanupExec=MoreExecutors.listeningDecorator(cleanupExec);
   this.resourceManagement=resourceManagement;
+  this.runPendingTasksExec=Execs.multiThreaded(config.getPendingTasksRunnerNumThreads(),"rtr-pending-tasks-runner-%d");
 }
