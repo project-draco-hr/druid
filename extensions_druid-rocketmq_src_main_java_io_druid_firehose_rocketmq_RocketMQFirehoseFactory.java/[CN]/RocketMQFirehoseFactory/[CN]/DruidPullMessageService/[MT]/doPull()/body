@@ -1,0 +1,36 @@
+{
+  for (  DruidPullRequest pullRequest : requestsRead) {
+    PullResult pullResult;
+    try {
+      if (!pullRequest.isLongPull()) {
+        pullResult=defaultMQPullConsumer.pull(pullRequest.getMessageQueue(),pullRequest.getTag(),pullRequest.getNextBeginOffset(),pullRequest.getPullBatchSize());
+      }
+ else {
+        pullResult=defaultMQPullConsumer.pullBlockIfNotFound(pullRequest.getMessageQueue(),pullRequest.getTag(),pullRequest.getNextBeginOffset(),pullRequest.getPullBatchSize());
+      }
+switch (pullResult.getPullStatus()) {
+case FOUND:
+        if (!messageQueueTreeSetMap.keySet().contains(pullRequest.getMessageQueue())) {
+          messageQueueTreeSetMap.putIfAbsent(pullRequest.getMessageQueue(),new ConcurrentSkipListSet<>(new MessageComparator()));
+        }
+      messageQueueTreeSetMap.get(pullRequest.getMessageQueue()).addAll(pullResult.getMsgFoundList());
+    break;
+case NO_NEW_MSG:
+case NO_MATCHED_MSG:
+  break;
+case OFFSET_ILLEGAL:
+LOGGER.error("Bad Pull Request: Offset is illegal. Offset used: {}",pullRequest.getNextBeginOffset());
+break;
+default :
+break;
+}
+}
+ catch (MQClientException|RemotingException|MQBrokerException|InterruptedException e) {
+LOGGER.error("Failed to pull message from broker.",e);
+}
+ finally {
+pullRequest.getCountDownLatch().countDown();
+}
+}
+requestsRead.clear();
+}
