@@ -3,6 +3,19 @@
   collectRequest.setRoot(new Dependency(versionedArtifact,JavaScopes.RUNTIME));
   final DependencyRequest dependencyRequest=new DependencyRequest(collectRequest,DependencyFilterUtils.andFilter(DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME),new DependencyFilter(){
     @Override public boolean accept(    DependencyNode node,    List<DependencyNode> parents){
+      String scope=node.getDependency().getScope();
+      if (scope != null) {
+        scope=scope.toLowerCase();
+        if (scope.equals("provided")) {
+          return false;
+        }
+        if (scope.equals("test")) {
+          return false;
+        }
+        if (scope.equals("system")) {
+          return false;
+        }
+      }
       if (accept(node.getArtifact())) {
         return false;
       }
