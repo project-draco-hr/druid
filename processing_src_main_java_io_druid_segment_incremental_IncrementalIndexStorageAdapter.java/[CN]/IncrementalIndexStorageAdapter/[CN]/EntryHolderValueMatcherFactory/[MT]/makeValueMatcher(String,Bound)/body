@@ -12,7 +12,11 @@
         return false;
       }
       for (      int dimVal : dims[dimIndex]) {
-        List<String> stringCoords=Lists.newArrayList(SPLITTER.split(dimDim.getValue(dimVal)));
+        Comparable fullDimVal=dimDim.getValue(dimVal);
+        if (!(fullDimVal instanceof String)) {
+          return false;
+        }
+        List<String> stringCoords=Lists.newArrayList(SPLITTER.split((String)fullDimVal));
         float[] coords=new float[stringCoords.size()];
         for (int j=0; j < coords.length; j++) {
           coords[j]=Float.valueOf(stringCoords.get(j));

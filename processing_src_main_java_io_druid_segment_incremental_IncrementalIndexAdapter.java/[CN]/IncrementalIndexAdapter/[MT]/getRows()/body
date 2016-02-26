@@ -2,9 +2,9 @@
   return new Iterable<Rowboat>(){
     @Override public Iterator<Rowboat> iterator(){
       final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
-      final IncrementalIndex.SortedDimLookup[] dimLookups=new IncrementalIndex.SortedDimLookup[dimensions.size()];
+      final IncrementalIndex.SortedDimLookup[] sortedDimLookups=new IncrementalIndex.SortedDimLookup[dimensions.size()];
       for (      IncrementalIndex.DimensionDesc dimension : dimensions) {
-        dimLookups[dimension.getIndex()]=indexers.get(dimension.getName()).getDimLookup();
+        sortedDimLookups[dimension.getIndex()]=indexers.get(dimension.getName()).getDimLookup();
       }
       return Iterators.transform(index.getFacts().entrySet().iterator(),new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
         int count=0;
@@ -23,7 +23,7 @@
               continue;
             }
             for (int i=0; i < dimValues[dimIndex].length; ++i) {
-              dims[dimIndex][i]=dimLookups[dimIndex].idToIndex(dimValues[dimIndex][i]);
+              dims[dimIndex][i]=sortedDimLookups[dimIndex].getSortedIdFromUnsortedId(dimValues[dimIndex][i]);
             }
           }
           Object[] metrics=new Object[index.getMetricAggs().length];

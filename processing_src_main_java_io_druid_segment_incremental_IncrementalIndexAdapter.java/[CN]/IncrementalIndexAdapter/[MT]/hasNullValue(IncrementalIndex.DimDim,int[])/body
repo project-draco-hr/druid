@@ -3,8 +3,14 @@
     return true;
   }
   for (  int dimIndex : dimIndices) {
-    if (Strings.isNullOrEmpty(dimDim.getValue(dimIndex))) {
+    Comparable val=dimDim.getValue(dimIndex);
+    if (val == null) {
       return true;
+    }
+    if (val instanceof String) {
+      if (((String)val).length() == 0) {
+        return true;
+      }
     }
   }
   return false;

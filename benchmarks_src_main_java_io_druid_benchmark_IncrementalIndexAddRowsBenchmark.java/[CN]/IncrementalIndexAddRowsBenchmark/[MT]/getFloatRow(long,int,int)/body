@@ -1,0 +1,10 @@
+{
+  List<String> dimensionList=new ArrayList<String>(dimensionCount);
+  ImmutableMap.Builder<String,Object> builder=ImmutableMap.builder();
+  for (int i=0; i < dimensionCount; i++) {
+    String dimName=String.format("Dim_%d",i);
+    dimensionList.add(dimName);
+    builder.put(dimName,rng.nextFloat());
+  }
+  return new MapBasedInputRow(timestamp,dimensionList,builder.build());
+}
