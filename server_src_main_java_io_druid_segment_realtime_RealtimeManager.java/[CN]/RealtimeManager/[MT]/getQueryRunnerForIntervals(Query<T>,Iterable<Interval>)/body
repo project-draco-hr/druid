@@ -1,3 +1,10 @@
 {
-  return getQueryRunnerForSegments(query,null);
+  final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
+  final Map<Integer,FireChief> partitionChiefs=chiefs.get(Iterables.getOnlyElement(query.getDataSource().getNames()));
+  return partitionChiefs == null ? new NoopQueryRunner<T>() : factory.getToolchest().mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(partitionChiefs.values(),new Function<FireChief,QueryRunner<T>>(){
+    @Override public QueryRunner<T> apply(    FireChief fireChief){
+      return fireChief.getQueryRunner(query);
+    }
+  }
+)));
 }

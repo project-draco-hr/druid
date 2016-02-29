@@ -1,10 +1,10 @@
 {
-  List<FireChief> chiefs=this.chiefs.get(datasource);
+  Map<Integer,FireChief> chiefs=this.chiefs.get(datasource);
   if (chiefs == null) {
     return null;
   }
   FireDepartmentMetrics snapshot=null;
-  for (  FireChief chief : chiefs) {
+  for (  FireChief chief : chiefs.values()) {
     if (snapshot == null) {
       snapshot=chief.getMetrics().snapshot();
     }
