@@ -17,6 +17,9 @@
  else {
     metrics=query.getMetrics();
   }
+  List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
+  Preconditions.checkArgument(intervals.size() == 1,"Can only handle a single interval, got[%s]",intervals);
+  final String segmentId=SegmentDesc.withInterval(segment.getIdentifier(),intervals.get(0));
   return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.convertDimensionFilters(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
     @Override public Result<SelectResultValue> apply(    Cursor cursor){
       final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec(),query.isDescending());
@@ -31,7 +34,7 @@
         final ObjectColumnSelector metricSelector=cursor.makeObjectColumnSelector(metric);
         metSelectors.put(metric,metricSelector);
       }
-      final PagingOffset offset=query.getPagingOffset(segment.getIdentifier());
+      final PagingOffset offset=query.getPagingOffset(segmentId);
       cursor.advanceTo(offset.startDelta());
       int lastOffset=offset.startOffset();
       for (; !cursor.isDone() && offset.hasNext(); cursor.advance(), offset.next()) {
@@ -68,9 +71,9 @@
             theEvent.put(metric,selector.get());
           }
         }
-        builder.addEntry(new EventHolder(segment.getIdentifier(),lastOffset=offset.current(),theEvent));
+        builder.addEntry(new EventHolder(segmentId,lastOffset=offset.current(),theEvent));
       }
-      builder.finished(segment.getIdentifier(),lastOffset);
+      builder.finished(segmentId,lastOffset);
       return builder.build();
     }
   }

@@ -1,0 +1,9 @@
+{
+  LinkedHashMap<String,Integer> next=Maps.newLinkedHashMap();
+  for (  Map<String,Integer> pager : pagers) {
+    for (    Map.Entry<String,Integer> entry : pager.entrySet()) {
+      next.put(entry.getKey(),descending ? entry.getValue() - 1 : entry.getValue() + 1);
+    }
+  }
+  return new PagingSpec(next,threshold);
+}

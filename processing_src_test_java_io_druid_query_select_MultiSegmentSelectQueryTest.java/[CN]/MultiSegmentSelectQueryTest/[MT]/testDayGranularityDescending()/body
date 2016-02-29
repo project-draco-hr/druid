@@ -1,0 +1,19 @@
+{
+  QueryGranularity granularity=QueryRunnerTestHelper.dayGran;
+  SelectQuery query=builder.granularity(granularity).descending(true).build();
+  for (  int[] expected : new int[][]{{0,0,-3,-3,0,0,3,3},{0,-1,-5,-6,0,1,2,3},{0,-4,0,-9,0,3,0,3},{-3,0,0,-12,3,0,0,3},{-4,0,0,-13,1,0,0,1},{-5,0,0,-14,0,0,0,0}}) {
+    List<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,ImmutableMap.of()),Lists.<Result<SelectResultValue>>newArrayList());
+    Assert.assertEquals(2,results.size());
+    SelectResultValue value0=results.get(0).getValue();
+    SelectResultValue value1=results.get(1).getValue();
+    Map<String,Integer> pagingIdentifiers0=value0.getPagingIdentifiers();
+    Map<String,Integer> pagingIdentifiers1=value1.getPagingIdentifiers();
+    for (int i=0; i < 4; i++) {
+      if (expected[i] < 0) {
+        Map<String,Integer> paging=i < 3 ? pagingIdentifiers1 : pagingIdentifiers0;
+        Assert.assertEquals(expected[i],paging.get(segmentIdentifiers.get(i)).intValue());
+      }
+    }
+    query=query.withPagingSpec(toNextPager(3,query.isDescending(),pagingIdentifiers0,pagingIdentifiers1));
+  }
+}

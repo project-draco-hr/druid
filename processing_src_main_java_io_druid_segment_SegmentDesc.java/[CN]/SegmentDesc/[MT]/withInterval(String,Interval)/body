@@ -1,0 +1,16 @@
+{
+  String[] splits=identifier.split(DataSegment.delimiter);
+  if (splits.length < 4) {
+    LOGGER.warn("Invalid segment identifier " + identifier);
+    return identifier;
+  }
+  StringBuilder builder=new StringBuilder();
+  builder.append(splits[0]).append(DataSegment.delimiter);
+  builder.append(newInterval.getStart()).append(DataSegment.delimiter);
+  builder.append(newInterval.getEnd()).append(DataSegment.delimiter);
+  for (int i=3; i < splits.length - 1; i++) {
+    builder.append(splits[i]).append(DataSegment.delimiter);
+  }
+  builder.append(splits[splits.length - 1]);
+  return builder.toString();
+}
