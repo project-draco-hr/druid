@@ -2,7 +2,13 @@
   return new Iterable<Row>(){
     @Override public Iterator<Row> iterator(){
       final List<DimensionDesc> dimensions=getDimensions();
-      final ConcurrentNavigableMap<TimeAndDims,Integer> facts=descending ? getFacts().descendingMap() : getFacts();
+      Map<TimeAndDims,Integer> facts=null;
+      if (descending && sortFacts) {
+        facts=((ConcurrentNavigableMap<TimeAndDims,Integer>)getFacts()).descendingMap();
+      }
+ else {
+        facts=getFacts();
+      }
       return Iterators.transform(facts.entrySet().iterator(),new Function<Map.Entry<TimeAndDims,Integer>,Row>(){
         @Override public Row apply(        final Map.Entry<TimeAndDims,Integer> input){
           final TimeAndDims timeAndDims=input.getKey();

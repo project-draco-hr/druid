@@ -1,3 +1,8 @@
 {
-  return getFacts().firstKey().getTimestamp();
+  if (sortFacts) {
+    return ((ConcurrentNavigableMap<TimeAndDims,Integer>)getFacts()).firstKey().getTimestamp();
+  }
+ else {
+    throw new UnsupportedOperationException("can't get minTime from unsorted facts data.");
+  }
 }

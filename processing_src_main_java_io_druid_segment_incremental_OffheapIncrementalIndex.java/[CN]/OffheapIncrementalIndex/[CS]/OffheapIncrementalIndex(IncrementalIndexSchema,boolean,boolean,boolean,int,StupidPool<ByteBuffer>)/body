@@ -1,8 +1,13 @@
 {
-  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions);
+  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions,sortFacts);
   this.maxRowCount=maxRowCount;
   this.bufferPool=bufferPool;
-  this.facts=new ConcurrentSkipListMap<>(dimsComparator());
+  if (sortFacts) {
+    this.facts=new ConcurrentSkipListMap<>(dimsComparator());
+  }
+ else {
+    this.facts=new ConcurrentHashMap<>();
+  }
   ResourceHolder<ByteBuffer> bb=bufferPool.take();
   if (bb.get().capacity() < aggsTotalSize) {
     RuntimeException ex=new IAE("bufferPool buffers capacity must be >= [%s]",aggsTotalSize);

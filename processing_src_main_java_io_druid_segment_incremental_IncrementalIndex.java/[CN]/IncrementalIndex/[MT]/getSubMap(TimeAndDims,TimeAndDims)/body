@@ -1,3 +1,8 @@
 {
-  return getFacts().subMap(start,end);
+  if (sortFacts) {
+    return ((ConcurrentNavigableMap<TimeAndDims,Integer>)getFacts()).subMap(start,end);
+  }
+ else {
+    throw new UnsupportedOperationException("can't get subMap from unsorted facts data.");
+  }
 }
