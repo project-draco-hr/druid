@@ -8,7 +8,7 @@
  catch (    ClassCastException e) {
       throw new UnsupportedOperationException("Subqueries must be of type 'group by'");
     }
-    final Sequence<Row> subqueryResult=mergeGroupByResults(subquery,runner,context);
+    final Sequence<Row> subqueryResult=mergeGroupByResults(subquery.withOverriddenContext(ImmutableMap.<String,Object>of(GroupByQueryHelper.CTX_KEY_SORT_RESULTS,false)),runner,context);
     final Set<AggregatorFactory> aggs=Sets.newHashSet();
     for (    AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
       for (      final AggregatorFactory transferAgg : aggregatorFactory.getRequiredColumns()) {
@@ -25,7 +25,7 @@
     }
     final GroupByQuery innerQuery=new GroupByQuery.Builder(subquery).setAggregatorSpecs(Lists.newArrayList(aggs)).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
     final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
-    final IncrementalIndex innerQueryResultIndex=makeIncrementalIndex(innerQuery,subqueryResult);
+    final IncrementalIndex innerQueryResultIndex=makeIncrementalIndex(innerQuery.withOverriddenContext(ImmutableMap.<String,Object>of(GroupByQueryHelper.CTX_KEY_SORT_RESULTS,true)),subqueryResult);
     final IncrementalIndex outerQueryResultIndex=makeIncrementalIndex(outerQuery,Sequences.concat(Sequences.map(Sequences.simple(outerQuery.getIntervals()),new Function<Interval,Sequence<Row>>(){
       @Override public Sequence<Row> apply(      Interval interval){
         return engine.process(outerQuery.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(ImmutableList.of(interval))),new IncrementalIndexStorageAdapter(innerQueryResultIndex));
@@ -36,7 +36,7 @@
     return new ResourceClosingSequence<>(outerQuery.applyLimit(postAggregate(query,outerQueryResultIndex)),outerQueryResultIndex);
   }
  else {
-    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false)),context));
+    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryHelper.CTX_KEY_SORT_RESULTS,false)),context));
     return new ResourceClosingSequence<>(query.applyLimit(postAggregate(query,index)),index);
   }
 }

@@ -15,11 +15,12 @@
   }
 );
   final IncrementalIndex index;
-  if (query.getContextBoolean("useOffheap",false)) {
-    index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,true,true,Math.min(query.getContextValue(CTX_KEY_MAX_RESULTS,config.getMaxResults()),config.getMaxResults()),bufferPool);
+  final boolean sortResults=query.getContextValue(CTX_KEY_SORT_RESULTS,true);
+  if (query.getContextValue("useOffheap",false)) {
+    index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,true,sortResults,Math.min(query.getContextValue(CTX_KEY_MAX_RESULTS,config.getMaxResults()),config.getMaxResults()),bufferPool);
   }
  else {
-    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,true,true,Math.min(query.getContextValue(CTX_KEY_MAX_RESULTS,config.getMaxResults()),config.getMaxResults()));
+    index=new OnheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,true,sortResults,Math.min(query.getContextValue(CTX_KEY_MAX_RESULTS,config.getMaxResults()),config.getMaxResults()));
   }
   Accumulator<IncrementalIndex,T> accumulator=new Accumulator<IncrementalIndex,T>(){
     @Override public IncrementalIndex accumulate(    IncrementalIndex accumulated,    T in){
