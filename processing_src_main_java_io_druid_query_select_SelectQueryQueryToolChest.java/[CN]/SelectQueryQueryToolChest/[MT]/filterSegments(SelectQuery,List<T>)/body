@@ -1,0 +1,48 @@
+{
+  PagingSpec pagingSpec=query.getPagingSpec();
+  Map<String,Integer> paging=pagingSpec.getPagingIdentifiers();
+  if (paging == null || paging.isEmpty()) {
+    return segments;
+  }
+  final QueryGranularity granularity=query.getGranularity();
+  List<Interval> intervals=Lists.newArrayList(Iterables.transform(paging.keySet(),SegmentDesc.INTERVAL_EXTRACTOR));
+  Collections.sort(intervals,query.isDescending() ? Comparators.intervalsByEndThenStart() : Comparators.intervalsByStartThenEnd());
+  TreeMap<Long,Long> granularThresholds=Maps.newTreeMap();
+  for (  Interval interval : intervals) {
+    if (query.isDescending()) {
+      long granularEnd=granularity.truncate(interval.getEndMillis());
+      Long currentEnd=granularThresholds.get(granularEnd);
+      if (currentEnd == null || interval.getEndMillis() > currentEnd) {
+        granularThresholds.put(granularEnd,interval.getEndMillis());
+      }
+    }
+ else {
+      long granularStart=granularity.truncate(interval.getStartMillis());
+      Long currentStart=granularThresholds.get(granularStart);
+      if (currentStart == null || interval.getStartMillis() < currentStart) {
+        granularThresholds.put(granularStart,interval.getStartMillis());
+      }
+    }
+  }
+  List<T> queryIntervals=Lists.newArrayList(segments);
+  Iterator<T> it=queryIntervals.iterator();
+  if (query.isDescending()) {
+    while (it.hasNext()) {
+      Interval interval=it.next().getInterval();
+      Map.Entry<Long,Long> ceiling=granularThresholds.ceilingEntry(granularity.truncate(interval.getEndMillis()));
+      if (ceiling == null || interval.getStartMillis() >= ceiling.getValue()) {
+        it.remove();
+      }
+    }
+  }
+ else {
+    while (it.hasNext()) {
+      Interval interval=it.next().getInterval();
+      Map.Entry<Long,Long> floor=granularThresholds.floorEntry(granularity.truncate(interval.getStartMillis()));
+      if (floor == null || interval.getEndMillis() <= floor.getValue()) {
+        it.remove();
+      }
+    }
+  }
+  return queryIntervals;
+}

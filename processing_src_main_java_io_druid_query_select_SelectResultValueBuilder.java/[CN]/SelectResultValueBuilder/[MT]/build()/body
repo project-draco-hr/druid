@@ -1,13 +1,3 @@
 {
-  List<EventHolder> values=Lists.newArrayListWithCapacity(pQueue.size());
-  Map<String,Integer> pagingIdentifiers=Maps.newLinkedHashMap();
-  while (!pQueue.isEmpty()) {
-    EventHolder event=pQueue.remove();
-    pagingIdentifiers.put(event.getSegmentId(),event.getOffset());
-    values.add(event);
-  }
-  if (pagingIdentifiers.isEmpty()) {
-    pagingIdentifiers.putAll(pagingSpec.getPagingIdentifiers());
-  }
-  return new Result<SelectResultValue>(timestamp,new SelectResultValue(pagingIdentifiers,values));
+  return new Result<SelectResultValue>(timestamp,new SelectResultValue(pagingIdentifiers,getEventHolders()));
 }
