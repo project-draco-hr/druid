@@ -1,0 +1,40 @@
+{
+  droppingSinks.add(identifier);
+  return Futures.transform(mergeBarrier(),new Function<Object,Object>(){
+    @Nullable @Override public Object apply(    @Nullable Object input){
+      if (sinks.get(identifier) != sink) {
+        log.warn("Sink for segment[%s] no longer valid, not abandoning.");
+        return null;
+      }
+      if (removeOnDiskData) {
+        log.info("Removing commit metadata for segment[%s].",identifier);
+        try {
+          final File commitFile=computeCommitFile();
+          if (commitFile.exists()) {
+            final Committed oldCommitted=objectMapper.readValue(commitFile,Committed.class);
+            objectMapper.writeValue(commitFile,oldCommitted.without(identifier.getIdentifierAsString()));
+          }
+        }
+ catch (        Exception e) {
+          log.makeAlert(e,"Failed to update committed segments[%s]",schema.getDataSource()).addData("identifier",identifier.getIdentifierAsString()).emit();
+          throw Throwables.propagate(e);
+        }
+      }
+      try {
+        segmentAnnouncer.unannounceSegment(sink.getSegment());
+      }
+ catch (      Exception e) {
+        log.makeAlert(e,"Failed to unannounce segment[%s]",schema.getDataSource()).addData("identifier",identifier.getIdentifierAsString()).emit();
+      }
+      log.info("Removing sink for segment[%s].",identifier);
+      sinks.remove(identifier);
+      droppingSinks.remove(identifier);
+      sinkTimeline.remove(sink.getInterval(),sink.getVersion(),identifier.getShardSpec().createChunk(sink));
+      if (removeOnDiskData) {
+        removeDirectory(computePersistDir(identifier));
+      }
+      return null;
+    }
+  }
+,persistExecutor);
+}

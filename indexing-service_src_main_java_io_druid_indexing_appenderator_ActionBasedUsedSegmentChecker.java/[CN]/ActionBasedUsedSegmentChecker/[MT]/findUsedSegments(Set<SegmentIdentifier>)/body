@@ -1,0 +1,25 @@
+{
+  final Map<String,Set<SegmentIdentifier>> identifiersByDataSource=Maps.newTreeMap();
+  for (  SegmentIdentifier identifier : identifiers) {
+    if (!identifiersByDataSource.containsKey(identifier.getDataSource())) {
+      identifiersByDataSource.put(identifier.getDataSource(),Sets.<SegmentIdentifier>newHashSet());
+    }
+    identifiersByDataSource.get(identifier.getDataSource()).add(identifier);
+  }
+  final Set<DataSegment> retVal=Sets.newHashSet();
+  for (  Map.Entry<String,Set<SegmentIdentifier>> entry : identifiersByDataSource.entrySet()) {
+    final List<Interval> intervals=JodaUtils.condenseIntervals(Iterables.transform(entry.getValue(),new Function<SegmentIdentifier,Interval>(){
+      @Override public Interval apply(      SegmentIdentifier input){
+        return input.getInterval();
+      }
+    }
+));
+    final List<DataSegment> usedSegmentsForIntervals=taskActionClient.submit(new SegmentListUsedAction(entry.getKey(),null,intervals));
+    for (    DataSegment segment : usedSegmentsForIntervals) {
+      if (identifiers.contains(SegmentIdentifier.fromDataSegment(segment))) {
+        retVal.add(segment);
+      }
+    }
+  }
+  return retVal;
+}

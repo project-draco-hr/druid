@@ -1,0 +1,40 @@
+{
+  final RealtimeTuningConfig tuningConfig;
+  try (final AppenderatorTester tester=new AppenderatorTester(2)){
+    final Appenderator appenderator=tester.getAppenderator();
+    tuningConfig=tester.getTuningConfig();
+    final AtomicInteger eventCount=new AtomicInteger(0);
+    final Supplier<Committer> committerSupplier=new Supplier<Committer>(){
+      @Override public Committer get(){
+        final Object metadata=ImmutableMap.of("eventCount",eventCount.get());
+        return new Committer(){
+          @Override public Object getMetadata(){
+            return metadata;
+          }
+          @Override public void run(){
+          }
+        }
+;
+      }
+    }
+;
+    appenderator.startJob();
+    eventCount.incrementAndGet();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","foo",1),committerSupplier);
+    eventCount.incrementAndGet();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","bar",2),committerSupplier);
+    eventCount.incrementAndGet();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","baz",3),committerSupplier);
+    eventCount.incrementAndGet();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","qux",4),committerSupplier);
+    eventCount.incrementAndGet();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","bob",5),committerSupplier);
+    appenderator.close();
+    try (final AppenderatorTester tester2=new AppenderatorTester(2,tuningConfig.getBasePersistDirectory())){
+      final Appenderator appenderator2=tester2.getAppenderator();
+      Assert.assertEquals(ImmutableMap.of("eventCount",4),appenderator2.startJob());
+      Assert.assertEquals(ImmutableList.of(IDENTIFIERS.get(0)),appenderator2.getSegments());
+      Assert.assertEquals(4,appenderator2.getRowCount(IDENTIFIERS.get(0)));
+    }
+   }
+ }

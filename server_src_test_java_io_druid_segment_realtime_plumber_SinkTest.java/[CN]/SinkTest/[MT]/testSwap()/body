@@ -3,7 +3,7 @@
   final Interval interval=new Interval("2013-01-01/2013-01-02");
   final String version=new DateTime().toString();
   RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(100,new Period("P1Y"),null,null,null,null,null,null,null,null,0,0,null,null);
-  final Sink sink=new Sink(interval,schema,tuningConfig,version);
+  final Sink sink=new Sink(interval,schema,tuningConfig.getShardSpec(),version,tuningConfig.getMaxRowsInMemory(),tuningConfig.isReportParseExceptions());
   sink.add(new InputRow(){
     @Override public List<String> getDimensions(){
       return Lists.newArrayList();

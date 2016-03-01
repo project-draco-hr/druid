@@ -1,0 +1,23 @@
+{
+  if (!identifier.getDataSource().equals(schema.getDataSource())) {
+    throw new IAE("Expected dataSource[%s] but was asked to insert row for dataSource[%s]?!",schema.getDataSource(),identifier.getDataSource());
+  }
+  final Sink sink=getOrCreateSink(identifier);
+  int sinkRetVal;
+  try {
+    sinkRetVal=sink.add(row);
+  }
+ catch (  IndexSizeExceededException e) {
+    persistAll(committerSupplier.get());
+    sinkRetVal=sink.add(row);
+  }
+  if (!sink.canAppendRow() || System.currentTimeMillis() > nextFlush) {
+    persistAll(committerSupplier.get());
+  }
+  if (sinkRetVal < 0) {
+    throw new SegmentNotWritableException("Attempt to add row to swapped-out sink for segment[%s].",identifier);
+  }
+ else {
+    return sink.getNumRows();
+  }
+}

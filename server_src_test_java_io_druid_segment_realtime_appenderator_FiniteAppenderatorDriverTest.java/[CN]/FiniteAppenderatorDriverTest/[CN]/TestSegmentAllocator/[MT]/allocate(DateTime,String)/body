@@ -1,0 +1,10 @@
+{
+synchronized (counters) {
+    final long timestampTruncated=granularity.truncate(timestamp).getMillis();
+    if (!counters.containsKey(timestampTruncated)) {
+      counters.put(timestampTruncated,new AtomicInteger());
+    }
+    final int partitionNum=counters.get(timestampTruncated).getAndIncrement();
+    return new SegmentIdentifier(dataSource,granularity.bucket(new DateTime(timestampTruncated)),VERSION,new NumberedShardSpec(partitionNum,0));
+  }
+}

@@ -1,0 +1,16 @@
+{
+  return new Supplier<Committer>(){
+    @Override public Committer get(){
+      final Map<String,String> mapCopy=ImmutableMap.copyOf(map);
+      return new Committer(){
+        @Override public Object getMetadata(){
+          return mapCopy;
+        }
+        @Override public void run(){
+        }
+      }
+;
+    }
+  }
+;
+}

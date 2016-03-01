@@ -1,0 +1,49 @@
+{
+  if (sinks.get(identifier) != sink) {
+    log.warn("Sink for segment[%s] no longer valid, bailing out of mergeAndPush.",identifier);
+    return null;
+  }
+  final File persistDir=computePersistDir(identifier);
+  final File mergedTarget=new File(persistDir,"merged");
+  final File descriptorFile=computeDescriptorFile(identifier);
+  for (  FireHydrant hydrant : sink) {
+    if (sink.isWritable()) {
+      throw new ISE("WTF?! Expected sink to be no longer writable before mergeAndPush. Segment[%s].",identifier);
+    }
+synchronized (hydrant) {
+      if (!hydrant.hasSwapped()) {
+        throw new ISE("WTF?! Expected sink to be fully persisted before mergeAndPush. Segment[%s].",identifier);
+      }
+    }
+  }
+  try {
+    if (descriptorFile.exists()) {
+      log.info("Segment[%s] already pushed.",identifier);
+      return objectMapper.readValue(descriptorFile,DataSegment.class);
+    }
+    log.info("Pushing merged index for segment[%s].",identifier);
+    removeDirectory(mergedTarget);
+    if (mergedTarget.exists()) {
+      throw new ISE("Merged target[%s] exists after removing?!",mergedTarget);
+    }
+    List<QueryableIndex> indexes=Lists.newArrayList();
+    for (    FireHydrant fireHydrant : sink) {
+      Segment segment=fireHydrant.getSegment();
+      final QueryableIndex queryableIndex=segment.asQueryableIndex();
+      log.info("Adding hydrant[%s]",fireHydrant);
+      indexes.add(queryableIndex);
+    }
+    final File mergedFile;
+    mergedFile=indexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,tuningConfig.getIndexSpec());
+    QueryableIndex index=indexIO.loadIndex(mergedFile);
+    DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
+    objectMapper.writeValue(descriptorFile,segment);
+    log.info("Pushed merged index for segment[%s], descriptor is: %s",identifier,segment);
+    return segment;
+  }
+ catch (  Exception e) {
+    metrics.incrementFailedHandoffs();
+    log.warn(e,"Failed to push merged index for segment[%s].",identifier);
+    throw Throwables.propagate(e);
+  }
+}

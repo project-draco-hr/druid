@@ -1,0 +1,14 @@
+{
+  if (basePersistDirLock == null) {
+    try {
+      basePersistDirLockChannel=FileChannel.open(computeLockFile().toPath(),StandardOpenOption.CREATE,StandardOpenOption.WRITE);
+      basePersistDirLock=basePersistDirLockChannel.tryLock();
+      if (basePersistDirLock == null) {
+        throw new ISE("Cannot acquire lock on basePersistDir: %s",computeLockFile());
+      }
+    }
+ catch (    IOException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+}

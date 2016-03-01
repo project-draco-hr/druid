@@ -1,0 +1,14 @@
+{
+synchronized (activeSegments) {
+    final FiniteAppenderatorDriverMetadata wrappedMetadata=new FiniteAppenderatorDriverMetadata(ImmutableList.copyOf(activeSegments.values()),lastSegmentId,committer.getMetadata());
+    return new Committer(){
+      @Override public Object getMetadata(){
+        return wrappedMetadata;
+      }
+      @Override public void run(){
+        committer.run();
+      }
+    }
+;
+  }
+}

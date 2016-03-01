@@ -1,0 +1,27 @@
+{
+  log.info("Shutting down...");
+  final List<ListenableFuture<?>> futures=Lists.newArrayList();
+  for (  Map.Entry<SegmentIdentifier,Sink> entry : sinks.entrySet()) {
+    futures.add(abandonSegment(entry.getKey(),entry.getValue(),false));
+  }
+  try {
+    Futures.allAsList(futures).get();
+  }
+ catch (  InterruptedException e) {
+    Thread.currentThread().interrupt();
+    log.warn(e,"Interrupted during close()");
+  }
+catch (  ExecutionException e) {
+    log.warn(e,"Unable to abandon existing segments during close()");
+  }
+  try {
+    shutdownExecutors();
+    Preconditions.checkState(persistExecutor.awaitTermination(365,TimeUnit.DAYS),"persistExecutor not terminated");
+    Preconditions.checkState(mergeExecutor.awaitTermination(365,TimeUnit.DAYS),"mergeExecutor not terminated");
+  }
+ catch (  InterruptedException e) {
+    Thread.currentThread().interrupt();
+    throw new ISE("Failed to shutdown executors during close()");
+  }
+  unlockBasePersistDirectory();
+}

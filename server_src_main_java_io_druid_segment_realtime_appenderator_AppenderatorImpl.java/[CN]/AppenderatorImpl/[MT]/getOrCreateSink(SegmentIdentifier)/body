@@ -1,0 +1,15 @@
+{
+  Sink retVal=sinks.get(identifier);
+  if (retVal == null) {
+    retVal=new Sink(identifier.getInterval(),schema,identifier.getShardSpec(),identifier.getVersion(),tuningConfig.getMaxRowsInMemory(),tuningConfig.isReportParseExceptions());
+    try {
+      segmentAnnouncer.announceSegment(retVal.getSegment());
+    }
+ catch (    IOException e) {
+      log.makeAlert(e,"Failed to announce new segment[%s]",schema.getDataSource()).addData("interval",retVal.getInterval()).emit();
+    }
+    sinks.put(identifier,retVal);
+    sinkTimeline.add(retVal.getInterval(),retVal.getVersion(),identifier.getShardSpec().createChunk(retVal));
+  }
+  return retVal;
+}

@@ -1,0 +1,8 @@
+{
+  final File persistDir=computePersistDir(identifier);
+  if (!persistDir.mkdir() && !persistDir.exists()) {
+    throw new IOException(String.format("Could not create directory: %s",persistDir));
+  }
+  objectMapper.writeValue(computeIdentifierFile(identifier),identifier);
+  return persistDir;
+}

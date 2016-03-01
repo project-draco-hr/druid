@@ -8,7 +8,7 @@
   Sink retVal=sinks.get(truncatedTime);
   if (retVal == null) {
     final Interval sinkInterval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
-    retVal=new Sink(sinkInterval,schema,config,versioningPolicy.getVersion(sinkInterval));
+    retVal=new Sink(sinkInterval,schema,config.getShardSpec(),versioningPolicy.getVersion(sinkInterval),config.getMaxRowsInMemory(),config.isReportParseExceptions());
     addSink(retVal);
   }
   return retVal;

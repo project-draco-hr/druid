@@ -1,0 +1,15 @@
+{
+  try {
+    log.info("Persisting data.");
+    final long start=System.currentTimeMillis();
+    final Object commitMetadata=appenderator.persistAll(wrapCommitter(committer)).get();
+    log.info("Persisted pending data in %,dms.",System.currentTimeMillis() - start);
+    return commitMetadata;
+  }
+ catch (  InterruptedException e) {
+    throw e;
+  }
+catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

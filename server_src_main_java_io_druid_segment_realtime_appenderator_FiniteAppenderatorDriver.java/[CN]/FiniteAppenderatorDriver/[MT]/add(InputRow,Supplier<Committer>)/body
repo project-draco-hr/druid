@@ -1,0 +1,15 @@
+{
+  final SegmentIdentifier identifier=getSegment(row.getTimestamp());
+  if (identifier != null) {
+    try {
+      final int numRows=appenderator.add(identifier,row,wrapCommitterSupplier(committerSupplier));
+      if (numRows >= maxRowsPerSegment) {
+        moveSegmentOut(ImmutableList.of(identifier));
+      }
+    }
+ catch (    SegmentNotWritableException e) {
+      throw new ISE(e,"WTF?! Segment[%s] not writable when it should have been.",identifier);
+    }
+  }
+  return identifier;
+}

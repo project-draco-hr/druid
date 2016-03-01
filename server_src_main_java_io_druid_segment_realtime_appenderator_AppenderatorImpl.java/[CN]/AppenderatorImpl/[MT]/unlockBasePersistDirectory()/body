@@ -1,0 +1,12 @@
+{
+  try {
+    if (basePersistDirLock != null) {
+      basePersistDirLock.release();
+      basePersistDirLockChannel.close();
+      basePersistDirLock=null;
+    }
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

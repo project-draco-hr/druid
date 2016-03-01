@@ -1,0 +1,11 @@
+{
+  if (target.exists()) {
+    try {
+      log.info("Deleting Index File[%s]",target);
+      FileUtils.deleteDirectory(target);
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Failed to remove directory[%s]",schema.getDataSource()).addData("file",target).emit();
+    }
+  }
+}

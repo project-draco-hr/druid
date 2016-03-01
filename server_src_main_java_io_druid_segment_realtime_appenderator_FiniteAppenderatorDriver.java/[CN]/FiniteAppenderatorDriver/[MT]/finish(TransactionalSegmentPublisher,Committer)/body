@@ -1,0 +1,27 @@
+{
+  final SegmentsAndMetadata segmentsAndMetadata=publishAll(publisher,wrapCommitter(committer));
+  if (segmentsAndMetadata != null) {
+    final long giveUpAt=handoffConditionTimeout > 0 ? System.currentTimeMillis() + handoffConditionTimeout : 0;
+    log.info("Awaiting handoff...");
+synchronized (handoffMonitor) {
+      while (!appenderator.getSegments().isEmpty()) {
+        if (giveUpAt == 0) {
+          handoffMonitor.wait();
+        }
+ else {
+          final long remaining=giveUpAt - System.currentTimeMillis();
+          if (remaining > 0) {
+            handoffMonitor.wait(remaining);
+          }
+ else {
+            throw new ISE("Segment handoff wait timeout. Segments not yet handed off: [%s]",Joiner.on(", ").join(appenderator.getSegments()));
+          }
+        }
+      }
+    }
+    return new SegmentsAndMetadata(segmentsAndMetadata.getSegments(),((FiniteAppenderatorDriverMetadata)segmentsAndMetadata.getCommitMetadata()).getCallerMetadata());
+  }
+ else {
+    return null;
+  }
+}

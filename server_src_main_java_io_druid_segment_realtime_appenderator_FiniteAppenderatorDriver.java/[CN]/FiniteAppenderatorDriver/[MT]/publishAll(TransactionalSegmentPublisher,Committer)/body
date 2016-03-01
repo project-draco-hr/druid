@@ -1,0 +1,61 @@
+{
+  final List<SegmentIdentifier> theSegments=ImmutableList.copyOf(appenderator.getSegments());
+  long nTry=0;
+  while (true) {
+    try {
+      log.info("Pushing segments: [%s]",Joiner.on(", ").join(theSegments));
+      final SegmentsAndMetadata segmentsAndMetadata=appenderator.push(theSegments,committer).get();
+      if (!segmentsToIdentifiers(segmentsAndMetadata.getSegments()).equals(Sets.newHashSet(theSegments))) {
+        throw new ISE("WTF?! Pushed different segments than requested. Pushed[%s], requested[%s].",Joiner.on(", ").join(identifiersToStrings(segmentsToIdentifiers(segmentsAndMetadata.getSegments()))),Joiner.on(", ").join(identifiersToStrings(theSegments)));
+      }
+      log.info("Publishing segments with commitMetadata[%s]: [%s]",segmentsAndMetadata.getCommitMetadata(),Joiner.on(", ").join(segmentsAndMetadata.getSegments()));
+      final boolean published=publisher.publishSegments(ImmutableSet.copyOf(segmentsAndMetadata.getSegments()),((FiniteAppenderatorDriverMetadata)segmentsAndMetadata.getCommitMetadata()).getCallerMetadata());
+      if (published) {
+        log.info("Published segments, awaiting handoff.");
+      }
+ else {
+        log.info("Transaction failure while publishing segments, checking if someone else beat us to it.");
+        if (usedSegmentChecker.findUsedSegments(segmentsToIdentifiers(segmentsAndMetadata.getSegments())).equals(Sets.newHashSet(segmentsAndMetadata.getSegments()))) {
+          log.info("Our segments really do exist, awaiting handoff.");
+        }
+ else {
+          log.warn("Our segments don't exist, giving up.");
+          return null;
+        }
+      }
+      for (      final DataSegment dataSegment : segmentsAndMetadata.getSegments()) {
+        handoffNotifier.registerSegmentHandoffCallback(new SegmentDescriptor(dataSegment.getInterval(),dataSegment.getVersion(),dataSegment.getShardSpec().getPartitionNum()),MoreExecutors.sameThreadExecutor(),new Runnable(){
+          @Override public void run(){
+            final SegmentIdentifier identifier=SegmentIdentifier.fromDataSegment(dataSegment);
+            log.info("Segment[%s] successfully handed off, dropping.",identifier);
+            final ListenableFuture<?> dropFuture=appenderator.drop(identifier);
+            Futures.addCallback(dropFuture,new FutureCallback<Object>(){
+              @Override public void onSuccess(              Object result){
+synchronized (handoffMonitor) {
+                  handoffMonitor.notifyAll();
+                }
+              }
+              @Override public void onFailure(              Throwable e){
+                log.warn(e,"Failed to drop segment[%s]?!");
+synchronized (handoffMonitor) {
+                  handoffMonitor.notifyAll();
+                }
+              }
+            }
+);
+          }
+        }
+);
+      }
+      return segmentsAndMetadata;
+    }
+ catch (    InterruptedException e) {
+      throw e;
+    }
+catch (    Exception e) {
+      final long sleepMillis=computeNextRetrySleep(++nTry);
+      log.warn(e,"Failed publishAll (try %d), retrying in %,dms.",nTry,sleepMillis);
+      Thread.sleep(sleepMillis);
+    }
+  }
+}
