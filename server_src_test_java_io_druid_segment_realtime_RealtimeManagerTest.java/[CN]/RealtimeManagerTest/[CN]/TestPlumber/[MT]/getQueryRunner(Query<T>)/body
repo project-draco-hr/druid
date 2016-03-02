@@ -1,6 +1,17 @@
 {
-  if (runner == null) {
+  if (runners == null) {
     throw new UnsupportedOperationException();
   }
-  return runner;
+  final BaseQuery baseQuery=(BaseQuery)query;
+  if (baseQuery.getQuerySegmentSpec() instanceof MultipleIntervalSegmentSpec) {
+    return factory.getToolchest().mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(baseQuery.getIntervals(),new Function<Interval,QueryRunner<T>>(){
+      @Override public QueryRunner<T> apply(      Interval input){
+        return runners.get(input);
+      }
+    }
+)));
+  }
+  Assert.assertEquals(1,query.getIntervals().size());
+  final SegmentDescriptor descriptor=((SpecificSegmentSpec)((BaseQuery)query).getQuerySegmentSpec()).getDescriptor();
+  return new SpecificSegmentQueryRunner<T>(runners.get(descriptor.getInterval()),new SpecificSegmentSpec(descriptor));
 }

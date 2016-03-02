@@ -4,7 +4,7 @@
   return partitionChiefs == null ? new NoopQueryRunner<T>() : factory.getToolchest().mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(specs,new Function<SegmentDescriptor,QueryRunner<T>>(){
     @Override public QueryRunner<T> apply(    SegmentDescriptor spec){
       final FireChief retVal=partitionChiefs.get(spec.getPartitionNumber());
-      return retVal == null ? new NoopQueryRunner<T>() : retVal.getQueryRunner(query);
+      return retVal == null ? new NoopQueryRunner<T>() : retVal.getQueryRunner(query.withQuerySegmentSpec(new SpecificSegmentSpec(spec)));
     }
   }
 )));
