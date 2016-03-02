@@ -1,0 +1,6 @@
+{
+  final SegmentPublishResult result1=coordinator.announceHistoricalSegments(ImmutableSet.of(defaultSegment),new ObjectMetadata(null),new ObjectMetadata(ImmutableMap.of("foo","baz")));
+  Assert.assertEquals(new SegmentPublishResult(ImmutableSet.of(defaultSegment),true),result1);
+  final SegmentPublishResult result2=coordinator.announceHistoricalSegments(ImmutableSet.of(defaultSegment2),new ObjectMetadata(null),new ObjectMetadata(ImmutableMap.of("foo","baz")));
+  Assert.assertEquals(new SegmentPublishResult(ImmutableSet.<DataSegment>of(),false),result2);
+}

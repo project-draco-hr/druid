@@ -1,15 +1,7 @@
 {
-  final String selectStatement=String.format("SELECT %s FROM %s WHERE %s = :key",valueColumn,tableName,keyColumn);
   return getDBI().withHandle(new HandleCallback<byte[]>(){
     @Override public byte[] withHandle(    Handle handle) throws Exception {
-      List<byte[]> matched=handle.createQuery(selectStatement).bind("key",key).map(ByteArrayMapper.FIRST).list();
-      if (matched.isEmpty()) {
-        return null;
-      }
-      if (matched.size() > 1) {
-        throw new ISE("Error! More than one matching entry[%d] found for [%s]?!",matched.size(),key);
-      }
-      return matched.get(0);
+      return lookupWithHandle(handle,tableName,keyColumn,valueColumn,key);
     }
   }
 );

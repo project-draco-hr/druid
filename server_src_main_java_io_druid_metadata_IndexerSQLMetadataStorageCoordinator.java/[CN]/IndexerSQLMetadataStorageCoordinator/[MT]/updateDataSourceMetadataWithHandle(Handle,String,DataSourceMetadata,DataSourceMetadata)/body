@@ -1,0 +1,40 @@
+{
+  Preconditions.checkNotNull(dataSource,"dataSource");
+  Preconditions.checkNotNull(startMetadata,"startMetadata");
+  Preconditions.checkNotNull(endMetadata,"endMetadata");
+  final byte[] oldCommitMetadataBytesFromDb=getDataSourceMetadataWithHandleAsBytes(handle,dataSource);
+  final String oldCommitMetadataSha1FromDb;
+  final DataSourceMetadata oldCommitMetadataFromDb;
+  if (oldCommitMetadataBytesFromDb == null) {
+    oldCommitMetadataSha1FromDb=null;
+    oldCommitMetadataFromDb=null;
+  }
+ else {
+    oldCommitMetadataSha1FromDb=BaseEncoding.base16().encode(Hashing.sha1().hashBytes(oldCommitMetadataBytesFromDb).asBytes());
+    oldCommitMetadataFromDb=jsonMapper.readValue(oldCommitMetadataBytesFromDb,DataSourceMetadata.class);
+  }
+  final boolean startMetadataMatchesExisting=oldCommitMetadataFromDb == null ? startMetadata.isValidStart() : startMetadata.matches(oldCommitMetadataFromDb);
+  if (!startMetadataMatchesExisting) {
+    log.info("Not updating metadata, existing state is not the expected start state.");
+    return false;
+  }
+  final DataSourceMetadata newCommitMetadata=oldCommitMetadataFromDb == null ? endMetadata : oldCommitMetadataFromDb.plus(endMetadata);
+  final byte[] newCommitMetadataBytes=jsonMapper.writeValueAsBytes(newCommitMetadata);
+  final String newCommitMetadataSha1=BaseEncoding.base16().encode(Hashing.sha1().hashBytes(newCommitMetadataBytes).asBytes());
+  final boolean retVal;
+  if (oldCommitMetadataBytesFromDb == null) {
+    final int numRows=handle.createStatement(String.format("INSERT INTO %s (dataSource, created_date, commit_metadata_payload, commit_metadata_sha1) " + "VALUES (:dataSource, :created_date, :commit_metadata_payload, :commit_metadata_sha1)",dbTables.getDataSourceTable())).bind("dataSource",dataSource).bind("created_date",new DateTime().toString()).bind("commit_metadata_payload",newCommitMetadataBytes).bind("commit_metadata_sha1",newCommitMetadataSha1).execute();
+    retVal=numRows > 0;
+  }
+ else {
+    final int numRows=handle.createStatement(String.format("UPDATE %s SET " + "commit_metadata_payload = :new_commit_metadata_payload, " + "commit_metadata_sha1 = :new_commit_metadata_sha1 "+ "WHERE dataSource = :dataSource AND commit_metadata_sha1 = :old_commit_metadata_sha1",dbTables.getDataSourceTable())).bind("dataSource",dataSource).bind("old_commit_metadata_sha1",oldCommitMetadataSha1FromDb).bind("new_commit_metadata_payload",newCommitMetadataBytes).bind("new_commit_metadata_sha1",newCommitMetadataSha1).execute();
+    retVal=numRows > 0;
+  }
+  if (retVal) {
+    log.info("Updated metadata from[%s] to[%s].",oldCommitMetadataFromDb,newCommitMetadata);
+  }
+ else {
+    log.info("Not updating metadata, compare-and-swap failure.");
+  }
+  return retVal;
+}

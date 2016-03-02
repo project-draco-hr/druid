@@ -1,0 +1,9 @@
+{
+  final SegmentPublishResult result1=coordinator.announceHistoricalSegments(ImmutableSet.of(defaultSegment),new ObjectMetadata(null),new ObjectMetadata(ImmutableMap.of("foo","bar")));
+  Assert.assertEquals(new SegmentPublishResult(ImmutableSet.of(defaultSegment),true),result1);
+  Assert.assertArrayEquals(mapper.writeValueAsString(defaultSegment).getBytes("UTF-8"),derbyConnector.lookup(derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable(),"id","payload",defaultSegment.getIdentifier()));
+  final SegmentPublishResult result2=coordinator.announceHistoricalSegments(ImmutableSet.of(defaultSegment2),new ObjectMetadata(ImmutableMap.of("foo","bar")),new ObjectMetadata(ImmutableMap.of("foo","baz")));
+  Assert.assertEquals(new SegmentPublishResult(ImmutableSet.of(defaultSegment2),true),result2);
+  Assert.assertArrayEquals(mapper.writeValueAsString(defaultSegment2).getBytes("UTF-8"),derbyConnector.lookup(derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable(),"id","payload",defaultSegment2.getIdentifier()));
+  Assert.assertEquals(new ObjectMetadata(ImmutableMap.of("foo","baz")),coordinator.getDataSourceMetadata("fooDataSource"));
+}
