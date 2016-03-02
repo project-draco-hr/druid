@@ -1,4 +1,19 @@
 {
-  autoCloseables.add(autoCloseable);
-  return autoCloseable;
+  closer.register(new Closeable(){
+    @Override public void close() throws IOException {
+      if (throwException) {
+        closeable.close();
+      }
+ else {
+        try {
+          closeable.close();
+        }
+ catch (        IOException e) {
+          LOG.warn(e,"Error closing [%s]",closeable);
+        }
+      }
+    }
+  }
+);
+  return closeable;
 }
