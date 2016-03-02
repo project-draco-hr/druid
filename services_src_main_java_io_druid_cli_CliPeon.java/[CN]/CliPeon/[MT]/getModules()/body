@@ -21,6 +21,7 @@
       Binders.dataSegmentArchiverBinder(binder);
       binder.bind(DataSegmentArchiver.class).to(OmniDataSegmentArchiver.class).in(LazySingleton.class);
       binder.bind(ExecutorLifecycle.class).in(ManageLifecycle.class);
+      LifecycleModule.register(binder,ExecutorLifecycle.class);
       binder.bind(ExecutorLifecycleConfig.class).toInstance(new ExecutorLifecycleConfig().setTaskFile(new File(taskAndStatusFile.get(0))).setStatusFile(new File(taskAndStatusFile.get(1))));
       binder.bind(TaskRunner.class).to(ThreadPoolTaskRunner.class);
       binder.bind(QuerySegmentWalker.class).to(ThreadPoolTaskRunner.class);
