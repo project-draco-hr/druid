@@ -1,0 +1,49 @@
+{
+  directory=tempFolder.newFolder();
+  final TestUtils testUtils=new TestUtils();
+  final ObjectMapper objectMapper=testUtils.getTestObjectMapper();
+  for (  Module module : new KafkaIndexTaskModule().getJacksonModules()) {
+    objectMapper.registerModule(module);
+  }
+  final TaskConfig taskConfig=new TaskConfig(new File(directory,"taskBaseDir").getPath(),null,null,50000,null,false,null,null);
+  final TestDerbyConnector derbyConnector=derby.getConnector();
+  derbyConnector.createDataSourceTable();
+  derbyConnector.createPendingSegmentsTable();
+  derbyConnector.createSegmentTable();
+  derbyConnector.createRulesTable();
+  derbyConnector.createConfigTable();
+  derbyConnector.createTaskTables();
+  derbyConnector.createAuditTable();
+  taskStorage=new MetadataTaskStorage(derbyConnector,new TaskStorageConfig(null),new SQLMetadataStorageActionHandlerFactory(derbyConnector,derby.metadataTablesConfigSupplier().get(),objectMapper));
+  metadataStorageCoordinator=new IndexerSQLMetadataStorageCoordinator(testUtils.getTestObjectMapper(),derby.metadataTablesConfigSupplier().get(),derbyConnector);
+  taskLockbox=new TaskLockbox(taskStorage);
+  final TaskActionToolbox taskActionToolbox=new TaskActionToolbox(taskLockbox,metadataStorageCoordinator,emitter);
+  final TaskActionClientFactory taskActionClientFactory=new LocalTaskActionClientFactory(taskStorage,taskActionToolbox);
+  final SegmentHandoffNotifierFactory handoffNotifierFactory=new SegmentHandoffNotifierFactory(){
+    @Override public SegmentHandoffNotifier createSegmentHandoffNotifier(    String dataSource){
+      return new SegmentHandoffNotifier(){
+        @Override public boolean registerSegmentHandoffCallback(        SegmentDescriptor descriptor,        Executor exec,        Runnable handOffRunnable){
+          if (doHandoff) {
+            exec.execute(handOffRunnable);
+          }
+          return true;
+        }
+        @Override public void start(){
+        }
+        @Override public void close(){
+        }
+      }
+;
+    }
+  }
+;
+  final LocalDataSegmentPusherConfig dataSegmentPusherConfig=new LocalDataSegmentPusherConfig();
+  dataSegmentPusherConfig.storageDirectory=getSegmentDirectory();
+  final DataSegmentPusher dataSegmentPusher=new LocalDataSegmentPusher(dataSegmentPusherConfig,objectMapper);
+  toolboxFactory=new TaskToolboxFactory(taskConfig,taskActionClientFactory,emitter,dataSegmentPusher,new TestDataSegmentKiller(),null,null,new TestDataSegmentAnnouncer(),handoffNotifierFactory,makeTimeseriesOnlyConglomerate(),MoreExecutors.sameThreadExecutor(),EasyMock.createMock(MonitorScheduler.class),new SegmentLoaderFactory(new SegmentLoaderLocalCacheManager(null,new SegmentLoaderConfig(){
+    @Override public List<StorageLocationConfig> getLocations(){
+      return Lists.newArrayList();
+    }
+  }
+,testUtils.getTestObjectMapper())),testUtils.getTestObjectMapper(),testUtils.getTestIndexMerger(),testUtils.getTestIndexIO(),MapCache.create(1024),new CacheConfig(),testUtils.getTestIndexMergerV9());
+}

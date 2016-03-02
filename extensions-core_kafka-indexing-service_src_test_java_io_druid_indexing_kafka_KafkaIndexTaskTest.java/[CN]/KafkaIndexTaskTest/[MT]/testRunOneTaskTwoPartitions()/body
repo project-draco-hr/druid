@@ -1,0 +1,21 @@
+{
+  final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L,1,0L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L,1,1L)),kafkaServer.consumerProperties(),true),null);
+  final ListenableFuture<TaskStatus> future=runTask(task);
+  try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
+    for (    ProducerRecord<byte[],byte[]> record : RECORDS) {
+      kafkaProducer.send(record).get();
+    }
+  }
+   Assert.assertEquals(TaskStatus.Status.SUCCESS,future.get().getStatusCode());
+  Assert.assertEquals(4,task.getFireDepartmentMetrics().processed());
+  Assert.assertEquals(0,task.getFireDepartmentMetrics().unparseable());
+  Assert.assertEquals(0,task.getFireDepartmentMetrics().thrownAway());
+  SegmentDescriptor desc1=SD(task,"2010/P1D",0);
+  SegmentDescriptor desc2=SD(task,"2011/P1D",0);
+  SegmentDescriptor desc3=SD(task,"2012/P1D",0);
+  Assert.assertEquals(ImmutableSet.of(desc1,desc2,desc3),publishedDescriptors());
+  Assert.assertEquals(new KafkaDataSourceMetadata(new KafkaPartitions("topic0",ImmutableMap.of(0,5L,1,1L))),metadataStorageCoordinator.getDataSourceMetadata(DATA_SCHEMA.getDataSource()));
+  Assert.assertEquals(ImmutableList.of("c"),readSegmentDim1(desc1));
+  Assert.assertEquals(ImmutableList.of("d","e"),readSegmentDim1(desc2));
+  Assert.assertEquals(ImmutableList.of("g"),readSegmentDim1(desc3));
+}

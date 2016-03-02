@@ -1,0 +1,8 @@
+{
+  return FluentIterable.from(metadataStorageCoordinator.getUsedSegmentsForInterval(DATA_SCHEMA.getDataSource(),new Interval("0000/3000"))).transform(new Function<DataSegment,SegmentDescriptor>(){
+    @Override public SegmentDescriptor apply(    DataSegment input){
+      return input.toDescriptor();
+    }
+  }
+).toSet();
+}

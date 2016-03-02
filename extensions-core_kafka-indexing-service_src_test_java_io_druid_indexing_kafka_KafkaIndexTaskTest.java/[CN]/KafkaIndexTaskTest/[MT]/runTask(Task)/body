@@ -1,0 +1,29 @@
+{
+  try {
+    taskStorage.insert(task,TaskStatus.running(task.getId()));
+  }
+ catch (  EntryExistsException e) {
+  }
+  taskLockbox.syncFromStorage();
+  final TaskToolbox toolbox=toolboxFactory.build(task);
+synchronized (runningTasks) {
+    runningTasks.add(task);
+  }
+  return taskExec.submit(new Callable<TaskStatus>(){
+    @Override public TaskStatus call() throws Exception {
+      try {
+        if (task.isReady(toolbox.getTaskActionClient())) {
+          return task.run(toolbox);
+        }
+ else {
+          throw new ISE("Task is not ready");
+        }
+      }
+ catch (      Exception e) {
+        log.warn(e,"Task failed");
+        return TaskStatus.failure(task.getId());
+      }
+    }
+  }
+);
+}

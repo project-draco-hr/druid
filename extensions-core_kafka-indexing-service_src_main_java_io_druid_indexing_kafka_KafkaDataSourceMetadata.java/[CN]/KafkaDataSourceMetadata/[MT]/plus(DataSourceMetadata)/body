@@ -1,0 +1,19 @@
+{
+  if (!(other instanceof KafkaDataSourceMetadata)) {
+    throw new IAE("Expected instance of %s, got %s",KafkaDataSourceMetadata.class.getCanonicalName(),other.getClass().getCanonicalName());
+  }
+  final KafkaDataSourceMetadata that=(KafkaDataSourceMetadata)other;
+  if (that.getKafkaPartitions().getTopic().equals(kafkaPartitions.getTopic())) {
+    final Map<Integer,Long> newMap=Maps.newHashMap();
+    for (    Map.Entry<Integer,Long> entry : kafkaPartitions.getPartitionOffsetMap().entrySet()) {
+      newMap.put(entry.getKey(),entry.getValue());
+    }
+    for (    Map.Entry<Integer,Long> entry : that.getKafkaPartitions().getPartitionOffsetMap().entrySet()) {
+      newMap.put(entry.getKey(),entry.getValue());
+    }
+    return new KafkaDataSourceMetadata(new KafkaPartitions(kafkaPartitions.getTopic(),newMap));
+  }
+ else {
+    return other;
+  }
+}
