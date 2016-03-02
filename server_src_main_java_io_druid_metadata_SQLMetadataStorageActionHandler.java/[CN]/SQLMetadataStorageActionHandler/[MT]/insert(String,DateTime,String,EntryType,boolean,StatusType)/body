@@ -6,6 +6,12 @@
         return null;
       }
     }
+,new Predicate<Throwable>(){
+      @Override public boolean apply(      Throwable e){
+        final boolean isStatementException=e instanceof StatementException || (e instanceof CallbackFailedException && e.getCause() instanceof StatementException);
+        return connector.isTransientException(e) && !(isStatementException && getEntry(id).isPresent());
+      }
+    }
 );
   }
  catch (  Exception e) {

@@ -1,0 +1,8 @@
+{
+  final String entryId="abcd";
+  Map<String,Integer> entry=ImmutableMap.of("a",1);
+  Map<String,Integer> status=ImmutableMap.of("count",42);
+  handler.insert(entryId,new DateTime("2014-01-01"),"test",entry,true,status);
+  thrown.expect(EntryExistsException.class);
+  handler.insert(entryId,new DateTime("2014-01-01"),"test",entry,true,status);
+}
