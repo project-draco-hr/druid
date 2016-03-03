@@ -1,10 +1,7 @@
 {
   return asLeaderWith(taskMaster.getTaskRunner(),new Function<TaskRunner,Response>(){
     @Override public Response apply(    TaskRunner taskRunner){
-      if (taskRunner instanceof RemoteTaskRunner) {
-        return Response.ok(((RemoteTaskRunner)taskRunner).getZkWorkers()).build();
-      }
- else       if (taskRunner instanceof WorkerTaskRunner) {
+      if (taskRunner instanceof WorkerTaskRunner) {
         return Response.ok(((WorkerTaskRunner)taskRunner).getWorkers()).build();
       }
  else {

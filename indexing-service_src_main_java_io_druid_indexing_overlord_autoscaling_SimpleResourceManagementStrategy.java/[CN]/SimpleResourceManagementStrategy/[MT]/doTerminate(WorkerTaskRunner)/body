@@ -21,12 +21,12 @@ synchronized (lock) {
     }
     currentlyTerminating.clear();
     currentlyTerminating.addAll(stillExisting);
-    Collection<Worker> workers=getWorkers(runner);
+    Collection<ImmutableWorkerInfo> workers=getWorkers(runner);
     updateTargetWorkerCount(workerConfig,pendingTasks,workers);
     if (currentlyTerminating.isEmpty()) {
       final int excessWorkers=(workers.size() + currentlyProvisioning.size()) - targetWorkerCount;
       if (excessWorkers > 0) {
-        final Predicate<Worker> isLazyWorker=createLazyWorkerPredicate(config);
+        final Predicate<ImmutableWorkerInfo> isLazyWorker=createLazyWorkerPredicate(config);
         final Collection<String> laziestWorkerIps=Collections2.transform(runner.markWorkersLazy(isLazyWorker,excessWorkers),new Function<Worker,String>(){
           @Override public String apply(          Worker zkWorker){
             return zkWorker.getIp();

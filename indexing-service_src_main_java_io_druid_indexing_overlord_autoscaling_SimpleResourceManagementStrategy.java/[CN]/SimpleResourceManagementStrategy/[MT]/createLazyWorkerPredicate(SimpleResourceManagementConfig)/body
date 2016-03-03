@@ -1,7 +1,7 @@
 {
-  final Predicate<Worker> isValidWorker=createValidWorkerPredicate(config);
-  return new Predicate<Worker>(){
-    @Override public boolean apply(    Worker worker){
+  final Predicate<ImmutableWorkerInfo> isValidWorker=createValidWorkerPredicate(config);
+  return new Predicate<ImmutableWorkerInfo>(){
+    @Override public boolean apply(    ImmutableWorkerInfo worker){
       final boolean itHasBeenAWhile=System.currentTimeMillis() - worker.getLastCompletedTaskTime().getMillis() >= config.getWorkerIdleTimeout().toStandardDuration().getMillis();
       return itHasBeenAWhile || !isValidWorker.apply(worker);
     }

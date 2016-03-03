@@ -1,0 +1,22 @@
+{
+synchronized (statusLock) {
+    Iterator<String> iterator=zkWorkers.keySet().iterator();
+    while (iterator.hasNext()) {
+      String worker=iterator.next();
+      ZkWorker zkWorker=zkWorkers.get(worker);
+      try {
+        if (getAssignedTasks(zkWorker.getWorker()).isEmpty() && isLazyWorker.apply(zkWorker.toImmutable())) {
+          log.info("Adding Worker[%s] to lazySet!",zkWorker.getWorker().getHost());
+          lazyWorkers.put(worker,zkWorker);
+          if (lazyWorkers.size() == maxWorkers) {
+            break;
+          }
+        }
+      }
+ catch (      Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+    return ImmutableList.copyOf(getWorkerFromZK(lazyWorkers.values()));
+  }
+}

@@ -18,13 +18,13 @@
     }
     ZkWorker assignedWorker=null;
     try {
-      final Optional<ImmutableZkWorker> immutableZkWorker=strategy.findWorkerForTask(config,ImmutableMap.copyOf(Maps.transformEntries(Maps.filterEntries(zkWorkers,new Predicate<Map.Entry<String,ZkWorker>>(){
+      final Optional<ImmutableWorkerInfo> immutableZkWorker=strategy.findWorkerForTask(config,ImmutableMap.copyOf(Maps.transformEntries(Maps.filterEntries(zkWorkers,new Predicate<Map.Entry<String,ZkWorker>>(){
         @Override public boolean apply(        Map.Entry<String,ZkWorker> input){
           return !lazyWorkers.containsKey(input.getKey()) && !workersWithUnacknowledgedTask.containsKey(input.getKey());
         }
       }
-),new Maps.EntryTransformer<String,ZkWorker,ImmutableZkWorker>(){
-        @Override public ImmutableZkWorker transformEntry(        String key,        ZkWorker value){
+),new Maps.EntryTransformer<String,ZkWorker,ImmutableWorkerInfo>(){
+        @Override public ImmutableWorkerInfo transformEntry(        String key,        ZkWorker value){
           return value.toImmutable();
         }
       }

@@ -12,7 +12,7 @@
   EasyMock.replay(autoScaler);
   RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
   EasyMock.expect(runner.getPendingTasks()).andReturn(Collections.singletonList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,null).withQueueInsertionTime(new DateTime()))).times(2);
-  EasyMock.expect(runner.getWorkers()).andReturn(Collections.singletonList(new TestZkWorker(testTask).getWorker())).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Collections.singletonList(new TestZkWorker(testTask).toImmutable())).times(2);
   EasyMock.replay(runner);
   boolean provisionedSomething=simpleResourceManagementStrategy.doProvision(runner);
   Assert.assertTrue(provisionedSomething);

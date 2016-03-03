@@ -1,0 +1,20 @@
+{
+  final TreeSet<ImmutableWorkerInfo> sortedWorkers=Sets.newTreeSet(new Comparator<ImmutableWorkerInfo>(){
+    @Override public int compare(    ImmutableWorkerInfo zkWorker,    ImmutableWorkerInfo zkWorker2){
+      int retVal=-Ints.compare(zkWorker2.getCurrCapacityUsed(),zkWorker.getCurrCapacityUsed());
+      if (retVal == 0) {
+        retVal=zkWorker2.getWorker().getVersion().compareTo(zkWorker.getWorker().getVersion());
+      }
+      return retVal;
+    }
+  }
+);
+  sortedWorkers.addAll(zkWorkers.values());
+  final String minWorkerVer=config.getMinWorkerVersion();
+  for (  ImmutableWorkerInfo zkWorker : sortedWorkers) {
+    if (zkWorker.canRunTask(task) && zkWorker.isValidVersion(minWorkerVer)) {
+      return Optional.of(zkWorker);
+    }
+  }
+  return Optional.absent();
+}
