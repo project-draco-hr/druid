@@ -2,7 +2,10 @@
   return asLeaderWith(taskMaster.getTaskRunner(),new Function<TaskRunner,Response>(){
     @Override public Response apply(    TaskRunner taskRunner){
       if (taskRunner instanceof RemoteTaskRunner) {
-        return Response.ok(((RemoteTaskRunner)taskRunner).getWorkers()).build();
+        return Response.ok(((RemoteTaskRunner)taskRunner).getZkWorkers()).build();
+      }
+ else       if (taskRunner instanceof WorkerTaskRunner) {
+        return Response.ok(((WorkerTaskRunner)taskRunner).getWorkers()).build();
       }
  else {
         log.debug("Task runner [%s] of type [%s] does not support listing workers",taskRunner,taskRunner.getClass().getCanonicalName());
