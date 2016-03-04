@@ -5,7 +5,7 @@
     }
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
     log.debug("Starting polling of segment table");
-    List<DataSegment> segments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
+    final List<DataSegment> segments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
       @Override public List<DataSegment> withHandle(      Handle handle) throws Exception {
         return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).map(new ResultSetMapper<DataSegment>(){
           @Override public DataSegment map(          int index,          ResultSet r,          StatementContext ctx) throws SQLException {
@@ -13,7 +13,8 @@
               return jsonMapper.readValue(r.getBytes("payload"),DataSegment.class);
             }
  catch (            IOException e) {
-              throw new SQLException(e);
+              log.makeAlert(e,"Failed to read segment from db.");
+              return null;
             }
           }
         }
@@ -25,8 +26,9 @@
       log.warn("No segments found in the database!");
       return;
     }
+    final Collection<DataSegment> segmentsFinal=Collections2.filter(segments,Predicates.notNull());
     log.info("Polled and found %,d segments in the database",segments.size());
-    for (    final DataSegment segment : segments) {
+    for (    final DataSegment segment : segmentsFinal) {
       String datasourceName=segment.getDataSource();
       DruidDataSource dataSource=newDataSources.get(datasourceName);
       if (dataSource == null) {

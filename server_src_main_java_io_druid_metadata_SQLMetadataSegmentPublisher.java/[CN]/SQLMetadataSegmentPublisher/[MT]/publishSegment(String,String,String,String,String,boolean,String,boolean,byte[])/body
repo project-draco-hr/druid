@@ -1,0 +1,26 @@
+{
+  try {
+    final DBI dbi=connector.getDBI();
+    List<Map<String,Object>> exists=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
+      @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
+        return handle.createQuery(String.format("SELECT id FROM %s WHERE id=:id",config.getSegmentsTable())).bind("id",identifier).list();
+      }
+    }
+);
+    if (!exists.isEmpty()) {
+      log.info("Found [%s] in DB, not updating DB",identifier);
+      return;
+    }
+    dbi.withHandle(new HandleCallback<Void>(){
+      @Override public Void withHandle(      Handle handle) throws Exception {
+        handle.createStatement(statement).bind("id",identifier).bind("dataSource",dataSource).bind("created_date",createdDate).bind("start",start).bind("end",end).bind("partitioned",partitioned).bind("version",version).bind("used",used).bind("payload",payload).execute();
+        return null;
+      }
+    }
+);
+  }
+ catch (  Exception e) {
+    log.error(e,"Exception inserting into DB");
+    throw new RuntimeException(e);
+  }
+}

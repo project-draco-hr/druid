@@ -1,26 +1,3 @@
 {
-  try {
-    final DBI dbi=connector.getDBI();
-    List<Map<String,Object>> exists=dbi.withHandle(new HandleCallback<List<Map<String,Object>>>(){
-      @Override public List<Map<String,Object>> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT id FROM %s WHERE id=:id",config.getSegmentsTable())).bind("id",segment.getIdentifier()).list();
-      }
-    }
-);
-    if (!exists.isEmpty()) {
-      log.info("Found [%s] in DB, not updating DB",segment.getIdentifier());
-      return;
-    }
-    dbi.withHandle(new HandleCallback<Void>(){
-      @Override public Void withHandle(      Handle handle) throws Exception {
-        handle.createStatement(statement).bind("id",segment.getIdentifier()).bind("dataSource",segment.getDataSource()).bind("created_date",new DateTime().toString()).bind("start",segment.getInterval().getStart().toString()).bind("end",segment.getInterval().getEnd().toString()).bind("partitioned",(segment.getShardSpec() instanceof NoneShardSpec) ? false : true).bind("version",segment.getVersion()).bind("used",true).bind("payload",jsonMapper.writeValueAsBytes(segment)).execute();
-        return null;
-      }
-    }
-);
-  }
- catch (  Exception e) {
-    log.error(e,"Exception inserting into DB");
-    throw new RuntimeException(e);
-  }
+  publishSegment(segment.getIdentifier(),segment.getDataSource(),new DateTime().toString(),segment.getInterval().getStart().toString(),segment.getInterval().getEnd().toString(),(segment.getShardSpec() instanceof NoneShardSpec) ? false : true,segment.getVersion(),true,jsonMapper.writeValueAsBytes(segment));
 }
