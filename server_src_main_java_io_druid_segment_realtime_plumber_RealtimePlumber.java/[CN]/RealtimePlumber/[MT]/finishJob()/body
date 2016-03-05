@@ -4,6 +4,7 @@
   for (  final Map.Entry<Long,Sink> entry : sinks.entrySet()) {
     persistAndMerge(entry.getKey(),entry.getValue());
   }
+  final long forceEndWaitTime=System.currentTimeMillis() + config.getHandoffConditionTimeout();
   while (!sinks.isEmpty()) {
     try {
       log.info("Cannot shut down yet! Sinks remaining: %s",Joiner.on(", ").join(Iterables.transform(sinks.values(),new Function<Sink,String>(){
@@ -14,7 +15,18 @@
 )));
 synchronized (handoffCondition) {
         while (!sinks.isEmpty()) {
-          handoffCondition.wait();
+          if (config.getHandoffConditionTimeout() == 0) {
+            handoffCondition.wait();
+          }
+ else {
+            long curr=System.currentTimeMillis();
+            if (forceEndWaitTime - curr > 0) {
+              handoffCondition.wait(forceEndWaitTime - curr);
+            }
+ else {
+              throw new ISE("Segment handoff wait timeout. [%s] segments might not have completed handoff.",sinks.size());
+            }
+          }
         }
       }
     }
