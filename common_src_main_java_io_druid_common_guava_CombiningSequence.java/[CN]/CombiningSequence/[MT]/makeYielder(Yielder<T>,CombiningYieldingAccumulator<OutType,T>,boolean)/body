@@ -13,14 +13,14 @@
       retVal=combiningAccumulator.getRetVal();
       finalFinalValue=true;
       if (!combiningAccumulator.yielded()) {
-        return Yielders.done(null,yielder);
+        return Yielders.done(retVal,yielder);
       }
  else {
         finalYielder=Yielders.done(null,yielder);
       }
     }
  else {
-      return Yielders.done(null,yielder);
+      return Yielders.done(combiningAccumulator.getRetVal(),yielder);
     }
   }
   return new Yielder<OutType>(){
