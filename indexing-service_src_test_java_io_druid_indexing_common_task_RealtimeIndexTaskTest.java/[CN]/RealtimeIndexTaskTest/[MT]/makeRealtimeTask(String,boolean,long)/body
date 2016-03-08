@@ -1,0 +1,12 @@
+{
+  ObjectMapper objectMapper=new DefaultObjectMapper();
+  DataSchema dataSchema=new DataSchema("test_ds",null,new AggregatorFactory[]{new CountAggregatorFactory("rows"),new LongSumAggregatorFactory("met1","met1")},new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,null),objectMapper);
+  RealtimeIOConfig realtimeIOConfig=new RealtimeIOConfig(new TestFirehoseFactory(),null,null);
+  RealtimeTuningConfig realtimeTuningConfig=new RealtimeTuningConfig(1000,new Period("P1Y"),new Period("PT10M"),null,null,new ServerTimeRejectionPolicyFactory(),null,null,null,buildV9Directly,0,0,reportParseExceptions,handoffTimeout);
+  return new RealtimeIndexTask(taskId,null,new FireDepartment(dataSchema,realtimeIOConfig,realtimeTuningConfig),null){
+    @Override protected boolean isFirehoseDrainableByClosing(    FirehoseFactory firehoseFactory){
+      return true;
+    }
+  }
+;
+}

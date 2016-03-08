@@ -1,0 +1,18 @@
+{
+  final TestIndexerMetadataStorageCoordinator mdc=new TestIndexerMetadataStorageCoordinator();
+  final RealtimeIndexTask task=makeRealtimeTask(null,true,100L);
+  final TaskToolbox taskToolbox=makeToolbox(task,mdc,tempFolder.newFolder());
+  final ListenableFuture<TaskStatus> statusFuture=runTask(task,taskToolbox);
+  while (task.getFirehose() == null) {
+    Thread.sleep(50);
+  }
+  final TestFirehose firehose=(TestFirehose)task.getFirehose();
+  firehose.addRows(ImmutableList.<InputRow>of(new MapBasedInputRow(now,ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","foo","met1","1"))));
+  firehose.close();
+  while (mdc.getPublished().isEmpty()) {
+    Thread.sleep(50);
+  }
+  Assert.assertEquals(1,task.getMetrics().processed());
+  Assert.assertNotNull(Iterables.getOnlyElement(mdc.getPublished()));
+  statusFuture.get();
+}
