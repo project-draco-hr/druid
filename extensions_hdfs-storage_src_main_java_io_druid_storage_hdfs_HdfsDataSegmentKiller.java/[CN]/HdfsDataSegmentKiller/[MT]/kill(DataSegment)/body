@@ -1,9 +1,13 @@
 {
   final Path path=getPath(segment);
   log.info("killing segment[%s] mapped to path[%s]",segment.getIdentifier(),path);
-  final FileSystem fs=checkPathAndGetFilesystem(path);
   try {
     if (path.getName().endsWith(".zip")) {
+      final FileSystem fs=path.getFileSystem(config);
+      if (!fs.exists(path)) {
+        log.warn("Segment Path [%s] does not exist. It appears to have been deleted already.",path);
+        return;
+      }
       Path partitionNumDir=path.getParent();
       if (!fs.delete(partitionNumDir,true)) {
         throw new SegmentLoadingException("Unable to kill segment, failed to delete dir [%s]",partitionNumDir.toString());
