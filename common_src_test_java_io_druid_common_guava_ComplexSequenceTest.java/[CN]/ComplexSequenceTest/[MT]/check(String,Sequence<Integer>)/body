@@ -1,0 +1,17 @@
+{
+  List<Integer> combined=Sequences.toList(complex,new ArrayList<Integer>());
+  Assert.assertEquals(expected,combined.toString());
+  Yielder<Integer> yielder=complex.toYielder(null,new YieldingAccumulator<Integer,Integer>(){
+    @Override public Integer accumulate(    Integer accumulated,    Integer in){
+      yield();
+      return in;
+    }
+  }
+);
+  List<Integer> combinedByYielder=new ArrayList<>();
+  while (!yielder.isDone()) {
+    combinedByYielder.add(yielder.get());
+    yielder=yielder.next(null);
+  }
+  Assert.assertEquals(expected,combinedByYielder.toString());
+}
