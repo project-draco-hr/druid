@@ -1,7 +1,7 @@
 {
   TestDerbyConnector connector=derbyConnectorRule.getConnector();
   manager=new SQLMetadataSegmentManager(jsonMapper,Suppliers.ofInstance(new MetadataSegmentManagerConfig()),derbyConnectorRule.metadataTablesConfigSupplier(),connector);
-  SQLMetadataSegmentPublisher publisher=new SQLMetadataSegmentPublisher(jsonMapper,derbyConnectorRule.metadataTablesConfigSupplier().get(),connector);
+  publisher=new SQLMetadataSegmentPublisher(jsonMapper,derbyConnectorRule.metadataTablesConfigSupplier().get(),connector);
   connector.createSegmentTable();
   publisher.publishSegment(segment1);
   publisher.publishSegment(segment2);

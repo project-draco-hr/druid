@@ -1,0 +1,7 @@
+{
+  publisher.publishSegment("corrupt-segment-id","corrupt-datasource","corrupt-create-date","corrupt-start-date","corrupt-end-date",true,"corrupt-version",true,"corrupt-payload".getBytes());
+  EmittingLogger.registerEmitter(new NoopServiceEmitter());
+  manager.start();
+  manager.poll();
+  Assert.assertEquals("wikipedia",Iterables.getOnlyElement(manager.getInventory()).getName());
+}
