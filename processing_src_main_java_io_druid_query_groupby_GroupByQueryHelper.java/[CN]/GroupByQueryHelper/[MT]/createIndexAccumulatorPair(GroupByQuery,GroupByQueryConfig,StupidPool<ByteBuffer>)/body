@@ -15,7 +15,7 @@
   }
 );
   final IncrementalIndex index;
-  if (query.getContextValue("useOffheap",false)) {
+  if (query.getContextBoolean("useOffheap",false)) {
     index=new OffheapIncrementalIndex(granTimeStart,gran,aggs.toArray(new AggregatorFactory[aggs.size()]),false,true,query.getContextValue(CTX_KEY_MAX_RESULTS,config.getMaxResults()),bufferPool);
   }
  else {
