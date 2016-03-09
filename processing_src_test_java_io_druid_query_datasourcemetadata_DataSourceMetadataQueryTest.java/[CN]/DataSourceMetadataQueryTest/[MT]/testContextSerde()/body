@@ -1,9 +1,12 @@
 {
-  final DataSourceMetadataQuery query=Druids.newDataSourceMetadataQueryBuilder().dataSource("foo").intervals("2013/2014").context(ImmutableMap.<String,Object>of("priority",1,"useCache",true,"populateCache",true,"finalize",true)).build();
+  final DataSourceMetadataQuery query=Druids.newDataSourceMetadataQueryBuilder().dataSource("foo").intervals("2013/2014").context(ImmutableMap.<String,Object>of("priority",1,"useCache",true,"populateCache","true","finalize",true)).build();
   final ObjectMapper mapper=new DefaultObjectMapper();
   final Query serdeQuery=mapper.readValue(mapper.writeValueAsBytes(mapper.readValue(mapper.writeValueAsString(query),Query.class)),Query.class);
   Assert.assertEquals(1,serdeQuery.getContextValue("priority"));
   Assert.assertEquals(true,serdeQuery.getContextValue("useCache"));
-  Assert.assertEquals(true,serdeQuery.getContextValue("populateCache"));
+  Assert.assertEquals("true",serdeQuery.getContextValue("populateCache"));
   Assert.assertEquals(true,serdeQuery.getContextValue("finalize"));
+  Assert.assertEquals(true,serdeQuery.getContextBoolean("useCache",false));
+  Assert.assertEquals(true,serdeQuery.getContextBoolean("populateCache",false));
+  Assert.assertEquals(true,serdeQuery.getContextBoolean("finalize",false));
 }
