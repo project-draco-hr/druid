@@ -1,5 +1,5 @@
 {
-  ProtoBufInputRowParser parser=new ProtoBufInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(Arrays.asList(DIMENSIONS),Arrays.<String>asList(),null)),"prototest.desc");
+  ProtoBufInputRowParser parser=new ProtoBufInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(Arrays.asList(DIMENSIONS),Arrays.<String>asList(),null)),"prototest.desc");
   DateTime dateTime=new DateTime(2012,07,12,9,30);
   ProtoTestEventWrapper.ProtoTestEvent event=ProtoTestEventWrapper.ProtoTestEvent.newBuilder().setDescription("description").setEventType(ProtoTestEventWrapper.ProtoTestEvent.EventCategory.CATEGORY_ONE).setId(4711L).setIsValid(true).setSomeOtherId(4712).setTimestamp(dateTime.toString()).setSomeFloatColumn(47.11F).setSomeIntColumn(815).setSomeLongColumn(816L).build();
   ByteArrayOutputStream out=new ByteArrayOutputStream();
