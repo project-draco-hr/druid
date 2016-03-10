@@ -7,7 +7,8 @@
       final byte[] aggregatorBytes=QueryCacheHelper.computeAggregatorBytes(query.getAggregatorSpecs());
       final byte[] granularityBytes=query.getGranularity().cacheKey();
       final byte descending=query.isDescending() ? (byte)1 : 0;
-      return ByteBuffer.allocate(2 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(descending).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
+      final byte skipEmptyBuckets=query.isSkipEmptyBuckets() ? (byte)1 : 0;
+      return ByteBuffer.allocate(3 + granularityBytes.length + filterBytes.length+ aggregatorBytes.length).put(TIMESERIES_QUERY).put(descending).put(skipEmptyBuckets).put(granularityBytes).put(filterBytes).put(aggregatorBytes).array();
     }
     @Override public TypeReference<Object> getCacheObjectClazz(){
       return OBJECT_TYPE_REFERENCE;
