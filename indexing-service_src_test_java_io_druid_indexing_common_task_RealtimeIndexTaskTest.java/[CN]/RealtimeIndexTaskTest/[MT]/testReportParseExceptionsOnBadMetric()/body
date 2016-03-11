@@ -11,6 +11,7 @@
   firehose.close();
   expectedException.expect(ExecutionException.class);
   expectedException.expectCause(CoreMatchers.<Throwable>instanceOf(ParseException.class));
-  expectedException.expectCause(ThrowableMessageMatcher.hasMessage(CoreMatchers.containsString("Unable to parse metrics[met1], value[foo]")));
+  expectedException.expectCause(ThrowableMessageMatcher.hasMessage(CoreMatchers.containsString("Encountered parse error for aggregator[met1]")));
+  expectedException.expect(ThrowableCauseMatcher.hasCause(ThrowableCauseMatcher.hasCause(CoreMatchers.allOf(CoreMatchers.<Throwable>instanceOf(ParseException.class),ThrowableMessageMatcher.hasMessage(CoreMatchers.containsString("Unable to parse metrics[met1], value[foo]"))))));
   statusFuture.get();
 }
