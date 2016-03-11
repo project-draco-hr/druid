@@ -1,4 +1,5 @@
 {
+  stopping=true;
   for (  Map.Entry<Integer,ListeningExecutorService> entry : exec.entrySet()) {
     try {
       entry.getValue().shutdown();
@@ -19,7 +20,7 @@
       try {
         task.stopGracefully();
         final TaskStatus taskStatus=item.getResult().get(new Interval(new DateTime(start),taskConfig.getGracefulShutdownTimeout()).toDurationMillis(),TimeUnit.MILLISECONDS);
-        log.info("Graceful shutdown of task[%s] finished in %,dms with status[%s].",task.getId(),System.currentTimeMillis() - start,taskStatus.getStatusCode());
+        log.info("Graceful shutdown of task[%s] finished in %,dms.",task.getId(),System.currentTimeMillis() - start);
       }
  catch (      Exception e) {
         log.makeAlert(e,"Graceful task shutdown failed: %s",task.getDataSource()).addData("taskId",task.getId()).addData("dataSource",task.getDataSource()).emit();
