@@ -62,7 +62,10 @@ synchronized (agg) {
       }
  catch (      ParseException e) {
         if (reportParseExceptions) {
-          throw e;
+          throw new ParseException(e,"Encountered parse error for aggregator[%s]",getMetricAggs()[i].getName());
+        }
+ else {
+          log.debug(e,"Encountered parse error, skipping aggregator[%s].",getMetricAggs()[i].getName());
         }
       }
     }
