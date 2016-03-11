@@ -2,13 +2,20 @@
 synchronized (lifecycleLock) {
     Preconditions.checkState(started,"not started");
     try {
+      started=false;
       exec.shutdownNow();
       pathChildrenCache.close();
       taskRunner.stop();
-      started=false;
+      if (!doneStopping.await(STOP_WARNING_SECONDS,TimeUnit.SECONDS)) {
+        log.warn("WorkerTaskMonitor taking longer than %s seconds to exit. Still waiting...",STOP_WARNING_SECONDS);
+        doneStopping.await();
+      }
       log.info("Stopped WorkerTaskMonitor.");
     }
- catch (    Exception e) {
+ catch (    InterruptedException e) {
+      throw e;
+    }
+catch (    Exception e) {
       log.makeAlert(e,"Exception stopping WorkerTaskMonitor").emit();
     }
   }
