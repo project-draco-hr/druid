@@ -1,0 +1,8 @@
+{
+  List<LogicalSegment> segments=new TimeBoundaryQueryQueryToolChest().filterSegments(MINTIME_BOUNDARY_QUERY,Arrays.asList(createLogicalSegment(new Interval("2013-01-01/P1D")),createLogicalSegment(new Interval("2013-01-01T01/PT1H")),createLogicalSegment(new Interval("2013-01-01T02/PT1H")),createLogicalSegment(new Interval("2013-01-02/P1D")),createLogicalSegment(new Interval("2013-01-03T01/PT1H")),createLogicalSegment(new Interval("2013-01-03T02/PT1H")),createLogicalSegment(new Interval("2013-01-03/P1D"))));
+  Assert.assertEquals(3,segments.size());
+  List<LogicalSegment> expected=Arrays.asList(createLogicalSegment(new Interval("2013-01-01/P1D")),createLogicalSegment(new Interval("2013-01-01T01/PT1H")),createLogicalSegment(new Interval("2013-01-01T02/PT1H")));
+  for (int i=0; i < segments.size(); i++) {
+    Assert.assertEquals(segments.get(i).getInterval(),expected.get(i).getInterval());
+  }
+}
