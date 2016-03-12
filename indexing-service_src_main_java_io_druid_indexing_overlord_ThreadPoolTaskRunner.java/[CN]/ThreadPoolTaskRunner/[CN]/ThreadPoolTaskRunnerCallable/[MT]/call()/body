@@ -7,8 +7,13 @@
     status=task.run(toolbox);
   }
  catch (  InterruptedException e) {
-    log.error(e,"Interrupted while running task[%s]",task);
-    throw Throwables.propagate(e);
+    if (stopping) {
+      log.debug(e,"Interrupted while running task[%s] during graceful shutdown.",task);
+    }
+ else {
+      log.warn(e,"Interrupted while running task[%s]",task);
+    }
+    status=TaskStatus.failure(task.getId());
   }
 catch (  Exception e) {
     log.error(e,"Exception while running task[%s]",task);
@@ -16,13 +21,7 @@ catch (  Exception e) {
   }
 catch (  Throwable t) {
     log.error(t,"Uncaught Throwable while running task[%s]",task);
-    throw Throwables.propagate(t);
+    throw t;
   }
-  try {
-    return status.withDuration(System.currentTimeMillis() - startTime);
-  }
- catch (  Exception e) {
-    log.error(e,"Uncaught Exception during callback for task[%s]",task);
-    throw Throwables.propagate(e);
-  }
+  return status.withDuration(System.currentTimeMillis() - startTime);
 }
