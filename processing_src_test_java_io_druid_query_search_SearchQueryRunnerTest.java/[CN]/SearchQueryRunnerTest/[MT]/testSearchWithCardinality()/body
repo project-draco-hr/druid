@@ -1,0 +1,21 @@
+{
+  final SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).query("a").build();
+  QueryRunner mergedRunner=toolChest.mergeResults(new QueryRunner<Result<SearchResultValue>>(){
+    @Override public Sequence<Result<SearchResultValue>> run(    Query<Result<SearchResultValue>> query,    Map<String,Object> responseContext){
+      final Query<Result<SearchResultValue>> query1=searchQuery.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-01-12/2011-02-28"))));
+      final Query<Result<SearchResultValue>> query2=searchQuery.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-03-01/2011-04-15"))));
+      return Sequences.concat(runner.run(query1,responseContext),runner.run(query2,responseContext));
+    }
+  }
+);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"automotive",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"mezzanine",558));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"travel",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"health",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"entertainment",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.marketDimension,"total_market",372));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.placementishDimension,"a",186));
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.partialNullDimension,"value",372));
+  checkSearchQuery(searchQuery,mergedRunner,expectedHits);
+}

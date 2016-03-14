@@ -1,5 +1,5 @@
 {
-  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
-  expectedResults.put(QueryRunnerTestHelper.qualityDimension,new HashSet<String>(Arrays.asList("automotive")));
-  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(QueryRunnerTestHelper.qualityDimension,"automotive").intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.qualityDimension).query("a").build(),expectedResults);
+  List<SearchHit> expectedHits=Lists.newLinkedList();
+  expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"mezzanine",93));
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(new AndDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"total_market"),new SelectorDimFilter(QueryRunnerTestHelper.qualityDimension,"mezzanine")))).intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.qualityDimension).query("a").build(),expectedHits);
 }

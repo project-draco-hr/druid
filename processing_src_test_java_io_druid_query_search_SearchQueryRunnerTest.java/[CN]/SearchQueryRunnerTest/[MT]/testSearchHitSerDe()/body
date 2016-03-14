@@ -1,0 +1,12 @@
+{
+  for (  SearchHit hit : Arrays.asList(new SearchHit("dim1","val1"),new SearchHit("dim2","val2",3))) {
+    SearchHit read=TestHelper.JSON_MAPPER.readValue(TestHelper.JSON_MAPPER.writeValueAsString(hit),SearchHit.class);
+    Assert.assertEquals(hit,read);
+    if (hit.getCount() == null) {
+      Assert.assertNull(read.getCount());
+    }
+ else {
+      Assert.assertEquals(hit.getCount(),read.getCount());
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  Iterable<SearchHit> source=Iterables.transform(retVal.entrySet(),new Function<Map.Entry<SearchHit,MutableInt>,SearchHit>(){
+    @Override public SearchHit apply(    Map.Entry<SearchHit,MutableInt> input){
+      SearchHit hit=input.getKey();
+      return new SearchHit(hit.getDimension(),hit.getValue(),input.getValue().intValue());
+    }
+  }
+);
+  return Sequences.simple(ImmutableList.of(new Result<SearchResultValue>(segment.getDataInterval().getStart(),new SearchResultValue(Lists.newArrayList(new FunctionalIterable<SearchHit>(source).limit(limit))))));
+}
