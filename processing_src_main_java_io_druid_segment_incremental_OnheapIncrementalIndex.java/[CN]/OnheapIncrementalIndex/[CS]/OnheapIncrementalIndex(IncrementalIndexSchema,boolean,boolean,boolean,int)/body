@@ -1,0 +1,10 @@
+{
+  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions,sortFacts);
+  this.maxRowCount=maxRowCount;
+  if (sortFacts) {
+    this.facts=new ConcurrentSkipListMap<>(dimsComparator());
+  }
+ else {
+    this.facts=new ConcurrentHashMap<>();
+  }
+}

@@ -2,7 +2,7 @@
   IncrementalIndex index=null;
   List<File> toMerge=new ArrayList<>();
   try {
-    index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,true,maxRowCount);
+    index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,true,true,maxRowCount);
     while (rows.hasNext()) {
       Object row=rows.next();
       if (!index.canAppendRow()) {
@@ -10,7 +10,7 @@
         toMerge.add(tmp);
         indexMerger.persist(index,tmp,new IndexSpec());
         index.close();
-        index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,true,maxRowCount);
+        index=new OnheapIncrementalIndex(minTimestamp,gran,metrics,deserializeComplexMetrics,true,true,maxRowCount);
       }
       if (row instanceof String && parser instanceof StringInputRowParser) {
         index.add(((StringInputRowParser)parser).parse((String)row));
