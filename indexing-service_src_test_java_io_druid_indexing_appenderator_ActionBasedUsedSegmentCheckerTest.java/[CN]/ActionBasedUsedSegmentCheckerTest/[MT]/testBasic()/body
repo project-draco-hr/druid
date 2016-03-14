@@ -1,0 +1,10 @@
+{
+  final TaskActionClient taskActionClient=EasyMock.createMock(TaskActionClient.class);
+  EasyMock.expect(taskActionClient.submit(new SegmentListUsedAction("bar",null,ImmutableList.of(new Interval("2002/P1D"))))).andReturn(ImmutableList.of(DataSegment.builder().dataSource("bar").interval(new Interval("2002/P1D")).shardSpec(new LinearShardSpec(0)).version("b").build(),DataSegment.builder().dataSource("bar").interval(new Interval("2002/P1D")).shardSpec(new LinearShardSpec(1)).version("b").build()));
+  EasyMock.expect(taskActionClient.submit(new SegmentListUsedAction("foo",null,ImmutableList.of(new Interval("2000/P1D"),new Interval("2001/P1D"))))).andReturn(ImmutableList.of(DataSegment.builder().dataSource("foo").interval(new Interval("2000/P1D")).shardSpec(new LinearShardSpec(0)).version("a").build(),DataSegment.builder().dataSource("foo").interval(new Interval("2000/P1D")).shardSpec(new LinearShardSpec(1)).version("a").build(),DataSegment.builder().dataSource("foo").interval(new Interval("2001/P1D")).shardSpec(new LinearShardSpec(1)).version("b").build(),DataSegment.builder().dataSource("foo").interval(new Interval("2002/P1D")).shardSpec(new LinearShardSpec(1)).version("b").build()));
+  EasyMock.replay(taskActionClient);
+  final UsedSegmentChecker checker=new ActionBasedUsedSegmentChecker(taskActionClient);
+  final Set<DataSegment> segments=checker.findUsedSegments(ImmutableSet.of(new SegmentIdentifier("foo",new Interval("2000/P1D"),"a",new LinearShardSpec(1)),new SegmentIdentifier("foo",new Interval("2001/P1D"),"b",new LinearShardSpec(0)),new SegmentIdentifier("bar",new Interval("2002/P1D"),"b",new LinearShardSpec(0))));
+  Assert.assertEquals(ImmutableSet.of(DataSegment.builder().dataSource("foo").interval(new Interval("2000/P1D")).shardSpec(new LinearShardSpec(1)).version("a").build(),DataSegment.builder().dataSource("bar").interval(new Interval("2002/P1D")).shardSpec(new LinearShardSpec(0)).version("b").build()),segments);
+  EasyMock.verify(taskActionClient);
+}

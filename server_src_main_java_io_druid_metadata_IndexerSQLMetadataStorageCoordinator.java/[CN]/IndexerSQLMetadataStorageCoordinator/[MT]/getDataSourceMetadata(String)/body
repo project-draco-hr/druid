@@ -1,0 +1,12 @@
+{
+  final byte[] bytes=connector.lookup(dbTables.getDataSourceTable(),"dataSource","commit_metadata_payload",dataSource);
+  if (bytes == null) {
+    return null;
+  }
+  try {
+    return jsonMapper.readValue(bytes,DataSourceMetadata.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

@@ -1,0 +1,20 @@
+{
+  try {
+    final ListenableFuture<?> uncommitFuture=persistExecutor.submit(new Callable<Object>(){
+      @Override public Object call() throws Exception {
+        objectMapper.writeValue(computeCommitFile(),Committed.nil());
+        return null;
+      }
+    }
+);
+    uncommitFuture.get();
+    final List<ListenableFuture<?>> futures=Lists.newArrayList();
+    for (    Map.Entry<SegmentIdentifier,Sink> entry : sinks.entrySet()) {
+      futures.add(abandonSegment(entry.getKey(),entry.getValue(),true));
+    }
+    Futures.allAsList(futures).get();
+  }
+ catch (  ExecutionException e) {
+    throw Throwables.propagate(e);
+  }
+}

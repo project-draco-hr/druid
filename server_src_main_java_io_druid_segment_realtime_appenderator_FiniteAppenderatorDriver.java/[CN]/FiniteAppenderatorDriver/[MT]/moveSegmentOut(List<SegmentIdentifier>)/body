@@ -1,0 +1,11 @@
+{
+synchronized (activeSegments) {
+    for (    final SegmentIdentifier identifier : identifiers) {
+      log.info("Moving segment[%s] out of active list.",identifier);
+      final long key=identifier.getInterval().getStartMillis();
+      if (activeSegments.remove(key) != identifier) {
+        throw new ISE("WTF?! Asked to remove segment[%s] that didn't exist...",identifier);
+      }
+    }
+  }
+}

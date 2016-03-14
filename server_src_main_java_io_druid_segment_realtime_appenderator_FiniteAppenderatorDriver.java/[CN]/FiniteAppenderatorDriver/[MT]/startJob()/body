@@ -1,0 +1,17 @@
+{
+  handoffNotifier.start();
+  final FiniteAppenderatorDriverMetadata metadata=objectMapper.convertValue(appenderator.startJob(),FiniteAppenderatorDriverMetadata.class);
+  log.info("Restored metadata[%s].",metadata);
+  if (metadata != null) {
+synchronized (activeSegments) {
+      for (      SegmentIdentifier identifier : metadata.getActiveSegments()) {
+        activeSegments.put(identifier.getInterval().getStartMillis(),identifier);
+      }
+      lastSegmentId=metadata.getPreviousSegmentId();
+    }
+    return metadata.getCallerMetadata();
+  }
+ else {
+    return null;
+  }
+}

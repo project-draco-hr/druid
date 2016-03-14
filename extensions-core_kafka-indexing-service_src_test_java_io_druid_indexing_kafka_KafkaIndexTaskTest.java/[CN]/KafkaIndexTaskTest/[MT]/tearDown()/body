@@ -1,0 +1,16 @@
+{
+  emitter.close();
+synchronized (runningTasks) {
+    for (    Task task : runningTasks) {
+      task.stopGracefully();
+    }
+    runningTasks.clear();
+  }
+  taskExec.shutdown();
+  taskExec.awaitTermination(9999,TimeUnit.DAYS);
+  kafkaServer.close();
+  kafkaServer=null;
+  zkServer.stop();
+  zkServer=null;
+  destroyToolboxFactory();
+}

@@ -1,0 +1,24 @@
+{
+  try (final AppenderatorTester tester=new AppenderatorTester(2)){
+    final Appenderator appenderator=tester.getAppenderator();
+    appenderator.startJob();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","foo",1),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","foo",2),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(1),IR("2000","foo",4),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(2),IR("2001","foo",8),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(2),IR("2001T01","foo",16),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(2),IR("2001T02","foo",32),Suppliers.ofInstance(Committers.nil()));
+    final TimeseriesQuery query1=Druids.newTimeseriesQueryBuilder().dataSource(AppenderatorTester.DATASOURCE).intervals(ImmutableList.of(new Interval("2000/2001"))).aggregators(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("count","count"),new LongSumAggregatorFactory("met","met"))).granularity(QueryGranularity.DAY).build();
+    final List<Result<TimeseriesResultValue>> results1=Lists.newArrayList();
+    Sequences.toList(query1.run(appenderator,ImmutableMap.<String,Object>of()),results1);
+    Assert.assertEquals("query1",ImmutableList.of(new Result<>(new DateTime("2000"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",3L,"met",7L)))),results1);
+    final TimeseriesQuery query2=Druids.newTimeseriesQueryBuilder().dataSource(AppenderatorTester.DATASOURCE).intervals(ImmutableList.of(new Interval("2000/2002"))).aggregators(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("count","count"),new LongSumAggregatorFactory("met","met"))).granularity(QueryGranularity.DAY).build();
+    final List<Result<TimeseriesResultValue>> results2=Lists.newArrayList();
+    Sequences.toList(query2.run(appenderator,ImmutableMap.<String,Object>of()),results2);
+    Assert.assertEquals("query2",ImmutableList.of(new Result<>(new DateTime("2000"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",3L,"met",7L))),new Result<>(new DateTime("2001"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",3L,"met",56L)))),results2);
+    final TimeseriesQuery query3=Druids.newTimeseriesQueryBuilder().dataSource(AppenderatorTester.DATASOURCE).intervals(ImmutableList.of(new Interval("2000/2001T01"))).aggregators(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("count","count"),new LongSumAggregatorFactory("met","met"))).granularity(QueryGranularity.DAY).build();
+    final List<Result<TimeseriesResultValue>> results3=Lists.newArrayList();
+    Sequences.toList(query3.run(appenderator,ImmutableMap.<String,Object>of()),results3);
+    Assert.assertEquals(ImmutableList.of(new Result<>(new DateTime("2000"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",3L,"met",7L))),new Result<>(new DateTime("2001"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",1L,"met",8L)))),results3);
+  }
+ }

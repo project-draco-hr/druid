@@ -1,6 +1,7 @@
 {
   derbyConnector=derbyConnectorRule.getConnector();
   mapper.registerSubtypes(LinearShardSpec.class);
+  derbyConnector.createDataSourceTable();
   derbyConnector.createTaskTables();
   derbyConnector.createSegmentTable();
   coordinator=new IndexerSQLMetadataStorageCoordinator(mapper,derbyConnectorRule.metadataTablesConfigSupplier().get(),derbyConnector);

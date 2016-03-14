@@ -1,0 +1,8 @@
+{
+  log.info("Stopping gracefully.");
+  stopping=true;
+  if (publishing && runThread.isAlive()) {
+    log.info("stopGracefully: Run thread started publishing, interrupting it.");
+    runThread.interrupt();
+  }
+}

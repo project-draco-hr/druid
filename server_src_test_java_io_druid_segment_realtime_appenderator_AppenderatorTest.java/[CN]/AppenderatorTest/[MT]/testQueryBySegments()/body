@@ -1,0 +1,19 @@
+{
+  try (final AppenderatorTester tester=new AppenderatorTester(2)){
+    final Appenderator appenderator=tester.getAppenderator();
+    appenderator.startJob();
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","foo",1),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(0),IR("2000","foo",2),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(1),IR("2000","foo",4),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(2),IR("2001","foo",8),Suppliers.ofInstance(Committers.nil()));
+    appenderator.add(IDENTIFIERS.get(2),IR("2001T01","foo",16),Suppliers.ofInstance(Committers.nil()));
+    final TimeseriesQuery query1=Druids.newTimeseriesQueryBuilder().dataSource(AppenderatorTester.DATASOURCE).aggregators(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("count","count"),new LongSumAggregatorFactory("met","met"))).granularity(QueryGranularity.DAY).intervals(new MultipleSpecificSegmentSpec(ImmutableList.of(new SegmentDescriptor(IDENTIFIERS.get(2).getInterval(),IDENTIFIERS.get(2).getVersion(),IDENTIFIERS.get(2).getShardSpec().getPartitionNum())))).build();
+    final List<Result<TimeseriesResultValue>> results1=Lists.newArrayList();
+    Sequences.toList(query1.run(appenderator,ImmutableMap.<String,Object>of()),results1);
+    Assert.assertEquals("query1",ImmutableList.of(new Result<>(new DateTime("2001"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",2L,"met",24L)))),results1);
+    final TimeseriesQuery query2=Druids.newTimeseriesQueryBuilder().dataSource(AppenderatorTester.DATASOURCE).aggregators(Arrays.<AggregatorFactory>asList(new LongSumAggregatorFactory("count","count"),new LongSumAggregatorFactory("met","met"))).granularity(QueryGranularity.DAY).intervals(new MultipleSpecificSegmentSpec(ImmutableList.of(new SegmentDescriptor(new Interval("2001/PT1H"),IDENTIFIERS.get(2).getVersion(),IDENTIFIERS.get(2).getShardSpec().getPartitionNum())))).build();
+    final List<Result<TimeseriesResultValue>> results2=Lists.newArrayList();
+    Sequences.toList(query2.run(appenderator,ImmutableMap.<String,Object>of()),results2);
+    Assert.assertEquals("query2",ImmutableList.of(new Result<>(new DateTime("2001"),new TimeseriesResultValue(ImmutableMap.<String,Object>of("count",1L,"met",8L)))),results2);
+  }
+ }

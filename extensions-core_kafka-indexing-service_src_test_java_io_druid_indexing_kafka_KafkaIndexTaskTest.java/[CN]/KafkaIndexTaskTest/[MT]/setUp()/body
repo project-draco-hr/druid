@@ -1,0 +1,14 @@
+{
+  emitter=new ServiceEmitter("service","host",new LoggingEmitter(log,LoggingEmitter.Level.ERROR,new DefaultObjectMapper()));
+  emitter.start();
+  EmittingLogger.registerEmitter(emitter);
+  makeToolboxFactory();
+  zkServer=new TestingCluster(1);
+  zkServer.start();
+  kafkaServer=new TestBroker(zkServer.getConnectString(),tempFolder.newFolder(),1,ImmutableMap.of("num.partitions","2"));
+  kafkaServer.start();
+  taskExec=MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(Execs.makeThreadFactory("kafka-task-test-%d")));
+  handoffConditionTimeout=0;
+  reportParseExceptions=false;
+  doHandoff=true;
+}

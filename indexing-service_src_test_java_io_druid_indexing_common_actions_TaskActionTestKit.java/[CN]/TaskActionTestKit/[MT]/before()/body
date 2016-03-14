@@ -4,6 +4,7 @@
   testDerbyConnector=new TestDerbyConnector(Suppliers.ofInstance(new MetadataStorageConnectorConfig()),Suppliers.ofInstance(metadataStorageTablesConfig));
   metadataStorageCoordinator=new IndexerSQLMetadataStorageCoordinator(new TestUtils().getTestObjectMapper(),metadataStorageTablesConfig,testDerbyConnector);
   taskActionToolbox=new TaskActionToolbox(taskLockbox,metadataStorageCoordinator,new NoopServiceEmitter());
+  testDerbyConnector.createDataSourceTable();
   testDerbyConnector.createPendingSegmentsTable();
   testDerbyConnector.createSegmentTable();
   testDerbyConnector.createRulesTable();

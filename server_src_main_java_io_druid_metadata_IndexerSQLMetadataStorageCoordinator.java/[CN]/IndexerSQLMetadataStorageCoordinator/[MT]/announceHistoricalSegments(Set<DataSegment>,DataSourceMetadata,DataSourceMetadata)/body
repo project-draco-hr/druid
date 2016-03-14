@@ -1,0 +1,45 @@
+{
+  if (segments.isEmpty()) {
+    throw new IllegalArgumentException("segment set must not be empty");
+  }
+  final String dataSource=segments.iterator().next().getDataSource();
+  for (  DataSegment segment : segments) {
+    if (!dataSource.equals(segment.getDataSource())) {
+      throw new IllegalArgumentException("segments must all be from the same dataSource");
+    }
+  }
+  if ((startMetadata == null && endMetadata != null) || (startMetadata != null && endMetadata == null)) {
+    throw new IllegalArgumentException("start/end metadata pair must be either null or non-null");
+  }
+  final AtomicBoolean txnFailure=new AtomicBoolean(false);
+  try {
+    return connector.retryTransaction(new TransactionCallback<SegmentPublishResult>(){
+      @Override public SegmentPublishResult inTransaction(      final Handle handle,      final TransactionStatus transactionStatus) throws Exception {
+        final Set<DataSegment> inserted=Sets.newHashSet();
+        if (startMetadata != null) {
+          final boolean success=updateDataSourceMetadataWithHandle(handle,dataSource,startMetadata,endMetadata);
+          if (!success) {
+            transactionStatus.setRollbackOnly();
+            txnFailure.set(true);
+            throw new RuntimeException("Aborting transaction!");
+          }
+        }
+        for (        final DataSegment segment : segments) {
+          if (announceHistoricalSegment(handle,segment)) {
+            inserted.add(segment);
+          }
+        }
+        return new SegmentPublishResult(ImmutableSet.copyOf(inserted),true);
+      }
+    }
+,3,SQLMetadataConnector.DEFAULT_MAX_TRIES);
+  }
+ catch (  CallbackFailedException e) {
+    if (txnFailure.get()) {
+      return new SegmentPublishResult(ImmutableSet.<DataSegment>of(),false);
+    }
+ else {
+      throw e;
+    }
+  }
+}

@@ -1,14 +1,7 @@
 {
-  return connector.getDBI().inTransaction(new TransactionCallback<Set<DataSegment>>(){
-    @Override public Set<DataSegment> inTransaction(    Handle handle,    TransactionStatus transactionStatus) throws IOException {
-      final Set<DataSegment> inserted=Sets.newHashSet();
-      for (      final DataSegment segment : segments) {
-        if (announceHistoricalSegment(handle,segment)) {
-          inserted.add(segment);
-        }
-      }
-      return ImmutableSet.copyOf(inserted);
-    }
+  final SegmentPublishResult result=announceHistoricalSegments(segments,null,null);
+  if (!result.isSuccess()) {
+    throw new ISE("WTF?! announceHistoricalSegments failed with null metadata, should not happen.");
   }
-);
+  return result.getSegments();
 }

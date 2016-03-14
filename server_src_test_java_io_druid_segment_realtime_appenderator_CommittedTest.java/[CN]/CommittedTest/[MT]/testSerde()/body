@@ -1,0 +1,8 @@
+{
+  final Committed committed=fixedInstance();
+  final byte[] bytes=objectMapper.writeValueAsBytes(committed);
+  final Committed committed2=objectMapper.readValue(bytes,Committed.class);
+  Assert.assertEquals("Round trip: overall",committed,committed2);
+  Assert.assertEquals("Round trip: metadata",committed.getMetadata(),committed2.getMetadata());
+  Assert.assertEquals("Round trip: identifiers",committed.getHydrants().keySet(),committed2.getHydrants().keySet());
+}

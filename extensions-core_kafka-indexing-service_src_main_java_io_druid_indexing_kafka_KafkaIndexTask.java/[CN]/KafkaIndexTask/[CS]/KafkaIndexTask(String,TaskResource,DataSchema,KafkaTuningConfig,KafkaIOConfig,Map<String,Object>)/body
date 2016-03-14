@@ -1,0 +1,7 @@
+{
+  super(id == null ? makeTaskId(dataSchema.getDataSource(),RANDOM.nextInt()) : id,String.format("%s_%s",TYPE,dataSchema.getDataSource()),taskResource,dataSchema.getDataSource(),context);
+  this.dataSchema=Preconditions.checkNotNull(dataSchema,"dataSchema");
+  this.parser=Preconditions.checkNotNull((InputRowParser<ByteBuffer>)dataSchema.getParser(),"parser");
+  this.tuningConfig=Preconditions.checkNotNull(tuningConfig,"tuningConfig");
+  this.ioConfig=Preconditions.checkNotNull(ioConfig,"ioConfig");
+}

@@ -1,0 +1,154 @@
+{
+  log.info("Starting up!");
+  runThread=Thread.currentThread();
+  final FireDepartment fireDepartmentForMetrics=new FireDepartment(dataSchema,new RealtimeIOConfig(null,null,null),null);
+  fireDepartmentMetrics=fireDepartmentForMetrics.getMetrics();
+  toolbox.getMonitorScheduler().addMonitor(new RealtimeMetricsMonitor(ImmutableList.of(fireDepartmentForMetrics),ImmutableMap.of(DruidMetrics.TASK_ID,new String[]{getId()})));
+  try (final Appenderator appenderator0=newAppenderator(fireDepartmentMetrics,toolbox);final FiniteAppenderatorDriver driver=newDriver(appenderator0,toolbox);final KafkaConsumer<byte[],byte[]> consumer=newConsumer()){
+    appenderator=appenderator0;
+    final String topic=ioConfig.getStartPartitions().getTopic();
+    final Object restoredMetadata=driver.startJob();
+    final Map<Integer,Long> nextOffsets=Maps.newHashMap();
+    if (restoredMetadata == null) {
+      nextOffsets.putAll(ioConfig.getStartPartitions().getPartitionOffsetMap());
+    }
+ else {
+      final Map<String,Object> restoredMetadataMap=(Map)restoredMetadata;
+      final KafkaPartitions restoredNextPartitions=toolbox.getObjectMapper().convertValue(restoredMetadataMap.get(METADATA_NEXT_PARTITIONS),KafkaPartitions.class);
+      nextOffsets.putAll(restoredNextPartitions.getPartitionOffsetMap());
+      if (!restoredNextPartitions.getTopic().equals(ioConfig.getStartPartitions().getTopic())) {
+        throw new ISE("WTF?! Restored topic[%s] but expected topic[%s]",restoredNextPartitions.getTopic(),ioConfig.getStartPartitions().getTopic());
+      }
+      if (!nextOffsets.keySet().equals(ioConfig.getStartPartitions().getPartitionOffsetMap().keySet())) {
+        throw new ISE("WTF?! Restored partitions[%s] but expected partitions[%s]",nextOffsets.keySet(),ioConfig.getStartPartitions().getPartitionOffsetMap().keySet());
+      }
+    }
+    final Supplier<Committer> committerSupplier=new Supplier<Committer>(){
+      @Override public Committer get(){
+        final Map<Integer,Long> snapshot=ImmutableMap.copyOf(nextOffsets);
+        return new Committer(){
+          @Override public Object getMetadata(){
+            return ImmutableMap.of(METADATA_NEXT_PARTITIONS,new KafkaPartitions(ioConfig.getStartPartitions().getTopic(),snapshot));
+          }
+          @Override public void run(){
+          }
+        }
+;
+      }
+    }
+;
+    final Set<Integer> assignment=Sets.newHashSet();
+    for (    Map.Entry<Integer,Long> entry : nextOffsets.entrySet()) {
+      final long endOffset=ioConfig.getEndPartitions().getPartitionOffsetMap().get(entry.getKey());
+      if (entry.getValue() < endOffset) {
+        assignment.add(entry.getKey());
+      }
+ else       if (entry.getValue() == endOffset) {
+        log.info("Finished reading partition[%d].",entry.getKey());
+      }
+ else {
+        throw new ISE("WTF?! Cannot start from offset[%,d] > endOffset[%,d]",entry.getValue(),endOffset);
+      }
+    }
+    assignPartitions(consumer,topic,assignment);
+    for (    final int partition : assignment) {
+      final long offset=nextOffsets.get(partition);
+      log.info("Seeking partition[%d] to offset[%,d].",partition,offset);
+      consumer.seek(new TopicPartition(topic,partition),offset);
+    }
+    boolean stillReading=true;
+    while (stillReading) {
+      if (stopping) {
+        log.info("Stopping early.");
+        break;
+      }
+      final ConsumerRecords<byte[],byte[]> records=RetryUtils.retry(new Callable<ConsumerRecords<byte[],byte[]>>(){
+        @Override public ConsumerRecords<byte[],byte[]> call() throws Exception {
+          try {
+            return consumer.poll(POLL_TIMEOUT);
+          }
+  finally {
+            startedReading=true;
+          }
+        }
+      }
+,new Predicate<Throwable>(){
+        @Override public boolean apply(        Throwable input){
+          return input instanceof OffsetOutOfRangeException;
+        }
+      }
+,Integer.MAX_VALUE);
+      for (      ConsumerRecord<byte[],byte[]> record : records) {
+        if (log.isTraceEnabled()) {
+          log.trace("Got topic[%s] partition[%d] offset[%,d].",record.topic(),record.partition(),record.offset());
+        }
+        if (record.offset() < ioConfig.getEndPartitions().getPartitionOffsetMap().get(record.partition())) {
+          if (record.offset() != nextOffsets.get(record.partition())) {
+            throw new ISE("WTF?! Got offset[%,d] after offset[%,d] in partition[%d].",record.offset(),nextOffsets.get(record.partition()),record.partition());
+          }
+          try {
+            final InputRow row=Preconditions.checkNotNull(parser.parse(ByteBuffer.wrap(record.value())),"row");
+            final SegmentIdentifier identifier=driver.add(row,committerSupplier);
+            if (identifier == null) {
+              throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
+            }
+            fireDepartmentMetrics.incrementProcessed();
+          }
+ catch (          ParseException e) {
+            if (tuningConfig.isReportParseExceptions()) {
+              throw e;
+            }
+ else {
+              log.debug(e,"Dropping unparseable row from partition[%d] offset[%,d].",record.partition(),record.offset());
+              fireDepartmentMetrics.incrementUnparseable();
+            }
+          }
+          final long nextOffset=record.offset() + 1;
+          final long endOffset=ioConfig.getEndPartitions().getPartitionOffsetMap().get(record.partition());
+          nextOffsets.put(record.partition(),nextOffset);
+          if (nextOffset == endOffset && assignment.remove(record.partition())) {
+            log.info("Finished reading topic[%s], partition[%,d].",record.topic(),record.partition());
+            assignPartitions(consumer,topic,assignment);
+            stillReading=!assignment.isEmpty();
+          }
+        }
+      }
+    }
+    final Committer finalCommitter=committerSupplier.get();
+    driver.persist(finalCommitter);
+    publishing=true;
+    if (stopping) {
+      return TaskStatus.failure(getId());
+    }
+    final TransactionalSegmentPublisher publisher=new TransactionalSegmentPublisher(){
+      @Override public boolean publishSegments(      Set<DataSegment> segments,      Object commitMetadata) throws IOException {
+        if (!ioConfig.getEndPartitions().equals(((Map)commitMetadata).get(METADATA_NEXT_PARTITIONS))) {
+          throw new ISE("WTF?! Driver attempted to publish invalid metadata[%s].",commitMetadata);
+        }
+        final SegmentInsertAction action;
+        if (ioConfig.isUseTransaction()) {
+          action=new SegmentInsertAction(segments,new KafkaDataSourceMetadata(ioConfig.getStartPartitions()),new KafkaDataSourceMetadata(ioConfig.getEndPartitions()));
+        }
+ else {
+          action=new SegmentInsertAction(segments,null,null);
+        }
+        log.info("Publishing with isTransaction[%s].",ioConfig.isUseTransaction());
+        return toolbox.getTaskActionClient().submit(action).isSuccess();
+      }
+    }
+;
+    final SegmentsAndMetadata published=driver.finish(publisher,committerSupplier.get());
+    if (published == null) {
+      throw new ISE("Transaction failure publishing segments, aborting");
+    }
+ else {
+      log.info("Published segments[%s] with metadata[%s].",Joiner.on(", ").join(Iterables.transform(published.getSegments(),new Function<DataSegment,String>(){
+        @Override public String apply(        DataSegment input){
+          return input.getIdentifier();
+        }
+      }
+)),published.getCommitMetadata());
+    }
+  }
+   return success();
+}

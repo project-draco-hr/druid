@@ -3,9 +3,12 @@
     throw new IAE("No currHydrant but given row[%s]",row);
   }
 synchronized (hydrantLock) {
+    if (!writable) {
+      return ADD_FAILED;
+    }
     IncrementalIndex index=currHydrant.getIndex();
     if (index == null) {
-      return -1;
+      return ADD_FAILED;
     }
     return index.add(row);
   }

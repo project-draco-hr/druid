@@ -1,0 +1,16 @@
+{
+  File indexZip=new File(String.format("%s/%s/%s_%s/%s/%d/index.zip",getSegmentDirectory(),DATA_SCHEMA.getDataSource(),descriptor.getInterval().getStart(),descriptor.getInterval().getEnd(),descriptor.getVersion(),descriptor.getPartitionNumber()));
+  File outputLocation=new File(directory,String.format("%s_%s_%s_%s",descriptor.getInterval().getStart(),descriptor.getInterval().getEnd(),descriptor.getVersion(),descriptor.getPartitionNumber()));
+  outputLocation.mkdir();
+  CompressionUtils.unzip(Files.asByteSource(indexZip),outputLocation,Predicates.<Throwable>alwaysFalse(),false);
+  IndexIO indexIO=new TestUtils().getTestIndexIO();
+  QueryableIndex index=indexIO.loadIndex(outputLocation);
+  DictionaryEncodedColumn dim1=index.getColumn("dim1").getDictionaryEncoding();
+  List<String> values=Lists.newArrayList();
+  for (int i=0; i < dim1.length(); i++) {
+    int id=dim1.getSingleValueRow(i);
+    String value=dim1.lookupName(id);
+    values.add(value);
+  }
+  return values;
+}

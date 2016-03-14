@@ -1,0 +1,22 @@
+{
+synchronized (indexToPersist) {
+    if (indexToPersist.hasSwapped()) {
+      log.info("Segment[%s], Hydrant[%s] already swapped. Ignoring request to persist.",identifier,indexToPersist);
+      return 0;
+    }
+    log.info("Segment[%s], persisting Hydrant[%s]",identifier,indexToPersist);
+    try {
+      int numRows=indexToPersist.getIndex().size();
+      final File persistedFile;
+      final File persistDir=createPersistDirIfNeeded(identifier);
+      final IndexSpec indexSpec=tuningConfig.getIndexSpec();
+      persistedFile=indexMerger.persist(indexToPersist.getIndex(),identifier.getInterval(),new File(persistDir,String.valueOf(indexToPersist.getCount())),indexSpec);
+      indexToPersist.swapSegment(new QueryableIndexSegment(indexToPersist.getSegment().getIdentifier(),indexIO.loadIndex(persistedFile)));
+      return numRows;
+    }
+ catch (    IOException e) {
+      log.makeAlert("dataSource[%s] -- incremental persist failed",schema.getDataSource()).addData("segment",identifier.getIdentifierAsString()).addData("count",indexToPersist.getCount()).emit();
+      throw Throwables.propagate(e);
+    }
+  }
+}

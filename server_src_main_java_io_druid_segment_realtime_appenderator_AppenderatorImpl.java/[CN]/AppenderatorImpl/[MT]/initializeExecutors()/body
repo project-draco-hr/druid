@@ -1,0 +1,9 @@
+{
+  final int maxPendingPersists=tuningConfig.getMaxPendingPersists();
+  if (persistExecutor == null) {
+    persistExecutor=MoreExecutors.listeningDecorator(Execs.newBlockingSingleThreaded("appenderator_persist_%d",maxPendingPersists));
+  }
+  if (mergeExecutor == null) {
+    mergeExecutor=MoreExecutors.listeningDecorator(Execs.newBlockingSingleThreaded("appenderator_merge_%d",1));
+  }
+}

@@ -1,5 +1,5 @@
 {
-  final Sink theSink=new Sink(interval,schema,config,version);
+  final Sink theSink=new Sink(interval,schema,config.getShardSpec(),version,config.getMaxRowsInMemory(),config.isReportParseExceptions());
   final File persistDir=new File(tmpSegmentDir,theSink.getSegment().getIdentifier());
   final Set<File> spilled=Sets.newHashSet();
   final IndexMerger theIndexMerger=config.getBuildV9Directly() ? indexMergerV9 : indexMerger;
