@@ -1,0 +1,12 @@
+{
+  broadcastClient=httpClientProvider.get();
+  broadcastClient.setConnectTimeout(CANCELLATION_TIMEOUT_MILLIS);
+  broadcastClient.setMaxRequestsQueuedPerDestination(MAX_QUEUED_CANCELLATIONS);
+  try {
+    broadcastClient.start();
+  }
+ catch (  Exception e) {
+    throw new ServletException(e);
+  }
+  super.init();
+}
