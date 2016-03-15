@@ -1,0 +1,14 @@
+{
+  String invalid="\uD841";
+  Assert.assertEquals(1,StringUtils.toUtf8(invalid).length);
+  Assert.assertEquals(4,StringUtils.estimatedBinaryLengthAsUTF8(invalid));
+  invalid="\uD841\uD841";
+  Assert.assertEquals(2,StringUtils.toUtf8(invalid).length);
+  Assert.assertEquals(4,StringUtils.estimatedBinaryLengthAsUTF8(invalid));
+  invalid="\uD841\u0050";
+  Assert.assertEquals(2,StringUtils.toUtf8(invalid).length);
+  Assert.assertEquals(4,StringUtils.estimatedBinaryLengthAsUTF8(invalid));
+  invalid="\uDEE2\uD841";
+  Assert.assertEquals(2,StringUtils.toUtf8(invalid).length);
+  Assert.assertEquals(4,StringUtils.estimatedBinaryLengthAsUTF8(invalid));
+}
