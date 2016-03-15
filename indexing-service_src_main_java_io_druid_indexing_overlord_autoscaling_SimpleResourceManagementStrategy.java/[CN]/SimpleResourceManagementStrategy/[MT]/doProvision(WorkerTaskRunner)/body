@@ -1,6 +1,6 @@
 {
   Collection<? extends TaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
-  Collection<Worker> workers=getWorkers(runner);
+  Collection<ImmutableWorkerInfo> workers=getWorkers(runner);
 synchronized (lock) {
     boolean didProvision=false;
     final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
@@ -8,11 +8,11 @@ synchronized (lock) {
       log.warn("No workerConfig available, cannot provision new workers.");
       return false;
     }
-    final Predicate<Worker> isValidWorker=createValidWorkerPredicate(config);
+    final Predicate<ImmutableWorkerInfo> isValidWorker=createValidWorkerPredicate(config);
     final int currValidWorkers=Collections2.filter(workers,isValidWorker).size();
-    final List<String> workerNodeIds=workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(workers,new Function<Worker,String>(){
-      @Override public String apply(      Worker input){
-        return input.getIp();
+    final List<String> workerNodeIds=workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(workers,new Function<ImmutableWorkerInfo,String>(){
+      @Override public String apply(      ImmutableWorkerInfo input){
+        return input.getWorker().getIp();
       }
     }
 )));

@@ -1,5 +1,5 @@
 {
   FillCapacityWorkerSelectStrategy strategy=new FillCapacityWithAffinityWorkerSelectStrategy(new FillCapacityWithAffinityConfig(ImmutableMap.of("foo",Arrays.asList("localhost"))));
-  Optional<ImmutableZkWorker> optional=strategy.findWorkerForTask(new RemoteTaskRunnerConfig(),ImmutableMap.of("localhost",new ImmutableZkWorker(new Worker("localhost","localhost",1,"v1",DateTime.now()),0,Sets.<String>newHashSet())),new NoopTask(null,1,0,null,null,null));
+  Optional<ImmutableWorkerInfo> optional=strategy.findWorkerForTask(new RemoteTaskRunnerConfig(),ImmutableMap.of("localhost",new ImmutableWorkerInfo(new Worker("localhost","localhost",1,"v1"),0,Sets.<String>newHashSet(),Sets.<String>newHashSet(),DateTime.now())),new NoopTask(null,1,0,null,null,null));
   Assert.assertFalse(optional.isPresent());
 }

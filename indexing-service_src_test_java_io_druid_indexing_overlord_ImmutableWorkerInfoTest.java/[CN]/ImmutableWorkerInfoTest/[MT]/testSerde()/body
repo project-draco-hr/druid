@@ -1,0 +1,6 @@
+{
+  ImmutableWorkerInfo workerInfo=new ImmutableWorkerInfo(new Worker("testWorker","192.0.0.1",10,"v1"),2,ImmutableSet.of("grp1","grp2"),ImmutableSet.of("task1","task2"),new DateTime("2015-01-01T01:01:01Z"));
+  ObjectMapper mapper=new DefaultObjectMapper();
+  final ImmutableWorkerInfo serde=mapper.readValue(mapper.writeValueAsString(workerInfo),ImmutableWorkerInfo.class);
+  Assert.assertEquals(workerInfo,serde);
+}

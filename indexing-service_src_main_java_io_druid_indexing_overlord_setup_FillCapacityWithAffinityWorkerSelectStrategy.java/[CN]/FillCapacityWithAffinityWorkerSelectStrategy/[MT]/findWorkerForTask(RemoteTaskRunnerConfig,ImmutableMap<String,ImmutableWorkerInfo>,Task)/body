@@ -1,0 +1,28 @@
+{
+  ImmutableMap.Builder<String,ImmutableWorkerInfo> builder=new ImmutableMap.Builder<>();
+  for (  String workerHost : zkWorkers.keySet()) {
+    if (!affinityWorkerHosts.contains(workerHost)) {
+      builder.put(workerHost,zkWorkers.get(workerHost));
+    }
+  }
+  ImmutableMap<String,ImmutableWorkerInfo> eligibleWorkers=builder.build();
+  List<String> workerHosts=affinityConfig.getAffinity().get(task.getDataSource());
+  if (workerHosts == null) {
+    return super.findWorkerForTask(config,eligibleWorkers,task);
+  }
+  ImmutableMap.Builder<String,ImmutableWorkerInfo> affinityBuilder=new ImmutableMap.Builder<>();
+  for (  String workerHost : workerHosts) {
+    ImmutableWorkerInfo zkWorker=zkWorkers.get(workerHost);
+    if (zkWorker != null) {
+      affinityBuilder.put(workerHost,zkWorker);
+    }
+  }
+  ImmutableMap<String,ImmutableWorkerInfo> affinityWorkers=affinityBuilder.build();
+  if (!affinityWorkers.isEmpty()) {
+    Optional<ImmutableWorkerInfo> retVal=super.findWorkerForTask(config,affinityWorkers,task);
+    if (retVal.isPresent()) {
+      return retVal;
+    }
+  }
+  return super.findWorkerForTask(config,eligibleWorkers,task);
+}

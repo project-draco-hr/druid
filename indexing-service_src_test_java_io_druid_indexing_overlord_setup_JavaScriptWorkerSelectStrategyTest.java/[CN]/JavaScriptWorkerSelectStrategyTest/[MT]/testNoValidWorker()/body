@@ -1,7 +1,7 @@
 {
-  ImmutableMap<String,ImmutableZkWorker> workerMap=ImmutableMap.of("10.0.0.1",createMockWorker(1,true,false),"10.0.0.4",createMockWorker(1,true,false));
-  Optional<ImmutableZkWorker> workerForBatchTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("index_hadoop"));
+  ImmutableMap<String,ImmutableWorkerInfo> workerMap=ImmutableMap.of("10.0.0.1",createMockWorker(1,true,false),"10.0.0.4",createMockWorker(1,true,false));
+  Optional<ImmutableWorkerInfo> workerForBatchTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("index_hadoop"));
   Assert.assertFalse(workerForBatchTask.isPresent());
-  Optional<ImmutableZkWorker> workerForOtherTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("otherTask"));
+  Optional<ImmutableWorkerInfo> workerForOtherTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("otherTask"));
   Assert.assertFalse(workerForOtherTask.isPresent());
 }
