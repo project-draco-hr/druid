@@ -1,10 +1,11 @@
 {
-  final CloserRule closer=new CloserRule(false);
+  final CloserRule closer=new CloserRule(true);
   final AtomicBoolean closed=new AtomicBoolean(false);
   final String ioExceptionMsg="You can't triple stamp a double stamp!";
+  final IOException suppressed=new IOException(ioExceptionMsg);
   closer.closeLater(new Closeable(){
     @Override public void close() throws IOException {
-      throw new IOException(ioExceptionMsg);
+      throw suppressed;
     }
   }
 );
@@ -15,11 +16,12 @@
   }
 );
   final String msg="You can't divide by zero, you can only take the limit of such!";
+  final ArithmeticException arithmeticException=new ArithmeticException(msg);
   Throwable ex=null;
   try {
     run(closer,new Runnable(){
       @Override public void run(){
-        throw new ArithmeticException(msg);
+        throw arithmeticException;
       }
     }
 );
@@ -27,17 +29,8 @@
  catch (  Throwable e) {
     ex=e;
   }
-  Assert.assertTrue(closed.get());
+  Assert.assertEquals(arithmeticException,ex);
   Assert.assertNotNull(ex);
-  Assert.assertTrue(ex instanceof ArithmeticException);
-  Assert.assertEquals(msg,ex.getMessage());
-  Assert.assertEquals(ImmutableList.of(ioExceptionMsg),Lists.transform(Arrays.asList(ex.getSuppressed()),new Function<Throwable,String>(){
-    @Nullable @Override public String apply(    @Nullable Throwable input){
-      if (input == null) {
-        return null;
-      }
-      return input.getSuppressed()[0].getMessage();
-    }
-  }
-));
+  Assert.assertNotNull(ex.getSuppressed());
+  Assert.assertEquals(suppressed,ex.getSuppressed()[0]);
 }

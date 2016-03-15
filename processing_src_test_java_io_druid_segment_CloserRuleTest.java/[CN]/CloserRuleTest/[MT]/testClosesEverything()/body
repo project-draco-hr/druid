@@ -14,17 +14,6 @@
     }
 );
   }
-  for (  final IOException throwable : ioExceptions) {
-    closer.closeLater(new AutoCloseable(){
-      @Override public void close() throws Exception {
-        counter.incrementAndGet();
-        if (throwable != null) {
-          throw throwable;
-        }
-      }
-    }
-);
-  }
   Throwable ex=null;
   try {
     run(closer,Runnables.doNothing());
@@ -33,6 +22,6 @@
     ex=throwable;
   }
   Assert.assertNotNull(ex);
-  Assert.assertEquals(ioExceptions.size() * 2,counter.get());
-  Assert.assertEquals(ioExceptions.size(),ex.getSuppressed().length);
+  Assert.assertEquals(ioExceptions.size(),counter.get());
+  Assert.assertEquals(2,ex.getSuppressed().length);
 }

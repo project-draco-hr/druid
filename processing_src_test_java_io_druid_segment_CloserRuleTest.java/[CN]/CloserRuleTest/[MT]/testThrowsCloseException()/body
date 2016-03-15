@@ -1,9 +1,10 @@
 {
   final CloserRule closer=new CloserRule(true);
   final String ioExceptionMsg="You can't triple stamp a double stamp!";
+  final IOException ioException=new IOException(ioExceptionMsg);
   closer.closeLater(new Closeable(){
     @Override public void close() throws IOException {
-      throw new IOException(ioExceptionMsg);
+      throw ioException;
     }
   }
 );
@@ -14,9 +15,5 @@
  catch (  Throwable throwable) {
     ex=throwable;
   }
-  Assert.assertNotNull(ex);
-  ex=ex.getSuppressed()[0];
-  Assert.assertNotNull(ex);
-  Assert.assertTrue(ex instanceof IOException);
-  Assert.assertEquals(ioExceptionMsg,ex.getMessage());
+  Assert.assertEquals(ioException,ex);
 }
