@@ -8,6 +8,10 @@
       savedInputRow=row;
       return true;
     }
+    if (ignored % IGNORE_THRESHOLD == 0) {
+      log.warn("[%,d] InputRow(s) ignored as they do not satisfy the predicate",ignored);
+    }
+    ignored++;
   }
   return false;
 }
