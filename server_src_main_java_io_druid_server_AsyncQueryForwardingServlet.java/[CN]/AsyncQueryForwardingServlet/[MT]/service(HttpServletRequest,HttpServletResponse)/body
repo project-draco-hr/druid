@@ -8,7 +8,7 @@
   if (isQueryEndpoint && HttpMethod.DELETE.is(request.getMethod())) {
     for (    final String host : hostFinder.getAllHosts()) {
       if (!host.equals(defaultHost)) {
-        getHttpClient().newRequest(rewriteURI(request,host)).method(HttpMethod.DELETE).send(new Response.CompleteListener(){
+        broadcastClient.newRequest(rewriteURI(request,host)).method(HttpMethod.DELETE).timeout(CANCELLATION_TIMEOUT_MILLIS,TimeUnit.MILLISECONDS).send(new Response.CompleteListener(){
           @Override public void onComplete(          Result result){
             if (result.isFailed()) {
               log.warn(result.getFailure(),"Failed to forward cancellation request to [%s]",host);
