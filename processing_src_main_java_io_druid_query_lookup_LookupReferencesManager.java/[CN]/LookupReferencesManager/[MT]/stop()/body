@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    if (started.getAndSet(false)) {
+      if (lookupSnapshotTaker != null) {
+        lookupSnapshotTaker.takeSnapshot(getAllAsList());
+      }
+      LOGGER.info("Stopping lookup factory references manager");
+      for (      String lookupName : lookupMap.keySet()) {
+        lookupMap.remove(lookupName).close();
+      }
+    }
+  }
+}

@@ -35,7 +35,6 @@
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class);
       Jerseys.addResource(binder,QueryResource.class);
       LifecycleModule.register(binder,QueryResource.class);
-      LifecycleModule.register(binder,LookupReferencesManager.class);
       binder.bind(NodeTypeConfig.class).toInstance(new NodeTypeConfig(nodeType));
       LifecycleModule.register(binder,Server.class);
     }
@@ -50,5 +49,5 @@
       taskActionBinder.addBinding("remote").to(RemoteTaskActionClientFactory.class).in(LazySingleton.class);
     }
   }
-,new IndexingServiceFirehoseModule(),new ChatHandlerServerModule());
+,new IndexingServiceFirehoseModule(),new ChatHandlerServerModule(),new LookupModule());
 }

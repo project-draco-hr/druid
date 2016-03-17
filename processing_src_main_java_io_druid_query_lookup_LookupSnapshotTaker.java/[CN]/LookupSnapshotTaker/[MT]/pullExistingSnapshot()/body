@@ -1,0 +1,20 @@
+{
+  List<LookupBean> lookupBeanList;
+  try {
+    if (!persistFile.isFile()) {
+      LOGGER.warn("could not find any snapshot file under working directory [%s]",persistDirectory);
+      return Collections.emptyList();
+    }
+ else     if (persistFile.length() == 0) {
+      LOGGER.warn("found empty file no lookups to load from [%s]",persistFile.getAbsolutePath());
+      return Collections.emptyList();
+    }
+    lookupBeanList=objectMapper.readValue(persistFile,new TypeReference<List<LookupBean>>(){
+    }
+);
+    return lookupBeanList;
+  }
+ catch (  IOException e) {
+    throw new ISE(e,"Exception during reading lookups from [%s]",persistFile.getAbsolutePath());
+  }
+}

@@ -1,0 +1,25 @@
+{
+  Map<String,LookupExtractorFactory> failedExtractorFactoryMap=new HashMap<>();
+synchronized (lock) {
+    assertStarted();
+    for (    Map.Entry<String,LookupExtractorFactory> entry : lookups.entrySet()) {
+      final String lookupName=entry.getKey();
+      final LookupExtractorFactory lookupExtractorFactory=entry.getValue();
+      if (lookupMap.containsKey(lookupName)) {
+        LOGGER.warn("lookup [%s] is not add, another lookup with the same name already exist",lookupName);
+        continue;
+      }
+      if (!lookupExtractorFactory.start()) {
+        failedExtractorFactoryMap.put(lookupName,lookupExtractorFactory);
+        continue;
+      }
+      lookupMap.put(lookupName,lookupExtractorFactory);
+      if (lookupSnapshotTaker != null) {
+        lookupSnapshotTaker.takeSnapshot(getAllAsList());
+      }
+    }
+    if (!failedExtractorFactoryMap.isEmpty()) {
+      throw new ISE("was not able to start the following lookup(s) [%s]",failedExtractorFactoryMap.keySet().toString());
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  LookupBean lookupBean=new LookupBean();
+  lookupBean.name="name";
+  lookupBean.factory=new LookupFactoryMock();
+  List<LookupBean> lookupBeanList=Lists.newArrayList(lookupBean);
+  lookupSnapshotTaker.takeSnapshot(lookupBeanList);
+  List<LookupBean> actualList=lookupSnapshotTaker.pullExistingSnapshot();
+  Assert.assertEquals(lookupBeanList,actualList);
+}

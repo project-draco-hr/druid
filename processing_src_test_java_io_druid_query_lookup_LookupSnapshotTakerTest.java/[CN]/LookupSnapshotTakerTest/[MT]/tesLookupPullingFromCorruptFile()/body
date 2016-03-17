@@ -1,0 +1,7 @@
+{
+  File snapshotFile=lookupSnapshotTaker.getPersistFile();
+  Assert.assertTrue(snapshotFile.createNewFile());
+  byte[] bytes=StringUtils.toUtf8("test corrupt file");
+  Files.write(bytes,snapshotFile);
+  lookupSnapshotTaker.pullExistingSnapshot();
+}

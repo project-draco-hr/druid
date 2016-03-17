@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    final LookupExtractorFactory lookupExtractorFactory=lookupMap.remove(lookupName);
+    if (lookupExtractorFactory != null) {
+      LOGGER.debug("Removed lookup [%s]",lookupName);
+      if (lookupSnapshotTaker != null) {
+        lookupSnapshotTaker.takeSnapshot(getAllAsList());
+      }
+      return lookupExtractorFactory.close();
+    }
+  }
+  return false;
+}

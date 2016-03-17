@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    if (!started.getAndSet(true)) {
+      if (lookupSnapshotTaker != null) {
+        final List<LookupBean> lookupBeanList=lookupSnapshotTaker.pullExistingSnapshot();
+        for (        LookupBean lookupBean : lookupBeanList) {
+          this.put(lookupBean.name,lookupBean.factory);
+        }
+      }
+      LOGGER.info("Started lookup factory references manager");
+    }
+  }
+}
