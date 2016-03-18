@@ -1,0 +1,18 @@
+{
+  final String lookupName="some lookup";
+  LookupExtractorFactory oldFactory=EasyMock.createStrictMock(LookupExtractorFactory.class);
+  LookupExtractorFactory newFactory=EasyMock.createStrictMock(LookupExtractorFactory.class);
+  EasyMock.expect(oldFactory.replaces(EasyMock.<LookupExtractorFactory>isNull())).andReturn(true).once();
+  EasyMock.expect(oldFactory.start()).andReturn(true).once();
+  EasyMock.expect(oldFactory.replaces(EasyMock.eq(oldFactory))).andReturn(false).once();
+  EasyMock.expect(newFactory.replaces(EasyMock.eq(oldFactory))).andReturn(true).once();
+  EasyMock.expect(newFactory.start()).andReturn(true).once();
+  EasyMock.expect(oldFactory.close()).andReturn(true).once();
+  EasyMock.expect(newFactory.close()).andReturn(true).once();
+  EasyMock.replay(oldFactory,newFactory);
+  Assert.assertTrue(lookupReferencesManager.updateIfNew(lookupName,oldFactory));
+  Assert.assertFalse(lookupReferencesManager.updateIfNew(lookupName,oldFactory));
+  Assert.assertTrue(lookupReferencesManager.updateIfNew(lookupName,newFactory));
+  lookupReferencesManager.remove(lookupName);
+  EasyMock.verify(oldFactory,newFactory);
+}

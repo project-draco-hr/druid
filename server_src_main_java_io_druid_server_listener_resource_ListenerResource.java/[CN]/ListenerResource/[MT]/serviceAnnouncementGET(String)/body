@@ -1,0 +1,12 @@
+{
+  if (Strings.isNullOrEmpty(id)) {
+    return makeNullIdResponse();
+  }
+  try {
+    return handler.handleGET(id);
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Exception in handling GET request for [%s]",id);
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

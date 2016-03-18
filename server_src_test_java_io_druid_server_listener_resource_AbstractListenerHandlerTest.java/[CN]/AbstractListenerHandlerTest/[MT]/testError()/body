@@ -1,0 +1,7 @@
+{
+  final ByteArrayInputStream bais=new ByteArrayInputStream(StringUtils.toUtf8(mapper.writeValueAsString(new SomeBeanClass("a"))));
+  failPost.set(true);
+  final Response response=abstractListenerHandler.handlePOST(bais,mapper,good_id);
+  Assert.assertEquals(500,response.getStatus());
+  Assert.assertEquals(ImmutableMap.of("error",error_msg),response.getEntity());
+}

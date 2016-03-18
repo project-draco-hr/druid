@@ -1,0 +1,12 @@
+{
+  if (Strings.isNullOrEmpty(id)) {
+    return makeNullIdResponse();
+  }
+  try {
+    return handler.handleDELETE(id);
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Exception in handling DELETE request for [%s]",id);
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

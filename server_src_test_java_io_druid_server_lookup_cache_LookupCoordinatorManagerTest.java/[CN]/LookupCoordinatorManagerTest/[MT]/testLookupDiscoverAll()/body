@@ -1,0 +1,9 @@
+{
+  final List<String> fakeChildren=ImmutableList.of("tier1","tier2");
+  EasyMock.reset(discoverer);
+  EasyMock.expect(discoverer.discoverChildren(LookupCoordinatorManager.LOOKUP_LISTEN_ANNOUNCE_KEY)).andReturn(fakeChildren).once();
+  EasyMock.replay(discoverer);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
+  Assert.assertEquals(fakeChildren,manager.discoverTiers());
+  EasyMock.verify(discoverer);
+}

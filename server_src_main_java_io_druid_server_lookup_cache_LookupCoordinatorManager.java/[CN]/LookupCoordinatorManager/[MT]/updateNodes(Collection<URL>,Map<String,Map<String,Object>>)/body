@@ -1,0 +1,40 @@
+{
+  if (knownLookups == null) {
+    LOG.debug("No config for lookups found");
+    return;
+  }
+  if (knownLookups.isEmpty()) {
+    LOG.debug("No known lookups. Skipping update");
+    return;
+  }
+  if (LOG.isDebugEnabled()) {
+    LOG.debug("Updating %d lookups on %d nodes",knownLookups.size(),urls.size());
+  }
+  final List<ListenableFuture<?>> futures=new ArrayList<>(urls.size());
+  for (  final URL url : urls) {
+    futures.add(executorService.submit(new Runnable(){
+      @Override public void run(){
+        try {
+          updateAllOnHost(url,knownLookups);
+        }
+ catch (        InterruptedException e) {
+          Thread.currentThread().interrupt();
+          LOG.warn("Update on [%s] interrupted",url);
+          throw Throwables.propagate(e);
+        }
+catch (        IOException|ExecutionException e) {
+          LOG.makeAlert(e,"Error submitting to [%s]",url).emit();
+        }
+      }
+    }
+));
+  }
+  final ListenableFuture allFuture=Futures.allAsList(futures);
+  try {
+    allFuture.get(lookupCoordinatorManagerConfig.getUpdateAllTimeout().getMillis(),TimeUnit.MILLISECONDS);
+  }
+ catch (  TimeoutException e) {
+    LOG.warn("Timeout in updating hosts! Attempting to cancel");
+    allFuture.cancel(true);
+  }
+}

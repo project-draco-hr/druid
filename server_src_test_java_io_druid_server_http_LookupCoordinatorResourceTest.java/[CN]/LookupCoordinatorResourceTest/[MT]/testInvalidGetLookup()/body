@@ -1,0 +1,10 @@
+{
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  EasyMock.replay(lookupCoordinatorManager);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  Assert.assertEquals(400,lookupCoordinatorResource.getSpecificLookup("foo",null).getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.getSpecificLookup("foo","").getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.getSpecificLookup("","foo").getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.getSpecificLookup(null,"foo").getStatus());
+  EasyMock.verify(lookupCoordinatorManager);
+}

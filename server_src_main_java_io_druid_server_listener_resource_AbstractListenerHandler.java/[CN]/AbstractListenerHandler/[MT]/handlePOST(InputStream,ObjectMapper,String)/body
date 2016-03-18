@@ -1,0 +1,14 @@
+{
+  try {
+    final Object o=post(ImmutableMap.of(id,mapper.<ObjType>readValue(inputStream,inObjTypeRef)));
+    return Response.status(Response.Status.ACCEPTED).entity(o).build();
+  }
+ catch (  JsonParseException|JsonMappingException e) {
+    LOG.debug(e,"Bad request");
+    return Response.status(Response.Status.BAD_REQUEST).entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+catch (  Exception e) {
+    LOG.error(e,"Error handling request");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

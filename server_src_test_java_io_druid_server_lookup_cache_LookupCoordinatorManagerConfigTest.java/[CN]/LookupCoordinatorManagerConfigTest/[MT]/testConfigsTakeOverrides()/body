@@ -1,0 +1,16 @@
+{
+  final Duration funnyDuration=Duration.standardDays(100);
+  final LookupCoordinatorManagerConfig config=new LookupCoordinatorManagerConfig();
+  config.setDeleteAllTimeout(funnyDuration);
+  config.setHostDeleteTimeout(funnyDuration);
+  config.setHostUpdateTimeout(funnyDuration);
+  config.setUpdateAllTimeout(funnyDuration);
+  config.setPeriod(funnyDuration.getMillis());
+  config.setThreadPoolSize(1200);
+  Assert.assertEquals(funnyDuration,config.getDeleteAllTimeout());
+  Assert.assertEquals(funnyDuration,config.getHostDeleteTimeout());
+  Assert.assertEquals(funnyDuration,config.getHostUpdateTimeout());
+  Assert.assertEquals(funnyDuration,config.getUpdateAllTimeout());
+  Assert.assertEquals(funnyDuration.getMillis(),config.getPeriod());
+  Assert.assertEquals(1200,config.getThreadPoolSize());
+}

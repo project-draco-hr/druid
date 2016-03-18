@@ -1,0 +1,12 @@
+{
+  final String reqContentType=req.getContentType();
+  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType);
+  final ObjectMapper mapper=isSmile ? smileMapper : jsonMapper;
+  try {
+    return handler.handlePOSTAll(inputStream,mapper);
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Exception in handling POSTAll request");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

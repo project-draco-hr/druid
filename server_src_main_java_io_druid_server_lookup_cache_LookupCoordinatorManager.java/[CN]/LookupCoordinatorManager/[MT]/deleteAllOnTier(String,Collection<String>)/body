@@ -1,0 +1,43 @@
+{
+  if (dropLookups.isEmpty()) {
+    LOG.debug("Nothing to drop");
+    return;
+  }
+  final Collection<URL> urls=getAllHostsAnnounceEndpoint(tier);
+  final List<ListenableFuture<?>> futures=new ArrayList<>(urls.size());
+  for (  final URL url : urls) {
+    futures.add(executorService.submit(new Runnable(){
+      @Override public void run(){
+        for (        final String drop : dropLookups) {
+          final URL lookupURL;
+          try {
+            lookupURL=new URL(url.getProtocol(),url.getHost(),url.getPort(),String.format("%s/%s",url.getFile(),drop));
+          }
+ catch (          MalformedURLException e) {
+            throw new ISE(e,"Error creating url for [%s]/[%s]",url,drop);
+          }
+          try {
+            deleteOnHost(lookupURL);
+          }
+ catch (          InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.warn("Delete [%s] interrupted",lookupURL);
+            throw Throwables.propagate(e);
+          }
+catch (          IOException|ExecutionException e) {
+            LOG.makeAlert(e,"Error deleting [%s]",lookupURL).emit();
+          }
+        }
+      }
+    }
+));
+  }
+  final ListenableFuture allFuture=Futures.allAsList(futures);
+  try {
+    allFuture.get(lookupCoordinatorManagerConfig.getUpdateAllTimeout().getMillis(),TimeUnit.MILLISECONDS);
+  }
+ catch (  TimeoutException e) {
+    allFuture.cancel(true);
+    throw new ExecutionException("Timeout in updating hosts! Attempting to cancel",e);
+  }
+}

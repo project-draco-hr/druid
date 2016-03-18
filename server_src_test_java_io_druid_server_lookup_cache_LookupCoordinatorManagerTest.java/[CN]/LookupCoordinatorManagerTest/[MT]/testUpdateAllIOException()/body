@@ -1,0 +1,14 @@
+{
+  final IOException ex=new IOException("test exception");
+  final List<URL> urls=ImmutableList.of(new URL("http://foo.bar"));
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig){
+    @Override Collection<URL> getAllHostsAnnounceEndpoint(    String Tier){
+      return urls;
+    }
+    @Override void updateAllOnHost(    final URL url,    Map<String,Map<String,Object>> updatedLookups) throws IOException, InterruptedException, ExecutionException {
+      throw ex;
+    }
+  }
+;
+  manager.updateAllOnTier(LOOKUP_TIER,SINGLE_LOOKUP_MAP);
+}

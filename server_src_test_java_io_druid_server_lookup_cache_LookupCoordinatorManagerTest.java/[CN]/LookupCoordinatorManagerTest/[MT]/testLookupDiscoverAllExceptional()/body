@@ -1,0 +1,21 @@
+{
+  final IOException ex=new IOException("some exception");
+  EasyMock.reset(discoverer);
+  EasyMock.expect(discoverer.discoverChildren(LookupCoordinatorManager.LOOKUP_LISTEN_ANNOUNCE_KEY)).andThrow(ex).once();
+  expectedException.expectCause(new BaseMatcher<Throwable>(){
+    @Override public boolean matches(    Object o){
+      return o == ex;
+    }
+    @Override public void describeTo(    Description description){
+    }
+  }
+);
+  EasyMock.replay(discoverer);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
+  try {
+    manager.discoverTiers();
+  }
+  finally {
+    EasyMock.verify(discoverer);
+  }
+}

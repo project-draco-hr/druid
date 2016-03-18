@@ -1,0 +1,11 @@
+{
+  final String errMsg="some message";
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  EasyMock.expect(lookupCoordinatorManager.getLookup(EasyMock.eq(LOOKUP_TIER),EasyMock.eq(LOOKUP_NAME))).andThrow(new RuntimeException(errMsg)).once();
+  EasyMock.replay(lookupCoordinatorManager);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  final Response response=lookupCoordinatorResource.getSpecificLookup(LOOKUP_TIER,LOOKUP_NAME);
+  Assert.assertEquals(500,response.getStatus());
+  Assert.assertEquals(ImmutableMap.of("error",errMsg),response.getEntity());
+  EasyMock.verify(lookupCoordinatorManager);
+}

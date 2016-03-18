@@ -1,0 +1,14 @@
+{
+  final String zkPath=Strings.isNullOrEmpty(key_base) ? listeningAnnouncerConfig.getListenersPath() : listeningAnnouncerConfig.getAnnouncementPath(key_base);
+  try {
+    return cf.getChildren().forPath(zkPath);
+  }
+ catch (  KeeperException.NoNodeException|KeeperException.NoChildrenForEphemeralsException e) {
+    LOG.warn(e,"Path [%s] not discoverable",zkPath);
+    return ImmutableList.of();
+  }
+catch (  Exception e) {
+    Throwables.propagateIfInstanceOf(e,IOException.class);
+    throw Throwables.propagate(e);
+  }
+}

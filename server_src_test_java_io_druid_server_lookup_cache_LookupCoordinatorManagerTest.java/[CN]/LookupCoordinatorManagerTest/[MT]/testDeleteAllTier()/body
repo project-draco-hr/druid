@@ -1,0 +1,20 @@
+{
+  final HttpResponseHandler<InputStream,InputStream> responseHandler=EasyMock.createStrictMock(HttpResponseHandler.class);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig){
+    @Override HttpResponseHandler<InputStream,InputStream> makeResponseHandler(    final AtomicInteger returnCode,    final AtomicReference<String> reasonString){
+      returnCode.set(200);
+      reasonString.set("");
+      return responseHandler;
+    }
+  }
+;
+  final HostAndPort hostAndPort=HostAndPort.fromParts("someHost",8080);
+  final Collection<String> drop=ImmutableList.of("lookup1");
+  EasyMock.expect(discoverer.getNodes(LookupModule.getTierListenerPath(LOOKUP_TIER))).andReturn(ImmutableList.of(hostAndPort)).once();
+  final SettableFuture<InputStream> future=SettableFuture.create();
+  future.set(new ByteArrayInputStream(new byte[0]));
+  EasyMock.expect(client.go(EasyMock.<Request>anyObject(),EasyMock.<SequenceInputStreamResponseHandler>anyObject(),EasyMock.<Duration>anyObject())).andReturn(future).once();
+  EasyMock.replay(client,discoverer,responseHandler);
+  manager.deleteAllOnTier(LOOKUP_TIER,drop);
+  EasyMock.verify(client,discoverer,responseHandler);
+}

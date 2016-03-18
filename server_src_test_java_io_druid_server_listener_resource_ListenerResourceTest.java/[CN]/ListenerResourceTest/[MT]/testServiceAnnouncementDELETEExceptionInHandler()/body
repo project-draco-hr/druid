@@ -1,0 +1,10 @@
+{
+  final ListenerHandler handler=EasyMock.createStrictMock(ListenerHandler.class);
+  EasyMock.expect(handler.handleDELETE(EasyMock.anyString())).andThrow(new RuntimeException("test"));
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  EasyMock.replay(handler);
+  Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),resource.serviceAnnouncementDELETE("id").getStatus());
+  EasyMock.verify(handler);
+}

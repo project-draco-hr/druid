@@ -1,0 +1,12 @@
+{
+  final Announcer announcer=EasyMock.createStrictMock(Announcer.class);
+  final HostAndPort node=HostAndPort.fromString("some_host");
+  final ListenerResourceAnnouncer resourceAnnouncer=new ListenerResourceAnnouncer(announcer,listeningAnnouncerConfig,listenerKey,node){
+  }
+;
+  announcer.announce(EasyMock.eq(ZKPaths.makePath(announcePath,node.getHostText())),EasyMock.aryEq(resourceAnnouncer.getAnnounceBytes()));
+  EasyMock.expectLastCall().once();
+  EasyMock.replay(announcer);
+  resourceAnnouncer.start();
+  EasyMock.verify(announcer);
+}

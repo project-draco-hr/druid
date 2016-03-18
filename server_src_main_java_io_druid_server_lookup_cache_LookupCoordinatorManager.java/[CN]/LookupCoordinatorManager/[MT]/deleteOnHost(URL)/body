@@ -1,0 +1,22 @@
+{
+  final AtomicInteger returnCode=new AtomicInteger(0);
+  final AtomicReference<String> reasonString=new AtomicReference<>(null);
+  LOG.debug("Dropping %s",url);
+  try (final InputStream result=httpClient.go(new Request(HttpMethod.DELETE,url).addHeader(HttpHeaders.Names.ACCEPT,SmileMediaTypes.APPLICATION_JACKSON_SMILE),makeResponseHandler(returnCode,reasonString),lookupCoordinatorManagerConfig.getHostDeleteTimeout()).get()){
+    if (!HttpStatusCodes.isSuccess(returnCode.get()) || HttpStatusCodes.STATUS_CODE_NOT_FOUND != returnCode.get()) {
+      final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+      try {
+        StreamUtils.copyAndClose(result,baos);
+      }
+ catch (      IOException e2) {
+        LOG.warn(e2,"Error reading response from [%s]",url);
+      }
+      throw new IOException(String.format("Bad lookup delete request to [%s] : [%d] : [%s]  Response: [%s]",url,returnCode.get(),reasonString.get(),StringUtils.fromUtf8(baos.toByteArray())));
+    }
+ else {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Delete to [%s] : Status: %s reason: [%s]",url,returnCode.get(),reasonString.get());
+      }
+    }
+  }
+ }

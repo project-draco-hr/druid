@@ -1,0 +1,36 @@
+{
+  setupServerAndCurator();
+  closerRule.closeLater(server);
+  curator.start();
+  closerRule.closeLater(curator);
+  Assert.assertNotNull(curator.create().forPath("/druid"));
+  Assert.assertTrue(curator.blockUntilConnected(10,TimeUnit.SECONDS));
+  final Announcer announcer=new Announcer(curator,executorService);
+  final HostAndPort node=HostAndPort.fromString("localhost");
+  final ListenerResourceAnnouncer listenerResourceAnnouncer=new ListenerResourceAnnouncer(announcer,listeningAnnouncerConfig,listenerKey,node){
+  }
+;
+  listenerResourceAnnouncer.start();
+  announcer.start();
+  closerRule.closeLater(new Closeable(){
+    @Override public void close() throws IOException {
+      announcer.stop();
+    }
+  }
+);
+  Assert.assertNotNull(curator.checkExists().forPath(announcePath));
+  final String nodePath=ZKPaths.makePath(announcePath,node.getHostText());
+  Assert.assertNotNull(curator.checkExists().forPath(nodePath));
+  Assert.assertEquals(Longs.BYTES,curator.getData().decompressed().forPath(nodePath).length);
+  Assert.assertNull(curator.checkExists().forPath(listeningAnnouncerConfig.getAnnouncementPath(listenerKey + "FOO")));
+  listenerResourceAnnouncer.stop();
+  listenerResourceAnnouncer.start();
+  listenerResourceAnnouncer.start();
+  listenerResourceAnnouncer.stop();
+  listenerResourceAnnouncer.stop();
+  listenerResourceAnnouncer.start();
+  listenerResourceAnnouncer.stop();
+  listenerResourceAnnouncer.start();
+  listenerResourceAnnouncer.stop();
+  Assert.assertNull(curator.checkExists().forPath(nodePath));
+}

@@ -1,0 +1,25 @@
+{
+  final AtomicReference<List<Map<String,Object>>> configVal=new AtomicReference<>(null);
+  final URL url=LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("localhost"));
+  EasyMock.reset(configManager);
+  EasyMock.expect(configManager.watch(EasyMock.anyString(),EasyMock.<TypeReference>anyObject())).andReturn(configVal);
+  final JsonProcessingException ex=EasyMock.createStrictMock(JsonProcessingException.class);
+  final ObjectMapper mapper=EasyMock.createStrictMock(ObjectMapper.class);
+  EasyMock.expect(mapper.writeValueAsBytes(EasyMock.eq(SINGLE_LOOKUP_MAP))).andThrow(ex);
+  expectedException.expectCause(new BaseMatcher<Throwable>(){
+    @Override public boolean matches(    Object o){
+      return ex == o;
+    }
+    @Override public void describeTo(    Description description){
+    }
+  }
+);
+  EasyMock.replay(mapper);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
+  try {
+    manager.updateAllOnHost(url,SINGLE_LOOKUP_MAP);
+  }
+  finally {
+    EasyMock.verify(mapper);
+  }
+}

@@ -1,0 +1,13 @@
+{
+  final Map<HostAndPort,Long> priorSeenMap=lastSeenMap;
+  final Map<HostAndPort,Long> currentMap=getCurrentNodes(listener_key);
+  final Collection<HostAndPort> retVal=Collections2.filter(currentMap.keySet(),new Predicate<HostAndPort>(){
+    @Override public boolean apply(    HostAndPort input){
+      final Long l=priorSeenMap.get(input);
+      return l == null || l < currentMap.get(input);
+    }
+  }
+);
+  lastSeenMap=priorSeenMap;
+  return retVal;
+}

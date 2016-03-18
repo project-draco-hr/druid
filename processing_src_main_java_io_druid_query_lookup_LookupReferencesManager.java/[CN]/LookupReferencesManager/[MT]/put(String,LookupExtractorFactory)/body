@@ -8,10 +8,17 @@ synchronized (lock) {
     if (!lookupExtractorFactory.start()) {
       throw new ISE("start method returned false for lookup [%s]",lookupName);
     }
-    boolean isAdded=(null == lookupMap.putIfAbsent(lookupName,lookupExtractorFactory));
-    if (isAdded && lookupSnapshotTaker != null) {
-      lookupSnapshotTaker.takeSnapshot(getAllAsList());
+    final boolean noPrior=null == lookupMap.putIfAbsent(lookupName,lookupExtractorFactory);
+    if (noPrior) {
+      if (lookupSnapshotTaker != null) {
+        lookupSnapshotTaker.takeSnapshot(getAllAsList());
+      }
     }
-    return isAdded;
+ else {
+      if (!lookupExtractorFactory.close()) {
+        throw new ISE("Error closing [%s] on race condition",lookupName);
+      }
+    }
+    return noPrior;
   }
 }

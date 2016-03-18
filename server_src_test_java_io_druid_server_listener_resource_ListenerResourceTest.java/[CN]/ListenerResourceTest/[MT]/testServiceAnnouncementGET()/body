@@ -1,0 +1,16 @@
+{
+  final AtomicInteger c=new AtomicInteger(0);
+  final AbstractListenerHandler handler=new ExceptionalAbstractListenerHandler(){
+    @Override public Object get(    String id){
+      c.incrementAndGet();
+      return ANN_ID.equals(id) ? ANN_ID : null;
+    }
+  }
+;
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  Assert.assertEquals(Response.Status.OK.getStatusCode(),resource.serviceAnnouncementGET(ANN_ID).getStatus());
+  Assert.assertEquals(1,c.get());
+  EasyMock.verify(req);
+}

@@ -1,0 +1,11 @@
+{
+synchronized (startStopSync) {
+    if (!started) {
+      LOG.warn("Not started, ignoring stop request");
+      return;
+    }
+    started=false;
+    executorService.shutdownNow();
+    LOG.debug("Stopped");
+  }
+}

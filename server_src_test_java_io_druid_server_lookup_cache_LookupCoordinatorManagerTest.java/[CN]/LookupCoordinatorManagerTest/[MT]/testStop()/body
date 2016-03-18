@@ -1,0 +1,11 @@
+{
+  final AtomicReference<List<Map<String,Object>>> lookupRef=new AtomicReference<>(null);
+  EasyMock.reset(configManager);
+  EasyMock.expect(configManager.watch(EasyMock.eq(LookupCoordinatorManager.LOOKUP_CONFIG_KEY),EasyMock.<TypeReference>anyObject(),EasyMock.<AtomicReference>isNull())).andReturn(lookupRef).once();
+  EasyMock.replay(configManager);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
+  manager.start();
+  manager.stop();
+  manager.stop();
+  EasyMock.verify(configManager);
+}
