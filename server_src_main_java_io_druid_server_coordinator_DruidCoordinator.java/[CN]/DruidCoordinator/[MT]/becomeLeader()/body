@@ -16,7 +16,7 @@ synchronized (lock) {
       final List<Pair<? extends CoordinatorRunnable,Duration>> coordinatorRunnables=Lists.newArrayList();
       coordinatorRunnables.add(Pair.of(new CoordinatorHistoricalManagerRunnable(startingLeaderCounter),config.getCoordinatorPeriod()));
       if (indexingServiceClient != null) {
-        coordinatorRunnables.add(Pair.of(new CoordinatorIndexingServiceRunnable(makeIndexingServiceHelpers(configManager.watch(DatasourceWhitelist.CONFIG_KEY,DatasourceWhitelist.class)),startingLeaderCounter),config.getCoordinatorIndexingPeriod()));
+        coordinatorRunnables.add(Pair.of(new CoordinatorIndexingServiceRunnable(makeIndexingServiceHelpers(),startingLeaderCounter),config.getCoordinatorIndexingPeriod()));
       }
       for (      final Pair<? extends CoordinatorRunnable,Duration> coordinatorRunnable : coordinatorRunnables) {
         ScheduledExecutors.scheduleWithFixedDelay(exec,config.getCoordinatorStartDelay(),coordinatorRunnable.rhs,new Callable<ScheduledExecutors.Signal>(){

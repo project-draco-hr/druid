@@ -1,9 +1,9 @@
 {
-  this.period=period.getMillis();
-  Preconditions.checkArgument(this.period > 0,"coordinator kill period must be > 0");
-  this.retainDuration=retainDuration.getMillis();
+  this.period=config.getCoordinatorKillPeriod().getMillis();
+  Preconditions.checkArgument(this.period > config.getCoordinatorIndexingPeriod().getMillis(),"coordinator kill period must be greater than druid.coordinator.period.indexingPeriod");
+  this.retainDuration=config.getCoordinatorKillDurationToRetain().getMillis();
   Preconditions.checkArgument(this.retainDuration >= 0,"coordinator kill retainDuration must be >= 0");
-  this.maxSegmentsToKill=maxSegmentsToKill;
+  this.maxSegmentsToKill=config.getCoordinatorKillMaxSegments();
   Preconditions.checkArgument(this.maxSegmentsToKill > 0,"coordinator kill maxSegments must be > 0");
   log.info("Kill Task scheduling enabled with period [%s], retainDuration [%s], maxSegmentsToKill [%s]",this.period,this.retainDuration,this.maxSegmentsToKill);
   this.segmentManager=segmentManager;

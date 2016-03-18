@@ -33,5 +33,7 @@
       stats.addToGlobalStat("mergedCount",mergeSegments(segmentsToMerge,entry.getKey()));
     }
   }
+  log.info("Issued merge requests for %s segments",stats.getGlobalStats().get("mergedCount").get());
+  params.getEmitter().emit(new ServiceMetricEvent.Builder().build("coordinator/merge/count",stats.getGlobalStats().get("mergedCount")));
   return params.buildFromExisting().withCoordinatorStats(stats).build();
 }
