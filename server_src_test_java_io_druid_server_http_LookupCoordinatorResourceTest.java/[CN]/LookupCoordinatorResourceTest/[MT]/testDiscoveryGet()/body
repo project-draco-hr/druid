@@ -1,0 +1,11 @@
+{
+  final List<String> tiers=ImmutableList.of();
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  EasyMock.expect(lookupCoordinatorManager.discoverTiers()).andReturn(tiers).once();
+  EasyMock.replay(lookupCoordinatorManager);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  final Response response=lookupCoordinatorResource.getTiers(true);
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(tiers,response.getEntity());
+  EasyMock.verify(lookupCoordinatorManager);
+}

@@ -1,0 +1,11 @@
+{
+synchronized (startStopSync) {
+    if (!started) {
+      LOG.debug("Already stopped, ignoring");
+      return;
+    }
+    announcer.unannounce(announcePath);
+    LOG.info("Unannouncing start time on [%s]",announcePath);
+    started=false;
+  }
+}

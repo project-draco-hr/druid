@@ -1,0 +1,16 @@
+{
+  final Map<String,ObjType> all;
+  try {
+    all=getAll();
+    if (all == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+ else {
+      return Response.ok(all).build();
+    }
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Error getting all");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

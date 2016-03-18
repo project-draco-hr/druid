@@ -1,0 +1,23 @@
+{
+synchronized (startStopSync) {
+    final Map<String,Map<String,Map<String,Object>>> priorSpec=getKnownLookups();
+    if (priorSpec == null) {
+      LOG.warn("Requested delete lookup [%s]/[%s]. But no lookups exist!",tier,lookup);
+      return false;
+    }
+    final Map<String,Map<String,Map<String,Object>>> updateSpec=new HashMap<>(priorSpec);
+    final Map<String,Map<String,Object>> priorTierSpec=updateSpec.get(tier);
+    if (priorTierSpec == null) {
+      LOG.warn("Requested delete of lookup [%s]/[%s] but tier does not exist!",tier,lookup);
+      return false;
+    }
+    if (!priorTierSpec.containsKey(lookup)) {
+      LOG.warn("Requested delete of lookup [%s]/[%s] but lookup does not exist!",tier,lookup);
+      return false;
+    }
+    final Map<String,Map<String,Object>> updateTierSpec=new HashMap<>(priorTierSpec);
+    updateTierSpec.remove(lookup);
+    updateSpec.put(tier,updateTierSpec);
+    return configManager.set(LOOKUP_CONFIG_KEY,updateSpec,auditInfo);
+  }
+}

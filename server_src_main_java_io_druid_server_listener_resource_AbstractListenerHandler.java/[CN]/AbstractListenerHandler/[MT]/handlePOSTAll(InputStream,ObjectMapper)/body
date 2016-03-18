@@ -1,0 +1,32 @@
+{
+  final Map<String,ObjType> inObjMap;
+  try {
+    final Map<String,Object> tempMap=mapper.readValue(inputStream,new TypeReference<Map<String,Object>>(){
+    }
+);
+    inObjMap=ImmutableMap.copyOf(Maps.transformValues(tempMap,new Function<Object,ObjType>(){
+      @Override public ObjType apply(      Object input){
+        return mapper.convertValue(input,inObjTypeRef);
+      }
+    }
+));
+  }
+ catch (  final IOException ex) {
+    LOG.debug(ex,"Bad request");
+    return Response.status(Response.Status.BAD_REQUEST).entity(ServletResourceUtils.sanitizeException(ex)).build();
+  }
+  final Object returnObj;
+  try {
+    returnObj=post(inObjMap);
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Error handling request");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+  if (returnObj == null) {
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+ else {
+    return Response.status(Response.Status.ACCEPTED).entity(returnObj).build();
+  }
+}

@@ -1,0 +1,15 @@
+{
+  final List<URL> urls=ImmutableList.of(new URL("http://foo.bar"));
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig){
+    @Override Collection<URL> getAllHostsAnnounceEndpoint(    String tier){
+      return urls;
+    }
+    @Override void updateAllOnHost(    final URL url,    Map<String,Map<String,Object>> updatedLookups) throws IOException, InterruptedException, ExecutionException {
+      if (!urls.get(0).equals(url) || updatedLookups != SINGLE_LOOKUP_MAP) {
+        throw new RuntimeException("Not matched");
+      }
+    }
+  }
+;
+  manager.updateAllOnTier(null,null);
+}

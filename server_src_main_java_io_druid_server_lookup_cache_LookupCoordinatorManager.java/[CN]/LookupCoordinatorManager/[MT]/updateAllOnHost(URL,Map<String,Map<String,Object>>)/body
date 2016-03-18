@@ -1,0 +1,43 @@
+{
+  final AtomicInteger returnCode=new AtomicInteger(0);
+  final AtomicReference<String> reasonString=new AtomicReference<>(null);
+  final byte[] bytes;
+  try {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Loading up %d lookups to %s",knownLookups.size(),url);
+    }
+    bytes=smileMapper.writeValueAsBytes(knownLookups);
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+  try (final InputStream result=httpClient.go(new Request(HttpMethod.POST,url).addHeader(HttpHeaders.Names.ACCEPT,SmileMediaTypes.APPLICATION_JACKSON_SMILE).addHeader(HttpHeaders.Names.CONTENT_TYPE,SmileMediaTypes.APPLICATION_JACKSON_SMILE).setContent(bytes),makeResponseHandler(returnCode,reasonString),lookupCoordinatorManagerConfig.getHostUpdateTimeout()).get()){
+    if (!HttpStatusCodes.isSuccess(returnCode.get())) {
+      final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+      try {
+        StreamUtils.copyAndClose(result,baos);
+      }
+ catch (      IOException e2) {
+        LOG.warn(e2,"Error reading response");
+      }
+      throw new IOException(String.format("Bad update request to [%s] : [%d] : [%s]  Response: [%s]",url,returnCode.get(),reasonString.get(),StringUtils.fromUtf8(baos.toByteArray())));
+    }
+ else {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Update on [%s], Status: %s reason: [%s]",url,returnCode.get(),reasonString.get());
+      }
+      final Map<String,Object> resultMap=smileMapper.readValue(result,MAP_STRING_OBJ_TYPE);
+      final Object missingValuesObject=resultMap.get(LookupModule.FAILED_UPDATES_KEY);
+      if (null == missingValuesObject) {
+        throw new IAE("Update result did not have field for [%s]",LookupModule.FAILED_UPDATES_KEY);
+      }
+      final Map<String,Object> missingValues=smileMapper.convertValue(missingValuesObject,MAP_STRING_OBJ_TYPE);
+      if (!missingValues.isEmpty()) {
+        throw new IAE("Lookups failed to update: %s",smileMapper.writeValueAsString(missingValues.keySet()));
+      }
+ else {
+        LOG.debug("Updated all lookups on [%s]",url);
+      }
+    }
+  }
+ }

@@ -7,6 +7,7 @@
       binder.bind(MetadataStorage.class).toProvider(MetadataStorageProvider.class).in(ManageLifecycle.class);
       JsonConfigProvider.bind(binder,"druid.manager.segments",MetadataSegmentManagerConfig.class);
       JsonConfigProvider.bind(binder,"druid.manager.rules",MetadataRuleManagerConfig.class);
+      JsonConfigProvider.bind(binder,"druid.manager.lookups",LookupCoordinatorManagerConfig.class);
       binder.bind(RedirectFilter.class).in(LazySingleton.class);
       binder.bind(RedirectInfo.class).to(CoordinatorRedirectInfo.class).in(LazySingleton.class);
       binder.bind(MetadataSegmentManager.class).toProvider(MetadataSegmentManagerProvider.class).in(ManageLifecycle.class);
@@ -15,8 +16,12 @@
       binder.bind(IndexingServiceClient.class).in(LazySingleton.class);
       binder.bind(CoordinatorServerView.class).in(LazySingleton.class);
       binder.bind(DruidCoordinator.class);
+      binder.bind(LookupCoordinatorManager.class).in(ManageLifecycle.class);
+      binder.bind(ListenerDiscoverer.class).in(ManageLifecycle.class);
+      LifecycleModule.register(binder,ListenerDiscoverer.class);
       LifecycleModule.register(binder,MetadataStorage.class);
       LifecycleModule.register(binder,DruidCoordinator.class);
+      LifecycleModule.register(binder,LookupCoordinatorManager.class);
       binder.bind(JettyServerInitializer.class).to(CoordinatorJettyServerInitializer.class);
       Jerseys.addResource(binder,CoordinatorResource.class);
       Jerseys.addResource(binder,CoordinatorDynamicConfigsResource.class);
@@ -26,6 +31,7 @@
       Jerseys.addResource(binder,DatasourcesResource.class);
       Jerseys.addResource(binder,MetadataResource.class);
       Jerseys.addResource(binder,IntervalsResource.class);
+      Jerseys.addResource(binder,LookupCoordinatorResource.class);
       LifecycleModule.register(binder,Server.class);
       LifecycleModule.register(binder,DatasourcesResource.class);
     }

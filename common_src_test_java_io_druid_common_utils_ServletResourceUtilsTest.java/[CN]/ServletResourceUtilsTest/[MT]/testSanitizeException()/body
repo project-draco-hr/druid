@@ -1,0 +1,11 @@
+{
+  final String message="some message";
+  Assert.assertEquals(message,ServletResourceUtils.sanitizeException(new Throwable(message)).get("error"));
+  Assert.assertEquals("null",ServletResourceUtils.sanitizeException(null).get("error"));
+  Assert.assertEquals(message,ServletResourceUtils.sanitizeException(new Throwable(){
+    @Override public String toString(){
+      return message;
+    }
+  }
+).get("error"));
+}

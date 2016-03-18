@@ -1,0 +1,14 @@
+{
+  final AbstractListenerHandler handler=new ExceptionalAbstractListenerHandler(){
+    @Override public String post(    Map<String,SomeBeanClass> inputObject) throws Exception {
+      return mapper.writeValueAsString(inputObject);
+    }
+  }
+;
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  final Response response=resource.serviceAnnouncementPOSTAll(EMPTY_JSON_MAP.openStream(),req);
+  Assert.assertEquals(Response.Status.ACCEPTED.getStatusCode(),response.getStatus());
+  Assert.assertEquals("{}",response.getEntity());
+}

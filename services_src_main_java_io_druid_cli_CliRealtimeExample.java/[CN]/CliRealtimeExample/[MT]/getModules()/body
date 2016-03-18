@@ -1,5 +1,5 @@
 {
-  return ImmutableList.<Module>of(new RealtimeModule(),new Module(){
+  return ImmutableList.of(new RealtimeModule(),new Module(){
     @Override public void configure(    Binder binder){
       binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/realtime");
       binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8084);
@@ -9,5 +9,5 @@
       binder.bind(ServerView.class).to(NoopServerView.class).in(LazySingleton.class);
     }
   }
-,new ChatHandlerServerModule());
+,new ChatHandlerServerModule(),new LookupModule());
 }

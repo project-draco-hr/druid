@@ -1,0 +1,20 @@
+{
+  try {
+    if (Strings.isNullOrEmpty(tier)) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ServletResourceUtils.sanitizeException(new NullPointerException("`tier` required"))).build();
+    }
+    final Map<String,Map<String,Map<String,Object>>> map=lookupCoordinatorManager.getKnownLookups();
+    if (map == null) {
+      return Response.status(Response.Status.NOT_FOUND).entity(ServletResourceUtils.sanitizeException(new RE("No lookups found"))).build();
+    }
+    final Map<String,Map<String,Object>> tierLookups=map.get(tier);
+    if (tierLookups == null) {
+      return Response.status(Response.Status.NOT_FOUND).entity(ServletResourceUtils.sanitizeException(new RE("Tier [%s] not found",tier))).build();
+    }
+    return Response.ok().entity(tierLookups.keySet()).build();
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Error getting tier [%s]",tier);
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

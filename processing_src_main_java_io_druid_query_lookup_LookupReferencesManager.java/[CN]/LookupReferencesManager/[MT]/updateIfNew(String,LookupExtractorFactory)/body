@@ -1,0 +1,20 @@
+{
+  final boolean update;
+synchronized (lock) {
+    assertStarted();
+    final LookupExtractorFactory prior=lookupMap.get(lookupName);
+    update=lookupExtractorFactory.replaces(prior);
+    if (update) {
+      if (!lookupExtractorFactory.start()) {
+        throw new ISE("Could not start [%s]",lookupName);
+      }
+      lookupMap.put(lookupName,lookupExtractorFactory);
+      if (prior != null) {
+        if (!prior.close()) {
+          LOGGER.error("Error closing [%s]:[%s]",lookupName,lookupExtractorFactory);
+        }
+      }
+    }
+  }
+  return update;
+}

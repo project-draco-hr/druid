@@ -1,0 +1,18 @@
+{
+  try {
+    if (discover) {
+      return Response.ok().entity(lookupCoordinatorManager.discoverTiers()).build();
+    }
+    final Map<String,Map<String,Map<String,Object>>> knownLookups=lookupCoordinatorManager.getKnownLookups();
+    if (knownLookups == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+ else {
+      return Response.ok().entity(knownLookups.keySet()).build();
+    }
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Error getting list of lookups");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

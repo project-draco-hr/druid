@@ -1,0 +1,25 @@
+{
+  try {
+    final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(req.getContentType());
+    final ObjectMapper mapper=isSmile ? smileMapper : jsonMapper;
+    final Map<String,Map<String,Map<String,Object>>> map;
+    try {
+      map=mapper.readValue(in,new TypeReference<Map<String,Map<String,Map<String,Object>>>>(){
+      }
+);
+    }
+ catch (    IOException e) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(ServletResourceUtils.sanitizeException(e)).build();
+    }
+    if (lookupCoordinatorManager.updateLookups(map,new AuditInfo(author,comment,req.getRemoteAddr()))) {
+      return Response.status(Response.Status.ACCEPTED).entity(map).build();
+    }
+ else {
+      throw new RuntimeException("Unknown error updating configuration");
+    }
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Error creating new lookups");
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

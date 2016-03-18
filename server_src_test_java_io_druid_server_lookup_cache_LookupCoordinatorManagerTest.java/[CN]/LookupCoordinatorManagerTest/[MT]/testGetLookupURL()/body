@@ -1,0 +1,8 @@
+{
+  final String path=ListenerResource.BASE_PATH + "/" + LookupCoordinatorManager.LOOKUP_LISTEN_ANNOUNCE_KEY;
+  Assert.assertEquals(new URL("http","someHost",1,path),LookupCoordinatorManager.getLookupsURL(HostAndPort.fromParts("someHost",1)));
+  Assert.assertEquals(new URL("http","someHost",-1,path),LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("someHost")));
+  Assert.assertEquals(new URL("http","::1",-1,path),LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("::1")));
+  Assert.assertEquals(new URL("http","[::1]",-1,path),LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("[::1]")));
+  Assert.assertEquals(new URL("http","::1",-1,path),LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("::1")));
+}

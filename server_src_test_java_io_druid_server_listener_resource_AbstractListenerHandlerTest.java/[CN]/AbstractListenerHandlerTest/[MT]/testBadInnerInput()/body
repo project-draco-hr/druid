@@ -1,0 +1,9 @@
+{
+  final ByteArrayInputStream bais=new ByteArrayInputStream(new byte[]{});
+  final ObjectMapper mapper=EasyMock.createStrictMock(ObjectMapper.class);
+  EasyMock.expect(mapper.readValue(EasyMock.<InputStream>anyObject(),EasyMock.<TypeReference<Object>>anyObject())).andThrow(new IOException());
+  EasyMock.replay(mapper);
+  final Response response=abstractListenerHandler.handlePOSTAll(bais,mapper);
+  Assert.assertEquals(400,response.getStatus());
+  EasyMock.verify(mapper);
+}

@@ -1,0 +1,38 @@
+{
+  final HashMap<HostAndPort,Long> retVal=new HashMap<>();
+  final String zkPath=listeningAnnouncerConfig.getAnnouncementPath(listener_key);
+  final Collection<String> children;
+  try {
+    children=cf.getChildren().forPath(zkPath);
+  }
+ catch (  org.apache.zookeeper.KeeperException.NoNodeException e) {
+    LOG.debug(e,"No path found at [%s]",zkPath);
+    return ImmutableMap.of();
+  }
+catch (  Exception e) {
+    throw new IOException("Error getting children for " + zkPath,e);
+  }
+  for (  String child : children) {
+    final String childPath=ZKPaths.makePath(zkPath,child);
+    try {
+      final byte[] data;
+      try {
+        data=cf.getData().decompressed().forPath(childPath);
+      }
+ catch (      Exception e) {
+        throw new IOException("Error getting data for " + childPath,e);
+      }
+      if (data == null) {
+        LOG.debug("Lost data at path [%s]",childPath);
+        continue;
+      }
+      final HostAndPort hostAndPort=HostAndPort.fromString(child);
+      final Long l=ByteBuffer.wrap(data).getLong();
+      retVal.put(hostAndPort,l);
+    }
+ catch (    IllegalArgumentException iae) {
+      LOG.warn(iae,"Error parsing [%s]",childPath);
+    }
+  }
+  return ImmutableMap.copyOf(retVal);
+}

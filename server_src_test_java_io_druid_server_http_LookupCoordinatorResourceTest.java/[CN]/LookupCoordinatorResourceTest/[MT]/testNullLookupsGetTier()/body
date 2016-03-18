@@ -1,0 +1,11 @@
+{
+  final String tier="some tier";
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  EasyMock.expect(lookupCoordinatorManager.getKnownLookups()).andReturn(null).once();
+  EasyMock.replay(lookupCoordinatorManager);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  final Response response=lookupCoordinatorResource.getSpecificTier(tier);
+  Assert.assertEquals(404,response.getStatus());
+  Assert.assertEquals(ImmutableMap.of("error","No lookups found"),response.getEntity());
+  EasyMock.verify(lookupCoordinatorManager);
+}

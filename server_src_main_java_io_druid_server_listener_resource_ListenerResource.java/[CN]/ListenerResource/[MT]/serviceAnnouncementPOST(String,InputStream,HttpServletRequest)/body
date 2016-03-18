@@ -1,0 +1,15 @@
+{
+  if (Strings.isNullOrEmpty(id)) {
+    return makeNullIdResponse();
+  }
+  final String reqContentType=req.getContentType();
+  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType);
+  final ObjectMapper mapper=isSmile ? smileMapper : jsonMapper;
+  try {
+    return handler.handlePOST(inputStream,mapper,id);
+  }
+ catch (  Exception e) {
+    LOG.error(e,"Exception in handling POST request for ID [%s]",id);
+    return Response.serverError().entity(ServletResourceUtils.sanitizeException(e)).build();
+  }
+}

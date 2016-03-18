@@ -1,0 +1,28 @@
+{
+synchronized (startStopSync) {
+    final Map<String,Map<String,Map<String,Object>>> priorSpec=getKnownLookups();
+    if (priorSpec == null && !updateSpec.isEmpty()) {
+      throw new ISE("Not initialized. If this is the first lookup, post an empty map to initialize");
+    }
+    final Map<String,Map<String,Map<String,Object>>> updatedSpec;
+    if (priorSpec == null) {
+      updatedSpec=updateSpec;
+    }
+ else {
+      updatedSpec=new HashMap<>(priorSpec);
+      for (      final String tier : updateSpec.keySet()) {
+        final Map<String,Map<String,Object>> priorTierSpec=priorSpec.get(tier);
+        final Map<String,Map<String,Object>> updateTierSpec=updateSpec.get(tier);
+        if (priorTierSpec == null) {
+          updatedSpec.put(tier,updateTierSpec);
+        }
+ else {
+          final Map<String,Map<String,Object>> updatedTierSpec=new HashMap<>(priorTierSpec);
+          updatedTierSpec.putAll(updateTierSpec);
+          updatedSpec.put(tier,updatedTierSpec);
+        }
+      }
+    }
+    return configManager.set(LOOKUP_CONFIG_KEY,updatedSpec,auditInfo);
+  }
+}

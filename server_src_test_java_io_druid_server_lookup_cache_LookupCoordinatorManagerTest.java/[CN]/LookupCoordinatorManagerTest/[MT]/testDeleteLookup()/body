@@ -1,0 +1,16 @@
+{
+  final Map<String,Object> ignore=ImmutableMap.<String,Object>of("lookup","ignore");
+  final Map<String,Object> lookup=ImmutableMap.<String,Object>of("lookup","foo");
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig){
+    @Override public Map<String,Map<String,Map<String,Object>>> getKnownLookups(){
+      return ImmutableMap.<String,Map<String,Map<String,Object>>>of(LOOKUP_TIER,ImmutableMap.of("foo",lookup,"ignore",ignore));
+    }
+  }
+;
+  final AuditInfo auditInfo=new AuditInfo("author","comment","localhost");
+  EasyMock.reset(configManager);
+  EasyMock.expect(configManager.set(EasyMock.eq(LookupCoordinatorManager.LOOKUP_CONFIG_KEY),EasyMock.eq(ImmutableMap.of(LOOKUP_TIER,ImmutableMap.of("ignore",ignore))),EasyMock.eq(auditInfo))).andReturn(true).once();
+  EasyMock.replay(configManager);
+  Assert.assertTrue(manager.deleteLookup(LOOKUP_TIER,"foo",auditInfo));
+  EasyMock.verify(configManager);
+}

@@ -1,0 +1,13 @@
+{
+  final String tier="some tier";
+  final String lookup="some lookup";
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  final Map<String,Map<String,Map<String,Object>>> retVal=ImmutableMap.<String,Map<String,Map<String,Object>>>of(tier,ImmutableMap.<String,Map<String,Object>>of(lookup,ImmutableMap.<String,Object>of()));
+  EasyMock.expect(lookupCoordinatorManager.getKnownLookups()).andReturn(retVal).once();
+  EasyMock.replay(lookupCoordinatorManager);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  final Response response=lookupCoordinatorResource.getSpecificTier(tier);
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(retVal.get(tier).keySet(),response.getEntity());
+  EasyMock.verify(lookupCoordinatorManager);
+}

@@ -1,0 +1,12 @@
+{
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
+  EasyMock.expect(discoverer.getNodes(EasyMock.eq(LookupModule.getTierListenerPath(LOOKUP_TIER)))).andReturn(ImmutableList.<HostAndPort>of()).once();
+  EasyMock.replay(discoverer);
+  Assert.assertEquals(ImmutableList.of(),manager.getAllHostsAnnounceEndpoint(LOOKUP_TIER));
+  EasyMock.verify(discoverer);
+  EasyMock.reset(discoverer);
+  EasyMock.expect(discoverer.getNodes(EasyMock.eq(LookupModule.getTierListenerPath(LOOKUP_TIER)))).andReturn(Collections.<HostAndPort>singletonList(null)).once();
+  EasyMock.replay(discoverer);
+  Assert.assertEquals(ImmutableList.of(),manager.getAllHostsAnnounceEndpoint(LOOKUP_TIER));
+  EasyMock.verify(discoverer);
+}

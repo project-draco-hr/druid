@@ -1,0 +1,15 @@
+{
+  final AtomicInteger c=new AtomicInteger(0);
+  final ListenerResource resource=new ListenerResource(mapper,mapper,new ExceptionalAbstractListenerHandler(){
+    @Override public Object post(    Map<String,SomeBeanClass> l){
+      c.incrementAndGet();
+      return l;
+    }
+  }
+){
+  }
+;
+  Assert.assertEquals(202,resource.serviceAnnouncementPOSTAll(EMPTY_JSON_MAP.openStream(),req).getStatus());
+  Assert.assertEquals(1,c.get());
+  EasyMock.verify(req);
+}

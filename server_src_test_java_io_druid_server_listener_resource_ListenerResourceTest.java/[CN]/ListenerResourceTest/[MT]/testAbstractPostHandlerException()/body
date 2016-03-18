@@ -1,0 +1,13 @@
+{
+  final AbstractListenerHandler handler=new ExceptionalAbstractListenerHandler(){
+    @Override public String post(    Map<String,SomeBeanClass> inputObject) throws Exception {
+      throw new UnsupportedOperationException("nope!");
+    }
+  }
+;
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  final Response response=resource.serviceAnnouncementPOSTAll(new ByteArrayInputStream(StringUtils.toUtf8(mapper.writeValueAsString(ImmutableMap.of("test1",new SomeBeanClass("test1"),"test2",new SomeBeanClass("test2"))))),req);
+  Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
+}

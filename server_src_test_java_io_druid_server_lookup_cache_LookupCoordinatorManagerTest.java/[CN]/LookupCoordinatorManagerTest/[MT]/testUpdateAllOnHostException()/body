@@ -1,0 +1,30 @@
+{
+  final HttpResponseHandler<InputStream,InputStream> responseHandler=EasyMock.createStrictMock(HttpResponseHandler.class);
+  final URL url=LookupCoordinatorManager.getLookupsURL(HostAndPort.fromString("localhost"));
+  final SettableFuture<InputStream> future=SettableFuture.create();
+  future.set(new ByteArrayInputStream(new byte[0]));
+  EasyMock.expect(client.go(EasyMock.<Request>anyObject(),EasyMock.<SequenceInputStreamResponseHandler>anyObject(),EasyMock.<Duration>anyObject())).andReturn(future).once();
+  EasyMock.replay(client,responseHandler);
+  final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig){
+    @Override HttpResponseHandler<InputStream,InputStream> makeResponseHandler(    final AtomicInteger returnCode,    final AtomicReference<String> reasonString){
+      returnCode.set(500);
+      reasonString.set("");
+      return responseHandler;
+    }
+  }
+;
+  expectedException.expect(new BaseMatcher<Throwable>(){
+    @Override public boolean matches(    Object o){
+      return o instanceof IOException && ((IOException)o).getMessage().startsWith("Bad update request");
+    }
+    @Override public void describeTo(    Description description){
+    }
+  }
+);
+  try {
+    manager.updateAllOnHost(url,SINGLE_LOOKUP_MAP);
+  }
+  finally {
+    EasyMock.verify(client,responseHandler);
+  }
+}

@@ -1,0 +1,14 @@
+{
+  final String author="some author";
+  final String comment="some comment";
+  final String ip="127.0.0.1";
+  final HttpServletRequest request=EasyMock.createStrictMock(HttpServletRequest.class);
+  final LookupCoordinatorManager lookupCoordinatorManager=EasyMock.createStrictMock(LookupCoordinatorManager.class);
+  final LookupCoordinatorResource lookupCoordinatorResource=new LookupCoordinatorResource(lookupCoordinatorManager,mapper,mapper);
+  EasyMock.replay(lookupCoordinatorManager,request);
+  Assert.assertEquals(400,lookupCoordinatorResource.createOrUpdateLookup(null,LOOKUP_NAME,author,comment,EMPTY_MAP_SOURCE.openStream(),request).getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.createOrUpdateLookup(LOOKUP_TIER,null,author,comment,EMPTY_MAP_SOURCE.openStream(),request).getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.createOrUpdateLookup(LOOKUP_TIER,"",author,comment,EMPTY_MAP_SOURCE.openStream(),request).getStatus());
+  Assert.assertEquals(400,lookupCoordinatorResource.createOrUpdateLookup("",LOOKUP_NAME,author,comment,EMPTY_MAP_SOURCE.openStream(),request).getStatus());
+  EasyMock.verify(lookupCoordinatorManager,request);
+}

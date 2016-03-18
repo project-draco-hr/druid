@@ -1,0 +1,9 @@
+{
+  final AbstractListenerHandler handler=new ExceptionalAbstractListenerHandler();
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  Assert.assertEquals(400,resource.serviceAnnouncementGET(null).getStatus());
+  Assert.assertEquals(400,resource.serviceAnnouncementGET("").getStatus());
+  EasyMock.verify(req);
+}

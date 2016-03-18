@@ -1,0 +1,20 @@
+{
+  final AbstractListenerHandler handler=new ExceptionalAbstractListenerHandler(){
+    @Nullable @Override public String post(    @NotNull Map<String,SomeBeanClass> inputObject) throws Exception {
+      return mapper.writeValueAsString(inputObject);
+    }
+  }
+;
+  final ListenerResource resource=new ListenerResource(mapper,mapper,handler){
+  }
+;
+  final List<String> strings=ImmutableList.of("test1","test2");
+  final Map<String,SomeBeanClass> expectedMap=new HashMap<>();
+  for (  final String str : strings) {
+    expectedMap.put(str,new SomeBeanClass(str));
+  }
+  final String expectedString=mapper.writeValueAsString(expectedMap);
+  final Response response=resource.serviceAnnouncementPOSTAll(new ByteArrayInputStream(StringUtils.toUtf8(expectedString)),req);
+  Assert.assertEquals(Response.Status.ACCEPTED.getStatusCode(),response.getStatus());
+  Assert.assertEquals(expectedString,response.getEntity());
+}

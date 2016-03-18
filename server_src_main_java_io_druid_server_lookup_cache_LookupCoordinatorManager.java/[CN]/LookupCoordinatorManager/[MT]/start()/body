@@ -1,0 +1,58 @@
+{
+synchronized (startStopSync) {
+    if (started) {
+      return;
+    }
+    if (executorService.isShutdown()) {
+      throw new ISE("Cannot restart after stop!");
+    }
+    lookupMapConfigRef=configManager.watch(LOOKUP_CONFIG_KEY,new TypeReference<Map<String,Map<String,Map<String,Object>>>>(){
+    }
+,null);
+    executorService.scheduleWithFixedDelay(new Runnable(){
+      @Override public void run(){
+        final Map<String,Map<String,Map<String,Object>>> allLookupTiers=lookupMapConfigRef.get();
+        if (Thread.currentThread().isInterrupted()) {
+          LOG.info("Not updating lookups because process was interrupted");
+          return;
+        }
+        if (!started) {
+          LOG.info("Not started. Returning");
+          return;
+        }
+        for (        final String tier : allLookupTiers.keySet()) {
+          try {
+            final Map<String,Map<String,Object>> allLookups=allLookupTiers.get(tier);
+            final Map<String,Map<String,Object>> oldLookups=prior_update.get(tier);
+            final Collection<String> drops;
+            if (oldLookups == null) {
+              drops=ImmutableList.of();
+            }
+ else {
+              drops=Sets.difference(oldLookups.keySet(),allLookups.keySet());
+            }
+            if (allLookupTiers == prior_update) {
+              LOG.debug("No updates");
+              updateAllNewOnTier(tier,allLookups);
+            }
+ else {
+              updateAllOnTier(tier,allLookups);
+              deleteAllOnTier(tier,drops);
+            }
+          }
+ catch (          InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw Throwables.propagate(e);
+          }
+catch (          Exception e) {
+            LOG.error(e,"Error updating lookups for tier [%s]. Will try again soon",tier);
+          }
+        }
+        prior_update=allLookupTiers;
+      }
+    }
+,0,lookupCoordinatorManagerConfig.getPeriod(),TimeUnit.MILLISECONDS);
+    started=true;
+    LOG.debug("Started");
+  }
+}
