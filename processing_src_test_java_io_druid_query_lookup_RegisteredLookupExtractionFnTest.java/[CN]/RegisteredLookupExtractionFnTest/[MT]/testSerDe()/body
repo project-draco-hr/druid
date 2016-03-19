@@ -1,0 +1,18 @@
+{
+  final ObjectMapper mapper=new DefaultObjectMapper();
+  final LookupReferencesManager manager=EasyMock.createStrictMock(LookupReferencesManager.class);
+  managerReturnsMap(manager);
+  EasyMock.replay(manager);
+  final RegisteredLookupExtractionFn fn=RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,true,null,true,false);
+  EasyMock.verify(manager);
+  final TypeReference<Map<String,Object>> typeReference=new TypeReference<Map<String,Object>>(){
+  }
+;
+  final Map<String,Object> result=mapper.readValue(mapper.writeValueAsString(fn),typeReference);
+  Assert.assertEquals(mapper.convertValue(fn,typeReference),result);
+  Assert.assertEquals(LOOKUP_NAME,result.get("lookup"));
+  Assert.assertEquals(true,result.get("retainMissingValue"));
+  Assert.assertEquals(true,result.get("injective"));
+  Assert.assertNull(result.get("replaceMissingValueWith"));
+  Assert.assertEquals(false,result.get("optimize"));
+}

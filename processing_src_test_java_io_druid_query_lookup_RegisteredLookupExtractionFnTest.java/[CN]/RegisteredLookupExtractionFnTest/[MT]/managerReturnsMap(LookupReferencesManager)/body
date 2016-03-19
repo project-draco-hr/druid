@@ -1,0 +1,17 @@
+{
+  EasyMock.expect(manager.get(EasyMock.eq(LOOKUP_NAME))).andReturn(new LookupExtractorFactory(){
+    @Override public boolean start(){
+      return false;
+    }
+    @Override public boolean close(){
+      return false;
+    }
+    @Override public boolean replaces(    @Nullable LookupExtractorFactory other){
+      return false;
+    }
+    @Override public LookupExtractor get(){
+      return LOOKUP_EXTRACTOR;
+    }
+  }
+).anyTimes();
+}
