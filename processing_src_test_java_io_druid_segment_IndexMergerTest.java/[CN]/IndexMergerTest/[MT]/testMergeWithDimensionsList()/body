@@ -1,5 +1,5 @@
 {
-  IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withDimensionsSpec(new DimensionsSpec(Arrays.asList("dimA","dimB","dimC"),null,null)).withMinTimestamp(0L).withQueryGranularity(QueryGranularity.NONE).withMetrics(new AggregatorFactory[]{new CountAggregatorFactory("count")}).build();
+  IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withDimensionsSpec(new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("dimA","dimB","dimC")),null,null)).withMinTimestamp(0L).withQueryGranularity(QueryGranularity.NONE).withMetrics(new AggregatorFactory[]{new CountAggregatorFactory("count")}).build();
   IncrementalIndex toPersist1=new OnheapIncrementalIndex(schema,true,1000);
   IncrementalIndex toPersist2=new OnheapIncrementalIndex(schema,true,1000);
   IncrementalIndex toPersist3=new OnheapIncrementalIndex(schema,true,1000);

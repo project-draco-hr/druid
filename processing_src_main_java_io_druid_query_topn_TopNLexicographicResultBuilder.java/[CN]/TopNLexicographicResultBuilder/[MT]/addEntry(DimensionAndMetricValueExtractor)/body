@@ -1,5 +1,6 @@
 {
-  String dimensionValue=dimensionAndMetricValueExtractor.getStringDimensionValue(dimSpec.getOutputName());
+  Object dimensionValueObj=dimensionAndMetricValueExtractor.getDimensionValue(dimSpec.getOutputName());
+  String dimensionValue=dimensionValueObj.toString();
   if (shouldAdd(dimensionValue)) {
     pQueue.add(new DimValHolder.Builder().withDimName(dimensionValue).withMetricValues(dimensionAndMetricValueExtractor.getBaseObject()).build());
     if (pQueue.size() > threshold) {

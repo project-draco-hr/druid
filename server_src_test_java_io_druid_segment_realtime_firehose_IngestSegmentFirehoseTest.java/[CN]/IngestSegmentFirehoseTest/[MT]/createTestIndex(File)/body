@@ -1,6 +1,6 @@
 {
   List<String> rows=Lists.newArrayList("2014102200,host1,10","2014102200,host2,20","2014102200,host3,30","2014102201,host1,10","2014102201,host2,20","2014102201,host3,30","2014102202,host1,10","2014102202,host2,20","2014102202,host3,30");
-  StringInputRowParser parser=new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(ImmutableList.of("host"),null,null),null,ImmutableList.of("timestamp","host","visited")),Charsets.UTF_8.toString());
+  StringInputRowParser parser=new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","yyyyMMddHH",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("host")),null,null),null,ImmutableList.of("timestamp","host","visited")),Charsets.UTF_8.toString());
   AggregatorFactory[] aggregators=new AggregatorFactory[]{new LongSumAggregatorFactory("visited_sum","visited")};
   IncrementalIndex index=null;
   try {

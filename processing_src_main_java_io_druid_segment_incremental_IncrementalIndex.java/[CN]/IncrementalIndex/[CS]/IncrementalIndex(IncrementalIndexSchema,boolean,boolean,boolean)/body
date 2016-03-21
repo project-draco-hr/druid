@@ -18,20 +18,20 @@
   DimensionsSpec dimensionsSpec=incrementalIndexSchema.getDimensionsSpec();
   this.dimensionDescs=Maps.newLinkedHashMap();
   this.dimValues=Collections.synchronizedList(Lists.<DimDim>newArrayList());
-  for (  String dimension : dimensionsSpec.getDimensions()) {
+  for (  DimensionSchema dimSchema : dimensionsSpec.getDimensions()) {
     ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(ValueType.STRING);
-    addNewDimension(dimension,capabilities);
-    columnCapabilities.put(dimension,capabilities);
+    ValueType type=TYPE_MAP.get(dimSchema.getValueType());
+    capabilities.setType(type);
+    if (dimSchema.getTypeName().equals(DimensionSchema.SPATIAL_TYPE_NAME)) {
+      capabilities.setHasSpatialIndexes(true);
+    }
+ else {
+      addNewDimension(dimSchema.getName(),capabilities);
+    }
+    columnCapabilities.put(dimSchema.getName(),capabilities);
   }
   List<SpatialDimensionSchema> spatialDimensions=dimensionsSpec.getSpatialDimensions();
   if (!spatialDimensions.isEmpty()) {
     this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));
-  }
-  for (  SpatialDimensionSchema spatialDimension : spatialDimensions) {
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
-    capabilities.setType(ValueType.STRING);
-    capabilities.setHasSpatialIndexes(true);
-    columnCapabilities.put(spatialDimension.getDimName(),capabilities);
   }
 }
