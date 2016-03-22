@@ -1,0 +1,13 @@
+{
+  if (partitionDimensions.isEmpty()) {
+    return Rows.toGroupKey(timestamp,inputRow);
+  }
+ else {
+    return Lists.transform(partitionDimensions,new Function<String,Object>(){
+      @Override public Object apply(      final String dim){
+        return inputRow.getDimension(dim);
+      }
+    }
+);
+  }
+}

@@ -1,0 +1,8 @@
+{
+  final HashBasedNumberedShardSpec shardSpec1=new HashBasedNumberedShardSpec(1,2,ImmutableList.of("visitor_id"),TestUtil.MAPPER);
+  final DateTime time=new DateTime();
+  final InputRow inputRow=new MapBasedInputRow(time,ImmutableList.of("visitor_id","cnt"),ImmutableMap.<String,Object>of("visitor_id","v1","cnt",10));
+  Assert.assertEquals(ImmutableList.of(Lists.newArrayList("v1")),shardSpec1.getGroupKey(time.getMillis(),inputRow));
+  final HashBasedNumberedShardSpec shardSpec2=new HashBasedNumberedShardSpec(1,2,null,TestUtil.MAPPER);
+  Assert.assertEquals(ImmutableList.of(time.getMillis(),ImmutableMap.of("cnt",Lists.newArrayList(10),"visitor_id",Lists.newArrayList("v1"))).toString(),shardSpec2.getGroupKey(time.getMillis(),inputRow).toString());
+}
