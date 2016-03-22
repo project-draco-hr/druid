@@ -14,7 +14,7 @@
             return new Result<TopNResultValue>(input.getTimestamp(),new TopNResultValue(Lists.transform(resultValue.getValue(),new Function<DimensionAndMetricValueExtractor,DimensionAndMetricValueExtractor>(){
               @Override public DimensionAndMetricValueExtractor apply(              DimensionAndMetricValueExtractor input){
                 String dimOutputName=topNQuery.getDimensionSpec().getOutputName();
-                String dimValue=input.getStringDimensionValue(dimOutputName);
+                Object dimValue=input.getDimensionValue(dimOutputName);
                 Map<String,Object> map=input.getBaseObject();
                 map.put(dimOutputName,topNQuery.getDimensionSpec().getExtractionFn().apply(dimValue));
                 return input;
