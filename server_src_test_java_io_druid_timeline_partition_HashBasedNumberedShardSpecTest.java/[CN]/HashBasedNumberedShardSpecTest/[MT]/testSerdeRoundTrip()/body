@@ -1,0 +1,6 @@
+{
+  final ShardSpec spec=TestUtil.MAPPER.readValue(TestUtil.MAPPER.writeValueAsBytes(new HashBasedNumberedShardSpec(1,2,ImmutableList.of("visitor_id"),TestUtil.MAPPER)),ShardSpec.class);
+  Assert.assertEquals(1,spec.getPartitionNum());
+  Assert.assertEquals(2,((HashBasedNumberedShardSpec)spec).getPartitions());
+  Assert.assertEquals(ImmutableList.of("visitor_id"),((HashBasedNumberedShardSpec)spec).getPartitionDimensions());
+}
