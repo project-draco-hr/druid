@@ -1,4 +1,5 @@
 {
-  final ValueMatcher valueMatcher=Filters.convertDimensionFilters(filter).makeMatcher(columnSelectorFactory);
+  final ValueMatcherFactory valueMatcherFactory=new FilteredAggregatorValueMatcherFactory(columnSelectorFactory);
+  final ValueMatcher valueMatcher=Filters.convertDimensionFilters(filter).makeMatcher(valueMatcherFactory);
   return new FilteredAggregator(valueMatcher,delegate.factorize(columnSelectorFactory));
 }

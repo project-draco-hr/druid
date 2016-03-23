@@ -1,0 +1,17 @@
+{
+  if (encodedCoordinate == null) {
+    return null;
+  }
+  final ImmutableList<String> parts=ImmutableList.copyOf(SPLITTER.split(encodedCoordinate));
+  final float[] coordinate=new float[parts.size()];
+  for (int i=0; i < coordinate.length; i++) {
+    final Float floatPart=tryParseFloat(parts.get(i));
+    if (floatPart == null) {
+      return null;
+    }
+ else {
+      coordinate[i]=floatPart;
+    }
+  }
+  return coordinate;
+}
