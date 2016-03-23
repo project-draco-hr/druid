@@ -1,0 +1,12 @@
+{
+  RetryUtil.retryUntil(new Callable<Boolean>(){
+    @Override public Boolean call() throws Exception {
+      TaskStatus.Status status=getTaskStatus(taskID);
+      if (status == TaskStatus.Status.FAILED) {
+        throw new ISE("Indexer task FAILED");
+      }
+      return status == TaskStatus.Status.SUCCESS;
+    }
+  }
+,true,millisEach,numTimes,taskID);
+}

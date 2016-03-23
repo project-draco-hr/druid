@@ -1,0 +1,27 @@
+{
+  String indexerSpec="";
+  try {
+    LOG.info("indexerFile name: [%s]",BATCH_TASK);
+    indexerSpec=getTaskAsString(BATCH_TASK);
+    indexerSpec=indexerSpec.replaceAll("%%HADOOP_TEST_PATH%%",hadoopDir);
+  }
+ catch (  Exception e) {
+    LOG.error("could not read and modify indexer file: %s",e.getMessage());
+    throw Throwables.propagate(e);
+  }
+  try {
+    final String taskID=indexer.submitTask(indexerSpec);
+    LOG.info("TaskID for loading index task %s",taskID);
+    indexer.waitUntilTaskCompletes(taskID,60000,20);
+    RetryUtil.retryUntil(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        return coordinator.areSegmentsLoaded(BATCH_DATASOURCE);
+      }
+    }
+,true,20000,10,"Segment-Load-Task-" + taskID);
+  }
+ catch (  Exception e) {
+    LOG.error("data could not be loaded: %s",e.getMessage());
+    throw Throwables.propagate(e);
+  }
+}

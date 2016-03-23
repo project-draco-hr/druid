@@ -25,7 +25,10 @@
       return dockerIp + ":9092";
     }
     @Override public String getProperty(    String prop){
-      throw new UnsupportedOperationException("DockerConfigProvider does not support getProperty()");
+      if (prop.equals("hadoopTestDir")) {
+        return hadoopDir;
+      }
+      throw new UnsupportedOperationException("DockerConfigProvider does not support property " + prop);
     }
   }
 ;
