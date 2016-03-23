@@ -1,0 +1,5 @@
+{
+  SelectorDimFilter selectorDimFilter=new SelectorDimFilter("abc","d");
+  DimFilter filter=new AndDimFilter(Arrays.<DimFilter>asList(new OrDimFilter(Arrays.<DimFilter>asList(new AndDimFilter(Arrays.<DimFilter>asList(selectorDimFilter,null))))));
+  Assert.assertEquals(selectorDimFilter,filter.optimize());
+}
