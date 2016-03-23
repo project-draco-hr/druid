@@ -1,3 +1,14 @@
 {
-  return factory.makeValueMatcher(dimension,bound);
+  return factory.makeValueMatcher(dimension,new Predicate(){
+    @Override public boolean apply(    Object input){
+      if (input instanceof String) {
+        final float[] coordinate=SpatialDimensionRowTransformer.decode((String)input);
+        return bound.contains(coordinate);
+      }
+ else {
+        return false;
+      }
+    }
+  }
+);
 }
