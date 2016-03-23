@@ -1,3 +1,13 @@
 {
-  return SketchAggregatorFactory.COMPARATOR;
+  if (errorBoundsStdDev == null) {
+    return Ordering.natural();
+  }
+ else {
+    return new Comparator(){
+      @Override public int compare(      Object o1,      Object o2){
+        return Doubles.compare(((SketchEstimateWithErrorBounds)o1).getEstimate(),((SketchEstimateWithErrorBounds)o2).getEstimate());
+      }
+    }
+;
+  }
 }
