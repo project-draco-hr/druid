@@ -40,114 +40,128 @@
       metricTypeNames.put(metric,adapter.getMetricType(metric));
     }
   }
+  Closer closer=Closer.create();
   final Interval dataInterval;
-  File v8OutDir=new File(outDir,"v8-tmp");
+  final File v8OutDir=new File(outDir,"v8-tmp");
   v8OutDir.mkdirs();
-  progress.progress();
-  long startTime=System.currentTimeMillis();
-  File indexFile=new File(v8OutDir,"index.drd");
-  try (FileOutputStream fileOutputStream=new FileOutputStream(indexFile);FileChannel channel=fileOutputStream.getChannel()){
-    channel.write(ByteBuffer.wrap(new byte[]{IndexIO.V8_VERSION}));
-    GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
-    GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
-    DateTime minTime=new DateTime(JodaUtils.MAX_INSTANT);
-    DateTime maxTime=new DateTime(JodaUtils.MIN_INSTANT);
-    for (    IndexableAdapter index : indexes) {
-      minTime=JodaUtils.minDateTime(minTime,index.getDataInterval().getStart());
-      maxTime=JodaUtils.maxDateTime(maxTime,index.getDataInterval().getEnd());
+  closer.register(new Closeable(){
+    @Override public void close() throws IOException {
+      FileUtils.deleteDirectory(v8OutDir);
     }
-    dataInterval=new Interval(minTime,maxTime);
-    serializerUtils.writeString(channel,String.format("%s/%s",minTime,maxTime));
-    serializerUtils.writeString(channel,mapper.writeValueAsString(indexSpec.getBitmapSerdeFactory()));
   }
-   IndexIO.checkFileSize(indexFile);
-  log.info("outDir[%s] completed index.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
-  progress.progress();
-  startTime=System.currentTimeMillis();
-  IOPeon ioPeon=new TmpFileIOPeon();
-  ArrayList<FileOutputSupplier> dimOuts=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
-  ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
-  final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  for (int i=0; i < indexes.size(); ++i) {
-    dimConversions.add(Maps.<String,IntBuffer>newHashMap());
+);
+  final IOPeon ioPeon=new TmpFileIOPeon();
+  closer.register(new Closeable(){
+    @Override public void close() throws IOException {
+      ioPeon.cleanup();
+    }
   }
-  for (  String dimension : mergedDimensions) {
-    final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
-    writer.open();
-    boolean dimHasNull=false;
-    boolean dimHasValues=false;
-    boolean dimAbsentFromSomeIndex=false;
-    int numMergeIndex=0;
-    Indexed<String> dimValueLookup=null;
-    Indexed<String>[] dimValueLookups=new Indexed[indexes.size() + 1];
-    for (int i=0; i < indexes.size(); i++) {
-      Indexed<String> dimValues=indexes.get(i).getDimValueLookup(dimension);
-      if (!isNullColumn(dimValues)) {
-        dimHasValues=true;
-        dimHasNull|=dimValues.indexOf(null) >= 0;
-        dimValueLookups[i]=dimValueLookup=dimValues;
-        numMergeIndex++;
+);
+  try {
+    progress.progress();
+    long startTime=System.currentTimeMillis();
+    File indexFile=new File(v8OutDir,"index.drd");
+    try (FileOutputStream fileOutputStream=new FileOutputStream(indexFile);FileChannel channel=fileOutputStream.getChannel()){
+      channel.write(ByteBuffer.wrap(new byte[]{IndexIO.V8_VERSION}));
+      GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
+      GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY).writeToChannel(channel);
+      DateTime minTime=new DateTime(JodaUtils.MAX_INSTANT);
+      DateTime maxTime=new DateTime(JodaUtils.MIN_INSTANT);
+      for (      IndexableAdapter index : indexes) {
+        minTime=JodaUtils.minDateTime(minTime,index.getDataInterval().getStart());
+        maxTime=JodaUtils.maxDateTime(maxTime,index.getDataInterval().getEnd());
       }
- else {
-        dimAbsentFromSomeIndex=true;
-      }
+      dataInterval=new Interval(minTime,maxTime);
+      serializerUtils.writeString(channel,String.format("%s/%s",minTime,maxTime));
+      serializerUtils.writeString(channel,mapper.writeValueAsString(indexSpec.getBitmapSerdeFactory()));
     }
-    boolean convertMissingDims=dimHasValues && dimAbsentFromSomeIndex;
-    convertMissingDimsFlags.add(convertMissingDims);
-    if (convertMissingDims && !dimHasNull) {
-      dimValueLookups[indexes.size()]=dimValueLookup=EMPTY_STR_DIM_VAL;
-      numMergeIndex++;
+     IndexIO.checkFileSize(indexFile);
+    log.info("outDir[%s] completed index.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
+    progress.progress();
+    startTime=System.currentTimeMillis();
+    ArrayList<FileOutputSupplier> dimOuts=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
+    ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
+    final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    for (int i=0; i < indexes.size(); ++i) {
+      dimConversions.add(Maps.<String,IntBuffer>newHashMap());
     }
-    int cardinality=0;
-    if (numMergeIndex > 1) {
-      DictionaryMergeIterator iterator=new DictionaryMergeIterator(dimValueLookups,true);
-      while (iterator.hasNext()) {
-        writer.write(iterator.next());
-      }
+    for (    String dimension : mergedDimensions) {
+      final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
+      writer.open();
+      boolean dimHasNull=false;
+      boolean dimHasValues=false;
+      boolean dimAbsentFromSomeIndex=false;
+      int numMergeIndex=0;
+      Indexed<String> dimValueLookup=null;
+      Indexed<String>[] dimValueLookups=new Indexed[indexes.size() + 1];
       for (int i=0; i < indexes.size(); i++) {
-        if (dimValueLookups[i] != null && iterator.needConversion(i)) {
-          dimConversions.get(i).put(dimension,iterator.conversions[i]);
+        Indexed<String> dimValues=indexes.get(i).getDimValueLookup(dimension);
+        if (!isNullColumn(dimValues)) {
+          dimHasValues=true;
+          dimHasNull|=dimValues.indexOf(null) >= 0;
+          dimValueLookups[i]=dimValueLookup=dimValues;
+          numMergeIndex++;
+        }
+ else {
+          dimAbsentFromSomeIndex=true;
         }
       }
-      cardinality=iterator.counter;
-    }
- else     if (numMergeIndex == 1) {
-      for (      String value : dimValueLookup) {
-        writer.write(value);
+      boolean convertMissingDims=dimHasValues && dimAbsentFromSomeIndex;
+      convertMissingDimsFlags.add(convertMissingDims);
+      if (convertMissingDims && !dimHasNull) {
+        dimValueLookups[indexes.size()]=dimValueLookup=EMPTY_STR_DIM_VAL;
+        numMergeIndex++;
       }
-      cardinality=dimValueLookup.size();
+      int cardinality=0;
+      if (numMergeIndex > 1) {
+        DictionaryMergeIterator iterator=new DictionaryMergeIterator(dimValueLookups,true);
+        while (iterator.hasNext()) {
+          writer.write(iterator.next());
+        }
+        for (int i=0; i < indexes.size(); i++) {
+          if (dimValueLookups[i] != null && iterator.needConversion(i)) {
+            dimConversions.get(i).put(dimension,iterator.conversions[i]);
+          }
+        }
+        cardinality=iterator.counter;
+      }
+ else       if (numMergeIndex == 1) {
+        for (        String value : dimValueLookup) {
+          writer.write(value);
+        }
+        cardinality=dimValueLookup.size();
+      }
+      dimensionCardinalities.put(dimension,cardinality);
+      FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir,dimension),true);
+      dimOuts.add(dimOut);
+      writer.close();
+      serializerUtils.writeString(dimOut,dimension);
+      ByteStreams.copy(writer.combineStreams(),dimOut);
+      ioPeon.cleanup();
     }
-    dimensionCardinalities.put(dimension,cardinality);
-    FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir,dimension),true);
-    dimOuts.add(dimOut);
-    writer.close();
-    serializerUtils.writeString(dimOut,dimension);
-    ByteStreams.copy(writer.combineStreams(),dimOut);
-    ioPeon.cleanup();
-  }
-  log.info("outDir[%s] completed dim conversions in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
-  progress.progress();
-  startTime=System.currentTimeMillis();
-  Iterable<Rowboat> theRows=makeRowIterable(indexes,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
-  CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
-  timeWriter.open();
-  ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  for (  String dimension : mergedDimensions) {
-    VSizeIndexedWriter writer=new VSizeIndexedWriter(ioPeon,dimension,dimensionCardinalities.get(dimension));
-    writer.open();
-    forwardDimWriters.add(writer);
-  }
-  ArrayList<MetricColumnSerializer> metWriters=Lists.newArrayListWithCapacity(mergedMetrics.size());
-  for (  String metric : mergedMetrics) {
-    ValueType type=valueTypes.get(metric);
+    log.info("outDir[%s] completed dim conversions in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
+    progress.progress();
+    startTime=System.currentTimeMillis();
+    Iterable<Rowboat> theRows=makeRowIterable(indexes,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
+    CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
+    timeWriter.open();
+    ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    for (    String dimension : mergedDimensions) {
+      VSizeIndexedWriter writer=new VSizeIndexedWriter(ioPeon,dimension,dimensionCardinalities.get(dimension));
+      writer.open();
+      forwardDimWriters.add(writer);
+    }
+    ArrayList<MetricColumnSerializer> metWriters=Lists.newArrayListWithCapacity(mergedMetrics.size());
+    for (    String metric : mergedMetrics) {
+      ValueType type=valueTypes.get(metric);
 switch (type) {
 case LONG:
-      metWriters.add(new LongMetricColumnSerializer(metric,v8OutDir,ioPeon));
-    break;
+        metWriters.add(new LongMetricColumnSerializer(metric,v8OutDir,ioPeon));
+      break;
 case FLOAT:
-  metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
-break;
+    metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
+  break;
 case COMPLEX:
 final String typeName=metricTypeNames.get(metric);
 ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(typeName);
@@ -311,6 +325,9 @@ throw new IOException(String.format("Unable to delete temporary dir[%s]",smooshD
 }
 createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(mergedDimensions,GenericIndexed.STRING_STRATEGY),GenericIndexed.fromIterable(mergedMetrics,GenericIndexed.STRING_STRATEGY),dataInterval,indexSpec.getBitmapSerdeFactory());
 indexIO.getDefaultIndexIOHandler().convertV8toV9(v8OutDir,outDir,indexSpec);
-FileUtils.deleteDirectory(v8OutDir);
 return outDir;
+}
+  finally {
+closer.close();
+}
 }
