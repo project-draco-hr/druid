@@ -1,0 +1,5 @@
+{
+  byte[] fieldNameBytes=StringUtils.toUtf8(fieldName);
+  byte[] bitMapFactoryCacheKey=StringUtils.toUtf8(bitMapFactory.toString());
+  return ByteBuffer.allocate(1 + fieldNameBytes.length + bitMapFactoryCacheKey.length).put(CACHE_TYPE_ID).put(fieldNameBytes).put(bitMapFactoryCacheKey).array();
+}
