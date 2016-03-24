@@ -1,0 +1,10 @@
+{
+  String json="{\n" + "  \"searchCurrentClassloader\": false,\n" + "  \"directory\": \"testExtensions\",\n"+ "  \"hadoopDependenciesDir\": \"testHadoopDependenciesDir\",\n"+ "  \"hadoopContainerDruidClasspath\": \"testHadoopContainerClasspath\",\n"+ "  \"loadList\": [\"a\",\"b\"]\n"+ "}";
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  ExtensionsConfig config=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,ExtensionsConfig.class)),ExtensionsConfig.class);
+  Assert.assertFalse(config.searchCurrentClassloader());
+  Assert.assertEquals("testExtensions",config.getDirectory());
+  Assert.assertEquals("testHadoopDependenciesDir",config.getHadoopDependenciesDir());
+  Assert.assertEquals("testHadoopContainerClasspath",config.getHadoopContainerDruidClasspath());
+  Assert.assertEquals(ImmutableList.of("a","b"),config.getLoadList());
+}
