@@ -1,0 +1,11 @@
+{
+  props=new Properties();
+  injector=Guice.createInjector(Iterables.concat(Arrays.asList(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(Properties.class).toInstance(props);
+      PolyBind.createChoice(binder,"billy",Key.get(Gogo.class),Key.get(GoA.class));
+      PolyBind.createChoiceWithDefault(binder,"sally",Key.get(GogoSally.class),null,"b");
+    }
+  }
+),Arrays.asList(modules)));
+}

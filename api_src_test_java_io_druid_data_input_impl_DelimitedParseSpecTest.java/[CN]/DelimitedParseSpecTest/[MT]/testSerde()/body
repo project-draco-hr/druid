@@ -1,0 +1,10 @@
+{
+  DelimitedParseSpec spec=new DelimitedParseSpec(new TimestampSpec("abc","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("abc")),null,null),"\u0001","\u0002",Arrays.asList("abc"));
+  final DelimitedParseSpec serde=jsonMapper.readValue(jsonMapper.writeValueAsString(spec),DelimitedParseSpec.class);
+  Assert.assertEquals("abc",serde.getTimestampSpec().getTimestampColumn());
+  Assert.assertEquals("iso",serde.getTimestampSpec().getTimestampFormat());
+  Assert.assertEquals(Arrays.asList("abc"),serde.getColumns());
+  Assert.assertEquals("\u0001",serde.getDelimiter());
+  Assert.assertEquals("\u0002",serde.getListDelimiter());
+  Assert.assertEquals(Arrays.asList("abc"),serde.getDimensionsSpec().getDimensionNames());
+}

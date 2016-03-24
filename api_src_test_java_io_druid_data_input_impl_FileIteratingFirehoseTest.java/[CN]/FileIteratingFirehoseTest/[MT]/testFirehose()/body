@@ -1,0 +1,17 @@
+{
+  for (  Pair<String[],ImmutableList<String>> fixture : fixtures) {
+    final List<LineIterator> lineIterators=Lists.transform(Arrays.asList(fixture.lhs),new Function<String,LineIterator>(){
+      @Override public LineIterator apply(      String s){
+        return new LineIterator(new StringReader(s));
+      }
+    }
+);
+    final StringInputRowParser parser=new StringInputRowParser(new CSVParseSpec(new TimestampSpec("ts","auto",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("x")),null,null),",",ImmutableList.of("ts","x")));
+    final FileIteratingFirehose firehose=new FileIteratingFirehose(lineIterators.iterator(),parser);
+    final List<String> results=Lists.newArrayList();
+    while (firehose.hasMore()) {
+      results.add(Joiner.on("|").join(firehose.nextRow().getDimension("x")));
+    }
+    Assert.assertEquals(fixture.rhs,results);
+  }
+}

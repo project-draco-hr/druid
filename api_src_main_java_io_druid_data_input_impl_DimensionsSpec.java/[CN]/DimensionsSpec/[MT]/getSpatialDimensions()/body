@@ -1,0 +1,10 @@
+{
+  Iterable<NewSpatialDimensionSchema> filteredList=Iterables.filter(dimensions,NewSpatialDimensionSchema.class);
+  Iterable<SpatialDimensionSchema> transformedList=Iterables.transform(filteredList,new Function<NewSpatialDimensionSchema,SpatialDimensionSchema>(){
+    @Nullable @Override public SpatialDimensionSchema apply(    NewSpatialDimensionSchema input){
+      return new SpatialDimensionSchema(input.getName(),input.getDims());
+    }
+  }
+);
+  return Lists.newArrayList(transformedList);
+}

@@ -1,0 +1,73 @@
+{
+  verifyClazzIsConfigurable(clazz);
+  final String propertyBase=propertyPrefix.endsWith(".") ? propertyPrefix : propertyPrefix + ".";
+  Map<String,Object> jsonMap=Maps.newHashMap();
+  for (  String prop : props.stringPropertyNames()) {
+    if (prop.startsWith(propertyBase)) {
+      final String propValue=props.getProperty(prop);
+      Object value;
+      try {
+        String modifiedPropValue=propValue;
+        if (!(modifiedPropValue.startsWith("[") || modifiedPropValue.startsWith("{"))) {
+          modifiedPropValue=jsonMapper.writeValueAsString(propValue);
+        }
+        value=jsonMapper.readValue(modifiedPropValue,Object.class);
+      }
+ catch (      IOException e) {
+        log.info(e,"Unable to parse [%s]=[%s] as a json object, using as is.",prop,propValue);
+        value=propValue;
+      }
+      jsonMap.put(prop.substring(propertyBase.length()),value);
+    }
+  }
+  final T config;
+  try {
+    config=jsonMapper.convertValue(jsonMap,clazz);
+  }
+ catch (  IllegalArgumentException e) {
+    throw new ProvisionException(String.format("Problem parsing object at prefix[%s]: %s.",propertyPrefix,e.getMessage()),e);
+  }
+  final Set<ConstraintViolation<T>> violations=validator.validate(config);
+  if (!violations.isEmpty()) {
+    List<String> messages=Lists.newArrayList();
+    for (    ConstraintViolation<T> violation : violations) {
+      String path="";
+      try {
+        Class<?> beanClazz=violation.getRootBeanClass();
+        final Iterator<Path.Node> iter=violation.getPropertyPath().iterator();
+        while (iter.hasNext()) {
+          Path.Node next=iter.next();
+          if (next.getKind() == ElementKind.PROPERTY) {
+            final String fieldName=next.getName();
+            final Field theField=beanClazz.getDeclaredField(fieldName);
+            if (theField.getAnnotation(JacksonInject.class) != null) {
+              path=String.format(" -- Injected field[%s] not bound!?",fieldName);
+              break;
+            }
+            JsonProperty annotation=theField.getAnnotation(JsonProperty.class);
+            final boolean noAnnotationValue=annotation == null || Strings.isNullOrEmpty(annotation.value());
+            final String pathPart=noAnnotationValue ? fieldName : annotation.value();
+            if (path.isEmpty()) {
+              path+=pathPart;
+            }
+ else {
+              path+="." + pathPart;
+            }
+          }
+        }
+      }
+ catch (      NoSuchFieldException e) {
+        throw Throwables.propagate(e);
+      }
+      messages.add(String.format("%s - %s",path,violation.getMessage()));
+    }
+    throw new ProvisionException(Iterables.transform(messages,new Function<String,Message>(){
+      @Override public Message apply(      String input){
+        return new Message(String.format("%s%s",propertyBase,input));
+      }
+    }
+));
+  }
+  log.info("Loaded class[%s] from props[%s] as [%s]",clazz,propertyBase,config);
+  return config;
+}

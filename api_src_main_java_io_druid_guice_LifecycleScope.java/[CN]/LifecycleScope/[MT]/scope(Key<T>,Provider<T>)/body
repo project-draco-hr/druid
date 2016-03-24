@@ -1,0 +1,27 @@
+{
+  return new Provider<T>(){
+    private volatile T value=null;
+    @Override public synchronized T get(){
+      if (value == null) {
+        final T retVal=unscoped.get();
+synchronized (instances) {
+          if (lifecycle == null) {
+            instances.add(retVal);
+          }
+ else {
+            try {
+              lifecycle.addMaybeStartManagedInstance(retVal,stage);
+            }
+ catch (            Exception e) {
+              log.warn(e,"Caught exception when trying to create a[%s]",key);
+              return null;
+            }
+          }
+        }
+        value=retVal;
+      }
+      return value;
+    }
+  }
+;
+}

@@ -1,0 +1,15 @@
+{
+  binder.bind(bindKey).toInstance(instance);
+  final ParameterizedType supType=Types.newParameterizedType(Supplier.class,bindKey.getTypeLiteral().getType());
+  final Key supplierKey;
+  if (bindKey.getAnnotationType() != null) {
+    supplierKey=Key.get(supType,bindKey.getAnnotationType());
+  }
+ else   if (bindKey.getAnnotation() != null) {
+    supplierKey=Key.get(supType,bindKey.getAnnotation());
+  }
+ else {
+    supplierKey=Key.get(supType);
+  }
+  binder.bind(supplierKey).toInstance(Suppliers.<T>ofInstance(instance));
+}

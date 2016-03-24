@@ -1,0 +1,32 @@
+{
+  List<JSONPathFieldSpec> fields=new ArrayList<>();
+  fields.add(JSONPathFieldSpec.createNestedField("foobar1","$.foo.bar1"));
+  fields.add(JSONPathFieldSpec.createNestedField("baz0","$.baz[0]"));
+  fields.add(JSONPathFieldSpec.createNestedField("hey0barx","$.hey[0].barx"));
+  fields.add(JSONPathFieldSpec.createRootField("timestamp"));
+  fields.add(JSONPathFieldSpec.createRootField("foo.bar1"));
+  JSONPathSpec flattenSpec=new JSONPathSpec(true,fields);
+  final JSONPathSpec serde=jsonMapper.readValue(jsonMapper.writeValueAsString(flattenSpec),JSONPathSpec.class);
+  Assert.assertTrue(serde.isUseFieldDiscovery());
+  List<JSONPathFieldSpec> serdeFields=serde.getFields();
+  JSONPathFieldSpec foobar1=serdeFields.get(0);
+  JSONPathFieldSpec baz0=serdeFields.get(1);
+  JSONPathFieldSpec hey0barx=serdeFields.get(2);
+  JSONPathFieldSpec timestamp=serdeFields.get(3);
+  JSONPathFieldSpec foodotbar1=serdeFields.get(4);
+  Assert.assertEquals(JSONPathFieldType.PATH,foobar1.getType());
+  Assert.assertEquals("foobar1",foobar1.getName());
+  Assert.assertEquals("$.foo.bar1",foobar1.getExpr());
+  Assert.assertEquals(JSONPathFieldType.PATH,baz0.getType());
+  Assert.assertEquals("baz0",baz0.getName());
+  Assert.assertEquals("$.baz[0]",baz0.getExpr());
+  Assert.assertEquals(JSONPathFieldType.PATH,hey0barx.getType());
+  Assert.assertEquals("hey0barx",hey0barx.getName());
+  Assert.assertEquals("$.hey[0].barx",hey0barx.getExpr());
+  Assert.assertEquals(JSONPathFieldType.ROOT,timestamp.getType());
+  Assert.assertEquals("timestamp",timestamp.getName());
+  Assert.assertEquals("timestamp",timestamp.getExpr());
+  Assert.assertEquals(JSONPathFieldType.ROOT,foodotbar1.getType());
+  Assert.assertEquals("foo.bar1",foodotbar1.getName());
+  Assert.assertEquals("foo.bar1",foodotbar1.getExpr());
+}

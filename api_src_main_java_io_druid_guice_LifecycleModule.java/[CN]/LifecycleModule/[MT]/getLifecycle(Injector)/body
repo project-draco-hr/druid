@@ -1,0 +1,18 @@
+{
+  final Key<Set<KeyHolder>> keyHolderKey=Key.get(new TypeLiteral<Set<KeyHolder>>(){
+  }
+,Names.named("lifecycle"));
+  final Set<KeyHolder> eagerClasses=injector.getInstance(keyHolderKey);
+  Lifecycle lifecycle=new Lifecycle(){
+    @Override public void start() throws Exception {
+      for (      KeyHolder<?> holder : eagerClasses) {
+        injector.getInstance(holder.getKey());
+      }
+      super.start();
+    }
+  }
+;
+  scope.setLifecycle(lifecycle);
+  lastScope.setLifecycle(lifecycle);
+  return lifecycle;
+}

@@ -1,0 +1,5 @@
+{
+  String jsonStr="{ \"type\":\"noop\" }";
+  InputRowParser actual=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,InputRowParser.class)),InputRowParser.class);
+  Assert.assertEquals(new NoopInputRowParser(null),actual);
+}

@@ -1,0 +1,15 @@
+{
+  final List<String> dimensions=parseSpec.getDimensionsSpec().hasCustomDimensions() ? parseSpec.getDimensionsSpec().getDimensionNames() : Lists.newArrayList(Sets.difference(theMap.keySet(),parseSpec.getDimensionsSpec().getDimensionExclusions()));
+  final DateTime timestamp;
+  try {
+    timestamp=parseSpec.getTimestampSpec().extractTimestamp(theMap);
+    if (timestamp == null) {
+      final String input=theMap.toString();
+      throw new NullPointerException(String.format("Null timestamp in input: %s",input.length() < 100 ? input : input.substring(0,100) + "..."));
+    }
+  }
+ catch (  Exception e) {
+    throw new ParseException(e,"Unparseable timestamp found!");
+  }
+  return new MapBasedInputRow(timestamp.getMillis(),dimensions,theMap);
+}

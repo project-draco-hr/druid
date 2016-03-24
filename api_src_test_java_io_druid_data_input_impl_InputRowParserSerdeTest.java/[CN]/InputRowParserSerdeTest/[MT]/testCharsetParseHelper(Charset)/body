@@ -1,0 +1,6 @@
+{
+  final StringInputRowParser parser=new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("foo","bar")),null,null),null,null),charset.name());
+  final ByteBufferInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(parser),ByteBufferInputRowParser.class);
+  final InputRow parsed=parser2.parse(ByteBuffer.wrap("{\"foo\":\"x\",\"bar\":\"y\",\"qux\":\"z\",\"timestamp\":\"3000\"}".getBytes(charset)));
+  return parsed;
+}

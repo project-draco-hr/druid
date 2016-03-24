@@ -1,0 +1,7 @@
+{
+  final JsonConfigurator configurator=new JsonConfigurator(mapper,validator);
+  properties.setProperty(PROP_PREFIX + "prop1","prop1");
+  final MappableObject obj=configurator.configurate(properties,PROP_PREFIX,MappableObject.class);
+  Assert.assertEquals("prop1",obj.prop1);
+  Assert.assertEquals(ImmutableList.of(),obj.prop1List);
+}

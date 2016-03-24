@@ -1,0 +1,10 @@
+{
+  Charset[] testCharsets={Charsets.US_ASCII,Charsets.ISO_8859_1,Charsets.UTF_8,Charsets.UTF_16BE,Charsets.UTF_16LE,Charsets.UTF_16};
+  for (  Charset testCharset : testCharsets) {
+    InputRow parsed=testCharsetParseHelper(testCharset);
+    Assert.assertEquals(ImmutableList.of("foo","bar"),parsed.getDimensions());
+    Assert.assertEquals(ImmutableList.of("x"),parsed.getDimension("foo"));
+    Assert.assertEquals(ImmutableList.of("y"),parsed.getDimension("bar"));
+    Assert.assertEquals(new DateTime("3000").getMillis(),parsed.getTimestampFromEpoch());
+  }
+}

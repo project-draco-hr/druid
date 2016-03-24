@@ -1,0 +1,8 @@
+{
+  DimensionsSpec expected=new DimensionsSpec(Arrays.asList(new StringDimensionSchema("AAA"),new StringDimensionSchema("BBB"),new FloatDimensionSchema("C++"),new NewSpatialDimensionSchema("DDT",null),new LongDimensionSchema("EEE"),new NewSpatialDimensionSchema("DDT2",Arrays.asList("A","B")),new NewSpatialDimensionSchema("IMPR",Arrays.asList("S","P","Q","R"))),Arrays.asList("FOO","HAR"),null);
+  String jsonStr="{\"dimensions\":" + "[\"AAA\", \"BBB\"," + "{\"name\":\"C++\", \"type\":\"float\"},"+ "{\"name\":\"DDT\", \"type\":\"spatial\"},"+ "{\"name\":\"EEE\", \"type\":\"long\"},"+ "{\"name\":\"DDT2\", \"type\": \"spatial\", \"dims\":[\"A\", \"B\"]}],"+ "\"dimensionExclusions\": [\"FOO\", \"HAR\"],"+ "\"spatialDimensions\": [{\"dimName\":\"IMPR\", \"dims\":[\"S\",\"P\",\"Q\",\"R\"]}]"+ "}";
+  DimensionsSpec actual=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,DimensionsSpec.class)),DimensionsSpec.class);
+  List<SpatialDimensionSchema> expectedSpatials=Arrays.asList(new SpatialDimensionSchema("DDT",null),new SpatialDimensionSchema("DDT2",Arrays.asList("A","B")),new SpatialDimensionSchema("IMPR",Arrays.asList("S","P","Q","R")));
+  Assert.assertEquals(expected,actual);
+  Assert.assertEquals(expectedSpatials,actual.getSpatialDimensions());
+}
