@@ -1,4 +1,4 @@
 {
-  Assert.assertEquals(1,Filters.convertDimensionFilters(DimFilters.or(new ExtractionDimFilter("foo","extractDimVal",DIM_EXTRACTION_FN,null))).getBitmapIndex(BITMAP_INDEX_SELECTOR).size());
-  Assert.assertEquals(1,Filters.convertDimensionFilters(DimFilters.or(new ExtractionDimFilter("foo","extractDimVal",DIM_EXTRACTION_FN,null),new ExtractionDimFilter("foo","DOES NOT EXIST",DIM_EXTRACTION_FN,null))).getBitmapIndex(BITMAP_INDEX_SELECTOR).size());
+  Assert.assertEquals(1,Filters.toFilter(DimFilters.or(new ExtractionDimFilter("foo","extractDimVal",DIM_EXTRACTION_FN,null))).getBitmapIndex(BITMAP_INDEX_SELECTOR).size());
+  Assert.assertEquals(1,Filters.toFilter(DimFilters.or(new ExtractionDimFilter("foo","extractDimVal",DIM_EXTRACTION_FN,null),new ExtractionDimFilter("foo","DOES NOT EXIST",DIM_EXTRACTION_FN,null))).getBitmapIndex(BITMAP_INDEX_SELECTOR).size());
 }

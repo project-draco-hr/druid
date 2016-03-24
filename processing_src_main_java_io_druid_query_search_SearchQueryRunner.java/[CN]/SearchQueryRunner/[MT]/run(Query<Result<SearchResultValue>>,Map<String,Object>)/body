@@ -3,7 +3,7 @@
     throw new ISE("Got a [%s] which isn't a %s",input.getClass(),SearchQuery.class);
   }
   final SearchQuery query=(SearchQuery)input;
-  final Filter filter=Filters.convertDimensionFilters(query.getDimensionsFilter());
+  final Filter filter=Filters.toFilter(query.getDimensionsFilter());
   final List<DimensionSpec> dimensions=query.getDimensions();
   final SearchQuerySpec searchQuerySpec=query.getQuery();
   final int limit=query.getLimit();
