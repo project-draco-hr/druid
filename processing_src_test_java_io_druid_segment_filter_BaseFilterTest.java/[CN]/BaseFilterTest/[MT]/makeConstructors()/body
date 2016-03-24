@@ -1,0 +1,49 @@
+{
+  final List<Object[]> constructors=Lists.newArrayList();
+  final Map<String,BitmapSerdeFactory> bitmapSerdeFactories=ImmutableMap.<String,BitmapSerdeFactory>of("concise",new ConciseBitmapSerdeFactory(),"roaring",new RoaringBitmapSerdeFactory());
+  final Map<String,IndexMerger> indexMergers=ImmutableMap.<String,IndexMerger>of("IndexMergerV9",TestHelper.getTestIndexMergerV9());
+  final Map<String,Function<IndexBuilder,Pair<StorageAdapter,Closeable>>> finishers=ImmutableMap.of("incremental",new Function<IndexBuilder,Pair<StorageAdapter,Closeable>>(){
+    @Override public Pair<StorageAdapter,Closeable> apply(    IndexBuilder input){
+      final IncrementalIndex index=input.buildIncrementalIndex();
+      return Pair.<StorageAdapter,Closeable>of(new IncrementalIndexStorageAdapter(index),new Closeable(){
+        @Override public void close() throws IOException {
+          index.close();
+        }
+      }
+);
+    }
+  }
+,"mmapped",new Function<IndexBuilder,Pair<StorageAdapter,Closeable>>(){
+    @Override public Pair<StorageAdapter,Closeable> apply(    IndexBuilder input){
+      final QueryableIndex index=input.buildMMappedIndex();
+      return Pair.<StorageAdapter,Closeable>of(new QueryableIndexStorageAdapter(index),new Closeable(){
+        @Override public void close() throws IOException {
+          index.close();
+        }
+      }
+);
+    }
+  }
+,"mmappedMerged",new Function<IndexBuilder,Pair<StorageAdapter,Closeable>>(){
+    @Override public Pair<StorageAdapter,Closeable> apply(    IndexBuilder input){
+      final QueryableIndex index=input.buildMMappedMergedIndex();
+      return Pair.<StorageAdapter,Closeable>of(new QueryableIndexStorageAdapter(index),new Closeable(){
+        @Override public void close() throws IOException {
+          index.close();
+        }
+      }
+);
+    }
+  }
+);
+  for (  Map.Entry<String,BitmapSerdeFactory> bitmapSerdeFactoryEntry : bitmapSerdeFactories.entrySet()) {
+    for (    Map.Entry<String,IndexMerger> indexMergerEntry : indexMergers.entrySet()) {
+      for (      Map.Entry<String,Function<IndexBuilder,Pair<StorageAdapter,Closeable>>> finisherEntry : finishers.entrySet()) {
+        final String testName=String.format("bitmaps[%s], indexMerger[%s], finisher[%s]",bitmapSerdeFactoryEntry.getKey(),indexMergerEntry.getKey(),finisherEntry.getKey());
+        final IndexBuilder indexBuilder=IndexBuilder.create().indexSpec(new IndexSpec(bitmapSerdeFactoryEntry.getValue(),null,null)).indexMerger(indexMergerEntry.getValue());
+        constructors.add(new Object[]{testName,indexBuilder,finisherEntry.getValue()});
+      }
+    }
+  }
+  return constructors;
+}

@@ -1,0 +1,21 @@
+{
+  return filter.makeMatcher(new ValueMatcherFactory(){
+    @Override public ValueMatcher makeValueMatcher(    final String dimension,    final Comparable value){
+      return new ValueMatcher(){
+        @Override public boolean matches(){
+          return Objects.equals(value,theValue);
+        }
+      }
+;
+    }
+    @Override public ValueMatcher makeValueMatcher(    String dimension,    final Predicate predicate){
+      return new ValueMatcher(){
+        @Override public boolean matches(){
+          return predicate.apply(theValue);
+        }
+      }
+;
+    }
+  }
+).matches();
+}
