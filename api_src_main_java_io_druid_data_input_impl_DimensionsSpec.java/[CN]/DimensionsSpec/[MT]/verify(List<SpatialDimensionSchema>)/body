@@ -1,0 +1,13 @@
+{
+  List<String> dimNames=getDimensionNames();
+  Preconditions.checkArgument(Sets.intersection(this.dimensionExclusions,Sets.newHashSet(dimNames)).isEmpty(),"dimensions and dimensions exclusions cannot overlap");
+  ParserUtils.validateFields(dimNames);
+  ParserUtils.validateFields(dimensionExclusions);
+  List<String> spatialDimNames=Lists.transform(spatialDimensions,new Function<SpatialDimensionSchema,String>(){
+    @Override public String apply(    SpatialDimensionSchema input){
+      return input.getDimName();
+    }
+  }
+);
+  ParserUtils.validateFields(Iterables.concat(dimNames,spatialDimNames));
+}

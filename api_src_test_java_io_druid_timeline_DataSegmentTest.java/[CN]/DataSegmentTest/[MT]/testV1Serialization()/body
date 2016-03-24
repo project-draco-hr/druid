@@ -1,0 +1,34 @@
+{
+  final Interval interval=new Interval("2011-10-01/2011-10-02");
+  final ImmutableMap<String,Object> loadSpec=ImmutableMap.<String,Object>of("something","or_other");
+  DataSegment segment=new DataSegment("something",interval,"1",loadSpec,Arrays.asList("dim1","dim2"),Arrays.asList("met1","met2"),new NoneShardSpec(),TEST_VERSION,1);
+  final Map<String,Object> objectMap=mapper.readValue(mapper.writeValueAsString(segment),new TypeReference<Map<String,Object>>(){
+  }
+);
+  Assert.assertEquals(10,objectMap.size());
+  Assert.assertEquals("something",objectMap.get("dataSource"));
+  Assert.assertEquals(interval.toString(),objectMap.get("interval"));
+  Assert.assertEquals("1",objectMap.get("version"));
+  Assert.assertEquals(loadSpec,objectMap.get("loadSpec"));
+  Assert.assertEquals("dim1,dim2",objectMap.get("dimensions"));
+  Assert.assertEquals("met1,met2",objectMap.get("metrics"));
+  Assert.assertEquals(ImmutableMap.of("type","none"),objectMap.get("shardSpec"));
+  Assert.assertEquals(TEST_VERSION,objectMap.get("binaryVersion"));
+  Assert.assertEquals(1,objectMap.get("size"));
+  DataSegment deserializedSegment=mapper.readValue(mapper.writeValueAsString(segment),DataSegment.class);
+  Assert.assertEquals(segment.getDataSource(),deserializedSegment.getDataSource());
+  Assert.assertEquals(segment.getInterval(),deserializedSegment.getInterval());
+  Assert.assertEquals(segment.getVersion(),deserializedSegment.getVersion());
+  Assert.assertEquals(segment.getLoadSpec(),deserializedSegment.getLoadSpec());
+  Assert.assertEquals(segment.getDimensions(),deserializedSegment.getDimensions());
+  Assert.assertEquals(segment.getMetrics(),deserializedSegment.getMetrics());
+  Assert.assertEquals(segment.getShardSpec(),deserializedSegment.getShardSpec());
+  Assert.assertEquals(segment.getSize(),deserializedSegment.getSize());
+  Assert.assertEquals(segment.getIdentifier(),deserializedSegment.getIdentifier());
+  deserializedSegment=mapper.readValue(mapper.writeValueAsString(segment),DataSegment.class);
+  Assert.assertEquals(0,segment.compareTo(deserializedSegment));
+  deserializedSegment=mapper.readValue(mapper.writeValueAsString(segment),DataSegment.class);
+  Assert.assertEquals(0,deserializedSegment.compareTo(segment));
+  deserializedSegment=mapper.readValue(mapper.writeValueAsString(segment),DataSegment.class);
+  Assert.assertEquals(segment.hashCode(),deserializedSegment.hashCode());
+}

@@ -1,0 +1,9 @@
+{
+  final StringInputRowParser parser=new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("foo","bar")),null,null),null,null));
+  final ByteBufferInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(parser),ByteBufferInputRowParser.class);
+  final InputRow parsed=parser2.parse(ByteBuffer.wrap("{\"foo\":\"x\",\"bar\":\"y\",\"qux\":\"z\",\"timestamp\":\"2000\"}".getBytes(Charsets.UTF_8)));
+  Assert.assertEquals(ImmutableList.of("foo","bar"),parsed.getDimensions());
+  Assert.assertEquals(ImmutableList.of("x"),parsed.getDimension("foo"));
+  Assert.assertEquals(ImmutableList.of("y"),parsed.getDimension("bar"));
+  Assert.assertEquals(new DateTime("2000").getMillis(),parsed.getTimestampFromEpoch());
+}

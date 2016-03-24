@@ -1,0 +1,6 @@
+{
+  JSONLowercaseParseSpec spec=new JSONLowercaseParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("A","B")),Lists.<String>newArrayList(),Lists.<SpatialDimensionSchema>newArrayList()));
+  Parser parser=spec.makeParser();
+  Map<String,Object> event=parser.parse("{\"timestamp\":\"2015-01-01\",\"A\":\"foo\"}");
+  Assert.assertEquals("foo",event.get("a"));
+}

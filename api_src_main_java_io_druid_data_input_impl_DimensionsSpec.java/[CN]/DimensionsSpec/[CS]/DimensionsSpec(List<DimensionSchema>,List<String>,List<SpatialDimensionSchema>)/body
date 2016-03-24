@@ -1,0 +1,15 @@
+{
+  this.dimensions=dimensions == null ? Lists.<DimensionSchema>newArrayList() : Lists.newArrayList(dimensions);
+  this.dimensionExclusions=(dimensionExclusions == null) ? Sets.<String>newHashSet() : Sets.newHashSet(dimensionExclusions);
+  List<SpatialDimensionSchema> spatialDims=(spatialDimensions == null) ? Lists.<SpatialDimensionSchema>newArrayList() : spatialDimensions;
+  verify(spatialDims);
+  this.dimensionSchemaMap=new HashMap<>();
+  for (  DimensionSchema schema : this.dimensions) {
+    dimensionSchemaMap.put(schema.getName(),schema);
+  }
+  for (  SpatialDimensionSchema spatialSchema : spatialDims) {
+    DimensionSchema newSchema=DimensionsSpec.convertSpatialSchema(spatialSchema);
+    this.dimensions.add(newSchema);
+    dimensionSchemaMap.put(newSchema.getName(),newSchema);
+  }
+}

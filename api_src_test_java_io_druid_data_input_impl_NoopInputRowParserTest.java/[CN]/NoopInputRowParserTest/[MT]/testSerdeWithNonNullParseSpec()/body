@@ -1,0 +1,5 @@
+{
+  String jsonStr="{" + "\"type\":\"noop\"," + "\"parseSpec\":{ \"format\":\"timeAndDims\", \"dimensionsSpec\": { \"dimensions\": [\"host\"] } }"+ "}";
+  InputRowParser actual=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,InputRowParser.class)),InputRowParser.class);
+  Assert.assertEquals(new NoopInputRowParser(new TimeAndDimsParseSpec(null,new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("host")),null,null))),actual);
+}

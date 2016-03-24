@@ -1,0 +1,10 @@
+{
+  super(timestampSpec,dimensionsSpec);
+  this.listDelimiter=listDelimiter;
+  Preconditions.checkNotNull(columns,"columns");
+  for (  String column : columns) {
+    Preconditions.checkArgument(!column.contains(","),"Column[%s] has a comma, it cannot",column);
+  }
+  this.columns=columns;
+  verify(dimensionsSpec.getDimensionNames());
+}

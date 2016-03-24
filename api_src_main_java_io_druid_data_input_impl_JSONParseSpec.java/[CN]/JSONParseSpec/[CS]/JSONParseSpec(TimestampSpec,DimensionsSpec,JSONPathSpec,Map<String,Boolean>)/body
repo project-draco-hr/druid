@@ -1,0 +1,10 @@
+{
+  super(timestampSpec,dimensionsSpec);
+  this.objectMapper=new ObjectMapper();
+  this.flattenSpec=flattenSpec != null ? flattenSpec : new JSONPathSpec(true,null);
+  this.featureSpec=(featureSpec == null) ? new HashMap<String,Boolean>() : featureSpec;
+  for (  Map.Entry<String,Boolean> entry : this.featureSpec.entrySet()) {
+    Feature feature=Feature.valueOf(entry.getKey());
+    objectMapper.configure(feature,entry.getValue());
+  }
+}

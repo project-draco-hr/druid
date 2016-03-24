@@ -1,0 +1,21 @@
+{
+  int payloadSize=input.remaining();
+  if (chars == null || chars.remaining() < payloadSize) {
+    chars=CharBuffer.allocate(payloadSize);
+  }
+  final CoderResult coderResult=charset.newDecoder().onMalformedInput(CodingErrorAction.REPLACE).onUnmappableCharacter(CodingErrorAction.REPLACE).decode(input,chars,true);
+  Map<String,Object> theMap;
+  if (coderResult.isUnderflow()) {
+    chars.flip();
+    try {
+      theMap=parseString(chars.toString());
+    }
+  finally {
+      chars.clear();
+    }
+  }
+ else {
+    throw new ParseException("Failed with CoderResult[%s]",coderResult);
+  }
+  return theMap;
+}

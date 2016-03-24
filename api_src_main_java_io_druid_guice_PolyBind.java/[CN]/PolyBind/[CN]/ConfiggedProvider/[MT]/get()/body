@@ -1,0 +1,25 @@
+{
+  final ParameterizedType mapType=Types.mapOf(String.class,Types.newParameterizedType(Provider.class,key.getTypeLiteral().getType()));
+  final Map<String,Provider<T>> implsMap;
+  if (key.getAnnotation() != null) {
+    implsMap=(Map<String,Provider<T>>)injector.getInstance(Key.get(mapType,key.getAnnotation()));
+  }
+ else   if (key.getAnnotationType() != null) {
+    implsMap=(Map<String,Provider<T>>)injector.getInstance(Key.get(mapType,key.getAnnotation()));
+  }
+ else {
+    implsMap=(Map<String,Provider<T>>)injector.getInstance(Key.get(mapType));
+  }
+  String implName=props.getProperty(property);
+  if (implName == null) {
+    implName=defaultPropertyValue;
+  }
+  final Provider<T> provider=implsMap.get(implName);
+  if (provider == null) {
+    if (defaultKey == null) {
+      throw new ProvisionException(String.format("Unknown provider[%s] of %s, known options[%s]",implName,key,implsMap.keySet()));
+    }
+    return injector.getInstance(defaultKey);
+  }
+  return provider.get();
+}

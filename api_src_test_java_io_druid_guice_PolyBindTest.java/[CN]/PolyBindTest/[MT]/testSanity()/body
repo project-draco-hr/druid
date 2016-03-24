@@ -1,0 +1,45 @@
+{
+  setUp(new Module(){
+    @Override public void configure(    Binder binder){
+      final MapBinder<String,Gogo> gogoBinder=PolyBind.optionBinder(binder,Key.get(Gogo.class));
+      gogoBinder.addBinding("a").to(GoA.class);
+      gogoBinder.addBinding("b").to(GoB.class);
+      final MapBinder<String,GogoSally> gogoSallyBinder=PolyBind.optionBinder(binder,Key.get(GogoSally.class));
+      gogoSallyBinder.addBinding("a").to(GoA.class);
+      gogoSallyBinder.addBinding("b").to(GoB.class);
+      PolyBind.createChoice(binder,"billy",Key.get(Gogo.class,Names.named("reverse")),Key.get(GoB.class));
+      final MapBinder<String,Gogo> annotatedGogoBinder=PolyBind.optionBinder(binder,Key.get(Gogo.class,Names.named("reverse")));
+      annotatedGogoBinder.addBinding("a").to(GoB.class);
+      annotatedGogoBinder.addBinding("b").to(GoA.class);
+    }
+  }
+);
+  Assert.assertEquals("A",injector.getInstance(Gogo.class).go());
+  Assert.assertEquals("B",injector.getInstance(Key.get(Gogo.class,Names.named("reverse"))).go());
+  props.setProperty("billy","b");
+  Assert.assertEquals("B",injector.getInstance(Gogo.class).go());
+  Assert.assertEquals("A",injector.getInstance(Key.get(Gogo.class,Names.named("reverse"))).go());
+  props.setProperty("billy","a");
+  Assert.assertEquals("A",injector.getInstance(Gogo.class).go());
+  Assert.assertEquals("B",injector.getInstance(Key.get(Gogo.class,Names.named("reverse"))).go());
+  props.setProperty("billy","b");
+  Assert.assertEquals("B",injector.getInstance(Gogo.class).go());
+  Assert.assertEquals("A",injector.getInstance(Key.get(Gogo.class,Names.named("reverse"))).go());
+  props.setProperty("billy","c");
+  Assert.assertEquals("A",injector.getInstance(Gogo.class).go());
+  Assert.assertEquals("B",injector.getInstance(Key.get(Gogo.class,Names.named("reverse"))).go());
+  Assert.assertEquals("B",injector.getInstance(GogoSally.class).go());
+  props.setProperty("sally","a");
+  Assert.assertEquals("A",injector.getInstance(GogoSally.class).go());
+  props.setProperty("sally","b");
+  Assert.assertEquals("B",injector.getInstance(GogoSally.class).go());
+  props.setProperty("sally","c");
+  try {
+    injector.getInstance(GogoSally.class).go();
+    Assert.fail();
+  }
+ catch (  Exception e) {
+    Assert.assertTrue(e instanceof ProvisionException);
+    Assert.assertTrue(e.getMessage().contains("Unknown provider[c] of Key[type=io.druid.guice.PolyBindTest$GogoSally"));
+  }
+}

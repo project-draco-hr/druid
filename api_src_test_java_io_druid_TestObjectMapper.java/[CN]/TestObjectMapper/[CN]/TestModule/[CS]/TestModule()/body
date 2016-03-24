@@ -1,0 +1,9 @@
+{
+  addSerializer(Interval.class,ToStringSerializer.instance);
+  addDeserializer(Interval.class,new StdDeserializer<Interval>(Interval.class){
+    @Override public Interval deserialize(    JsonParser jsonParser,    DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+      return new Interval(jsonParser.getText());
+    }
+  }
+);
+}

@@ -1,0 +1,12 @@
+{
+  final Object dimValue=event.get(dimension);
+  if (dimValue == null) {
+    return Collections.emptyList();
+  }
+ else   if (dimValue instanceof List) {
+    return Lists.transform((List)dimValue,TO_STRING_INCLUDING_NULL);
+  }
+ else {
+    return Collections.singletonList(String.valueOf(dimValue));
+  }
+}

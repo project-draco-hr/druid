@@ -1,0 +1,12 @@
+{
+  final TypeLiteral<T> interfaceType=interfaceKey.getTypeLiteral();
+  if (interfaceKey.getAnnotation() != null) {
+    return MapBinder.newMapBinder(binder,TypeLiteral.get(String.class),interfaceType,interfaceKey.getAnnotation());
+  }
+ else   if (interfaceKey.getAnnotationType() != null) {
+    return MapBinder.newMapBinder(binder,TypeLiteral.get(String.class),interfaceType,interfaceKey.getAnnotationType());
+  }
+ else {
+    return MapBinder.newMapBinder(binder,TypeLiteral.get(String.class),interfaceType);
+  }
+}
