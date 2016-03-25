@@ -1,0 +1,11 @@
+{
+  DruidServer dummyServer=new DruidServer("dummy","host",1234L,"type","tier",0);
+  DataSegment segment=DataSegment.builder().dataSource("dataSource").interval(new Interval("2016-03-22T14Z/2016-03-22T15Z")).version("v0").size(1L).build();
+  dummyServer.addDataSegment(segment.getIdentifier(),segment);
+  CoordinatorServerView inventoryView=EasyMock.createMock(CoordinatorServerView.class);
+  EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(dummyServer)).anyTimes();
+  EasyMock.expect(inventoryView.getInventoryValue(dummyServer.getName())).andReturn(dummyServer).anyTimes();
+  EasyMock.replay(inventoryView);
+  server=dummyServer;
+  serversResource=new ServersResource(inventoryView);
+}
