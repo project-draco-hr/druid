@@ -3,11 +3,6 @@ synchronized (lock) {
     if (!started) {
       return;
     }
-    try {
-      CuratorUtils.createOrSet(curatorFramework,getStatusPathForId(announcement.getTaskStatus().getId()),CreateMode.PERSISTENT,jsonMapper.writeValueAsBytes(announcement),config.getMaxZnodeBytes());
-    }
- catch (    Exception e) {
-      throw Throwables.propagate(e);
-    }
+    CuratorUtils.createOrSet(curatorFramework,getStatusPathForId(announcement.getTaskStatus().getId()),CreateMode.PERSISTENT,jsonMapper.writeValueAsBytes(announcement),config.getMaxZnodeBytes());
   }
 }
