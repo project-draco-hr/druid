@@ -3,7 +3,7 @@
   final AtomicReference<String> reasonString=new AtomicReference<>(null);
   LOG.debug("Dropping %s",url);
   try (final InputStream result=httpClient.go(new Request(HttpMethod.DELETE,url).addHeader(HttpHeaders.Names.ACCEPT,SmileMediaTypes.APPLICATION_JACKSON_SMILE),makeResponseHandler(returnCode,reasonString),lookupCoordinatorManagerConfig.getHostDeleteTimeout()).get()){
-    if (!HttpStatusCodes.isSuccess(returnCode.get()) || HttpStatusCodes.STATUS_CODE_NOT_FOUND != returnCode.get()) {
+    if (!httpStatusIsSuccess(returnCode.get()) || !httpStatusIsNotFound(returnCode.get())) {
       final ByteArrayOutputStream baos=new ByteArrayOutputStream();
       try {
         StreamUtils.copyAndClose(result,baos);
