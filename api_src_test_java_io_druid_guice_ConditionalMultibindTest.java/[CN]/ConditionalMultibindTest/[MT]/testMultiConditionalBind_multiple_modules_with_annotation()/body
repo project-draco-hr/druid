@@ -1,0 +1,25 @@
+{
+  props.setProperty("animal.type","pets");
+  Injector injector=Guice.createInjector(new Module(){
+    @Override public void configure(    Binder binder){
+      ConditionalMultibind.create(props,binder,Animal.class,SanDiego.class).addConditionBinding(ANIMAL_TYPE,Predicates.equalTo("pets"),Cat.class).addConditionBinding(ANIMAL_TYPE,Predicates.equalTo("pets"),Dog.class);
+    }
+  }
+,new Module(){
+    @Override public void configure(    Binder binder){
+      ConditionalMultibind.create(props,binder,Animal.class,SanDiego.class).addBinding(new Bird()).addConditionBinding(ANIMAL_TYPE,Predicates.equalTo("pets"),Tiger.class);
+      ConditionalMultibind.create(props,binder,Animal.class,SanJose.class).addConditionBinding(ANIMAL_TYPE,Predicates.equalTo("pets"),Fish.class);
+    }
+  }
+);
+  Set<Animal> animalSet_1=injector.getInstance(Key.get(new TypeLiteral<Set<Animal>>(){
+  }
+,SanDiego.class));
+  Assert.assertEquals(4,animalSet_1.size());
+  Assert.assertEquals(animalSet_1,ImmutableSet.<Animal>of(new Bird(),new Cat(),new Dog(),new Tiger()));
+  Set<Animal> animalSet_2=injector.getInstance(Key.get(new TypeLiteral<Set<Animal>>(){
+  }
+,SanJose.class));
+  Assert.assertEquals(1,animalSet_2.size());
+  Assert.assertEquals(animalSet_2,ImmutableSet.<Animal>of(new Fish()));
+}
