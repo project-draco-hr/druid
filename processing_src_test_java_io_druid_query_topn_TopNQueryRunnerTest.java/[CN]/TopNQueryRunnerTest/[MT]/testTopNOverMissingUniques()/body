@@ -1,5 +1,5 @@
 {
   TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(QueryRunnerTestHelper.marketDimension).metric(QueryRunnerTestHelper.uniqueMetric).threshold(3).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.<AggregatorFactory>asList(new HyperUniquesAggregatorFactory("uniques","missingUniques"))).build();
-  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>builder().put("market","total_market").put("uniques",0).build(),ImmutableMap.<String,Object>builder().put("market","spot").put("uniques",0).build(),ImmutableMap.<String,Object>builder().put("market","upfront").put("uniques",0).build()))));
+  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<TopNResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>builder().put("market","spot").put("uniques",0).build(),ImmutableMap.<String,Object>builder().put("market","total_market").put("uniques",0).build(),ImmutableMap.<String,Object>builder().put("market","upfront").put("uniques",0).build()))));
   assertExpectedResults(expectedResults,query);
 }
