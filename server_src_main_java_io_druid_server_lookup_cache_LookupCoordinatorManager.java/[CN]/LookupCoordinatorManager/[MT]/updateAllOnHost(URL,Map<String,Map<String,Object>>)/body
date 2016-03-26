@@ -12,7 +12,7 @@
     throw Throwables.propagate(e);
   }
   try (final InputStream result=httpClient.go(new Request(HttpMethod.POST,url).addHeader(HttpHeaders.Names.ACCEPT,SmileMediaTypes.APPLICATION_JACKSON_SMILE).addHeader(HttpHeaders.Names.CONTENT_TYPE,SmileMediaTypes.APPLICATION_JACKSON_SMILE).setContent(bytes),makeResponseHandler(returnCode,reasonString),lookupCoordinatorManagerConfig.getHostUpdateTimeout()).get()){
-    if (!HttpStatusCodes.isSuccess(returnCode.get())) {
+    if (!httpStatusIsSuccess(returnCode.get())) {
       final ByteArrayOutputStream baos=new ByteArrayOutputStream();
       try {
         StreamUtils.copyAndClose(result,baos);
