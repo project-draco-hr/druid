@@ -1,0 +1,11 @@
+{
+  Preconditions.checkNotNull(indexMerger,"indexMerger");
+  Preconditions.checkNotNull(tmpDir,"tmpDir");
+  final IncrementalIndex incrementalIndex=buildIncrementalIndex();
+  try {
+    return TestHelper.getTestIndexIO().loadIndex(indexMerger.persist(incrementalIndex,new File(tmpDir,String.format("testIndex-%s",new Random().nextInt(Integer.MAX_VALUE))),indexSpec));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

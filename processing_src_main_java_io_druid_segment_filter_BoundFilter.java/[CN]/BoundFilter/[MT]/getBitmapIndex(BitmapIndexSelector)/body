@@ -1,0 +1,84 @@
+{
+  final BitmapIndex bitmapIndex=selector.getBitmapIndex(boundDimFilter.getDimension());
+  if (bitmapIndex == null) {
+    if (doesMatch(null)) {
+      return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
+    }
+ else {
+      return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+    }
+  }
+  if (boundDimFilter.isAlphaNumeric()) {
+    final Indexed<String> dimValues=selector.getDimensionValues(boundDimFilter.getDimension());
+    return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
+      @Override public Iterator<ImmutableBitmap> iterator(){
+        return new Iterator<ImmutableBitmap>(){
+          int currIndex=0;
+          @Override public boolean hasNext(){
+            return currIndex < bitmapIndex.getCardinality();
+          }
+          @Override public ImmutableBitmap next(){
+            while (currIndex < bitmapIndex.getCardinality() && !doesMatch(dimValues.get(currIndex))) {
+              currIndex++;
+            }
+            if (currIndex == bitmapIndex.getCardinality()) {
+              return bitmapIndex.getBitmapFactory().makeEmptyImmutableBitmap();
+            }
+            return bitmapIndex.getBitmap(currIndex++);
+          }
+          @Override public void remove(){
+            throw new UnsupportedOperationException();
+          }
+        }
+;
+      }
+    }
+);
+  }
+ else {
+    final int startIndex;
+    final int endIndex;
+    if (!boundDimFilter.hasLowerBound()) {
+      startIndex=0;
+    }
+ else {
+      final int found=bitmapIndex.getIndex(boundDimFilter.getLower());
+      if (found >= 0) {
+        startIndex=boundDimFilter.isLowerStrict() ? found + 1 : found;
+      }
+ else {
+        startIndex=-(found + 1);
+      }
+    }
+    if (!boundDimFilter.hasUpperBound()) {
+      endIndex=bitmapIndex.getCardinality();
+    }
+ else {
+      final int found=bitmapIndex.getIndex(boundDimFilter.getUpper());
+      if (found >= 0) {
+        endIndex=boundDimFilter.isUpperStrict() ? found : found + 1;
+      }
+ else {
+        endIndex=-(found + 1);
+      }
+    }
+    return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
+      @Override public Iterator<ImmutableBitmap> iterator(){
+        return new Iterator<ImmutableBitmap>(){
+          int currIndex=startIndex;
+          @Override public boolean hasNext(){
+            return currIndex < endIndex;
+          }
+          @Override public ImmutableBitmap next(){
+            return bitmapIndex.getBitmap(currIndex++);
+          }
+          @Override public void remove(){
+            throw new UnsupportedOperationException();
+          }
+        }
+;
+      }
+    }
+);
+  }
+}

@@ -1,0 +1,23 @@
+{
+  if (input == null) {
+    return (!boundDimFilter.hasLowerBound() || (boundDimFilter.getLower().isEmpty() && !boundDimFilter.isLowerStrict())) && (!boundDimFilter.hasUpperBound() || !boundDimFilter.getUpper().isEmpty() || !boundDimFilter.isUpperStrict());
+  }
+  int lowerComparing=1;
+  int upperComparing=1;
+  if (boundDimFilter.hasLowerBound()) {
+    lowerComparing=comparator.compare(input,boundDimFilter.getLower());
+  }
+  if (boundDimFilter.hasUpperBound()) {
+    upperComparing=comparator.compare(boundDimFilter.getUpper(),input);
+  }
+  if (boundDimFilter.isLowerStrict() && boundDimFilter.isUpperStrict()) {
+    return ((lowerComparing > 0)) && (upperComparing > 0);
+  }
+ else   if (boundDimFilter.isLowerStrict()) {
+    return (lowerComparing > 0) && (upperComparing >= 0);
+  }
+ else   if (boundDimFilter.isUpperStrict()) {
+    return (lowerComparing >= 0) && (upperComparing > 0);
+  }
+  return (lowerComparing >= 0) && (upperComparing >= 0);
+}

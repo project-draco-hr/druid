@@ -1,0 +1,28 @@
+{
+  Preconditions.checkNotNull(indexMerger,"indexMerger");
+  Preconditions.checkNotNull(tmpDir,"tmpDir");
+  final List<QueryableIndex> persisted=Lists.newArrayList();
+  try {
+    for (int i=0; i < rows.size(); i+=ROWS_PER_INDEX_FOR_MERGING) {
+      persisted.add(TestHelper.getTestIndexIO().loadIndex(indexMerger.persist(buildIncrementalIndexWithRows(schema,rows.subList(i,Math.min(rows.size(),i + ROWS_PER_INDEX_FOR_MERGING))),new File(tmpDir,String.format("testIndex-%s",UUID.randomUUID().toString())),indexSpec)));
+    }
+    final QueryableIndex merged=TestHelper.getTestIndexIO().loadIndex(indexMerger.merge(Lists.transform(persisted,new Function<QueryableIndex,IndexableAdapter>(){
+      @Override public IndexableAdapter apply(      QueryableIndex input){
+        return new QueryableIndexIndexableAdapter(input);
+      }
+    }
+),Iterables.toArray(Iterables.transform(Arrays.asList(schema.getMetrics()),new Function<AggregatorFactory,AggregatorFactory>(){
+      @Override public AggregatorFactory apply(      AggregatorFactory input){
+        return input.getCombiningFactory();
+      }
+    }
+),AggregatorFactory.class),new File(tmpDir,String.format("testIndex-%s",UUID.randomUUID())),indexSpec));
+    for (    QueryableIndex index : persisted) {
+      index.close();
+    }
+    return merged;
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

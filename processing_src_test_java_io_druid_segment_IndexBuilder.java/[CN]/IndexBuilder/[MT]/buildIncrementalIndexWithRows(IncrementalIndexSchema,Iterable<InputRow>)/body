@@ -1,0 +1,13 @@
+{
+  Preconditions.checkNotNull(schema,"schema");
+  final IncrementalIndex incrementalIndex=new OnheapIncrementalIndex(schema,true,MAX_ROWS);
+  for (  InputRow row : rows) {
+    try {
+      incrementalIndex.add(row);
+    }
+ catch (    IndexSizeExceededException e) {
+      throw Throwables.propagate(e);
+    }
+  }
+  return incrementalIndex;
+}
