@@ -1,4 +1,12 @@
 {
-  final LoggingEmitter loggingEmitter=EasyMock.createNiceMock(LoggingEmitter.class);
-  com.metamx.emitter.EmittingLogger.registerEmitter(new ServiceEmitter("","",loggingEmitter));
+  LoggingEmitter loggingEmitter=EasyMock.createNiceMock(LoggingEmitter.class);
+  EasyMock.replay(loggingEmitter);
+  SERVICE_EMITTER=new ServiceEmitter("","",loggingEmitter){
+    @Override public void emit(    Event event){
+      EVENT_EMITS.incrementAndGet();
+      super.emit(event);
+    }
+  }
+;
+  com.metamx.emitter.EmittingLogger.registerEmitter(SERVICE_EMITTER);
 }
