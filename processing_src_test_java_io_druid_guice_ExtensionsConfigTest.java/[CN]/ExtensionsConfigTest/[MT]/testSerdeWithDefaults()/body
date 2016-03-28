@@ -1,0 +1,10 @@
+{
+  String json="{}";
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  ExtensionsConfig config=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,ExtensionsConfig.class)),ExtensionsConfig.class);
+  Assert.assertTrue(config.searchCurrentClassloader());
+  Assert.assertEquals("extensions",config.getDirectory());
+  Assert.assertEquals("hadoop-dependencies",config.getHadoopDependenciesDir());
+  Assert.assertNull(config.getHadoopContainerDruidClasspath());
+  Assert.assertNull(config.getLoadList());
+}
