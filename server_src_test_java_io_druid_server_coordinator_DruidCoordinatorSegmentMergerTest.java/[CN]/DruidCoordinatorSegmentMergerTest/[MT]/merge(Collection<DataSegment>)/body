@@ -1,4 +1,7 @@
 {
+  final JacksonConfigManager configManager=EasyMock.createMock(JacksonConfigManager.class);
+  EasyMock.expect(configManager.watch(DatasourceWhitelist.CONFIG_KEY,DatasourceWhitelist.class)).andReturn(new AtomicReference<DatasourceWhitelist>(null)).anyTimes();
+  EasyMock.replay(configManager);
   final List<List<DataSegment>> retVal=Lists.newArrayList();
   final IndexingServiceClient indexingServiceClient=new IndexingServiceClient(null,null,null){
     @Override public void mergeSegments(    List<DataSegment> segmentsToMerge){
@@ -6,9 +9,8 @@
     }
   }
 ;
-  final AtomicReference<DatasourceWhitelist> whitelistRef=new AtomicReference<DatasourceWhitelist>(null);
-  final DruidCoordinatorSegmentMerger merger=new DruidCoordinatorSegmentMerger(indexingServiceClient,whitelistRef);
-  final DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withAvailableSegments(ImmutableSet.copyOf(segments)).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMergeBytesLimit(mergeBytesLimit).withMergeSegmentsLimit(mergeSegmentsLimit).build()).build();
+  final DruidCoordinatorSegmentMerger merger=new DruidCoordinatorSegmentMerger(indexingServiceClient,configManager);
+  final DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withAvailableSegments(ImmutableSet.copyOf(segments)).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMergeBytesLimit(mergeBytesLimit).withMergeSegmentsLimit(mergeSegmentsLimit).build()).withEmitter(EasyMock.createMock(ServiceEmitter.class)).build();
   merger.run(params);
   return retVal;
 }

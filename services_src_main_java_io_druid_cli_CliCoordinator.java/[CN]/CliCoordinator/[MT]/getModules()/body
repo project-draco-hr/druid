@@ -34,6 +34,7 @@
       Jerseys.addResource(binder,LookupCoordinatorResource.class);
       LifecycleModule.register(binder,Server.class);
       LifecycleModule.register(binder,DatasourcesResource.class);
+      ConditionalMultibind.create(properties,binder,DruidCoordinatorHelper.class,CoordinatorIndexingServiceHelper.class).addConditionBinding("druid.coordinator.merge.on",Predicates.equalTo("true"),DruidCoordinatorSegmentMerger.class).addConditionBinding("druid.coordinator.conversion.on",Predicates.equalTo("true"),DruidCoordinatorVersionConverter.class).addConditionBinding("druid.coordinator.kill.on",Predicates.equalTo("true"),DruidCoordinatorSegmentKiller.class);
     }
     @Provides @LazySingleton public LoadQueueTaskMaster getLoadQueueTaskMaster(    CuratorFramework curator,    ObjectMapper jsonMapper,    ScheduledExecutorFactory factory,    DruidCoordinatorConfig config){
       return new LoadQueueTaskMaster(curator,jsonMapper,factory.create(1,"Master-PeonExec--%d"),Executors.newSingleThreadExecutor(),config);
