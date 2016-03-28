@@ -1,0 +1,7 @@
+{
+  MessageType parquetSchema=readContext.getRequestedSchema();
+  Schema avroSchema=new AvroSchemaConverter(configuration).convert(parquetSchema);
+  Class<? extends AvroDataSupplier> suppClass=configuration.getClass(AVRO_DATA_SUPPLIER,SpecificDataSupplier.class,AvroDataSupplier.class);
+  AvroDataSupplier supplier=ReflectionUtils.newInstance(suppClass,configuration);
+  return new AvroRecordMaterializer<GenericRecord>(parquetSchema,avroSchema,supplier.get());
+}
