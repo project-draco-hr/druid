@@ -10,7 +10,10 @@
       log.info("Updating task [%s] announcement with location [%s]",taskId,location);
       workerCuratorCoordinator.updateTaskStatusAnnouncement(TaskAnnouncement.create(details.task,details.status,details.location));
     }
- catch (    Exception e) {
+ catch (    InterruptedException e) {
+      throw e;
+    }
+catch (    Exception e) {
       log.makeAlert(e,"Failed to update task announcement").addData("task",taskId).emit();
     }
   }

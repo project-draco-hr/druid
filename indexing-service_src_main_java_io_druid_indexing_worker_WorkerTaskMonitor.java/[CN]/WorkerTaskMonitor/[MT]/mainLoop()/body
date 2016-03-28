@@ -5,7 +5,10 @@
       try {
         notice.handle();
       }
- catch (      Exception e) {
+ catch (      InterruptedException e) {
+        throw e;
+      }
+catch (      Exception e) {
         log.makeAlert(e,"Failed to handle notice").addData("noticeClass",notice.getClass().getSimpleName()).addData("noticeTaskId",notice.getTaskId()).emit();
       }
     }
