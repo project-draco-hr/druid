@@ -1,5 +1,4 @@
 {
-  final StringInputRowParser stringParser=firehoseParser;
   ConnectionOptions lyraOptions=new ConnectionOptions(this.connectionFactory);
   Config lyraConfig=new Config().withRecoveryPolicy(new RetryPolicy().withMaxRetries(config.getMaxRetries()).withRetryInterval(Duration.seconds(config.getRetryIntervalSeconds())).withMaxDuration(Duration.seconds(config.getMaxDurationSeconds())));
   String queue=config.getQueue();
@@ -56,7 +55,7 @@
         log.wtf("I have nothing in delivery. Method hasMore() should have returned false.");
         return null;
       }
-      return stringParser.parse(StringUtils.fromUtf8(delivery.getBody()));
+      return firehoseParser.parse(ByteBuffer.wrap(delivery.getBody()));
     }
     @Override public Runnable commit(){
       return new Runnable(){
