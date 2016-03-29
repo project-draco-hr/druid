@@ -79,14 +79,17 @@
     log.info("outDir[%s] completed index.drd in %,d millis.",v8OutDir,System.currentTimeMillis() - startTime);
     progress.progress();
     startTime=System.currentTimeMillis();
-    ArrayList<FileOutputSupplier> dimOuts=Lists.newArrayListWithCapacity(mergedDimensions.size());
-    Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
-    ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
+    final ArrayList<FileOutputSupplier> dimOuts=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    final Map<String,Integer> dimensionCardinalities=Maps.newHashMap();
+    final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(indexes.size());
     final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    final ArrayList<MutableBitmap> nullRowsList=Lists.newArrayListWithCapacity(mergedDimensions.size());
+    final ArrayList<Boolean> dimHasNullFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
     for (int i=0; i < indexes.size(); ++i) {
       dimConversions.add(Maps.<String,IntBuffer>newHashMap());
     }
     for (    String dimension : mergedDimensions) {
+      nullRowsList.add(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap());
       final GenericIndexedWriter<String> writer=new GenericIndexedWriter<String>(ioPeon,dimension,GenericIndexed.STRING_STRATEGY);
       writer.open();
       boolean dimHasNull=false;
@@ -110,6 +113,7 @@
       boolean convertMissingDims=dimHasValues && dimAbsentFromSomeIndex;
       convertMissingDimsFlags.add(convertMissingDims);
       if (convertMissingDims && !dimHasNull) {
+        dimHasNull=true;
         dimValueLookups[indexes.size()]=dimValueLookup=EMPTY_STR_DIM_VAL;
         numMergeIndex++;
       }
@@ -133,6 +137,7 @@
         cardinality=dimValueLookup.size();
       }
       dimensionCardinalities.put(dimension,cardinality);
+      dimHasNullFlags.add(dimHasNull);
       FileOutputSupplier dimOut=new FileOutputSupplier(IndexIO.makeDimFile(v8OutDir,dimension),true);
       dimOuts.add(dimOut);
       writer.close();
@@ -196,6 +201,12 @@ int[][] dims=theRow.getDims();
 for (int i=0; i < dims.length; ++i) {
 List<Integer> listToWrite=(i >= dims.length || dims[i] == null) ? null : Ints.asList(dims[i]);
 forwardDimWriters.get(i).write(listToWrite);
+if (listToWrite == null || listToWrite.isEmpty()) {
+nullRowsList.get(i).add(rowCount);
+}
+ else if (dimHasNullFlags.get(i) && listToWrite.size() == 1 && listToWrite.get(0) == 0) {
+nullRowsList.get(i).add(rowCount);
+}
 }
 for (Map.Entry<Integer,TreeSet<Integer>> comprisedRow : theRow.getComprisedRows().entrySet()) {
 final IntBuffer conversionBuffer=rowNumConversions.get(comprisedRow.getKey());
@@ -269,6 +280,9 @@ convertedInverteds.add(new ConvertingIndexedInts(indexes.get(j).getBitmapIndex(d
 }
 }
 MutableBitmap bitset=bitmapSerdeFactory.getBitmapFactory().makeEmptyMutableBitmap();
+if ((dictId == 0) && (Iterables.getFirst(dimVals,"") == null)) {
+bitset.or(nullRowsList.get(i));
+}
 for (Integer row : CombiningIterable.createSplatted(convertedInverteds,Ordering.<Integer>natural().nullsFirst())) {
 if (row != INVALID_ROW) {
 bitset.add(row);

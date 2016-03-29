@@ -1,0 +1,8 @@
+{
+  final Cursor cursor=makeCursor(null);
+  final Aggregator agg=new FilteredAggregatorFactory(new CountAggregatorFactory("count"),filter).factorize(cursor);
+  for (; !cursor.isDone(); cursor.advance()) {
+    agg.aggregate();
+  }
+  return agg.getLong();
+}
