@@ -1,8 +1,8 @@
 {
-  Assert.assertEquals(ImmutableList.of(1,2,5),select(new SelectorFilter("dim2",null)));
-  Assert.assertEquals(ImmutableList.of(1,2,5),select(new SelectorFilter("dim2","")));
-  Assert.assertEquals(ImmutableList.of(0,3),select(new SelectorFilter("dim2","a")));
-  Assert.assertEquals(ImmutableList.of(0),select(new SelectorFilter("dim2","b")));
-  Assert.assertEquals(ImmutableList.of(4),select(new SelectorFilter("dim2","c")));
-  Assert.assertEquals(ImmutableList.of(),select(new SelectorFilter("dim2","d")));
+  assertFilterMatches(new SelectorDimFilter("dim2",null),ImmutableList.of("1","2","5"));
+  assertFilterMatches(new SelectorDimFilter("dim2",""),ImmutableList.of("1","2","5"));
+  assertFilterMatches(new SelectorDimFilter("dim2","a"),ImmutableList.of("0","3"));
+  assertFilterMatches(new SelectorDimFilter("dim2","b"),ImmutableList.of("0"));
+  assertFilterMatches(new SelectorDimFilter("dim2","c"),ImmutableList.of("4"));
+  assertFilterMatches(new SelectorDimFilter("dim2","d"),ImmutableList.<String>of());
 }

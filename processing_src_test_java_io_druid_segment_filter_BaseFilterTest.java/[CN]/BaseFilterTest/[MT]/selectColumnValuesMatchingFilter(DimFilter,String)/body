@@ -1,0 +1,11 @@
+{
+  final Cursor cursor=makeCursor(Filters.toFilter(filter));
+  final List<String> values=Lists.newArrayList();
+  final DimensionSelector selector=cursor.makeDimensionSelector(new DefaultDimensionSpec(selectColumn,selectColumn));
+  for (; !cursor.isDone(); cursor.advance()) {
+    final IndexedInts row=selector.getRow();
+    Preconditions.checkState(row.size() == 1);
+    values.add(selector.lookupName(row.get(0)));
+  }
+  return values;
+}
