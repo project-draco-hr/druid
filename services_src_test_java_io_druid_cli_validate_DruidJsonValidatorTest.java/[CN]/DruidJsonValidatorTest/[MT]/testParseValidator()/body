@@ -1,8 +1,6 @@
 {
-  String type="parse";
-  Cli<?> parser=Cli.builder("validator").withCommand(DruidJsonValidator.class).build();
-  Object command=parser.parse("validator","-f","simple_test_data_record_parser.json","-r","simple_test_data.tsv","-t",type);
-  Assert.assertNotNull(command);
+  Runnable command=parseCommand("validator","-f","simple_test_data_record_parser.json","-r","simple_test_data.tsv","-t","parse");
+  command.run();
   Writer writer=new StringWriter(){
     @Override public void write(    String str){
       super.write(str + '\n');

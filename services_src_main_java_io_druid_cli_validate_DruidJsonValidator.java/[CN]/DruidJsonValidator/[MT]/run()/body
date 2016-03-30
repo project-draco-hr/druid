@@ -3,7 +3,9 @@
   if (!file.exists()) {
     System.out.printf("File[%s] does not exist.%n",file);
   }
-  final ObjectMapper jsonMapper=new DefaultObjectMapper();
+  final Injector injector=makeInjector();
+  final ObjectMapper jsonMapper=injector.getInstance(ObjectMapper.class);
+  registerModules(jsonMapper,Iterables.concat(Initialization.getFromExtensions(injector.getInstance(ExtensionsConfig.class),DruidModule.class),Arrays.asList(new FirehoseModule(),new IndexingHadoopModule(),new IndexingServiceFirehoseModule(),new LocalDataStorageDruidModule(),new ParsersModule())));
   final ClassLoader loader;
   if (Thread.currentThread().getContextClassLoader() != null) {
     loader=Thread.currentThread().getContextClassLoader();
