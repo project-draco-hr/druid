@@ -1,0 +1,18 @@
+{
+  Configuration conf=new Configuration();
+  Job job=Job.getInstance(conf);
+  HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromFile(new File("example/wikipedia_hadoop_parquet_job.json"));
+  config.intoConfiguration(job);
+  File testFile=new File("example/wikipedia_list.parquet");
+  Path path=new Path(testFile.getAbsoluteFile().toURI());
+  FileSplit split=new FileSplit(path,0,testFile.length(),null);
+  InputFormat inputFormat=ReflectionUtils.newInstance(DruidParquetInputFormat.class,job.getConfiguration());
+  TaskAttemptContext context=new TaskAttemptContextImpl(job.getConfiguration(),new TaskAttemptID());
+  RecordReader reader=inputFormat.createRecordReader(split,context);
+  reader.initialize(split,context);
+  reader.nextKeyValue();
+  GenericRecord data=(GenericRecord)reader.getCurrentValue();
+  assertEquals(data.get("added"),null);
+  assertEquals(data.get("page"),new Utf8("Gypsy Danger"));
+  reader.close();
+}
