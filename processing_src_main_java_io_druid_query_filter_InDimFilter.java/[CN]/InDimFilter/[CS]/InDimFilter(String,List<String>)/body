@@ -1,5 +1,11 @@
 {
   Preconditions.checkNotNull(dimension,"dimension can not be null");
-  this.values=(values == null) ? Collections.<String>emptyList() : values;
+  Preconditions.checkArgument(values != null && !values.isEmpty(),"values can not be null or empty");
+  this.values=Lists.newArrayList(Iterables.transform(values,new Function<String,String>(){
+    @Override public String apply(    String input){
+      return Strings.nullToEmpty(input);
+    }
+  }
+));
   this.dimension=dimension;
 }

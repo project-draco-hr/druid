@@ -1,9 +1,3 @@
 {
-  final List<Filter> selectorFilters=ImmutableList.copyOf(Iterables.transform(values,new Function<String,Filter>(){
-    @Override public Filter apply(    String input){
-      return new SelectorFilter(dimension,input);
-    }
-  }
-));
-  return new OrFilter(selectorFilters);
+  return new InFilter(dimension,ImmutableSet.copyOf(values));
 }

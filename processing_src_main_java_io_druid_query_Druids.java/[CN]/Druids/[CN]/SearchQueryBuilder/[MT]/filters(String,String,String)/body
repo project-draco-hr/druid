@@ -1,8 +1,4 @@
 {
-  List<DimFilter> fields=Lists.<DimFilter>newArrayList(new SelectorDimFilter(dimensionName,value));
-  for (  String val : values) {
-    fields.add(new SelectorDimFilter(dimensionName,val));
-  }
-  dimFilter=new OrDimFilter(fields);
+  dimFilter=new InDimFilter(dimensionName,Lists.asList(value,values));
   return this;
 }
