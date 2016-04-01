@@ -1,5 +1,5 @@
 {
-  final Cursor cursor=makeCursor(Filters.toFilter(filter));
+  final Cursor cursor=makeCursor(Filters.toFilter(maybeOptimize(filter)));
   final List<String> values=Lists.newArrayList();
   final DimensionSelector selector=cursor.makeDimensionSelector(new DefaultDimensionSpec(selectColumn,selectColumn));
   for (; !cursor.isDone(); cursor.advance()) {
