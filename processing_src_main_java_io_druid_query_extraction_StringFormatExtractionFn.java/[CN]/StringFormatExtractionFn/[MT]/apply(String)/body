@@ -1,3 +1,11 @@
 {
-  return String.format(format,value);
+  if (value == null) {
+    if (nullHandling == NullHandling.RETURNNULL) {
+      return null;
+    }
+    if (nullHandling == NullHandling.EMPTYSTRING) {
+      value="";
+    }
+  }
+  return Strings.emptyToNull(String.format(format,value));
 }

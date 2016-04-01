@@ -1,0 +1,6 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  StringFormatExtractionFn extractionFn=(StringFormatExtractionFn)objectMapper.readValue(json,ExtractionFn.class);
+  Assert.assertEquals("[%s]",extractionFn.getFormat());
+  Assert.assertEquals(extractionFn,objectMapper.readValue(objectMapper.writeValueAsBytes(extractionFn),ExtractionFn.class));
+}
