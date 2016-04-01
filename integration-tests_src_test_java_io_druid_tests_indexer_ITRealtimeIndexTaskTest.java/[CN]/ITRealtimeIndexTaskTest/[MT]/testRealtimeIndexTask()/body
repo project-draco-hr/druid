@@ -12,7 +12,7 @@
       throw new ISE("could not open query file: %s",REALTIME_QUERIES_RESOURCE);
     }
     query_response_template=IOUtils.toString(is,"UTF-8");
-    String queryStr=query_response_template.replace("%%TIMEBOUNDARY_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMEBOUNDARY_RESPONSE_MAXTIME%%",TIMESTAMP_FMT.print(dtLast)).replace("%%TIMEBOUNDARY_RESPONSE_MINTIME%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_END%%",INTERVAL_FMT.print(dtLast.plusMinutes(2))).replace("%%TIMESERIES_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%POST_AG_REQUEST_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%POST_AG_REQUEST_END%%",INTERVAL_FMT.print(dtLast.plusMinutes(2))).replace("%%POST_AG_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtLast.minusSeconds(24).withSecondOfMinute(0)));
+    String queryStr=query_response_template.replace("%%TIMEBOUNDARY_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMEBOUNDARY_RESPONSE_MAXTIME%%",TIMESTAMP_FMT.print(dtLast)).replace("%%TIMEBOUNDARY_RESPONSE_MINTIME%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_END%%",INTERVAL_FMT.print(dtLast.plusMinutes(2))).replace("%%TIMESERIES_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%POST_AG_REQUEST_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%POST_AG_REQUEST_END%%",INTERVAL_FMT.print(dtLast.plusMinutes(2))).replace("%%POST_AG_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtGroupBy.withSecondOfMinute(0)));
     try {
       this.queryHelper.testQueriesFromString(getRouterURL(),queryStr,2);
     }
