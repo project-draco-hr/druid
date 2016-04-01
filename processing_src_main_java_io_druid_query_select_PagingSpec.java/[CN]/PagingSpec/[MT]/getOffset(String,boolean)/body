@@ -3,5 +3,8 @@
   if (offset == null) {
     offset=PagingOffset.toOffset(0,descending);
   }
+ else   if (fromNext) {
+    offset=descending ? offset - 1 : offset + 1;
+  }
   return PagingOffset.of(offset,threshold);
 }

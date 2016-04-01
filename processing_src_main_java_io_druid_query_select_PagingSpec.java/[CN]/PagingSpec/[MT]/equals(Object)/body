@@ -2,10 +2,13 @@
   if (this == o) {
     return true;
   }
-  if (!(o instanceof PagingSpec)) {
+  if (o == null || getClass() != o.getClass()) {
     return false;
   }
   PagingSpec that=(PagingSpec)o;
+  if (fromNext != that.fromNext) {
+    return false;
+  }
   if (threshold != that.threshold) {
     return false;
   }

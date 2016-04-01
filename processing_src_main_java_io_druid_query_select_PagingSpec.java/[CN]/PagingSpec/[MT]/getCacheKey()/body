@@ -12,7 +12,7 @@
     index++;
   }
   final byte[] thresholdBytes=ByteBuffer.allocate(Ints.BYTES).putInt(threshold).array();
-  final ByteBuffer queryCacheKey=ByteBuffer.allocate(pagingKeysSize + pagingValuesSize + thresholdBytes.length);
+  final ByteBuffer queryCacheKey=ByteBuffer.allocate(pagingKeysSize + pagingValuesSize + thresholdBytes.length+ 1);
   for (  byte[] pagingKey : pagingKeys) {
     queryCacheKey.put(pagingKey);
   }
@@ -20,5 +20,6 @@
     queryCacheKey.put(pagingValue);
   }
   queryCacheKey.put(thresholdBytes);
+  queryCacheKey.put(isFromNext() ? (byte)0x01 : 0x00);
   return queryCacheKey.array();
 }

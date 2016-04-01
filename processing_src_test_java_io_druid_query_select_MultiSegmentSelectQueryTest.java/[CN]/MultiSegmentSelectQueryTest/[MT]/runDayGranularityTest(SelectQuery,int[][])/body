@@ -1,0 +1,17 @@
+{
+  for (  int[] expected : expectedOffsets) {
+    List<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,ImmutableMap.of()),Lists.<Result<SelectResultValue>>newArrayList());
+    Assert.assertEquals(2,results.size());
+    SelectResultValue value0=results.get(0).getValue();
+    SelectResultValue value1=results.get(1).getValue();
+    Map<String,Integer> pagingIdentifiers0=value0.getPagingIdentifiers();
+    Map<String,Integer> pagingIdentifiers1=value1.getPagingIdentifiers();
+    Map<String,Integer> merged=PagingSpec.merge(Arrays.asList(pagingIdentifiers0,pagingIdentifiers1));
+    for (int i=0; i < 4; i++) {
+      if (query.isDescending() ^ expected[i] >= 0) {
+        Assert.assertEquals(expected[i],merged.get(segmentIdentifiers.get(i)).intValue());
+      }
+    }
+    query=query.withPagingSpec(toNextCursor(merged,query,3));
+  }
+}

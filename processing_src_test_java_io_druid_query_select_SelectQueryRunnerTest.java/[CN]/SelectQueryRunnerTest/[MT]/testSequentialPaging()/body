@@ -1,0 +1,24 @@
+{
+  int[] asc={2,5,8,11,14,17,20,23,25};
+  int[] dsc={-3,-6,-9,-12,-15,-18,-21,-24,-26};
+  int[] expected=descending ? dsc : asc;
+  SelectQuery query=newTestQuery().intervals(I_0112_0114).build();
+  for (  int offset : expected) {
+    List<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,ImmutableMap.of()),Lists.<Result<SelectResultValue>>newArrayList());
+    Assert.assertEquals(1,results.size());
+    SelectResultValue result=results.get(0).getValue();
+    Map<String,Integer> pagingIdentifiers=result.getPagingIdentifiers();
+    Assert.assertEquals(offset,pagingIdentifiers.get(QueryRunnerTestHelper.segmentId).intValue());
+    Map<String,Integer> next=PagingSpec.next(pagingIdentifiers,descending);
+    query=query.withPagingSpec(new PagingSpec(next,3));
+  }
+  query=newTestQuery().intervals(I_0112_0114).build();
+  for (  int offset : expected) {
+    List<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,ImmutableMap.of()),Lists.<Result<SelectResultValue>>newArrayList());
+    Assert.assertEquals(1,results.size());
+    SelectResultValue result=results.get(0).getValue();
+    Map<String,Integer> pagingIdentifiers=result.getPagingIdentifiers();
+    Assert.assertEquals(offset,pagingIdentifiers.get(QueryRunnerTestHelper.segmentId).intValue());
+    query=query.withPagingSpec(new PagingSpec(pagingIdentifiers,3,true));
+  }
+}
