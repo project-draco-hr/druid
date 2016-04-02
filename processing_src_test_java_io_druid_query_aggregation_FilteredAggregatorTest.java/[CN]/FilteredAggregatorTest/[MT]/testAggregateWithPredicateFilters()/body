@@ -1,0 +1,18 @@
+{
+  final float[] values={0.15f,0.27f};
+  TestFloatColumnSelector selector;
+  FilteredAggregatorFactory factory;
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","a","a",false,false,true,null));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new RegexDimFilter("dim","a",null));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new SearchQueryDimFilter("dim",new ContainsSearchQuerySpec("a",true),null));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  String jsFn="function(x) { return(x === 'a') }";
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new JavaScriptDimFilter("dim",jsFn,null));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+}

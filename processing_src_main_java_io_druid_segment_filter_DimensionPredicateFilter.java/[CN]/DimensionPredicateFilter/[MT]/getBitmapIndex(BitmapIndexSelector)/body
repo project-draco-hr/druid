@@ -1,9 +1,23 @@
 {
-  Indexed<String> dimValues=selector.getDimensionValues(dimension);
-  if (dimValues == null || dimValues.size() == 0 || predicate == null) {
+  if (predicate == null) {
     return selector.getBitmapFactory().makeEmptyImmutableBitmap();
   }
-  return selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(predicate).transform(new Function<String,ImmutableBitmap>(){
+  Indexed<String> dimValues=selector.getDimensionValues(dimension);
+  if (dimValues == null || dimValues.size() == 0) {
+    boolean needsComplement=predicate.apply(extractionFn == null ? null : extractionFn.apply(null));
+    if (needsComplement) {
+      return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
+    }
+ else {
+      return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+    }
+  }
+  return selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(extractionFn == null ? predicate : new Predicate<String>(){
+    @Override public boolean apply(    @Nullable String input){
+      return predicate.apply(extractionFn.apply(input));
+    }
+  }
+).transform(new Function<String,ImmutableBitmap>(){
     @Override public ImmutableBitmap apply(    @Nullable String input){
       return selector.getBitmapIndex(dimension,input);
     }

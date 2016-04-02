@@ -1,0 +1,26 @@
+{
+  final float[] values={0.15f,0.27f};
+  TestFloatColumnSelector selector;
+  FilteredAggregatorFactory factory;
+  String extractionJsFn="function(str) { return str + 'AARDVARK'; }";
+  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new SelectorDimFilter("dim","aAARDVARK",extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new InDimFilter("dim",Arrays.asList("NOT-aAARDVARK","FOOBAR","aAARDVARK"),extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","aAARDVARK","aAARDVARK",false,false,true,extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new RegexDimFilter("dim","aAARDVARK",extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new SearchQueryDimFilter("dim",new ContainsSearchQuerySpec("aAARDVARK",true),extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+  String jsFn="function(x) { return(x === 'aAARDVARK') }";
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new JavaScriptDimFilter("dim",jsFn,extractionFn));
+  selector=new TestFloatColumnSelector(values);
+  validateFilteredAggs(factory,values,selector);
+}

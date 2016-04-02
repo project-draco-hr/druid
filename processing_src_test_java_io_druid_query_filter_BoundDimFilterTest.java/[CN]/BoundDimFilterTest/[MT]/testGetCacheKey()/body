@@ -1,7 +1,11 @@
 {
-  BoundDimFilter boundDimFilter=new BoundDimFilter("dimension","12","15",null,null,true);
-  BoundDimFilter boundDimFilterCopy=new BoundDimFilter("dimension","12","15",false,false,true);
+  BoundDimFilter boundDimFilter=new BoundDimFilter("dimension","12","15",null,null,true,null);
+  BoundDimFilter boundDimFilterCopy=new BoundDimFilter("dimension","12","15",false,false,true,null);
   Assert.assertArrayEquals(boundDimFilter.getCacheKey(),boundDimFilterCopy.getCacheKey());
-  BoundDimFilter anotherBoundDimFilter=new BoundDimFilter("dimension","12","15",true,null,false);
+  BoundDimFilter anotherBoundDimFilter=new BoundDimFilter("dimension","12","15",true,null,false,null);
   Assert.assertFalse(Arrays.equals(anotherBoundDimFilter.getCacheKey(),boundDimFilter.getCacheKey()));
+  BoundDimFilter boundDimFilterWithExtract=new BoundDimFilter("dimension","12","15",null,null,true,extractionFn);
+  BoundDimFilter boundDimFilterWithExtractCopy=new BoundDimFilter("dimension","12","15",false,false,true,extractionFn);
+  Assert.assertFalse(Arrays.equals(boundDimFilter.getCacheKey(),boundDimFilterWithExtract.getCacheKey()));
+  Assert.assertArrayEquals(boundDimFilterWithExtract.getCacheKey(),boundDimFilterWithExtractCopy.getCacheKey());
 }

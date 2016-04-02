@@ -1,6 +1,6 @@
 {
   DimensionsSpec dimensions=new DimensionsSpec(Arrays.asList(new StringDimensionSchema("string"),new FloatDimensionSchema("float"),new LongDimensionSchema("long")),null,null);
-  AggregatorFactory[] metrics={new FilteredAggregatorFactory(new CountAggregatorFactory("cnt"),new SelectorDimFilter("billy","A"))};
+  AggregatorFactory[] metrics={new FilteredAggregatorFactory(new CountAggregatorFactory("cnt"),new SelectorDimFilter("billy","A",null))};
   final IncrementalIndexSchema schema=new IncrementalIndexSchema(0,QueryGranularity.MINUTE,dimensions,metrics);
   return Arrays.asList(new Object[][]{{new IndexCreator(){
     @Override public IncrementalIndex createIndex(){

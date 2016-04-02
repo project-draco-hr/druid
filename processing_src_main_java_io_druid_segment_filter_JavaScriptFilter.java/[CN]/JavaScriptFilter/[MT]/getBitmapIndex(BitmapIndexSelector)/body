@@ -3,8 +3,11 @@
   try {
     final Indexed<String> dimValues=selector.getDimensionValues(dimension);
     ImmutableBitmap bitmap;
-    if (dimValues == null) {
+    if (dimValues == null || dimValues.size() == 0) {
       bitmap=selector.getBitmapFactory().makeEmptyImmutableBitmap();
+      if (predicate.applyInContext(cx,null)) {
+        bitmap=selector.getBitmapFactory().complement(bitmap,selector.getNumRows());
+      }
     }
  else {
       bitmap=selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(new Predicate<String>(){

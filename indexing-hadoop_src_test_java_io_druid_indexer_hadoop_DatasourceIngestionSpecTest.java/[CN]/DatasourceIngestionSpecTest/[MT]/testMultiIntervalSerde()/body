@@ -5,7 +5,7 @@
   DatasourceIngestionSpec expected=new DatasourceIngestionSpec("test",null,intervals,null,null,null,null,null,false);
   Assert.assertEquals(expected,actual);
   jsonStr="{\n" + "  \"dataSource\": \"test\",\n" + "  \"intervals\": [\"2014/2015\", \"2016/2017\"],\n"+ "  \"segments\": [{\n"+ "    \"dataSource\":\"test\",\n"+ "    \"interval\":\"2014-01-01T00:00:00.000Z/2017-01-01T00:00:00.000Z\",\n"+ "    \"version\":\"v0\",\n"+ "    \"loadSpec\":null,\n"+ "    \"dimensions\":\"\",\n"+ "    \"metrics\":\"\",\n"+ "    \"shardSpec\":{\"type\":\"none\"},\n"+ "    \"binaryVersion\":9,\n"+ "    \"size\":128,\n"+ "    \"identifier\":\"test_2014-01-01T00:00:00.000Z_2017-01-01T00:00:00.000Z_v0\"\n"+ "    }],\n"+ "  \"filter\": { \"type\": \"selector\", \"dimension\": \"dim\", \"value\": \"value\"},\n"+ "  \"granularity\": \"day\",\n"+ "  \"dimensions\": [\"d1\", \"d2\"],\n"+ "  \"metrics\": [\"m1\", \"m2\", \"m3\"],\n"+ "  \"ignoreWhenNoSegments\": true\n"+ "}\n";
-  expected=new DatasourceIngestionSpec("test",null,intervals,ImmutableList.of(new DataSegment("test",Interval.parse("2014/2017"),"v0",null,null,null,null,9,128)),new SelectorDimFilter("dim","value"),QueryGranularity.DAY,Lists.newArrayList("d1","d2"),Lists.newArrayList("m1","m2","m3"),true);
+  expected=new DatasourceIngestionSpec("test",null,intervals,ImmutableList.of(new DataSegment("test",Interval.parse("2014/2017"),"v0",null,null,null,null,9,128)),new SelectorDimFilter("dim","value",null),QueryGranularity.DAY,Lists.newArrayList("d1","d2"),Lists.newArrayList("m1","m2","m3"),true);
   actual=MAPPER.readValue(MAPPER.writeValueAsString(MAPPER.readValue(jsonStr,DatasourceIngestionSpec.class)),DatasourceIngestionSpec.class);
   Assert.assertEquals(expected,actual);
 }

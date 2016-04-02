@@ -1,0 +1,15 @@
+{
+  final Map<String,String> stringMap=ImmutableMap.of("1","HELLO","a","HELLO","def","HELLO","abc","UNKNOWN");
+  LookupExtractor mapExtractor=new MapLookupExtractor(stringMap,false);
+  LookupExtractionFn lookupFn=new LookupExtractionFn(mapExtractor,false,"UNKNOWN",false,true);
+  assertFilterMatches(new JavaScriptDimFilter("dim0",jsValueFilter("HELLO"),lookupFn),ImmutableList.of("1"));
+  assertFilterMatches(new JavaScriptDimFilter("dim0",jsValueFilter("UNKNOWN"),lookupFn),ImmutableList.of("0","2","3","4","5"));
+  assertFilterMatches(new JavaScriptDimFilter("dim1",jsValueFilter("HELLO"),lookupFn),ImmutableList.of("3","4"));
+  assertFilterMatches(new JavaScriptDimFilter("dim1",jsValueFilter("UNKNOWN"),lookupFn),ImmutableList.of("0","1","2","5"));
+  assertFilterMatches(new JavaScriptDimFilter("dim2",jsValueFilter("HELLO"),lookupFn),ImmutableList.of("0","3"));
+  assertFilterMatches(new JavaScriptDimFilter("dim2",jsValueFilter("UNKNOWN"),lookupFn),ImmutableList.of("0","1","2","4","5"));
+  assertFilterMatches(new JavaScriptDimFilter("dim3",jsValueFilter("HELLO"),lookupFn),ImmutableList.<String>of());
+  assertFilterMatches(new JavaScriptDimFilter("dim3",jsValueFilter("UNKNOWN"),lookupFn),ImmutableList.of("0","1","2","3","4","5"));
+  assertFilterMatches(new JavaScriptDimFilter("dim4",jsValueFilter("HELLO"),lookupFn),ImmutableList.<String>of());
+  assertFilterMatches(new JavaScriptDimFilter("dim4",jsValueFilter("UNKNOWN"),lookupFn),ImmutableList.of("0","1","2","3","4","5"));
+}
