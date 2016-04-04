@@ -1,5 +1,6 @@
 {
-  int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
+  DataSegment toAnnounce=segmentTransformer.apply(segment);
+  int newBytesLen=jsonMapper.writeValueAsBytes(toAnnounce).length;
   if (newBytesLen > config.getMaxBytesPerNode()) {
     throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
   }
@@ -10,10 +11,10 @@ synchronized (lock) {
       while (iter.hasNext() && !done) {
         SegmentZNode availableZNode=iter.next();
         if (availableZNode.getBytes().length + newBytesLen < config.getMaxBytesPerNode()) {
-          availableZNode.addSegment(segment);
-          log.info("Announcing segment[%s] at existing path[%s]",segment.getIdentifier(),availableZNode.getPath());
+          availableZNode.addSegment(toAnnounce);
+          log.info("Announcing segment[%s] at existing path[%s]",toAnnounce.getIdentifier(),availableZNode.getPath());
           announcer.update(availableZNode.getPath(),availableZNode.getBytes());
-          segmentLookup.put(segment,availableZNode);
+          segmentLookup.put(toAnnounce,availableZNode);
           if (availableZNode.getCount() >= config.getSegmentsPerNode()) {
             availableZNodes.remove(availableZNode);
           }
@@ -27,10 +28,10 @@ synchronized (lock) {
     if (!done) {
       assert(availableZNodes.isEmpty());
       SegmentZNode availableZNode=new SegmentZNode(makeServedSegmentPath());
-      availableZNode.addSegment(segment);
-      log.info("Announcing segment[%s] at new path[%s]",segment.getIdentifier(),availableZNode.getPath());
+      availableZNode.addSegment(toAnnounce);
+      log.info("Announcing segment[%s] at new path[%s]",toAnnounce.getIdentifier(),availableZNode.getPath());
       announcer.announce(availableZNode.getPath(),availableZNode.getBytes());
-      segmentLookup.put(segment,availableZNode);
+      segmentLookup.put(toAnnounce,availableZNode);
       availableZNodes.add(availableZNode);
     }
   }

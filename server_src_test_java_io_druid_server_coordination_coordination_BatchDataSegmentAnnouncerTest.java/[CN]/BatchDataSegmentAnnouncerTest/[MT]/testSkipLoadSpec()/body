@@ -1,0 +1,14 @@
+{
+  skipLoadSpec=true;
+  Iterator<DataSegment> segIter=testSegments.iterator();
+  DataSegment firstSegment=segIter.next();
+  segmentAnnouncer.announceSegment(firstSegment);
+  List<String> zNodes=cf.getChildren().forPath(testSegmentsPath);
+  for (  String zNode : zNodes) {
+    DataSegment announcedSegment=Iterables.getOnlyElement(segmentReader.read(joiner.join(testSegmentsPath,zNode)));
+    Assert.assertEquals(announcedSegment,firstSegment);
+    Assert.assertNull(announcedSegment.getLoadSpec());
+  }
+  segmentAnnouncer.unannounceSegment(firstSegment);
+  Assert.assertTrue(cf.getChildren().forPath(testSegmentsPath).isEmpty());
+}

@@ -1,9 +1,10 @@
 {
+  Iterable<DataSegment> toAnnounce=Iterables.transform(segments,segmentTransformer);
   SegmentZNode segmentZNode=new SegmentZNode(makeServedSegmentPath());
   Set<DataSegment> batch=Sets.newHashSet();
   int byteSize=0;
   int count=0;
-  for (  DataSegment segment : segments) {
+  for (  DataSegment segment : toAnnounce) {
     int newBytesLen=jsonMapper.writeValueAsBytes(segment).length;
     if (newBytesLen > config.getMaxBytesPerNode()) {
       throw new ISE("byte size %,d exceeds %,d",newBytesLen,config.getMaxBytesPerNode());
