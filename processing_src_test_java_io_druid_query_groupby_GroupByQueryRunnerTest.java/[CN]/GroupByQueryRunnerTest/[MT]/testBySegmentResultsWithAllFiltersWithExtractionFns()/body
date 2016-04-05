@@ -1,0 +1,30 @@
+{
+  int segmentCount=32;
+  Result<BySegmentResultValue> singleSegmentResult=new Result<BySegmentResultValue>(new DateTime("2011-01-12T00:00:00.000Z"),new BySegmentResultValueClass(Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","mezzanine","rows",6L,"idx",4420L)),"testSegment",new Interval("2011-04-02T00:00:00.000Z/2011-04-04T00:00:00.000Z")));
+  List<Result> bySegmentResults=Lists.newArrayList();
+  for (int i=0; i < segmentCount; i++) {
+    bySegmentResults.add(singleSegmentResult);
+  }
+  String extractionJsFn="function(str) { return 'super-' + str; }";
+  String jsFn="function(x) { return(x === 'super-mezzanine') }";
+  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false);
+  List<DimFilter> superFilterList=new ArrayList<>();
+  superFilterList.add(new SelectorDimFilter("quality","super-mezzanine",extractionFn));
+  superFilterList.add(new InDimFilter("quality",Arrays.asList("not-super-mezzanine","FOOBAR","super-mezzanine"),extractionFn));
+  superFilterList.add(new BoundDimFilter("quality","super-mezzanine","super-mezzanine",false,false,true,extractionFn));
+  superFilterList.add(new RegexDimFilter("quality","super-mezzanine",extractionFn));
+  superFilterList.add(new SearchQueryDimFilter("quality",new ContainsSearchQuerySpec("super-mezzanine",true),extractionFn));
+  superFilterList.add(new JavaScriptDimFilter("quality",jsFn,extractionFn));
+  DimFilter superFilter=new AndDimFilter(superFilterList);
+  GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null)).setDimFilter(superFilter).setContext(ImmutableMap.<String,Object>of("bySegment",true));
+  final GroupByQuery fullQuery=builder.build();
+  QueryToolChest toolChest=factory.getToolchest();
+  List<QueryRunner<Row>> singleSegmentRunners=Lists.newArrayList();
+  for (int i=0; i < segmentCount; i++) {
+    singleSegmentRunners.add(toolChest.preMergeQueryDecoration(runner));
+  }
+  ExecutorService exec=Executors.newCachedThreadPool();
+  QueryRunner theRunner=toolChest.postMergeQueryDecoration(new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(Executors.newCachedThreadPool(),singleSegmentRunners)),toolChest));
+  TestHelper.assertExpectedObjects(bySegmentResults,theRunner.run(fullQuery,Maps.newHashMap()),"");
+  exec.shutdownNow();
+}

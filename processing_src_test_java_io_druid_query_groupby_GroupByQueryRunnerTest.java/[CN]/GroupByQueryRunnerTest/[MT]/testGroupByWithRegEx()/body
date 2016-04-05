@@ -1,5 +1,5 @@
 {
-  GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimFilter(new RegexDimFilter("quality","auto.*")).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","quality"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount)).setGranularity(new PeriodGranularity(new Period("P1M"),null,null));
+  GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimFilter(new RegexDimFilter("quality","auto.*",null)).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","quality"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(QueryRunnerTestHelper.rowsCount)).setGranularity(new PeriodGranularity(new Period("P1M"),null,null));
   final GroupByQuery query=builder.build();
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","quality","automotive","rows",2L));
   final GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){

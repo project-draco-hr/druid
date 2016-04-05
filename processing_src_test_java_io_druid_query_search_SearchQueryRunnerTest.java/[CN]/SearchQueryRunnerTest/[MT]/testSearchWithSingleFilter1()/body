@@ -1,5 +1,5 @@
 {
   List<SearchHit> expectedHits=Lists.newLinkedList();
   expectedHits.add(new SearchHit(QueryRunnerTestHelper.qualityDimension,"mezzanine",93));
-  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(new AndDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"total_market"),new SelectorDimFilter(QueryRunnerTestHelper.qualityDimension,"mezzanine")))).intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.qualityDimension).query("a").build(),expectedHits);
+  checkSearchQuery(Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).filters(new AndDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter(QueryRunnerTestHelper.marketDimension,"total_market",null),new SelectorDimFilter(QueryRunnerTestHelper.qualityDimension,"mezzanine",null)))).intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(QueryRunnerTestHelper.qualityDimension).query("a").build(),expectedHits);
 }

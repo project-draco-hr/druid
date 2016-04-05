@@ -1,3 +1,13 @@
 {
-  return factory.makeValueMatcher(dimension,value);
+  if (extractionFn == null) {
+    return factory.makeValueMatcher(dimension,value);
+  }
+ else {
+    return factory.makeValueMatcher(dimension,new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return value.equals(Strings.nullToEmpty(extractionFn.apply(input)));
+      }
+    }
+);
+  }
 }

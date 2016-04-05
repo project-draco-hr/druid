@@ -1,0 +1,9 @@
+{
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue(""),null),ImmutableList.of("1","2","3","4","5"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("10"),null),ImmutableList.of("1"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("2"),null),ImmutableList.of("2"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("1"),null),ImmutableList.of("1","3"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("def"),null),ImmutableList.of("4"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("abc"),null),ImmutableList.of("5"));
+  assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("ab"),null),ImmutableList.<String>of("4","5"));
+}

@@ -1,8 +1,8 @@
 {
-  Assert.assertEquals(ImmutableList.of(0,1,2,3,4,5),select(toInFilter("dim3",null,(String)null)));
-  Assert.assertEquals(ImmutableList.of(0,1,2,3,4,5),select(toInFilter("dim3","")));
-  Assert.assertEquals(ImmutableList.of(0,1,2,3,4,5),select(toInFilter("dim3",null,"a")));
-  Assert.assertEquals(ImmutableList.<Integer>of(),select(toInFilter("dim3","a")));
-  Assert.assertEquals(ImmutableList.<Integer>of(),select(toInFilter("dim3","b")));
-  Assert.assertEquals(ImmutableList.<Integer>of(),select(toInFilter("dim3","c")));
+  assertFilterMatches(toInFilter("dim3",null,(String)null),ImmutableList.of("a","b","c","d","e","f"));
+  assertFilterMatches(toInFilter("dim3",""),ImmutableList.of("a","b","c","d","e","f"));
+  assertFilterMatches(toInFilter("dim3",null,"a"),ImmutableList.of("a","b","c","d","e","f"));
+  assertFilterMatches(toInFilter("dim3","a"),ImmutableList.<String>of());
+  assertFilterMatches(toInFilter("dim3","b"),ImmutableList.<String>of());
+  assertFilterMatches(toInFilter("dim3","c"),ImmutableList.<String>of());
 }

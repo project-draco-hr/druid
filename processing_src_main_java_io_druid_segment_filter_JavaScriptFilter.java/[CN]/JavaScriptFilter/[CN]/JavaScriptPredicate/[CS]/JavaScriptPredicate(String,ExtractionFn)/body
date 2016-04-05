@@ -1,0 +1,14 @@
+{
+  Preconditions.checkNotNull(script,"script must not be null");
+  this.script=script;
+  this.extractionFn=extractionFn;
+  final Context cx=Context.enter();
+  try {
+    cx.setOptimizationLevel(9);
+    scope=cx.initStandardObjects();
+    fnApply=cx.compileFunction(scope,script,"script",1,null);
+  }
+  finally {
+    Context.exit();
+  }
+}

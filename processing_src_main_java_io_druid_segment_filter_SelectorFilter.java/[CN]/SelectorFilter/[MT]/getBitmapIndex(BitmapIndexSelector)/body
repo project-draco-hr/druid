@@ -1,3 +1,12 @@
 {
-  return selector.getBitmapIndex(dimension,value);
+  if (extractionFn == null) {
+    return selector.getBitmapIndex(dimension,value);
+  }
+ else {
+    final List<Filter> filters=makeFiltersUsingExtractionFn(selector);
+    if (filters.isEmpty()) {
+      return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+    }
+    return new OrFilter(filters).getBitmapIndex(selector);
+  }
 }

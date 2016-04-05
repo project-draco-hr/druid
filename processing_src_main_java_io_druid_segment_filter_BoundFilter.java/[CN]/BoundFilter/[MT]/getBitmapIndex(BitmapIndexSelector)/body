@@ -8,7 +8,7 @@
       return selector.getBitmapFactory().makeEmptyImmutableBitmap();
     }
   }
-  if (boundDimFilter.isAlphaNumeric()) {
+  if (boundDimFilter.isAlphaNumeric() || extractionFn != null) {
     final Indexed<String> dimValues=selector.getDimensionValues(boundDimFilter.getDimension());
     return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
       @Override public Iterator<ImmutableBitmap> iterator(){

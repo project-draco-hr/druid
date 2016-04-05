@@ -1,0 +1,20 @@
+{
+  Map<String,String> extractionMap=new HashMap<>();
+  extractionMap.put("","EMPTY");
+  extractionMap.put(null,"EMPTY");
+  MapLookupExtractor mapLookupExtractor=new MapLookupExtractor(extractionMap,false);
+  LookupExtractionFn extractionFn=new LookupExtractionFn(mapLookupExtractor,false,null,true,true);
+  String jsFn="function(x) { return(x === 'EMPTY') }";
+  List<DimFilter> superFilterList=new ArrayList<>();
+  superFilterList.add(new SelectorDimFilter("null_column","EMPTY",extractionFn));
+  superFilterList.add(new InDimFilter("null_column",Arrays.asList("NOT-EMPTY","FOOBAR","EMPTY"),extractionFn));
+  superFilterList.add(new BoundDimFilter("null_column","EMPTY","EMPTY",false,false,true,extractionFn));
+  superFilterList.add(new RegexDimFilter("null_column","EMPTY",extractionFn));
+  superFilterList.add(new SearchQueryDimFilter("null_column",new ContainsSearchQuerySpec("EMPTY",true),extractionFn));
+  superFilterList.add(new JavaScriptDimFilter("null_column",jsFn,extractionFn));
+  DimFilter superFilter=new AndDimFilter(superFilterList);
+  GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("null_column","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).setDimFilter(superFilter).build();
+  List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias",null,"rows",13L,"idx",6619L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias",null,"rows",13L,"idx",5827L));
+  Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
+  TestHelper.assertExpectedObjects(expectedResults,results,"");
+}

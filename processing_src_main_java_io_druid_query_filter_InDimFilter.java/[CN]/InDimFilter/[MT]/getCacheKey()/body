@@ -8,7 +8,8 @@
     valuesBytesSize+=valuesBytes[index].length + 1;
     ++index;
   }
-  ByteBuffer filterCacheKey=ByteBuffer.allocate(2 + dimensionBytes.length + valuesBytesSize).put(DimFilterCacheHelper.IN_CACHE_ID).put(dimensionBytes).put(DimFilterCacheHelper.STRING_SEPARATOR);
+  byte[] extractionFnBytes=extractionFn == null ? new byte[0] : extractionFn.getCacheKey();
+  ByteBuffer filterCacheKey=ByteBuffer.allocate(3 + dimensionBytes.length + valuesBytesSize+ extractionFnBytes.length).put(DimFilterCacheHelper.IN_CACHE_ID).put(dimensionBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(extractionFnBytes).put(DimFilterCacheHelper.STRING_SEPARATOR);
   for (  byte[] bytes : valuesBytes) {
     filterCacheKey.put(bytes).put((byte)0xFF);
   }

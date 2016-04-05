@@ -1,6 +1,9 @@
 {
   return factory.makeValueMatcher(dimension,new Predicate<String>(){
     @Override public boolean apply(    String input){
+      if (extractionFn != null) {
+        input=extractionFn.apply(input);
+      }
       return values.contains(Strings.nullToEmpty(input));
     }
   }

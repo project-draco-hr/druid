@@ -2,7 +2,7 @@
   if (this == o) {
     return true;
   }
-  if (!(o instanceof BoundDimFilter)) {
+  if (o == null || getClass() != o.getClass()) {
     return false;
   }
   BoundDimFilter that=(BoundDimFilter)o;
@@ -21,5 +21,8 @@
   if (getUpper() != null ? !getUpper().equals(that.getUpper()) : that.getUpper() != null) {
     return false;
   }
-  return !(getLower() != null ? !getLower().equals(that.getLower()) : that.getLower() != null);
+  if (getLower() != null ? !getLower().equals(that.getLower()) : that.getLower() != null) {
+    return false;
+  }
+  return getExtractionFn() != null ? getExtractionFn().equals(that.getExtractionFn()) : that.getExtractionFn() == null;
 }

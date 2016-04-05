@@ -2,12 +2,15 @@
   if (this == o) {
     return true;
   }
-  if (!(o instanceof InDimFilter)) {
+  if (o == null || getClass() != o.getClass()) {
     return false;
   }
   InDimFilter that=(InDimFilter)o;
-  if (!values.equals(that.values)) {
+  if (values != null ? !values.equals(that.values) : that.values != null) {
     return false;
   }
-  return dimension.equals(that.dimension);
+  if (!dimension.equals(that.dimension)) {
+    return false;
+  }
+  return extractionFn != null ? extractionFn.equals(that.extractionFn) : that.extractionFn == null;
 }

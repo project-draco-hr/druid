@@ -1,6 +1,6 @@
 {
-  Assert.assertEquals(ImmutableList.<Integer>of(),select(toInFilter("dim0",null)));
-  Assert.assertEquals(ImmutableList.<Integer>of(),select(toInFilter("dim0","","")));
-  Assert.assertEquals(ImmutableList.of(0,2),select(toInFilter("dim0","a","c")));
-  Assert.assertEquals(ImmutableList.of(4),select(toInFilter("dim0","e","x")));
+  assertFilterMatches(toInFilter("dim0",null),ImmutableList.<String>of());
+  assertFilterMatches(toInFilter("dim0","",""),ImmutableList.<String>of());
+  assertFilterMatches(toInFilter("dim0","a","c"),ImmutableList.of("a","c"));
+  assertFilterMatches(toInFilter("dim0","e","x"),ImmutableList.of("e"));
 }

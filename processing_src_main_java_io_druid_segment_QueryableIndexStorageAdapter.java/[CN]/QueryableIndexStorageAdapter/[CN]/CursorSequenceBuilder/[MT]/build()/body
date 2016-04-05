@@ -86,7 +86,7 @@
               }
               @Override public String lookupName(              int id){
                 final String value=column.lookupName(id);
-                return extractionFn == null ? Strings.nullToEmpty(value) : extractionFn.apply(Strings.nullToEmpty(value));
+                return extractionFn == null ? value : extractionFn.apply(value);
               }
               @Override public int lookupId(              String name){
                 if (extractionFn != null) {
