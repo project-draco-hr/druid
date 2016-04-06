@@ -2,12 +2,21 @@
   if (this == o) {
     return true;
   }
-  if (!(o instanceof LookupExtractionFn)) {
+  if (o == null || getClass() != o.getClass()) {
     return false;
   }
   LookupExtractionFn that=(LookupExtractionFn)o;
   if (isOptimize() != that.isOptimize()) {
     return false;
   }
-  return getLookup().equals(that.getLookup());
+  if (isRetainMissingValue() != that.isRetainMissingValue()) {
+    return false;
+  }
+  if (isInjective() != that.isInjective()) {
+    return false;
+  }
+  if (getLookup() != null ? !getLookup().equals(that.getLookup()) : that.getLookup() != null) {
+    return false;
+  }
+  return getReplaceMissingValueWith() != null ? getReplaceMissingValueWith().equals(that.getReplaceMissingValueWith()) : that.getReplaceMissingValueWith() == null;
 }

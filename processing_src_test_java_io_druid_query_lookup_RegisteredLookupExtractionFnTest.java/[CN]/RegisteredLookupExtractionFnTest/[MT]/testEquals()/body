@@ -1,0 +1,13 @@
+{
+  final LookupReferencesManager manager=EasyMock.createStrictMock(LookupReferencesManager.class);
+  managerReturnsMap(manager);
+  EasyMock.replay(manager);
+  final RegisteredLookupExtractionFn fn=RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,"something",true,false);
+  Assert.assertEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,"something",true,false));
+  Assert.assertNotEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,true,null,true,false));
+  Assert.assertNotEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,"something else",true,false));
+  Assert.assertNotEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,"something",false,false));
+  Assert.assertNotEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,"something",true,true));
+  Assert.assertNotEquals(fn,RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,false,null,true,false));
+  EasyMock.verify(manager);
+}

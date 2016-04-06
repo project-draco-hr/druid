@@ -1,0 +1,11 @@
+{
+  final LookupReferencesManager manager=EasyMock.createStrictMock(LookupReferencesManager.class);
+  managerReturnsMap(manager);
+  EasyMock.replay(manager);
+  final RegisteredLookupExtractionFn fn=RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,true,null,true,false);
+  EasyMock.verify(manager);
+  for (  String orig : Arrays.asList("","foo","bat")) {
+    Assert.assertEquals(LOOKUP_EXTRACTOR.apply(orig),fn.apply(orig));
+  }
+  Assert.assertEquals("not in the map",fn.apply("not in the map"));
+}

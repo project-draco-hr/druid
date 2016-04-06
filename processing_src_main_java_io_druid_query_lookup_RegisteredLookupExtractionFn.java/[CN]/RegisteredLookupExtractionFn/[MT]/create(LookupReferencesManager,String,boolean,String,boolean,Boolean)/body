@@ -1,0 +1,6 @@
+{
+  Preconditions.checkArgument(lookup != null,"`lookup` required");
+  final LookupExtractorFactory factory=manager.get(lookup);
+  Preconditions.checkNotNull(factory,"lookup [%s] not found",lookup);
+  return new RegisteredLookupExtractionFn(new LookupExtractionFn(factory.get(),retainMissingValue,replaceMissingValueWith,injective,optimize),lookup);
+}
