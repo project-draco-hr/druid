@@ -1,7 +1,7 @@
 {
   LookupBean lookupBean=new LookupBean();
   lookupBean.name="name";
-  lookupBean.factory=new LookupFactoryMock();
+  lookupBean.factory=new MapLookupExtractorFactory(ImmutableMap.of("key","value"),true);
   List<LookupBean> lookupBeanList=Lists.newArrayList(lookupBean);
   lookupSnapshotTaker.takeSnapshot(lookupBeanList);
   List<LookupBean> actualList=lookupSnapshotTaker.pullExistingSnapshot();

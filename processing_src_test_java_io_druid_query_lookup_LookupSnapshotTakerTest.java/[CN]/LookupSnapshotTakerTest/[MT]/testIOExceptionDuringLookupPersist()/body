@@ -4,7 +4,7 @@
   LookupSnapshotTaker lookupSnapshotTaker=new LookupSnapshotTaker(mapper,directory.getAbsolutePath());
   LookupBean lookupBean=new LookupBean();
   lookupBean.name="name";
-  lookupBean.factory=new LookupFactoryMock();
+  lookupBean.factory=new MapLookupExtractorFactory(ImmutableMap.of("key","value"),true);
   List<LookupBean> lookupBeanList=Lists.newArrayList(lookupBean);
   lookupSnapshotTaker.takeSnapshot(lookupBeanList);
 }
