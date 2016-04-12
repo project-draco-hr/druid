@@ -1,0 +1,11 @@
+{
+  ExprLexer lexer=new ExprLexer(new ANTLRInputStream(in));
+  CommonTokenStream tokens=new CommonTokenStream(lexer);
+  ExprParser parser=new ExprParser(tokens);
+  parser.setBuildParseTree(true);
+  ParseTree parseTree=parser.expr();
+  ParseTreeWalker walker=new ParseTreeWalker();
+  ExprListenerImpl listener=new ExprListenerImpl(parseTree);
+  walker.walk(listener,parseTree);
+  return listener.getAST();
+}

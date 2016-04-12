@@ -1,0 +1,25 @@
+{
+  int opCode=((TerminalNode)ctx.getChild(1)).getSymbol().getType();
+switch (opCode) {
+case ExprParser.LT:
+    nodes.put(ctx,new BinLtExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+  break;
+case ExprParser.LEQ:
+nodes.put(ctx,new BinLeqExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+case ExprParser.GT:
+nodes.put(ctx,new BinGtExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+case ExprParser.GEQ:
+nodes.put(ctx,new BinGeqExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+case ExprParser.EQ:
+nodes.put(ctx,new BinEqExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+case ExprParser.NEQ:
+nodes.put(ctx,new BinNeqExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+default :
+throw new RuntimeException("Unrecognized binary operator " + ctx.getChild(1).getText());
+}
+}

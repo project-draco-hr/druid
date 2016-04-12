@@ -1,0 +1,16 @@
+{
+  int opCode=((TerminalNode)ctx.getChild(1)).getSymbol().getType();
+switch (opCode) {
+case ExprParser.MUL:
+    nodes.put(ctx,new BinMulExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+  break;
+case ExprParser.DIV:
+nodes.put(ctx,new BinDivExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+case ExprParser.MODULO:
+nodes.put(ctx,new BinModuloExpr(ctx.getChild(1).getText(),(Expr)nodes.get(ctx.getChild(0)),(Expr)nodes.get(ctx.getChild(2))));
+break;
+default :
+throw new RuntimeException("Unrecognized binary operator " + ctx.getChild(1).getText());
+}
+}

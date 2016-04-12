@@ -1,0 +1,14 @@
+{
+  String actual=Parser.parse("x+y+z").toString();
+  String expected="(+ (+ x y) z)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("x+y-z").toString();
+  expected="(- (+ x y) z)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("x-y+z").toString();
+  expected="(+ (- x y) z)";
+  Assert.assertEquals(expected,actual);
+  actual=Parser.parse("x-y-z").toString();
+  expected="(- (- x y) z)";
+  Assert.assertEquals(expected,actual);
+}

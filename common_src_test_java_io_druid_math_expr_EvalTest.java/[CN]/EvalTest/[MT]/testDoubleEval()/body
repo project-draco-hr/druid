@@ -1,0 +1,28 @@
+{
+  Map<String,Number> bindings=new HashMap<>();
+  bindings.put("x",2.0d);
+  Assert.assertEquals(2.0,Parser.parse("x").eval(bindings).doubleValue(),0.0001);
+  Assert.assertFalse(Parser.parse("1.0 && 0.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("1.0 && 2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("1.0 || 0.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertFalse(Parser.parse("0.0 || 0.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("2.0 > 1.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("2.0 >= 2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("1.0 < 2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("2.0 <= 2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("2.0 == 2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("2.0 != 1.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertEquals(3.5,Parser.parse("2.0 + 1.5").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(0.5,Parser.parse("2.0 - 1.5").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(3.0,Parser.parse("2.0 * 1.5").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(4.0,Parser.parse("2.0 / 0.5").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(0.2,Parser.parse("2.0 % 0.3").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(8.0,Parser.parse("2.0 ^ 3.0").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(-1.5,Parser.parse("-1.5").eval(bindings).doubleValue(),0.0001);
+  Assert.assertTrue(Parser.parse("!-1.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertTrue(Parser.parse("!0.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertFalse(Parser.parse("!2.0").eval(bindings).doubleValue() > 0.0);
+  Assert.assertEquals(2.0,Parser.parse("sqrt(4.0)").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(2.0,Parser.parse("if(1.0, 2.0, 3.0)").eval(bindings).doubleValue(),0.0001);
+  Assert.assertEquals(3.0,Parser.parse("if(0.0, 2.0, 3.0)").eval(bindings).doubleValue(),0.0001);
+}
