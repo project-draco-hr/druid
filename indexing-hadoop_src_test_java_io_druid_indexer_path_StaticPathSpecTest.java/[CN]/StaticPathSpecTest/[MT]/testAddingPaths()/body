@@ -1,0 +1,11 @@
+{
+  Job job=new Job();
+  StaticPathSpec pathSpec=new StaticPathSpec("/a/c,/a/b/{c,d}",null);
+  DataSchema schema=new DataSchema("ds",null,new AggregatorFactory[0],null,jsonMapper);
+  HadoopIOConfig io=new HadoopIOConfig(null,null,null);
+  pathSpec.addInputPaths(new HadoopDruidIndexerConfig(new HadoopIngestionSpec(schema,io,null)),job);
+  String paths=job.getConfiguration().get(MultipleInputs.DIR_FORMATS);
+  String formatter=TextInputFormat.class.getName();
+  String[] expected={"/a/c;" + formatter,"/a/b/c;" + formatter,"/a/b/d;" + formatter};
+  Assert.assertArrayEquals(expected,paths.split(","));
+}

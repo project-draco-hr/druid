@@ -1,0 +1,21 @@
+{
+  if (paths == null || paths.isEmpty()) {
+    return;
+  }
+  Class<? extends InputFormat> inputFormatClassToUse=inputFormatClass;
+  if (inputFormatClassToUse == null) {
+    if (config.isCombineText()) {
+      inputFormatClassToUse=CombineTextInputFormat.class;
+    }
+ else {
+      inputFormatClassToUse=TextInputFormat.class;
+    }
+  }
+  Set<String> pathStrings=Sets.newLinkedHashSet();
+  for (  String path : paths) {
+    Iterables.addAll(pathStrings,HadoopGlobPathSplitter.splitGlob(path));
+  }
+  if (!pathStrings.isEmpty()) {
+    addInputPath(job,pathStrings,inputFormatClassToUse);
+  }
+}

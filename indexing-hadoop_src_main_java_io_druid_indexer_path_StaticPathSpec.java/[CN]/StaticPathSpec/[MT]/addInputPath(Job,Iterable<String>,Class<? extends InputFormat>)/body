@@ -1,0 +1,15 @@
+{
+  Configuration conf=job.getConfiguration();
+  StringBuilder inputFormats=new StringBuilder(Strings.nullToEmpty(conf.get(MultipleInputs.DIR_FORMATS)));
+  String[] paths=Iterables.toArray(pathStrings,String.class);
+  for (int i=0; i < paths.length - 1; i++) {
+    if (inputFormats.length() > 0) {
+      inputFormats.append(',');
+    }
+    inputFormats.append(paths[i]).append(';').append(inputFormatClass.getName());
+  }
+  if (inputFormats.length() > 0) {
+    conf.set(MultipleInputs.DIR_FORMATS,inputFormats.toString());
+  }
+  MultipleInputs.addInputPath(job,new Path(paths[paths.length - 1]),inputFormatClass);
+}

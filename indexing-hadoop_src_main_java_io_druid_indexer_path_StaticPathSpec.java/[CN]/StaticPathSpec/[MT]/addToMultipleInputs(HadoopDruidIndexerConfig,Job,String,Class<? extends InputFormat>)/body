@@ -1,17 +1,5 @@
 {
-  if (path == null) {
-    return;
-  }
-  Class<? extends InputFormat> inputFormatClassToUse=inputFormatClass;
-  if (inputFormatClassToUse == null) {
-    if (config.isCombineText()) {
-      inputFormatClassToUse=CombineTextInputFormat.class;
-    }
- else {
-      inputFormatClassToUse=TextInputFormat.class;
-    }
-  }
-  for (  StringBuilder sb : HadoopGlobPathSplitter.splitGlob(path)) {
-    MultipleInputs.addInputPath(job,new Path(sb.toString()),inputFormatClassToUse);
+  if (path != null) {
+    addToMultipleInputs(config,job,ImmutableSet.of(path),inputFormatClass);
   }
 }
