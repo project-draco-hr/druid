@@ -1,0 +1,12 @@
+{
+  JavaScriptDimFilter javaScriptDimFilter=new JavaScriptDimFilter("dim","fn",null);
+  JavaScriptDimFilter javaScriptDimFilter2=new JavaScriptDimFilter("di","mfn",null);
+  JavaScriptDimFilter javaScriptDimFilter3=new JavaScriptDimFilter("di","mfn",null);
+  Assert.assertNotEquals(javaScriptDimFilter.hashCode(),javaScriptDimFilter2.hashCode());
+  Assert.assertEquals(javaScriptDimFilter2.hashCode(),javaScriptDimFilter3.hashCode());
+  RegexDimExtractionFn regexFn=new RegexDimExtractionFn(".*",false,null);
+  JavaScriptDimFilter javaScriptDimFilter4=new JavaScriptDimFilter("dim","fn",regexFn);
+  JavaScriptDimFilter javaScriptDimFilter5=new JavaScriptDimFilter("dim","fn",regexFn);
+  Assert.assertNotEquals(javaScriptDimFilter.hashCode(),javaScriptDimFilter3.hashCode());
+  Assert.assertEquals(javaScriptDimFilter4.hashCode(),javaScriptDimFilter5.hashCode());
+}
