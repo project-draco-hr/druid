@@ -9,8 +9,7 @@
   announcer=new Announcer(cf,MoreExecutors.sameThreadExecutor());
   announcer.start();
   segmentReader=new SegmentReader(cf,jsonMapper);
-  skipDimensions=false;
-  skipMetrics=false;
+  skipDimensionsAndMetrics=false;
   skipLoadSpec=false;
   segmentAnnouncer=new BatchDataSegmentAnnouncer(new DruidServerMetadata("id","host",Long.MAX_VALUE,"type","tier",0),new BatchDataSegmentAnnouncerConfig(){
     @Override public int getSegmentsPerNode(){
@@ -19,11 +18,8 @@
     @Override public long getMaxBytesPerNode(){
       return maxBytesPerNode.get();
     }
-    @Override public boolean isSkipDimensions(){
-      return skipDimensions;
-    }
-    @Override public boolean isSkipMetrics(){
-      return skipMetrics;
+    @Override public boolean isSkipDimensionsAndMetrics(){
+      return skipDimensionsAndMetrics;
     }
     @Override public boolean isSkipLoadSpec(){
       return skipLoadSpec;
