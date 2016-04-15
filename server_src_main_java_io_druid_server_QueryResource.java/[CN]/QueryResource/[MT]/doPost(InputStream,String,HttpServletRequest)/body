@@ -7,6 +7,7 @@
   final String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
   ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
   final ObjectWriter jsonWriter=pretty != null ? objectMapper.writerWithDefaultPrettyPrinter() : objectMapper.writer();
+  final String currThreadName=Thread.currentThread().getName();
   try {
     query=objectMapper.readValue(in,Query.class);
     queryId=query.getId();
@@ -17,6 +18,7 @@
     if (query.getContextValue(QueryContextKeys.TIMEOUT) == null) {
       query=query.withOverriddenContext(ImmutableMap.of(QueryContextKeys.TIMEOUT,config.getMaxIdleTime().toStandardDuration().getMillis()));
     }
+    Thread.currentThread().setName(String.format("%s[%s_%s_%s]",currThreadName,query.getType(),query.getDataSource(),queryId));
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
     }
@@ -90,5 +92,8 @@ catch (  Exception e) {
     }
     log.makeAlert(e,"Exception handling request").addData("exception",e.toString()).addData("query",queryString).addData("peer",req.getRemoteAddr()).emit();
     return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
+  }
+ finally {
+    Thread.currentThread().setName(currThreadName);
   }
 }

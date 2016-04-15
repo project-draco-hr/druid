@@ -20,7 +20,7 @@
   final String url=String.format("http://%s/druid/v2/",host);
   final String cancelUrl=String.format("http://%s/druid/v2/%s",host,query.getId());
   try {
-    log.debug("Querying url[%s]",url);
+    log.debug("Querying queryId[%s] url[%s]",query.getId(),url);
     final long requestStartTime=System.currentTimeMillis();
     final ServiceMetricEvent.Builder builder=toolChest.makeMetricBuilder(query);
     builder.setDimension("server",host);
@@ -31,7 +31,7 @@
       private final BlockingQueue<InputStream> queue=new LinkedBlockingQueue<>();
       private final AtomicBoolean done=new AtomicBoolean(false);
       @Override public ClientResponse<InputStream> handleResponse(      HttpResponse response){
-        log.debug("Initial response from url[%s]",url);
+        log.debug("Initial response from url[%s] for queryId[%s]",url,query.getId());
         responseStartTime=System.currentTimeMillis();
         emitter.emit(builder.build("query/node/ttfb",responseStartTime - requestStartTime));
         try {
@@ -94,7 +94,7 @@ synchronized (done) {
       }
       @Override public ClientResponse<InputStream> done(      ClientResponse<InputStream> clientResponse){
         long stopTime=System.currentTimeMillis();
-        log.debug("Completed request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",url,byteCount.get(),stopTime - responseStartTime,byteCount.get() / (0.0001 * (stopTime - responseStartTime)));
+        log.debug("Completed queryId[%s] request to url[%s] with %,d bytes returned in %,d millis [%,f b/s].",query.getId(),url,byteCount.get(),stopTime - responseStartTime,byteCount.get() / (0.0001 * (stopTime - responseStartTime)));
         emitter.emit(builder.build("query/node/time",stopTime - requestStartTime));
         emitter.emit(builder.build("query/node/bytes",byteCount.get()));
 synchronized (done) {
