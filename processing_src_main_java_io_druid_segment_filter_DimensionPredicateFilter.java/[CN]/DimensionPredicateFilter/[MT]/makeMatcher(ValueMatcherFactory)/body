@@ -1,14 +1,3 @@
 {
-  if (extractionFn == null) {
-    return factory.makeValueMatcher(dimension,predicate);
-  }
- else {
-    Predicate extractingPredicate=new Predicate(){
-      @Override public boolean apply(      @Nullable Object input){
-        return predicate.apply(extractionFn.apply(input));
-      }
-    }
-;
-    return factory.makeValueMatcher(dimension,extractingPredicate);
-  }
+  return factory.makeValueMatcher(dimension,predicate);
 }

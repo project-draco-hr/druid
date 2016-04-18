@@ -2,25 +2,38 @@
   if (predicate == null) {
     return selector.getBitmapFactory().makeEmptyImmutableBitmap();
   }
-  Indexed<String> dimValues=selector.getDimensionValues(dimension);
+  final Indexed<String> dimValues=selector.getDimensionValues(dimension);
   if (dimValues == null || dimValues.size() == 0) {
-    boolean needsComplement=predicate.apply(extractionFn == null ? null : extractionFn.apply(null));
-    if (needsComplement) {
+    if (predicate.apply(null)) {
       return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
     }
  else {
       return selector.getBitmapFactory().makeEmptyImmutableBitmap();
     }
   }
-  return selector.getBitmapFactory().union(FunctionalIterable.create(dimValues).filter(extractionFn == null ? predicate : new Predicate<String>(){
-    @Override public boolean apply(    @Nullable String input){
-      return predicate.apply(extractionFn.apply(input));
+  final BitmapIndex bitmapIndex=selector.getBitmapIndex(dimension);
+  return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
+    @Override public Iterator<ImmutableBitmap> iterator(){
+      return new Iterator<ImmutableBitmap>(){
+        int currIndex=0;
+        @Override public boolean hasNext(){
+          return currIndex < bitmapIndex.getCardinality();
+        }
+        @Override public ImmutableBitmap next(){
+          while (currIndex < bitmapIndex.getCardinality() && !predicate.apply(dimValues.get(currIndex))) {
+            currIndex++;
+          }
+          if (currIndex == bitmapIndex.getCardinality()) {
+            return bitmapIndex.getBitmapFactory().makeEmptyImmutableBitmap();
+          }
+          return bitmapIndex.getBitmap(currIndex++);
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
     }
   }
-).transform(new Function<String,ImmutableBitmap>(){
-    @Override public ImmutableBitmap apply(    @Nullable String input){
-      return selector.getBitmapIndex(dimension,input);
-    }
-  }
-));
+);
 }

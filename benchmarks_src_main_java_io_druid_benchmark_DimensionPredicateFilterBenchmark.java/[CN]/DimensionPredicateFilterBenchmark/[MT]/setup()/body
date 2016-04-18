@@ -1,0 +1,40 @@
+{
+  final BitmapFactory bitmapFactory=new RoaringBitmapFactory();
+  final BitmapSerdeFactory serdeFactory=new RoaringBitmapSerdeFactory();
+  final List<Integer> ints=generateInts();
+  final GenericIndexed<String> dictionary=GenericIndexed.fromIterable(FluentIterable.from(ints).transform(new Function<Integer,String>(){
+    @Override public String apply(    Integer i){
+      return i.toString();
+    }
+  }
+),GenericIndexed.STRING_STRATEGY);
+  final BitmapIndex bitmapIndex=new BitmapIndexColumnPartSupplier(bitmapFactory,GenericIndexed.fromIterable(FluentIterable.from(ints).transform(new Function<Integer,ImmutableBitmap>(){
+    @Override public ImmutableBitmap apply(    Integer i){
+      final MutableBitmap mutableBitmap=bitmapFactory.makeEmptyMutableBitmap();
+      mutableBitmap.add(i - START_INT);
+      return bitmapFactory.makeImmutableBitmap(mutableBitmap);
+    }
+  }
+),serdeFactory.getObjectStrategy()),dictionary).get();
+  selector=new BitmapIndexSelector(){
+    @Override public Indexed<String> getDimensionValues(    String dimension){
+      return dictionary;
+    }
+    @Override public int getNumRows(){
+      throw new UnsupportedOperationException();
+    }
+    @Override public BitmapFactory getBitmapFactory(){
+      return bitmapFactory;
+    }
+    @Override public ImmutableBitmap getBitmapIndex(    String dimension,    String value){
+      return bitmapIndex.getBitmap(bitmapIndex.getIndex(value));
+    }
+    @Override public BitmapIndex getBitmapIndex(    String dimension){
+      return bitmapIndex;
+    }
+    @Override public ImmutableRTree getSpatialIndex(    String dimension){
+      throw new UnsupportedOperationException();
+    }
+  }
+;
+}
