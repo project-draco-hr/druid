@@ -1,3 +1,3 @@
 {
-  return new FinalizeResultsQueryRunner<T>(factory.getToolchest().postMergeQueryDecoration(factory.getToolchest().mergeResults(new UnionQueryRunner<T>(new BySegmentQueryRunner<T>(segmentId,adapter.getDataInterval().getStart(),factory.createRunner(adapter))))),factory.getToolchest());
+  return new FluentQueryRunnerBuilder<T>(factory.getToolchest()).create(new UnionQueryRunner<T>(new BySegmentQueryRunner<T>(segmentId,adapter.getDataInterval().getStart(),factory.createRunner(adapter)))).mergeResults().applyPostMergeDecoration();
 }

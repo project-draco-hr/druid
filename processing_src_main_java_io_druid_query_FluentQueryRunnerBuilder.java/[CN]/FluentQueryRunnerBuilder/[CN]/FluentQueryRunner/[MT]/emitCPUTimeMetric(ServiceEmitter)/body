@@ -1,0 +1,8 @@
+{
+  return from(CPUTimeMetricQueryRunner.safeBuild(baseRunner,new Function<Query<T>,ServiceMetricEvent.Builder>(){
+    @Nullable @Override public ServiceMetricEvent.Builder apply(    Query<T> tQuery){
+      return toolChest.makeMetricBuilder(tQuery);
+    }
+  }
+,emitter,new AtomicLong(0L),true));
+}
