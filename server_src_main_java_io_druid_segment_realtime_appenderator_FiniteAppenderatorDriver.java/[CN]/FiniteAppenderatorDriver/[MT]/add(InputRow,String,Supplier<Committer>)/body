@@ -1,5 +1,8 @@
 {
-  final SegmentIdentifier identifier=getSegment(row.getTimestamp());
+  Preconditions.checkNotNull(row,"row");
+  Preconditions.checkNotNull(sequenceName,"sequenceName");
+  Preconditions.checkNotNull(committerSupplier,"committerSupplier");
+  final SegmentIdentifier identifier=getSegment(row.getTimestamp(),sequenceName);
   if (identifier != null) {
     try {
       final int numRows=appenderator.add(identifier,row,wrapCommitterSupplier(committerSupplier));

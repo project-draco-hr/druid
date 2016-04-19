@@ -1,0 +1,15 @@
+{
+synchronized (activeSegments) {
+    final NavigableMap<Long,SegmentIdentifier> activeSegmentsForSequence=activeSegments.get(sequenceName);
+    if (activeSegmentsForSequence == null) {
+      return null;
+    }
+    final Map.Entry<Long,SegmentIdentifier> candidateEntry=activeSegmentsForSequence.floorEntry(timestamp.getMillis());
+    if (candidateEntry != null && candidateEntry.getValue().getInterval().contains(timestamp)) {
+      return candidateEntry.getValue();
+    }
+ else {
+      return null;
+    }
+  }
+}

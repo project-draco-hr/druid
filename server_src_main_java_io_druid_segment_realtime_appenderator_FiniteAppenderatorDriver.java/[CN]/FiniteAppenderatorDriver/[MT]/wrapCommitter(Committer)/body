@@ -1,6 +1,11 @@
 {
 synchronized (activeSegments) {
-    final FiniteAppenderatorDriverMetadata wrappedMetadata=new FiniteAppenderatorDriverMetadata(ImmutableList.copyOf(activeSegments.values()),lastSegmentId,committer.getMetadata());
+    final FiniteAppenderatorDriverMetadata wrappedMetadata=new FiniteAppenderatorDriverMetadata(ImmutableMap.copyOf(Maps.transformValues(activeSegments,new Function<NavigableMap<Long,SegmentIdentifier>,List<SegmentIdentifier>>(){
+      @Override public List<SegmentIdentifier> apply(      NavigableMap<Long,SegmentIdentifier> input){
+        return ImmutableList.copyOf(input.values());
+      }
+    }
+)),ImmutableMap.copyOf(lastSegmentIds),committer.getMetadata());
     return new Committer(){
       @Override public Object getMetadata(){
         return wrappedMetadata;

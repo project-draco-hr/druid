@@ -4,23 +4,28 @@
   while (true) {
     try {
       log.info("Pushing segments: [%s]",Joiner.on(", ").join(theSegments));
-      final SegmentsAndMetadata segmentsAndMetadata=appenderator.push(theSegments,committer).get();
+      final SegmentsAndMetadata segmentsAndMetadata=appenderator.push(theSegments,wrappedCommitter).get();
       if (!segmentsToIdentifiers(segmentsAndMetadata.getSegments()).equals(Sets.newHashSet(theSegments))) {
         throw new ISE("WTF?! Pushed different segments than requested. Pushed[%s], requested[%s].",Joiner.on(", ").join(identifiersToStrings(segmentsToIdentifiers(segmentsAndMetadata.getSegments()))),Joiner.on(", ").join(identifiersToStrings(theSegments)));
       }
       log.info("Publishing segments with commitMetadata[%s]: [%s]",segmentsAndMetadata.getCommitMetadata(),Joiner.on(", ").join(segmentsAndMetadata.getSegments()));
-      final boolean published=publisher.publishSegments(ImmutableSet.copyOf(segmentsAndMetadata.getSegments()),((FiniteAppenderatorDriverMetadata)segmentsAndMetadata.getCommitMetadata()).getCallerMetadata());
-      if (published) {
-        log.info("Published segments, awaiting handoff.");
+      if (segmentsAndMetadata.getSegments().isEmpty()) {
+        log.info("Nothing to publish, skipping publish step.");
       }
  else {
-        log.info("Transaction failure while publishing segments, checking if someone else beat us to it.");
-        if (usedSegmentChecker.findUsedSegments(segmentsToIdentifiers(segmentsAndMetadata.getSegments())).equals(Sets.newHashSet(segmentsAndMetadata.getSegments()))) {
-          log.info("Our segments really do exist, awaiting handoff.");
+        final boolean published=publisher.publishSegments(ImmutableSet.copyOf(segmentsAndMetadata.getSegments()),((FiniteAppenderatorDriverMetadata)segmentsAndMetadata.getCommitMetadata()).getCallerMetadata());
+        if (published) {
+          log.info("Published segments, awaiting handoff.");
         }
  else {
-          log.warn("Our segments don't exist, giving up.");
-          return null;
+          log.info("Transaction failure while publishing segments, checking if someone else beat us to it.");
+          if (usedSegmentChecker.findUsedSegments(segmentsToIdentifiers(segmentsAndMetadata.getSegments())).equals(Sets.newHashSet(segmentsAndMetadata.getSegments()))) {
+            log.info("Our segments really do exist, awaiting handoff.");
+          }
+ else {
+            log.warn("Our segments don't exist, giving up.");
+            return null;
+          }
         }
       }
       for (      final DataSegment dataSegment : segmentsAndMetadata.getSegments()) {

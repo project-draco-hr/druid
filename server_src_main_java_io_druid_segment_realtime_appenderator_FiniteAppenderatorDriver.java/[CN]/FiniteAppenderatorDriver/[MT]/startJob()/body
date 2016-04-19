@@ -4,10 +4,15 @@
   log.info("Restored metadata[%s].",metadata);
   if (metadata != null) {
 synchronized (activeSegments) {
-      for (      SegmentIdentifier identifier : metadata.getActiveSegments()) {
-        activeSegments.put(identifier.getInterval().getStartMillis(),identifier);
+      for (      Map.Entry<String,List<SegmentIdentifier>> entry : metadata.getActiveSegments().entrySet()) {
+        final String sequenceName=entry.getKey();
+        final TreeMap<Long,SegmentIdentifier> segmentMap=Maps.newTreeMap();
+        lastSegmentIds.put(sequenceName,metadata.getLastSegmentIds().get(sequenceName));
+        activeSegments.put(sequenceName,segmentMap);
+        for (        SegmentIdentifier identifier : entry.getValue()) {
+          segmentMap.put(identifier.getInterval().getStartMillis(),identifier);
+        }
       }
-      lastSegmentId=metadata.getPreviousSegmentId();
     }
     return metadata.getCallerMetadata();
   }

@@ -3,7 +3,7 @@
   Assert.assertNull(driver.startJob());
   for (int i=0; i < ROWS.size(); i++) {
     committerSupplier.setMetadata(i + 1);
-    Assert.assertNotNull(driver.add(ROWS.get(i),committerSupplier));
+    Assert.assertNotNull(driver.add(ROWS.get(i),"dummy",committerSupplier));
   }
   final SegmentsAndMetadata segmentsAndMetadata=driver.finish(makeOkPublisher(),committerSupplier.get());
   Assert.assertEquals(ImmutableSet.of(new SegmentIdentifier(DATA_SOURCE,new Interval("2000/PT1H"),VERSION,new NumberedShardSpec(0,0)),new SegmentIdentifier(DATA_SOURCE,new Interval("2000T01/PT1H"),VERSION,new NumberedShardSpec(0,0))),asIdentifiers(segmentsAndMetadata.getSegments()));

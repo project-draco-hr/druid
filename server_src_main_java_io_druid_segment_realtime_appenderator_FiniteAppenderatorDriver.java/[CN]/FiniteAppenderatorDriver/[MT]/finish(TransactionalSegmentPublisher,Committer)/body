@@ -2,7 +2,7 @@
   final SegmentsAndMetadata segmentsAndMetadata=publishAll(publisher,wrapCommitter(committer));
   if (segmentsAndMetadata != null) {
     final long giveUpAt=handoffConditionTimeout > 0 ? System.currentTimeMillis() + handoffConditionTimeout : 0;
-    log.info("Awaiting handoff...");
+    log.info("Awaiting handoff of segments: [%s]",Joiner.on(", ").join(appenderator.getSegments()));
 synchronized (handoffMonitor) {
       while (!appenderator.getSegments().isEmpty()) {
         if (giveUpAt == 0) {
@@ -19,6 +19,7 @@ synchronized (handoffMonitor) {
         }
       }
     }
+    log.info("All segments handed off.");
     return new SegmentsAndMetadata(segmentsAndMetadata.getSegments(),((FiniteAppenderatorDriverMetadata)segmentsAndMetadata.getCommitMetadata()).getCallerMetadata());
   }
  else {

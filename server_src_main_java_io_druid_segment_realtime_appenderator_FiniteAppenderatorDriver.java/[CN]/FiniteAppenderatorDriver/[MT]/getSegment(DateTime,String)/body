@@ -1,0 +1,30 @@
+{
+synchronized (activeSegments) {
+    final SegmentIdentifier existing=getActiveSegment(timestamp,sequenceName);
+    if (existing != null) {
+      return existing;
+    }
+ else {
+      final NavigableMap<Long,SegmentIdentifier> activeSegmentsForSequence=activeSegments.get(sequenceName);
+      final SegmentIdentifier newSegment=segmentAllocator.allocate(timestamp,sequenceName,lastSegmentIds.get(sequenceName));
+      if (newSegment != null) {
+        final Long key=newSegment.getInterval().getStartMillis();
+        for (        SegmentIdentifier identifier : appenderator.getSegments()) {
+          if (identifier.equals(newSegment)) {
+            throw new ISE("WTF?! Allocated segment[%s] which conflicts with existing segment[%s].",newSegment,identifier);
+          }
+        }
+        log.info("New segment[%s] for sequenceName[%s].",newSegment,sequenceName);
+        if (activeSegmentsForSequence == null) {
+          activeSegments.put(sequenceName,Maps.<Long,SegmentIdentifier>newTreeMap());
+        }
+        activeSegments.get(sequenceName).put(key,newSegment);
+        lastSegmentIds.put(sequenceName,newSegment.getIdentifierAsString());
+      }
+ else {
+        log.warn("Cannot allocate segment for timestamp[%s], sequenceName[%s]. ",timestamp,sequenceName);
+      }
+      return newSegment;
+    }
+  }
+}

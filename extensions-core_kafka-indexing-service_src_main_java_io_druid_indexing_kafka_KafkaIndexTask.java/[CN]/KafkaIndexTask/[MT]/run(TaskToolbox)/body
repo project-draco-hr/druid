@@ -23,6 +23,10 @@
         throw new ISE("WTF?! Restored partitions[%s] but expected partitions[%s]",nextOffsets.keySet(),ioConfig.getStartPartitions().getPartitionOffsetMap().keySet());
       }
     }
+    final Map<Integer,String> sequenceNames=Maps.newHashMap();
+    for (    Integer partitionNum : nextOffsets.keySet()) {
+      sequenceNames.put(partitionNum,String.format("%s_%s",ioConfig.getBaseSequenceName(),partitionNum));
+    }
     final Supplier<Committer> committerSupplier=new Supplier<Committer>(){
       @Override public Committer get(){
         final Map<Integer,Long> snapshot=ImmutableMap.copyOf(nextOffsets);
@@ -56,7 +60,7 @@
       log.info("Seeking partition[%d] to offset[%,d].",partition,offset);
       consumer.seek(new TopicPartition(topic,partition),offset);
     }
-    boolean stillReading=true;
+    boolean stillReading=!assignment.isEmpty();
     while (stillReading) {
       if (stopping) {
         log.info("Stopping early.");
@@ -88,7 +92,7 @@
           }
           try {
             final InputRow row=Preconditions.checkNotNull(parser.parse(ByteBuffer.wrap(record.value())),"row");
-            final SegmentIdentifier identifier=driver.add(row,committerSupplier);
+            final SegmentIdentifier identifier=driver.add(row,sequenceNames.get(record.partition()),committerSupplier);
             if (identifier == null) {
               throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
             }

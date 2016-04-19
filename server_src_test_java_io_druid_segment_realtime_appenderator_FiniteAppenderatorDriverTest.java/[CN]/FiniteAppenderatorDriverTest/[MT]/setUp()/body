@@ -1,4 +1,5 @@
 {
   appenderatorTester=new AppenderatorTester(MAX_ROWS_IN_MEMORY);
-  driver=new FiniteAppenderatorDriver(appenderatorTester.getAppenderator(),new TestSegmentAllocator(DATA_SOURCE,Granularity.HOUR),new TestSegmentHandoffNotifierFactory(),new TestUsedSegmentChecker(),OBJECT_MAPPER,MAX_ROWS_PER_SEGMENT,HANDOFF_CONDITION_TIMEOUT);
+  allocator=new TestSegmentAllocator(DATA_SOURCE,Granularity.HOUR);
+  driver=new FiniteAppenderatorDriver(appenderatorTester.getAppenderator(),allocator,new TestSegmentHandoffNotifierFactory(),new TestUsedSegmentChecker(),OBJECT_MAPPER,MAX_ROWS_PER_SEGMENT,HANDOFF_CONDITION_TIMEOUT);
 }
