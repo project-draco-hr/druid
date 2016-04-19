@@ -11,7 +11,7 @@
   this.version=version;
   this.dimensions=dimensions == null ? ImmutableList.<String>of() : ImmutableList.copyOf(Iterables.transform(Iterables.filter(dimensions,nonEmpty),internFun));
   this.metrics=metrics == null ? ImmutableList.<String>of() : ImmutableList.copyOf(Iterables.transform(Iterables.filter(metrics,nonEmpty),internFun));
-  this.shardSpec=(shardSpec == null) ? new NoneShardSpec() : shardSpec;
+  this.shardSpec=(shardSpec == null) ? NoneShardSpec.instance() : shardSpec;
   this.binaryVersion=binaryVersion;
   this.size=size;
   this.identifier=makeDataSegmentIdentifier(this.dataSource,this.interval.getStart(),this.interval.getEnd(),this.version,this.shardSpec);

@@ -1,0 +1,8 @@
+{
+  final NoneShardSpec one=NoneShardSpec.instance();
+  ObjectMapper mapper=new TestObjectMapper();
+  NoneShardSpec serde1=mapper.readValue(mapper.writeValueAsString(one),NoneShardSpec.class);
+  NoneShardSpec serde2=mapper.readValue(mapper.writeValueAsString(one),NoneShardSpec.class);
+  Assert.assertTrue(serde1 == serde2);
+  Assert.assertTrue(one == serde1);
+}
