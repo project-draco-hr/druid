@@ -8,16 +8,11 @@
 ));
   }
  else {
-    Iterable<String> allDimVals=selector.getDimensionValues(dimension);
-    if (allDimVals == null) {
-      allDimVals=Lists.newArrayList((String)null);
-    }
-    List<ImmutableBitmap> bitmaps=Lists.newArrayList();
-    for (    String dimVal : allDimVals) {
-      if (values.contains(Strings.nullToEmpty(extractionFn.apply(dimVal)))) {
-        bitmaps.add(selector.getBitmapIndex(dimension,dimVal));
+    return Filters.matchPredicate(dimension,selector,new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return values.contains(Strings.nullToEmpty(extractionFn.apply(input)));
       }
     }
-    return selector.getBitmapFactory().union(bitmaps);
+);
   }
 }

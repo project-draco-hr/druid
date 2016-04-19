@@ -6,7 +6,7 @@
   index.add(new MapBasedInputRow(t.minus(1).getMillis(),Lists.newArrayList("sally"),ImmutableMap.<String,Object>of("sally","bo")));
   IncrementalIndexStorageAdapter adapter=new IncrementalIndexStorageAdapter(index);
   for (  boolean descending : Arrays.asList(false,true)) {
-    Sequence<Cursor> cursorSequence=adapter.makeCursors(new SelectorFilter("sally","bo",null),interval,QueryGranularity.NONE,descending);
+    Sequence<Cursor> cursorSequence=adapter.makeCursors(new SelectorFilter("sally","bo"),interval,QueryGranularity.NONE,descending);
     Cursor cursor=Sequences.toList(Sequences.limit(cursorSequence,1),Lists.<Cursor>newArrayList()).get(0);
     DimensionSelector dimSelector;
     dimSelector=cursor.makeDimensionSelector(new DefaultDimensionSpec("sally","sally"));

@@ -1,10 +1,11 @@
 {
-  this.dimension=dimension;
-  if (predicate == null) {
-    this.predicate=null;
+  Preconditions.checkNotNull(predicate,"predicate");
+  this.dimension=Preconditions.checkNotNull(dimension,"dimension");
+  if (extractionFn == null) {
+    this.predicate=predicate;
   }
  else {
-    this.predicate=extractionFn == null ? predicate : new Predicate<String>(){
+    this.predicate=new Predicate<String>(){
       @Override public boolean apply(      String input){
         return predicate.apply(extractionFn.apply(input));
       }

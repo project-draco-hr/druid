@@ -1,41 +1,22 @@
 {
-  final BitmapIndex bitmapIndex=selector.getBitmapIndex(boundDimFilter.getDimension());
-  if (bitmapIndex == null) {
-    if (doesMatch(null)) {
-      return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
-    }
- else {
-      return selector.getBitmapFactory().makeEmptyImmutableBitmap();
-    }
-  }
   if (boundDimFilter.isAlphaNumeric() || extractionFn != null) {
-    final Indexed<String> dimValues=selector.getDimensionValues(boundDimFilter.getDimension());
-    return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
-      @Override public Iterator<ImmutableBitmap> iterator(){
-        return new Iterator<ImmutableBitmap>(){
-          int currIndex=0;
-          @Override public boolean hasNext(){
-            return currIndex < bitmapIndex.getCardinality();
-          }
-          @Override public ImmutableBitmap next(){
-            while (currIndex < bitmapIndex.getCardinality() && !doesMatch(dimValues.get(currIndex))) {
-              currIndex++;
-            }
-            if (currIndex == bitmapIndex.getCardinality()) {
-              return bitmapIndex.getBitmapFactory().makeEmptyImmutableBitmap();
-            }
-            return bitmapIndex.getBitmap(currIndex++);
-          }
-          @Override public void remove(){
-            throw new UnsupportedOperationException();
-          }
-        }
-;
+    return Filters.matchPredicate(boundDimFilter.getDimension(),selector,new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return doesMatch(input);
       }
     }
 );
   }
  else {
+    final BitmapIndex bitmapIndex=selector.getBitmapIndex(boundDimFilter.getDimension());
+    if (bitmapIndex == null || bitmapIndex.getCardinality() == 0) {
+      if (doesMatch(null)) {
+        return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
+      }
+ else {
+        return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+      }
+    }
     final int startIndex;
     final int endIndex;
     if (!boundDimFilter.hasLowerBound()) {

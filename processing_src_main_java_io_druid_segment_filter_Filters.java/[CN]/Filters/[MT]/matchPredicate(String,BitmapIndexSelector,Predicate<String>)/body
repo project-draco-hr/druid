@@ -1,0 +1,39 @@
+{
+  Preconditions.checkNotNull(dimension,"dimension");
+  Preconditions.checkNotNull(selector,"selector");
+  Preconditions.checkNotNull(predicate,"predicate");
+  final Indexed<String> dimValues=selector.getDimensionValues(dimension);
+  if (dimValues == null || dimValues.size() == 0) {
+    if (predicate.apply(null)) {
+      return selector.getBitmapFactory().complement(selector.getBitmapFactory().makeEmptyImmutableBitmap(),selector.getNumRows());
+    }
+ else {
+      return selector.getBitmapFactory().makeEmptyImmutableBitmap();
+    }
+  }
+  final BitmapIndex bitmapIndex=selector.getBitmapIndex(dimension);
+  return selector.getBitmapFactory().union(new Iterable<ImmutableBitmap>(){
+    @Override public Iterator<ImmutableBitmap> iterator(){
+      return new Iterator<ImmutableBitmap>(){
+        int currIndex=0;
+        @Override public boolean hasNext(){
+          return currIndex < bitmapIndex.getCardinality();
+        }
+        @Override public ImmutableBitmap next(){
+          while (currIndex < bitmapIndex.getCardinality() && !predicate.apply(dimValues.get(currIndex))) {
+            currIndex++;
+          }
+          if (currIndex == bitmapIndex.getCardinality()) {
+            return bitmapIndex.getBitmapFactory().makeEmptyImmutableBitmap();
+          }
+          return bitmapIndex.getBitmap(currIndex++);
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
+    }
+  }
+);
+}

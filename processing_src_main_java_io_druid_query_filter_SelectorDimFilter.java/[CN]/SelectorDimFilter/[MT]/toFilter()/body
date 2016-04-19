@@ -1,3 +1,15 @@
 {
-  return new SelectorFilter(dimension,value,extractionFn);
+  if (extractionFn == null) {
+    return new SelectorFilter(dimension,value);
+  }
+ else {
+    final String valueOrNull=Strings.emptyToNull(value);
+    final Predicate<String> predicate=new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return Objects.equals(valueOrNull,input);
+      }
+    }
+;
+    return new DimensionPredicateFilter(dimension,predicate,extractionFn);
+  }
 }
