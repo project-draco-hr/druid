@@ -1,4 +1,7 @@
 {
-  addSingleInventory(container,inventory);
+  Predicate<Pair<DruidServerMetadata,DataSegment>> predicate=Predicates.or(defaultFilter,Predicates.or(segmentPredicates.values()));
+  if (predicate.apply(Pair.of(container.getMetadata(),inventory))) {
+    addSingleInventory(container,inventory);
+  }
   return container;
 }

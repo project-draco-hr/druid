@@ -1,5 +1,5 @@
 {
-  baseView=new BatchServerInventoryView(zkPathsConfig,curator,jsonMapper){
+  baseView=new BatchServerInventoryView(zkPathsConfig,curator,jsonMapper,Predicates.<Pair<DruidServerMetadata,DataSegment>>alwaysTrue()){
     @Override public void registerSegmentCallback(    Executor exec,    final SegmentCallback callback){
       super.registerSegmentCallback(exec,new SegmentCallback(){
         @Override public CallbackAction segmentAdded(        DruidServerMetadata server,        DataSegment segment){

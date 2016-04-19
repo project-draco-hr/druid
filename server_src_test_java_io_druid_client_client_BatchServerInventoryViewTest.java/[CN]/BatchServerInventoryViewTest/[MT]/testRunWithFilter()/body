@@ -1,0 +1,13 @@
+{
+  segmentAnnouncer.announceSegments(testSegments);
+  waitForSync(filteredBatchServerInventoryView,testSegments);
+  DruidServer server=Iterables.get(filteredBatchServerInventoryView.getInventory(),0);
+  Set<DataSegment> segments=Sets.newHashSet(server.getSegments().values());
+  Assert.assertEquals(testSegments,segments);
+  int prevUpdateCount=inventoryUpdateCounter.get();
+  DataSegment segment1=makeSegment(101);
+  segmentAnnouncer.announceSegment(segment1);
+  testSegments.add(segment1);
+  waitForUpdateEvents(prevUpdateCount + 1);
+  Assert.assertNull(Iterables.getOnlyElement(filteredBatchServerInventoryView.getInventory()).getSegment(segment1.getIdentifier()));
+}

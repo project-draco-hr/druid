@@ -3,6 +3,7 @@
     entry.getValue().execute(new Runnable(){
       @Override public void run(){
         if (CallbackAction.UNREGISTER == fn.apply(entry.getKey())) {
+          segmentCallbackRemoved(entry.getKey());
           segmentCallbacks.remove(entry.getKey());
         }
       }

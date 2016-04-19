@@ -17,7 +17,7 @@
   addSegment(timeline,server,"2015-03-14/2015-03-15",ImmutableList.of("d1"),ImmutableList.of("m1"),"v5");
   addSegment(timeline,server,"2015-03-15/2015-03-16",ImmutableList.of("d1"),ImmutableList.of("m1"),"v6");
   addSegmentWithShardSpec(timeline,server,"2015-04-03/2015-04-05",ImmutableList.of("d4"),ImmutableList.of("m4"),"v7",new NumberedShardSpec(0,2));
-  serverInventoryView=EasyMock.createMock(InventoryView.class);
+  serverInventoryView=EasyMock.createMock(FilteredServerInventoryView.class);
   EasyMock.expect(serverInventoryView.getInventory()).andReturn(ImmutableList.of(server)).anyTimes();
   timelineServerView=EasyMock.createMock(TimelineServerView.class);
   EasyMock.expect(timelineServerView.getTimeline(EasyMock.anyObject(TableDataSource.class))).andReturn(timeline);

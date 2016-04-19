@@ -1,0 +1,15 @@
+{
+  Predicate<Pair<DruidServerMetadata,DataSegment>> predicate=Predicates.or(defaultFilter,Predicates.or(segmentPredicates.values()));
+  Set<DataSegment> filteredInventory=Sets.newHashSet(Iterables.transform(Iterables.filter(Iterables.transform(inventory,new Function<DataSegment,Pair<DruidServerMetadata,DataSegment>>(){
+    @Override public Pair<DruidServerMetadata,DataSegment> apply(    DataSegment input){
+      return Pair.of(container.getMetadata(),input);
+    }
+  }
+),predicate),new Function<Pair<DruidServerMetadata,DataSegment>,DataSegment>(){
+    @Override public DataSegment apply(    Pair<DruidServerMetadata,DataSegment> input){
+      return input.rhs;
+    }
+  }
+));
+  return filteredInventory;
+}

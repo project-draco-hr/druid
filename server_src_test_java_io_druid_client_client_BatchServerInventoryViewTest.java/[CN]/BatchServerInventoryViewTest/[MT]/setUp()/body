@@ -29,7 +29,7 @@
       return testBasePath;
     }
   }
-,cf,jsonMapper);
+,cf,jsonMapper,Predicates.<Pair<DruidServerMetadata,DataSegment>>alwaysTrue());
   batchServerInventoryView.start();
   inventoryUpdateCounter.set(0);
   filteredBatchServerInventoryView=new BatchServerInventoryView(new ZkPathsConfig(){
@@ -37,7 +37,12 @@
       return testBasePath;
     }
   }
-,cf,jsonMapper){
+,cf,jsonMapper,new Predicate<Pair<DruidServerMetadata,DataSegment>>(){
+    @Override public boolean apply(    @Nullable Pair<DruidServerMetadata,DataSegment> input){
+      return input.rhs.getInterval().getStart().isBefore(SEGMENT_INTERVAL_START.plusDays(INITIAL_SEGMENTS));
+    }
+  }
+){
     @Override protected DruidServer addInnerInventory(    DruidServer container,    String inventoryKey,    Set<DataSegment> inventory){
       DruidServer server=super.addInnerInventory(container,inventoryKey,inventory);
       inventoryUpdateCounter.incrementAndGet();

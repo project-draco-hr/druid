@@ -1,5 +1,5 @@
 {
-  for (  final Map.Entry<ServerView.SegmentCallback,Pair<Predicate<DataSegment>,Executor>> entry : callbacks.entrySet()) {
+  for (  final Map.Entry<ServerView.SegmentCallback,Pair<Predicate<Pair<DruidServerMetadata,DataSegment>>,Executor>> entry : callbacks.entrySet()) {
     entry.getValue().rhs.execute(new Runnable(){
       @Override public void run(){
         entry.getKey().segmentViewInitialized();
