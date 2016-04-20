@@ -1,7 +1,7 @@
 {
   Preconditions.checkNotNull(dimension,"dimension can not be null");
   Preconditions.checkArgument(values != null && !values.isEmpty(),"values can not be null or empty");
-  this.values=Lists.newArrayList(Iterables.transform(values,new Function<String,String>(){
+  this.values=ImmutableSortedSet.copyOf(Iterables.transform(values,new Function<String,String>(){
     @Override public String apply(    String input){
       return Strings.nullToEmpty(input);
     }
