@@ -5,9 +5,9 @@
     }
     ConcurrentHashMap<String,DruidDataSource> newDataSources=new ConcurrentHashMap<String,DruidDataSource>();
     log.debug("Starting polling of segment table");
-    final List<DataSegment> segments=dbi.withHandle(new HandleCallback<List<DataSegment>>(){
-      @Override public List<DataSegment> withHandle(      Handle handle) throws Exception {
-        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).map(new ResultSetMapper<DataSegment>(){
+    final List<DataSegment> segments=inReadOnlyTransaction(new TransactionCallback<List<DataSegment>>(){
+      @Override public List<DataSegment> inTransaction(      Handle handle,      TransactionStatus status) throws Exception {
+        return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).setFetchSize(connector.getStreamingFetchSize()).map(new ResultSetMapper<DataSegment>(){
           @Override public DataSegment map(          int index,          ResultSet r,          StatementContext ctx) throws SQLException {
             try {
               return jsonMapper.readValue(r.getBytes("payload"),DataSegment.class);

@@ -1,6 +1,6 @@
 {
   try {
-    dbi.withHandle(new HandleCallback<Void>(){
+    connector.getDBI().withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
         handle.createStatement(String.format("UPDATE %s SET used=true WHERE id = :id",getSegmentsTable())).bind("id",segmentId).execute();
         return null;

@@ -5,7 +5,7 @@
       log.warn("Cannot delete datasource %s, does not exist",ds);
       return false;
     }
-    dbi.withHandle(new HandleCallback<Void>(){
+    connector.getDBI().withHandle(new HandleCallback<Void>(){
       @Override public Void withHandle(      Handle handle) throws Exception {
         handle.createStatement(String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",getSegmentsTable())).bind("dataSource",ds).execute();
         return null;

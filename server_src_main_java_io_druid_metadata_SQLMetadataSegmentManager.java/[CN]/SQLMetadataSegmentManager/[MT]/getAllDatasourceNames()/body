@@ -1,6 +1,6 @@
 {
 synchronized (lock) {
-    return dbi.withHandle(new HandleCallback<List<String>>(){
+    return connector.getDBI().withHandle(new HandleCallback<List<String>>(){
       @Override public List<String> withHandle(      Handle handle) throws Exception {
         return handle.createQuery(String.format("SELECT DISTINCT(datasource) FROM %s",getSegmentsTable())).fold(Lists.<String>newArrayList(),new Folder3<ArrayList<String>,Map<String,Object>>(){
           @Override public ArrayList<String> fold(          ArrayList<String> druidDataSources,          Map<String,Object> stringObjectMap,          FoldController foldController,          StatementContext statementContext) throws SQLException {
