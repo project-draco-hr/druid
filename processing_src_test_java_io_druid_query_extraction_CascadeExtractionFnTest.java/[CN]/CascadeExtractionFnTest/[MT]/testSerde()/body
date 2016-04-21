@@ -1,5 +1,6 @@
 {
   final ObjectMapper objectMapper=new DefaultObjectMapper();
+  objectMapper.setInjectableValues(new InjectableValues.Std().addValue(JavaScriptConfig.class,JavaScriptConfig.getDefault()));
   final String json="{\"type\" : \"cascade\", \"extractionFns\": [" + regexDimExtractionFnJson + ","+ javascriptExtractionFnJson+ ","+ substringDimExtractionFnJson+ "]}";
   CascadeExtractionFn cascadeExtractionFn=(CascadeExtractionFn)objectMapper.readValue(json,ExtractionFn.class);
   RegexDimExtractionFn regexDimExtractionFn=(RegexDimExtractionFn)objectMapper.readValue(regexDimExtractionFnJson,ExtractionFn.class);

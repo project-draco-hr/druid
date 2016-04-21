@@ -11,7 +11,7 @@
   superFilterList.add(new BoundDimFilter("null_column","EMPTY","EMPTY",false,false,true,extractionFn));
   superFilterList.add(new RegexDimFilter("null_column","EMPTY",extractionFn));
   superFilterList.add(new SearchQueryDimFilter("null_column",new ContainsSearchQuerySpec("EMPTY",true),extractionFn));
-  superFilterList.add(new JavaScriptDimFilter("null_column",jsFn,extractionFn));
+  superFilterList.add(new JavaScriptDimFilter("null_column",jsFn,extractionFn,JavaScriptConfig.getDefault()));
   DimFilter superFilter=new AndDimFilter(superFilterList);
   GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("null_column","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).setDimFilter(superFilter).build();
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias",null,"rows",13L,"idx",6619L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias",null,"rows",13L,"idx",5827L));

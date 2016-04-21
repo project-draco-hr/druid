@@ -7,14 +7,14 @@
   }
   String extractionJsFn="function(str) { return 'super-' + str; }";
   String jsFn="function(x) { return(x === 'super-mezzanine') }";
-  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false);
+  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false,JavaScriptConfig.getDefault());
   List<DimFilter> superFilterList=new ArrayList<>();
   superFilterList.add(new SelectorDimFilter("quality","super-mezzanine",extractionFn));
   superFilterList.add(new InDimFilter("quality",Arrays.asList("not-super-mezzanine","FOOBAR","super-mezzanine"),extractionFn));
   superFilterList.add(new BoundDimFilter("quality","super-mezzanine","super-mezzanine",false,false,true,extractionFn));
   superFilterList.add(new RegexDimFilter("quality","super-mezzanine",extractionFn));
   superFilterList.add(new SearchQueryDimFilter("quality",new ContainsSearchQuerySpec("super-mezzanine",true),extractionFn));
-  superFilterList.add(new JavaScriptDimFilter("quality",jsFn,extractionFn));
+  superFilterList.add(new JavaScriptDimFilter("quality",jsFn,extractionFn,JavaScriptConfig.getDefault()));
   DimFilter superFilter=new AndDimFilter(superFilterList);
   GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null)).setDimFilter(superFilter).setContext(ImmutableMap.<String,Object>of("bySegment",true));
   final GroupByQuery fullQuery=builder.build();

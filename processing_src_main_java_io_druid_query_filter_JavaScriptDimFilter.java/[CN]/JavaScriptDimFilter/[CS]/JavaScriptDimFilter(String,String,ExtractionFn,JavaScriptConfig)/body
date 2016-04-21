@@ -1,0 +1,14 @@
+{
+  Preconditions.checkArgument(dimension != null,"dimension must not be null");
+  Preconditions.checkArgument(function != null,"function must not be null");
+  this.dimension=dimension;
+  this.function=function;
+  this.extractionFn=extractionFn;
+  this.config=config;
+  if (config.isDisabled()) {
+    this.predicate=null;
+  }
+ else {
+    this.predicate=new JavaScriptPredicate(function,extractionFn);
+  }
+}

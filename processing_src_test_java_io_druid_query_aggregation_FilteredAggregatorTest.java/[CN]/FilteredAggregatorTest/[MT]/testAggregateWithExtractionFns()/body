@@ -3,7 +3,7 @@
   TestFloatColumnSelector selector;
   FilteredAggregatorFactory factory;
   String extractionJsFn="function(str) { return str + 'AARDVARK'; }";
-  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false);
+  ExtractionFn extractionFn=new JavaScriptExtractionFn(extractionJsFn,false,JavaScriptConfig.getDefault());
   factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new SelectorDimFilter("dim","aAARDVARK",extractionFn));
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
@@ -20,7 +20,7 @@
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
   String jsFn="function(x) { return(x === 'aAARDVARK') }";
-  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new JavaScriptDimFilter("dim",jsFn,extractionFn));
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new JavaScriptDimFilter("dim",jsFn,extractionFn,JavaScriptConfig.getDefault()));
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
 }

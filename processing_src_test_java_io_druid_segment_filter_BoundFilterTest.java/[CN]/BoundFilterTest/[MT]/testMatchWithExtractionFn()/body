@@ -1,8 +1,8 @@
 {
   String extractionJsFn="function(str) { return 'super-' + str; }";
-  ExtractionFn superFn=new JavaScriptExtractionFn(extractionJsFn,false);
+  ExtractionFn superFn=new JavaScriptExtractionFn(extractionJsFn,false,JavaScriptConfig.getDefault());
   String nullJsFn="function(str) { return null; }";
-  ExtractionFn makeNullFn=new JavaScriptExtractionFn(nullJsFn,false);
+  ExtractionFn makeNullFn=new JavaScriptExtractionFn(nullJsFn,false,JavaScriptConfig.getDefault());
   assertFilterMatches(new BoundDimFilter("dim0","","",false,false,false,makeNullFn),ImmutableList.of("0","1","2","3","4","5"));
   assertFilterMatches(new BoundDimFilter("dim1","super-ab","super-abd",true,true,false,superFn),ImmutableList.of("5"));
   assertFilterMatches(new BoundDimFilter("dim1","super-0","super-10",false,false,true,superFn),ImmutableList.of("1","2","3"));

@@ -1,5 +1,6 @@
 {
-  JavaScriptParseSpec spec=new JavaScriptParseSpec(new TimestampSpec("abc","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("abc")),null,null),"abc");
+  jsonMapper.setInjectableValues(new InjectableValues.Std().addValue(JavaScriptConfig.class,JavaScriptConfig.getDefault()));
+  JavaScriptParseSpec spec=new JavaScriptParseSpec(new TimestampSpec("abc","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("abc")),null,null),"abc",JavaScriptConfig.getDefault());
   final JavaScriptParseSpec serde=jsonMapper.readValue(jsonMapper.writeValueAsString(spec),JavaScriptParseSpec.class);
   Assert.assertEquals("abc",serde.getTimestampSpec().getTimestampColumn());
   Assert.assertEquals("iso",serde.getTimestampSpec().getTimestampFormat());

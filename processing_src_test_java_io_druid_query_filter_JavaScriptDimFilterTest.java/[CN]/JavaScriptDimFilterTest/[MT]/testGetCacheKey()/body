@@ -1,8 +1,8 @@
 {
-  JavaScriptDimFilter javaScriptDimFilter=new JavaScriptDimFilter("dim",FN1,null);
-  JavaScriptDimFilter javaScriptDimFilter2=new JavaScriptDimFilter("di",FN2,null);
+  JavaScriptDimFilter javaScriptDimFilter=new JavaScriptDimFilter("dim",FN1,null,JavaScriptConfig.getDefault());
+  JavaScriptDimFilter javaScriptDimFilter2=new JavaScriptDimFilter("di",FN2,null,JavaScriptConfig.getDefault());
   Assert.assertFalse(Arrays.equals(javaScriptDimFilter.getCacheKey(),javaScriptDimFilter2.getCacheKey()));
   RegexDimExtractionFn regexFn=new RegexDimExtractionFn(".*",false,null);
-  JavaScriptDimFilter javaScriptDimFilter3=new JavaScriptDimFilter("dim",FN1,regexFn);
+  JavaScriptDimFilter javaScriptDimFilter3=new JavaScriptDimFilter("dim",FN1,regexFn,JavaScriptConfig.getDefault());
   Assert.assertFalse(Arrays.equals(javaScriptDimFilter.getCacheKey(),javaScriptDimFilter3.getCacheKey()));
 }

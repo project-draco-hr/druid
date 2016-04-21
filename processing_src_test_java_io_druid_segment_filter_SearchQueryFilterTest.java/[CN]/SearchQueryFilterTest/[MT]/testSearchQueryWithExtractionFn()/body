@@ -1,6 +1,6 @@
 {
   String nullJsFn="function(str) { if (str === null) { return 'NOT_NULL_ANYMORE'; } else { return str;} }";
-  ExtractionFn changeNullFn=new JavaScriptExtractionFn(nullJsFn,false);
+  ExtractionFn changeNullFn=new JavaScriptExtractionFn(nullJsFn,false,JavaScriptConfig.getDefault());
   assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("ANYMORE"),changeNullFn),ImmutableList.of("0"));
   assertFilterMatches(new SearchQueryDimFilter("dim1",specForValue("ab"),changeNullFn),ImmutableList.<String>of("4","5"));
   assertFilterMatches(new SearchQueryDimFilter("dim2",specForValue("ANYMORE"),changeNullFn),ImmutableList.of("1","2","5"));

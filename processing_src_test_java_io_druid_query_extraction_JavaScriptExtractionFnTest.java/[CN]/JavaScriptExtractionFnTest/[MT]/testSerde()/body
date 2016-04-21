@@ -1,5 +1,6 @@
 {
   final ObjectMapper objectMapper=new DefaultObjectMapper();
+  objectMapper.setInjectableValues(new InjectableValues.Std().addValue(JavaScriptConfig.class,JavaScriptConfig.getDefault()));
   final String json="{ \"type\" : \"javascript\", \"function\" : \"function(str) { return str.substring(0,3); }\" }";
   JavaScriptExtractionFn extractionFn=(JavaScriptExtractionFn)objectMapper.readValue(json,ExtractionFn.class);
   Assert.assertEquals("function(str) { return str.substring(0,3); }",extractionFn.getFunction());

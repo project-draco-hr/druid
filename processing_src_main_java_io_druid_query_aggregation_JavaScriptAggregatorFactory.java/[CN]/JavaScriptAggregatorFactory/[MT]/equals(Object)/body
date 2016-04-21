@@ -1,12 +1,10 @@
 {
-  if (this == o)   return true;
-  if (o == null || getClass() != o.getClass())   return false;
+  if (this == o) {
+    return true;
+  }
+  if (o == null || getClass() != o.getClass()) {
+    return false;
+  }
   JavaScriptAggregatorFactory that=(JavaScriptAggregatorFactory)o;
-  if (compiledScript != null ? !compiledScript.equals(that.compiledScript) : that.compiledScript != null)   return false;
-  if (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null)   return false;
-  if (fnAggregate != null ? !fnAggregate.equals(that.fnAggregate) : that.fnAggregate != null)   return false;
-  if (fnCombine != null ? !fnCombine.equals(that.fnCombine) : that.fnCombine != null)   return false;
-  if (fnReset != null ? !fnReset.equals(that.fnReset) : that.fnReset != null)   return false;
-  if (name != null ? !name.equals(that.name) : that.name != null)   return false;
-  return true;
+  return Objects.equals(name,that.name) && Objects.equals(fieldNames,that.fieldNames) && Objects.equals(fnAggregate,that.fnAggregate)&& Objects.equals(fnReset,that.fnReset)&& Objects.equals(fnCombine,that.fnCombine);
 }
