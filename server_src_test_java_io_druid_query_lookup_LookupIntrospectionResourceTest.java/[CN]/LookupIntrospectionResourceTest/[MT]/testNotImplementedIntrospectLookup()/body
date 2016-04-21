@@ -1,0 +1,6 @@
+{
+  EasyMock.expect(lookupExtractorFactory.getIntrospectHandler()).andReturn(null);
+  EasyMock.expect(lookupExtractorFactory.get()).andReturn(new MapLookupExtractor(ImmutableMap.<String,String>of(),false)).anyTimes();
+  EasyMock.replay(lookupExtractorFactory);
+  Assert.assertEquals(Response.status(Response.Status.NOT_FOUND).build().getStatus(),((Response)lookupIntrospectionResource.introspectLookup("lookupId")).getStatus());
+}

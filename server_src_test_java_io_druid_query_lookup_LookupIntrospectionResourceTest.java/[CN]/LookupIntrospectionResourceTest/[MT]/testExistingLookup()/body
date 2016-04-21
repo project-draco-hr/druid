@@ -1,0 +1,6 @@
+{
+  EasyMock.expect(lookupExtractorFactory.getIntrospectHandler()).andReturn(lookupIntrospectHandler);
+  EasyMock.expect(lookupExtractorFactory.get()).andReturn(new MapLookupExtractor(ImmutableMap.<String,String>of(),false)).anyTimes();
+  EasyMock.replay(lookupExtractorFactory);
+  Assert.assertEquals(lookupIntrospectHandler,lookupIntrospectionResource.introspectLookup("lookupId"));
+}

@@ -1,0 +1,15 @@
+{
+  final LookupExtractorFactory lookupExtractorFactory=lookupReferencesManager.get(lookupId);
+  if (lookupExtractorFactory == null) {
+    LOGGER.error("trying to introspect non existing lookup [%s]",lookupId);
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+  LookupIntrospectHandler introspectHandler=lookupExtractorFactory.getIntrospectHandler();
+  if (introspectHandler != null) {
+    return introspectHandler;
+  }
+ else {
+    LOGGER.warn("Trying to introspect lookup [%s] of type [%s] but implementation doesn't provide resource",lookupId,lookupExtractorFactory.get().getClass());
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+}

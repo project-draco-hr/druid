@@ -1,0 +1,30 @@
+{
+  LookupIntrospectHandler lookupIntrospectHandler=new LookupIntrospectHandler(){
+    @POST public Response postMock(    InputStream inputStream){
+      return Response.ok().build();
+    }
+  }
+;
+  LookupExtractorFactory lookupExtractorFactory1=new LookupExtractorFactory(){
+    final LookupExtractor mapLookup=new MapLookupExtractor(ImmutableMap.<String,String>of("key","value"),true);
+    @Override public boolean start(){
+      return true;
+    }
+    @Override public boolean close(){
+      return true;
+    }
+    @Override public boolean replaces(    @Nullable LookupExtractorFactory other){
+      return true;
+    }
+    @Nullable @Override public LookupIntrospectHandler getIntrospectHandler(){
+      return null;
+    }
+    @Override public LookupExtractor get(){
+      return mapLookup;
+    }
+  }
+;
+  LookupIntrospectionResource lookupIntrospectionResource=new LookupIntrospectionResource(lookupReferencesManager);
+  EasyMock.expect(lookupReferencesManager.get("lookupId1")).andReturn(lookupExtractorFactory1).anyTimes();
+  EasyMock.replay(lookupReferencesManager);
+}
