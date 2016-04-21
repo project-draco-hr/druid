@@ -4,4 +4,6 @@
   this.parser=Preconditions.checkNotNull((InputRowParser<ByteBuffer>)dataSchema.getParser(),"parser");
   this.tuningConfig=Preconditions.checkNotNull(tuningConfig,"tuningConfig");
   this.ioConfig=Preconditions.checkNotNull(ioConfig,"ioConfig");
+  this.chatHandlerProvider=Optional.fromNullable(chatHandlerProvider);
+  this.endOffsets.putAll(ioConfig.getEndPartitions().getPartitionOffsetMap());
 }

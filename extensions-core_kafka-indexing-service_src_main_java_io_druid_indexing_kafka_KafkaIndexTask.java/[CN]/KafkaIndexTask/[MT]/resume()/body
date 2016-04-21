@@ -1,0 +1,17 @@
+{
+  pauseLock.lockInterruptibly();
+  try {
+    pauseRequested=false;
+    shouldResume.signalAll();
+    long nanos=TimeUnit.SECONDS.toNanos(5);
+    while (isPaused()) {
+      if (nanos <= 0L) {
+        throw new RuntimeException("Resume command was not accepted within 5 seconds");
+      }
+      nanos=shouldResume.awaitNanos(nanos);
+    }
+  }
+  finally {
+    pauseLock.unlock();
+  }
+}

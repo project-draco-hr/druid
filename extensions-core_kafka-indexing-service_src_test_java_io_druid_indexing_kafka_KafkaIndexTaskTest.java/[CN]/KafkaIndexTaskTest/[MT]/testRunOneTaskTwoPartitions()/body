@@ -1,5 +1,5 @@
 {
-  final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L,1,0L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L,1,2L)),kafkaServer.consumerProperties(),true),null);
+  final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L,1,0L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L,1,2L)),kafkaServer.consumerProperties(),true,false),null);
   final ListenableFuture<TaskStatus> future=runTask(task);
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
     for (    ProducerRecord<byte[],byte[]> record : RECORDS) {

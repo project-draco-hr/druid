@@ -4,7 +4,7 @@
       kafkaProducer.send(record).get();
     }
   }
-   final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true),null);
+   final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
   final ListenableFuture<TaskStatus> future=runTask(task);
   Assert.assertEquals(TaskStatus.Status.SUCCESS,future.get().getStatusCode());
   Assert.assertEquals(3,task.getFireDepartmentMetrics().processed());

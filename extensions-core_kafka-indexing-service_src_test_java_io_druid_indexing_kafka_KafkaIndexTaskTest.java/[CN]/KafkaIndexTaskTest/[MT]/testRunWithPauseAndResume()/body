@@ -1,15 +1,35 @@
 {
   final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
   final ListenableFuture<TaskStatus> future=runTask(task);
-  while (task.getStatus() != KafkaIndexTask.Status.READING) {
-    Thread.sleep(10);
-  }
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
-    for (    ProducerRecord<byte[],byte[]> record : RECORDS) {
+    for (    ProducerRecord<byte[],byte[]> record : Iterables.limit(RECORDS,4)) {
       kafkaProducer.send(record).get();
     }
   }
-   Assert.assertEquals(TaskStatus.Status.SUCCESS,future.get().getStatusCode());
+   while (countEvents(task) != 2) {
+    Thread.sleep(25);
+  }
+  Assert.assertEquals(2,countEvents(task));
+  Assert.assertEquals(KafkaIndexTask.Status.READING,task.getStatus());
+  Map<Integer,Long> currentOffsets=objectMapper.readValue(task.pause(0).getEntity().toString(),new TypeReference<Map<Integer,Long>>(){
+  }
+);
+  Assert.assertEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
+    for (    ProducerRecord<byte[],byte[]> record : Iterables.skip(RECORDS,4)) {
+      kafkaProducer.send(record).get();
+    }
+  }
+   try {
+    future.get(10,TimeUnit.SECONDS);
+    Assert.fail("Task completed when it should have been paused");
+  }
+ catch (  TimeoutException e) {
+  }
+  Assert.assertEquals(currentOffsets,task.getCurrentOffsets());
+  task.resume();
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,future.get().getStatusCode());
+  Assert.assertEquals(task.getEndOffsets(),task.getCurrentOffsets());
   Assert.assertEquals(3,task.getFireDepartmentMetrics().processed());
   Assert.assertEquals(0,task.getFireDepartmentMetrics().unparseable());
   Assert.assertEquals(0,task.getFireDepartmentMetrics().thrownAway());

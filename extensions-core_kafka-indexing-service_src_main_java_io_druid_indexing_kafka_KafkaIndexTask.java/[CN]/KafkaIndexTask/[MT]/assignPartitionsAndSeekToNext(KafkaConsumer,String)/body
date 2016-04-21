@@ -1,0 +1,22 @@
+{
+  final Set<Integer> assignment=Sets.newHashSet();
+  for (  Map.Entry<Integer,Long> entry : nextOffsets.entrySet()) {
+    final long endOffset=endOffsets.get(entry.getKey());
+    if (entry.getValue() < endOffset) {
+      assignment.add(entry.getKey());
+    }
+ else     if (entry.getValue() == endOffset) {
+      log.info("Finished reading partition[%d].",entry.getKey());
+    }
+ else {
+      throw new ISE("WTF?! Cannot start from offset[%,d] > endOffset[%,d]",entry.getValue(),endOffset);
+    }
+  }
+  assignPartitions(consumer,topic,assignment);
+  for (  final int partition : assignment) {
+    final long offset=nextOffsets.get(partition);
+    log.info("Seeking partition[%d] to offset[%,d].",partition,offset);
+    consumer.seek(new TopicPartition(topic,partition),offset);
+  }
+  return assignment;
+}

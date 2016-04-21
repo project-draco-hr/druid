@@ -1,6 +1,6 @@
 {
-  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),false),null);
-  final KafkaIndexTask task2=createTask(null,new KafkaIOConfig("sequence1",new KafkaPartitions("topic0",ImmutableMap.of(0,3L)),new KafkaPartitions("topic0",ImmutableMap.of(0,7L)),kafkaServer.consumerProperties(),false),null);
+  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),false,false),null);
+  final KafkaIndexTask task2=createTask(null,new KafkaIOConfig("sequence1",new KafkaPartitions("topic0",ImmutableMap.of(0,3L)),new KafkaPartitions("topic0",ImmutableMap.of(0,7L)),kafkaServer.consumerProperties(),false,false),null);
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
     for (    ProducerRecord<byte[],byte[]> record : RECORDS) {
       kafkaProducer.send(record).get();

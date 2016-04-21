@@ -1,0 +1,47 @@
+{
+  final KafkaIndexTask task=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,1L)),new KafkaPartitions("topic0",ImmutableMap.of(0,3L)),kafkaServer.consumerProperties(),true,true),null);
+  final ListenableFuture<TaskStatus> future=runTask(task);
+  try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
+    for (    ProducerRecord<byte[],byte[]> record : RECORDS) {
+      kafkaProducer.send(record).get();
+    }
+  }
+   while (task.getStatus() != KafkaIndexTask.Status.PAUSED) {
+    Thread.sleep(25);
+  }
+  Assert.assertEquals(task.getEndOffsets(),task.getCurrentOffsets());
+  Assert.assertEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  Assert.assertEquals(ImmutableMap.of(0,3L),task.getEndOffsets());
+  Map<Integer,Long> newEndOffsets=ImmutableMap.of(0,4L);
+  task.setEndOffsets(newEndOffsets,false);
+  Assert.assertEquals(newEndOffsets,task.getEndOffsets());
+  Assert.assertEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  task.resume();
+  while (task.getStatus() != KafkaIndexTask.Status.PAUSED) {
+    Thread.sleep(25);
+  }
+  Assert.assertEquals(newEndOffsets,task.getCurrentOffsets());
+  Assert.assertEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  newEndOffsets=ImmutableMap.of(0,6L);
+  task.setEndOffsets(newEndOffsets,true);
+  Assert.assertEquals(newEndOffsets,task.getEndOffsets());
+  Assert.assertNotEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  while (task.getStatus() != KafkaIndexTask.Status.PAUSED) {
+    Thread.sleep(25);
+  }
+  Assert.assertEquals(newEndOffsets,task.getCurrentOffsets());
+  Assert.assertEquals(KafkaIndexTask.Status.PAUSED,task.getStatus());
+  task.resume();
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,future.get().getStatusCode());
+  Assert.assertEquals(4,task.getFireDepartmentMetrics().processed());
+  Assert.assertEquals(1,task.getFireDepartmentMetrics().unparseable());
+  Assert.assertEquals(0,task.getFireDepartmentMetrics().thrownAway());
+  SegmentDescriptor desc1=SD(task,"2009/P1D",0);
+  SegmentDescriptor desc2=SD(task,"2010/P1D",0);
+  SegmentDescriptor desc3=SD(task,"2011/P1D",0);
+  Assert.assertEquals(ImmutableSet.of(desc1,desc2,desc3),publishedDescriptors());
+  Assert.assertEquals(new KafkaDataSourceMetadata(new KafkaPartitions("topic0",ImmutableMap.of(0,6L))),metadataStorageCoordinator.getDataSourceMetadata(DATA_SCHEMA.getDataSource()));
+  Assert.assertEquals(ImmutableList.of("b"),readSegmentDim1(desc1));
+  Assert.assertEquals(ImmutableList.of("c"),readSegmentDim1(desc2));
+  Assert.assertEquals(ImmutableList.of("d","e"),readSegmentDim1(desc3));
+}

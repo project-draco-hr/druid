@@ -1,5 +1,15 @@
 {
   log.info("Starting up!");
+  startTime=DateTime.now();
+  mapper=toolbox.getObjectMapper();
+  status=Status.STARTING;
+  if (chatHandlerProvider.isPresent()) {
+    log.info("Found chat handler of class[%s]",chatHandlerProvider.get().getClass().getName());
+    chatHandlerProvider.get().register(getId(),this);
+  }
+ else {
+    log.warn("No chat handler detected");
+  }
   runThread=Thread.currentThread();
   final FireDepartment fireDepartmentForMetrics=new FireDepartment(dataSchema,new RealtimeIOConfig(null,null,null),null);
   fireDepartmentMetrics=fireDepartmentForMetrics.getMetrics();
@@ -8,7 +18,6 @@
     appenderator=appenderator0;
     final String topic=ioConfig.getStartPartitions().getTopic();
     final Object restoredMetadata=driver.startJob();
-    final Map<Integer,Long> nextOffsets=Maps.newHashMap();
     if (restoredMetadata == null) {
       nextOffsets.putAll(ioConfig.getStartPartitions().getPartitionOffsetMap());
     }
@@ -41,97 +50,88 @@
       }
     }
 ;
-    final Set<Integer> assignment=Sets.newHashSet();
-    for (    Map.Entry<Integer,Long> entry : nextOffsets.entrySet()) {
-      final long endOffset=ioConfig.getEndPartitions().getPartitionOffsetMap().get(entry.getKey());
-      if (entry.getValue() < endOffset) {
-        assignment.add(entry.getKey());
-      }
- else       if (entry.getValue() == endOffset) {
-        log.info("Finished reading partition[%d].",entry.getKey());
-      }
- else {
-        throw new ISE("WTF?! Cannot start from offset[%,d] > endOffset[%,d]",entry.getValue(),endOffset);
-      }
-    }
-    assignPartitions(consumer,topic,assignment);
-    for (    final int partition : assignment) {
-      final long offset=nextOffsets.get(partition);
-      log.info("Seeking partition[%d] to offset[%,d].",partition,offset);
-      consumer.seek(new TopicPartition(topic,partition),offset);
-    }
+    Set<Integer> assignment=assignPartitionsAndSeekToNext(consumer,topic);
     boolean stillReading=!assignment.isEmpty();
-    while (stillReading) {
-      if (stopping) {
-        log.info("Stopping early.");
-        break;
-      }
-      final ConsumerRecords<byte[],byte[]> records=RetryUtils.retry(new Callable<ConsumerRecords<byte[],byte[]>>(){
-        @Override public ConsumerRecords<byte[],byte[]> call() throws Exception {
-          try {
-            return consumer.poll(POLL_TIMEOUT);
+    try {
+      while (stillReading) {
+        if (possiblyPause(assignment)) {
+          assignment=assignPartitionsAndSeekToNext(consumer,topic);
+          if (assignment.isEmpty()) {
+            log.info("All partitions have been fully read");
+            publishOnStop=true;
+            stopRequested=true;
           }
+        }
+        if (stopRequested) {
+          break;
+        }
+        final ConsumerRecords<byte[],byte[]> records=RetryUtils.retry(new Callable<ConsumerRecords<byte[],byte[]>>(){
+          @Override public ConsumerRecords<byte[],byte[]> call() throws Exception {
+            try {
+              return consumer.poll(POLL_TIMEOUT);
+            }
   finally {
-            startedReading=true;
+              status=Status.READING;
+            }
           }
         }
-      }
 ,new Predicate<Throwable>(){
-        @Override public boolean apply(        Throwable input){
-          return input instanceof OffsetOutOfRangeException;
+          @Override public boolean apply(          Throwable input){
+            return input instanceof OffsetOutOfRangeException;
+          }
         }
-      }
 ,Integer.MAX_VALUE);
-      for (      ConsumerRecord<byte[],byte[]> record : records) {
-        if (log.isTraceEnabled()) {
-          log.trace("Got topic[%s] partition[%d] offset[%,d].",record.topic(),record.partition(),record.offset());
-        }
-        if (record.offset() < ioConfig.getEndPartitions().getPartitionOffsetMap().get(record.partition())) {
-          if (record.offset() != nextOffsets.get(record.partition())) {
-            throw new ISE("WTF?! Got offset[%,d] after offset[%,d] in partition[%d].",record.offset(),nextOffsets.get(record.partition()),record.partition());
+        for (        ConsumerRecord<byte[],byte[]> record : records) {
+          if (log.isTraceEnabled()) {
+            log.trace("Got topic[%s] partition[%d] offset[%,d].",record.topic(),record.partition(),record.offset());
           }
-          try {
-            final InputRow row=Preconditions.checkNotNull(parser.parse(ByteBuffer.wrap(record.value())),"row");
-            final SegmentIdentifier identifier=driver.add(row,sequenceNames.get(record.partition()),committerSupplier);
-            if (identifier == null) {
-              throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
+          if (record.offset() < endOffsets.get(record.partition())) {
+            if (record.offset() != nextOffsets.get(record.partition())) {
+              throw new ISE("WTF?! Got offset[%,d] after offset[%,d] in partition[%d].",record.offset(),nextOffsets.get(record.partition()),record.partition());
             }
-            fireDepartmentMetrics.incrementProcessed();
-          }
- catch (          ParseException e) {
-            if (tuningConfig.isReportParseExceptions()) {
-              throw e;
+            try {
+              final InputRow row=Preconditions.checkNotNull(parser.parse(ByteBuffer.wrap(record.value())),"row");
+              final SegmentIdentifier identifier=driver.add(row,sequenceNames.get(record.partition()),committerSupplier);
+              if (identifier == null) {
+                throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
+              }
+              fireDepartmentMetrics.incrementProcessed();
             }
+ catch (            ParseException e) {
+              if (tuningConfig.isReportParseExceptions()) {
+                throw e;
+              }
  else {
-              log.debug(e,"Dropping unparseable row from partition[%d] offset[%,d].",record.partition(),record.offset());
-              fireDepartmentMetrics.incrementUnparseable();
+                log.debug(e,"Dropping unparseable row from partition[%d] offset[%,d].",record.partition(),record.offset());
+                fireDepartmentMetrics.incrementUnparseable();
+              }
             }
+            nextOffsets.put(record.partition(),record.offset() + 1);
           }
-          final long nextOffset=record.offset() + 1;
-          final long endOffset=ioConfig.getEndPartitions().getPartitionOffsetMap().get(record.partition());
-          nextOffsets.put(record.partition(),nextOffset);
-          if (nextOffset == endOffset && assignment.remove(record.partition())) {
+          if (nextOffsets.get(record.partition()).equals(endOffsets.get(record.partition())) && assignment.remove(record.partition())) {
             log.info("Finished reading topic[%s], partition[%,d].",record.topic(),record.partition());
             assignPartitions(consumer,topic,assignment);
-            stillReading=!assignment.isEmpty();
+            stillReading=ioConfig.isPauseAfterRead() || !assignment.isEmpty();
           }
         }
       }
     }
-    final Committer finalCommitter=committerSupplier.get();
-    driver.persist(finalCommitter);
-    publishing=true;
-    if (stopping) {
-      return TaskStatus.failure(getId());
+  finally {
+      driver.persist(committerSupplier.get());
     }
+    if (stopRequested && !publishOnStop) {
+      throw new InterruptedException("Stopping without publishing");
+    }
+    status=Status.PUBLISHING;
     final TransactionalSegmentPublisher publisher=new TransactionalSegmentPublisher(){
       @Override public boolean publishSegments(      Set<DataSegment> segments,      Object commitMetadata) throws IOException {
-        if (!ioConfig.getEndPartitions().equals(((Map)commitMetadata).get(METADATA_NEXT_PARTITIONS))) {
+        final KafkaPartitions finalPartitions=toolbox.getObjectMapper().convertValue(((Map)commitMetadata).get(METADATA_NEXT_PARTITIONS),KafkaPartitions.class);
+        if (!endOffsets.equals(finalPartitions.getPartitionOffsetMap())) {
           throw new ISE("WTF?! Driver attempted to publish invalid metadata[%s].",commitMetadata);
         }
         final SegmentInsertAction action;
         if (ioConfig.isUseTransaction()) {
-          action=new SegmentInsertAction(segments,new KafkaDataSourceMetadata(ioConfig.getStartPartitions()),new KafkaDataSourceMetadata(ioConfig.getEndPartitions()));
+          action=new SegmentInsertAction(segments,new KafkaDataSourceMetadata(ioConfig.getStartPartitions()),new KafkaDataSourceMetadata(finalPartitions));
         }
  else {
           action=new SegmentInsertAction(segments,null,null);
@@ -154,5 +154,12 @@
 )),published.getCommitMetadata());
     }
   }
-   return success();
+ catch (  InterruptedException e) {
+    if (!stopRequested) {
+      Thread.currentThread().interrupt();
+      throw e;
+    }
+    log.info("The task was asked to stop before completing");
+  }
+  return success();
 }

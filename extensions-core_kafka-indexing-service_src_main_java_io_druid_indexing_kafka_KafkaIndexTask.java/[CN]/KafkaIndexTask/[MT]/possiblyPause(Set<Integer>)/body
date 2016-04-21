@@ -1,0 +1,39 @@
+{
+  pauseLock.lockInterruptibly();
+  try {
+    if (ioConfig.isPauseAfterRead() && assignment.isEmpty()) {
+      pauseMillis=PAUSE_FOREVER;
+      pauseRequested=true;
+    }
+    if (pauseRequested) {
+      status=Status.PAUSED;
+      long nanos=0;
+      hasPaused.signalAll();
+      while (pauseRequested) {
+        if (pauseMillis == PAUSE_FOREVER) {
+          log.info("Pausing ingestion until resumed");
+          shouldResume.await();
+        }
+ else {
+          if (pauseMillis > 0) {
+            log.info("Pausing ingestion for [%,d] ms",pauseMillis);
+            nanos=TimeUnit.MILLISECONDS.toNanos(pauseMillis);
+            pauseMillis=0;
+          }
+          if (nanos <= 0L) {
+            pauseRequested=false;
+          }
+          nanos=shouldResume.awaitNanos(nanos);
+        }
+      }
+      status=Status.READING;
+      shouldResume.signalAll();
+      log.info("Ingestion loop resumed");
+      return true;
+    }
+  }
+  finally {
+    pauseLock.unlock();
+  }
+  return false;
+}

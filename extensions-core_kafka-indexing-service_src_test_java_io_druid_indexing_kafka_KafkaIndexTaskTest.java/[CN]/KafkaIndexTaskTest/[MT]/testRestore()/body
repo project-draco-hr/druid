@@ -1,5 +1,5 @@
 {
-  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true),null);
+  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
   final ListenableFuture<TaskStatus> future1=runTask(task1);
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
     for (    ProducerRecord<byte[],byte[]> record : Iterables.limit(RECORDS,4)) {
@@ -11,8 +11,8 @@
   }
   Assert.assertEquals(2,countEvents(task1));
   task1.stopGracefully();
-  Assert.assertEquals(TaskStatus.Status.FAILED,future1.get().getStatusCode());
-  final KafkaIndexTask task2=createTask(task1.getId(),new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true),null);
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,future1.get().getStatusCode());
+  final KafkaIndexTask task2=createTask(task1.getId(),new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
   final ListenableFuture<TaskStatus> future2=runTask(task2);
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
     for (    ProducerRecord<byte[],byte[]> record : Iterables.skip(RECORDS,4)) {

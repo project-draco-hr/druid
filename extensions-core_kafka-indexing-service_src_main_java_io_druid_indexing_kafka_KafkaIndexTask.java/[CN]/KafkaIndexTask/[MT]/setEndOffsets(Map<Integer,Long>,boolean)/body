@@ -1,0 +1,28 @@
+{
+  if (offsets == null) {
+    return Response.status(Response.Status.BAD_REQUEST).entity("Request body must contain a map of { partition:endOffset }").build();
+  }
+ else   if (!endOffsets.keySet().containsAll(offsets.keySet())) {
+    return Response.status(Response.Status.BAD_REQUEST).entity(String.format("Request contains partitions not being handled by this task, my partitions: %s",endOffsets.keySet())).build();
+  }
+  pauseLock.lockInterruptibly();
+  try {
+    if (!isPaused()) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Task must be paused before changing the end offsets").build();
+    }
+    for (    Map.Entry<Integer,Long> entry : offsets.entrySet()) {
+      if (entry.getValue().compareTo(nextOffsets.get(entry.getKey())) < 0) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(String.format("End offset must be >= current offset for partition [%s] (current: %s)",entry.getKey(),nextOffsets.get(entry.getKey()))).build();
+      }
+    }
+    endOffsets.putAll(offsets);
+    log.info("endOffsets changed to %s",endOffsets);
+  }
+  finally {
+    pauseLock.unlock();
+  }
+  if (resume) {
+    resume();
+  }
+  return Response.ok(endOffsets).build();
+}

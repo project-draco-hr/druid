@@ -4,6 +4,7 @@
   this.endPartitions=Preconditions.checkNotNull(endPartitions,"endPartitions");
   this.consumerProperties=Preconditions.checkNotNull(consumerProperties,"consumerProperties");
   this.useTransaction=useTransaction != null ? useTransaction : DEFAULT_USE_TRANSACTION;
+  this.pauseAfterRead=pauseAfterRead != null ? pauseAfterRead : DEFAULT_PAUSE_AFTER_READ;
   Preconditions.checkArgument(startPartitions.getTopic().equals(endPartitions.getTopic()),"start topic and end topic must match");
   Preconditions.checkArgument(startPartitions.getPartitionOffsetMap().keySet().equals(endPartitions.getPartitionOffsetMap().keySet()),"start partition set and end partition set must match");
   for (  int partition : endPartitions.getPartitionOffsetMap().keySet()) {

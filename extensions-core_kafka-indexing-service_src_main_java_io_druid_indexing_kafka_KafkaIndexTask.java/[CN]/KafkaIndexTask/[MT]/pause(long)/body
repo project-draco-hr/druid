@@ -1,0 +1,29 @@
+{
+  if (!(status == Status.PAUSED || status == Status.READING)) {
+    return Response.status(Response.Status.BAD_REQUEST).entity(String.format("Can't pause, task is not in a pausable state (state: [%s])",status)).build();
+  }
+  pauseLock.lockInterruptibly();
+  try {
+    pauseMillis=timeout <= 0 ? PAUSE_FOREVER : timeout;
+    pauseRequested=true;
+    if (isPaused()) {
+      shouldResume.signalAll();
+    }
+    long nanos=TimeUnit.SECONDS.toNanos(2);
+    while (!isPaused()) {
+      if (nanos <= 0L) {
+        return Response.status(Response.Status.ACCEPTED).entity("Request accepted but task has not yet paused").build();
+      }
+      nanos=hasPaused.awaitNanos(nanos);
+    }
+  }
+  finally {
+    pauseLock.unlock();
+  }
+  try {
+    return Response.ok().entity(mapper.writeValueAsString(getCurrentOffsets())).build();
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+}
