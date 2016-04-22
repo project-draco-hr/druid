@@ -1,0 +1,8 @@
+{
+  MapBasedInputRow row=new MapBasedInputRow(new DateTime().minus(1).getMillis(),Lists.newArrayList("billy","joe"),ImmutableMap.<String,Object>of("billy","A","joe","B"));
+  IncrementalIndex index=closer.closeLater(indexCreator.createIndex());
+  index.add(row);
+  index.add(row);
+  index.add(row);
+  Assert.assertEquals(1,index.size());
+}
