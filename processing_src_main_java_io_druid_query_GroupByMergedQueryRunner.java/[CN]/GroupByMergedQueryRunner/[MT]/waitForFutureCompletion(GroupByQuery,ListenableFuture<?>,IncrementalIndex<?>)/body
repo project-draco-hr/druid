@@ -1,0 +1,32 @@
+{
+  try {
+    queryWatcher.registerQuery(query,future);
+    final Number timeout=query.getContextValue(QueryContextKeys.TIMEOUT,(Number)null);
+    if (timeout == null) {
+      future.get();
+    }
+ else {
+      future.get(timeout.longValue(),TimeUnit.MILLISECONDS);
+    }
+  }
+ catch (  InterruptedException e) {
+    log.warn(e,"Query interrupted, cancelling pending results, query id [%s]",query.getId());
+    future.cancel(true);
+    closeOnFailure.close();
+    throw new QueryInterruptedException(e);
+  }
+catch (  CancellationException e) {
+    closeOnFailure.close();
+    throw new QueryInterruptedException(e);
+  }
+catch (  TimeoutException e) {
+    closeOnFailure.close();
+    log.info("Query timeout, cancelling pending results for query id [%s]",query.getId());
+    future.cancel(true);
+    throw new QueryInterruptedException(e);
+  }
+catch (  ExecutionException e) {
+    closeOnFailure.close();
+    throw Throwables.propagate(e.getCause());
+  }
+}

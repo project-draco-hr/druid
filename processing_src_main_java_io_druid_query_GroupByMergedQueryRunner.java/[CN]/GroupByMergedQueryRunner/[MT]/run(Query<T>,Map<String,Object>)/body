@@ -1,5 +1,6 @@
 {
   final GroupByQuery query=(GroupByQuery)queryParam;
+  final boolean isSingleThreaded=query.getContextValue(CTX_KEY_IS_SINGLE_THREADED,configSupplier.get().isSingleThreaded());
   final Pair<IncrementalIndex,Accumulator<IncrementalIndex,T>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(query,configSupplier.get(),bufferPool);
   final Pair<Queue,Accumulator<Queue,T>> bySegmentAccumulatorPair=GroupByQueryHelper.createBySegmentAccumulatorPair();
   final boolean bySegment=BaseQuery.getContextBySegment(query,false);
@@ -9,7 +10,7 @@
       if (input == null) {
         throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
       }
-      return exec.submit(new AbstractPrioritizedCallable<Void>(priority){
+      ListenableFuture<Void> future=exec.submit(new AbstractPrioritizedCallable<Void>(priority){
         @Override public Void call() throws Exception {
           try {
             if (bySegment) {
@@ -30,38 +31,15 @@ catch (          Exception e) {
         }
       }
 );
+      if (isSingleThreaded) {
+        waitForFutureCompletion(query,future,indexAccumulatorPair.lhs);
+      }
+      return future;
     }
   }
 )));
-  try {
-    queryWatcher.registerQuery(query,futures);
-    final Number timeout=query.getContextValue(QueryContextKeys.TIMEOUT,(Number)null);
-    if (timeout == null) {
-      futures.get();
-    }
- else {
-      futures.get(timeout.longValue(),TimeUnit.MILLISECONDS);
-    }
-  }
- catch (  InterruptedException e) {
-    log.warn(e,"Query interrupted, cancelling pending results, query id [%s]",query.getId());
-    futures.cancel(true);
-    indexAccumulatorPair.lhs.close();
-    throw new QueryInterruptedException(e);
-  }
-catch (  CancellationException e) {
-    indexAccumulatorPair.lhs.close();
-    throw new QueryInterruptedException(e);
-  }
-catch (  TimeoutException e) {
-    indexAccumulatorPair.lhs.close();
-    log.info("Query timeout, cancelling pending results for query id [%s]",query.getId());
-    futures.cancel(true);
-    throw new QueryInterruptedException(e);
-  }
-catch (  ExecutionException e) {
-    indexAccumulatorPair.lhs.close();
-    throw Throwables.propagate(e.getCause());
+  if (!isSingleThreaded) {
+    waitForFutureCompletion(query,futures,indexAccumulatorPair.lhs);
   }
   if (bySegment) {
     return Sequences.simple(bySegmentAccumulatorPair.lhs);
