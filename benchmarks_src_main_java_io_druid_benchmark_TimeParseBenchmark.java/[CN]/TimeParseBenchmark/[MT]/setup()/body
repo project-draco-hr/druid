@@ -1,0 +1,15 @@
+{
+  SimpleDateFormat format=new SimpleDateFormat(DATA_FORMAT);
+  long start=System.currentTimeMillis();
+  int rowsPerBatch=numRows / numBatches;
+  int numRowInBatch=0;
+  rows=new String[numRows];
+  for (int i=0; i < numRows; ++i) {
+    if (numRowInBatch >= rowsPerBatch) {
+      numRowInBatch=0;
+      start+=5000;
+    }
+    rows[i]=format.format(new Date(start));
+    numRowInBatch++;
+  }
+}

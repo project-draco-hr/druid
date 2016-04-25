@@ -1,0 +1,11 @@
+{
+  String DATE_FORMAT="yyyy-MM-dd'T'HH:mm:ss";
+  String[] dates=new String[]{"2000-01-01T05:00:00","2000-01-01T05:00:01","2000-01-01T05:00:01","2000-01-01T05:00:02","2000-01-01T05:00:03"};
+  TimestampSpec spec=new TimestampSpec("TIMEstamp",DATE_FORMAT,null);
+  for (int i=0; i < dates.length; ++i) {
+    String date=dates[i];
+    DateTime dateTime=spec.extractTimestamp(ImmutableMap.<String,Object>of("TIMEstamp",date));
+    DateTime expectedDateTime=ISODateTimeFormat.dateHourMinuteSecond().parseDateTime(date);
+    Assert.assertEquals(expectedDateTime,dateTime);
+  }
+}

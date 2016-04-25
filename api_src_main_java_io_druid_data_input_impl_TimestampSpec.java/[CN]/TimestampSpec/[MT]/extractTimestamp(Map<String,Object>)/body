@@ -1,4 +1,17 @@
 {
   final Object o=input.get(timestampColumn);
-  return o == null ? missingValue : timestampConverter.apply(o);
+  DateTime extracted=missingValue;
+  if (o != null) {
+    if (o.equals(parseCtx.lastTimeObject)) {
+      extracted=parseCtx.lastDateTime;
+    }
+ else {
+      ParseCtx newCtx=new ParseCtx();
+      newCtx.lastTimeObject=o;
+      extracted=timestampConverter.apply(o);
+      newCtx.lastDateTime=extracted;
+      parseCtx=newCtx;
+    }
+  }
+  return extracted;
 }

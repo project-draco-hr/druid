@@ -1,0 +1,11 @@
+{
+  String lastTimeString=null;
+  long lastTime=0L;
+  for (int i=0; i < rows.length; ++i) {
+    if (!rows[i].equals(lastTimeString)) {
+      lastTimeString=rows[i];
+      lastTime=timeFn.apply(rows[i]).getMillis();
+    }
+    blackhole.consume(lastTime);
+  }
+}
