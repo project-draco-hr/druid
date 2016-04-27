@@ -1,0 +1,32 @@
+{
+  final AtomicInteger executorCount=new AtomicInteger(0);
+  RemoteTaskRunnerConfig config=new RemoteTaskRunnerConfig();
+  IndexerZkConfig indexerZkConfig=new IndexerZkConfig(new ZkPathsConfig(){
+    @Override public String getBase(){
+      return basePath;
+    }
+  }
+,null,null,null,null,null);
+  HttpClient httpClient=EasyMock.createMock(HttpClient.class);
+  Supplier<WorkerBehaviorConfig> workerBehaviorConfig=EasyMock.createMock(Supplier.class);
+  ScheduledExecutorFactory executorFactory=new ScheduledExecutorFactory(){
+    @Override public ScheduledExecutorService create(    int i,    String s){
+      executorCount.incrementAndGet();
+      return ScheduledExecutors.fixed(i,s);
+    }
+  }
+;
+  SimpleResourceManagementConfig resourceManagementConfig=new SimpleResourceManagementConfig();
+  ResourceManagementSchedulerConfig resourceManagementSchedulerConfig=new ResourceManagementSchedulerConfig(){
+    @Override public boolean isDoAutoscale(){
+      return true;
+    }
+  }
+;
+  RemoteTaskRunnerFactory factory=new RemoteTaskRunnerFactory(cf,config,indexerZkConfig,jsonMapper,httpClient,workerBehaviorConfig,executorFactory,resourceManagementConfig,resourceManagementSchedulerConfig);
+  Assert.assertEquals(0,executorCount.get());
+  RemoteTaskRunner remoteTaskRunner1=factory.build();
+  Assert.assertEquals(2,executorCount.get());
+  RemoteTaskRunner remoteTaskRunner2=factory.build();
+  Assert.assertEquals(4,executorCount.get());
+}
