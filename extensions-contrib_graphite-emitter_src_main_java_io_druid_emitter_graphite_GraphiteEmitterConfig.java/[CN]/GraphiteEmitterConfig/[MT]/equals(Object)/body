@@ -12,17 +12,23 @@
   if (getBatchSize() != that.getBatchSize()) {
     return false;
   }
-  if (getHostname() != null ? !getHostname().equals(that.getHostname()) : that.getHostname() != null) {
+  if (!getHostname().equals(that.getHostname())) {
     return false;
   }
-  if (getFlushPeriod() != null ? !getFlushPeriod().equals(that.getFlushPeriod()) : that.getFlushPeriod() != null) {
+  if (!getFlushPeriod().equals(that.getFlushPeriod())) {
     return false;
   }
-  if (getMaxQueueSize() != null ? !getMaxQueueSize().equals(that.getMaxQueueSize()) : that.getMaxQueueSize() != null) {
+  if (!getMaxQueueSize().equals(that.getMaxQueueSize())) {
     return false;
   }
-  if (getDruidToGraphiteEventConverter() != null ? !getDruidToGraphiteEventConverter().equals(that.getDruidToGraphiteEventConverter()) : that.getDruidToGraphiteEventConverter() != null) {
+  if (!getDruidToGraphiteEventConverter().equals(that.getDruidToGraphiteEventConverter())) {
     return false;
   }
-  return !(getAlertEmitters() != null ? !getAlertEmitters().equals(that.getAlertEmitters()) : that.getAlertEmitters() != null);
+  if (getAlertEmitters() != null ? !getAlertEmitters().equals(that.getAlertEmitters()) : that.getAlertEmitters() != null) {
+    return false;
+  }
+  if (!getEmitWaitTime().equals(that.getEmitWaitTime())) {
+    return false;
+  }
+  return getWaitForEventTime().equals(that.getWaitForEventTime());
 }

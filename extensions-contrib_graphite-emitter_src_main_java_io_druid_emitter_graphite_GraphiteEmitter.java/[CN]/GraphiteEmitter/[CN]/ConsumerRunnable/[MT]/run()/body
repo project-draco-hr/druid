@@ -6,7 +6,7 @@
     }
     while (eventsQueue.size() > 0 && !exec.isShutdown()) {
       try {
-        final GraphiteEvent graphiteEvent=eventsQueue.poll(DEFAULT_PUT_GET_TIMEOUT,TimeUnit.MILLISECONDS);
+        final GraphiteEvent graphiteEvent=eventsQueue.poll(graphiteEmitterConfig.getWaitForEventTime(),TimeUnit.MILLISECONDS);
         if (graphiteEvent != null) {
           log.debug("sent [%s] with value [%s] and time [%s]",graphiteEvent.getEventPath(),graphiteEvent.getValue(),graphiteEvent.getTimestamp());
           pickledGraphite.send(graphiteEvent.getEventPath(),graphiteEvent.getValue(),graphiteEvent.getTimestamp());
