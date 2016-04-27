@@ -1,0 +1,7 @@
+{
+  autoScaler=EasyMock.createMock(AutoScaler.class);
+  testTask=TestTasks.immediateSuccess("task1");
+  config=new PendingTaskBasedWorkerResourceManagementConfig().setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(10).setPendingTaskTimeout(new Period(0)).setWorkerVersion(MIN_VERSION).setMaxScalingStep(2);
+  workerConfig=new AtomicReference<>(new WorkerBehaviorConfig(new FillCapacityWorkerSelectStrategy(),autoScaler));
+  strategy=new PendingTaskBasedWorkerResourceManagementStrategy(config,DSuppliers.of(workerConfig),new ResourceManagementSchedulerConfig(),executorService);
+}

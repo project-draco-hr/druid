@@ -1,0 +1,25 @@
+{
+  EasyMock.reset(autoScaler);
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScaler);
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTaskPayloads()).andReturn(Arrays.asList((Task)NoopTask.create())).times(1);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.asList(new TestZkWorker(NoopTask.create()).toImmutable(),new TestZkWorker(NoopTask.create()).toImmutable())).times(2);
+  EasyMock.expect(runner.getConfig()).andReturn(new RemoteTaskRunnerConfig());
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<Worker>newArrayList());
+  EasyMock.expect(runner.markWorkersLazy((Predicate<ImmutableWorkerInfo>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Collections.<Worker>emptyList());
+  EasyMock.replay(runner);
+  boolean terminatedSomething=strategy.doTerminate(runner);
+  Assert.assertFalse(terminatedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.reset(autoScaler);
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
+  EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScaler);
+  boolean provisionedSomething=strategy.doProvision(runner);
+  Assert.assertFalse(provisionedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.verify(runner);
+}

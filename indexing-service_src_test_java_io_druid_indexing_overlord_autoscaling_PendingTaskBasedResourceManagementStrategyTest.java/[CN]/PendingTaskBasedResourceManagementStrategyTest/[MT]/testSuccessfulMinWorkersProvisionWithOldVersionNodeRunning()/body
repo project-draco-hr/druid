@@ -1,0 +1,17 @@
+{
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(3);
+  EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(5);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList());
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTaskPayloads()).andReturn(Lists.<Task>newArrayList());
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.<ImmutableWorkerInfo>asList(new TestZkWorker(testTask).toImmutable(),new TestZkWorker(testTask,"h1","n1",INVALID_VERSION).toImmutable()));
+  EasyMock.expect(runner.getConfig()).andReturn(new RemoteTaskRunnerConfig());
+  EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("aNode"))).times(2);
+  EasyMock.replay(runner,autoScaler);
+  boolean provisionedSomething=strategy.doProvision(runner);
+  Assert.assertTrue(provisionedSomething);
+  Assert.assertTrue(strategy.getStats().toList().size() == 2);
+  for (  ScalingStats.ScalingEvent event : strategy.getStats().toList()) {
+    Assert.assertTrue(event.getEvent() == ScalingStats.EVENT.PROVISION);
+  }
+}

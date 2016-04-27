@@ -1,0 +1,17 @@
+{
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList());
+  EasyMock.expect(autoScaler.terminate(EasyMock.<List<String>>anyObject())).andReturn(new AutoScalingData(Lists.<String>newArrayList()));
+  EasyMock.replay(autoScaler);
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTasks()).andReturn(Arrays.asList(new RemoteTaskRunnerWorkItem(testTask.getId(),null,TaskLocation.unknown()).withQueueInsertionTime(new DateTime()))).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.asList(new TestZkWorker(testTask).toImmutable())).times(2);
+  EasyMock.expect(runner.markWorkersLazy((Predicate<ImmutableWorkerInfo>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Arrays.<Worker>asList(new TestZkWorker(testTask).getWorker()));
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<Worker>newArrayList());
+  EasyMock.replay(runner);
+  boolean terminatedSomething=strategy.doTerminate(runner);
+  Assert.assertTrue(terminatedSomething);
+  Assert.assertTrue(strategy.getStats().toList().size() == 1);
+  Assert.assertTrue(strategy.getStats().toList().get(0).getEvent() == ScalingStats.EVENT.TERMINATE);
+  EasyMock.verify(autoScaler);
+}

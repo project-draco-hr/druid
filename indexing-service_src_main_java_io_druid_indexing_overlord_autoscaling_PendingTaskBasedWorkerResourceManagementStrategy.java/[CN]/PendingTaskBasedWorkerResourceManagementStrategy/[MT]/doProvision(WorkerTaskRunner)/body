@@ -1,0 +1,47 @@
+{
+  Collection<Task> pendingTasks=runner.getPendingTaskPayloads();
+  Collection<ImmutableWorkerInfo> workers=runner.getWorkers();
+synchronized (lock) {
+    boolean didProvision=false;
+    final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
+    if (workerConfig == null || workerConfig.getAutoScaler() == null) {
+      log.error("No workerConfig available, cannot provision new workers.");
+      return false;
+    }
+    final Collection<String> workerNodeIds=getWorkerNodeIDs(Collections2.transform(workers,new Function<ImmutableWorkerInfo,Worker>(){
+      @Override public Worker apply(      ImmutableWorkerInfo input){
+        return input.getWorker();
+      }
+    }
+),workerConfig);
+    currentlyProvisioning.removeAll(workerNodeIds);
+    if (currentlyProvisioning.isEmpty()) {
+      int want=getScaleUpNodeCount(runner.getConfig(),workerConfig,pendingTasks,workers);
+      while (want > 0) {
+        final AutoScalingData provisioned=workerConfig.getAutoScaler().provision();
+        final List<String> newNodes=provisioned == null ? ImmutableList.<String>of() : provisioned.getNodeIds();
+        if (newNodes.isEmpty()) {
+          log.warn("NewNodes is empty, returning from provision loop");
+          break;
+        }
+ else {
+          currentlyProvisioning.addAll(newNodes);
+          lastProvisionTime=new DateTime();
+          scalingStats.addProvisionEvent(provisioned);
+          want-=provisioned.getNodeIds().size();
+          didProvision=true;
+        }
+      }
+    }
+ else {
+      Duration durSinceLastProvision=new Duration(lastProvisionTime,new DateTime());
+      log.info("%s provisioning. Current wait time: %s",currentlyProvisioning,durSinceLastProvision);
+      if (durSinceLastProvision.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
+        log.makeAlert("Worker node provisioning taking too long!").addData("millisSinceLastProvision",durSinceLastProvision.getMillis()).addData("provisioningCount",currentlyProvisioning.size()).emit();
+        workerConfig.getAutoScaler().terminateWithIds(Lists.newArrayList(currentlyProvisioning));
+        currentlyProvisioning.clear();
+      }
+    }
+    return didProvision;
+  }
+}

@@ -16,17 +16,17 @@
     }
   }
 ;
-  SimpleResourceManagementConfig resourceManagementConfig=new SimpleResourceManagementConfig();
+  SimpleWorkerResourceManagementConfig resourceManagementConfig=new SimpleWorkerResourceManagementConfig();
   ResourceManagementSchedulerConfig resourceManagementSchedulerConfig=new ResourceManagementSchedulerConfig(){
     @Override public boolean isDoAutoscale(){
       return true;
     }
   }
 ;
-  RemoteTaskRunnerFactory factory=new RemoteTaskRunnerFactory(cf,config,indexerZkConfig,jsonMapper,httpClient,workerBehaviorConfig,executorFactory,resourceManagementConfig,resourceManagementSchedulerConfig);
-  Assert.assertEquals(0,executorCount.get());
+  RemoteTaskRunnerFactory factory=new RemoteTaskRunnerFactory(cf,config,indexerZkConfig,jsonMapper,httpClient,workerBehaviorConfig,executorFactory,resourceManagementSchedulerConfig,new SimpleWorkerResourceManagementStrategy(resourceManagementConfig,workerBehaviorConfig,resourceManagementSchedulerConfig,executorFactory));
+  Assert.assertEquals(1,executorCount.get());
   RemoteTaskRunner remoteTaskRunner1=factory.build();
   Assert.assertEquals(2,executorCount.get());
   RemoteTaskRunner remoteTaskRunner2=factory.build();
-  Assert.assertEquals(4,executorCount.get());
+  Assert.assertEquals(3,executorCount.get());
 }

@@ -1,0 +1,61 @@
+{
+  Collection<? extends TaskRunnerWorkItem> pendingTasks=runner.getPendingTasks();
+synchronized (lock) {
+    final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
+    if (workerConfig == null) {
+      log.warn("No workerConfig available, cannot terminate workers.");
+      return false;
+    }
+    boolean didTerminate=false;
+    final Set<String> workerNodeIds=Sets.newHashSet(workerConfig.getAutoScaler().ipToIdLookup(Lists.newArrayList(Iterables.transform(runner.getLazyWorkers(),new Function<Worker,String>(){
+      @Override public String apply(      Worker input){
+        return input.getIp();
+      }
+    }
+))));
+    final Set<String> stillExisting=Sets.newHashSet();
+    for (    String s : currentlyTerminating) {
+      if (workerNodeIds.contains(s)) {
+        stillExisting.add(s);
+      }
+    }
+    currentlyTerminating.clear();
+    currentlyTerminating.addAll(stillExisting);
+    Collection<ImmutableWorkerInfo> workers=getWorkers(runner);
+    updateTargetWorkerCount(workerConfig,pendingTasks,workers);
+    if (currentlyTerminating.isEmpty()) {
+      final int excessWorkers=(workers.size() + currentlyProvisioning.size()) - targetWorkerCount;
+      if (excessWorkers > 0) {
+        final Predicate<ImmutableWorkerInfo> isLazyWorker=ResourceManagementUtil.createLazyWorkerPredicate(config);
+        final Collection<String> laziestWorkerIps=Collections2.transform(runner.markWorkersLazy(isLazyWorker,excessWorkers),new Function<Worker,String>(){
+          @Override public String apply(          Worker worker){
+            return worker.getIp();
+          }
+        }
+);
+        if (laziestWorkerIps.isEmpty()) {
+          log.info("Wanted to terminate %,d workers, but couldn't find any lazy ones!",excessWorkers);
+        }
+ else {
+          log.info("Terminating %,d workers (wanted %,d): %s",laziestWorkerIps.size(),excessWorkers,Joiner.on(", ").join(laziestWorkerIps));
+          final AutoScalingData terminated=workerConfig.getAutoScaler().terminate(ImmutableList.copyOf(laziestWorkerIps));
+          if (terminated != null) {
+            currentlyTerminating.addAll(terminated.getNodeIds());
+            lastTerminateTime=new DateTime();
+            scalingStats.addTerminateEvent(terminated);
+            didTerminate=true;
+          }
+        }
+      }
+    }
+ else {
+      Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
+      log.info("%s terminating. Current wait time: %s",currentlyTerminating,durSinceLastTerminate);
+      if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
+        log.makeAlert("Worker node termination taking too long!").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
+        currentlyTerminating.clear();
+      }
+    }
+    return didTerminate;
+  }
+}

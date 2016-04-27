@@ -12,7 +12,7 @@ synchronized (lock) {
  else {
         return;
       }
-      zkWritingExecutor.execute(new Runnable(){
+      processingExecutor.execute(new Runnable(){
         @Override public void run(){
 synchronized (lock) {
             try {
@@ -28,7 +28,7 @@ synchronized (lock) {
               final String path=ZKPaths.makePath(basePath,currentlyProcessing.getSegmentIdentifier());
               final byte[] payload=jsonMapper.writeValueAsBytes(currentlyProcessing.getChangeRequest());
               curator.create().withMode(CreateMode.EPHEMERAL).forPath(path,payload);
-              zkWritingExecutor.schedule(new Runnable(){
+              processingExecutor.schedule(new Runnable(){
                 @Override public void run(){
                   try {
                     if (curator.checkExists().forPath(path) != null) {

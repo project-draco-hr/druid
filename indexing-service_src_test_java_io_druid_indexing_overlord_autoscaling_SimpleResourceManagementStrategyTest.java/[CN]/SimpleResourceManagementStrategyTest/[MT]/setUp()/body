@@ -1,8 +1,8 @@
 {
   autoScaler=EasyMock.createMock(AutoScaler.class);
   testTask=TestTasks.immediateSuccess("task1");
-  final SimpleResourceManagementConfig simpleResourceManagementConfig=new SimpleResourceManagementConfig().setWorkerIdleTimeout(new Period(0)).setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(1).setPendingTaskTimeout(new Period(0)).setWorkerVersion("");
+  final SimpleWorkerResourceManagementConfig simpleWorkerResourceManagementConfig=new SimpleWorkerResourceManagementConfig().setWorkerIdleTimeout(new Period(0)).setMaxScalingDuration(new Period(1000)).setNumEventsToTrack(1).setPendingTaskTimeout(new Period(0)).setWorkerVersion("");
   final ResourceManagementSchedulerConfig schedulerConfig=new ResourceManagementSchedulerConfig();
   workerConfig=new AtomicReference<>(new WorkerBehaviorConfig(null,autoScaler));
-  simpleResourceManagementStrategy=new SimpleResourceManagementStrategy(simpleResourceManagementConfig,DSuppliers.of(workerConfig),schedulerConfig,executorService);
+  simpleResourceManagementStrategy=new SimpleWorkerResourceManagementStrategy(simpleWorkerResourceManagementConfig,DSuppliers.of(workerConfig),schedulerConfig,executorService);
 }

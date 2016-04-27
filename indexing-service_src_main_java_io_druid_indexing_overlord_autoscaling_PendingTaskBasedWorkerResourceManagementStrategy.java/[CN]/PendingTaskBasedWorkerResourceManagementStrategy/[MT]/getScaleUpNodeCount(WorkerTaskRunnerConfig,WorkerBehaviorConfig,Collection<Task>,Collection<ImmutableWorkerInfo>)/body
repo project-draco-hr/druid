@@ -1,0 +1,14 @@
+{
+  final int minWorkerCount=workerConfig.getAutoScaler().getMinNumWorkers();
+  final int maxWorkerCount=workerConfig.getAutoScaler().getMaxNumWorkers();
+  final Predicate<ImmutableWorkerInfo> isValidWorker=ResourceManagementUtil.createValidWorkerPredicate(config);
+  final int currValidWorkers=Collections2.filter(workers,isValidWorker).size();
+  int moreWorkersNeeded=currValidWorkers == 0 ? minWorkerCount : getWorkersNeededToAssignTasks(remoteTaskRunnerConfig,workerConfig,pendingTasks,workers);
+  int want=Math.max(minWorkerCount - currValidWorkers,Math.min(config.getMaxScalingStep(),moreWorkersNeeded));
+  if (want > 0 && currValidWorkers >= maxWorkerCount) {
+    log.warn("Unable to provision more workers. Current workerCount[%d] maximum workerCount[%d].");
+    return 0;
+  }
+  want=Math.min(want,maxWorkerCount - currValidWorkers);
+  return want;
+}

@@ -1,0 +1,35 @@
+{
+  EasyMock.reset(autoScaler);
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScaler);
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTaskPayloads()).andReturn(Arrays.<Task>asList()).times(2);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.asList(new TestZkWorker(NoopTask.create(),"h1","i1",MIN_VERSION).toImmutable())).times(3);
+  EasyMock.expect(runner.getConfig()).andReturn(new RemoteTaskRunnerConfig()).times(2);
+  EasyMock.expect(runner.getLazyWorkers()).andReturn(Lists.<Worker>newArrayList());
+  EasyMock.expect(runner.markWorkersLazy((Predicate<ImmutableWorkerInfo>)EasyMock.anyObject(),EasyMock.anyInt())).andReturn(Collections.<Worker>emptyList());
+  EasyMock.replay(runner);
+  boolean terminatedSomething=strategy.doTerminate(runner);
+  Assert.assertFalse(terminatedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.reset(autoScaler);
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(0);
+  EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(2);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.replay(autoScaler);
+  boolean provisionedSomething=strategy.doProvision(runner);
+  Assert.assertFalse(provisionedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.reset(autoScaler);
+  EasyMock.expect(autoScaler.getMinNumWorkers()).andReturn(3);
+  EasyMock.expect(autoScaler.getMaxNumWorkers()).andReturn(5);
+  EasyMock.expect(autoScaler.ipToIdLookup(EasyMock.<List<String>>anyObject())).andReturn(Lists.<String>newArrayList("ip"));
+  EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h3")));
+  EasyMock.expect(autoScaler.provision()).andReturn(new AutoScalingData(Lists.<String>newArrayList("h4")));
+  EasyMock.replay(autoScaler);
+  provisionedSomething=strategy.doProvision(runner);
+  Assert.assertTrue(provisionedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.verify(runner);
+}

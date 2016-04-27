@@ -1,0 +1,7 @@
+{
+  final Predicate<ImmutableWorkerInfo> isValidWorker=ResourceManagementUtil.createValidWorkerPredicate(config);
+  final int currValidWorkers=Collections2.filter(zkWorkers,isValidWorker).size();
+  final int invalidWorkers=zkWorkers.size() - currValidWorkers;
+  final int minWorkers=workerConfig.getAutoScaler().getMinNumWorkers();
+  return invalidWorkers + Math.max(0,Math.min(config.getMaxScalingStep(),currValidWorkers - minWorkers));
+}

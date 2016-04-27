@@ -16,8 +16,8 @@
       binder.bind(TaskStorageQueryAdapter.class).in(LazySingleton.class);
       binder.bind(ChatHandlerProvider.class).toProvider(Providers.<ChatHandlerProvider>of(null));
       configureTaskStorage(binder);
-      configureRunners(binder);
       configureAutoscale(binder);
+      configureRunners(binder);
       binder.bind(AuditManager.class).toProvider(AuditManagerProvider.class).in(ManageLifecycle.class);
       binder.bind(RedirectFilter.class).in(LazySingleton.class);
       binder.bind(RedirectInfo.class).to(OverlordRedirectInfo.class).in(LazySingleton.class);
@@ -47,10 +47,12 @@
     }
     private void configureAutoscale(    Binder binder){
       JsonConfigProvider.bind(binder,"druid.indexer.autoscale",ResourceManagementSchedulerConfig.class);
-      binder.bind(new TypeLiteral<ResourceManagementStrategy<WorkerTaskRunner>>(){
-      }
-).to(SimpleResourceManagementStrategy.class).in(LazySingleton.class);
-      JsonConfigProvider.bind(binder,"druid.indexer.autoscale",SimpleResourceManagementConfig.class);
+      JsonConfigProvider.bind(binder,"druid.indexer.autoscale",PendingTaskBasedWorkerResourceManagementConfig.class);
+      JsonConfigProvider.bind(binder,"druid.indexer.autoscale",SimpleWorkerResourceManagementConfig.class);
+      PolyBind.createChoice(binder,"druid.indexer.autoscale.strategy.type",Key.get(ResourceManagementStrategy.class),Key.get(SimpleWorkerResourceManagementStrategy.class));
+      final MapBinder<String,ResourceManagementStrategy> biddy=PolyBind.optionBinder(binder,Key.get(ResourceManagementStrategy.class));
+      biddy.addBinding("simple").to(SimpleWorkerResourceManagementStrategy.class);
+      biddy.addBinding("pendingTaskBased").to(PendingTaskBasedWorkerResourceManagementStrategy.class);
     }
   }
 ,new IndexingServiceFirehoseModule(),new IndexingServiceTaskLogsModule());

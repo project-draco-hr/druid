@@ -1,0 +1,23 @@
+{
+  final Collection<ImmutableWorkerInfo> validWorkers=Collections2.filter(workers,ResourceManagementUtil.createValidWorkerPredicate(config));
+  Map<String,ImmutableWorkerInfo> workersMap=Maps.newHashMap();
+  for (  ImmutableWorkerInfo worker : validWorkers) {
+    workersMap.put(worker.getWorker().getHost(),worker);
+  }
+  WorkerSelectStrategy workerSelectStrategy=workerConfig.getSelectStrategy();
+  int need=0;
+  int capacity=getExpectedWorkerCapacity(workers);
+  for (  Task task : pendingTasks) {
+    Optional<ImmutableWorkerInfo> selectedWorker=workerSelectStrategy.findWorkerForTask(workerTaskRunnerConfig,ImmutableMap.copyOf(workersMap),task);
+    final ImmutableWorkerInfo workerRunningTask;
+    if (selectedWorker.isPresent()) {
+      workerRunningTask=selectedWorker.get();
+    }
+ else {
+      workerRunningTask=createDummyWorker("dummy" + need,capacity,workerTaskRunnerConfig.getMinWorkerVersion());
+      need++;
+    }
+    workersMap.put(workerRunningTask.getWorker().getHost(),workerWithTask(workerRunningTask,task));
+  }
+  return need;
+}

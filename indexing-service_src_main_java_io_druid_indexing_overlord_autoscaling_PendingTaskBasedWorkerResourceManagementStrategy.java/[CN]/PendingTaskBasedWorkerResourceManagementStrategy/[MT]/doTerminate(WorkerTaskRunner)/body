@@ -1,0 +1,56 @@
+{
+  Collection<ImmutableWorkerInfo> zkWorkers=runner.getWorkers();
+synchronized (lock) {
+    final WorkerBehaviorConfig workerConfig=workerConfigRef.get();
+    if (workerConfig == null) {
+      log.warn("No workerConfig available, cannot terminate workers.");
+      return false;
+    }
+    if (!currentlyProvisioning.isEmpty()) {
+      log.debug("Already provisioning nodes, Not Terminating any nodes.");
+      return false;
+    }
+    boolean didTerminate=false;
+    final Collection<String> workerNodeIds=getWorkerNodeIDs(runner.getLazyWorkers(),workerConfig);
+    final Set<String> stillExisting=Sets.newHashSet();
+    for (    String s : currentlyTerminating) {
+      if (workerNodeIds.contains(s)) {
+        stillExisting.add(s);
+      }
+    }
+    currentlyTerminating.clear();
+    currentlyTerminating.addAll(stillExisting);
+    if (currentlyTerminating.isEmpty()) {
+      final int maxWorkersToTerminate=maxWorkersToTerminate(zkWorkers,workerConfig);
+      final Predicate<ImmutableWorkerInfo> isLazyWorker=ResourceManagementUtil.createLazyWorkerPredicate(config);
+      final List<String> laziestWorkerIps=Lists.newArrayList(Collections2.transform(runner.markWorkersLazy(isLazyWorker,maxWorkersToTerminate),new Function<Worker,String>(){
+        @Override public String apply(        Worker zkWorker){
+          return zkWorker.getIp();
+        }
+      }
+));
+      if (laziestWorkerIps.isEmpty()) {
+        log.debug("Found no lazy workers");
+      }
+ else {
+        log.info("Terminating %,d lazy workers: %s",laziestWorkerIps.size(),Joiner.on(", ").join(laziestWorkerIps));
+        final AutoScalingData terminated=workerConfig.getAutoScaler().terminate(laziestWorkerIps);
+        if (terminated != null) {
+          currentlyTerminating.addAll(terminated.getNodeIds());
+          lastTerminateTime=new DateTime();
+          scalingStats.addTerminateEvent(terminated);
+          didTerminate=true;
+        }
+      }
+    }
+ else {
+      Duration durSinceLastTerminate=new Duration(lastTerminateTime,new DateTime());
+      log.info("%s terminating. Current wait time: %s",currentlyTerminating,durSinceLastTerminate);
+      if (durSinceLastTerminate.isLongerThan(config.getMaxScalingDuration().toStandardDuration())) {
+        log.makeAlert("Worker node termination taking too long!").addData("millisSinceLastTerminate",durSinceLastTerminate.getMillis()).addData("terminatingCount",currentlyTerminating.size()).emit();
+        currentlyTerminating.clear();
+      }
+    }
+    return didTerminate;
+  }
+}

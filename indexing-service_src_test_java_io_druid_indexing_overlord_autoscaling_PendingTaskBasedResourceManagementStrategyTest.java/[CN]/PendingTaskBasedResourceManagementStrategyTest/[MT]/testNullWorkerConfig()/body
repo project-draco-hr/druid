@@ -1,0 +1,14 @@
+{
+  workerConfig.set(null);
+  EasyMock.replay(autoScaler);
+  RemoteTaskRunner runner=EasyMock.createMock(RemoteTaskRunner.class);
+  EasyMock.expect(runner.getPendingTaskPayloads()).andReturn(Arrays.<Task>asList(NoopTask.create())).times(1);
+  EasyMock.expect(runner.getWorkers()).andReturn(Arrays.asList(new TestZkWorker(null).toImmutable())).times(2);
+  EasyMock.replay(runner);
+  boolean terminatedSomething=strategy.doTerminate(runner);
+  boolean provisionedSomething=strategy.doProvision(runner);
+  Assert.assertFalse(terminatedSomething);
+  Assert.assertFalse(provisionedSomething);
+  EasyMock.verify(autoScaler);
+  EasyMock.verify(runner);
+}
