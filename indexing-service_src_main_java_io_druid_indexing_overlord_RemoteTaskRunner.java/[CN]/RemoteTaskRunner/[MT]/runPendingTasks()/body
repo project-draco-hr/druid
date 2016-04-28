@@ -7,14 +7,17 @@
           String taskId=taskRunnerWorkItem.getTaskId();
           if (tryAssignTasks.putIfAbsent(taskId,taskId) == null) {
             try {
-              if (tryAssignTask(pendingTaskPayloads.get(taskId),taskRunnerWorkItem)) {
+              Task task=pendingTaskPayloads.get(taskId);
+              if (task != null && tryAssignTask(task,taskRunnerWorkItem)) {
                 pendingTaskPayloads.remove(taskId);
               }
             }
  catch (            Exception e) {
               log.makeAlert(e,"Exception while trying to assign task").addData("taskId",taskRunnerWorkItem.getTaskId()).emit();
               RemoteTaskRunnerWorkItem workItem=pendingTasks.remove(taskId);
-              taskComplete(workItem,null,TaskStatus.failure(taskId));
+              if (workItem != null) {
+                taskComplete(workItem,null,TaskStatus.failure(taskId));
+              }
             }
  finally {
               tryAssignTasks.remove(taskId);

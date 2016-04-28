@@ -1,0 +1,6 @@
+{
+  Worker worker=new Worker(workerId,workerId,3,"0");
+  cf.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(joiner.join(announcementsPath,workerId),jsonMapper.writeValueAsBytes(worker));
+  cf.create().creatingParentsIfNeeded().forPath(joiner.join(tasksPath,workerId));
+  return worker;
+}

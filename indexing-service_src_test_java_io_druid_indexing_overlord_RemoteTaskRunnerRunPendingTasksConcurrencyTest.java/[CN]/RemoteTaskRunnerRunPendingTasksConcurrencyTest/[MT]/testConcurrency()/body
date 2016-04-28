@@ -1,0 +1,70 @@
+{
+  rtrTestUtils.makeWorker("worker0");
+  rtrTestUtils.makeWorker("worker1");
+  remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period("PT3600S")){
+    public int getPendingTasksRunnerNumThreads(){
+      return 2;
+    }
+  }
+);
+  int numTasks=6;
+  ListenableFuture<TaskStatus>[] results=new ListenableFuture[numTasks];
+  Task[] tasks=new Task[numTasks];
+  for (int i=0; i < 2; i++) {
+    tasks[i]=TestTasks.unending("task" + i);
+    results[i]=(remoteTaskRunner.run(tasks[i]));
+  }
+  while (remoteTaskRunner.getWorkersWithUnacknowledgedTask().size() < 2) {
+    Thread.sleep(5);
+  }
+  for (int i=2; i < 5; i++) {
+    tasks[i]=TestTasks.unending("task" + i);
+    results[i]=(remoteTaskRunner.run(tasks[i]));
+  }
+  if (rtrTestUtils.taskAnnounced("worker0",tasks[0].getId())) {
+    rtrTestUtils.mockWorkerRunningTask("worker0",tasks[0]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker0",tasks[0]);
+    rtrTestUtils.mockWorkerRunningTask("worker1",tasks[1]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker1",tasks[1]);
+  }
+ else {
+    rtrTestUtils.mockWorkerRunningTask("worker0",tasks[1]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker0",tasks[1]);
+    rtrTestUtils.mockWorkerRunningTask("worker1",tasks[0]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker1",tasks[0]);
+  }
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,results[0].get().getStatusCode());
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,results[1].get().getStatusCode());
+  while (remoteTaskRunner.getWorkersWithUnacknowledgedTask().size() < 2) {
+    Thread.sleep(5);
+  }
+  remoteTaskRunner.shutdown("task4");
+  if (rtrTestUtils.taskAnnounced("worker0",tasks[3].getId())) {
+    rtrTestUtils.mockWorkerRunningTask("worker0",tasks[3]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker0",tasks[3]);
+    rtrTestUtils.mockWorkerRunningTask("worker1",tasks[2]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker1",tasks[2]);
+  }
+ else {
+    rtrTestUtils.mockWorkerRunningTask("worker1",tasks[3]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker1",tasks[3]);
+    rtrTestUtils.mockWorkerRunningTask("worker0",tasks[2]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker0",tasks[2]);
+  }
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,results[2].get().getStatusCode());
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,results[3].get().getStatusCode());
+  tasks[5]=TestTasks.unending("task5");
+  results[5]=remoteTaskRunner.run(tasks[5]);
+  while (remoteTaskRunner.getWorkersWithUnacknowledgedTask().size() < 1) {
+    Thread.sleep(5);
+  }
+  if (rtrTestUtils.taskAnnounced("worker0",tasks[5].getId())) {
+    rtrTestUtils.mockWorkerRunningTask("worker0",tasks[5]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker0",tasks[5]);
+  }
+ else {
+    rtrTestUtils.mockWorkerRunningTask("worker1",tasks[5]);
+    rtrTestUtils.mockWorkerCompleteSuccessfulTask("worker1",tasks[5]);
+  }
+  Assert.assertEquals(TaskStatus.Status.SUCCESS,results[5].get().getStatusCode());
+}
