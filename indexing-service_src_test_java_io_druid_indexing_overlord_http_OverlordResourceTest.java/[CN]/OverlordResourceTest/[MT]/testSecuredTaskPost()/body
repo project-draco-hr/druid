@@ -1,0 +1,6 @@
+{
+  EasyMock.replay(taskRunner,taskMaster,tsqa,req);
+  Task task=NoopTask.create();
+  Response response=overlordResource.taskPost(task,req);
+  Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
+}

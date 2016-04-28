@@ -1,0 +1,17 @@
+{
+  List<String> tasksIds=ImmutableList.of("id_1","id_2","id_3");
+  EasyMock.expect(tsqa.getRecentlyFinishedTaskStatuses()).andReturn(Lists.transform(tasksIds,new Function<String,TaskStatus>(){
+    @Override public TaskStatus apply(    String input){
+      return TaskStatus.success(input);
+    }
+  }
+)).once();
+  EasyMock.expect(tsqa.getTask(tasksIds.get(0))).andReturn(Optional.of(getTaskWithIdAndDatasource(tasksIds.get(0),"deny"))).once();
+  EasyMock.expect(tsqa.getTask(tasksIds.get(1))).andReturn(Optional.of(getTaskWithIdAndDatasource(tasksIds.get(1),"allow"))).once();
+  EasyMock.expect(tsqa.getTask(tasksIds.get(2))).andReturn(Optional.of(getTaskWithIdAndDatasource(tasksIds.get(2),"allow"))).once();
+  EasyMock.replay(taskRunner,taskMaster,tsqa,req);
+  List<OverlordResource.TaskResponseObject> responseObjects=(List)overlordResource.getCompleteTasks(req).getEntity();
+  Assert.assertEquals(2,responseObjects.size());
+  Assert.assertEquals(tasksIds.get(1),responseObjects.get(0).toJson().get("id"));
+  Assert.assertEquals(tasksIds.get(2),responseObjects.get(1).toJson().get("id"));
+}

@@ -1,0 +1,9 @@
+{
+  if (resourceFilter instanceof TaskResourceFilter && !mockedOnce) {
+    tsqa=injector.getInstance(TaskStorageQueryAdapter.class);
+    EasyMock.expect(tsqa.getTask(EasyMock.anyString())).andReturn(Optional.of(noopTask)).anyTimes();
+    EasyMock.replay(tsqa);
+    mockedOnce=true;
+  }
+  setUp(resourceFilter);
+}

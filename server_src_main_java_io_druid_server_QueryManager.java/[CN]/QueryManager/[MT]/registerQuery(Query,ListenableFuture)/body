@@ -1,9 +1,14 @@
 {
   final String id=query.getId();
+  final List<String> datasources=query.getDataSource().getNames();
   queries.put(id,future);
+  queryDatasources.putAll(id,datasources);
   future.addListener(new Runnable(){
     @Override public void run(){
       queries.remove(id,future);
+      for (      String datasource : datasources) {
+        queryDatasources.remove(id,datasource);
+      }
     }
   }
 ,MoreExecutors.sameThreadExecutor());

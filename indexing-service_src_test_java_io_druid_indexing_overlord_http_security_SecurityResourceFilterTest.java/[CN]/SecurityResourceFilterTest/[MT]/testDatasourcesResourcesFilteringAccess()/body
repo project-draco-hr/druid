@@ -1,0 +1,8 @@
+{
+  setUpMockExpectations(requestPath,true,requestMethod);
+  EasyMock.expect(request.getEntity(Task.class)).andReturn(noopTask).anyTimes();
+  EasyMock.expect(request.getMethod()).andReturn(requestMethod).anyTimes();
+  EasyMock.replay(req,request,authorizationInfo);
+  resourceFilter.getRequestFilter().filter(request);
+  Assert.assertTrue(((AbstractResourceFilter)resourceFilter.getRequestFilter()).isApplicable(requestPath));
+}

@@ -1,0 +1,23 @@
+{
+  if (log.isDebugEnabled()) {
+    log.debug("Received cancel request for query [%s]",queryId);
+  }
+  if (authConfig.isEnabled()) {
+    final AuthorizationInfo authorizationInfo=(AuthorizationInfo)req.getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+    Preconditions.checkNotNull(authorizationInfo,"Security is enabled but no authorization info found in the request");
+    Set<String> datasources=queryManager.getQueryDatasources(queryId);
+    if (datasources == null) {
+      log.warn("QueryId [%s] not registered with QueryManager, cannot cancel",queryId);
+    }
+ else {
+      for (      String dataSource : datasources) {
+        Access authResult=authorizationInfo.isAuthorized(new Resource(dataSource,ResourceType.DATASOURCE),Action.WRITE);
+        if (!authResult.isAllowed()) {
+          return Response.status(Response.Status.FORBIDDEN).header("Access-Check-Result",authResult).build();
+        }
+      }
+    }
+  }
+  queryManager.cancelQuery(queryId);
+  return Response.status(Response.Status.ACCEPTED).build();
+}

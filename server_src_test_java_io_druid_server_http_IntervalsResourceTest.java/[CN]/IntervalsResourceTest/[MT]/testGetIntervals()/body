@@ -4,8 +4,8 @@
   List<Interval> expectedIntervals=new ArrayList<>();
   expectedIntervals.add(new Interval("2010-01-01T00:00:00.000Z/2010-01-02T00:00:00.000Z"));
   expectedIntervals.add(new Interval("2010-01-22T00:00:00.000Z/2010-01-23T00:00:00.000Z"));
-  IntervalsResource intervalsResource=new IntervalsResource(inventoryView);
-  Response response=intervalsResource.getIntervals();
+  IntervalsResource intervalsResource=new IntervalsResource(inventoryView,new AuthConfig());
+  Response response=intervalsResource.getIntervals(request);
   TreeMap<Interval,Map<String,Map<String,Object>>> actualIntervals=(TreeMap)response.getEntity();
   Assert.assertEquals(2,actualIntervals.size());
   Assert.assertEquals(expectedIntervals.get(1),actualIntervals.firstKey());
@@ -16,5 +16,4 @@
   Assert.assertEquals(1,actualIntervals.get(expectedIntervals.get(0)).get("datasource1").get("count"));
   Assert.assertEquals(5L,actualIntervals.get(expectedIntervals.get(0)).get("datasource2").get("size"));
   Assert.assertEquals(1,actualIntervals.get(expectedIntervals.get(0)).get("datasource2").get("count"));
-  EasyMock.verify(inventoryView);
 }

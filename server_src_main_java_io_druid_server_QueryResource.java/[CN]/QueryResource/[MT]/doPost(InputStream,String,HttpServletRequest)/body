@@ -22,6 +22,20 @@
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
     }
+    if (authConfig.isEnabled()) {
+      AuthorizationInfo authorizationInfo=(AuthorizationInfo)req.getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+      if (authorizationInfo != null) {
+        for (        String dataSource : query.getDataSource().getNames()) {
+          Access authResult=authorizationInfo.isAuthorized(new Resource(dataSource,ResourceType.DATASOURCE),Action.READ);
+          if (!authResult.isAllowed()) {
+            return Response.status(Response.Status.FORBIDDEN).header("Access-Check-Result",authResult).build();
+          }
+        }
+      }
+ else {
+        throw new ISE("WTF?! Security is enabled but no authorization info found in the request");
+      }
+    }
     final Map<String,Object> responseContext=new MapMaker().makeMap();
     final Sequence res=query.run(texasRanger,responseContext);
     final Sequence results;

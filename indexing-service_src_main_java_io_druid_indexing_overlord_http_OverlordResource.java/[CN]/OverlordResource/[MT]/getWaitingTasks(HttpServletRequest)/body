@@ -1,0 +1,50 @@
+{
+  return workItemsResponse(new Function<TaskRunner,Collection<? extends TaskRunnerWorkItem>>(){
+    @Override public Collection<? extends TaskRunnerWorkItem> apply(    TaskRunner taskRunner){
+      final List<Task> allActiveTasks=taskStorageQueryAdapter.getActiveTasks();
+      final List<Task> activeTasks;
+      if (authConfig.isEnabled()) {
+        final Map<Pair<Resource,Action>,Access> resourceAccessMap=new HashMap<>();
+        final AuthorizationInfo authorizationInfo=(AuthorizationInfo)req.getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+        activeTasks=ImmutableList.copyOf(Iterables.filter(allActiveTasks,new Predicate<Task>(){
+          @Override public boolean apply(          Task input){
+            Resource resource=new Resource(input.getDataSource(),ResourceType.DATASOURCE);
+            Action action=Action.READ;
+            Pair<Resource,Action> key=new Pair<>(resource,action);
+            if (resourceAccessMap.containsKey(key)) {
+              return resourceAccessMap.get(key).isAllowed();
+            }
+ else {
+              Access access=authorizationInfo.isAuthorized(key.lhs,key.rhs);
+              resourceAccessMap.put(key,access);
+              return access.isAllowed();
+            }
+          }
+        }
+));
+      }
+ else {
+        activeTasks=allActiveTasks;
+      }
+      final Set<String> runnersKnownTasks=Sets.newHashSet(Iterables.transform(taskRunner.getKnownTasks(),new Function<TaskRunnerWorkItem,String>(){
+        @Override public String apply(        final TaskRunnerWorkItem workItem){
+          return workItem.getTaskId();
+        }
+      }
+));
+      final List<TaskRunnerWorkItem> waitingTasks=Lists.newArrayList();
+      for (      final Task task : activeTasks) {
+        if (!runnersKnownTasks.contains(task.getId())) {
+          waitingTasks.add(new TaskRunnerWorkItem(task.getId(),SettableFuture.<TaskStatus>create(),new DateTime(0),new DateTime(0)){
+            @Override public TaskLocation getLocation(){
+              return TaskLocation.unknown();
+            }
+          }
+);
+        }
+      }
+      return waitingTasks;
+    }
+  }
+);
+}

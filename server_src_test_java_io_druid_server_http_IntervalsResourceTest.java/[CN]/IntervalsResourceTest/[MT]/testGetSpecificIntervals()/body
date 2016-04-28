@@ -1,11 +1,10 @@
 {
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
   EasyMock.replay(inventoryView);
-  IntervalsResource intervalsResource=new IntervalsResource(inventoryView);
-  Response response=intervalsResource.getSpecificIntervals("2010-01-01T00:00:00.000Z/P1D",null,null);
+  IntervalsResource intervalsResource=new IntervalsResource(inventoryView,new AuthConfig());
+  Response response=intervalsResource.getSpecificIntervals("2010-01-01T00:00:00.000Z/P1D",null,null,request);
   Map<String,Object> actualIntervals=(Map)response.getEntity();
   Assert.assertEquals(2,actualIntervals.size());
   Assert.assertEquals(25L,actualIntervals.get("size"));
   Assert.assertEquals(2,actualIntervals.get("count"));
-  EasyMock.verify(inventoryView);
 }

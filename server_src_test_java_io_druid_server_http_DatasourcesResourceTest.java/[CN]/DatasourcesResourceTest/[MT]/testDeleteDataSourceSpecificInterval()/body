@@ -5,7 +5,7 @@
   indexingServiceClient.killSegments("datasource1",theInterval);
   EasyMock.expectLastCall().once();
   EasyMock.replay(indexingServiceClient,server);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,indexingServiceClient);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,indexingServiceClient,new AuthConfig());
   Response response=datasourcesResource.deleteDataSourceSpecificInterval("datasource1",interval);
   Assert.assertEquals(200,response.getStatus());
   Assert.assertEquals(null,response.getEntity());

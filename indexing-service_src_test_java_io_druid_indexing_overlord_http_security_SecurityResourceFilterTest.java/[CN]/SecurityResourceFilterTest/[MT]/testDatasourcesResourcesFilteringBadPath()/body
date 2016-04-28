@@ -1,0 +1,6 @@
+{
+  final String badRequestPath=requestPath.replaceAll("\\w+","droid");
+  EasyMock.expect(request.getPath()).andReturn(badRequestPath).anyTimes();
+  EasyMock.replay(req,request,authorizationInfo);
+  Assert.assertFalse(((AbstractResourceFilter)resourceFilter.getRequestFilter()).isApplicable(badRequestPath));
+}

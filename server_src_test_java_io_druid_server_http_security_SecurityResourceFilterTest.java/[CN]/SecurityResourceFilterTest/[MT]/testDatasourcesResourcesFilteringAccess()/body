@@ -1,0 +1,7 @@
+{
+  setUpMockExpectations(requestPath,true,requestMethod);
+  EasyMock.replay(req,request,authorizationInfo);
+  Assert.assertTrue(((AbstractResourceFilter)resourceFilter.getRequestFilter()).isApplicable(requestPath));
+  resourceFilter.getRequestFilter().filter(request);
+  EasyMock.verify(req,request,authorizationInfo);
+}

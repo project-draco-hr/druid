@@ -1,0 +1,43 @@
+{
+  taskMaster.start();
+  announcementLatch.await();
+  while (!taskMaster.isLeading()) {
+    Thread.sleep(10);
+  }
+  Assert.assertEquals(taskMaster.getLeader(),druidNode.getHostAndPort());
+  overlordResource=new OverlordResource(taskMaster,new TaskStorageQueryAdapter(taskStorage),null,null,null,new AuthConfig());
+  Response response=overlordResource.getLeader();
+  Assert.assertEquals(druidNode.getHostAndPort(),response.getEntity());
+  final String taskId_0="0";
+  NoopTask task_0=new NoopTask(taskId_0,0,0,null,null,null);
+  response=overlordResource.taskPost(task_0,req);
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(ImmutableMap.of("task",taskId_0),response.getEntity());
+  response=overlordResource.taskPost(task_0,req);
+  Assert.assertEquals(400,response.getStatus());
+  response=overlordResource.getTaskPayload(taskId_0);
+  Assert.assertEquals(task_0,((Map)response.getEntity()).get("payload"));
+  response=overlordResource.getTaskPayload("whatever");
+  Assert.assertEquals(404,response.getStatus());
+  response=overlordResource.getTaskStatus(taskId_0);
+  Assert.assertEquals(taskId_0,((Map)response.getEntity()).get("task"));
+  Assert.assertEquals(TaskStatus.running(taskId_0).getStatusCode(),((TaskStatus)((Map)response.getEntity()).get("status")).getStatusCode());
+  taskCompletionCountDownLatches[Integer.parseInt(taskId_0)].countDown();
+  waitForTaskStatus(taskId_0,TaskStatus.Status.SUCCESS);
+  final String taskId_1="1";
+  NoopTask task_1=new NoopTask(taskId_1,0,0,null,null,null);
+  taskStorage.insert(task_1,TaskStatus.running(taskId_1));
+  runTaskCountDownLatches[Integer.parseInt(taskId_1)].await();
+  response=overlordResource.getRunningTasks(req);
+  Assert.assertEquals(1,(((List)response.getEntity()).size()));
+  final OverlordResource.TaskResponseObject taskResponseObject=((List<OverlordResource.TaskResponseObject>)response.getEntity()).get(0);
+  Assert.assertEquals(taskId_1,taskResponseObject.toJson().get("id"));
+  Assert.assertEquals(TASK_LOCATION,taskResponseObject.toJson().get("location"));
+  taskCompletionCountDownLatches[Integer.parseInt(taskId_1)].countDown();
+  waitForTaskStatus(taskId_1,TaskStatus.Status.SUCCESS);
+  response=overlordResource.getCompleteTasks(req);
+  Assert.assertEquals(2,(((List)response.getEntity()).size()));
+  taskMaster.stop();
+  Assert.assertFalse(taskMaster.isLeading());
+  EasyMock.verify(taskLockbox,taskActionClientFactory);
+}

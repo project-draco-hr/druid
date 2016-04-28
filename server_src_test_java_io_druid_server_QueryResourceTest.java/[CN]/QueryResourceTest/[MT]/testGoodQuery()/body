@@ -1,5 +1,5 @@
 {
-  QueryResource queryResource=new QueryResource(serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),new QueryManager());
-  Response respone=queryResource.doPost(new ByteArrayInputStream(simpleTimeSeriesQuery.getBytes("UTF-8")),null,testServletRequest);
-  Assert.assertNotNull(respone);
+  EasyMock.replay(testServletRequest);
+  Response response=queryResource.doPost(new ByteArrayInputStream(simpleTimeSeriesQuery.getBytes("UTF-8")),null,testServletRequest);
+  Assert.assertNotNull(response);
 }

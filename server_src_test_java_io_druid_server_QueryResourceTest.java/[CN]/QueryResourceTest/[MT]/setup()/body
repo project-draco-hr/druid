@@ -1,5 +1,6 @@
 {
-  EasyMock.expect(testServletRequest.getContentType()).andReturn(MediaType.APPLICATION_JSON);
+  EasyMock.expect(testServletRequest.getContentType()).andReturn(MediaType.APPLICATION_JSON).anyTimes();
   EasyMock.expect(testServletRequest.getRemoteAddr()).andReturn("localhost").anyTimes();
-  EasyMock.replay(testServletRequest);
+  queryManager=new QueryManager();
+  queryResource=new QueryResource(serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),queryManager,new AuthConfig());
 }

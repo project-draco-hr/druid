@@ -3,7 +3,7 @@
   EasyMock.expect(server.getDataSource("datasource1")).andReturn(dataSource1).atLeastOnce();
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
   EasyMock.replay(inventoryView,server);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null,new AuthConfig());
   Response response=datasourcesResource.getTheDataSource("datasource1","full");
   DruidDataSource result=(DruidDataSource)response.getEntity();
   Assert.assertEquals(200,response.getStatus());

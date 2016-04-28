@@ -1,0 +1,20 @@
+{
+  EasyMock.expect(request.getPath()).andReturn(requestPath).anyTimes();
+  EasyMock.expect(request.getPathSegments()).andReturn(ImmutableList.copyOf(Iterables.transform(Arrays.asList(requestPath.split("/")),new Function<String,PathSegment>(){
+    @Override public PathSegment apply(    final String input){
+      return new PathSegment(){
+        @Override public String getPath(){
+          return input;
+        }
+        @Override public MultivaluedMap<String,String> getMatrixParameters(){
+          return null;
+        }
+      }
+;
+    }
+  }
+))).anyTimes();
+  EasyMock.expect(request.getMethod()).andReturn(requestMethod).anyTimes();
+  EasyMock.expect(req.getAttribute(EasyMock.anyString())).andReturn(authorizationInfo).atLeastOnce();
+  EasyMock.expect(authorizationInfo.isAuthorized(EasyMock.anyObject(Resource.class),EasyMock.anyObject(Action.class))).andReturn(new Access(authCheckResult)).atLeastOnce();
+}

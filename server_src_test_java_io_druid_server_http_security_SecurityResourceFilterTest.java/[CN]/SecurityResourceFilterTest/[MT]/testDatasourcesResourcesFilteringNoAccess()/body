@@ -1,0 +1,12 @@
+{
+  setUpMockExpectations(requestPath,false,requestMethod);
+  EasyMock.replay(req,request,authorizationInfo);
+  try {
+    resourceFilter.getRequestFilter().filter(request);
+  }
+ catch (  WebApplicationException e) {
+    Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),e.getResponse().getStatus());
+    throw e;
+  }
+  EasyMock.verify(req,request,authorizationInfo);
+}

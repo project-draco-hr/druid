@@ -1,0 +1,10 @@
+{
+  List<String> tasksIds=ImmutableList.of("id_1","id_2");
+  EasyMock.<Collection<? extends TaskRunnerWorkItem>>expect(taskRunner.getRunningTasks()).andReturn(ImmutableList.of(new MockTaskRunnerWorkItem(tasksIds.get(0),null),new MockTaskRunnerWorkItem(tasksIds.get(1),null)));
+  EasyMock.expect(tsqa.getTask(tasksIds.get(0))).andReturn(Optional.of(getTaskWithIdAndDatasource(tasksIds.get(0),"deny"))).once();
+  EasyMock.expect(tsqa.getTask(tasksIds.get(1))).andReturn(Optional.of(getTaskWithIdAndDatasource(tasksIds.get(1),"allow"))).once();
+  EasyMock.replay(taskRunner,taskMaster,tsqa,req);
+  List<OverlordResource.TaskResponseObject> responseObjects=(List)overlordResource.getRunningTasks(req).getEntity();
+  Assert.assertEquals(1,responseObjects.size());
+  Assert.assertEquals(tasksIds.get(1),responseObjects.get(0).toJson().get("id"));
+}

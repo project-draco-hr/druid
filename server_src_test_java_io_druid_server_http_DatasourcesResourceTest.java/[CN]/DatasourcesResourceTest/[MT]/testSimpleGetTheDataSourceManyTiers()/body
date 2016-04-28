@@ -9,7 +9,7 @@
   EasyMock.expect(server3.getTier()).andReturn("cold").atLeastOnce();
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server,server2,server3)).atLeastOnce();
   EasyMock.replay(inventoryView,server,server2,server3);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null,new AuthConfig());
   Response response=datasourcesResource.getTheDataSource("datasource1",null);
   Assert.assertEquals(200,response.getStatus());
   Map<String,Map<String,Object>> result=(Map<String,Map<String,Object>>)response.getEntity();

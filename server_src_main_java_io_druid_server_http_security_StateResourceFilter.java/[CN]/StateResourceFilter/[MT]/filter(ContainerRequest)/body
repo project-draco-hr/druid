@@ -1,0 +1,12 @@
+{
+  if (getAuthConfig().isEnabled()) {
+    final String resourceName="STATE";
+    final AuthorizationInfo authorizationInfo=(AuthorizationInfo)getReq().getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+    Preconditions.checkNotNull(authorizationInfo,"Security is enabled but no authorization info found in the request");
+    final Access authResult=authorizationInfo.isAuthorized(new Resource(resourceName,ResourceType.STATE),getAction(request));
+    if (!authResult.isAllowed()) {
+      throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity(String.format("Access-Check-Result: %s",authResult.toString())).build());
+    }
+  }
+  return request;
+}

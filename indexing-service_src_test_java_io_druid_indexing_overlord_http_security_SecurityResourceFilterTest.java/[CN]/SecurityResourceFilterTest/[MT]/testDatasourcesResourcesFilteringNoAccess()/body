@@ -1,0 +1,14 @@
+{
+  setUpMockExpectations(requestPath,false,requestMethod);
+  EasyMock.expect(request.getEntity(Task.class)).andReturn(noopTask).anyTimes();
+  EasyMock.expect(request.getMethod()).andReturn(requestMethod).anyTimes();
+  EasyMock.replay(req,request,authorizationInfo);
+  Assert.assertTrue(((AbstractResourceFilter)resourceFilter.getRequestFilter()).isApplicable(requestPath));
+  try {
+    resourceFilter.getRequestFilter().filter(request);
+  }
+ catch (  WebApplicationException e) {
+    Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),e.getResponse().getStatus());
+    throw e;
+  }
+}

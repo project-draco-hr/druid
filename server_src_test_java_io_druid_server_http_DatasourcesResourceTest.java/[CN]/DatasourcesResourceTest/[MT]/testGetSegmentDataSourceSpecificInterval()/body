@@ -5,7 +5,7 @@
   server.addDataSegment(dataSegmentList.get(2).getIdentifier(),dataSegmentList.get(2));
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
   EasyMock.replay(inventoryView);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null,new AuthConfig());
   Response response=datasourcesResource.getSegmentDataSourceSpecificInterval("invalidDataSource","2010-01-01/P1D",null,null);
   Assert.assertEquals(null,response.getEntity());
   response=datasourcesResource.getSegmentDataSourceSpecificInterval("datasource1","2010-03-01/P1D",null,null);

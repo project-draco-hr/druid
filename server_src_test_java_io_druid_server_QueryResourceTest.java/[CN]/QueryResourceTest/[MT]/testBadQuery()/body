@@ -1,6 +1,6 @@
 {
-  QueryResource queryResource=new QueryResource(serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),new QueryManager());
-  Response respone=queryResource.doPost(new ByteArrayInputStream("Meka Leka Hi Meka Hiney Ho".getBytes("UTF-8")),null,testServletRequest);
-  Assert.assertNotNull(respone);
-  Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),respone.getStatus());
+  EasyMock.replay(testServletRequest);
+  Response response=queryResource.doPost(new ByteArrayInputStream("Meka Leka Hi Meka Hiney Ho".getBytes("UTF-8")),null,testServletRequest);
+  Assert.assertNotNull(response);
+  Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
 }

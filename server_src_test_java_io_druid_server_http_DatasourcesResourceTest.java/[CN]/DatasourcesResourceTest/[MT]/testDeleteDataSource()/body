@@ -1,7 +1,7 @@
 {
   IndexingServiceClient indexingServiceClient=EasyMock.createStrictMock(IndexingServiceClient.class);
   EasyMock.replay(indexingServiceClient,server);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,indexingServiceClient);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,indexingServiceClient,new AuthConfig());
   Response response=datasourcesResource.deleteDataSource("datasource","true","???");
   Assert.assertEquals(400,response.getStatus());
   Assert.assertNotNull(response.getEntity());

@@ -1,0 +1,26 @@
+{
+  final String taskId=task.getId();
+  ListenableFuture<TaskStatus> future=MoreExecutors.listeningDecorator(Execs.singleThreaded("noop_test_task_exec_%s")).submit(new Callable<TaskStatus>(){
+    @Override public TaskStatus call() throws Exception {
+      runningTasks.add(taskId);
+      if (runLatches != null) {
+        runLatches[Integer.parseInt(taskId)].countDown();
+      }
+      if (completionLatches != null) {
+        completionLatches[Integer.parseInt(taskId)].await();
+      }
+      taskRunnerWorkItems.remove(taskId);
+      runningTasks.remove(taskId);
+      return TaskStatus.success(taskId);
+    }
+  }
+);
+  TaskRunnerWorkItem taskRunnerWorkItem=new TaskRunnerWorkItem(taskId,future){
+    @Override public TaskLocation getLocation(){
+      return TASK_LOCATION;
+    }
+  }
+;
+  taskRunnerWorkItems.put(taskId,taskRunnerWorkItem);
+  return future;
+}

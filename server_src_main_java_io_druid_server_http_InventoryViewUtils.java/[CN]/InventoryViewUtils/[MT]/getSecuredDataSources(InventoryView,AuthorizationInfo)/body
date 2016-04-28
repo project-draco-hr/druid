@@ -1,0 +1,24 @@
+{
+  if (authorizationInfo == null) {
+    throw new ISE("Invalid to call a secured method with null AuthorizationInfo!!");
+  }
+ else {
+    final Map<Pair<Resource,Action>,Access> resourceAccessMap=new HashMap<>();
+    return ImmutableSet.copyOf(Iterables.filter(getDataSources(inventoryView),new Predicate<DruidDataSource>(){
+      @Override public boolean apply(      DruidDataSource input){
+        Resource resource=new Resource(input.getName(),ResourceType.DATASOURCE);
+        Action action=Action.READ;
+        Pair<Resource,Action> key=new Pair<>(resource,action);
+        if (resourceAccessMap.containsKey(key)) {
+          return resourceAccessMap.get(key).isAllowed();
+        }
+ else {
+          Access access=authorizationInfo.isAuthorized(key.lhs,key.rhs);
+          resourceAccessMap.put(key,access);
+          return access.isAllowed();
+        }
+      }
+    }
+));
+  }
+}

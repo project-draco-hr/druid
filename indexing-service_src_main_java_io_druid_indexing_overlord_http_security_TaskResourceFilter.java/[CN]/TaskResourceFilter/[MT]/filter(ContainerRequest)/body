@@ -1,0 +1,22 @@
+{
+  if (getAuthConfig().isEnabled()) {
+    final String taskId=Preconditions.checkNotNull(request.getPathSegments().get(Iterables.indexOf(request.getPathSegments(),new Predicate<PathSegment>(){
+      @Override public boolean apply(      PathSegment input){
+        return input.getPath().equals("task");
+      }
+    }
+) + 1).getPath());
+    Optional<Task> taskOptional=taskStorageQueryAdapter.getTask(taskId);
+    if (!taskOptional.isPresent()) {
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(String.format("Cannot find any task with id: [%s]",taskId)).build());
+    }
+    final String dataSourceName=Preconditions.checkNotNull(taskOptional.get().getDataSource());
+    final AuthorizationInfo authorizationInfo=(AuthorizationInfo)getReq().getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+    Preconditions.checkNotNull(authorizationInfo,"Security is enabled but no authorization info found in the request");
+    final Access authResult=authorizationInfo.isAuthorized(new Resource(dataSourceName,ResourceType.DATASOURCE),getAction(request));
+    if (!authResult.isAllowed()) {
+      throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN).entity(String.format("Access-Check-Result: %s",authResult.toString())).build());
+    }
+  }
+  return request;
+}

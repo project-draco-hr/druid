@@ -1,0 +1,41 @@
+{
+  final Injector injector=Guice.createInjector(new Module(){
+    @Override public void configure(    Binder binder){
+      for (      Class clazz : mockableInjections) {
+        binder.bind(clazz).toInstance(EasyMock.createNiceMock(clazz));
+      }
+      for (      Object obj : injectedObjs) {
+        binder.bind((Class)obj.getClass()).toInstance(obj);
+      }
+      for (      Key<?> key : mockableKeys) {
+        binder.bind((Key<Object>)key).toInstance(EasyMock.createNiceMock(key.getTypeLiteral().getRawType()));
+      }
+      binder.bind(AuthConfig.class).toInstance(new AuthConfig(true));
+    }
+  }
+);
+  final String basepath=((Path)clazz.getAnnotation(Path.class)).value().substring(1);
+  final List<Class<? extends ResourceFilter>> baseResourceFilters=clazz.getAnnotation(ResourceFilters.class) == null ? Collections.<Class<? extends ResourceFilter>>emptyList() : ImmutableList.copyOf(((ResourceFilters)clazz.getAnnotation(ResourceFilters.class)).value());
+  return ImmutableList.copyOf(Iterables.concat(Iterables.transform(Iterables.filter(ImmutableList.copyOf(clazz.getDeclaredMethods()),new Predicate<Method>(){
+    @Override public boolean apply(    Method input){
+      return input.getAnnotation(GET.class) != null || input.getAnnotation(POST.class) != null || input.getAnnotation(DELETE.class) != null && (input.getAnnotation(ResourceFilters.class) != null || !baseResourceFilters.isEmpty());
+    }
+  }
+),new Function<Method,Collection<Object[]>>(){
+    @Override public Collection<Object[]> apply(    final Method method){
+      final List<Class<? extends ResourceFilter>> resourceFilters=method.getAnnotation(ResourceFilters.class) == null ? baseResourceFilters : ImmutableList.copyOf(method.getAnnotation(ResourceFilters.class).value());
+      return Collections2.transform(resourceFilters,new Function<Class<? extends ResourceFilter>,Object[]>(){
+        @Override public Object[] apply(        Class<? extends ResourceFilter> input){
+          if (method.getAnnotation(Path.class) != null) {
+            return new Object[]{String.format("%s%s",basepath,method.getAnnotation(Path.class).value()),input.getAnnotation(GET.class) == null ? (method.getAnnotation(DELETE.class) == null ? "POST" : "DELETE") : "GET",injector.getInstance(input),injector};
+          }
+ else {
+            return new Object[]{basepath,input.getAnnotation(GET.class) == null ? (method.getAnnotation(DELETE.class) == null ? "POST" : "DELETE") : "GET",injector.getInstance(input),injector};
+          }
+        }
+      }
+);
+    }
+  }
+)));
+}

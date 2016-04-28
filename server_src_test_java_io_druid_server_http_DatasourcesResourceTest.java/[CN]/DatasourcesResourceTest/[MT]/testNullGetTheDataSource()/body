@@ -2,7 +2,7 @@
   EasyMock.expect(server.getDataSource("none")).andReturn(null).atLeastOnce();
   EasyMock.expect(inventoryView.getInventory()).andReturn(ImmutableList.of(server)).atLeastOnce();
   EasyMock.replay(inventoryView,server);
-  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null);
+  DatasourcesResource datasourcesResource=new DatasourcesResource(inventoryView,null,null,new AuthConfig());
   Assert.assertEquals(204,datasourcesResource.getTheDataSource("none",null).getStatus());
   EasyMock.verify(inventoryView,server);
 }

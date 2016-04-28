@@ -3,12 +3,11 @@
   EasyMock.replay(inventoryView);
   List<Interval> expectedIntervals=new ArrayList<>();
   expectedIntervals.add(new Interval("2010-01-01T00:00:00.000Z/2010-01-02T00:00:00.000Z"));
-  IntervalsResource intervalsResource=new IntervalsResource(inventoryView);
-  Response response=intervalsResource.getSpecificIntervals("2010-01-01T00:00:00.000Z/P1D","simple",null);
+  IntervalsResource intervalsResource=new IntervalsResource(inventoryView,new AuthConfig());
+  Response response=intervalsResource.getSpecificIntervals("2010-01-01T00:00:00.000Z/P1D","simple",null,request);
   Map<Interval,Map<String,Object>> actualIntervals=(Map)response.getEntity();
   Assert.assertEquals(1,actualIntervals.size());
   Assert.assertTrue(actualIntervals.containsKey(expectedIntervals.get(0)));
   Assert.assertEquals(25L,actualIntervals.get(expectedIntervals.get(0)).get("size"));
   Assert.assertEquals(2,actualIntervals.get(expectedIntervals.get(0)).get("count"));
-  EasyMock.verify(inventoryView);
 }

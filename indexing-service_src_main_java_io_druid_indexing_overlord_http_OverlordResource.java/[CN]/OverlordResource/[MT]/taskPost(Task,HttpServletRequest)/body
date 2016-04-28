@@ -1,0 +1,23 @@
+{
+  if (authConfig.isEnabled()) {
+    final String dataSource=task.getDataSource();
+    final AuthorizationInfo authorizationInfo=(AuthorizationInfo)req.getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+    Preconditions.checkNotNull(authorizationInfo,"Security is enabled but no authorization info found in the request");
+    Access authResult=authorizationInfo.isAuthorized(new Resource(dataSource,ResourceType.DATASOURCE),Action.WRITE);
+    if (!authResult.isAllowed()) {
+      return Response.status(Response.Status.FORBIDDEN).header("Access-Check-Result",authResult).build();
+    }
+  }
+  return asLeaderWith(taskMaster.getTaskQueue(),new Function<TaskQueue,Response>(){
+    @Override public Response apply(    TaskQueue taskQueue){
+      try {
+        taskQueue.add(task);
+        return Response.ok(ImmutableMap.of("task",task.getId())).build();
+      }
+ catch (      EntryExistsException e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(ImmutableMap.of("error",String.format("Task[%s] already exists!",task.getId()))).build();
+      }
+    }
+  }
+);
+}

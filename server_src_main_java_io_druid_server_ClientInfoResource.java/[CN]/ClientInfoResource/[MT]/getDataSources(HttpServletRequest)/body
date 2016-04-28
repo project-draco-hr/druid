@@ -1,0 +1,25 @@
+{
+  if (authConfig.isEnabled()) {
+    final Map<Pair<Resource,Action>,Access> resourceAccessMap=new HashMap<>();
+    final AuthorizationInfo authorizationInfo=(AuthorizationInfo)request.getAttribute(AuthConfig.DRUID_AUTH_TOKEN);
+    return Collections2.filter(getSegmentsForDatasources().keySet(),new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        Resource resource=new Resource(input,ResourceType.DATASOURCE);
+        Action action=Action.READ;
+        Pair<Resource,Action> key=new Pair<>(resource,action);
+        if (resourceAccessMap.containsKey(key)) {
+          return resourceAccessMap.get(key).isAllowed();
+        }
+ else {
+          Access access=authorizationInfo.isAuthorized(key.lhs,key.rhs);
+          resourceAccessMap.put(key,access);
+          return access.isAllowed();
+        }
+      }
+    }
+);
+  }
+ else {
+    return getSegmentsForDatasources().keySet();
+  }
+}
