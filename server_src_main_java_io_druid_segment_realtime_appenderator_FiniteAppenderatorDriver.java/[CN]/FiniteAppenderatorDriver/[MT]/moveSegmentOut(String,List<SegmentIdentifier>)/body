@@ -1,9 +1,13 @@
 {
 synchronized (activeSegments) {
+    final NavigableMap<Long,SegmentIdentifier> activeSegmentsForSequence=activeSegments.get(sequenceName);
+    if (activeSegmentsForSequence == null) {
+      throw new ISE("WTF?! Asked to remove segments for sequenceName[%s] which doesn't exist...",sequenceName);
+    }
     for (    final SegmentIdentifier identifier : identifiers) {
       log.info("Moving segment[%s] out of active list.",identifier);
       final long key=identifier.getInterval().getStartMillis();
-      if (activeSegments.remove(key) != identifier) {
+      if (activeSegmentsForSequence.remove(key) != identifier) {
         throw new ISE("WTF?! Asked to remove segment[%s] that didn't exist...",identifier);
       }
     }
