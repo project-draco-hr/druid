@@ -4,7 +4,7 @@
   final boolean finalFinalValue;
   if (!yielder.isDone()) {
     retVal=combiningAccumulator.getRetVal();
-    finalYielder=yielder.next(yielder.get());
+    finalYielder=null;
     finalFinalValue=false;
   }
  else {
@@ -29,13 +29,15 @@
     }
     @Override public Yielder<OutType> next(    OutType initValue){
       combiningAccumulator.reset();
-      return makeYielder(finalYielder,combiningAccumulator,finalFinalValue);
+      return makeYielder(finalYielder == null ? yielder.next(yielder.get()) : finalYielder,combiningAccumulator,finalFinalValue);
     }
     @Override public boolean isDone(){
       return false;
     }
     @Override public void close() throws IOException {
-      finalYielder.close();
+      if (finalYielder != null) {
+        finalYielder.close();
+      }
     }
   }
 ;
