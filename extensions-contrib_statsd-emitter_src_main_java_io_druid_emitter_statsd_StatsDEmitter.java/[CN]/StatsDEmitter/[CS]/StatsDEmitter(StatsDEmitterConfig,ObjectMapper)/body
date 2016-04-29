@@ -1,0 +1,14 @@
+{
+  this.config=config;
+  this.converter=new DimensionConverter(mapper,config.getDimensionMapPath());
+  statsd=new NonBlockingStatsDClient(config.getPrefix(),config.getHostname(),config.getPort(),new StatsDClientErrorHandler(){
+    private int exceptionCount=0;
+    @Override public void handle(    Exception exception){
+      if (exceptionCount % 1000 == 0) {
+        log.error(exception,"Error sending metric to StatsD.");
+      }
+      exceptionCount+=1;
+    }
+  }
+);
+}

@@ -1,0 +1,20 @@
+{
+  StatsDMetric statsDMetric=null;
+  if (metricMap.containsKey(metric)) {
+    statsDMetric=metricMap.get(metric);
+  }
+ else   if (metricMap.containsKey(service + "-" + metric)) {
+    statsDMetric=metricMap.get(service + "-" + metric);
+  }
+  if (statsDMetric != null) {
+    for (    String dim : statsDMetric.dimensions) {
+      if (userDims.containsKey(dim)) {
+        builder.add(userDims.get(dim).toString());
+      }
+    }
+    return statsDMetric.type;
+  }
+ else {
+    return null;
+  }
+}

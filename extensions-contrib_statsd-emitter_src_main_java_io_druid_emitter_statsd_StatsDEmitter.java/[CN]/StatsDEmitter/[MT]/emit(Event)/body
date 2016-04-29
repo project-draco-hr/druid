@@ -1,0 +1,34 @@
+{
+  if (event instanceof ServiceMetricEvent) {
+    ServiceMetricEvent metricEvent=(ServiceMetricEvent)event;
+    String host=metricEvent.getHost();
+    String service=metricEvent.getService();
+    String metric=metricEvent.getMetric();
+    Map<String,Object> userDims=metricEvent.getUserDims();
+    Number value=metricEvent.getValue();
+    ImmutableList.Builder<String> nameBuilder=new ImmutableList.Builder<>();
+    if (config.getIncludeHost()) {
+      nameBuilder.add(host);
+    }
+    nameBuilder.add(service);
+    nameBuilder.add(metric);
+    StatsDMetric.Type metricType=converter.addFilteredUserDims(service,metric,userDims,nameBuilder);
+    if (metricType != null) {
+      String fullName=Joiner.on(config.getSeparator()).join(nameBuilder.build()).replaceAll(DRUID_METRIC_SEPARATOR,config.getSeparator()).replaceAll(STATSD_SEPARATOR,config.getSeparator());
+switch (metricType) {
+case count:
+        statsd.count(fullName,value.longValue());
+      break;
+case timer:
+    statsd.time(fullName,value.longValue());
+  break;
+case gauge:
+statsd.gauge(fullName,value.longValue());
+break;
+}
+}
+ else {
+log.error("Metric=[%s] has no StatsD type mapping",metric);
+}
+}
+}
