@@ -1,0 +1,6 @@
+{
+  final ServiceMetricEvent.Builder builder=new ServiceMetricEvent.Builder();
+  MonitorUtils.addDimensionsToBuilder(builder,dimensions);
+  emitter.emit(builder.build("jetty/numOpenConnections",activeConnections.get()));
+  return true;
+}

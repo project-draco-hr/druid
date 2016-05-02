@@ -9,6 +9,11 @@
   connector.setPort(node.getPort());
   connector.setIdleTimeout(Ints.checkedCast(config.getMaxIdleTime().toStandardDuration().getMillis()));
   connector.setAcceptorPriorityDelta(-1);
+  List<ConnectionFactory> monitoredConnFactories=new ArrayList<>();
+  for (  ConnectionFactory cf : connector.getConnectionFactories()) {
+    monitoredConnFactories.add(new JettyMonitoringConnectionFactory(cf,activeConnections));
+  }
+  connector.setConnectionFactories(monitoredConnFactories);
   server.setConnectors(new Connector[]{connector});
   return server;
 }

@@ -1,0 +1,13 @@
+{
+  final Connection connection=connectionFactory.newConnection(connector,endPoint);
+  connection.addListener(new Connection.Listener(){
+    @Override public void onOpened(    Connection connection){
+      activeConns.incrementAndGet();
+    }
+    @Override public void onClosed(    Connection connection){
+      activeConns.decrementAndGet();
+    }
+  }
+);
+  return connection;
+}
