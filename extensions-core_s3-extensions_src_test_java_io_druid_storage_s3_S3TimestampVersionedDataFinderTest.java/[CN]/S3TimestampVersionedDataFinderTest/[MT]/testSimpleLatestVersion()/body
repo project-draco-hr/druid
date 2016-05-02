@@ -13,7 +13,7 @@
   S3TimestampVersionedDataFinder finder=new S3TimestampVersionedDataFinder(s3Client);
   Pattern pattern=Pattern.compile("renames-[0-9]*\\.gz");
   EasyMock.replay(s3Client);
-  URI latest=finder.getLatestVersion(URI.create(String.format("s3://%s/%s",bucket,object0.getKey())),pattern);
+  URI latest=finder.getLatestVersion(URI.create(String.format("s3://%s/%s",bucket,keyPrefix)),pattern);
   EasyMock.verify(s3Client);
   URI expected=URI.create(String.format("s3://%s/%s",bucket,object1.getKey()));
   Assert.assertEquals(expected,latest);

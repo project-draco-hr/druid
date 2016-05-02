@@ -8,9 +8,8 @@
   object0.setLastModifiedDate(new Date(0));
   EasyMock.expect(s3Client.listObjects(EasyMock.eq(bucket),EasyMock.anyString(),EasyMock.eq("/"))).andReturn(new S3Object[]{object0}).once();
   S3TimestampVersionedDataFinder finder=new S3TimestampVersionedDataFinder(s3Client);
-  Pattern pattern=Pattern.compile("renames-[0-9]*\\.gz");
   EasyMock.replay(s3Client);
-  URI latest=finder.getLatestVersion(URI.create(String.format("s3://%s/%s",bucket,keyPrefix)),pattern);
+  URI latest=finder.getLatestVersion(URI.create(String.format("s3://%s/%s",bucket,object0.getKey())),null);
   EasyMock.verify(s3Client);
   URI expected=URI.create(String.format("s3://%s/%s",bucket,object0.getKey()));
   Assert.assertEquals(expected,latest);

@@ -3,7 +3,7 @@
   try (OutputStreamWriter out=new FileWriter(tmpFile)){
     out.write(mapper.writeValueAsString(ImmutableMap.<String,String>of("foo","bar")));
   }
-   final URIExtractionNamespace namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new DefaultObjectMapper())),new Period(0),null);
+   final URIExtractionNamespace namespace=new URIExtractionNamespace("ns",tmpFile.toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new DefaultObjectMapper())),new Period(0),null);
   cacheManager.scheduleOrUpdate(ImmutableList.<ExtractionNamespace>of(namespace));
   Collection<String> strings=cacheManager.getKnownNamespaces();
   Assert.assertArrayEquals(new String[]{"ns"},strings.toArray(new String[strings.size()]));

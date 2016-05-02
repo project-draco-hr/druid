@@ -2,7 +2,7 @@
   final int size=128;
   List<URIExtractionNamespace> namespaces=new ArrayList<>(size);
   for (int i=0; i < size; ++i) {
-    URIExtractionNamespace namespace=new URIExtractionNamespace(String.format("%d-ns-%d",i << 10,i),tmpFile.toURI(),new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(0),Pattern.quote(tmpFile.getName()));
+    URIExtractionNamespace namespace=new URIExtractionNamespace(String.format("%d-ns-%d",i << 10,i),tmpFile.toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(0),null);
     namespaces.add(namespace);
     Assert.assertNull(fnCache.get(namespace.getNamespace()));
     NamespaceExtractionCacheManagersTest.waitFor(manager.schedule(namespace));

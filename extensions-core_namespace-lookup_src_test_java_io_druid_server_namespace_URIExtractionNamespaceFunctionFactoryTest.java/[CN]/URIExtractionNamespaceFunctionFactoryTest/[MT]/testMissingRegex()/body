@@ -1,5 +1,5 @@
 {
-  URIExtractionNamespace badNamespace=new URIExtractionNamespace(namespace.getNamespace(),namespace.getUri(),null,null,namespace.getNamespaceParseSpec(),Period.millis((int)namespace.getPollMs()),null);
+  URIExtractionNamespace badNamespace=new URIExtractionNamespace(namespace.getNamespace(),null,Paths.get(namespace.getUri()).getParent().toUri(),Pattern.quote(Paths.get(namespace.getUri()).getFileName().toString()),namespace.getNamespaceParseSpec(),Period.millis((int)namespace.getPollMs()),null);
   Assert.assertTrue(new File(namespace.getUri()).delete());
   ConcurrentMap<String,String> map=new ConcurrentHashMap<>();
   expectedException.expect(new BaseMatcher<Throwable>(){

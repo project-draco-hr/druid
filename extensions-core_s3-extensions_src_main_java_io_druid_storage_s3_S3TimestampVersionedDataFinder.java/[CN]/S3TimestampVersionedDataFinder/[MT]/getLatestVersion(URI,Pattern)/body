@@ -5,17 +5,13 @@
         final S3Coords coords=new S3Coords(checkURI(uri));
         long mostRecent=Long.MIN_VALUE;
         URI latest=null;
-        String parentPath=coords.path.endsWith("/") ? coords.path : Paths.get(coords.path).getParent().toString();
-        if (!parentPath.endsWith("/")) {
-          parentPath=parentPath + "/";
-        }
-        S3Object[] objects=s3Client.listObjects(coords.bucket,parentPath,"/");
+        S3Object[] objects=s3Client.listObjects(coords.bucket,coords.path,"/");
         if (objects == null) {
           return null;
         }
         for (        S3Object storageObject : objects) {
           storageObject.closeDataInputStream();
-          String keyString=storageObject.getKey().substring(parentPath.length());
+          String keyString=storageObject.getKey().substring(coords.path.length());
           if (keyString.startsWith("/")) {
             keyString=keyString.substring(1);
           }

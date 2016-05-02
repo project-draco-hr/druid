@@ -1,0 +1,14 @@
+{
+  for (  String ns : nsList) {
+    ConcurrentMap<String,String> map=extractionCacheManager.getCacheMap(ns + "old_cache");
+    map.put("key","val");
+    extractionCacheManager.swapAndClearCache(ns,ns + "old_cache");
+    Assert.assertEquals("val",map.get("key"));
+    Assert.assertEquals("val",extractionCacheManager.getCacheMap(ns).get("key"));
+    ConcurrentMap<String,String> map2=extractionCacheManager.getCacheMap(ns + "cache");
+    map2.put("key","val2");
+    Assert.assertTrue(extractionCacheManager.swapAndClearCache(ns,ns + "cache"));
+    Assert.assertEquals("val2",map2.get("key"));
+    Assert.assertEquals("val2",extractionCacheManager.getCacheMap(ns).get("key"));
+  }
+}

@@ -1,8 +1,9 @@
 {
-  int result=namespace.hashCode();
-  result=31 * result + uri.hashCode();
-  result=31 * result + namespaceParseSpec.hashCode();
+  int result=getNamespace().hashCode();
+  result=31 * result + (getUri() != null ? getUri().hashCode() : 0);
+  result=31 * result + (getUriPrefix() != null ? getUriPrefix().hashCode() : 0);
+  result=31 * result + getNamespaceParseSpec().hashCode();
+  result=31 * result + (getFileRegex() != null ? getFileRegex().hashCode() : 0);
   result=31 * result + pollPeriod.hashCode();
-  result=31 * result + (versionRegex != null ? versionRegex.hashCode() : 0);
   return result;
 }
