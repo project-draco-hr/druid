@@ -1,0 +1,17 @@
+{
+  final int n=1000;
+  final KafkaLookupExtractorFactory factory=new KafkaLookupExtractorFactory(cacheManager,TOPIC,DEFAULT_PROPERTIES);
+  factory.getMapRef().set(ImmutableMap.<String,String>of());
+  final AtomicLong events=factory.getDoubleEventCount();
+  final LookupExtractor extractor=factory.get();
+  final List<byte[]> byteArrays=new ArrayList<>(n);
+  for (int i=0; i < n; ++i) {
+    final byte[] myKey=extractor.getCacheKey();
+    for (    byte[] byteArray : byteArrays) {
+      Assert.assertFalse(Arrays.equals(byteArray,myKey));
+    }
+    byteArrays.add(myKey);
+    events.incrementAndGet();
+  }
+  Assert.assertEquals(n,byteArrays.size());
+}

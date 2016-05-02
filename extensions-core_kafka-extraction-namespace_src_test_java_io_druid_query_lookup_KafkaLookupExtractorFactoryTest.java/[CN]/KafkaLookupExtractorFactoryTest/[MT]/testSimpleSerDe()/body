@@ -1,0 +1,9 @@
+{
+  final KafkaLookupExtractorFactory expected=new KafkaLookupExtractorFactory(null,TOPIC,DEFAULT_PROPERTIES);
+  final KafkaLookupExtractorFactory result=mapper.readValue(mapper.writeValueAsString(expected),KafkaLookupExtractorFactory.class);
+  Assert.assertEquals(expected.getKafkaTopic(),result.getKafkaTopic());
+  Assert.assertEquals(expected.getKafkaProperties(),result.getKafkaProperties());
+  Assert.assertEquals(cacheManager,result.getCacheManager());
+  Assert.assertEquals(0,expected.getCompletedEventCount());
+  Assert.assertEquals(0,result.getCompletedEventCount());
+}

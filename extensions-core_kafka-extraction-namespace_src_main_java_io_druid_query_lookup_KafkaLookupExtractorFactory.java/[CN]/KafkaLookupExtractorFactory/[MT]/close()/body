@@ -1,0 +1,22 @@
+{
+synchronized (started) {
+    if (!started.get() || executorService.isShutdown()) {
+      LOG.info("Already shutdown, ignoring");
+      return !started.get();
+    }
+    started.set(false);
+    executorService.shutdownNow();
+    final ListenableFuture<?> future=this.future;
+    if (future != null) {
+      if (!future.isDone() && !future.cancel(true) && !future.isDone()) {
+        LOG.error("Error cancelling future for topic [%s]",getKafkaTopic());
+        return false;
+      }
+    }
+    if (!cacheManager.delete(factoryId)) {
+      LOG.error("Error removing [%s] for topic [%s] from cache",factoryId,getKafkaTopic());
+      return false;
+    }
+    return true;
+  }
+}

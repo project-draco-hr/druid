@@ -1,0 +1,14 @@
+{
+  final LookupExtractor extractor=factory.get();
+  if (expected == null) {
+    while (extractor.apply(key) != null) {
+      Thread.sleep(100);
+    }
+  }
+ else {
+    while (!expected.equals(extractor.apply(key))) {
+      Thread.sleep(100);
+    }
+  }
+  Assert.assertEquals("update check",expected,extractor.apply(key));
+}

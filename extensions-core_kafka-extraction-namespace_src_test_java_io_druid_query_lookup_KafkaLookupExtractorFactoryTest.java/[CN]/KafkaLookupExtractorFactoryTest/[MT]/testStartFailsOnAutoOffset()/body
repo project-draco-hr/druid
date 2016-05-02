@@ -1,0 +1,8 @@
+{
+  expectedException.expectMessage("Cannot set kafka property [auto.offset.reset]. Property will be forced to [smallest]. Found ");
+  EasyMock.replay(cacheManager);
+  final KafkaLookupExtractorFactory factory=new KafkaLookupExtractorFactory(cacheManager,TOPIC,ImmutableMap.of("auto.offset.reset","make me fail"));
+  Assert.assertTrue(factory.start());
+  Assert.assertTrue(factory.close());
+  EasyMock.verify(cacheManager);
+}

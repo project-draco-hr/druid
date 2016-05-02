@@ -1,0 +1,13 @@
+{
+  if (this == other) {
+    return false;
+  }
+  if (other == null) {
+    return false;
+  }
+  if (getClass() != other.getClass()) {
+    return true;
+  }
+  final KafkaLookupExtractorFactory that=(KafkaLookupExtractorFactory)other;
+  return !(getKafkaTopic().equals(that.getKafkaTopic()) && getKafkaProperties().equals(that.getKafkaProperties()) && getConnectTimeout() == that.getConnectTimeout() && isOneToOne() == that.isOneToOne());
+}

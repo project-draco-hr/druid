@@ -1,0 +1,8 @@
+{
+  this.kafkaTopic=Preconditions.checkNotNull(kafkaTopic,"kafkaTopic required");
+  this.kafkaProperties=Preconditions.checkNotNull(kafkaProperties,"kafkaProperties required");
+  executorService=MoreExecutors.listeningDecorator(Execs.singleThreaded("kafka-factory-" + kafkaTopic + "-%s",Thread.MIN_PRIORITY));
+  this.cacheManager=cacheManager;
+  this.connectTimeout=connectTimeout;
+  this.isOneToOne=isOneToOne;
+}

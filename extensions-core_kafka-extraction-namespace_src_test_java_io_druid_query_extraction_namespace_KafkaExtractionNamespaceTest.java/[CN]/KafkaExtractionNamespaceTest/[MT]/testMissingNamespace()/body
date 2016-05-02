@@ -1,7 +1,0 @@
-{
-  ObjectMapper mapper=new DefaultObjectMapper();
-  mapper.registerSubtypes(KafkaExtractionNamespace.class);
-  final String val="{\"type\":\"kafka\",\"kafkaTopic\":\"testTopic\"}";
-  final ExtractionNamespace fn=mapper.reader(ExtractionNamespace.class).readValue(val);
-  Assert.assertEquals(val,mapper.writeValueAsString(fn));
-}

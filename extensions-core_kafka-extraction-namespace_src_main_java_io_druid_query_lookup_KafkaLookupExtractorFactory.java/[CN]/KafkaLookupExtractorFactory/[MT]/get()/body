@@ -1,0 +1,17 @@
+{
+  final Map<String,String> map=Preconditions.checkNotNull(mapRef.get(),"Not started");
+  final long startCount=doubleEventCount.get();
+  return new MapLookupExtractor(map,isOneToOne()){
+    @Override public byte[] getCacheKey(){
+      final byte[] idutf8=StringUtils.toUtf8(factoryId);
+      if (startCount == doubleEventCount.get()) {
+        return ByteBuffer.allocate(idutf8.length + 1 + Longs.BYTES).put(idutf8).put((byte)0xFF).putLong(startCount).array();
+      }
+ else {
+        final byte[] scrambler=StringUtils.toUtf8(UUID.randomUUID().toString());
+        return ByteBuffer.allocate(idutf8.length + 1 + scrambler.length+ 1).put(idutf8).put((byte)0xFF).put(scrambler).put((byte)0xFF).array();
+      }
+    }
+  }
+;
+}

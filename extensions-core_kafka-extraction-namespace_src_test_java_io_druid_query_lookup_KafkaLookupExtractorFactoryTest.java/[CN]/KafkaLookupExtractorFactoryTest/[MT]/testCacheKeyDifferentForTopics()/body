@@ -1,0 +1,7 @@
+{
+  final KafkaLookupExtractorFactory factory1=new KafkaLookupExtractorFactory(cacheManager,TOPIC,DEFAULT_PROPERTIES);
+  factory1.getMapRef().set(ImmutableMap.<String,String>of());
+  final KafkaLookupExtractorFactory factory2=new KafkaLookupExtractorFactory(cacheManager,TOPIC + "b",DEFAULT_PROPERTIES);
+  factory2.getMapRef().set(ImmutableMap.<String,String>of());
+  Assert.assertFalse(Arrays.equals(factory1.get().getCacheKey(),factory2.get().getCacheKey()));
+}

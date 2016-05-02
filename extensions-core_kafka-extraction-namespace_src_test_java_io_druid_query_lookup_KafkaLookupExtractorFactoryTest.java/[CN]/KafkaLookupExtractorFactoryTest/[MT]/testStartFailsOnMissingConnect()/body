@@ -1,0 +1,8 @@
+{
+  expectedException.expectMessage("zookeeper.connect required property");
+  EasyMock.replay(cacheManager);
+  final KafkaLookupExtractorFactory factory=new KafkaLookupExtractorFactory(cacheManager,TOPIC,ImmutableMap.<String,String>of());
+  Assert.assertTrue(factory.start());
+  Assert.assertTrue(factory.close());
+  EasyMock.verify(cacheManager);
+}

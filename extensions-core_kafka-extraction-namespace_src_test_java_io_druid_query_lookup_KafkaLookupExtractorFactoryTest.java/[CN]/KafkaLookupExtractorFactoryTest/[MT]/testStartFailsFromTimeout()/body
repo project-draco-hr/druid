@@ -1,0 +1,21 @@
+{
+  EasyMock.expect(cacheManager.getCacheMap(EasyMock.anyString())).andReturn(new ConcurrentHashMap<String,String>()).once();
+  EasyMock.expect(cacheManager.delete(EasyMock.anyString())).andReturn(true).once();
+  EasyMock.replay(cacheManager);
+  final KafkaLookupExtractorFactory factory=new KafkaLookupExtractorFactory(cacheManager,TOPIC,ImmutableMap.of("zookeeper.connect","localhost"),1,false){
+    @Override ConsumerConnector buildConnector(    Properties properties){
+      try {
+        Thread.currentThread().join();
+      }
+ catch (      InterruptedException e) {
+        throw Throwables.propagate(e);
+      }
+      throw new RuntimeException("shouldn't make it here");
+    }
+  }
+;
+  Assert.assertFalse(factory.start());
+  Assert.assertTrue(factory.getFuture().isDone());
+  Assert.assertTrue(factory.getFuture().isCancelled());
+  EasyMock.verify(cacheManager);
+}

@@ -1,0 +1,8 @@
+{
+  expectedException.expectMessage("Cannot set kafka property [group.id]. Property is randomly generated for you. Found");
+  EasyMock.replay(cacheManager);
+  final KafkaLookupExtractorFactory factory=new KafkaLookupExtractorFactory(cacheManager,TOPIC,ImmutableMap.of("group.id","make me fail"));
+  Assert.assertTrue(factory.start());
+  Assert.assertTrue(factory.close());
+  EasyMock.verify(cacheManager);
+}
