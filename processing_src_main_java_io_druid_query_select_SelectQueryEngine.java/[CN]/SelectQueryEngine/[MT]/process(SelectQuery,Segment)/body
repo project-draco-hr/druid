@@ -3,6 +3,7 @@
   if (adapter == null) {
     throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
   }
+  String dataSource=Iterables.getOnlyElement(query.getDataSource().getNames());
   final Iterable<DimensionSpec> dims;
   if (query.getDimensions() == null || query.getDimensions().isEmpty()) {
     dims=DefaultDimensionSpec.toSpec(adapter.getAvailableDimensions());
@@ -19,7 +20,7 @@
   }
   List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
   Preconditions.checkArgument(intervals.size() == 1,"Can only handle a single interval, got[%s]",intervals);
-  final String segmentId=SegmentDesc.withInterval(segment.getIdentifier(),intervals.get(0));
+  final String segmentId=DataSegmentUtils.withInterval(dataSource,segment.getIdentifier(),intervals.get(0));
   return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.toFilter(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
     @Override public Result<SelectResultValue> apply(    Cursor cursor){
       final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec(),query.isDescending());

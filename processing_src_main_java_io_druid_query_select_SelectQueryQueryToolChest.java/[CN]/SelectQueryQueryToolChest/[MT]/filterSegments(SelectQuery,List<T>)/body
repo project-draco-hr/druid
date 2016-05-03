@@ -1,11 +1,12 @@
 {
+  String dataSource=Iterables.getOnlyElement(query.getDataSource().getNames());
   PagingSpec pagingSpec=query.getPagingSpec();
   Map<String,Integer> paging=pagingSpec.getPagingIdentifiers();
   if (paging == null || paging.isEmpty()) {
     return segments;
   }
   final QueryGranularity granularity=query.getGranularity();
-  List<Interval> intervals=Lists.newArrayList(Iterables.transform(paging.keySet(),SegmentDesc.INTERVAL_EXTRACTOR));
+  List<Interval> intervals=Lists.newArrayList(Iterables.transform(paging.keySet(),DataSegmentUtils.INTERVAL_EXTRACTOR(dataSource)));
   Collections.sort(intervals,query.isDescending() ? Comparators.intervalsByEndThenStart() : Comparators.intervalsByStartThenEnd());
   TreeMap<Long,Long> granularThresholds=Maps.newTreeMap();
   for (  Interval interval : intervals) {

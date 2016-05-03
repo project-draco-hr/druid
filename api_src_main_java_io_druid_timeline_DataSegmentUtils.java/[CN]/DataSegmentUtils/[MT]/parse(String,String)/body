@@ -1,0 +1,18 @@
+{
+  if (!identifier.startsWith(String.format("%s_",dataSource))) {
+    LOGGER.info("Invalid identifier %s",identifier);
+    return null;
+  }
+  String remaining=identifier.substring(dataSource.length() + 1);
+  String[] splits=remaining.split(DataSegment.delimiter);
+  if (splits.length < 3) {
+    LOGGER.info("Invalid identifier %s",identifier);
+    return null;
+  }
+  DateTimeFormatter formatter=ISODateTimeFormat.dateTime();
+  DateTime start=formatter.parseDateTime(splits[0]);
+  DateTime end=formatter.parseDateTime(splits[1]);
+  String version=splits[2];
+  String trail=splits.length > 3 ? join(splits,DataSegment.delimiter,3,splits.length) : null;
+  return new SegmentIdentifierParts(dataSource,new Interval(start.getMillis(),end.getMillis()),version,trail);
+}

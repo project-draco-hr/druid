@@ -1,0 +1,8 @@
+{
+  SegmentIdentifierParts segmentDesc=DataSegmentUtils.parse(dataSource,identifier);
+  if (segmentDesc == null) {
+    LOGGER.warn("Invalid segment identifier " + identifier);
+    return identifier;
+  }
+  return segmentDesc.withInterval(newInterval).toString();
+}
