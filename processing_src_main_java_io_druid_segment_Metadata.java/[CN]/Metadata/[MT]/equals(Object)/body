@@ -9,5 +9,8 @@
   if (!container.equals(metadata.container)) {
     return false;
   }
-  return Arrays.equals(aggregators,metadata.aggregators);
+  if (!Arrays.equals(aggregators,metadata.aggregators)) {
+    return false;
+  }
+  return !(queryGranularity != null ? !queryGranularity.equals(metadata.queryGranularity) : metadata.queryGranularity != null);
 }

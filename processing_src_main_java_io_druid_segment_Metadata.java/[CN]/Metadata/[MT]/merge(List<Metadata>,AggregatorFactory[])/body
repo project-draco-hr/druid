@@ -5,16 +5,21 @@
   boolean foundSomeMetadata=false;
   Map<String,Object> mergedContainer=new HashMap<>();
   List<AggregatorFactory[]> aggregatorsToMerge=overrideMergedAggregators == null ? new ArrayList<AggregatorFactory[]>() : null;
+  List<QueryGranularity> gransToMerge=new ArrayList<>();
   for (  Metadata metadata : toBeMerged) {
     if (metadata != null) {
       foundSomeMetadata=true;
       if (aggregatorsToMerge != null) {
         aggregatorsToMerge.add(metadata.getAggregators());
       }
+      if (gransToMerge != null) {
+        gransToMerge.add(metadata.getQueryGranularity());
+      }
       mergedContainer.putAll(metadata.container);
     }
  else {
       aggregatorsToMerge=null;
+      gransToMerge=null;
     }
   }
   if (!foundSomeMetadata) {
@@ -26,6 +31,9 @@
   }
  else {
     result.setAggregators(overrideMergedAggregators);
+  }
+  if (gransToMerge != null) {
+    result.setQueryGranularity(QueryGranularity.mergeQueryGranularities(gransToMerge));
   }
   result.container.putAll(mergedContainer);
   return result;

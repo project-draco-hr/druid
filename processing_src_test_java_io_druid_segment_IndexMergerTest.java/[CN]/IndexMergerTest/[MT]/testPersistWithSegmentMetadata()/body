@@ -10,5 +10,5 @@
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index.getAvailableDimensions()));
   Assert.assertEquals(3,index.getColumnNames().size());
   assertDimCompression(index,indexSpec.getDimensionCompressionStrategy());
-  Assert.assertEquals(new Metadata().setAggregators(IncrementalIndexTest.getDefaultCombiningAggregatorFactories()).putAll(metadataElems),index.getMetadata());
+  Assert.assertEquals(new Metadata().setAggregators(IncrementalIndexTest.getDefaultCombiningAggregatorFactories()).setQueryGranularity(QueryGranularity.NONE).putAll(metadataElems),index.getMetadata());
 }

@@ -1,5 +1,5 @@
 {
-  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis(differentIds ? "merged" : "testSegment",null,ImmutableMap.of("placement",new ColumnAnalysis(ValueType.STRING.toString(),false,0,1,null,null,null),"quality_uniques",new ColumnAnalysis("hyperUnique",false,0,null,null,null,null)),0,expectedSegmentAnalysis1.getNumRows() + expectedSegmentAnalysis2.getNumRows(),null);
+  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis(differentIds ? "merged" : "testSegment",null,ImmutableMap.of("placement",new ColumnAnalysis(ValueType.STRING.toString(),false,0,1,null,null,null),"quality_uniques",new ColumnAnalysis("hyperUnique",false,0,null,null,null,null)),0,expectedSegmentAnalysis1.getNumRows() + expectedSegmentAnalysis2.getNumRows(),null,null);
   QueryToolChest toolChest=FACTORY.getToolchest();
   ExecutorService exec=Executors.newCachedThreadPool();
   QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(FACTORY.mergeRunners(MoreExecutors.sameThreadExecutor(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(toolChest.preMergeQueryDecoration(runner1),toolChest.preMergeQueryDecoration(runner2)))),toolChest);

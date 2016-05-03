@@ -23,8 +23,9 @@
       }
       List<Interval> retIntervals=query.analyzingInterval() ? Arrays.asList(segment.getDataInterval()) : null;
       final Map<String,AggregatorFactory> aggregators;
+      Metadata metadata=null;
       if (query.hasAggregators()) {
-        final Metadata metadata=segment.asStorageAdapter().getMetadata();
+        metadata=segment.asStorageAdapter().getMetadata();
         if (metadata != null && metadata.getAggregators() != null) {
           aggregators=Maps.newHashMap();
           for (          AggregatorFactory aggregator : metadata.getAggregators()) {
@@ -38,7 +39,17 @@
  else {
         aggregators=null;
       }
-      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators)));
+      final QueryGranularity queryGranularity;
+      if (query.hasQueryGranularity()) {
+        if (metadata == null) {
+          metadata=segment.asStorageAdapter().getMetadata();
+        }
+        queryGranularity=metadata.getQueryGranularity();
+      }
+ else {
+        queryGranularity=null;
+      }
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators,queryGranularity)));
     }
   }
 ;
