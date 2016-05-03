@@ -14,15 +14,14 @@
           final TimeAndDims timeAndDims=input.getKey();
           final int rowOffset=input.getValue();
           int[][] theDims=timeAndDims.getDims();
-          ValueType[] types=timeAndDims.getTypes();
           Map<String,Object> theVals=Maps.newLinkedHashMap();
           for (int i=0; i < theDims.length; ++i) {
             int[] dim=theDims[i];
-            ValueType type=types[i];
             DimensionDesc dimensionDesc=dimensions.get(i);
             if (dimensionDesc == null) {
               continue;
             }
+            ValueType type=dimensionDesc.getCapabilities().getType();
             String dimensionName=dimensionDesc.getName();
             if (dim == null || dim.length == 0) {
               theVals.put(dimensionName,null);
