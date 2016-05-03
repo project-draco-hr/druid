@@ -1,4 +1,5 @@
 {
   ConfigProvider.bind(binder,DruidProcessingConfig.class,ImmutableMap.of("base_path","druid.processing"));
   binder.bind(ExecutorServiceConfig.class).to(DruidProcessingConfig.class);
+  MetricsModule.register(binder,ExecutorServiceMonitor.class);
 }
