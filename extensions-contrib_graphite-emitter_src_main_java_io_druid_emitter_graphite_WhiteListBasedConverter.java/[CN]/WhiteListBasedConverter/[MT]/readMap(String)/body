@@ -1,12 +1,15 @@
 {
   String fileContent;
   String actualPath=mapPath;
-  if (Strings.isNullOrEmpty(mapPath)) {
-    actualPath=this.getClass().getClassLoader().getResource("defaultWhiteListMap.json").getFile();
-    LOGGER.warn("using default whiteList map located at [%s]",actualPath);
-  }
   try {
-    fileContent=Files.asCharSource(new File(actualPath),Charset.forName("UTF-8")).read();
+    if (Strings.isNullOrEmpty(mapPath)) {
+      actualPath=this.getClass().getClassLoader().getResource("defaultWhiteListMap.json").getFile();
+      LOGGER.info("using default whiteList map located at [%s]",actualPath);
+      fileContent=CharStreams.toString(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("defaultWhiteListMap.json")));
+    }
+ else {
+      fileContent=Files.asCharSource(new File(mapPath),Charset.forName("UTF-8")).read();
+    }
     return mapper.reader(new TypeReference<ImmutableSortedMap<String,ImmutableSet<String>>>(){
     }
 ).readValue(fileContent);
