@@ -35,7 +35,7 @@
     if (CompressionUtils.isGz(s3Coords.path)) {
       final String fname=Files.getNameWithoutExtension(uri.getPath());
       final File outFile=new File(outDir,fname);
-      final FileUtils.FileCopyResult result=CompressionUtils.gunzip(byteSource,outFile);
+      final FileUtils.FileCopyResult result=CompressionUtils.gunzip(byteSource,outFile,S3Utils.S3RETRY);
       log.info("Loaded %d bytes from [%s] to [%s]",result.size(),s3Coords.toString(),outFile.getAbsolutePath());
       return result;
     }

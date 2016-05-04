@@ -1,11 +1,9 @@
 {
   try {
     final FileObject object=buildFileObject(uri,s3Client);
-    try (InputStream nullStream=object.openInputStream()){
-      return String.format("%d",object.getLastModified());
-    }
-   }
- catch (  S3ServiceException e) {
+    return String.format("%d",object.getLastModified());
+  }
+ catch (  ServiceException e) {
     if (S3Utils.isServiceExceptionRecoverable(e)) {
       throw new IOException(String.format("Could not fetch last modified timestamp from URI [%s]",uri.toString()),e);
     }

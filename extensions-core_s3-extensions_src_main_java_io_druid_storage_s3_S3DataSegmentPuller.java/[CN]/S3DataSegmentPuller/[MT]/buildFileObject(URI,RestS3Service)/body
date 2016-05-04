@@ -1,9 +1,11 @@
 {
   final S3Coords coords=new S3Coords(checkURI(uri));
-  final S3Object s3Obj=s3Client.getObject(coords.bucket,coords.path);
+  final StorageObject s3Obj=s3Client.getObjectDetails(coords.bucket,coords.path);
   final String path=uri.getPath();
   return new FileObject(){
+    final Object inputStreamOpener=new Object();
     volatile boolean streamAcquired=false;
+    volatile StorageObject storageObject=s3Obj;
     @Override public URI toUri(){
       return uri;
     }
@@ -13,11 +15,18 @@
     }
     @Override public InputStream openInputStream() throws IOException {
       try {
-        streamAcquired=true;
-        return s3Obj.getDataInputStream();
+synchronized (inputStreamOpener) {
+          if (streamAcquired) {
+            return storageObject.getDataInputStream();
+          }
+          storageObject=s3Client.getObject(s3Obj.getBucketName(),s3Obj.getKey());
+          final InputStream stream=storageObject.getDataInputStream();
+          streamAcquired=true;
+          return stream;
+        }
       }
  catch (      ServiceException e) {
-        throw new IOException(String.format("Could not load S3 URI [%s]",uri),e);
+        throw new IOException(StringUtils.safeFormat("Could not load S3 URI [%s]",uri),e);
       }
     }
     @Override public OutputStream openOutputStream() throws IOException {
@@ -37,16 +46,6 @@
     }
     @Override public boolean delete(){
       throw new UOE("Cannot delete S3 items anonymously. jetS3t doesn't support authenticated deletes easily.");
-    }
-    @Override public void finalize() throws Throwable {
-      try {
-        if (!streamAcquired) {
-          s3Obj.closeDataInputStream();
-        }
-      }
-  finally {
-        super.finalize();
-      }
     }
   }
 ;
