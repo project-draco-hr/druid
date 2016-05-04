@@ -2,6 +2,6 @@
   final Task task=new NoopTask(null,0,0,null,null,null);
   actionTestKit.getTaskLockbox().add(task);
   actionTestKit.getTaskLockbox().lock(task,new Interval(INTERVAL));
-  SegmentPublishResult result=new SegmentInsertAction(ImmutableSet.of(SEGMENT1),new ObjectMetadata(ImmutableList.of(1)),new ObjectMetadata(ImmutableList.of(2))).perform(task,actionTestKit.getTaskActionToolbox());
+  SegmentPublishResult result=new SegmentTransactionalInsertAction(ImmutableSet.of(SEGMENT1),new ObjectMetadata(ImmutableList.of(1)),new ObjectMetadata(ImmutableList.of(2))).perform(task,actionTestKit.getTaskActionToolbox());
   Assert.assertEquals(new SegmentPublishResult(ImmutableSet.<DataSegment>of(),false),result);
 }

@@ -1,16 +1,3 @@
 {
-  toolbox.verifyTaskLocks(task,segments);
-  final SegmentPublishResult retVal=toolbox.getIndexerMetadataStorageCoordinator().announceHistoricalSegments(segments,startMetadata,endMetadata);
-  final ServiceMetricEvent.Builder metricBuilder=new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE,task.getDataSource()).setDimension(DruidMetrics.TASK_TYPE,task.getType());
-  if (retVal.isSuccess()) {
-    toolbox.getEmitter().emit(metricBuilder.build("segment/txn/success",1));
-  }
- else {
-    toolbox.getEmitter().emit(metricBuilder.build("segment/txn/failure",1));
-  }
-  for (  DataSegment segment : retVal.getSegments()) {
-    metricBuilder.setDimension(DruidMetrics.INTERVAL,segment.getInterval().toString());
-    toolbox.getEmitter().emit(metricBuilder.build("segment/added/bytes",segment.getSize()));
-  }
-  return retVal;
+  return new SegmentTransactionalInsertAction(segments,null,null).perform(task,toolbox).getSegments();
 }

@@ -129,12 +129,12 @@
         if (!endOffsets.equals(finalPartitions.getPartitionOffsetMap())) {
           throw new ISE("WTF?! Driver attempted to publish invalid metadata[%s].",commitMetadata);
         }
-        final SegmentInsertAction action;
+        final SegmentTransactionalInsertAction action;
         if (ioConfig.isUseTransaction()) {
-          action=new SegmentInsertAction(segments,new KafkaDataSourceMetadata(ioConfig.getStartPartitions()),new KafkaDataSourceMetadata(finalPartitions));
+          action=new SegmentTransactionalInsertAction(segments,new KafkaDataSourceMetadata(ioConfig.getStartPartitions()),new KafkaDataSourceMetadata(finalPartitions));
         }
  else {
-          action=new SegmentInsertAction(segments,null,null);
+          action=new SegmentTransactionalInsertAction(segments,null,null);
         }
         log.info("Publishing with isTransaction[%s].",ioConfig.isUseTransaction());
         return toolbox.getTaskActionClient().submit(action).isSuccess();
