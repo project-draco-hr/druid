@@ -28,6 +28,8 @@
   server1.addDataSegment(segment.getIdentifier(),segment);
   server2.addDataSegment(segment.getIdentifier(),segment);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1.toImmutableDruidServer(),mockPeon),new ServerHolder(server2.toImmutableDruidServer(),mockPeon)))));
-  CoordinatorStats stats=rule.run(null,DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(druidCluster).withSegmentReplicantLookup(SegmentReplicantLookup.make(druidCluster)).withReplicationManager(throttler).withAvailableSegments(Arrays.asList(segment)).build(),segment);
+  CostBalancerStrategyFactory costBalancerStrategyFactory=new CostBalancerStrategyFactory(1);
+  CoordinatorStats stats=rule.run(null,DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(druidCluster).withSegmentReplicantLookup(SegmentReplicantLookup.make(druidCluster)).withReplicationManager(throttler).withBalancerStrategyFactory(costBalancerStrategyFactory).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).withAvailableSegments(Arrays.asList(segment)).build(),segment);
   Assert.assertTrue(stats.getPerTierStats().get("droppedCount").get("hot").get() == 1);
+  costBalancerStrategyFactory.close();
 }

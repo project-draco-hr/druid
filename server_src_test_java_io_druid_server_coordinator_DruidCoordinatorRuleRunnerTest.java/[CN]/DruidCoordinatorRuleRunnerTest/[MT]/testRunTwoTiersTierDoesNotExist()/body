@@ -11,8 +11,9 @@
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T12:00:00.000Z"),ImmutableMap.<String,Integer>of("hot",1)),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),ImmutableMap.<String,Integer>of("normal",1)))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverNorm","hostNorm",1000,"historical","normal",0).toImmutableDruidServer(),mockPeon)))));
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withEmitter(emitter).withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withEmitter(emitter).withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   ruleRunner.run(params);
   EasyMock.verify(emitter);
   EasyMock.verify(mockPeon);
+  params.getBalancerStrategyFactory().close();
 }

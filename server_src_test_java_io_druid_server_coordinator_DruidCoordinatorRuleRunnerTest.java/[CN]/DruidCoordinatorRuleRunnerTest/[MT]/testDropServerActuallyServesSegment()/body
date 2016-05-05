@@ -20,10 +20,11 @@
   EasyMock.replay(anotherMockPeon);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(server1.toImmutableDruidServer(),mockPeon),new ServerHolder(server2.toImmutableDruidServer(),anotherMockPeon),new ServerHolder(server3.toImmutableDruidServer(),anotherMockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMillisToWaitBeforeDeleting(0L).build()).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMillisToWaitBeforeDeleting(0L).build()).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
   CoordinatorStats stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("droppedCount").get("normal").get() == 1);
   EasyMock.verify(mockPeon);
   EasyMock.verify(anotherMockPeon);
+  params.getBalancerStrategyFactory().close();
 }

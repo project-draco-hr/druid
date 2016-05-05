@@ -1,5 +1,5 @@
 {
-  final Interval gap=segment1.getInterval().gap(segment2.getInterval());
+  final long gapMillis=gapMillis(segment1.getInterval(),segment2.getInterval());
   final double baseCost=Math.min(segment1.getSize(),segment2.getSize());
   double recencyPenalty=1;
   double dataSourcePenalty=1;
@@ -12,11 +12,10 @@
   if (segment1diff < SEVEN_DAYS_IN_MILLIS && segment2diff < SEVEN_DAYS_IN_MILLIS) {
     recencyPenalty=(2 - segment1diff / SEVEN_DAYS_IN_MILLIS) * (2 - segment2diff / SEVEN_DAYS_IN_MILLIS);
   }
-  if (gap == null) {
+  if (gapMillis == 0) {
     gapPenalty=2;
   }
  else {
-    long gapMillis=gap.toDurationMillis();
     if (gapMillis < THIRTY_DAYS_IN_MILLIS) {
       gapPenalty=2 - gapMillis / THIRTY_DAYS_IN_MILLIS;
     }

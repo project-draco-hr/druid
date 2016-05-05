@@ -8,7 +8,7 @@
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-01T06:00:00.000Z"),ImmutableMap.<String,Integer>of("hot",2)),new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2012-01-02T00:00:00.000Z"),ImmutableMap.<String,Integer>of("cold",1)))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot",0).toImmutableDruidServer(),mockPeon),new ServerHolder(new DruidServer("serverHot2","hostHot2",1000,"historical","hot",0).toImmutableDruidServer(),mockPeon))),"cold",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverCold","hostCold",1000,"historical","cold",0).toImmutableDruidServer(),mockPeon)))));
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
   CoordinatorStats stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 12);
@@ -16,4 +16,5 @@
   Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
   EasyMock.verify(mockPeon);
+  params.getBalancerStrategyFactory().close();
 }

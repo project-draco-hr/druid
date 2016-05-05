@@ -13,7 +13,7 @@
   }
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot",0).toImmutableDruidServer(),mockPeon))),"normal",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(normServer.toImmutableDruidServer(),mockPeon)))));
   SegmentReplicantLookup segmentReplicantLookup=SegmentReplicantLookup.make(druidCluster);
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(segmentReplicantLookup).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
   CoordinatorStats stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 12);
@@ -21,4 +21,5 @@
   Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
   EasyMock.verify(mockPeon);
+  params.getBalancerStrategyFactory().close();
 }

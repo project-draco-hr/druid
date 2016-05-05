@@ -8,17 +8,19 @@
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2013-01-01T00:00:00.000Z"),ImmutableMap.<String,Integer>of("hot",2)))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
   DruidCluster druidCluster=new DruidCluster(ImmutableMap.of("hot",MinMaxPriorityQueue.orderedBy(Ordering.natural().reverse()).create(Arrays.asList(new ServerHolder(new DruidServer("serverHot","hostHot",1000,"historical","hot",0).toImmutableDruidServer(),mockPeon),new ServerHolder(new DruidServer("serverHot2","hostHot2",1000,"historical","hot",0).toImmutableDruidServer(),mockPeon)))));
-  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build();
+  DruidCoordinatorRuntimeParams params=new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withAvailableSegments(availableSegments).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   DruidCoordinatorRuntimeParams afterParams=ruleRunner.run(params);
   CoordinatorStats stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 48);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
   DataSegment overFlowSegment=new DataSegment("test",new Interval("2012-02-01/2012-02-02"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),1,0);
-  afterParams=ruleRunner.run(new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withEmitter(emitter).withAvailableSegments(Arrays.asList(overFlowSegment)).withDatabaseRuleManager(databaseRuleManager).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build());
+  afterParams.getBalancerStrategyFactory().close();
+  afterParams=ruleRunner.run(new DruidCoordinatorRuntimeParams.Builder().withDruidCluster(druidCluster).withEmitter(emitter).withAvailableSegments(Arrays.asList(overFlowSegment)).withDatabaseRuleManager(databaseRuleManager).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).withSegmentReplicantLookup(SegmentReplicantLookup.make(new DruidCluster())).build());
   stats=afterParams.getCoordinatorStats();
   Assert.assertTrue(stats.getPerTierStats().get("assignedCount").get("hot").get() == 1);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedCount") == null);
   Assert.assertTrue(stats.getPerTierStats().get("unassignedSize") == null);
   EasyMock.verify(mockPeon);
+  afterParams.getBalancerStrategyFactory().close();
 }

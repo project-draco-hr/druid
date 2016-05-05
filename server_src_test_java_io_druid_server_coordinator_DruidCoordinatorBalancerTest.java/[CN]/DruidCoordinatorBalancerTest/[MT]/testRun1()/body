@@ -19,7 +19,8 @@
   EasyMock.replay(coordinator);
   LoadQueuePeonTester fromPeon=new LoadQueuePeonTester();
   LoadQueuePeonTester toPeon=new LoadQueuePeonTester();
-  DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidCoordinatorBalancerTester.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,fromPeon),new ServerHolder(druidServer2,toPeon)))))).withLoadManagementPeons(ImmutableMap.<String,LoadQueuePeon>of("from",fromPeon,"to",toPeon)).withAvailableSegments(segments.values()).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).build()).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
+  DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withDruidCluster(new DruidCluster(ImmutableMap.<String,MinMaxPriorityQueue<ServerHolder>>of("normal",MinMaxPriorityQueue.orderedBy(DruidCoordinatorBalancerTester.percentUsedComparator).create(Arrays.asList(new ServerHolder(druidServer1,fromPeon),new ServerHolder(druidServer2,toPeon)))))).withLoadManagementPeons(ImmutableMap.<String,LoadQueuePeon>of("from",fromPeon,"to",toPeon)).withAvailableSegments(segments.values()).withDynamicConfigs(new CoordinatorDynamicConfig.Builder().withMaxSegmentsToMove(MAX_SEGMENTS_TO_MOVE).build()).withBalancerStrategyFactory(new CostBalancerStrategyFactory(1)).withBalancerReferenceTimestamp(new DateTime("2013-01-01")).build();
   params=new DruidCoordinatorBalancerTester(coordinator).run(params);
   Assert.assertTrue(params.getCoordinatorStats().getPerTierStats().get("movedCount").get("normal").get() > 0);
+  params.getBalancerStrategyFactory().close();
 }

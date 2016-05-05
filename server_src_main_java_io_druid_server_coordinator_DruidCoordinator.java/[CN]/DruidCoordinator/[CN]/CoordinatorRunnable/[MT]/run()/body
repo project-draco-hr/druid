@@ -16,14 +16,15 @@ synchronized (lock) {
         return;
       }
     }
-    BalancerStrategyFactory factory=new CostBalancerStrategyFactory(getDynamicConfigs().getBalancerComputeThreads());
-    DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(metadataSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
-    for (    DruidCoordinatorHelper helper : helpers) {
-      if (leader && startingLeaderCounter == leaderCounter) {
-        params=helper.run(params);
+    try (BalancerStrategyFactory factory=new CostBalancerStrategyFactory(getDynamicConfigs().getBalancerComputeThreads())){
+      DruidCoordinatorRuntimeParams params=DruidCoordinatorRuntimeParams.newBuilder().withStartTime(startTime).withDatasources(metadataSegmentManager.getInventory()).withDynamicConfigs(getDynamicConfigs()).withEmitter(emitter).withBalancerStrategyFactory(factory).build();
+      for (      DruidCoordinatorHelper helper : helpers) {
+        if (leader && startingLeaderCounter == leaderCounter) {
+          params=helper.run(params);
+        }
       }
     }
-  }
+   }
  catch (  Exception e) {
     log.makeAlert(e,"Caught exception, ignoring so that schedule keeps going.").emit();
   }
