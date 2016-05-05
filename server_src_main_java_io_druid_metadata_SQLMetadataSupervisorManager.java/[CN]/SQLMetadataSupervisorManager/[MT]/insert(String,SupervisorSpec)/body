@@ -1,0 +1,10 @@
+{
+  dbi.withHandle(new HandleCallback<Void>(){
+    @Override public Void withHandle(    Handle handle) throws Exception {
+      final String version=new DateTime().toString();
+      handle.createStatement(String.format("INSERT INTO %s (id, spec_id, version, payload) VALUES (:id, :spec_id, :version, :payload)",getSupervisorsTable())).bind("id",String.format("%s_%s",id,version)).bind("spec_id",id).bind("version",version).bind("payload",jsonMapper.writeValueAsBytes(spec)).execute();
+      return null;
+    }
+  }
+);
+}

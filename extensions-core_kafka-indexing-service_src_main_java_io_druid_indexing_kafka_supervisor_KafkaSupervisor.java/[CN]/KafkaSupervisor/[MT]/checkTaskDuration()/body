@@ -1,0 +1,29 @@
+{
+  Iterator<Map.Entry<Integer,TaskGroup>> i=taskGroups.entrySet().iterator();
+  while (i.hasNext()) {
+    Map.Entry<Integer,TaskGroup> groupEntry=i.next();
+    Integer groupId=groupEntry.getKey();
+    TaskGroup group=groupEntry.getValue();
+    DateTime earliestTaskStart=DateTime.now();
+    for (    TaskData taskData : group.tasks.values()) {
+      if (earliestTaskStart.isAfter(taskData.startTime)) {
+        earliestTaskStart=taskData.startTime;
+      }
+    }
+    if (earliestTaskStart.plus(ioConfig.getTaskDuration()).isBeforeNow()) {
+      log.info("Task group [%d] has run for [%s]",groupId,ioConfig.getTaskDuration());
+      Map<Integer,Long> endOffsets=signalTasksToFinish(groupId);
+      group.completionTimeout=DateTime.now().plus(ioConfig.getCompletionTimeout());
+      if (!pendingCompletionTaskGroups.containsKey(groupId)) {
+        pendingCompletionTaskGroups.put(groupId,Lists.<TaskGroup>newArrayList());
+      }
+      pendingCompletionTaskGroups.get(groupId).add(group);
+      if (endOffsets != null) {
+        for (        Map.Entry<Integer,Long> entry : endOffsets.entrySet()) {
+          partitionGroups.get(groupId).put(entry.getKey(),entry.getValue());
+        }
+      }
+      i.remove();
+    }
+  }
+}

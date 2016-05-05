@@ -1,0 +1,21 @@
+{
+  for (  Integer groupId : partitionGroups.keySet()) {
+    if (!taskGroups.containsKey(groupId)) {
+      log.info("Creating new task group [%d] for partitions %s",groupId,partitionGroups.get(groupId).keySet());
+      taskGroups.put(groupId,new TaskGroup(generateStartingOffsetsForPartitionGroup(groupId)));
+    }
+  }
+  boolean createdTask=false;
+  for (  Map.Entry<Integer,TaskGroup> entry : taskGroups.entrySet()) {
+    TaskGroup taskGroup=entry.getValue();
+    Integer groupId=entry.getKey();
+    if (ioConfig.getReplicas() > taskGroup.tasks.size()) {
+      log.info("Number of tasks [%d] does not match configured numReplicas [%d] in task group [%d], creating more tasks",taskGroup.tasks.size(),ioConfig.getReplicas(),groupId);
+      createKafkaTasksForGroup(groupId,ioConfig.getReplicas() - taskGroup.tasks.size());
+      createdTask=true;
+    }
+  }
+  if (createdTask && firstRunTime.isBeforeNow()) {
+    scheduledExec.schedule(buildRunTask(),5000,TimeUnit.MILLISECONDS);
+  }
+}

@@ -1,0 +1,19 @@
+{
+  Preconditions.checkNotNull(id,"id");
+  Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
+  if (taskRunner.isPresent()) {
+    Optional<? extends TaskRunnerWorkItem> item=Iterables.tryFind(taskRunner.get().getRunningTasks(),new Predicate<TaskRunnerWorkItem>(){
+      @Override public boolean apply(      TaskRunnerWorkItem taskRunnerWorkItem){
+        return id.equals(taskRunnerWorkItem.getTaskId());
+      }
+    }
+);
+    if (item.isPresent() && item.get().getLocation() != TaskLocation.unknown()) {
+      return item.get().getLocation();
+    }
+  }
+ else {
+    log.error("Failed to get task runner because I'm not the leader!");
+  }
+  return null;
+}

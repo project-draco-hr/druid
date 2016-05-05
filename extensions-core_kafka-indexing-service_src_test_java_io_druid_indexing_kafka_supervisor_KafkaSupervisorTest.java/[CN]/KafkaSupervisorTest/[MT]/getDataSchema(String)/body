@@ -1,0 +1,6 @@
+{
+  List<DimensionSchema> dimensions=new ArrayList<>();
+  dimensions.add(StringDimensionSchema.create("dim1"));
+  dimensions.add(StringDimensionSchema.create("dim2"));
+  return new DataSchema(dataSource,objectMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(dimensions,null,null),new JSONPathSpec(true,ImmutableList.<JSONPathFieldSpec>of()),ImmutableMap.<String,Boolean>of()),Charsets.UTF_8.name()),Map.class),new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,ImmutableList.<Interval>of()),objectMapper);
+}

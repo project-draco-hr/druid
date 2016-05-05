@@ -1,0 +1,49 @@
+{
+  int taskCount=0;
+  List<Task> tasks=taskStorage.getActiveTasks();
+  for (  Task task : tasks) {
+    if (task instanceof KafkaIndexTask && dataSource.equals(task.getDataSource())) {
+      taskCount++;
+      KafkaIndexTask kafkaTask=(KafkaIndexTask)task;
+      String taskId=task.getId();
+      Integer taskGroupId=null;
+      for (      Integer partition : kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet()) {
+        if (taskGroupId == null) {
+          taskGroupId=getTaskGroupIdForPartition(partition);
+        }
+ else         if (!taskGroupId.equals(getTaskGroupIdForPartition(partition))) {
+          log.warn("Stopping task [%s] which does not match the expected partition allocation",taskId);
+          stopTask(taskId,false);
+          taskGroupId=null;
+          break;
+        }
+      }
+      if (taskGroupId != null) {
+        TaskGroup taskGroup=taskGroups.get(taskGroupId);
+        if (!isTaskInPendingCompletionGroups(taskId) && (taskGroup == null || !taskGroup.tasks.containsKey(taskId))) {
+          Optional<KafkaIndexTask.Status> status=getTaskStatus(taskId);
+          if (status.isPresent() && status.get() == KafkaIndexTask.Status.PUBLISHING) {
+            addDiscoveredTaskToPendingCompletionTaskGroups(taskGroupId,taskId,kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap());
+            Map<Integer,Long> publishingTaskCurrentOffsets=getCurrentOffsets(taskId,true);
+            Map<Integer,Long> partitionOffsets=partitionGroups.get(taskGroupId);
+            for (            Map.Entry<Integer,Long> entry : publishingTaskCurrentOffsets.entrySet()) {
+              Integer partition=entry.getKey();
+              Long offset=entry.getValue();
+              if (partitionOffsets.get(partition) == null || partitionOffsets.get(partition) < offset) {
+                partitionOffsets.put(partition,offset);
+              }
+            }
+          }
+ else {
+            if (!taskGroups.containsKey(taskGroupId)) {
+              log.debug("Creating new task group [%d]",taskGroupId);
+              taskGroups.put(taskGroupId,new TaskGroup(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap()));
+            }
+            taskGroups.get(taskGroupId).tasks.put(taskId,new TaskData());
+          }
+        }
+      }
+    }
+  }
+  log.debug("Found [%d] Kafka indexing tasks for dataSource [%s]",taskCount,dataSource);
+}

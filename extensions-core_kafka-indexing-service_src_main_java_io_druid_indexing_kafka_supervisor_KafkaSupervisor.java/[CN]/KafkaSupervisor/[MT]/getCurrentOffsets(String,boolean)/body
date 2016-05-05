@@ -1,0 +1,12 @@
+{
+  TaskLocation taskLocation=getTaskLocation(id);
+  if (taskLocation != null) {
+    try {
+      return taskClient.getCurrentOffsets(taskLocation,id,retry);
+    }
+ catch (    Exception e) {
+      log.info("Failed to get current offsets for task [%s]",id);
+    }
+  }
+  return ImmutableMap.of();
+}

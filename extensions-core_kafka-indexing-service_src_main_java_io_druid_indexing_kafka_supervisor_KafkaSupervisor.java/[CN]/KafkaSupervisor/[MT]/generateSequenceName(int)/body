@@ -1,0 +1,18 @@
+{
+  StringBuilder sb=new StringBuilder();
+  Map<Integer,Long> startPartitions=taskGroups.get(groupId).partitionOffsets;
+  for (  Map.Entry<Integer,Long> entry : startPartitions.entrySet()) {
+    sb.append(String.format("+%d(%d)",entry.getKey(),entry.getValue()));
+  }
+  String partitionOffsetStr=sb.toString().substring(1);
+  String dataSchema, tuningConfig;
+  try {
+    dataSchema=sortingMapper.writeValueAsString(spec.getDataSchema());
+    tuningConfig=sortingMapper.writeValueAsString(spec.getTuningConfig());
+  }
+ catch (  JsonProcessingException e) {
+    throw Throwables.propagate(e);
+  }
+  String hashCode=DigestUtils.sha1Hex(dataSchema + tuningConfig + partitionOffsetStr).substring(0,15);
+  return Joiner.on("_").join("index_kafka",dataSource,hashCode);
+}

@@ -1,0 +1,12 @@
+{
+  TaskLocation taskLocation=getTaskLocation(id);
+  if (taskLocation != null) {
+    try {
+      return Optional.of(taskClient.getStatus(taskLocation,id));
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to get status for task [%s]",id);
+    }
+  }
+  return Optional.absent();
+}

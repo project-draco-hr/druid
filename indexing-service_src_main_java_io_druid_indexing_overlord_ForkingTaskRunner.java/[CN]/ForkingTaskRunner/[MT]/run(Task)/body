@@ -107,6 +107,7 @@ synchronized (tasks) {
                 processHolder.registerWithCloser(closer);
               }
               TaskRunnerUtils.notifyLocationChanged(listeners,task.getId(),taskLocation);
+              TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),TaskStatus.running(task.getId()));
               log.info("Logging task %s output to: %s",task.getId(),logFile);
               boolean runFailed=true;
               final ByteSink logSink=Files.asByteSink(logFile,FileWriteMode.APPEND);
@@ -121,12 +122,15 @@ synchronized (tasks) {
   finally {
                 taskLogPusher.pushTaskLog(task.getId(),logFile);
               }
+              TaskStatus status;
               if (!runFailed) {
-                return jsonMapper.readValue(statusFile,TaskStatus.class);
+                status=jsonMapper.readValue(statusFile,TaskStatus.class);
               }
  else {
-                return TaskStatus.failure(task.getId());
+                status=TaskStatus.failure(task.getId());
               }
+              TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),status);
+              return status;
             }
  catch (            Throwable t) {
               throw closer.rethrow(t);

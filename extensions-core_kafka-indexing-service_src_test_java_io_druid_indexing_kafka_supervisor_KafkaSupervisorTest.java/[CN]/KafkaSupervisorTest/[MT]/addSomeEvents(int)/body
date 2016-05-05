@@ -1,0 +1,9 @@
+{
+  try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){
+    for (int i=0; i < NUM_PARTITIONS; i++) {
+      for (int j=0; j < numEventsPerPartition; j++) {
+        kafkaProducer.send(new ProducerRecord<byte[],byte[]>(KAFKA_TOPIC,i,null,String.format("event-%d",j).getBytes())).get();
+      }
+    }
+  }
+ }

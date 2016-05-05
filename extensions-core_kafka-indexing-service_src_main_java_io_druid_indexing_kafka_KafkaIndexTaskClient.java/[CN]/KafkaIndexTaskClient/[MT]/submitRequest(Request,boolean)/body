@@ -1,0 +1,43 @@
+{
+  final RetryPolicy retryPolicy=retryPolicyFactory.makeRetryPolicy();
+  while (true) {
+    StatusResponseHolder response=null;
+    try {
+      new Socket(request.getUrl().getHost(),request.getUrl().getPort()).close();
+      try {
+        response=httpClient.go(request,new StatusResponseHandler(Charsets.UTF_8)).get();
+      }
+ catch (      Exception e) {
+        Throwables.propagateIfInstanceOf(e.getCause(),IOException.class);
+        Throwables.propagateIfInstanceOf(e.getCause(),ChannelException.class);
+        throw Throwables.propagate(e);
+      }
+      int responseCode=response.getStatus().getCode();
+      if (responseCode / 100 == 2) {
+        return response;
+      }
+ else       if (responseCode == 400) {
+        throw new IAE("Received 400 Bad Request with body: %s",response.getContent());
+      }
+ else {
+        throw new IOException(String.format("Received status [%d] with: %s",responseCode,response.getContent()));
+      }
+    }
+ catch (    IOException|ChannelException e) {
+      final Duration delay=retryPolicy.getAndIncrementRetryDelay();
+      if (!retry || delay == null) {
+        Throwables.propagate(e);
+      }
+ else {
+        try {
+          final long sleepTime=delay.getMillis();
+          log.debug("Bad response HTTP [%d] from %s; will try again in [%s] (body: [%s])",(response != null ? response.getStatus().getCode() : 0),request.getUrl(),new Duration(sleepTime).toString(),(response != null ? response.getContent() : "[empty]"));
+          Thread.sleep(sleepTime);
+        }
+ catch (        InterruptedException e2) {
+          Throwables.propagate(e2);
+        }
+      }
+    }
+  }
+}

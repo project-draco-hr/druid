@@ -1,0 +1,28 @@
+{
+  Preconditions.checkState(started,"not started");
+  log.info("Beginning shutdown of KafkaSupervisor[%s]",dataSource);
+  try {
+    scheduledExec.shutdownNow();
+    Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
+    if (taskRunner.isPresent()) {
+      taskRunner.get().unregisterListener(supervisorId);
+    }
+    if (stopGracefully) {
+      log.info("Stopping gracefully, signalling managed tasks to complete and publish");
+synchronized (stopLock) {
+        notices.add(new ShutdownNotice());
+        while (!stopped) {
+          stopLock.wait();
+        }
+      }
+      log.info("Shutdown notice handled");
+    }
+    exec.shutdownNow();
+    consumer.close();
+    started=false;
+    log.info("KafkaSupervisor[%s] has stopped",dataSource);
+  }
+ catch (  Exception e) {
+    log.makeAlert(e,"Exception stopping KafkaSupervisor[%s]",dataSource).emit();
+  }
+}

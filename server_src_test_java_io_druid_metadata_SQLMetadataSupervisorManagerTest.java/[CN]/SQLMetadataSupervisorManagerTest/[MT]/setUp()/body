@@ -1,0 +1,6 @@
+{
+  connector=derbyConnectorRule.getConnector();
+  tablesConfig=derbyConnectorRule.metadataTablesConfigSupplier().get();
+  connector.createSupervisorsTable();
+  supervisorManager=new SQLMetadataSupervisorManager(mapper,connector,Suppliers.ofInstance(tablesConfig));
+}

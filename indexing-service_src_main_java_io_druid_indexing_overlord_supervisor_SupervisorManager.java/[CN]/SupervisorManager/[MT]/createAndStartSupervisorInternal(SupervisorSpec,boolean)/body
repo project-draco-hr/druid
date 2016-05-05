@@ -1,0 +1,12 @@
+{
+  String id=spec.getId();
+  if (!supervisors.containsKey(id)) {
+    if (persistSpec) {
+      metadataSupervisorManager.insert(id,spec);
+    }
+    supervisors.put(id,Pair.of(spec.createSupervisor(),spec));
+    supervisors.get(id).lhs.start();
+    return true;
+  }
+  return false;
+}

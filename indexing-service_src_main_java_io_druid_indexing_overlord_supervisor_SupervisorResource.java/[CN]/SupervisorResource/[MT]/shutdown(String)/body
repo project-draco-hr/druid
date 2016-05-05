@@ -1,0 +1,12 @@
+{
+  return asLeaderWithSupervisorManager(new Function<SupervisorManager,Response>(){
+    @Override public Response apply(    SupervisorManager manager){
+      if (!manager.hasSupervisor(id)) {
+        return Response.status(Response.Status.NOT_FOUND).entity(ImmutableMap.of("error",String.format("[%s] does not exist",id))).build();
+      }
+      manager.stopAndRemoveSupervisor(id);
+      return Response.ok(ImmutableMap.of("id",id)).build();
+    }
+  }
+);
+}

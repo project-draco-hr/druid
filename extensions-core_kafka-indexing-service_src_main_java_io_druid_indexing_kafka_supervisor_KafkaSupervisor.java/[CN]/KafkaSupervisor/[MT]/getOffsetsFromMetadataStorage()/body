@@ -1,0 +1,16 @@
+{
+  DataSourceMetadata dataSourceMetadata=indexerMetadataStorageCoordinator.getDataSourceMetadata(dataSource);
+  if (dataSourceMetadata != null && dataSourceMetadata instanceof KafkaDataSourceMetadata) {
+    KafkaPartitions partitions=((KafkaDataSourceMetadata)dataSourceMetadata).getKafkaPartitions();
+    if (partitions != null) {
+      if (!ioConfig.getTopic().equals(partitions.getTopic())) {
+        log.warn("Topic in metadata storage [%s] doesn't match spec topic [%s], ignoring stored offsets",partitions.getTopic(),ioConfig.getTopic());
+        return ImmutableMap.of();
+      }
+ else       if (partitions.getPartitionOffsetMap() != null) {
+        return partitions.getPartitionOffsetMap();
+      }
+    }
+  }
+  return ImmutableMap.of();
+}

@@ -1,0 +1,20 @@
+{
+  if (listenerRegistered) {
+    return;
+  }
+  Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
+  if (taskRunner.isPresent()) {
+    taskRunner.get().registerListener(new TaskRunnerListener(){
+      @Override public String getListenerId(){
+        return supervisorId;
+      }
+      @Override public void locationChanged(      final String taskId,      final TaskLocation newLocation){
+      }
+      @Override public void statusChanged(      String taskId,      TaskStatus status){
+        notices.add(new RunNotice());
+      }
+    }
+,MoreExecutors.sameThreadExecutor());
+    listenerRegistered=true;
+  }
+}

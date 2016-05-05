@@ -1,0 +1,31 @@
+{
+  for (  TaskGroup group : taskGroups.values()) {
+    for (    Map.Entry<String,TaskData> entry : group.tasks.entrySet()) {
+      String taskId=entry.getKey();
+      TaskData taskData=entry.getValue();
+      if (taskData.startTime == null) {
+        try {
+          taskData.startTime=getTaskStartTime(taskId);
+          if (taskData.startTime != null) {
+            long millisRemaining=ioConfig.getTaskDuration().getMillis() - (System.currentTimeMillis() - taskData.startTime.getMillis());
+            if (millisRemaining > 0) {
+              scheduledExec.schedule(buildRunTask(),millisRemaining + MAX_RUN_FREQUENCY_MILLIS,TimeUnit.MILLISECONDS);
+            }
+          }
+        }
+ catch (        Exception e) {
+          log.warn(e,"Task [%s] failed to return start time, killing task",taskId);
+          killTask(taskId);
+        }
+      }
+      taskData.status=taskStorage.getStatus(taskId).get();
+    }
+  }
+  for (  List<TaskGroup> taskGroups : pendingCompletionTaskGroups.values()) {
+    for (    TaskGroup group : taskGroups) {
+      for (      Map.Entry<String,TaskData> entry : group.tasks.entrySet()) {
+        entry.getValue().status=taskStorage.getStatus(entry.getKey()).get();
+      }
+    }
+  }
+}

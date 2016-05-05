@@ -16,7 +16,8 @@
           log.info("Failing task[%s]",assignedTask);
           RemoteTaskRunnerWorkItem taskRunnerWorkItem=runningTasks.remove(assignedTask);
           if (taskRunnerWorkItem != null) {
-            taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTaskId()));
+            taskRunnerWorkItem.setResult(TaskStatus.failure(assignedTask));
+            TaskRunnerUtils.notifyStatusChanged(listeners,assignedTask,TaskStatus.failure(assignedTask));
           }
  else {
             log.warn("RemoteTaskRunner has no knowledge of task[%s]",assignedTask);

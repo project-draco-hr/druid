@@ -1,0 +1,32 @@
+{
+  supervisor=getSupervisor(1,1,true,"PT1H");
+  addSomeEvents(1);
+  Capture<KafkaIndexTask> captured=Capture.newInstance();
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true);
+  taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  KafkaIndexTask task=captured.getValue();
+  Assert.assertEquals(dataSchema,task.getDataSchema());
+  Assert.assertEquals(tuningConfig,task.getTuningConfig());
+  KafkaIOConfig taskConfig=task.getIOConfig();
+  Assert.assertEquals(kafkaHost,taskConfig.getConsumerProperties().get("bootstrap.servers"));
+  Assert.assertEquals("myCustomValue",taskConfig.getConsumerProperties().get("myCustomKey"));
+  Assert.assertEquals("sequenceName-0",taskConfig.getBaseSequenceName());
+  Assert.assertTrue("isUseTransaction",taskConfig.isUseTransaction());
+  Assert.assertFalse("pauseAfterRead",taskConfig.isPauseAfterRead());
+  Assert.assertEquals(KAFKA_TOPIC,taskConfig.getStartPartitions().getTopic());
+  Assert.assertEquals(0L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(0));
+  Assert.assertEquals(0L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(1));
+  Assert.assertEquals(0L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(2));
+  Assert.assertEquals(KAFKA_TOPIC,taskConfig.getEndPartitions().getTopic());
+  Assert.assertEquals(Long.MAX_VALUE,(long)taskConfig.getEndPartitions().getPartitionOffsetMap().get(0));
+  Assert.assertEquals(Long.MAX_VALUE,(long)taskConfig.getEndPartitions().getPartitionOffsetMap().get(1));
+  Assert.assertEquals(Long.MAX_VALUE,(long)taskConfig.getEndPartitions().getPartitionOffsetMap().get(2));
+}

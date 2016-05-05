@@ -1,0 +1,53 @@
+{
+  final TaskLocation location=new TaskLocation("testHost",1234);
+  supervisor=getSupervisor(2,2,true,"PT1M");
+  addSomeEvents(100);
+  Capture<Task> captured=Capture.newInstance(CaptureType.ALL);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  expect(taskRunner.getRunningTasks()).andReturn(Collections.EMPTY_LIST).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true).times(4);
+  taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  List<Task> tasks=captured.getValues();
+  Collection workItems=new ArrayList<>();
+  for (  Task task : tasks) {
+    workItems.add(new TestTaskRunnerWorkItem(task.getId(),null,location));
+  }
+  reset(taskStorage,taskRunner,taskClient,taskQueue);
+  captured=Capture.newInstance(CaptureType.ALL);
+  expect(taskStorage.getActiveTasks()).andReturn(tasks).anyTimes();
+  for (  Task task : tasks) {
+    expect(taskStorage.getStatus(task.getId())).andReturn(Optional.of(TaskStatus.running(task.getId()))).anyTimes();
+    expect(taskStorage.getTask(task.getId())).andReturn(Optional.of(task)).anyTimes();
+  }
+  expect(taskRunner.getRunningTasks()).andReturn(workItems).anyTimes();
+  expect(taskClient.getStatus(anyObject(TaskLocation.class),anyString())).andReturn(KafkaIndexTask.Status.READING).anyTimes();
+  expect(taskClient.getStartTime(EasyMock.eq(location),EasyMock.contains("sequenceName-0"))).andReturn(DateTime.now().minusMinutes(2)).andReturn(DateTime.now());
+  expect(taskClient.getStartTime(EasyMock.eq(location),EasyMock.contains("sequenceName-1"))).andReturn(DateTime.now()).times(2);
+  expect(taskClient.pause(EasyMock.eq(location),EasyMock.contains("sequenceName-0"))).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L)).andReturn(ImmutableMap.of(0,10L,1,15L,2,35L));
+  taskClient.setEndOffsets(EasyMock.eq(location),EasyMock.contains("sequenceName-0"),EasyMock.eq(ImmutableMap.of(0,10L,1,20L,2,35L)),EasyMock.eq(true));
+  expectLastCall().times(2);
+  expect(taskQueue.add(capture(captured))).andReturn(true).times(2);
+  replay(taskStorage,taskRunner,taskClient,taskQueue);
+  supervisor.runInternal();
+  verifyAll();
+  for (  Task task : captured.getValues()) {
+    KafkaIndexTask kafkaIndexTask=(KafkaIndexTask)task;
+    Assert.assertEquals(dataSchema,kafkaIndexTask.getDataSchema());
+    Assert.assertEquals(tuningConfig,kafkaIndexTask.getTuningConfig());
+    KafkaIOConfig taskConfig=kafkaIndexTask.getIOConfig();
+    Assert.assertEquals("sequenceName-0",taskConfig.getBaseSequenceName());
+    Assert.assertTrue("isUseTransaction",taskConfig.isUseTransaction());
+    Assert.assertFalse("pauseAfterRead",taskConfig.isPauseAfterRead());
+    Assert.assertEquals(KAFKA_TOPIC,taskConfig.getStartPartitions().getTopic());
+    Assert.assertEquals(10L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(0));
+    Assert.assertEquals(20L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(1));
+    Assert.assertEquals(35L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(2));
+  }
+}

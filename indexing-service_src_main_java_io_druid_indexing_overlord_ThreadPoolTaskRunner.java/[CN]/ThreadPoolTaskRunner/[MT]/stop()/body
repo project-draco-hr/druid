@@ -21,15 +21,18 @@
         task.stopGracefully();
         final TaskStatus taskStatus=item.getResult().get(new Interval(new DateTime(start),taskConfig.getGracefulShutdownTimeout()).toDurationMillis(),TimeUnit.MILLISECONDS);
         log.info("Graceful shutdown of task[%s] finished in %,dms.",task.getId(),System.currentTimeMillis() - start);
+        TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),taskStatus);
       }
  catch (      Exception e) {
         log.makeAlert(e,"Graceful task shutdown failed: %s",task.getDataSource()).addData("taskId",task.getId()).addData("dataSource",task.getDataSource()).emit();
         log.warn(e,"Graceful shutdown of task[%s] aborted with exception.",task.getId());
         error=true;
+        TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),TaskStatus.failure(task.getId()));
       }
     }
  else {
       graceful=false;
+      TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),TaskStatus.failure(task.getId()));
     }
     elapsed=System.currentTimeMillis() - start;
     final ServiceMetricEvent.Builder metricBuilder=ServiceMetricEvent.builder().setDimension("task",task.getId()).setDimension("dataSource",task.getDataSource()).setDimension("graceful",String.valueOf(graceful)).setDimension("error",String.valueOf(error));

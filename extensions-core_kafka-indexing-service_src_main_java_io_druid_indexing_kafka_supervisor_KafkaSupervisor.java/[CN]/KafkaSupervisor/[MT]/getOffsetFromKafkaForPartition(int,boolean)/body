@@ -1,0 +1,13 @@
+{
+  TopicPartition topicPartition=new TopicPartition(ioConfig.getTopic(),partition);
+  if (!consumer.assignment().contains(topicPartition)) {
+    consumer.assign(Lists.newArrayList(topicPartition));
+  }
+  if (useEarliestOffset) {
+    consumer.seekToBeginning(topicPartition);
+  }
+ else {
+    consumer.seekToEnd(topicPartition);
+  }
+  return consumer.position(topicPartition);
+}

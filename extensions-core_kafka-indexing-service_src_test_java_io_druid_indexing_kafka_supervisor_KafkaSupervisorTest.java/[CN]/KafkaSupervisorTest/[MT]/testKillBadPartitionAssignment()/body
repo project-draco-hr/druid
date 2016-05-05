@@ -1,0 +1,33 @@
+{
+  supervisor=getSupervisor(1,2,true,"PT1H");
+  addSomeEvents(1);
+  Task id1=createKafkaIndexTask("id1",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,2,Long.MAX_VALUE)));
+  Task id2=createKafkaIndexTask("id2",DATASOURCE,"sequenceName-1",new KafkaPartitions("topic",ImmutableMap.of(1,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE)));
+  Task id3=createKafkaIndexTask("id3",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE,2,Long.MAX_VALUE)));
+  Task id4=createKafkaIndexTask("id4",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE)));
+  Task id5=createKafkaIndexTask("id5",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE,2,Long.MAX_VALUE)));
+  List<Task> existingTasks=ImmutableList.of(id1,id2,id3,id4,id5);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  expect(taskRunner.getRunningTasks()).andReturn(Collections.EMPTY_LIST).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(existingTasks).anyTimes();
+  expect(taskStorage.getStatus("id1")).andReturn(Optional.of(TaskStatus.running("id1"))).anyTimes();
+  expect(taskStorage.getStatus("id2")).andReturn(Optional.of(TaskStatus.running("id2"))).anyTimes();
+  expect(taskStorage.getStatus("id3")).andReturn(Optional.of(TaskStatus.running("id3"))).anyTimes();
+  expect(taskStorage.getStatus("id4")).andReturn(Optional.of(TaskStatus.running("id4"))).anyTimes();
+  expect(taskStorage.getStatus("id5")).andReturn(Optional.of(TaskStatus.running("id5"))).anyTimes();
+  expect(taskStorage.getTask("id1")).andReturn(Optional.of(id1)).anyTimes();
+  expect(taskStorage.getTask("id2")).andReturn(Optional.of(id2)).anyTimes();
+  expect(taskStorage.getTask("id3")).andReturn(Optional.of(id3)).anyTimes();
+  expect(taskStorage.getTask("id4")).andReturn(Optional.of(id3)).anyTimes();
+  expect(taskStorage.getTask("id5")).andReturn(Optional.of(id3)).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
+  taskQueue.shutdown("id3");
+  taskQueue.shutdown("id4");
+  taskQueue.shutdown("id5");
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+}

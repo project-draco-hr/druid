@@ -1,6 +1,12 @@
 {
+  for (  Pair<TaskRunnerListener,Executor> pair : listeners) {
+    if (pair.lhs.getListenerId().equals(listener.getListenerId())) {
+      throw new ISE("Listener [%s] already registered",listener.getListenerId());
+    }
+  }
   final Pair<TaskRunnerListener,Executor> listenerPair=Pair.of(listener,executor);
   listeners.add(listenerPair);
+  log.info("Registered listener [%s]",listener.getListenerId());
   for (  ThreadPoolTaskRunnerWorkItem item : runningItems) {
     TaskRunnerUtils.notifyLocationChanged(ImmutableList.of(listenerPair),item.getTaskId(),item.getLocation());
   }

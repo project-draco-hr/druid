@@ -1,0 +1,9 @@
+{
+  Optional<TaskQueue> taskQueue=taskMaster.getTaskQueue();
+  if (taskQueue.isPresent()) {
+    taskQueue.get().shutdown(id);
+  }
+ else {
+    log.error("Failed to get task queue because I'm not the leader!");
+  }
+}

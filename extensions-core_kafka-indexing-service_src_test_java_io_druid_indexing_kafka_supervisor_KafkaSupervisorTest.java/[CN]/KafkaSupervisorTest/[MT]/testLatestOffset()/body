@@ -1,0 +1,18 @@
+{
+  supervisor=getSupervisor(1,1,false,"PT1H");
+  addSomeEvents(1100);
+  Capture<KafkaIndexTask> captured=Capture.newInstance();
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.<TaskRunner>absent()).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true);
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  KafkaIndexTask task=captured.getValue();
+  Assert.assertEquals(1100L,(long)task.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(0));
+  Assert.assertEquals(1100L,(long)task.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(1));
+  Assert.assertEquals(1100L,(long)task.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(2));
+}

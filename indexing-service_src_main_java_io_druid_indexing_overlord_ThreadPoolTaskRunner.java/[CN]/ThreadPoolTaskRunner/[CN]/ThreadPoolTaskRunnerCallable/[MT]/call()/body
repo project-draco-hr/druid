@@ -4,6 +4,7 @@
   try {
     log.info("Running task: %s",task.getId());
     TaskRunnerUtils.notifyLocationChanged(listeners,task.getId(),location);
+    TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),TaskStatus.running(task.getId()));
     status=task.run(toolbox);
   }
  catch (  InterruptedException e) {
@@ -23,5 +24,7 @@ catch (  Throwable t) {
     log.error(t,"Uncaught Throwable while running task[%s]",task);
     throw t;
   }
-  return status.withDuration(System.currentTimeMillis() - startTime);
+  status=status.withDuration(System.currentTimeMillis() - startTime);
+  TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),status);
+  return status;
 }

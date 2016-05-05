@@ -1,0 +1,59 @@
+{
+  TaskGroup taskGroup=taskGroups.get(groupId);
+  Map<Integer,Long> endOffsets=new HashMap<>();
+  Iterator<Map.Entry<String,TaskData>> i=taskGroup.tasks.entrySet().iterator();
+  while (i.hasNext()) {
+    Map.Entry<String,TaskData> taskEntry=i.next();
+    String taskId=taskEntry.getKey();
+    TaskData task=taskEntry.getValue();
+    if (task.status.isSuccess()) {
+      stopTasksInGroup(taskGroup);
+      return null;
+    }
+    if (task.status.isRunnable()) {
+      TaskLocation location=getTaskLocation(taskId);
+      if (location == null) {
+        log.info("Killing task [%s] which hasn't been assigned to a worker",taskId);
+        killTask(taskId);
+      }
+ else {
+        Map<Integer,Long> currentOffsets;
+        try {
+          currentOffsets=taskClient.pause(location,taskId);
+        }
+ catch (        Exception e) {
+          log.warn(e,"Task [%s] failed to respond to [pause] in a timely manner, killing task",taskId);
+          killTask(taskId);
+          i.remove();
+          continue;
+        }
+        for (        Map.Entry<Integer,Long> offset : currentOffsets.entrySet()) {
+          if (!endOffsets.containsKey(offset.getKey()) || endOffsets.get(offset.getKey()).compareTo(offset.getValue()) < 0) {
+            endOffsets.put(offset.getKey(),offset.getValue());
+          }
+        }
+      }
+    }
+  }
+  log.info("Setting endOffsets for tasks in taskGroup [%d] to %s and resuming",groupId,endOffsets);
+  i=taskGroup.tasks.entrySet().iterator();
+  while (i.hasNext()) {
+    Map.Entry<String,TaskData> taskEntry=i.next();
+    String taskId=taskEntry.getKey();
+    TaskData task=taskEntry.getValue();
+    if (task.status.isRunnable()) {
+      TaskLocation location=getTaskLocation(taskId);
+      if (location != null) {
+        try {
+          taskClient.setEndOffsets(location,taskId,endOffsets,true);
+        }
+ catch (        Exception e) {
+          log.warn(e,"Task [%s] failed to respond to [set end offsets] in a timely manner, killing task",taskId);
+          killTask(taskId);
+          i.remove();
+        }
+      }
+    }
+  }
+  return endOffsets;
+}

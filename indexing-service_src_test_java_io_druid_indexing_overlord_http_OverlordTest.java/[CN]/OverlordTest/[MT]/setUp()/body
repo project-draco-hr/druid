@@ -1,5 +1,6 @@
 {
   req=EasyMock.createStrictMock(HttpServletRequest.class);
+  supervisorManager=EasyMock.createMock(SupervisorManager.class);
   taskLockbox=EasyMock.createStrictMock(TaskLockbox.class);
   taskLockbox.syncFromStorage();
   EasyMock.expectLastCall().atLeastOnce();
@@ -39,6 +40,6 @@
       announcementLatch.countDown();
     }
   }
-,serviceEmitter);
+,serviceEmitter,supervisorManager);
   EmittingLogger.registerEmitter(serviceEmitter);
 }

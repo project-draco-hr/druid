@@ -1,0 +1,37 @@
+{
+  int numPartitions=0;
+  for (  Map<Integer,Long> partitionGroup : partitionGroups.values()) {
+    numPartitions+=partitionGroup.size();
+  }
+  KafkaSupervisorReport report=new KafkaSupervisorReport(dataSource,DateTime.now(),ioConfig.getTopic(),numPartitions,ioConfig.getReplicas(),ioConfig.getTaskDuration().getMillis() / 1000);
+  try {
+    for (    TaskGroup taskGroup : taskGroups.values()) {
+      for (      Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
+        String taskId=entry.getKey();
+        DateTime startTime=entry.getValue().startTime;
+        Long remainingSeconds=null;
+        if (startTime != null) {
+          remainingSeconds=Math.max(0,ioConfig.getTaskDuration().getMillis() - (DateTime.now().getMillis() - startTime.getMillis())) / 1000;
+        }
+        report.addActiveTask(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),(includeOffsets ? getCurrentOffsets(taskId,false) : null),startTime,remainingSeconds);
+      }
+    }
+    for (    List<TaskGroup> taskGroups : pendingCompletionTaskGroups.values()) {
+      for (      TaskGroup taskGroup : taskGroups) {
+        for (        Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
+          String taskId=entry.getKey();
+          DateTime startTime=entry.getValue().startTime;
+          Long remainingSeconds=null;
+          if (taskGroup.completionTimeout != null) {
+            remainingSeconds=Math.max(0,taskGroup.completionTimeout.getMillis() - DateTime.now().getMillis()) / 1000;
+          }
+          report.addPublishingTask(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),(includeOffsets ? getCurrentOffsets(taskId,false) : null),startTime,remainingSeconds);
+        }
+      }
+    }
+  }
+ catch (  Exception e) {
+    log.warn(e,"Failed to generate status report");
+  }
+  return report;
+}

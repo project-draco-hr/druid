@@ -1,0 +1,10 @@
+{
+  log.info("Loading stored supervisors from database");
+  Map<String,SupervisorSpec> supervisors=metadataSupervisorManager.getLatest();
+  for (  String id : supervisors.keySet()) {
+    SupervisorSpec spec=supervisors.get(id);
+    if (!(spec instanceof NoopSupervisorSpec)) {
+      createAndStartSupervisorInternal(spec,false);
+    }
+  }
+}

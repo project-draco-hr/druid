@@ -1,0 +1,10 @@
+{
+  try {
+    final URI serviceUri=new URI("http",null,location.getHost(),location.getPort(),String.format("%s/%s/%s",BASE_PATH,id,"status"),null,null);
+    final StatusResponseHolder response=submitRequest(new Request(HttpMethod.GET,serviceUri.toURL()),true);
+    return jsonMapper.readValue(response.getContent(),KafkaIndexTask.Status.class);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

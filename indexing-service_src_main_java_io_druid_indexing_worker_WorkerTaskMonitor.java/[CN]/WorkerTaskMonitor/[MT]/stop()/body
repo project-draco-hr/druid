@@ -3,6 +3,7 @@ synchronized (lifecycleLock) {
     Preconditions.checkState(started,"not started");
     try {
       started=false;
+      taskRunner.unregisterListener("WorkerTaskMonitor");
       exec.shutdownNow();
       pathChildrenCache.close();
       taskRunner.stop();

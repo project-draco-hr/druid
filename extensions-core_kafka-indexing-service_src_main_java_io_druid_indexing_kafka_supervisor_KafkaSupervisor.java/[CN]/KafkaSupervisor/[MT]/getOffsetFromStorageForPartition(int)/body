@@ -1,0 +1,17 @@
+{
+  long offset;
+  Map<Integer,Long> metadataOffsets=getOffsetsFromMetadataStorage();
+  if (metadataOffsets.get(partition) != null) {
+    offset=metadataOffsets.get(partition);
+    log.debug("Getting offset [%,d] from metadata storage for partition [%d]",offset,partition);
+    long latestKafkaOffset=getOffsetFromKafkaForPartition(partition,false);
+    if (offset > latestKafkaOffset) {
+      throw new ISE("Offset in metadata storage [%,d] > latest Kafka offset [%,d] for partition [%d]. If your Kafka offsets have" + " been reset, you will need to remove the entry for [%s] from the dataSource table.",offset,latestKafkaOffset,partition,dataSource);
+    }
+  }
+ else {
+    offset=getOffsetFromKafkaForPartition(partition,ioConfig.isUseEarliestOffset());
+    log.debug("Getting offset [%,d] from Kafka for partition [%d]",offset,partition);
+  }
+  return offset;
+}

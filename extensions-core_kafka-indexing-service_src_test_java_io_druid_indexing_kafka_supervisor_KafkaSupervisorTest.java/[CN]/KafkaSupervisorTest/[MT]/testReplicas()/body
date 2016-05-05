@@ -1,0 +1,26 @@
+{
+  supervisor=getSupervisor(2,1,true,"PT1H");
+  addSomeEvents(1);
+  Capture<KafkaIndexTask> captured=Capture.newInstance(CaptureType.ALL);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.<TaskRunner>absent()).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true).times(2);
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  KafkaIndexTask task1=captured.getValues().get(0);
+  Assert.assertEquals(3,task1.getIOConfig().getStartPartitions().getPartitionOffsetMap().size());
+  Assert.assertEquals(3,task1.getIOConfig().getEndPartitions().getPartitionOffsetMap().size());
+  Assert.assertEquals(0L,(long)task1.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(0));
+  Assert.assertEquals(0L,(long)task1.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(1));
+  Assert.assertEquals(0L,(long)task1.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(2));
+  KafkaIndexTask task2=captured.getValues().get(1);
+  Assert.assertEquals(3,task2.getIOConfig().getStartPartitions().getPartitionOffsetMap().size());
+  Assert.assertEquals(3,task2.getIOConfig().getEndPartitions().getPartitionOffsetMap().size());
+  Assert.assertEquals(0L,(long)task2.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(0));
+  Assert.assertEquals(0L,(long)task2.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(1));
+  Assert.assertEquals(0L,(long)task2.getIOConfig().getStartPartitions().getPartitionOffsetMap().get(2));
+}

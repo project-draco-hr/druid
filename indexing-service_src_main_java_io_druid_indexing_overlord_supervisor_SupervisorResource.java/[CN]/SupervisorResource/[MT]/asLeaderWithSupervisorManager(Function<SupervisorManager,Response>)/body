@@ -1,0 +1,9 @@
+{
+  Optional<SupervisorManager> supervisorManager=taskMaster.getSupervisorManager();
+  if (supervisorManager.isPresent()) {
+    return f.apply(supervisorManager.get());
+  }
+ else {
+    return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+  }
+}

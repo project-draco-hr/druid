@@ -1,0 +1,31 @@
+{
+  Iterator<Map.Entry<Integer,TaskGroup>> iTaskGroups=taskGroups.entrySet().iterator();
+  while (iTaskGroups.hasNext()) {
+    Map.Entry<Integer,TaskGroup> taskGroupEntry=iTaskGroups.next();
+    Integer groupId=taskGroupEntry.getKey();
+    TaskGroup taskGroup=taskGroupEntry.getValue();
+    log.debug("Task group [%d] pre-pruning: %s",groupId,taskGroup.tasks.keySet());
+    Iterator<Map.Entry<String,TaskData>> iTasks=taskGroup.tasks.entrySet().iterator();
+    while (iTasks.hasNext()) {
+      Map.Entry<String,TaskData> task=iTasks.next();
+      String taskId=task.getKey();
+      TaskData taskData=task.getValue();
+      if (!isTaskCurrent(groupId,taskId)) {
+        log.info("Stopping task [%s] which does not match the expected offset range and ingestion spec",taskId);
+        stopTask(taskId,false);
+        iTasks.remove();
+        continue;
+      }
+      if (taskData.status.isFailure()) {
+        iTasks.remove();
+        continue;
+      }
+      if (taskData.status.isSuccess()) {
+        stopTasksInGroup(taskGroup);
+        iTaskGroups.remove();
+        break;
+      }
+    }
+    log.debug("Task group [%d] post-pruning: %s",groupId,taskGroup.tasks.keySet());
+  }
+}

@@ -1,0 +1,31 @@
+{
+  return ImmutableMap.copyOf(dbi.withHandle(new HandleCallback<Map<String,SupervisorSpec>>(){
+    @Override public Map<String,SupervisorSpec> withHandle(    Handle handle) throws Exception {
+      return handle.createQuery(String.format("SELECT r.spec_id, r.payload " + "FROM %1$s r " + "INNER JOIN(SELECT spec_id, max(version) as version FROM %1$s GROUP BY spec_id) latest "+ "ON r.spec_id = latest.spec_id and r.version = latest.version",getSupervisorsTable())).map(new ResultSetMapper<Pair<String,SupervisorSpec>>(){
+        @Override public Pair<String,SupervisorSpec> map(        int index,        ResultSet r,        StatementContext ctx) throws SQLException {
+          try {
+            return Pair.of(r.getString("spec_id"),jsonMapper.<SupervisorSpec>readValue(r.getBytes("payload"),new TypeReference<SupervisorSpec>(){
+            }
+));
+          }
+ catch (          IOException e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+).fold(Maps.<String,SupervisorSpec>newHashMap(),new Folder3<Map<String,SupervisorSpec>,Pair<String,SupervisorSpec>>(){
+        @Override public Map<String,SupervisorSpec> fold(        Map<String,SupervisorSpec> retVal,        Pair<String,SupervisorSpec> stringObjectMap,        FoldController foldController,        StatementContext statementContext) throws SQLException {
+          try {
+            retVal.put(stringObjectMap.lhs,stringObjectMap.rhs);
+            return retVal;
+          }
+ catch (          Exception e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+  }
+));
+}

@@ -1,0 +1,14 @@
+{
+  Map<Integer,Long> startingOffsets=new HashMap<>();
+  for (  Map.Entry<Integer,Long> entry : partitionGroups.get(groupId).entrySet()) {
+    Integer partition=entry.getKey();
+    Long offset=entry.getValue();
+    if (offset != null) {
+      startingOffsets.put(partition,offset);
+    }
+ else {
+      startingOffsets.put(partition,getOffsetFromStorageForPartition(partition));
+    }
+  }
+  return startingOffsets;
+}

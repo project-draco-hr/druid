@@ -1,0 +1,15 @@
+{
+  final Properties props=new Properties();
+  props.putAll(ioConfig.getConsumerProperties());
+  props.setProperty("enable.auto.commit","false");
+  props.setProperty("metadata.max.age.ms","10000");
+  props.setProperty("group.id",String.format("kafka-supervisor-%s",getRandomId()));
+  ClassLoader currCtxCl=Thread.currentThread().getContextClassLoader();
+  try {
+    Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+    return new KafkaConsumer<>(props,new ByteArrayDeserializer(),new ByteArrayDeserializer());
+  }
+  finally {
+    Thread.currentThread().setContextClassLoader(currCtxCl);
+  }
+}

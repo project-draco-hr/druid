@@ -1,0 +1,15 @@
+{
+  TaskLocation taskLocation=getTaskLocation(id);
+  if (taskLocation != null) {
+    try {
+      taskClient.stop(taskLocation,id,publish);
+    }
+ catch (    Exception e) {
+      log.warn(e,"Task [%s] failed to stop in a timely manner, killing task",id);
+      killTask(id);
+    }
+  }
+ else {
+    killTask(id);
+  }
+}

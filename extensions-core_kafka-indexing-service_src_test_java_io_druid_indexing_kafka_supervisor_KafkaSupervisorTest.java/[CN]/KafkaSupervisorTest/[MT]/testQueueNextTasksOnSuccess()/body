@@ -1,0 +1,46 @@
+{
+  supervisor=getSupervisor(2,2,true,"PT1H");
+  addSomeEvents(1);
+  Capture<Task> captured=Capture.newInstance(CaptureType.ALL);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  expect(taskRunner.getRunningTasks()).andReturn(Collections.EMPTY_LIST).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true).times(4);
+  taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  List<Task> tasks=captured.getValues();
+  reset(taskStorage);
+  expect(taskStorage.getActiveTasks()).andReturn(tasks).anyTimes();
+  for (  Task task : tasks) {
+    expect(taskStorage.getStatus(task.getId())).andReturn(Optional.of(TaskStatus.running(task.getId()))).anyTimes();
+    expect(taskStorage.getTask(task.getId())).andReturn(Optional.of(task)).anyTimes();
+  }
+  replay(taskStorage);
+  supervisor.runInternal();
+  verifyAll();
+  Capture<Task> newTasksCapture=Capture.newInstance(CaptureType.ALL);
+  Capture<String> shutdownTaskIdCapture=Capture.newInstance();
+  List<Task> imStillRunning=tasks.subList(1,4);
+  KafkaIndexTask iAmSuccess=(KafkaIndexTask)tasks.get(0);
+  reset(taskStorage);
+  reset(taskQueue);
+  expect(taskStorage.getActiveTasks()).andReturn(imStillRunning).anyTimes();
+  for (  Task task : imStillRunning) {
+    expect(taskStorage.getStatus(task.getId())).andReturn(Optional.of(TaskStatus.running(task.getId()))).anyTimes();
+    expect(taskStorage.getTask(task.getId())).andReturn(Optional.of(task)).anyTimes();
+  }
+  expect(taskStorage.getStatus(iAmSuccess.getId())).andReturn(Optional.of(TaskStatus.success(iAmSuccess.getId())));
+  expect(taskStorage.getTask(iAmSuccess.getId())).andReturn(Optional.of((Task)iAmSuccess)).anyTimes();
+  taskQueue.shutdown(capture(shutdownTaskIdCapture));
+  expect(taskQueue.add(capture(newTasksCapture))).andReturn(true).times(2);
+  replay(taskStorage);
+  replay(taskQueue);
+  supervisor.runInternal();
+  verifyAll();
+  Assert.assertTrue(shutdownTaskIdCapture.getValue().contains(iAmSuccess.getIOConfig().getBaseSequenceName()));
+}

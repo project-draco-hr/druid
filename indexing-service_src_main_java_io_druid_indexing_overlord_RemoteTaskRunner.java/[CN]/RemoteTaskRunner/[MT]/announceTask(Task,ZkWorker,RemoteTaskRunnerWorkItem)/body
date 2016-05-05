@@ -16,6 +16,7 @@ synchronized (statusLock) {
     RemoteTaskRunnerWorkItem newWorkItem=workItem.withWorker(theZkWorker.getWorker(),null);
     runningTasks.put(task.getId(),newWorkItem);
     log.info("Task %s switched from pending to running (on [%s])",task.getId(),newWorkItem.getWorker().getHost());
+    TaskRunnerUtils.notifyStatusChanged(listeners,task.getId(),TaskStatus.running(task.getId()));
     Stopwatch timeoutStopwatch=Stopwatch.createStarted();
     while (!isWorkerRunningTask(theZkWorker.getWorker(),task.getId())) {
       final long waitMs=config.getTaskAssignmentTimeout().toStandardDuration().getMillis();

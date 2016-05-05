@@ -1,0 +1,24 @@
+{
+  Map<String,List<PartitionInfo>> topics;
+  try {
+    topics=consumer.listTopics();
+  }
+ catch (  Exception e) {
+    log.warn(e,"Unable to get partition data from Kafka for brokers [%s], are the brokers up?",ioConfig.getConsumerProperties().get(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY));
+    return;
+  }
+  List<PartitionInfo> partitions=topics.get(ioConfig.getTopic());
+  int numPartitions=(partitions != null ? partitions.size() : 0);
+  log.debug("Found [%d] Kafka partitions for topic [%s]",numPartitions,ioConfig.getTopic());
+  for (int partition=0; partition < numPartitions; partition++) {
+    int taskGroupId=getTaskGroupIdForPartition(partition);
+    if (partitionGroups.get(taskGroupId) == null) {
+      partitionGroups.put(taskGroupId,new HashMap<Integer,Long>());
+    }
+    Map<Integer,Long> partitionMap=partitionGroups.get(taskGroupId);
+    if (!partitionMap.containsKey(partition)) {
+      log.info("New partition [%d] discovered for topic [%s], adding to task group [%d]",partition,ioConfig.getTopic(),taskGroupId);
+      partitionMap.put(partition,null);
+    }
+  }
+}

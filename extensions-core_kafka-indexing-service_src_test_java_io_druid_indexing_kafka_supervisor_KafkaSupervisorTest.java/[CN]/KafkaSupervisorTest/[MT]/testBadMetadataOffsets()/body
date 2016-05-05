@@ -1,0 +1,10 @@
+{
+  supervisor=getSupervisor(1,1,true,"PT1H");
+  addSomeEvents(1);
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.<TaskRunner>absent()).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(new KafkaPartitions(KAFKA_TOPIC,ImmutableMap.of(0,10L,1,20L,2,30L)))).anyTimes();
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+}

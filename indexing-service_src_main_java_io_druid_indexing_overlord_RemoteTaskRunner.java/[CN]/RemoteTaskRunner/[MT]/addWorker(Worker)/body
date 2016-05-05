@@ -48,7 +48,8 @@ taskId=ZKPaths.getNodeFromPath(event.getData().getPath());
 taskRunnerWorkItem=runningTasks.remove(taskId);
 if (taskRunnerWorkItem != null) {
 log.info("Task[%s] just disappeared!",taskId);
-taskRunnerWorkItem.setResult(TaskStatus.failure(taskRunnerWorkItem.getTaskId()));
+taskRunnerWorkItem.setResult(TaskStatus.failure(taskId));
+TaskRunnerUtils.notifyStatusChanged(listeners,taskId,TaskStatus.failure(taskId));
 }
  else {
 log.info("Task[%s] went bye bye.",taskId);

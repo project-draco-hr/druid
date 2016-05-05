@@ -1,0 +1,36 @@
+{
+  return ImmutableMap.copyOf(dbi.withHandle(new HandleCallback<Map<String,List<VersionedSupervisorSpec>>>(){
+    @Override public Map<String,List<VersionedSupervisorSpec>> withHandle(    Handle handle) throws Exception {
+      return handle.createQuery(String.format("SELECT spec_id, version, payload FROM %1$s ORDER BY version DESC",getSupervisorsTable())).map(new ResultSetMapper<Pair<String,VersionedSupervisorSpec>>(){
+        @Override public Pair<String,VersionedSupervisorSpec> map(        int index,        ResultSet r,        StatementContext ctx) throws SQLException {
+          try {
+            SupervisorSpec payload=jsonMapper.readValue(r.getBytes("payload"),new TypeReference<SupervisorSpec>(){
+            }
+);
+            return Pair.of(r.getString("spec_id"),new VersionedSupervisorSpec(payload,r.getString("version")));
+          }
+ catch (          IOException e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+).fold(Maps.<String,List<VersionedSupervisorSpec>>newHashMap(),new Folder3<Map<String,List<VersionedSupervisorSpec>>,Pair<String,VersionedSupervisorSpec>>(){
+        @Override public Map<String,List<VersionedSupervisorSpec>> fold(        Map<String,List<VersionedSupervisorSpec>> retVal,        Pair<String,VersionedSupervisorSpec> pair,        FoldController foldController,        StatementContext statementContext) throws SQLException {
+          try {
+            String specId=pair.lhs;
+            if (!retVal.containsKey(specId)) {
+              retVal.put(specId,Lists.<VersionedSupervisorSpec>newArrayList());
+            }
+            retVal.get(specId).add(pair.rhs);
+            return retVal;
+          }
+ catch (          Exception e) {
+            throw Throwables.propagate(e);
+          }
+        }
+      }
+);
+    }
+  }
+));
+}

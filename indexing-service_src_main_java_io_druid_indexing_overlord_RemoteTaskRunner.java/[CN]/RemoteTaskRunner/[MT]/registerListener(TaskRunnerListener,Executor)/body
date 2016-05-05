@@ -1,9 +1,15 @@
 {
+  for (  Pair<TaskRunnerListener,Executor> pair : listeners) {
+    if (pair.lhs.getListenerId().equals(listener.getListenerId())) {
+      throw new ISE("Listener [%s] already registered",listener.getListenerId());
+    }
+  }
   final Pair<TaskRunnerListener,Executor> listenerPair=Pair.of(listener,executor);
 synchronized (statusLock) {
     for (    Map.Entry<String,RemoteTaskRunnerWorkItem> entry : runningTasks.entrySet()) {
       TaskRunnerUtils.notifyLocationChanged(ImmutableList.of(listenerPair),entry.getKey(),entry.getValue().getLocation());
     }
+    log.info("Registered listener [%s]",listener.getListenerId());
     listeners.add(listenerPair);
   }
 }

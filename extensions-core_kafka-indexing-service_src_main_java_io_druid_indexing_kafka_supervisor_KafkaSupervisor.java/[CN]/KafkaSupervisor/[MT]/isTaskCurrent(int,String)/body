@@ -1,0 +1,8 @@
+{
+  Optional<Task> taskOptional=taskStorage.getTask(taskId);
+  if (!taskOptional.isPresent() || !(taskOptional.get() instanceof KafkaIndexTask)) {
+    return false;
+  }
+  String taskSequenceName=((KafkaIndexTask)taskOptional.get()).getIOConfig().getBaseSequenceName();
+  return generateSequenceName(taskGroupId).equals(taskSequenceName);
+}
