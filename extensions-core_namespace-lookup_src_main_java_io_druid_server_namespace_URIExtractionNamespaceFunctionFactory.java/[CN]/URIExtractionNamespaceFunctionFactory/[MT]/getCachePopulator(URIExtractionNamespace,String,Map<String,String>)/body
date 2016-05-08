@@ -12,25 +12,22 @@
         throw new IAE("Cannot load data from location [%s]. Data pulling from [%s] not supported",originalUri,originalUri.getScheme());
       }
       final URIDataPuller puller=(URIDataPuller)pullerRaw;
-      final Pattern versionRegex;
-      final URI uriBase;
+      final URI uri;
       if (doSearch) {
-        uriBase=extractionNamespace.getUriPrefix();
+        final Pattern versionRegex;
         if (extractionNamespace.getFileRegex() != null) {
           versionRegex=Pattern.compile(extractionNamespace.getFileRegex());
         }
  else {
           versionRegex=null;
         }
+        uri=pullerRaw.getLatestVersion(extractionNamespace.getUriPrefix(),versionRegex);
+        if (uri == null) {
+          throw new RuntimeException(new FileNotFoundException(String.format("Could not find match for pattern `%s` in [%s] for %s",versionRegex,originalUri,extractionNamespace)));
+        }
       }
  else {
-        final Path filePath=Paths.get(extractionNamespace.getUri());
-        versionRegex=Pattern.compile(Pattern.quote(filePath.getFileName().toString()));
-        uriBase=filePath.getParent().toUri();
-      }
-      final URI uri=pullerRaw.getLatestVersion(uriBase,versionRegex);
-      if (uri == null) {
-        throw new RuntimeException(new FileNotFoundException(String.format("Could not find match for pattern `%s` in [%s] for %s",versionRegex,originalUri,extractionNamespace)));
+        uri=extractionNamespace.getUri();
       }
       final String uriPath=uri.getPath();
       try {
