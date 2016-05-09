@@ -1,3 +1,12 @@
 {
-  return intervalChunkingQueryRunnerDecorator.decorate(runner,this);
+  return intervalChunkingQueryRunnerDecorator.decorate(new QueryRunner<Result<TimeseriesResultValue>>(){
+    @Override public Sequence<Result<TimeseriesResultValue>> run(    Query<Result<TimeseriesResultValue>> query,    Map<String,Object> responseContext){
+      TimeseriesQuery timeseriesQuery=(TimeseriesQuery)query;
+      if (timeseriesQuery.getDimensionsFilter() != null) {
+        timeseriesQuery=timeseriesQuery.withDimFilter(timeseriesQuery.getDimensionsFilter().optimize());
+      }
+      return runner.run(timeseriesQuery,responseContext);
+    }
+  }
+,this);
 }
