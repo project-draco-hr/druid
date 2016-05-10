@@ -1,10 +1,11 @@
 {
   Preconditions.checkArgument(Preconditions.checkNotNull(columns,"`columns` list required").size() > 1,"Must specify more than one column to have a key value pair");
-  final DelimitedParser delegate=new DelimitedParser(Optional.fromNullable(Strings.isNullOrEmpty(delimiter) ? null : delimiter),Optional.<String>absent());
+  final DelimitedParser delegate=new DelimitedParser(Optional.fromNullable(Strings.emptyToNull(delimiter)),Optional.fromNullable(Strings.emptyToNull(listDelimiter)));
   Preconditions.checkArgument(!(Strings.isNullOrEmpty(keyColumn) ^ Strings.isNullOrEmpty(valueColumn)),"Must specify both `keyColumn` and `valueColumn` or neither `keyColumn` nor `valueColumn`");
   delegate.setFieldNames(columns);
   this.columns=columns;
   this.delimiter=delimiter;
+  this.listDelimiter=listDelimiter;
   this.keyColumn=Strings.isNullOrEmpty(keyColumn) ? columns.get(0) : keyColumn;
   this.valueColumn=Strings.isNullOrEmpty(valueColumn) ? columns.get(1) : valueColumn;
   Preconditions.checkArgument(columns.contains(this.keyColumn),"Column [%s] not found int columns: %s",this.keyColumn,Arrays.toString(columns.toArray()));
