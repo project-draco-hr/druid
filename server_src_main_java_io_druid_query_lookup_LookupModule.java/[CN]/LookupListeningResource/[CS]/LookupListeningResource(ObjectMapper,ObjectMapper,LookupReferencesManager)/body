@@ -8,7 +8,7 @@
       for (      final String name : lookups.keySet()) {
         final LookupExtractorFactory factory=lookups.get(name);
         try {
-          if (!manager.updateIfNew(name,factory)) {
+          if (!manager.updateIfNew(name,factory) && factory.replaces(manager.get(name))) {
             failedUpdates.put(name,factory);
           }
         }
