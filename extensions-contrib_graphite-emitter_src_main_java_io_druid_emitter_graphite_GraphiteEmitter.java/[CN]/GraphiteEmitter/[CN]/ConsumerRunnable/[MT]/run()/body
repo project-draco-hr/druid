@@ -17,6 +17,9 @@
         if (e instanceof InterruptedException) {
           Thread.currentThread().interrupt();
         }
+ else         if (e instanceof SocketException) {
+          pickledGraphite.connect();
+        }
       }
     }
     pickledGraphite.flush();
