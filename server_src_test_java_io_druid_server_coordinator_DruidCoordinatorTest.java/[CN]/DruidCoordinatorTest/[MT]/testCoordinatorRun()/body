@@ -63,7 +63,9 @@
   Assert.assertNotNull(dataSourceMap);
   Assert.assertEquals(1,dataSourceMap.size());
   Assert.assertNotNull(dataSourceMap.get(dataSource));
-  Assert.assertEquals(1L,dataSourceMap.get(dataSource).get());
+  while (dataSourceMap.get(dataSource).get() != 1L) {
+    Thread.sleep(50);
+  }
   coordinator.stop();
   leaderUnannouncerLatch.await();
   Assert.assertFalse(coordinator.isLeader());
