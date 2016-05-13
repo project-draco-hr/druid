@@ -36,7 +36,7 @@
     return new ResourceClosingSequence<>(outerQuery.applyLimit(postAggregate(query,outerQueryResultIndex)),outerQueryResultIndex);
   }
  else {
-    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryHelper.CTX_KEY_SORT_RESULTS,false)),context));
+    final IncrementalIndex index=makeIncrementalIndex(query,runner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryHelper.CTX_KEY_SORT_RESULTS,false,GROUP_BY_MERGE_KEY,false)),context));
     return new ResourceClosingSequence<>(query.applyLimit(postAggregate(query,index)),index);
   }
 }
