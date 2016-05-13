@@ -2,5 +2,11 @@
   ObjectMapper mapper=new DefaultObjectMapper();
   SelectQueryQueryToolChest toolchest=new SelectQueryQueryToolChest(new DefaultObjectMapper(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
   SelectQueryRunnerFactory factory=new SelectQueryRunnerFactory(new SelectQueryQueryToolChest(new DefaultObjectMapper(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new SelectQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
-  return new AggregationTestHelper(mapper,TestHelper.getTestIndexMerger(),TestHelper.getTestIndexIO(),toolchest,factory,tempFolder,jsonModulesToRegister);
+  IndexIO indexIO=new IndexIO(mapper,new ColumnConfig(){
+    @Override public int columnCacheSizeBytes(){
+      return 0;
+    }
+  }
+);
+  return new AggregationTestHelper(mapper,new IndexMerger(mapper,indexIO),indexIO,toolchest,factory,tempFolder,jsonModulesToRegister);
 }
