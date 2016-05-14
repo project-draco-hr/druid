@@ -1,5 +1,12 @@
 {
-  Sequence<Pair<Integer,Integer>> seq=Sequences.limit(new CombiningSequence<>(Sequences.simple(pairs),Ordering.natural().onResultOf(Pair.<Integer,Integer>lhsFn()),new BinaryFn<Pair<Integer,Integer>,Pair<Integer,Integer>,Pair<Integer,Integer>>(){
+  final CountDownLatch closed=new CountDownLatch(1);
+  final Closeable closeable=new Closeable(){
+    @Override public void close() throws IOException {
+      closed.countDown();
+    }
+  }
+;
+  Sequence<Pair<Integer,Integer>> seq=Sequences.limit(new CombiningSequence<>(new ResourceClosingSequence<>(Sequences.simple(pairs),closeable),Ordering.natural().onResultOf(Pair.<Integer,Integer>lhsFn()),new BinaryFn<Pair<Integer,Integer>,Pair<Integer,Integer>,Pair<Integer,Integer>>(){
     @Override public Pair<Integer,Integer> apply(    Pair<Integer,Integer> lhs,    Pair<Integer,Integer> rhs){
       if (lhs == null) {
         return rhs;
@@ -46,4 +53,5 @@
   Assert.assertTrue(yielder.isDone());
   Assert.assertFalse(expectedVals.hasNext());
   yielder.close();
+  Assert.assertTrue("resource closed",closed.await(10000,TimeUnit.MILLISECONDS));
 }
