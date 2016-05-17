@@ -1,0 +1,8 @@
+{
+  final URL[] urls=((URLClassLoader)QueryGranularity.class.getClassLoader()).getURLs();
+  final String className=QueryGranularity.class.getCanonicalName();
+  for (int i=0; i < 1000; ++i) {
+    final ClassLoader loader=new URLClassLoader(urls,null);
+    Assert.assertNotNull(Class.forName(className,true,loader));
+  }
+}

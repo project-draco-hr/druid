@@ -1,5 +1,5 @@
 {
-  CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> strategy=new TopNQueryQueryToolChest(null,null).getCacheStrategy(new TopNQuery(new TableDataSource("dummy"),new DefaultDimensionSpec("test","test"),new NumericTopNMetricSpec("metric1"),3,new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),null,QueryGranularity.ALL,ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("metric1")),null,null));
+  CacheStrategy<Result<TopNResultValue>,Object,TopNQuery> strategy=new TopNQueryQueryToolChest(null,null).getCacheStrategy(new TopNQuery(new TableDataSource("dummy"),new DefaultDimensionSpec("test","test"),new NumericTopNMetricSpec("metric1"),3,new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),null,QueryGranularities.ALL,ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("metric1")),null,null));
   final Result<TopNResultValue> result=new Result<>(new DateTime(123L),new TopNResultValue(Arrays.asList(ImmutableMap.<String,Object>of("test","val1","metric1",2))));
   Object preparedValue=strategy.prepareForCache().apply(result);
   ObjectMapper objectMapper=new DefaultObjectMapper();

@@ -1,8 +1,8 @@
 {
   final List<TestInputRowHolder> rows=Arrays.asList(makeRow(new DateTime("9000-01-01").getMillis()),makeRow(new ParseException("parse error")),null,makeRow(new DateTime().getMillis()));
   ObjectMapper jsonMapper=new DefaultObjectMapper();
-  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
-  schema2=new DataSchema("testV2",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
+  schema=new DataSchema("test",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularities.NONE,null),jsonMapper);
+  schema2=new DataSchema("testV2",null,new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularities.NONE,null),jsonMapper);
   RealtimeIOConfig ioConfig=new RealtimeIOConfig(new FirehoseFactory(){
     @Override public Firehose connect(    InputRowParser parser) throws IOException {
       return new TestFirehose(rows.iterator());
@@ -32,7 +32,7 @@
   realtimeManager2=new RealtimeManager(Arrays.<FireDepartment>asList(new FireDepartment(schema2,ioConfig2,tuningConfig)),null);
   tuningConfig_0=new RealtimeTuningConfig(1,new Period("P1Y"),null,null,null,null,null,new LinearShardSpec(0),null,null,0,0,null,null);
   tuningConfig_1=new RealtimeTuningConfig(1,new Period("P1Y"),null,null,null,null,null,new LinearShardSpec(1),null,null,0,0,null,null);
-  schema3=new DataSchema("testing",null,new AggregatorFactory[]{new CountAggregatorFactory("ignore")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
+  schema3=new DataSchema("testing",null,new AggregatorFactory[]{new CountAggregatorFactory("ignore")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularities.NONE,null),jsonMapper);
   FireDepartment department_0=new FireDepartment(schema3,ioConfig,tuningConfig_0);
   FireDepartment department_1=new FireDepartment(schema3,ioConfig2,tuningConfig_1);
   QueryRunnerFactoryConglomerate conglomerate=new QueryRunnerFactoryConglomerate(){

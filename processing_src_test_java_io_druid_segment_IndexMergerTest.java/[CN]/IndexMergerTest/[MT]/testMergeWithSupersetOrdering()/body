@@ -3,7 +3,7 @@
   IncrementalIndex toPersistB=getSingleDimIndex("dimB",Arrays.asList("1","2","3"));
   IncrementalIndex toPersistBA=getSingleDimIndex("dimB",Arrays.asList("1","2","3"));
   addDimValuesToIndex(toPersistBA,"dimA",Arrays.asList("1","2"));
-  IncrementalIndex toPersistBA2=new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
+  IncrementalIndex toPersistBA2=new OnheapIncrementalIndex(0L,QueryGranularities.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
   toPersistBA2.add(new MapBasedInputRow(1,Arrays.asList("dimB","dimA"),ImmutableMap.<String,Object>of("dimB","1","dimA","")));
   toPersistBA2.add(new MapBasedInputRow(1,Arrays.asList("dimB","dimA"),ImmutableMap.<String,Object>of("dimB","","dimA","1")));
   IncrementalIndex toPersistC=getSingleDimIndex("dimA",Arrays.asList("1","2"));

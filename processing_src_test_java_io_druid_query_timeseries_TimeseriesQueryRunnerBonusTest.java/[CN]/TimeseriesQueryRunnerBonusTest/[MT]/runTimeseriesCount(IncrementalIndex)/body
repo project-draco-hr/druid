@@ -1,7 +1,7 @@
 {
   final QueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
   final QueryRunner<Result<TimeseriesResultValue>> runner=makeQueryRunner(factory,new IncrementalIndexSegment(index,null));
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).descending(descending).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularities.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).descending(descending).build();
   HashMap<String,Object> context=new HashMap<String,Object>();
   return Sequences.toList(runner.run(query,context),Lists.<Result<TimeseriesResultValue>>newArrayList());
 }

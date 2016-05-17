@@ -1,7 +1,7 @@
 {
   Result<TimeseriesResultValue> result1=new Result<TimeseriesResultValue>(currTime,new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",1L,"index",2L)));
   Result<TimeseriesResultValue> result2=new Result<TimeseriesResultValue>(currTime,new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",2L,"index",3L)));
-  Result<TimeseriesResultValue> expected=new Result<TimeseriesResultValue>(new DateTime(QueryGranularity.DAY.truncate(currTime.getMillis())),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",3L,"index",5L)));
-  Result<TimeseriesResultValue> actual=new TimeseriesBinaryFn(QueryGranularity.DAY,aggregatorFactories).apply(result1,result2);
+  Result<TimeseriesResultValue> expected=new Result<TimeseriesResultValue>(new DateTime(QueryGranularities.DAY.truncate(currTime.getMillis())),new TimeseriesResultValue(ImmutableMap.<String,Object>of("rows",3L,"index",5L)));
+  Result<TimeseriesResultValue> actual=new TimeseriesBinaryFn(QueryGranularities.DAY,aggregatorFactories).apply(result1,result2);
   Assert.assertEquals(expected,actual);
 }

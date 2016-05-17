@@ -21,7 +21,7 @@
     queryAggregatorFactories.add(new LongSumAggregatorFactory(String.format("sumResult%s",i),String.format("sumResult%s",i)));
     queryAggregatorFactories.add(new DoubleSumAggregatorFactory(String.format("doubleSumResult%s",i),String.format("doubleSumResult%s",i)));
   }
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(new Interval("2000/2030"))).aggregators(queryAggregatorFactories).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularities.ALL).intervals(ImmutableList.of(new Interval("2000/2030"))).aggregators(queryAggregatorFactories).build();
   final Segment incrementalIndexSegment=new IncrementalIndexSegment(index,null);
   final QueryRunnerFactory factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),new TimeseriesQueryEngine(),QueryRunnerTestHelper.NOOP_QUERYWATCHER);
   final QueryRunner<Result<TimeseriesResultValue>> runner=new FinalizeResultsQueryRunner<Result<TimeseriesResultValue>>(factory.createRunner(incrementalIndexSegment),factory.getToolchest());

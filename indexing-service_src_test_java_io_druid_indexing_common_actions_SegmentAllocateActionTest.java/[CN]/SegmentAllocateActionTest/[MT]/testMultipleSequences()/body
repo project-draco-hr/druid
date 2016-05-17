@@ -1,12 +1,12 @@
 {
   final Task task=new NoopTask(null,0,0,null,null,null);
   taskActionTestKit.getTaskLockbox().add(task);
-  final SegmentIdentifier id1=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",null);
-  final SegmentIdentifier id2=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s2",null);
-  final SegmentIdentifier id3=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",id1.getIdentifierAsString());
-  final SegmentIdentifier id4=allocate(task,THE_DISTANT_FUTURE,QueryGranularity.NONE,Granularity.HOUR,"s1",id3.getIdentifierAsString());
-  final SegmentIdentifier id5=allocate(task,THE_DISTANT_FUTURE,QueryGranularity.NONE,Granularity.HOUR,"s2",id2.getIdentifierAsString());
-  final SegmentIdentifier id6=allocate(task,PARTY_TIME,QueryGranularity.NONE,Granularity.HOUR,"s1",null);
+  final SegmentIdentifier id1=allocate(task,PARTY_TIME,QueryGranularities.NONE,Granularity.HOUR,"s1",null);
+  final SegmentIdentifier id2=allocate(task,PARTY_TIME,QueryGranularities.NONE,Granularity.HOUR,"s2",null);
+  final SegmentIdentifier id3=allocate(task,PARTY_TIME,QueryGranularities.NONE,Granularity.HOUR,"s1",id1.getIdentifierAsString());
+  final SegmentIdentifier id4=allocate(task,THE_DISTANT_FUTURE,QueryGranularities.NONE,Granularity.HOUR,"s1",id3.getIdentifierAsString());
+  final SegmentIdentifier id5=allocate(task,THE_DISTANT_FUTURE,QueryGranularities.NONE,Granularity.HOUR,"s2",id2.getIdentifierAsString());
+  final SegmentIdentifier id6=allocate(task,PARTY_TIME,QueryGranularities.NONE,Granularity.HOUR,"s1",null);
   final TaskLock partyLock=Iterables.getOnlyElement(FluentIterable.from(taskActionTestKit.getTaskLockbox().findLocksForTask(task)).filter(new Predicate<TaskLock>(){
     @Override public boolean apply(    TaskLock input){
       return input.getInterval().contains(PARTY_TIME);

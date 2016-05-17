@@ -4,7 +4,7 @@
   Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:short","blah:thisislong","blah2:thisislong")));
   Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:short","blah2:thisislong")));
   Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(toHits(c,"blah:short","blah:thisislong","blah2:thisislong")));
-  Result<SearchResultValue> actual=new SearchBinaryFn(searchSortSpec,QueryGranularity.ALL,Integer.MAX_VALUE).apply(r1,r2);
+  Result<SearchResultValue> actual=new SearchBinaryFn(searchSortSpec,QueryGranularities.ALL,Integer.MAX_VALUE).apply(r1,r2);
   Assert.assertEquals(expected.getTimestamp(),actual.getTimestamp());
   assertSearchMergeResult(expected.getValue(),actual.getValue());
 }

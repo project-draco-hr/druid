@@ -3,7 +3,7 @@
   Result<Object> same=new Result<Object>(time.plusHours(12),null);
   Result<Object> greater=new Result<Object>(time.plusHours(25),null);
   Result<Object> less=new Result<Object>(time.minusHours(1),null);
-  QueryGranularity day=QueryGranularity.DAY;
+  QueryGranularity day=QueryGranularities.DAY;
   Assert.assertEquals(ResultGranularTimestampComparator.create(day,descending).compare(res,same),0);
   Assert.assertEquals(ResultGranularTimestampComparator.create(day,descending).compare(res,greater),descending ? 1 : -1);
   Assert.assertEquals(ResultGranularTimestampComparator.create(day,descending).compare(res,less),descending ? -1 : 1);

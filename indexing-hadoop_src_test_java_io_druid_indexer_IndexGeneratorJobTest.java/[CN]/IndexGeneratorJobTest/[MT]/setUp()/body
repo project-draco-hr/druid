@@ -16,7 +16,7 @@
  else {
     FileUtils.writeLines(dataFile,data);
   }
-  config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema(datasourceName,mapper.convertValue(inputRowParser,Map.class),aggs,new UniformGranularitySpec(Granularity.DAY,QueryGranularity.NONE,ImmutableList.of(this.interval)),mapper),new HadoopIOConfig(ImmutableMap.copyOf(inputSpec),null,tmpDir.getCanonicalPath()),new HadoopTuningConfig(tmpDir.getCanonicalPath(),null,null,null,null,maxRowsInMemory,false,false,false,false,ImmutableMap.of(JobContext.NUM_REDUCES,"0"),false,useCombiner,null,buildV9Directly,null)));
+  config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema(datasourceName,mapper.convertValue(inputRowParser,Map.class),aggs,new UniformGranularitySpec(Granularity.DAY,QueryGranularities.NONE,ImmutableList.of(this.interval)),mapper),new HadoopIOConfig(ImmutableMap.copyOf(inputSpec),null,tmpDir.getCanonicalPath()),new HadoopTuningConfig(tmpDir.getCanonicalPath(),null,null,null,null,maxRowsInMemory,false,false,false,false,ImmutableMap.of(JobContext.NUM_REDUCES,"0"),false,useCombiner,null,buildV9Directly,null)));
   config.setShardSpecs(loadShardSpecs(partitionType,shardInfoForEachSegment));
   config=HadoopDruidIndexerConfig.fromSpec(config.getSchema());
 }

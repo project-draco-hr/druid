@@ -9,7 +9,7 @@
   if (analyzingSize()) {
     final long start=storageAdapter.getMinTime().getMillis();
     final long end=storageAdapter.getMaxTime().getMillis();
-    final Sequence<Cursor> cursors=storageAdapter.makeCursors(null,new Interval(start,end),QueryGranularity.ALL,false);
+    final Sequence<Cursor> cursors=storageAdapter.makeCursors(null,new Interval(start,end),QueryGranularities.ALL,false);
     size=cursors.accumulate(0L,new Accumulator<Long,Cursor>(){
       @Override public Long accumulate(      Long accumulated,      Cursor cursor){
         DimensionSelector selector=cursor.makeDimensionSelector(new DefaultDimensionSpec(columnName,columnName));

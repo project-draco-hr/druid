@@ -1,13 +1,13 @@
 {
   loadQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
-  Future future=assertQueryable(QueryGranularity.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
+  Future future=assertQueryable(QueryGranularities.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
   waitForTestVerificationAndCleanup(future);
   dropQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
   dropQueryable("test","1",new Interval("2011-04-04/2011-04-05"));
-  future=assertQueryable(QueryGranularity.HOUR,"test",new Interval("2011-04-04/2011-04-04T06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T00/2011-04-04T01")),new Pair<String,Interval>("2",new Interval("2011-04-04T01/2011-04-04T02")),new Pair<String,Interval>("2",new Interval("2011-04-04T02/2011-04-04T03")),new Pair<String,Interval>("2",new Interval("2011-04-04T04/2011-04-04T05")),new Pair<String,Interval>("2",new Interval("2011-04-04T05/2011-04-04T06"))));
+  future=assertQueryable(QueryGranularities.HOUR,"test",new Interval("2011-04-04/2011-04-04T06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T00/2011-04-04T01")),new Pair<String,Interval>("2",new Interval("2011-04-04T01/2011-04-04T02")),new Pair<String,Interval>("2",new Interval("2011-04-04T02/2011-04-04T03")),new Pair<String,Interval>("2",new Interval("2011-04-04T04/2011-04-04T05")),new Pair<String,Interval>("2",new Interval("2011-04-04T05/2011-04-04T06"))));
   waitForTestVerificationAndCleanup(future);
-  future=assertQueryable(QueryGranularity.HOUR,"test",new Interval("2011-04-04/2011-04-04T03"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T00/2011-04-04T01")),new Pair<String,Interval>("2",new Interval("2011-04-04T01/2011-04-04T02")),new Pair<String,Interval>("2",new Interval("2011-04-04T02/2011-04-04T03"))));
+  future=assertQueryable(QueryGranularities.HOUR,"test",new Interval("2011-04-04/2011-04-04T03"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T00/2011-04-04T01")),new Pair<String,Interval>("2",new Interval("2011-04-04T01/2011-04-04T02")),new Pair<String,Interval>("2",new Interval("2011-04-04T02/2011-04-04T03"))));
   waitForTestVerificationAndCleanup(future);
-  future=assertQueryable(QueryGranularity.HOUR,"test",new Interval("2011-04-04T04/2011-04-04T06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T04/2011-04-04T05")),new Pair<String,Interval>("2",new Interval("2011-04-04T05/2011-04-04T06"))));
+  future=assertQueryable(QueryGranularities.HOUR,"test",new Interval("2011-04-04T04/2011-04-04T06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("2",new Interval("2011-04-04T04/2011-04-04T05")),new Pair<String,Interval>("2",new Interval("2011-04-04T05/2011-04-04T06"))));
   waitForTestVerificationAndCleanup(future);
 }

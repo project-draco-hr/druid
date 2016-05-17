@@ -2,8 +2,8 @@
   final File tmpDir=Files.createTempDir();
   tmpDir.deleteOnExit();
   ObjectMapper jsonMapper=new DefaultObjectMapper();
-  schema=new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(null,null,null))),Map.class),new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularity.NONE,null),jsonMapper);
-  schema2=new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(null,null,null))),Map.class),new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.YEAR,QueryGranularity.NONE,null),jsonMapper);
+  schema=new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(null,null,null))),Map.class),new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.HOUR,QueryGranularities.NONE,null),jsonMapper);
+  schema2=new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(null,null,null))),Map.class),new AggregatorFactory[]{new CountAggregatorFactory("rows")},new UniformGranularitySpec(Granularity.YEAR,QueryGranularities.NONE,null),jsonMapper);
   announcer=EasyMock.createMock(DataSegmentAnnouncer.class);
   announcer.announceSegment(EasyMock.<DataSegment>anyObject());
   EasyMock.expectLastCall().anyTimes();

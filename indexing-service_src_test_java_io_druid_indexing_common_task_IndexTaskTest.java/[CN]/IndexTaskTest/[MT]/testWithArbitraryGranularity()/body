@@ -6,7 +6,7 @@
   writer.println("2014-01-01T01:00:20Z,b,1");
   writer.println("2014-01-01T02:00:30Z,c,1");
   writer.close();
-  IndexTask indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new CSVParseSpec(new TimestampSpec("ts","auto",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("ts")),Lists.<String>newArrayList(),Lists.<SpatialDimensionSchema>newArrayList()),null,Arrays.asList("ts","dim","val"))),Map.class),new AggregatorFactory[]{new LongSumAggregatorFactory("val","val")},new ArbitraryGranularitySpec(QueryGranularity.MINUTE,Arrays.asList(new Interval("2014/2015"))),jsonMapper),new IndexTask.IndexIOConfig(new LocalFirehoseFactory(tmpDir,"druid*",null)),null),jsonMapper,null);
+  IndexTask indexTask=new IndexTask(null,null,new IndexTask.IndexIngestionSpec(new DataSchema("test",jsonMapper.convertValue(new StringInputRowParser(new CSVParseSpec(new TimestampSpec("ts","auto",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(Arrays.asList("ts")),Lists.<String>newArrayList(),Lists.<SpatialDimensionSchema>newArrayList()),null,Arrays.asList("ts","dim","val"))),Map.class),new AggregatorFactory[]{new LongSumAggregatorFactory("val","val")},new ArbitraryGranularitySpec(QueryGranularities.MINUTE,Arrays.asList(new Interval("2014/2015"))),jsonMapper),new IndexTask.IndexIOConfig(new LocalFirehoseFactory(tmpDir,"druid*",null)),null),jsonMapper,null);
   List<DataSegment> segments=runTask(indexTask);
   Assert.assertEquals(1,segments.size());
 }

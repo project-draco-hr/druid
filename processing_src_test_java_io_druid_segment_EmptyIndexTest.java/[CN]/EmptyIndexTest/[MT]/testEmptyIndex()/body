@@ -7,7 +7,7 @@
     throw new IllegalStateException("tmp mkdir failed");
   }
   tmpDir.deleteOnExit();
-  IncrementalIndex emptyIndex=new OnheapIncrementalIndex(0,QueryGranularity.NONE,new AggregatorFactory[0],1000);
+  IncrementalIndex emptyIndex=new OnheapIncrementalIndex(0,QueryGranularities.NONE,new AggregatorFactory[0],1000);
   IncrementalIndexAdapter emptyIndexAdapter=new IncrementalIndexAdapter(new Interval("2012-08-01/P3D"),emptyIndex,new ConciseBitmapFactory());
   TestHelper.getTestIndexMerger().merge(Lists.<IndexableAdapter>newArrayList(emptyIndexAdapter),new AggregatorFactory[0],tmpDir,new IndexSpec());
   QueryableIndex emptyQueryableIndex=TestHelper.getTestIndexIO().loadIndex(tmpDir);

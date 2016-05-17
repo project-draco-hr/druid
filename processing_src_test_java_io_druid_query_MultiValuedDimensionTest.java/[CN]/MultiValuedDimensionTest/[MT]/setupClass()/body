@@ -1,5 +1,5 @@
 {
-  incrementalIndex=new OnheapIncrementalIndex(0,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},true,true,true,5000);
+  incrementalIndex=new OnheapIncrementalIndex(0,QueryGranularities.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},true,true,true,5000);
   StringInputRowParser parser=new StringInputRowParser(new CSVParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("product","tags")),null,null),"\t",ImmutableList.of("timestamp","product","tags")),"UTF-8");
   String[] rows=new String[]{"2011-01-12T00:00:00.000Z,product_1,t1\tt2\tt3","2011-01-13T00:00:00.000Z,product_2,t3\tt4\tt5","2011-01-14T00:00:00.000Z,product_3,t5\tt6\tt7"};
   for (  String row : rows) {

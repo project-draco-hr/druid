@@ -11,7 +11,7 @@
   final Supplier<GroupByQueryConfig> configSupplier=Suppliers.ofInstance(config);
   final GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,pool);
   final GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,QueryRunnerTestHelper.NOOP_QUERYWATCHER,configSupplier,new GroupByQueryQueryToolChest(configSupplier,mapper,engine,pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()),pool);
-  IncrementalIndex index=new OnheapIncrementalIndex(0,QueryGranularity.SECOND,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},1000);
+  IncrementalIndex index=new OnheapIncrementalIndex(0,QueryGranularities.SECOND,new AggregatorFactory[]{new CountAggregatorFactory("cnt")},1000);
   String visitor_id="visitor_id";
   String client_type="client_type";
   long timestamp=System.currentTimeMillis();

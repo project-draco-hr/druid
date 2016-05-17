@@ -1,5 +1,5 @@
 {
-  QueryGranularity gran=QueryGranularity.DAY;
+  QueryGranularity gran=QueryGranularities.DAY;
   TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(gran).intervals(QueryRunnerTestHelper.fullOnInterval).aggregators(Arrays.asList(QueryRunnerTestHelper.rowsCount,QueryRunnerTestHelper.indexDoubleSum,QueryRunnerTestHelper.qualityUniques)).postAggregators(Arrays.<PostAggregator>asList(QueryRunnerTestHelper.addRowsIndexConstant)).descending(descending).build();
   Iterable<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,CONTEXT),Lists.<Result<TimeseriesResultValue>>newArrayList());
   final String[] expectedIndex=descending ? QueryRunnerTestHelper.expectedFullOnIndexValuesDesc : QueryRunnerTestHelper.expectedFullOnIndexValues;

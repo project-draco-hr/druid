@@ -23,7 +23,7 @@ synchronized (log) {
       }
       final long timestamp=new DateTime(event.get(TIMESTAMP)).getMillis();
       if (theIndex == null) {
-        theIndex=new OnheapIncrementalIndex(timestamp,QueryGranularity.MINUTE,METRIC_AGGS,1000);
+        theIndex=new OnheapIncrementalIndex(timestamp,QueryGranularities.MINUTE,METRIC_AGGS,1000);
       }
       final List<String> dims=Lists.newArrayList();
       for (      final Map.Entry<String,Object> val : event.entrySet()) {

@@ -2,7 +2,7 @@
   objectMapper=new DefaultObjectMapper();
   objectMapper.registerSubtypes(LinearShardSpec.class);
   final Map<String,Object> parserMap=objectMapper.convertValue(new MapInputRowParser(new JSONParseSpec(new TimestampSpec("ts","auto",null),new DimensionsSpec(null,null,null))),Map.class);
-  schema=new DataSchema(DATASOURCE,parserMap,new AggregatorFactory[]{new CountAggregatorFactory("count"),new LongSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.MINUTE,QueryGranularity.NONE,null),objectMapper);
+  schema=new DataSchema(DATASOURCE,parserMap,new AggregatorFactory[]{new CountAggregatorFactory("count"),new LongSumAggregatorFactory("met","met")},new UniformGranularitySpec(Granularity.MINUTE,QueryGranularities.NONE,null),objectMapper);
   tuningConfig=new RealtimeTuningConfig(maxRowsInMemory,null,null,basePersistDirectory,null,null,null,null,null,null,0,0,null,null);
   metrics=new FireDepartmentMetrics();
   queryExecutor=Execs.singleThreaded("queryExecutor(%d)");

@@ -67,7 +67,7 @@
  else {
     dimsToSearch=dimensions;
   }
-  final Sequence<Cursor> cursors=adapter.makeCursors(filter,segment.getDataInterval(),QueryGranularity.ALL,descending);
+  final Sequence<Cursor> cursors=adapter.makeCursors(filter,segment.getDataInterval(),QueryGranularities.ALL,descending);
   final TreeMap<SearchHit,MutableInt> retVal=cursors.accumulate(Maps.<SearchHit,SearchHit,MutableInt>newTreeMap(query.getSort().getComparator()),new Accumulator<TreeMap<SearchHit,MutableInt>,Cursor>(){
     @Override public TreeMap<SearchHit,MutableInt> accumulate(    TreeMap<SearchHit,MutableInt> set,    Cursor cursor){
       if (set.size() >= limit) {

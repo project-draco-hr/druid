@@ -2,7 +2,7 @@
   final int taskCount=30;
   final int concurrentThreads=3;
   final int elementsPerThread=1 << 15;
-  final OnheapIncrementalIndex incrementalIndex=this.incrementalIndex.getConstructor(Long.TYPE,QueryGranularity.class,AggregatorFactory[].class,Integer.TYPE).newInstance(0,QueryGranularity.NONE,factories,elementsPerThread * taskCount);
+  final OnheapIncrementalIndex incrementalIndex=this.incrementalIndex.getConstructor(Long.TYPE,QueryGranularity.class,AggregatorFactory[].class,Integer.TYPE).newInstance(0,QueryGranularities.NONE,factories,elementsPerThread * taskCount);
   final ArrayList<AggregatorFactory> queryAggregatorFactories=new ArrayList<>(dimensionCount + 1);
   queryAggregatorFactories.add(new CountAggregatorFactory("rows"));
   for (int i=0; i < dimensionCount; ++i) {
@@ -40,7 +40,7 @@
     queryFutures.add(queryExecutor.submit(new Runnable(){
       @Override public void run(){
         QueryRunner<Result<TimeseriesResultValue>> runner=new FinalizeResultsQueryRunner<Result<TimeseriesResultValue>>(factory.createRunner(incrementalIndexSegment),factory.getToolchest());
-        TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(queryInterval)).aggregators(queryAggregatorFactories).build();
+        TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularities.ALL).intervals(ImmutableList.of(queryInterval)).aggregators(queryAggregatorFactories).build();
         Map<String,Object> context=new HashMap<String,Object>();
         for (        Result<TimeseriesResultValue> result : Sequences.toList(runner.run(query,context),new LinkedList<Result<TimeseriesResultValue>>())) {
           if (someoneRan.get()) {
@@ -61,7 +61,7 @@
   queryExecutor.shutdown();
   indexExecutor.shutdown();
   QueryRunner<Result<TimeseriesResultValue>> runner=new FinalizeResultsQueryRunner<Result<TimeseriesResultValue>>(factory.createRunner(incrementalIndexSegment),factory.getToolchest());
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(queryInterval)).aggregators(queryAggregatorFactories).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("xxx").granularity(QueryGranularities.ALL).intervals(ImmutableList.of(queryInterval)).aggregators(queryAggregatorFactories).build();
   Map<String,Object> context=new HashMap<String,Object>();
   List<Result<TimeseriesResultValue>> results=Sequences.toList(runner.run(query,context),new LinkedList<Result<TimeseriesResultValue>>());
   final int expectedVal=elementsPerThread * taskCount;

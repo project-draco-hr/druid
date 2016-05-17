@@ -6,7 +6,7 @@
     qi=indexIO.loadIndex(segmentDir);
     StorageAdapter sa=new QueryableIndexStorageAdapter(qi);
     WindowedStorageAdapter wsa=new WindowedStorageAdapter(sa,sa.getInterval());
-    IngestSegmentFirehose firehose=new IngestSegmentFirehose(ImmutableList.of(wsa,wsa),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),null,QueryGranularity.NONE);
+    IngestSegmentFirehose firehose=new IngestSegmentFirehose(ImmutableList.of(wsa,wsa),ImmutableList.of("host"),ImmutableList.of("visited_sum","unique_hosts"),null,QueryGranularities.NONE);
     int count=0;
     while (firehose.hasMore()) {
       firehose.nextRow();

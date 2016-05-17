@@ -16,7 +16,7 @@
   }
 ,new SpecificSegmentSpec(descriptor));
   final Map<String,Object> responseContext=Maps.newHashMap();
-  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("foo").granularity(QueryGranularity.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).build();
+  TimeseriesQuery query=Druids.newTimeseriesQueryBuilder().dataSource("foo").granularity(QueryGranularities.ALL).intervals(ImmutableList.of(new Interval("2012-01-01T00:00:00Z/P1D"))).aggregators(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("rows"))).build();
   Sequence results=queryRunner.run(query,responseContext);
   Sequences.toList(results,Lists.newArrayList());
   Object missingSegments=responseContext.get(Result.MISSING_SEGMENTS_KEY);

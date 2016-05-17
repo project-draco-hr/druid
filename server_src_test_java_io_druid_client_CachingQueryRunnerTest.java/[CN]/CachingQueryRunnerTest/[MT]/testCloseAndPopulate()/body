@@ -1,7 +1,7 @@
 {
   List<Result> expectedRes=makeTopNResults(false,objects);
   List<Result> expectedCacheRes=makeTopNResults(true,objects);
-  TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(AllGranularity.ALL);
+  TopNQueryBuilder builder=new TopNQueryBuilder().dataSource("ds").dimension("top_dim").metric("imps").threshold(3).intervals("2011-01-05/2011-01-10").aggregators(AGGS).granularity(QueryGranularities.ALL);
   QueryToolChest toolchest=new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
   testCloseAndPopulate(expectedRes,expectedCacheRes,builder.build(),toolchest);
   testUseCache(expectedCacheRes,builder.build(),toolchest);

@@ -3,7 +3,7 @@
   log.info("Realtime loading resource[%s]",resource);
   String filename=resource.getFile();
   log.info("Realtime loading index file[%s]",filename);
-  final IncrementalIndex retVal=new OnheapIncrementalIndex(new DateTime("2011-01-12T00:00:00.000Z").getMillis(),QueryGranularity.MINUTE,aggs,1000);
+  final IncrementalIndex retVal=new OnheapIncrementalIndex(new DateTime("2011-01-12T00:00:00.000Z").getMillis(),QueryGranularities.MINUTE,aggs,1000);
   try {
     final List<Object> events=jsonMapper.readValue(new File(filename),List.class);
     for (    Object obj : events) {

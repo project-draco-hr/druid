@@ -1,8 +1,8 @@
 {
-  IncrementalIndex toPersistA=new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
+  IncrementalIndex toPersistA=new OnheapIncrementalIndex(0L,QueryGranularities.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
   toPersistA.add(new MapBasedInputRow(1,Arrays.asList("d1","d2","d3","d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d1","","d2","","d3","310","d7","","d9","910")));
   toPersistA.add(new MapBasedInputRow(2,Arrays.asList("d1","d2","d3","d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d2","210","d3","311","d7","710","d8","810","d9","911")));
-  IncrementalIndex toPersistB=new OnheapIncrementalIndex(0L,QueryGranularity.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
+  IncrementalIndex toPersistB=new OnheapIncrementalIndex(0L,QueryGranularities.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
   toPersistB.add(new MapBasedInputRow(3,Arrays.asList("d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d5","520","d6","620","d7","720","d8","820","d9","920")));
   toPersistB.add(new MapBasedInputRow(4,Arrays.asList("d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d5","","d6","621","d7","","d8","821","d9","921")));
   final File tmpDirA=temporaryFolder.newFolder();

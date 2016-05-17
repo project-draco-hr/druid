@@ -1,5 +1,5 @@
 {
-  CacheStrategy<Result<TimeseriesResultValue>,Object,TimeseriesQuery> strategy=new TimeseriesQueryQueryToolChest(null).getCacheStrategy(new TimeseriesQuery(new TableDataSource("dummy"),new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),descending,null,QueryGranularity.ALL,ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("metric1")),null,null));
+  CacheStrategy<Result<TimeseriesResultValue>,Object,TimeseriesQuery> strategy=new TimeseriesQueryQueryToolChest(null).getCacheStrategy(new TimeseriesQuery(new TableDataSource("dummy"),new MultipleIntervalSegmentSpec(ImmutableList.of(new Interval("2015-01-01/2015-01-02"))),descending,null,QueryGranularities.ALL,ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("metric1")),null,null));
   final Result<TimeseriesResultValue> result=new Result<>(new DateTime(123L),new TimeseriesResultValue(ImmutableMap.<String,Object>of("metric1",2)));
   Object preparedValue=strategy.prepareForCache().apply(result);
   ObjectMapper objectMapper=new DefaultObjectMapper();

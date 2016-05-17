@@ -2,6 +2,6 @@
   Map<String,Object> parser=jsonMapper.convertValue(new StringInputRowParser(new JSONParseSpec(new TimestampSpec("time","auto",null),new DimensionsSpec(DimensionsSpec.getDefaultSchemas(ImmutableList.of("time","dimA","dimB","metric1")),ImmutableList.of("dimC"),null))),new TypeReference<Map<String,Object>>(){
   }
 );
-  DataSchema schema=new DataSchema("test",parser,new AggregatorFactory[]{new DoubleSumAggregatorFactory("metric1","col1"),new DoubleSumAggregatorFactory("metric2","col2")},new ArbitraryGranularitySpec(QueryGranularity.DAY,ImmutableList.of(Interval.parse("2014/2015"))),jsonMapper);
+  DataSchema schema=new DataSchema("test",parser,new AggregatorFactory[]{new DoubleSumAggregatorFactory("metric1","col1"),new DoubleSumAggregatorFactory("metric2","col2")},new ArbitraryGranularitySpec(QueryGranularities.DAY,ImmutableList.of(Interval.parse("2014/2015"))),jsonMapper);
   schema.getParser();
 }

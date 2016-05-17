@@ -1,7 +1,7 @@
 {
   GroupByQuery.Builder builder=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setInterval("2011-04-02/2011-04-04").setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(new PeriodGranularity(new Period("P1M"),null,null));
   final GroupByQuery fullQuery=builder.build();
-  final GroupByQuery allGranQuery=builder.copy().setGranularity(QueryGranularity.ALL).build();
+  final GroupByQuery allGranQuery=builder.copy().setGranularity(QueryGranularities.ALL).build();
   QueryRunner mergedRunner=factory.getToolchest().mergeResults(new QueryRunner<Row>(){
     @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
       final Query query1=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-02/2011-04-03"))));

@@ -3,7 +3,7 @@
   final HeapMemoryTaskStorage ts=new HeapMemoryTaskStorage(new TaskStorageConfig(null){
   }
 );
-  final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withQueryGranularity(QueryGranularity.NONE).withMinTimestamp(JodaUtils.MIN_INSTANT).withDimensionsSpec(ROW_PARSER).withMetrics(new AggregatorFactory[]{new LongSumAggregatorFactory(METRIC_LONG_NAME,DIM_LONG_NAME),new DoubleSumAggregatorFactory(METRIC_FLOAT_NAME,DIM_FLOAT_NAME)}).build();
+  final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withQueryGranularity(QueryGranularities.NONE).withMinTimestamp(JodaUtils.MIN_INSTANT).withDimensionsSpec(ROW_PARSER).withMetrics(new AggregatorFactory[]{new LongSumAggregatorFactory(METRIC_LONG_NAME,DIM_LONG_NAME),new DoubleSumAggregatorFactory(METRIC_FLOAT_NAME,DIM_FLOAT_NAME)}).build();
   final OnheapIncrementalIndex index=new OnheapIncrementalIndex(schema,true,MAX_ROWS * MAX_SHARD_NUMBER);
   for (Integer i=0; i < MAX_ROWS; ++i) {
     index.add(ROW_PARSER.parse(buildRow(i.longValue())));

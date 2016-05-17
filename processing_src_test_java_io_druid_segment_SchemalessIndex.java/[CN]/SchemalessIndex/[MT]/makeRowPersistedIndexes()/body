@@ -12,7 +12,7 @@ synchronized (log) {
             dims.add(entry.getKey());
           }
         }
-        final IncrementalIndex rowIndex=new OnheapIncrementalIndex(timestamp,QueryGranularity.MINUTE,METRIC_AGGS,1000);
+        final IncrementalIndex rowIndex=new OnheapIncrementalIndex(timestamp,QueryGranularities.MINUTE,METRIC_AGGS,1000);
         rowIndex.add(new MapBasedInputRow(timestamp,dims,event));
         File tmpFile=File.createTempFile("billy","yay");
         tmpFile.delete();

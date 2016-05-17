@@ -1,6 +1,6 @@
 {
   loadQueryable("test","3",new Interval("2011-04-04/2011-04-05"));
-  Future future=assertQueryable(QueryGranularity.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
+  Future future=assertQueryable(QueryGranularities.DAY,"test",new Interval("2011-04-04/2011-04-06"),ImmutableList.<Pair<String,Interval>>of(new Pair<String,Interval>("3",new Interval("2011-04-04/2011-04-05"))));
   queryNotifyLatch.await(1000,TimeUnit.MILLISECONDS);
   Assert.assertEquals(1,factory.getSegmentReferences().size());
   for (  ReferenceCountingSegment referenceCountingSegment : factory.getSegmentReferences()) {
