@@ -1,0 +1,8 @@
+{
+  final JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  properties.put(propertyBase + ".lookupTier","");
+  final JsonConfigProvider<LookupListeningAnnouncerConfig> configProvider=JsonConfigProvider.of(propertyBase,LookupListeningAnnouncerConfig.class);
+  configProvider.inject(properties,configurator);
+  final LookupListeningAnnouncerConfig config=configProvider.get().get();
+  config.getLookupTier();
+}

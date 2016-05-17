@@ -2,6 +2,7 @@
   JsonConfigProvider.bind(binder,"druid.monitoring",DruidMonitorSchedulerConfig.class);
   JsonConfigProvider.bind(binder,"druid.monitoring",MonitorsConfig.class);
   DruidBinders.metricMonitorBinder(binder);
+  binder.bind(DataSourceTaskIdHolder.class).in(LazySingleton.class);
   binder.bind(EventReceiverFirehoseRegister.class).in(LazySingleton.class);
   binder.bind(ExecutorServiceMonitor.class).in(LazySingleton.class);
   binder.bind(Key.get(MonitorScheduler.class,Names.named("ForTheEagerness"))).to(MonitorScheduler.class).asEagerSingleton();

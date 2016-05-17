@@ -1,0 +1,7 @@
+{
+  final JsonConfigurator configurator=injector.getBinding(JsonConfigurator.class).getProvider().get();
+  final JsonConfigProvider<LookupListeningAnnouncerConfig> configProvider=JsonConfigProvider.of(propertyBase,LookupListeningAnnouncerConfig.class);
+  configProvider.inject(properties,configurator);
+  final LookupListeningAnnouncerConfig config=configProvider.get().get();
+  Assert.assertEquals(LookupListeningAnnouncerConfig.DEFAULT_TIER,config.getLookupTier());
+}
