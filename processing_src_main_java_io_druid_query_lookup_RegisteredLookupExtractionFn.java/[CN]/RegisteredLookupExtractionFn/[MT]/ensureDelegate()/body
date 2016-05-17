@@ -1,0 +1,10 @@
+{
+  if (null == delegate) {
+synchronized (delegateLock) {
+      if (null == delegate) {
+        delegate=new LookupExtractionFn(Preconditions.checkNotNull(manager.get(getLookup()),"Lookup [%s] not found",getLookup()).get(),isRetainMissingValue(),getReplaceMissingValueWith(),isInjective(),isOptimize());
+      }
+    }
+  }
+  return delegate;
+}

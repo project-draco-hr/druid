@@ -6,8 +6,17 @@
     return false;
   }
   RegisteredLookupExtractionFn that=(RegisteredLookupExtractionFn)o;
-  if (!delegate.equals(that.delegate)) {
+  if (isRetainMissingValue() != that.isRetainMissingValue()) {
     return false;
   }
-  return name.equals(that.name);
+  if (isInjective() != that.isInjective()) {
+    return false;
+  }
+  if (isOptimize() != that.isOptimize()) {
+    return false;
+  }
+  if (!getLookup().equals(that.getLookup())) {
+    return false;
+  }
+  return getReplaceMissingValueWith() != null ? getReplaceMissingValueWith().equals(that.getReplaceMissingValueWith()) : that.getReplaceMissingValueWith() == null;
 }

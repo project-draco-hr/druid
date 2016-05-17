@@ -1,5 +1,8 @@
 {
-  int result=delegate.hashCode();
-  result=31 * result + name.hashCode();
+  int result=getLookup().hashCode();
+  result=31 * result + (isRetainMissingValue() ? 1 : 0);
+  result=31 * result + (getReplaceMissingValueWith() != null ? getReplaceMissingValueWith().hashCode() : 0);
+  result=31 * result + (isInjective() ? 1 : 0);
+  result=31 * result + (isOptimize() ? 1 : 0);
   return result;
 }

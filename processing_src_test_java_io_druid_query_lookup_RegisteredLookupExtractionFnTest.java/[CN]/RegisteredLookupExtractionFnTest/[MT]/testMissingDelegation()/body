@@ -2,9 +2,9 @@
   final LookupReferencesManager manager=EasyMock.createStrictMock(LookupReferencesManager.class);
   EasyMock.expect(manager.get(EasyMock.eq(LOOKUP_NAME))).andReturn(null).once();
   EasyMock.replay(manager);
-  expectedException.expectMessage("lookup [some lookup] not found");
+  expectedException.expectMessage("Lookup [some lookup] not found");
   try {
-    RegisteredLookupExtractionFn.create(manager,LOOKUP_NAME,true,null,true,false);
+    new RegisteredLookupExtractionFn(manager,LOOKUP_NAME,true,null,true,false).apply("foo");
   }
   finally {
     EasyMock.verify(manager);
