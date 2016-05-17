@@ -4,15 +4,9 @@
     if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
       return Double.POSITIVE_INFINITY;
     }
-    double cost=0f;
-    for (    DataSegment segment : server.getServer().getSegments().values()) {
-      if (!proposalSegment.equals(segment)) {
-        cost+=computeJointSegmentCosts(proposalSegment,segment);
-      }
-    }
-    for (    DataSegment segment : server.getPeon().getSegmentsToLoad()) {
-      cost+=computeJointSegmentCosts(proposalSegment,segment);
-    }
+    double cost=0d;
+    cost+=computeJointSegmentsCost(proposalSegment,Iterables.filter(server.getServer().getSegments().values(),Predicates.not(Predicates.equalTo(proposalSegment))));
+    cost+=computeJointSegmentsCost(proposalSegment,server.getPeon().getSegmentsToLoad());
     return cost;
   }
   return Double.POSITIVE_INFINITY;

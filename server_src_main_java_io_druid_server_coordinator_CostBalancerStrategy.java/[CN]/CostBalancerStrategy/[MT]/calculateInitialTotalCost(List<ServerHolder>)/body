@@ -1,11 +1,9 @@
 {
   double cost=0;
   for (  ServerHolder server : serverHolders) {
-    DataSegment[] segments=server.getServer().getSegments().values().toArray(new DataSegment[]{});
-    for (int i=0; i < segments.length; ++i) {
-      for (int j=i; j < segments.length; ++j) {
-        cost+=computeJointSegmentCosts(segments[i],segments[j]);
-      }
+    Iterable<DataSegment> segments=server.getServer().getSegments().values();
+    for (    DataSegment s : segments) {
+      cost+=computeJointSegmentsCost(s,segments);
     }
   }
   return cost;

@@ -1,0 +1,6 @@
+{
+  DateTime referenceTime=new DateTime("2014-01-01T00:00:00");
+  CostBalancerStrategy strategy=new CostBalancerStrategy(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(4)));
+  double segmentCost=strategy.computeJointSegmentsCost(getSegment(100,"DUMMY",new Interval(referenceTime,referenceTime.plusHours(1))),getSegment(101,"DUMMY",new Interval(referenceTime.minusHours(2),referenceTime.minusHours(2).plusHours(1))));
+  Assert.assertEquals(CostBalancerStrategy.INV_LAMBDA_SQUARE * CostBalancerStrategy.intervalCost(1 * CostBalancerStrategy.LAMBDA,-2 * CostBalancerStrategy.LAMBDA,-1 * CostBalancerStrategy.LAMBDA) * 2,segmentCost,1e-6);
+}

@@ -1,0 +1,31 @@
+{
+  if (x1 == 0 || y1 == y0) {
+    return 0;
+  }
+  if (y0 < 0) {
+    double tmp=x1;
+    x1=y1 - y0;
+    y1=tmp - y0;
+    y0=-y0;
+  }
+  if (y0 < x1) {
+    final double beta;
+    final double gamma;
+    if (y1 <= x1) {
+      beta=y1 - y0;
+      gamma=x1 - y0;
+    }
+ else {
+      beta=x1 - y0;
+      gamma=y1 - y0;
+    }
+    return intervalCost(y0,y0,y1) + intervalCost(beta,beta,gamma) + 2 * (beta + FastMath.exp(-beta) - 1);
+  }
+ else {
+    final double exy0=FastMath.exp(x1 - y0);
+    final double exy1=FastMath.exp(x1 - y1);
+    final double ey0=FastMath.exp(0f - y0);
+    final double ey1=FastMath.exp(0f - y1);
+    return (ey1 - ey0) - (exy1 - exy0);
+  }
+}

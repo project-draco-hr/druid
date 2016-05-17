@@ -1,0 +1,10 @@
+{
+  final Interval intervalA=segmentA.getInterval();
+  final Interval intervalB=segmentB.getInterval();
+  final double t0=intervalA.getStartMillis();
+  final double t1=(intervalA.getEndMillis() - t0) / MILLIS_FACTOR;
+  final double start=(intervalB.getStartMillis() - t0) / MILLIS_FACTOR;
+  final double end=(intervalB.getEndMillis() - t0) / MILLIS_FACTOR;
+  final double multiplier=segmentA.getDataSource().equals(segmentB.getDataSource()) ? 2.0 : 1.0;
+  return INV_LAMBDA_SQUARE * intervalCost(t1,start,end) * multiplier;
+}
