@@ -31,13 +31,14 @@
       final Sink theSink=chunk.getObject();
       return new SpecificSegmentQueryRunner<>(new MetricsEmittingQueryRunner<>(emitter,builderFn,new BySegmentQueryRunner<T>(theSink.getSegment().getIdentifier(),descriptor.getInterval().getStart(),factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        final FireHydrant hydrant){
-          if (skipIncrementalSegment && !hydrant.hasSwapped()) {
+          final boolean hydrantDefinitelySwapped=hydrant.hasSwapped();
+          if (skipIncrementalSegment && !hydrantDefinitelySwapped) {
             return new NoopQueryRunner<>();
           }
           final Pair<Segment,Closeable> segment=hydrant.getAndIncrementSegment();
           try {
             QueryRunner<T> baseRunner=QueryRunnerHelper.makeClosingQueryRunner(factory.createRunner(segment.lhs),segment.rhs);
-            if (hydrant.hasSwapped() && cache.isLocal()) {
+            if (hydrantDefinitelySwapped && cache.isLocal()) {
               return new CachingQueryRunner<>(makeHydrantCacheIdentifier(hydrant,segment.lhs),descriptor,objectMapper,cache,toolchest,baseRunner,MoreExecutors.sameThreadExecutor(),cacheConfig);
             }
  else {

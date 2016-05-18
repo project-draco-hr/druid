@@ -24,13 +24,14 @@
       final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),theSink.getSegment().getVersion(),theSink.getSegment().getShardSpec().getPartitionNum());
       return new SpecificSegmentQueryRunner<T>(new MetricsEmittingQueryRunner<T>(emitter,builderFn,factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
         @Override public QueryRunner<T> apply(        FireHydrant input){
-          if (skipIncrementalSegment && !input.hasSwapped()) {
+          final boolean hydrantDefinitelySwapped=input.hasSwapped();
+          if (skipIncrementalSegment && !hydrantDefinitelySwapped) {
             return new NoopQueryRunner<T>();
           }
           final Pair<Segment,Closeable> segment=input.getAndIncrementSegment();
           try {
             QueryRunner<T> baseRunner=QueryRunnerHelper.makeClosingQueryRunner(factory.createRunner(segment.lhs),segment.rhs);
-            if (input.hasSwapped() && cache.isLocal()) {
+            if (hydrantDefinitelySwapped && cache.isLocal()) {
               return new CachingQueryRunner<>(makeHydrantIdentifier(input,segment.lhs),descriptor,objectMapper,cache,toolchest,baseRunner,MoreExecutors.sameThreadExecutor(),cacheConfig);
             }
  else {
