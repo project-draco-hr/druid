@@ -12,9 +12,11 @@
       }
     }
 )));
+    Map<ShardSpec,HadoopyShardSpec> innerHadoopShardSpecLookup=Maps.newHashMap();
     for (    HadoopyShardSpec hadoopyShardSpec : entry.getValue()) {
-      hadoopShardSpecLookup.put(hadoopyShardSpec.getActualSpec(),hadoopyShardSpec);
+      innerHadoopShardSpecLookup.put(hadoopyShardSpec.getActualSpec(),hadoopyShardSpec);
     }
+    hadoopShardSpecLookup.put(entry.getKey(),innerHadoopShardSpecLookup);
   }
   this.rollupGran=spec.getDataSchema().getGranularitySpec().getQueryGranularity();
 }
