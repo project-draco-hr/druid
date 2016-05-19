@@ -1,0 +1,24 @@
+{
+  if (extractionFn instanceof LookupExtractionFn && ((LookupExtractionFn)extractionFn).isOptimize()) {
+    LookupExtractionFn exFn=(LookupExtractionFn)extractionFn;
+    LookupExtractor lookup=exFn.getLookup();
+    final List<String> keys=new ArrayList<>();
+    for (    String value : values) {
+      final String convertedValue=Strings.emptyToNull(value);
+      if (!exFn.isRetainMissingValue() && Objects.equals(convertedValue,exFn.getReplaceMissingValueWith())) {
+        return this;
+      }
+      keys.addAll(lookup.unapply(convertedValue));
+      if (exFn.isRetainMissingValue() && lookup.apply(convertedValue) == null) {
+        keys.add(convertedValue);
+      }
+    }
+    if (keys.isEmpty()) {
+      return this;
+    }
+ else {
+      return new InDimFilter(dimension,keys,null);
+    }
+  }
+  return this;
+}

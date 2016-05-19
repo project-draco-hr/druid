@@ -1,3 +1,7 @@
 {
-  return this;
+  InDimFilter inFilter=optimizeLookup();
+  if (inFilter.values.size() == 1) {
+    return new SelectorDimFilter(inFilter.dimension,inFilter.values.first(),inFilter.getExtractionFn());
+  }
+  return inFilter;
 }

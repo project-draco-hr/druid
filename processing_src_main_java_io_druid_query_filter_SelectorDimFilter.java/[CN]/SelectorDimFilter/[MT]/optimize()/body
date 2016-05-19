@@ -1,26 +1,3 @@
 {
-  if (this.getExtractionFn() instanceof LookupExtractionFn && ((LookupExtractionFn)this.getExtractionFn()).isOptimize()) {
-    LookupExtractionFn exFn=(LookupExtractionFn)this.getExtractionFn();
-    LookupExtractor lookup=exFn.getLookup();
-    final String convertedValue=Strings.emptyToNull(value);
-    if (!exFn.isRetainMissingValue() && Objects.equals(convertedValue,exFn.getReplaceMissingValueWith())) {
-      return this;
-    }
-    final String mappingForValue=lookup.apply(convertedValue);
-    final List<String> keys=new ArrayList<>();
-    keys.addAll(lookup.unapply(convertedValue));
-    if (exFn.isRetainMissingValue() && mappingForValue == null) {
-      keys.add(convertedValue);
-    }
-    if (keys.isEmpty()) {
-      return this;
-    }
- else     if (keys.size() == 1) {
-      return new SelectorDimFilter(dimension,keys.get(0),null);
-    }
- else {
-      return new InDimFilter(dimension,keys,null);
-    }
-  }
-  return this;
+  return new InDimFilter(dimension,ImmutableList.of(value),extractionFn).optimize();
 }
