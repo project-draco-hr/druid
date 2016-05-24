@@ -1,0 +1,21 @@
+{
+  try {
+    DateTime shutoffAt=shutoffTime == null ? DateTime.now() : new DateTime(shutoffTime);
+    log.info("Setting Firehose shutoffTime to %s",shutoffTime);
+    exec.schedule(new Runnable(){
+      @Override public void run(){
+        try {
+          close();
+        }
+ catch (        IOException e) {
+          log.warn(e,"Failed to close delegate firehose, ignoring.");
+        }
+      }
+    }
+,shutoffAt.getMillis() - System.currentTimeMillis(),TimeUnit.MILLISECONDS);
+    return Response.ok().build();
+  }
+ catch (  IllegalArgumentException e) {
+    return Response.status(Response.Status.BAD_REQUEST).entity(ImmutableMap.<String,Object>of("error",e.getMessage())).build();
+  }
+}
