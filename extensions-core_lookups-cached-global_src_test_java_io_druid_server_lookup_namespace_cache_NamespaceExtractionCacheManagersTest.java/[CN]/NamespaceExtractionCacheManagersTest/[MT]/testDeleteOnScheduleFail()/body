@@ -1,0 +1,5 @@
+{
+  final String id="SOME_ID";
+  Assert.assertFalse(extractionCacheManager.scheduleAndWait(id,new URIExtractionNamespace(new URI("file://tmp/I_DONT_REALLY_EXIST" + UUID.randomUUID().toString()),null,null,new URIExtractionNamespace.JSONFlatDataParser(new DefaultObjectMapper(),"key","val"),Period.millis(10000),null),500));
+  Assert.assertEquals(ImmutableSet.copyOf(nsList),extractionCacheManager.getKnownIDs());
+}

@@ -1,0 +1,8 @@
+{
+  final Map<Class<? extends ExtractionNamespace>,ExtractionNamespaceCacheFactory<?>> namespaceFunctionFactoryMap=new HashMap<>();
+  this.suffix=suffix;
+  this.outStreamSupplier=outStreamSupplier;
+  this.lifecycle=new Lifecycle();
+  this.manager=cacheManagerConstructor.newInstance(lifecycle,new NoopServiceEmitter(),namespaceFunctionFactoryMap);
+  namespaceFunctionFactoryMap.put(URIExtractionNamespace.class,new URIExtractionNamespaceCacheFactory(FINDERS));
+}

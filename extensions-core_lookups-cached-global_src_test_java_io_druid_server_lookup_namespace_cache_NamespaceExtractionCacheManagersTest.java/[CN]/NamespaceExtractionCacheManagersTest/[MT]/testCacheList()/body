@@ -1,0 +1,10 @@
+{
+  List<String> nsList=new ArrayList<String>(NamespaceExtractionCacheManagersTest.nsList);
+  for (  String ns : nsList) {
+    extractionCacheManager.implData.put(ns,new NamespaceExtractionCacheManager.NamespaceImplData(null,null,null));
+  }
+  List<String> retvalList=Lists.newArrayList(extractionCacheManager.getKnownIDs());
+  Collections.sort(nsList);
+  Collections.sort(retvalList);
+  Assert.assertArrayEquals(nsList.toArray(),retvalList.toArray());
+}

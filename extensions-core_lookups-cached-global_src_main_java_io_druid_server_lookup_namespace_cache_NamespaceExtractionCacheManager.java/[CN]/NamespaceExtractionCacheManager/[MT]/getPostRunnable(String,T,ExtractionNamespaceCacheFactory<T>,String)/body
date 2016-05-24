@@ -1,0 +1,22 @@
+{
+  return new Runnable(){
+    @Override public void run(){
+      final NamespaceImplData namespaceDatum=implData.get(id);
+      if (namespaceDatum == null) {
+        return;
+      }
+synchronized (namespaceDatum.enabled) {
+        try {
+          if (!namespaceDatum.enabled.get()) {
+            return;
+          }
+          swapAndClearCache(id,cacheId);
+        }
+  finally {
+          namespaceDatum.firstRun.countDown();
+        }
+      }
+    }
+  }
+;
+}

@@ -1,0 +1,20 @@
+{
+  final NamespaceImplData implDatum=implData.get(id);
+  if (implDatum == null) {
+    schedule(id,namespace);
+    return true;
+  }
+  if (!implDatum.enabled.get()) {
+    schedule(id,namespace);
+    return true;
+  }
+  if (implDatum.namespace.equals(namespace)) {
+    return false;
+  }
+  if (log.isDebugEnabled()) {
+    log.debug("Namespace [%s] needs updated to [%s]",implDatum.namespace,namespace);
+  }
+  removeNamespaceLocalMetadata(implDatum);
+  schedule(id,namespace);
+  return true;
+}

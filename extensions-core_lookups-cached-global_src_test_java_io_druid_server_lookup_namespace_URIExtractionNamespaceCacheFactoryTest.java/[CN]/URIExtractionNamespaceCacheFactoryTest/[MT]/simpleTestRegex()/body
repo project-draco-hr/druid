@@ -1,0 +1,10 @@
+{
+  String regexID="regex";
+  final URIExtractionNamespace namespace=new URIExtractionNamespace(null,Paths.get(this.namespace.getUri()).getParent().toUri(),Pattern.quote(Paths.get(this.namespace.getUri()).getFileName().toString()),this.namespace.getNamespaceParseSpec(),Period.millis((int)this.namespace.getPollMs()),null);
+  Assert.assertTrue(!manager.getKnownIDs().contains(regexID));
+  NamespaceExtractionCacheManagersTest.waitFor(manager.schedule(regexID,namespace));
+  Map<String,String> map=manager.getCacheMap(regexID);
+  Assert.assertNotNull(map);
+  Assert.assertEquals("bar",map.get("foo"));
+  Assert.assertEquals(null,map.get("baz"));
+}

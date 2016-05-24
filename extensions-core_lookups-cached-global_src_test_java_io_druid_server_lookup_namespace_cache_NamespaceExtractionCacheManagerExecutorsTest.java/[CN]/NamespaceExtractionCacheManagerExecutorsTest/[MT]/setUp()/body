@@ -1,0 +1,47 @@
+{
+  final Path tmpDir=temporaryFolder.newFolder().toPath();
+  lifecycle=new Lifecycle();
+  lifecycle.start();
+  final URIExtractionNamespaceCacheFactory factory=new URIExtractionNamespaceCacheFactory(ImmutableMap.<String,SearchableVersionedDataFinder>of("file",new LocalFileTimestampVersionFinder())){
+    @Override public Callable<String> getCachePopulator(    final String id,    final URIExtractionNamespace extractionNamespace,    final String lastVersion,    final Map<String,String> cache){
+      return new Callable<String>(){
+        @Override public String call() throws Exception {
+          cache.put(KEY,VALUE);
+          Thread.sleep(2);
+          return Long.toString(System.currentTimeMillis());
+        }
+      }
+;
+    }
+  }
+;
+  manager=new OnHeapNamespaceExtractionCacheManager(lifecycle,new NoopServiceEmitter(),ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceCacheFactory<?>>of(URIExtractionNamespace.class,factory)){
+    @Override protected <T extends ExtractionNamespace>Runnable getPostRunnable(    final String id,    final T namespace,    final ExtractionNamespaceCacheFactory<T> factory,    final String cacheId){
+      final Runnable runnable=super.getPostRunnable(id,namespace,factory,cacheId);
+      cacheUpdateAlerts.putIfAbsent(id,new Object());
+      final Object cacheUpdateAlerter=cacheUpdateAlerts.get(id);
+      return new Runnable(){
+        @Override public void run(){
+synchronized (cacheUpdateAlerter) {
+            try {
+              runnable.run();
+              numRuns.incrementAndGet();
+            }
+  finally {
+              cacheUpdateAlerter.notifyAll();
+            }
+          }
+        }
+      }
+;
+    }
+  }
+;
+  tmpFile=Files.createTempFile(tmpDir,"druidTestURIExtractionNS",".dat").toFile();
+  try (OutputStream ostream=new FileOutputStream(tmpFile)){
+    try (OutputStreamWriter out=new OutputStreamWriter(ostream)){
+      out.write("SHOULDN'T TRY TO PARSE");
+      out.flush();
+    }
+   }
+ }

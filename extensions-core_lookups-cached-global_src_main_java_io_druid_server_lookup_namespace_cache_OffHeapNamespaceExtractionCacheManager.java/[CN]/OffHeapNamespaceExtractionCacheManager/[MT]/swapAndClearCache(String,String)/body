@@ -1,0 +1,20 @@
+{
+  final Lock lock=nsLocks.get(namespaceKey);
+  lock.lock();
+  try {
+    Preconditions.checkArgument(mmapDB.exists(cacheKey),"Namespace [%s] does not exist",cacheKey);
+    final String swapCacheKey=UUID.randomUUID().toString();
+    mmapDB.rename(cacheKey,swapCacheKey);
+    final String priorCache=currentNamespaceCache.put(namespaceKey,swapCacheKey);
+    if (priorCache != null) {
+      mmapDB.delete(priorCache);
+      return true;
+    }
+ else {
+      return false;
+    }
+  }
+  finally {
+    lock.unlock();
+  }
+}

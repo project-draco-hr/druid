@@ -1,0 +1,15 @@
+{
+  final Lock writeLock=startStopSync.writeLock();
+  writeLock.lock();
+  try {
+    if (!started) {
+      LOG.warn("Not started! [%s]",extractorID);
+      return true;
+    }
+    started=false;
+    return manager.checkedDelete(extractorID);
+  }
+  finally {
+    writeLock.unlock();
+  }
+}

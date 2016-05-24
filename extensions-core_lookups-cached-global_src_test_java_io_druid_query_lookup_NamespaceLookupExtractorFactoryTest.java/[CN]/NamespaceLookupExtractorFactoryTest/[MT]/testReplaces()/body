@@ -1,0 +1,12 @@
+{
+  final ExtractionNamespace en1=EasyMock.createStrictMock(ExtractionNamespace.class), en2=EasyMock.createStrictMock(ExtractionNamespace.class);
+  EasyMock.replay(en1,en2);
+  final NamespaceLookupExtractorFactory f1=new NamespaceLookupExtractorFactory(en1,cacheManager), f2=new NamespaceLookupExtractorFactory(en2,cacheManager), f1b=new NamespaceLookupExtractorFactory(en1,cacheManager);
+  Assert.assertTrue(f1.replaces(f2));
+  Assert.assertTrue(f2.replaces(f1));
+  Assert.assertFalse(f1.replaces(f1b));
+  Assert.assertFalse(f1b.replaces(f1));
+  Assert.assertFalse(f1.replaces(f1));
+  Assert.assertTrue(f1.replaces(EasyMock.createNiceMock(LookupExtractorFactory.class)));
+  EasyMock.verify(en1,en2);
+}

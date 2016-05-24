@@ -1,0 +1,13 @@
+{
+  final String namespaceID="ns";
+  URIExtractionNamespace namespace=new URIExtractionNamespace(tmpFile.toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(0),null);
+  final ListenableFuture<?> future=manager.schedule(namespaceID,namespace);
+  Assert.assertFalse(future.isDone());
+  Assert.assertFalse(future.isCancelled());
+  try {
+    manager.schedule(namespaceID,namespace).cancel(true);
+  }
+  finally {
+    future.cancel(true);
+  }
+}

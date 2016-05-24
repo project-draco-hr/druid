@@ -1,7 +1,7 @@
 {
   final Map<String,String> map=Preconditions.checkNotNull(mapRef.get(),"Not started");
   final long startCount=doubleEventCount.get();
-  return new MapLookupExtractor(map,isOneToOne()){
+  return new MapLookupExtractor(map,isInjective()){
     @Override public byte[] getCacheKey(){
       final byte[] idutf8=StringUtils.toUtf8(factoryId);
       if (startCount == doubleEventCount.get()) {

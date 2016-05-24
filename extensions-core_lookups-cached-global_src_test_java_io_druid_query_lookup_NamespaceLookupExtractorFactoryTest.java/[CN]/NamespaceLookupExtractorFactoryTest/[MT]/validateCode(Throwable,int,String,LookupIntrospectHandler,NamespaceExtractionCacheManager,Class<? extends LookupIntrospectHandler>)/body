@@ -1,0 +1,10 @@
+{
+synchronized (manager) {
+    EasyMock.verify(manager);
+    EasyMock.reset(manager);
+    EasyMock.expect(manager.getVersion(EasyMock.anyString())).andThrow(thrown).once();
+    EasyMock.replay(manager);
+  }
+  final Response response=(Response)clazz.getMethod(method).invoke(handler);
+  Assert.assertEquals(expectedCode,response.getStatus());
+}

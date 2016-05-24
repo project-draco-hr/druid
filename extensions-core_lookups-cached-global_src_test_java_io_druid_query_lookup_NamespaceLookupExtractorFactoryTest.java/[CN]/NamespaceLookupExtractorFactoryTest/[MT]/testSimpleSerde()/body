@@ -1,0 +1,5 @@
+{
+  final URIExtractionNamespace uriExtractionNamespace=new URIExtractionNamespace(temporaryFolder.newFolder().toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(mapper),Period.millis(0),null);
+  final NamespaceLookupExtractorFactory namespaceLookupExtractorFactory=new NamespaceLookupExtractorFactory(uriExtractionNamespace,cacheManager);
+  Assert.assertEquals(uriExtractionNamespace,mapper.readValue(mapper.writeValueAsString(namespaceLookupExtractorFactory),NamespaceLookupExtractorFactory.class).getExtractionNamespace());
+}

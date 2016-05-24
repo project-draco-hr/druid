@@ -1,0 +1,23 @@
+{
+  final ExtractionNamespace extractionNamespace=new ExtractionNamespace(){
+    @Override public long getPollMs(){
+      return 0;
+    }
+  }
+;
+  EasyMock.expect(cacheManager.scheduleAndWait(EasyMock.anyString(),EasyMock.eq(extractionNamespace),EasyMock.eq(60000L))).andReturn(true).once();
+  EasyMock.expect(cacheManager.getVersion(EasyMock.anyString())).andReturn("0").once();
+  EasyMock.expect(cacheManager.getCacheMap(EasyMock.anyString())).andReturn(new ConcurrentHashMap<String,String>()).once();
+  EasyMock.expect(cacheManager.getVersion(EasyMock.anyString())).andReturn(null).once();
+  EasyMock.expect(cacheManager.delete(EasyMock.anyString())).andReturn(true).once();
+  EasyMock.replay(cacheManager);
+  final NamespaceLookupExtractorFactory namespaceLookupExtractorFactory=new NamespaceLookupExtractorFactory(extractionNamespace,cacheManager);
+  Assert.assertTrue(namespaceLookupExtractorFactory.start());
+  try {
+    namespaceLookupExtractorFactory.get();
+    Assert.fail("Should have thrown ISE");
+  }
+ catch (  ISE ise) {
+  }
+  EasyMock.verify(cacheManager);
+}

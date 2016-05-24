@@ -1,0 +1,25 @@
+{
+  final Injector injector=Initialization.makeInjectorWithModules(GuiceInjectors.makeStartupInjector(),ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      JsonConfigProvider.bindInstance(binder,Key.get(DruidNode.class,Self.class),new DruidNode("test-inject",null,null));
+    }
+  }
+));
+  final ObjectMapper mapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
+  mapper.registerSubtypes(NamespaceLookupExtractorFactory.class);
+  final String str="{ \"type\": \"cachedNamespace\", \"extractionNamespace\": { \"type\": \"staticMap\", \"map\": {\"foo\":\"bar\"} } }";
+  final LookupExtractorFactory lookupExtractorFactory=mapper.readValue(str,LookupExtractorFactory.class);
+  Assert.assertTrue(lookupExtractorFactory.start());
+  try {
+    final LookupIntrospectHandler handler=lookupExtractorFactory.getIntrospectHandler();
+    Assert.assertNotNull(handler);
+    final Class<? extends LookupIntrospectHandler> clazz=handler.getClass();
+    Assert.assertNotNull(clazz.getMethod("getVersion").invoke(handler));
+    Assert.assertEquals(ImmutableSet.of("foo"),((Response)clazz.getMethod("getKeys").invoke(handler)).getEntity());
+    Assert.assertEquals(ImmutableSet.of("bar"),((Response)clazz.getMethod("getValues").invoke(handler)).getEntity());
+    Assert.assertEquals(ImmutableMap.builder().put("foo","bar").build(),((Response)clazz.getMethod("getMap").invoke(handler)).getEntity());
+  }
+  finally {
+    Assert.assertTrue(lookupExtractorFactory.close());
+  }
+}

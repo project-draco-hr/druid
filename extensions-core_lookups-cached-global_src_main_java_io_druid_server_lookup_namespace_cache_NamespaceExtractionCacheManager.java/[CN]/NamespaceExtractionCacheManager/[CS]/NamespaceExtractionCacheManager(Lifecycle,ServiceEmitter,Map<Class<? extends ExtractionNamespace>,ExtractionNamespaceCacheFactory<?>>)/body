@@ -1,0 +1,24 @@
+{
+  this.listeningScheduledExecutorService=MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(1,new ThreadFactoryBuilder().setDaemon(true).setNameFormat("NamespaceExtractionCacheManager-%d").setPriority(Thread.MIN_PRIORITY).build()));
+  ExecutorServices.manageLifecycle(lifecycle,listeningScheduledExecutorService);
+  this.serviceEmitter=serviceEmitter;
+  this.namespaceFunctionFactoryMap=namespaceFunctionFactoryMap;
+  listeningScheduledExecutorService.scheduleAtFixedRate(new Runnable(){
+    long priorTasksStarted=0L;
+    @Override public void run(){
+      try {
+        final long tasks=tasksStarted.get();
+        serviceEmitter.emit(ServiceMetricEvent.builder().build("namespace/deltaTasksStarted",tasks - priorTasksStarted));
+        priorTasksStarted=tasks;
+        monitor(serviceEmitter);
+      }
+ catch (      Exception e) {
+        log.error(e,"Error emitting namespace stats");
+        if (Thread.currentThread().isInterrupted()) {
+          throw Throwables.propagate(e);
+        }
+      }
+    }
+  }
+,1,10,TimeUnit.MINUTES);
+}

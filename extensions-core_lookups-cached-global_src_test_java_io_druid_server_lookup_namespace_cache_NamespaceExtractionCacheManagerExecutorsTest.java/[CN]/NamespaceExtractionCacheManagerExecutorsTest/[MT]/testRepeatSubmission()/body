@@ -1,0 +1,39 @@
+{
+  final int repeatCount=5;
+  final long delay=5;
+  final long totalRunCount;
+  final long start;
+  final String namespaceID="ns";
+  try {
+    final URIExtractionNamespace namespace=new URIExtractionNamespace(tmpFile.toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(delay),null);
+    cacheUpdateAlerts.putIfAbsent(namespaceID,new Object());
+    start=System.currentTimeMillis();
+    ListenableFuture<?> future=manager.schedule(namespaceID,namespace);
+    Assert.assertFalse(future.isDone());
+    Assert.assertFalse(future.isCancelled());
+    final long preRunCount;
+    final Object cacheUpdateAlerter=cacheUpdateAlerts.get(namespaceID);
+synchronized (cacheUpdateAlerter) {
+      preRunCount=numRuns.get();
+    }
+    for (; ; ) {
+synchronized (cacheUpdateAlerter) {
+        if (numRuns.get() - preRunCount >= repeatCount) {
+          break;
+        }
+ else {
+          cacheUpdateAlerter.wait();
+        }
+      }
+    }
+    long minEnd=start + ((repeatCount - 1) * delay);
+    long end=System.currentTimeMillis();
+    Assert.assertTrue(String.format("Didn't wait long enough between runs. Expected more than %d was %d",minEnd - start,end - start),minEnd <= end);
+  }
+  finally {
+    lifecycle.stop();
+  }
+  totalRunCount=numRuns.get();
+  Thread.sleep(delay * 10);
+  Assert.assertEquals(totalRunCount,numRuns.get(),1);
+}

@@ -1,0 +1,20 @@
+{
+  final Lock writeLock=startStopSync.writeLock();
+  writeLock.lock();
+  try {
+    if (started) {
+      LOG.warn("Already started! [%s]",extractorID);
+      return true;
+    }
+    if (!manager.scheduleAndWait(extractorID,extractionNamespace,firstCacheTimeout)) {
+      LOG.error("Failed to schedule lookup [%s]",extractorID);
+      return false;
+    }
+    LOG.debug("NamespaceLookupExtractorFactory[%s] started",extractorID);
+    started=true;
+    return true;
+  }
+  finally {
+    writeLock.unlock();
+  }
+}

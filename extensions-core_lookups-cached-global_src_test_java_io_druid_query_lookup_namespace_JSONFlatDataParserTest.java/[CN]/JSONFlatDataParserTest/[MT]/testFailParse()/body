@@ -1,0 +1,18 @@
+{
+  expectedException.expect(new BaseMatcher<Object>(){
+    @Override public boolean matches(    Object o){
+      if (!(o instanceof NullPointerException)) {
+        return false;
+      }
+      final NullPointerException npe=(NullPointerException)o;
+      return npe.getMessage().startsWith("Key column [keyWHOOPS] missing data in line");
+    }
+    @Override public void describeTo(    Description description){
+    }
+  }
+);
+  final URIExtractionNamespace.JSONFlatDataParser parser=new URIExtractionNamespace.JSONFlatDataParser(MAPPER,"keyWHOOPS","val");
+  final Map<String,String> map=new HashMap<>();
+  new MapPopulator<>(parser.getParser()).populate(Files.asByteSource(tmpFile),map);
+  Assert.assertEquals(VAL,map.get(KEY));
+}

@@ -1,0 +1,75 @@
+{
+  log.debug("Trying to update namespace [%s]",id);
+  final NamespaceImplData implDatum=implData.get(id);
+  if (implDatum != null) {
+synchronized (implDatum.enabled) {
+      if (implDatum.enabled.get()) {
+        throw new IAE("Namespace [%s] already exists! Leaving prior running",namespace.toString());
+      }
+    }
+  }
+  final long updateMs=namespace.getPollMs();
+  final CountDownLatch startLatch=new CountDownLatch(1);
+  final Runnable command=new Runnable(){
+    @Override public void run(){
+      try {
+        startLatch.await();
+        if (!Thread.currentThread().isInterrupted()) {
+          final Map<String,String> cache=getCacheMap(cacheId);
+          final String preVersion=lastVersion.get(id);
+          final Callable<String> runnable=factory.getCachePopulator(id,namespace,preVersion,cache);
+          tasksStarted.incrementAndGet();
+          final String newVersion=runnable.call();
+          if (preVersion != null && preVersion.equals(newVersion)) {
+            throw new CancellationException(String.format("Version `%s` already exists",preVersion));
+          }
+          if (newVersion != null) {
+            lastVersion.put(id,newVersion);
+          }
+          postRunnable.run();
+          log.debug("Namespace [%s] successfully updated",id);
+        }
+      }
+ catch (      Throwable t) {
+        delete(cacheId);
+        if (t instanceof CancellationException) {
+          log.debug(t,"Namespace [%s] cancelled",id);
+        }
+ else {
+          log.error(t,"Failed update namespace [%s]",namespace);
+        }
+        if (Thread.currentThread().isInterrupted()) {
+          throw Throwables.propagate(t);
+        }
+      }
+    }
+  }
+;
+  ListenableFuture<?> future;
+  try {
+    if (updateMs > 0) {
+      future=listeningScheduledExecutorService.scheduleAtFixedRate(command,0,updateMs,TimeUnit.MILLISECONDS);
+    }
+ else {
+      future=listeningScheduledExecutorService.schedule(command,0,TimeUnit.MILLISECONDS);
+    }
+    final NamespaceImplData me=new NamespaceImplData(future,namespace,id);
+    final NamespaceImplData other=implData.putIfAbsent(id,me);
+    if (other != null) {
+      if (!future.isDone() && !future.cancel(true)) {
+        log.warn("Unable to cancel future for namespace[%s] on race loss",id);
+      }
+      throw new IAE("Namespace [%s] already exists! Leaving prior running",namespace);
+    }
+ else {
+      if (!me.enabled.compareAndSet(false,true)) {
+        log.wtf("How did someone enable this before ME?");
+      }
+      log.debug("I own namespace [%s]",id);
+      return future;
+    }
+  }
+  finally {
+    startLatch.countDown();
+  }
+}

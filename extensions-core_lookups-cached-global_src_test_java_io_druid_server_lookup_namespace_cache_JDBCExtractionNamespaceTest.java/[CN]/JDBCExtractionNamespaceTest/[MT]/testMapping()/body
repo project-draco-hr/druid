@@ -1,0 +1,11 @@
+{
+  final JDBCExtractionNamespace extractionNamespace=new JDBCExtractionNamespace(derbyConnectorRule.getMetadataConnectorConfig(),tableName,keyName,valName,tsColumn,new Period(0));
+  NamespaceExtractionCacheManagersTest.waitFor(extractionCacheManager.schedule(namespace,extractionNamespace));
+  final Map<String,String> map=extractionCacheManager.getCacheMap(namespace);
+  for (  Map.Entry<String,String> entry : renames.entrySet()) {
+    String key=entry.getKey();
+    String val=entry.getValue();
+    Assert.assertEquals("non-null check",Strings.emptyToNull(val),Strings.emptyToNull(map.get(key)));
+  }
+  Assert.assertEquals("null check",null,map.get("baz"));
+}

@@ -1,0 +1,23 @@
+{
+  final NamespaceExtractionCacheManager manager=EasyMock.createStrictMock(NamespaceExtractionCacheManager.class);
+  final ExtractionNamespace extractionNamespace=EasyMock.createStrictMock(ExtractionNamespace.class);
+  EasyMock.expect(manager.scheduleAndWait(EasyMock.anyString(),EasyMock.eq(extractionNamespace),EasyMock.anyLong())).andReturn(true).once();
+  EasyMock.replay(manager);
+  final LookupExtractorFactory lookupExtractorFactory=new NamespaceLookupExtractorFactory(extractionNamespace,manager);
+  Assert.assertTrue(lookupExtractorFactory.start());
+  final LookupIntrospectHandler handler=lookupExtractorFactory.getIntrospectHandler();
+  Assert.assertNotNull(handler);
+  final Class<? extends LookupIntrospectHandler> clazz=handler.getClass();
+synchronized (manager) {
+    EasyMock.verify(manager);
+    EasyMock.reset(manager);
+    EasyMock.expect(manager.getVersion(EasyMock.anyString())).andReturn(null).once();
+    EasyMock.replay(manager);
+  }
+  final Response response=(Response)clazz.getMethod("getVersion").invoke(handler);
+  Assert.assertEquals(404,response.getStatus());
+  validateCode(new ISE("some exception"),404,"getKeys",handler,manager,clazz);
+  validateCode(new ISE("some exception"),404,"getValues",handler,manager,clazz);
+  validateCode(new ISE("some exception"),404,"getMap",handler,manager,clazz);
+  EasyMock.verify(manager);
+}

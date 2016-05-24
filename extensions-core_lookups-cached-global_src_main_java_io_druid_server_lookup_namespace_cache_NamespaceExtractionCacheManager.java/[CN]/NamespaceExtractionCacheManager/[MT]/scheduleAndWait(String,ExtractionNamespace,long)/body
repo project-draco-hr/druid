@@ -1,0 +1,24 @@
+{
+  if (scheduleOrUpdate(id,namespace)) {
+    log.debug("Scheduled new namespace [%s]: %s",id,namespace);
+  }
+ else {
+    log.debug("Namespace [%s] already running: %s",id,namespace);
+  }
+  final NamespaceImplData namespaceImplData=implData.get(id);
+  if (namespaceImplData == null) {
+    log.warn("NamespaceLookupExtractorFactory[%s] - deleted during start",id);
+    return false;
+  }
+  boolean success=false;
+  try {
+    success=namespaceImplData.firstRun.await(waitForFirstRun,TimeUnit.MILLISECONDS);
+  }
+ catch (  InterruptedException e) {
+    log.error(e,"NamespaceLookupExtractorFactory[%s] - interrupted during start",id);
+  }
+  if (!success) {
+    delete(id);
+  }
+  return success;
+}

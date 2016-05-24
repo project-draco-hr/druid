@@ -1,0 +1,47 @@
+{
+  this.extractionNamespace=Preconditions.checkNotNull(extractionNamespace,"extractionNamespace should be specified");
+  this.firstCacheTimeout=firstCacheTimeout == null ? DEFAULT_SCHEDULE_TIMEOUT : firstCacheTimeout;
+  Preconditions.checkArgument(this.firstCacheTimeout >= 0);
+  this.injective=injective;
+  this.manager=manager;
+  this.extractorID=buildID();
+  this.lookupIntrospectHandler=new LookupIntrospectHandler(){
+    @GET @Path("/keys") @Produces(MediaType.APPLICATION_JSON) public Response getKeys(){
+      try {
+        return Response.ok(getLatest().keySet()).build();
+      }
+ catch (      ISE e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(ServletResourceUtils.sanitizeException(e)).build();
+      }
+    }
+    @GET @Path("/values") @Produces(MediaType.APPLICATION_JSON) public Response getValues(){
+      try {
+        return Response.ok(getLatest().values()).build();
+      }
+ catch (      ISE e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(ServletResourceUtils.sanitizeException(e)).build();
+      }
+    }
+    @GET @Path("/version") @Produces(MediaType.APPLICATION_JSON) public Response getVersion(){
+      final String version=manager.getVersion(extractorID);
+      if (null == version) {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+ else {
+        return Response.ok(ImmutableMap.of("version",version)).build();
+      }
+    }
+    @GET @Produces(MediaType.APPLICATION_JSON) public Response getMap(){
+      try {
+        return Response.ok(getLatest()).build();
+      }
+ catch (      ISE e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(ServletResourceUtils.sanitizeException(e)).build();
+      }
+    }
+    private Map<String,String> getLatest(){
+      return ((MapLookupExtractor)get()).getMap();
+    }
+  }
+;
+}

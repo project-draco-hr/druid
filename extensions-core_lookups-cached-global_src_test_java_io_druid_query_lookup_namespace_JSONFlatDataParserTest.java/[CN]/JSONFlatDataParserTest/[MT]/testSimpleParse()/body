@@ -1,0 +1,6 @@
+{
+  final URIExtractionNamespace.JSONFlatDataParser parser=new URIExtractionNamespace.JSONFlatDataParser(MAPPER,"key","val");
+  final Map<String,String> map=new HashMap<>();
+  new MapPopulator<>(parser.getParser()).populate(Files.asByteSource(tmpFile),map);
+  Assert.assertEquals(VAL,map.get(KEY));
+}

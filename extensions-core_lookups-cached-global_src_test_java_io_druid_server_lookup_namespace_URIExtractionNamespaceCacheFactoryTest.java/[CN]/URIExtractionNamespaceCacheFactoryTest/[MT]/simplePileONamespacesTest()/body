@@ -1,0 +1,18 @@
+{
+  final int size=128;
+  List<String> ids=new ArrayList<>(size);
+  for (int i=0; i < size; ++i) {
+    String id=String.format("%d-ns-%d",i << 10,i);
+    ids.add(id);
+    URIExtractionNamespace namespace=new URIExtractionNamespace(tmpFile.toURI(),null,null,new URIExtractionNamespace.ObjectMapperFlatDataParser(URIExtractionNamespaceTest.registerTypes(new ObjectMapper())),new Period(0),null);
+    Assert.assertFalse(manager.getKnownIDs().contains(id));
+    NamespaceExtractionCacheManagersTest.waitFor(manager.schedule(id,namespace));
+  }
+  for (  String id : ids) {
+    final Map<String,String> map=manager.getCacheMap(id);
+    Assert.assertEquals("bar",map.get("foo"));
+    Assert.assertEquals(null,map.get("baz"));
+    manager.delete(id);
+  }
+  Assert.assertTrue(manager.getKnownIDs().isEmpty());
+}

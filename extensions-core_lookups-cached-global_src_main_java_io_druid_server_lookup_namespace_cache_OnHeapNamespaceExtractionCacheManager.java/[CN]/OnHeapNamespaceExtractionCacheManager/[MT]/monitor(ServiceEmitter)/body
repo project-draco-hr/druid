@@ -1,0 +1,23 @@
+{
+  long numEntries=0;
+  long size=0;
+  for (  Map.Entry<String,ConcurrentMap<String,String>> entry : mapMap.entrySet()) {
+    final ConcurrentMap<String,String> map=entry.getValue();
+    if (map == null) {
+      LOG.debug("missing cache key for reporting [%s]",entry.getKey());
+      continue;
+    }
+    numEntries+=map.size();
+    for (    Map.Entry<String,String> sEntry : map.entrySet()) {
+      final String key=sEntry.getKey();
+      final String value=sEntry.getValue();
+      if (key == null || value == null) {
+        LOG.debug("Missing entries for cache key [%s]",entry.getKey());
+        continue;
+      }
+      size+=key.length() + value.length();
+    }
+  }
+  serviceEmitter.emit(ServiceMetricEvent.builder().build("namespace/cache/numEntries",numEntries));
+  serviceEmitter.emit(ServiceMetricEvent.builder().build("namespace/cache/heapSizeInBytes",size * Chars.BYTES));
+}

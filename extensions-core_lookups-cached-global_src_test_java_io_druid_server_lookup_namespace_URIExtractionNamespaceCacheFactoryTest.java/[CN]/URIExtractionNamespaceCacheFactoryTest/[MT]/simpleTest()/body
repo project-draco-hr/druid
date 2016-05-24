@@ -1,0 +1,7 @@
+{
+  Assert.assertTrue(manager.getKnownIDs().isEmpty());
+  NamespaceExtractionCacheManagersTest.waitFor(manager.schedule(id,namespace));
+  Map<String,String> map=manager.getCacheMap(id);
+  Assert.assertEquals("bar",map.get("foo"));
+  Assert.assertEquals(null,map.get("baz"));
+}

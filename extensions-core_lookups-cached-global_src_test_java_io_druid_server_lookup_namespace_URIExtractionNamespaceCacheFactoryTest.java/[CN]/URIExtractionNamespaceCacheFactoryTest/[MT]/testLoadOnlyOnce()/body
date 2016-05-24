@@ -1,0 +1,14 @@
+{
+  Assert.assertTrue(manager.getKnownIDs().isEmpty());
+  ConcurrentMap<String,String> map=new ConcurrentHashMap<>();
+  Callable<String> populator=factory.getCachePopulator(id,namespace,null,map);
+  String v=populator.call();
+  Assert.assertEquals("bar",map.get("foo"));
+  Assert.assertEquals(null,map.get("baz"));
+  Assert.assertNotNull(v);
+  populator=factory.getCachePopulator(id,namespace,v,map);
+  String v2=populator.call();
+  Assert.assertEquals(v,v2);
+  Assert.assertEquals("bar",map.get("foo"));
+  Assert.assertEquals(null,map.get("baz"));
+}

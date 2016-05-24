@@ -1,0 +1,24 @@
+{
+  this.uri=uri;
+  this.uriPrefix=uriPrefix;
+  if ((uri != null) == (uriPrefix != null)) {
+    throw new IAE("Either uri xor uriPrefix required");
+  }
+  this.namespaceParseSpec=Preconditions.checkNotNull(namespaceParseSpec,"namespaceParseSpec");
+  this.pollPeriod=pollPeriod == null ? Period.ZERO : pollPeriod;
+  this.fileRegex=fileRegex == null ? versionRegex : fileRegex;
+  if (fileRegex != null && versionRegex != null) {
+    throw new IAE("Cannot specify both versionRegex and fileRegex. versionRegex is deprecated");
+  }
+  if (uri != null && this.fileRegex != null) {
+    throw new IAE("Cannot define both uri and fileRegex");
+  }
+  if (this.fileRegex != null) {
+    try {
+      Pattern.compile(this.fileRegex);
+    }
+ catch (    PatternSyntaxException ex) {
+      throw new IAE(ex,"Could not parse `fileRegex` [%s]",this.fileRegex);
+    }
+  }
+}

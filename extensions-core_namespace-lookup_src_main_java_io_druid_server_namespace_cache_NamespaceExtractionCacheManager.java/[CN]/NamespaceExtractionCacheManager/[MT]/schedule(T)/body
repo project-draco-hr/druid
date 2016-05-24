@@ -1,8 +1,0 @@
-{
-  final ExtractionNamespaceFunctionFactory<T> factory=(ExtractionNamespaceFunctionFactory<T>)namespaceFunctionFactoryMap.get(namespace.getClass());
-  if (factory == null) {
-    throw new ISE("Cannot find factory for namespace [%s]",namespace);
-  }
-  final String cacheId=UUID.randomUUID().toString();
-  return schedule(namespace,factory,getPostRunnable(namespace,factory,cacheId),cacheId);
-}

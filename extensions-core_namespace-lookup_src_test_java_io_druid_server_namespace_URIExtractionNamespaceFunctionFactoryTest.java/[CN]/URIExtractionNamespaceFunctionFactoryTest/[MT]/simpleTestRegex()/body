@@ -1,9 +1,0 @@
-{
-  final URIExtractionNamespace namespace=new URIExtractionNamespace(this.namespace.getNamespace(),null,Paths.get(this.namespace.getUri()).getParent().toUri(),Pattern.quote(Paths.get(this.namespace.getUri()).getFileName().toString()),this.namespace.getNamespaceParseSpec(),Period.millis((int)this.namespace.getPollMs()),null);
-  Assert.assertNull(fnCache.get(namespace.getNamespace()));
-  NamespaceExtractionCacheManagersTest.waitFor(manager.schedule(namespace));
-  Function<String,String> fn=fnCache.get(namespace.getNamespace());
-  Assert.assertNotNull(fn);
-  Assert.assertEquals("bar",fn.apply("foo"));
-  Assert.assertEquals(null,fn.apply("baz"));
-}

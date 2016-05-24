@@ -1,0 +1,14 @@
+{
+  URIExtractionNamespace badNamespace=new URIExtractionNamespace(namespace.getUri(),null,null,namespace.getNamespaceParseSpec(),Period.millis((int)namespace.getPollMs()),null);
+  Assert.assertTrue(new File(namespace.getUri()).delete());
+  ConcurrentMap<String,String> map=new ConcurrentHashMap<>();
+  try {
+    factory.getCachePopulator(id,badNamespace,null,map).call();
+  }
+ catch (  RuntimeException e) {
+    Assert.assertNotNull(e.getCause());
+    Assert.assertEquals(FileNotFoundException.class,e.getCause().getClass());
+    return;
+  }
+  Assert.fail("Did not have exception");
+}

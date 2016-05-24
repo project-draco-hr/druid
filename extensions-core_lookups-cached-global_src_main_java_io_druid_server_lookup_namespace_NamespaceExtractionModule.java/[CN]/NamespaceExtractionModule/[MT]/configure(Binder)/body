@@ -1,0 +1,7 @@
+{
+  PolyBind.createChoiceWithDefault(binder,TYPE_PREFIX,Key.get(NamespaceExtractionCacheManager.class),Key.get(OnHeapNamespaceExtractionCacheManager.class),"onHeap").in(LazySingleton.class);
+  PolyBind.optionBinder(binder,Key.get(NamespaceExtractionCacheManager.class)).addBinding("offHeap").to(OffHeapNamespaceExtractionCacheManager.class).in(LazySingleton.class);
+  getNamespaceFactoryMapBinder(binder).addBinding(JDBCExtractionNamespace.class).to(JDBCExtractionNamespaceCacheFactory.class).in(LazySingleton.class);
+  getNamespaceFactoryMapBinder(binder).addBinding(URIExtractionNamespace.class).to(URIExtractionNamespaceCacheFactory.class).in(LazySingleton.class);
+  getNamespaceFactoryMapBinder(binder).addBinding(StaticMapExtractionNamespace.class).to(StaticMapExtractionNamespaceCacheFactory.class).in(LazySingleton.class);
+}

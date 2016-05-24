@@ -1,0 +1,14 @@
+{
+  final ExtractionNamespace extractionNamespace=new ExtractionNamespace(){
+    @Override public long getPollMs(){
+      return 0;
+    }
+  }
+;
+  EasyMock.expect(cacheManager.scheduleAndWait(EasyMock.anyString(),EasyMock.eq(extractionNamespace),EasyMock.eq(60000L))).andReturn(false).once();
+  EasyMock.replay(cacheManager);
+  final NamespaceLookupExtractorFactory namespaceLookupExtractorFactory=new NamespaceLookupExtractorFactory(extractionNamespace,cacheManager);
+  Assert.assertFalse(namespaceLookupExtractorFactory.start());
+  Assert.assertTrue(namespaceLookupExtractorFactory.close());
+  EasyMock.verify(cacheManager);
+}

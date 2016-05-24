@@ -1,0 +1,13 @@
+{
+  final NamespaceImplData implDatum=implData.get(ns);
+  final boolean deleted=removeNamespaceLocalMetadata(implDatum);
+  if (deleted) {
+    log.info("Deleting namespace [%s]",ns);
+    lastVersion.remove(implDatum.name);
+    return true;
+  }
+ else {
+    log.debug("Did not delete namespace [%s]",ns);
+    return false;
+  }
+}
