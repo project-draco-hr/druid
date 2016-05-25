@@ -1,0 +1,16 @@
+{
+  log.info("SETUP CALLED AT " + +System.currentTimeMillis());
+  if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
+    ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
+  }
+  schemaInfo=BenchmarkSchemas.SCHEMA_MAP.get(schema);
+  BenchmarkDataGenerator gen=new BenchmarkDataGenerator(schemaInfo.getColumnSchemas(),RNG_SEED,schemaInfo.getDataInterval(),rowsPerSegment);
+  incIndex=makeIncIndex();
+  for (int j=0; j < rowsPerSegment; j++) {
+    InputRow row=gen.nextRow();
+    if (j % 10000 == 0) {
+      log.info(j + " rows generated.");
+    }
+    incIndex.add(row);
+  }
+}

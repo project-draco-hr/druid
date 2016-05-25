@@ -1,0 +1,25 @@
+{
+  for (  String dim : row.getDimensions()) {
+    if (dimensionMap.get(dim) == null) {
+      dimensionMap.put(dim,new HashMap<Object,Integer>());
+    }
+    Map<Object,Integer> valueMap=dimensionMap.get(dim);
+    Object dimVals=row.getRaw(dim);
+    if (dimVals == null) {
+      dimVals=Collections.singletonList(null);
+    }
+ else     if (!(dimVals instanceof List)) {
+      dimVals=Collections.singletonList(dimVals);
+    }
+    List<Object> dimValsList=(List)dimVals;
+    for (    Object val : dimValsList) {
+      if (val == null) {
+        val="";
+      }
+      if (valueMap.get(val) == null) {
+        valueMap.put(val,0);
+      }
+      valueMap.put(val,valueMap.get(val) + 1);
+    }
+  }
+}

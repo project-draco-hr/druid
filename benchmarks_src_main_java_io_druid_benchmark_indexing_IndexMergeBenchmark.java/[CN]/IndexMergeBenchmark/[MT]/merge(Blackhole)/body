@@ -1,0 +1,10 @@
+{
+  File tmpFile=File.createTempFile("IndexMergeBenchmark-MERGEDFILE-" + System.currentTimeMillis(),".TEMPFILE");
+  tmpFile.delete();
+  tmpFile.mkdirs();
+  log.info(tmpFile.getAbsolutePath() + " isFile: " + tmpFile.isFile()+ " isDir:"+ tmpFile.isDirectory());
+  tmpFile.deleteOnExit();
+  File mergedFile=INDEX_MERGER.mergeQueryableIndex(indexesToMerge,schemaInfo.getAggsArray(),tmpFile,new IndexSpec());
+  blackhole.consume(mergedFile);
+  tmpFile.delete();
+}

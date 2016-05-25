@@ -1,0 +1,15 @@
+{
+  Object ret=null;
+  ValueType type=schema.getType();
+  if (distribution instanceof AbstractIntegerDistribution) {
+    ret=((AbstractIntegerDistribution)distribution).sample();
+  }
+ else   if (distribution instanceof AbstractRealDistribution) {
+    ret=((AbstractRealDistribution)distribution).sample();
+  }
+ else   if (distribution instanceof EnumeratedDistribution) {
+    ret=((EnumeratedDistribution)distribution).sample();
+  }
+  ret=convertType(ret,type);
+  return ret;
+}

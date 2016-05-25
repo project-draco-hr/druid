@@ -1,0 +1,11 @@
+{
+  super(pmf);
+  probabilityRanges=new TreeMap<Double,Integer>();
+  normalizedPmf=this.getPmf();
+  double cumulativep=0.0;
+  for (int i=0; i < normalizedPmf.size(); i++) {
+    probabilityRanges.put(cumulativep,i);
+    Pair<T,Double> pair=normalizedPmf.get(i);
+    cumulativep+=pair.getSecond();
+  }
+}

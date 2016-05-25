@@ -1,0 +1,15 @@
+{
+  List<QueryRunner<Row>> singleSegmentRunners=Lists.newArrayList();
+  QueryToolChest toolChest=factory.getToolchest();
+  for (int i=0; i < numSegments; i++) {
+    String segmentName="qIndex" + i;
+    QueryRunner<Row> runner=QueryBenchmarkUtil.makeQueryRunner(factory,segmentName,new QueryableIndexSegment(segmentName,qIndexes.get(i)));
+    singleSegmentRunners.add(toolChest.preMergeQueryDecoration(runner));
+  }
+  QueryRunner theRunner=toolChest.postMergeQueryDecoration(new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(executorService,singleSegmentRunners)),toolChest));
+  Sequence<Row> queryResult=theRunner.run(query,Maps.<String,Object>newHashMap());
+  List<Row> results=Sequences.toList(queryResult,Lists.<Row>newArrayList());
+  for (  Row result : results) {
+    blackhole.consume(result);
+  }
+}

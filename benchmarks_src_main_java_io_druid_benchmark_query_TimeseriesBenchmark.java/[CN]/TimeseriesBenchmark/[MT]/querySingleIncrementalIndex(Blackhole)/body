@@ -1,0 +1,7 @@
+{
+  QueryRunner<Result<TimeseriesResultValue>> runner=QueryBenchmarkUtil.makeQueryRunner(factory,"incIndex",new IncrementalIndexSegment(incIndexes.get(0),"incIndex"));
+  List<Result<TimeseriesResultValue>> results=TimeseriesBenchmark.runQuery(factory,runner,query);
+  for (  Result<TimeseriesResultValue> result : results) {
+    blackhole.consume(result);
+  }
+}

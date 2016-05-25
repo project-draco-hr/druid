@@ -1,0 +1,13 @@
+{
+  List<BenchmarkColumnSchema> schemas=new ArrayList<>();
+  RowValueTracker tracker=new RowValueTracker();
+  schemas.add(BenchmarkColumnSchema.makeSequential("dimA",ValueType.STRING,false,1,null,10,20));
+  schemas.add(BenchmarkColumnSchema.makeEnumeratedSequential("dimB",ValueType.STRING,false,1,null,Arrays.<Object>asList("Hello","World","Foo","Bar")));
+  schemas.add(BenchmarkColumnSchema.makeSequential("dimC",ValueType.STRING,false,1,0.50,30,40));
+  BenchmarkDataGenerator dataGenerator=new BenchmarkDataGenerator(schemas,9999,0,0,1000.0);
+  for (int i=0; i < 100; i++) {
+    InputRow row=dataGenerator.nextRow();
+    tracker.addRow(row);
+  }
+  tracker.printStuff();
+}

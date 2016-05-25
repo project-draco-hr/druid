@@ -1,0 +1,27 @@
+{
+  SelectQuery queryCopy=query.withPagingSpec(PagingSpec.newSpec(pagingThreshold));
+  String segmentName;
+  List<QueryRunner<Result<SelectResultValue>>> singleSegmentRunners=Lists.newArrayList();
+  QueryToolChest toolChest=factory.getToolchest();
+  for (int i=0; i < numSegments; i++) {
+    segmentName="qIndex" + i;
+    QueryRunner<Result<SelectResultValue>> runner=QueryBenchmarkUtil.makeQueryRunner(factory,segmentName,new QueryableIndexSegment(segmentName,qIndexes.get(i)));
+    singleSegmentRunners.add(toolChest.preMergeQueryDecoration(runner));
+  }
+  QueryRunner theRunner=toolChest.postMergeQueryDecoration(new FinalizeResultsQueryRunner<>(toolChest.mergeResults(factory.mergeRunners(executorService,singleSegmentRunners)),toolChest));
+  boolean done=false;
+  while (!done) {
+    Sequence<Result<SelectResultValue>> queryResult=theRunner.run(queryCopy,Maps.<String,Object>newHashMap());
+    List<Result<SelectResultValue>> results=Sequences.toList(queryResult,Lists.<Result<SelectResultValue>>newArrayList());
+    SelectResultValue result=results.get(0).getValue();
+    if (result.getEvents().size() == 0) {
+      done=true;
+    }
+ else {
+      for (      EventHolder eh : result.getEvents()) {
+        blackhole.consume(eh);
+      }
+      queryCopy=incrementQueryPagination(queryCopy,result);
+    }
+  }
+}

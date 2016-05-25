@@ -1,0 +1,39 @@
+{
+  log.info("SETUP CALLED AT " + System.currentTimeMillis());
+  if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
+    ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
+  }
+  executorService=Execs.multiThreaded(numSegments,"TopNThreadPool");
+  setupQueries();
+  String[] schemaQuery=schemaAndQuery.split("\\.");
+  String schemaName=schemaQuery[0];
+  String queryName=schemaQuery[1];
+  schemaInfo=BenchmarkSchemas.SCHEMA_MAP.get(schemaName);
+  queryBuilder=SCHEMA_QUERY_MAP.get(schemaName).get(queryName);
+  queryBuilder.threshold(threshold);
+  query=queryBuilder.build();
+  incIndexes=new ArrayList<>();
+  for (int i=0; i < numSegments; i++) {
+    log.info("Generating rows for segment " + i);
+    BenchmarkDataGenerator gen=new BenchmarkDataGenerator(schemaInfo.getColumnSchemas(),RNG_SEED + i,schemaInfo.getDataInterval(),rowsPerSegment);
+    IncrementalIndex incIndex=makeIncIndex();
+    for (int j=0; j < rowsPerSegment; j++) {
+      InputRow row=gen.nextRow();
+      if (j % 10000 == 0) {
+        log.info(j + " rows generated.");
+      }
+      incIndex.add(row);
+    }
+    incIndexes.add(incIndex);
+  }
+  File tmpFile=Files.createTempDir();
+  log.info("Using temp dir: " + tmpFile.getAbsolutePath());
+  tmpFile.deleteOnExit();
+  qIndexes=new ArrayList<>();
+  for (int i=0; i < numSegments; i++) {
+    File indexFile=INDEX_MERGER_V9.persist(incIndexes.get(i),tmpFile,new IndexSpec());
+    QueryableIndex qIndex=INDEX_IO.loadIndex(indexFile);
+    qIndexes.add(qIndex);
+  }
+  factory=new TopNQueryRunnerFactory(new OffheapBufferPool(250000000,Integer.MAX_VALUE),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()),QueryBenchmarkUtil.NOOP_QUERYWATCHER);
+}

@@ -1,0 +1,17 @@
+{
+  this.timeCounter=0;
+  this.currentTime=startTime;
+  dimensionNames=new ArrayList<>();
+  for (  BenchmarkColumnSchema schema : columnSchemas) {
+    if (!schema.isMetric()) {
+      dimensionNames.add(schema.getName());
+    }
+  }
+  columnGenerators=new ArrayList<>();
+  columnGenerators.addAll(Lists.transform(columnSchemas,new Function<BenchmarkColumnSchema,BenchmarkColumnValueGenerator>(){
+    @Override public BenchmarkColumnValueGenerator apply(    BenchmarkColumnSchema input){
+      return input.makeGenerator(seed);
+    }
+  }
+));
+}

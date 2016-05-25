@@ -1,0 +1,16 @@
+{
+  Map<String,Druids.SearchQueryBuilder> basicQueries=new LinkedHashMap<>();
+  BenchmarkSchemaInfo basicSchema=BenchmarkSchemas.SCHEMA_MAP.get("basic");
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    queryAggs.add(new LongSumAggregatorFactory("sumLongSequential","sumLongSequential"));
+    queryAggs.add(new LongMaxAggregatorFactory("maxLongUniform","maxLongUniform"));
+    queryAggs.add(new DoubleSumAggregatorFactory("sumFloatNormal","sumFloatNormal"));
+    queryAggs.add(new DoubleMinAggregatorFactory("minFloatZipf","minFloatZipf"));
+    queryAggs.add(new HyperUniquesAggregatorFactory("hyperUniquesMet","hyper"));
+    Druids.SearchQueryBuilder queryBuilderA=Druids.newSearchQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).query("123");
+    basicQueries.put("A",queryBuilderA);
+  }
+  SCHEMA_QUERY_MAP.put("basic",basicQueries);
+}

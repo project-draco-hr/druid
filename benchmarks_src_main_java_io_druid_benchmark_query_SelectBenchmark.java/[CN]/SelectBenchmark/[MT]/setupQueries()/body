@@ -1,0 +1,10 @@
+{
+  Map<String,Druids.SelectQueryBuilder> basicQueries=new LinkedHashMap<>();
+  BenchmarkSchemaInfo basicSchema=BenchmarkSchemas.SCHEMA_MAP.get("basic");
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    Druids.SelectQueryBuilder queryBuilderA=Druids.newSelectQueryBuilder().dataSource(new TableDataSource("blah")).dimensionSpecs(DefaultDimensionSpec.toSpec(Arrays.<String>asList())).metrics(Arrays.<String>asList()).intervals(intervalSpec).granularity(QueryGranularities.ALL).descending(false);
+    basicQueries.put("A",queryBuilderA);
+  }
+  SCHEMA_QUERY_MAP.put("basic",basicQueries);
+}

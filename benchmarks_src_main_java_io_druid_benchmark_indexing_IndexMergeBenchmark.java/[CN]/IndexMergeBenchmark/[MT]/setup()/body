@@ -1,0 +1,25 @@
+{
+  log.info("SETUP CALLED AT " + +System.currentTimeMillis());
+  if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
+    ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
+  }
+  indexesToMerge=new ArrayList<>();
+  schemaInfo=BenchmarkSchemas.SCHEMA_MAP.get(schema);
+  for (int i=0; i < numSegments; i++) {
+    BenchmarkDataGenerator gen=new BenchmarkDataGenerator(schemaInfo.getColumnSchemas(),RNG_SEED + i,schemaInfo.getDataInterval(),rowsPerSegment);
+    IncrementalIndex incIndex=makeIncIndex();
+    for (int j=0; j < rowsPerSegment; j++) {
+      InputRow row=gen.nextRow();
+      if (j % 10000 == 0) {
+        log.info(j + " rows generated.");
+      }
+      incIndex.add(row);
+    }
+    File tmpFile=Files.createTempDir();
+    log.info("Using temp dir: " + tmpFile.getAbsolutePath());
+    tmpFile.deleteOnExit();
+    File indexFile=INDEX_MERGER_V9.persist(incIndex,tmpFile,new IndexSpec());
+    QueryableIndex qIndex=INDEX_IO.loadIndex(indexFile);
+    indexesToMerge.add(qIndex);
+  }
+}

@@ -1,0 +1,12 @@
+{
+  List<BenchmarkColumnSchema> schemas=new ArrayList<>();
+  RowValueTracker tracker=new RowValueTracker();
+  schemas.add(BenchmarkColumnSchema.makeContinuousUniform("dimA",ValueType.STRING,false,1,null,10.0,50.0));
+  schemas.add(BenchmarkColumnSchema.makeContinuousUniform("dimB",ValueType.FLOAT,false,1,null,210.0,250.0));
+  BenchmarkDataGenerator dataGenerator=new BenchmarkDataGenerator(schemas,9999,0,0,1000.0);
+  for (int i=0; i < 100; i++) {
+    InputRow row=dataGenerator.nextRow();
+    tracker.addRow(row);
+  }
+  tracker.printStuff();
+}

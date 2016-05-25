@@ -1,0 +1,8 @@
+{
+  Map<String,Object> event=new HashMap<>();
+  for (  BenchmarkColumnValueGenerator generator : columnGenerators) {
+    event.put(generator.getSchema().getName(),generator.generateRowValue());
+  }
+  MapBasedInputRow row=new MapBasedInputRow(nextTimestamp(),dimensionNames,event);
+  return row;
+}

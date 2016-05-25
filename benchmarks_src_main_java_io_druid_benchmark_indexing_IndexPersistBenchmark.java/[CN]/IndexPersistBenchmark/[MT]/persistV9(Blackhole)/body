@@ -1,0 +1,9 @@
+{
+  File tmpFile=Files.createTempDir();
+  log.info("Using temp dir: " + tmpFile.getAbsolutePath());
+  tmpFile.deleteOnExit();
+  ;
+  File indexFile=INDEX_MERGER_V9.persist(incIndex,tmpFile,new IndexSpec());
+  blackhole.consume(indexFile);
+  tmpFile.delete();
+}

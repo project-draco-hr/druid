@@ -1,0 +1,30 @@
+{
+  if (input == null) {
+    return null;
+  }
+  Object ret;
+switch (type) {
+case STRING:
+    ret=input.toString();
+  break;
+case LONG:
+if (input instanceof Number) {
+  ret=((Number)input).longValue();
+}
+ else {
+  ret=Long.parseLong(input.toString());
+}
+break;
+case FLOAT:
+if (input instanceof Number) {
+ret=((Number)input).floatValue();
+}
+ else {
+ret=Float.parseFloat(input.toString());
+}
+break;
+default :
+throw new UnsupportedOperationException("Unknown data type: " + type);
+}
+return ret;
+}

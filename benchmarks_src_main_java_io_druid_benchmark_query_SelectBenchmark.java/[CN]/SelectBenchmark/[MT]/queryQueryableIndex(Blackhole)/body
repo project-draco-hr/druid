@@ -1,0 +1,19 @@
+{
+  SelectQuery queryCopy=query.withPagingSpec(PagingSpec.newSpec(pagingThreshold));
+  String segmentId="qIndex";
+  QueryRunner<Result<SelectResultValue>> runner=QueryBenchmarkUtil.makeQueryRunner(factory,segmentId,new QueryableIndexSegment(segmentId,qIndexes.get(0)));
+  boolean done=false;
+  while (!done) {
+    List<Result<SelectResultValue>> results=SelectBenchmark.runQuery(factory,runner,queryCopy);
+    SelectResultValue result=results.get(0).getValue();
+    if (result.getEvents().size() == 0) {
+      done=true;
+    }
+ else {
+      for (      EventHolder eh : result.getEvents()) {
+        blackhole.consume(eh);
+      }
+      queryCopy=incrementQueryPagination(queryCopy,result);
+    }
+  }
+}

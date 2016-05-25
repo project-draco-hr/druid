@@ -1,0 +1,12 @@
+{
+  Map<String,GroupByQuery> basicQueries=new LinkedHashMap<>();
+  BenchmarkSchemaInfo basicSchema=BenchmarkSchemas.SCHEMA_MAP.get("basic");
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    queryAggs.add(new LongSumAggregatorFactory("sumLongSequential","sumLongSequential"));
+    GroupByQuery queryA=GroupByQuery.builder().setDataSource("blah").setQuerySegmentSpec(intervalSpec).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dimSequential",null),new DefaultDimensionSpec("dimZipf",null))).setAggregatorSpecs(queryAggs).setGranularity(QueryGranularities.DAY).build();
+    basicQueries.put("A",queryA);
+  }
+  SCHEMA_QUERY_MAP.put("basic",basicQueries);
+}

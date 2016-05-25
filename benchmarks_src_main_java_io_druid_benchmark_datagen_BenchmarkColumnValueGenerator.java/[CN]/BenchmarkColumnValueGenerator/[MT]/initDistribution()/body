@@ -1,0 +1,71 @@
+{
+  BenchmarkColumnSchema.ValueDistribution distributionType=schema.getDistributionType();
+  ValueType type=schema.getType();
+  List<Object> enumeratedValues=schema.getEnumeratedValues();
+  List<Double> enumeratedProbabilities=schema.getEnumeratedProbabilities();
+  List<Pair<Object,Double>> probabilities=new ArrayList<>();
+switch (distributionType) {
+case SEQUENTIAL:
+    distribution=new SequentialDistribution(schema.getStartInt(),schema.getEndInt(),schema.getEnumeratedValues());
+  break;
+case UNIFORM:
+distribution=new UniformRealDistribution(schema.getStartDouble(),schema.getEndDouble());
+break;
+case DISCRETE_UNIFORM:
+if (enumeratedValues == null) {
+enumeratedValues=new ArrayList<>();
+for (int i=schema.getStartInt(); i < schema.getEndInt(); i++) {
+Object val=convertType(i,type);
+enumeratedValues.add(val);
+}
+}
+for (int i=0; i < enumeratedValues.size(); i++) {
+probabilities.add(new Pair<>(enumeratedValues.get(i),0.1));
+}
+distribution=new EnumeratedTreeDistribution<>(probabilities);
+break;
+case NORMAL:
+distribution=new NormalDistribution(schema.getMean(),schema.getStandardDeviation());
+break;
+case ROUNDED_NORMAL:
+NormalDistribution normalDist=new NormalDistribution(schema.getMean(),schema.getStandardDeviation());
+distribution=new RealRoundingDistribution(normalDist);
+break;
+case ZIPF:
+int cardinality;
+if (enumeratedValues == null) {
+Integer startInt=schema.getStartInt();
+cardinality=schema.getEndInt() - startInt;
+ZipfDistribution zipf=new ZipfDistribution(cardinality,schema.getZipfExponent());
+for (int i=0; i < cardinality; i++) {
+probabilities.add(new Pair<>((Object)(i + startInt),zipf.probability(i)));
+}
+}
+ else {
+cardinality=enumeratedValues.size();
+ZipfDistribution zipf=new ZipfDistribution(enumeratedValues.size(),schema.getZipfExponent());
+for (int i=0; i < cardinality; i++) {
+probabilities.add(new Pair<>(enumeratedValues.get(i),zipf.probability(i)));
+}
+}
+distribution=new EnumeratedTreeDistribution<>(probabilities);
+break;
+case ENUMERATED:
+for (int i=0; i < enumeratedValues.size(); i++) {
+probabilities.add(new Pair<>(enumeratedValues.get(i),enumeratedProbabilities.get(i)));
+}
+distribution=new EnumeratedTreeDistribution<>(probabilities);
+break;
+default :
+throw new UnsupportedOperationException("Unknown distribution type: " + distributionType);
+}
+if (distribution instanceof AbstractIntegerDistribution) {
+((AbstractIntegerDistribution)distribution).reseedRandomGenerator(seed);
+}
+ else if (distribution instanceof AbstractRealDistribution) {
+((AbstractRealDistribution)distribution).reseedRandomGenerator(seed);
+}
+ else if (distribution instanceof EnumeratedDistribution) {
+((EnumeratedDistribution)distribution).reseedRandomGenerator(seed);
+}
+}

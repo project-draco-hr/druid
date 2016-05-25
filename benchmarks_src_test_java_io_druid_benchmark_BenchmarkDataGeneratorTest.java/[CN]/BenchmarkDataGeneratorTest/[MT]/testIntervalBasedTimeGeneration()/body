@@ -1,0 +1,12 @@
+{
+  List<BenchmarkColumnSchema> schemas=new ArrayList<>();
+  schemas.add(BenchmarkColumnSchema.makeEnumeratedSequential("dimB",ValueType.STRING,false,1,null,Arrays.<Object>asList("Hello","World","Foo","Bar")));
+  BenchmarkDataGenerator dataGenerator=new BenchmarkDataGenerator(schemas,9999,new Interval(50000,600000),100);
+  for (int i=0; i < 100; i++) {
+    InputRow row=dataGenerator.nextRow();
+  }
+  BenchmarkDataGenerator dataGenerator2=new BenchmarkDataGenerator(schemas,9999,new Interval(50000,50001),100);
+  for (int i=0; i < 100; i++) {
+    InputRow row=dataGenerator2.nextRow();
+  }
+}

@@ -1,0 +1,7 @@
+{
+  final QueryRunner<Result<TopNResultValue>> runner=QueryBenchmarkUtil.makeQueryRunner(factory,"qIndex",new QueryableIndexSegment("qIndex",qIndexes.get(0)));
+  List<Result<TopNResultValue>> results=TopNBenchmark.runQuery(factory,runner,query);
+  for (  Result<TopNResultValue> result : results) {
+    blackhole.consume(result);
+  }
+}

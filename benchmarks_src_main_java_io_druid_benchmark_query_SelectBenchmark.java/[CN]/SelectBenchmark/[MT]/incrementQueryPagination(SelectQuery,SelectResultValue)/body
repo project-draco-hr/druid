@@ -1,0 +1,9 @@
+{
+  Map<String,Integer> pagingIdentifiers=prevResult.getPagingIdentifiers();
+  Map<String,Integer> newPagingIdentifers=new HashMap<>();
+  for (  String segmentId : pagingIdentifiers.keySet()) {
+    int newOffset=pagingIdentifiers.get(segmentId) + 1;
+    newPagingIdentifers.put(segmentId,newOffset);
+  }
+  return query.withPagingSpec(new PagingSpec(newPagingIdentifers,pagingThreshold));
+}
