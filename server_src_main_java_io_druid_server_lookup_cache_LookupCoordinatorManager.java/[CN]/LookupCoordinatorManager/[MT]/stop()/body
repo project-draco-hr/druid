@@ -6,6 +6,11 @@ synchronized (startStopSync) {
     }
     started=false;
     executorService.shutdownNow();
+    final ListenableScheduledFuture backgroundManagerFuture=this.backgroundManagerFuture;
+    this.backgroundManagerFuture=null;
+    if (backgroundManagerFuture != null && !backgroundManagerFuture.cancel(true)) {
+      LOG.warn("Background lookup manager thread could not be cancelled");
+    }
     LOG.debug("Stopped");
   }
 }

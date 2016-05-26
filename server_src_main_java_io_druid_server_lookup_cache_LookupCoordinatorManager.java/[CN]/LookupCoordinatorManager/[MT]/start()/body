@@ -9,7 +9,7 @@ synchronized (startStopSync) {
     lookupMapConfigRef=configManager.watch(LOOKUP_CONFIG_KEY,new TypeReference<Map<String,Map<String,Map<String,Object>>>>(){
     }
 ,null);
-    executorService.scheduleWithFixedDelay(new Runnable(){
+    final ListenableScheduledFuture backgroundManagerFuture=this.backgroundManagerFuture=executorService.scheduleWithFixedDelay(new Runnable(){
       @Override public void run(){
         final Map<String,Map<String,Map<String,Object>>> allLookupTiers=lookupMapConfigRef.get();
         if (Thread.currentThread().isInterrupted()) {
@@ -56,6 +56,23 @@ catch (          Exception e) {
       }
     }
 ,0,lookupCoordinatorManagerConfig.getPeriod(),TimeUnit.MILLISECONDS);
+    Futures.addCallback(backgroundManagerFuture,new FutureCallback<Object>(){
+      @Override public void onSuccess(      @Nullable Object result){
+        backgroundManagerExitedLatch.countDown();
+        LOG.debug("Exited background lookup manager");
+      }
+      @Override public void onFailure(      Throwable t){
+        backgroundManagerExitedLatch.countDown();
+        if (backgroundManagerFuture.isCancelled()) {
+          LOG.info("Background lookup manager exited");
+          LOG.trace(t,"Background lookup manager exited with throwable");
+        }
+ else {
+          LOG.makeAlert(t,"Background lookup manager exited with error!").emit();
+        }
+      }
+    }
+);
     started=true;
     LOG.debug("Started");
   }

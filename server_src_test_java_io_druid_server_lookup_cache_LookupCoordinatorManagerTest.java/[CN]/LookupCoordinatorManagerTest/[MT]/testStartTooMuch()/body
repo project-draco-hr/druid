@@ -5,6 +5,8 @@
   EasyMock.replay(configManager);
   final LookupCoordinatorManager manager=new LookupCoordinatorManager(client,discoverer,mapper,configManager,lookupCoordinatorManagerConfig);
   manager.start();
+  Assert.assertTrue(manager.backgroundManagerIsRunning());
+  Assert.assertFalse(manager.waitForBackgroundTermination(10));
   manager.stop();
   expectedException.expect(new BaseMatcher<Throwable>(){
     @Override public boolean matches(    Object o){
