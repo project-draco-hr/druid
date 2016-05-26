@@ -1,0 +1,8 @@
+{
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.BAD_REQUEST).times(2);
+  expect(responseHolder.getContent()).andReturn("");
+  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  client.getCurrentOffsets(TEST_ID,true);
+  verifyAll();
+}

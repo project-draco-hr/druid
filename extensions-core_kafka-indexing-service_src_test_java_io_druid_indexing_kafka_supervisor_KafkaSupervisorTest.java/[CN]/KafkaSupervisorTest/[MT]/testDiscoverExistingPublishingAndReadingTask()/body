@@ -18,12 +18,12 @@
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(id1)).anyTimes();
   expect(taskStorage.getTask("id2")).andReturn(Optional.of(id2)).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
-  expect(taskClient.getStatus(location1,"id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
-  expect(taskClient.getStatus(location2,"id2")).andReturn(KafkaIndexTask.Status.READING);
-  expect(taskClient.getStartTime(location2,"id2")).andReturn(startTime);
-  expect(taskClient.getCurrentOffsets(location1,"id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
-  expect(taskClient.getCurrentOffsets(location1,"id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
-  expect(taskClient.getCurrentOffsets(location2,"id2",false)).andReturn(ImmutableMap.of(0,40L,1,50L,2,60L));
+  expect(taskClient.getStatus("id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
+  expect(taskClient.getStatus("id2")).andReturn(KafkaIndexTask.Status.READING);
+  expect(taskClient.getStartTime("id2",false)).andReturn(startTime);
+  expect(taskClient.getCurrentOffsets("id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
+  expect(taskClient.getCurrentOffsets("id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
+  expect(taskClient.getCurrentOffsets("id2",false)).andReturn(ImmutableMap.of(0,40L,1,50L,2,60L));
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
   replayAll();
   supervisor.start();

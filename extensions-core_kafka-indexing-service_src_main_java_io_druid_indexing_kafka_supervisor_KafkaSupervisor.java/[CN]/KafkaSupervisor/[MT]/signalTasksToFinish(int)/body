@@ -11,15 +11,15 @@
       return null;
     }
     if (task.status.isRunnable()) {
-      TaskLocation location=getTaskLocation(taskId);
-      if (location == null) {
+      if (taskInfoProvider.getTaskLocation(taskId).equals(TaskLocation.unknown())) {
         log.info("Killing task [%s] which hasn't been assigned to a worker",taskId);
         killTask(taskId);
+        i.remove();
       }
  else {
         Map<Integer,Long> currentOffsets;
         try {
-          currentOffsets=taskClient.pause(location,taskId);
+          currentOffsets=taskClient.pause(taskId);
         }
  catch (        Exception e) {
           log.warn(e,"Task [%s] failed to respond to [pause] in a timely manner, killing task",taskId);
@@ -42,16 +42,13 @@
     String taskId=taskEntry.getKey();
     TaskData task=taskEntry.getValue();
     if (task.status.isRunnable()) {
-      TaskLocation location=getTaskLocation(taskId);
-      if (location != null) {
-        try {
-          taskClient.setEndOffsets(location,taskId,endOffsets,true);
-        }
- catch (        Exception e) {
-          log.warn(e,"Task [%s] failed to respond to [set end offsets] in a timely manner, killing task",taskId);
-          killTask(taskId);
-          i.remove();
-        }
+      try {
+        taskClient.setEndOffsets(taskId,endOffsets,true);
+      }
+ catch (      Exception e) {
+        log.warn(e,"Task [%s] failed to respond to [set end offsets] in a timely manner, killing task",taskId);
+        killTask(taskId);
+        i.remove();
       }
     }
   }

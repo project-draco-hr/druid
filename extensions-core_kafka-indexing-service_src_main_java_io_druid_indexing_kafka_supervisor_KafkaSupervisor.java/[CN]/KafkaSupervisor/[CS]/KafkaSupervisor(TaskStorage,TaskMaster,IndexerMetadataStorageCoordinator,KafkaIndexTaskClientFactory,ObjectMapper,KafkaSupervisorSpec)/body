@@ -1,0 +1,38 @@
+{
+  this.taskStorage=taskStorage;
+  this.taskMaster=taskMaster;
+  this.indexerMetadataStorageCoordinator=indexerMetadataStorageCoordinator;
+  this.sortingMapper=mapper.copy().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY,true);
+  this.spec=spec;
+  this.dataSource=spec.getDataSchema().getDataSource();
+  this.ioConfig=spec.getIoConfig();
+  this.supervisorId=String.format("KafkaSupervisor-%s",dataSource);
+  this.exec=Execs.singleThreaded(supervisorId + "-%d");
+  this.scheduledExec=Execs.scheduledSingleThreaded(supervisorId + "-Scheduler-%d");
+  this.taskInfoProvider=new TaskInfoProvider(){
+    @Override public TaskLocation getTaskLocation(    final String id){
+      Preconditions.checkNotNull(id,"id");
+      Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
+      if (taskRunner.isPresent()) {
+        Optional<? extends TaskRunnerWorkItem> item=Iterables.tryFind(taskRunner.get().getRunningTasks(),new Predicate<TaskRunnerWorkItem>(){
+          @Override public boolean apply(          TaskRunnerWorkItem taskRunnerWorkItem){
+            return id.equals(taskRunnerWorkItem.getTaskId());
+          }
+        }
+);
+        if (item.isPresent()) {
+          return item.get().getLocation();
+        }
+      }
+ else {
+        log.error("Failed to get task runner because I'm not the leader!");
+      }
+      return TaskLocation.unknown();
+    }
+    @Override public Optional<TaskStatus> getTaskStatus(    String id){
+      return taskStorage.getStatus(id);
+    }
+  }
+;
+  this.taskClient=taskClientFactory.build(taskInfoProvider);
+}

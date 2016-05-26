@@ -1,0 +1,11 @@
+{
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"offsets/end",null,true);
+    return jsonMapper.readValue(response.getContent(),new TypeReference<Map<Integer,Long>>(){
+    }
+);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

@@ -1,0 +1,28 @@
+{
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"pause",timeout > 0 ? String.format("timeout=%d",timeout) : null,true);
+    if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      return jsonMapper.readValue(response.getContent(),new TypeReference<Map<Integer,Long>>(){
+      }
+);
+    }
+    final RetryPolicy retryPolicy=retryPolicyFactory.makeRetryPolicy();
+    while (true) {
+      if (getStatus(id) == KafkaIndexTask.Status.PAUSED) {
+        return getCurrentOffsets(id,true);
+      }
+      final Duration delay=retryPolicy.getAndIncrementRetryDelay();
+      if (delay == null) {
+        throw new ISE("Task [%s] failed to pause, aborting",id);
+      }
+ else {
+        final long sleepTime=delay.getMillis();
+        log.info("Still waiting for task [%s] to pause; will try again in [%s]",id,new Duration(sleepTime).toString());
+        Thread.sleep(sleepTime);
+      }
+    }
+  }
+ catch (  IOException|InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+}

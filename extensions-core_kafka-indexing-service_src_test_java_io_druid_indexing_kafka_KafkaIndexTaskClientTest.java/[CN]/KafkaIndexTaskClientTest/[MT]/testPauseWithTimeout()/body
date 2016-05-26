@@ -1,0 +1,16 @@
+{
+  Capture<Request> captured=Capture.newInstance();
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK).times(2);
+  expect(responseHolder.getContent()).andReturn("{\"0\":1, \"1\":10}").anyTimes();
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  Map<Integer,Long> results=client.pause(TEST_ID,101);
+  verifyAll();
+  Request request=captured.getValue();
+  Assert.assertEquals(HttpMethod.POST,request.getMethod());
+  Assert.assertEquals(new URL("http://test-host:1234/druid/worker/v1/chat/test-id/pause?timeout=101"),request.getUrl());
+  Assert.assertTrue(request.getHeaders().get("X-Druid-Task-Id").contains("test-id"));
+  Assert.assertEquals(2,results.size());
+  Assert.assertEquals(1,(long)results.get(0));
+  Assert.assertEquals(10,(long)results.get(1));
+}

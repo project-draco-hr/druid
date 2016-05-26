@@ -13,9 +13,9 @@
   expect(taskStorage.getStatus("id1")).andReturn(Optional.of(TaskStatus.running("id1"))).anyTimes();
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(task)).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
-  expect(taskClient.getStatus(location,"id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
-  expect(taskClient.getCurrentOffsets(location,"id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
-  expect(taskClient.getCurrentOffsets(location,"id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
+  expect(taskClient.getStatus("id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
+  expect(taskClient.getCurrentOffsets("id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
+  expect(taskClient.getCurrentOffsets("id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
   expect(taskQueue.add(capture(captured))).andReturn(true);
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
   replayAll();

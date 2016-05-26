@@ -1,0 +1,9 @@
+{
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"status",null,true);
+    return jsonMapper.readValue(response.getContent(),KafkaIndexTask.Status.class);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

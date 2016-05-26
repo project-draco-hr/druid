@@ -1,0 +1,10 @@
+{
+  reset(taskInfoProvider);
+  expect(taskInfoProvider.getTaskLocation(TEST_ID)).andReturn(TaskLocation.unknown()).anyTimes();
+  expect(taskInfoProvider.getTaskStatus(TEST_ID)).andReturn(Optional.of(TaskStatus.running(TEST_ID))).anyTimes();
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.BAD_REQUEST).times(2);
+  expect(responseHolder.getContent()).andReturn("");
+  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  client.getCurrentOffsets(TEST_ID,true);
+}

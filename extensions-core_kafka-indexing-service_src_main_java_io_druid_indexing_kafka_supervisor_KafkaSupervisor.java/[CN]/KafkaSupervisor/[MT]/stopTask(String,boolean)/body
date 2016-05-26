@@ -1,8 +1,7 @@
 {
-  TaskLocation taskLocation=getTaskLocation(id);
-  if (taskLocation != null) {
+  if (!taskInfoProvider.getTaskLocation(id).equals(TaskLocation.unknown())) {
     try {
-      taskClient.stop(taskLocation,id,publish);
+      taskClient.stop(id,publish);
     }
  catch (    Exception e) {
       log.warn(e,"Task [%s] failed to stop in a timely manner, killing task",id);

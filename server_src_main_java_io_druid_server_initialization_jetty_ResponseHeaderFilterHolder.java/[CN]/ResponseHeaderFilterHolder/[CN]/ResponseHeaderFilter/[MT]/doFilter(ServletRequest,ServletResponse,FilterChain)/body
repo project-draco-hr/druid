@@ -1,0 +1,10 @@
+{
+  if (config != null) {
+    Enumeration<String> it=config.getInitParameterNames();
+    while (it.hasMoreElements()) {
+      String key=it.nextElement();
+      ((HttpServletResponse)response).setHeader(key,config.getInitParameter(key));
+    }
+  }
+  chain.doFilter(request,response);
+}

@@ -1,0 +1,13 @@
+{
+  if (taskId != null) {
+    List<String> requestTaskId=headers.getRequestHeader(TASK_ID_HEADER);
+    if (requestTaskId != null && !requestTaskId.contains(taskId)) {
+      return null;
+    }
+  }
+  final Optional<ChatHandler> handler=handlers.get(handlerId);
+  if (handler.isPresent()) {
+    return handler.get();
+  }
+  return null;
+}

@@ -1,0 +1,12 @@
+{
+  Capture<Request> captured=Capture.newInstance();
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK);
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  client.stop(TEST_ID,false);
+  verifyAll();
+  Request request=captured.getValue();
+  Assert.assertEquals(HttpMethod.POST,request.getMethod());
+  Assert.assertEquals(new URL("http://test-host:1234/druid/worker/v1/chat/test-id/stop"),request.getUrl());
+  Assert.assertTrue(request.getHeaders().get("X-Druid-Task-Id").contains("test-id"));
+}

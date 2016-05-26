@@ -21,6 +21,8 @@
   expect(taskStorage.getTask("id3")).andReturn(Optional.of(id3)).anyTimes();
   expect(taskStorage.getTask("id4")).andReturn(Optional.of(id3)).anyTimes();
   expect(taskStorage.getTask("id5")).andReturn(Optional.of(id3)).anyTimes();
+  expect(taskClient.getStatus(anyString())).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
+  expect(taskClient.getStartTime(anyString(),eq(false))).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
   taskQueue.shutdown("id3");

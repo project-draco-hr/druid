@@ -1,0 +1,9 @@
+{
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"time/start",null,retry);
+    return response.getContent() == null || response.getContent().isEmpty() ? null : jsonMapper.readValue(response.getContent(),DateTime.class);
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

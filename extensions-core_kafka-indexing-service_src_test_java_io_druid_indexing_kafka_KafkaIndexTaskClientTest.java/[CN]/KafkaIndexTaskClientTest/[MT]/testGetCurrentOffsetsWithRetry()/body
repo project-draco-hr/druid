@@ -1,0 +1,26 @@
+{
+  client=new RetryingTestableKafkaIndexTaskClient(httpClient,objectMapper,taskInfoProvider);
+  Capture<Request> captured=Capture.newInstance();
+  Capture<Request> captured2=Capture.newInstance();
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.NOT_FOUND).times(2).andReturn(HttpResponseStatus.OK).times(2);
+  expect(responseHolder.getContent()).andReturn("").andReturn("{\"0\":1, \"1\":10}");
+  expect(responseHolder.getResponse()).andReturn(response);
+  expect(response.headers()).andReturn(headers);
+  expect(headers.get("X-Druid-Task-Id")).andReturn(TEST_ID);
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(httpClient.go(capture(captured2),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  Map<Integer,Long> results=client.getCurrentOffsets(TEST_ID,true);
+  verifyAll();
+  Request request=captured.getValue();
+  Assert.assertEquals(HttpMethod.GET,request.getMethod());
+  Assert.assertEquals(new URL("http://test-host:1234/druid/worker/v1/chat/test-id/offsets/current"),request.getUrl());
+  Assert.assertTrue(request.getHeaders().get("X-Druid-Task-Id").contains("test-id"));
+  request=captured2.getValue();
+  Assert.assertEquals(HttpMethod.GET,request.getMethod());
+  Assert.assertEquals(new URL("http://test-host:1234/druid/worker/v1/chat/test-id/offsets/current"),request.getUrl());
+  Assert.assertTrue(request.getHeaders().get("X-Druid-Task-Id").contains("test-id"));
+  Assert.assertEquals(2,results.size());
+  Assert.assertEquals(1,(long)results.get(0));
+  Assert.assertEquals(10,(long)results.get(1));
+}

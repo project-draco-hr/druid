@@ -1,0 +1,7 @@
+{
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.INTERNAL_SERVER_ERROR).times(2);
+  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  replayAll();
+  client.getCurrentOffsets(TEST_ID,true);
+  verifyAll();
+}
