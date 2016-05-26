@@ -3,15 +3,12 @@
   Aggregator[] aggs;
   if (null != priorIndex) {
     aggs=concurrentGet(priorIndex);
+    doAggregate(aggs,rowContainer,row,reportParseExceptions);
   }
  else {
     aggs=new Aggregator[metrics.length];
-    rowContainer.set(row);
-    for (int i=0; i < metrics.length; i++) {
-      final AggregatorFactory agg=metrics[i];
-      aggs[i]=agg.factorize(selectors.get(agg.getName()));
-    }
-    rowContainer.set(null);
+    factorizeAggs(metrics,aggs,rowContainer,row);
+    doAggregate(aggs,rowContainer,row,reportParseExceptions);
     final Integer rowIndex=indexIncrement.getAndIncrement();
     concurrentSet(rowIndex,aggs);
     if (numEntries.get() >= maxRowCount && !facts.containsKey(key)) {
@@ -23,25 +20,9 @@
     }
  else {
       aggs=concurrentGet(prev);
+      doAggregate(aggs,rowContainer,row,reportParseExceptions);
       concurrentRemove(rowIndex);
     }
   }
-  rowContainer.set(row);
-  for (  Aggregator agg : aggs) {
-synchronized (agg) {
-      try {
-        agg.aggregate();
-      }
- catch (      ParseException e) {
-        if (reportParseExceptions) {
-          throw new ParseException(e,"Encountered parse error for aggregator[%s]",agg.getName());
-        }
- else {
-          log.debug(e,"Encountered parse error, skipping aggregator[%s].",agg.getName());
-        }
-      }
-    }
-  }
-  rowContainer.set(null);
   return numEntries.get();
 }

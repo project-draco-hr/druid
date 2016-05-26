@@ -1,0 +1,19 @@
+{
+  rowContainer.set(row);
+  for (  Aggregator agg : aggs) {
+synchronized (agg) {
+      try {
+        agg.aggregate();
+      }
+ catch (      ParseException e) {
+        if (reportParseExceptions) {
+          throw new ParseException(e,"Encountered parse error for aggregator[%s]",agg.getName());
+        }
+ else {
+          log.debug(e,"Encountered parse error, skipping aggregator[%s].",agg.getName());
+        }
+      }
+    }
+  }
+  rowContainer.set(null);
+}
