@@ -1,0 +1,15 @@
+{
+  if (!rejectionPolicy.accept(timestamp)) {
+    return null;
+  }
+  final Granularity segmentGranularity=schema.getGranularitySpec().getSegmentGranularity();
+  final VersioningPolicy versioningPolicy=config.getVersioningPolicy();
+  final long truncatedTime=segmentGranularity.truncate(new DateTime(timestamp)).getMillis();
+  SegmentIdentifier retVal=segments.get(truncatedTime);
+  if (retVal == null) {
+    final Interval interval=new Interval(new DateTime(truncatedTime),segmentGranularity.increment(new DateTime(truncatedTime)));
+    retVal=new SegmentIdentifier(schema.getDataSource(),interval,versioningPolicy.getVersion(interval),config.getShardSpec());
+    addSegment(retVal);
+  }
+  return retVal;
+}

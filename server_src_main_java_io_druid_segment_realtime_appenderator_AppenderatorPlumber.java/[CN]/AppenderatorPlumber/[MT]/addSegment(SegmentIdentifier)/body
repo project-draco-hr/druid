@@ -1,0 +1,9 @@
+{
+  segments.put(identifier.getInterval().getStartMillis(),identifier);
+  try {
+    segmentAnnouncer.announceSegment(new DataSegment(identifier.getDataSource(),identifier.getInterval(),identifier.getVersion(),ImmutableMap.<String,Object>of(),ImmutableList.<String>of(),ImmutableList.<String>of(),identifier.getShardSpec(),null,0));
+  }
+ catch (  IOException e) {
+    log.makeAlert(e,"Failed to announce new segment[%s]",identifier.getDataSource()).addData("interval",identifier.getInterval()).emit();
+  }
+}

@@ -1,0 +1,10 @@
+{
+  final Stopwatch runExecStopwatch=Stopwatch.createStarted();
+  appenderator.persistAll(committer);
+  final long startDelay=runExecStopwatch.elapsed(TimeUnit.MILLISECONDS);
+  metrics.incrementPersistBackPressureMillis(startDelay);
+  if (startDelay > WARN_DELAY) {
+    log.warn("Ingestion was throttled for [%,d] millis because persists were pending.",startDelay);
+  }
+  runExecStopwatch.stop();
+}

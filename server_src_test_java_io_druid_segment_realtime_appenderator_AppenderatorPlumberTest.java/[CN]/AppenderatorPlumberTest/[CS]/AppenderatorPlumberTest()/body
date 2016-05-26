@@ -1,0 +1,13 @@
+{
+  this.appenderatorTester=new AppenderatorTester(10);
+  DataSegmentAnnouncer segmentAnnouncer=EasyMock.createMock(DataSegmentAnnouncer.class);
+  segmentAnnouncer.announceSegment(EasyMock.<DataSegment>anyObject());
+  EasyMock.expectLastCall().anyTimes();
+  SegmentPublisher segmentPublisher=EasyMock.createNiceMock(SegmentPublisher.class);
+  SegmentHandoffNotifierFactory handoffNotifierFactory=EasyMock.createNiceMock(SegmentHandoffNotifierFactory.class);
+  SegmentHandoffNotifier handoffNotifier=EasyMock.createNiceMock(SegmentHandoffNotifier.class);
+  EasyMock.expect(handoffNotifierFactory.createSegmentHandoffNotifier(EasyMock.anyString())).andReturn(handoffNotifier).anyTimes();
+  EasyMock.expect(handoffNotifier.registerSegmentHandoffCallback(EasyMock.<SegmentDescriptor>anyObject(),EasyMock.<Executor>anyObject(),EasyMock.<Runnable>anyObject())).andReturn(true).anyTimes();
+  RealtimeTuningConfig tuningConfig=new RealtimeTuningConfig(1,null,null,null,new IntervalStartVersioningPolicy(),new NoopRejectionPolicyFactory(),null,null,null,true,0,0,false,null);
+  this.plumber=new AppenderatorPlumber(appenderatorTester.getSchema(),tuningConfig,appenderatorTester.getMetrics(),segmentAnnouncer,segmentPublisher,handoffNotifier,appenderatorTester.getAppenderator());
+}

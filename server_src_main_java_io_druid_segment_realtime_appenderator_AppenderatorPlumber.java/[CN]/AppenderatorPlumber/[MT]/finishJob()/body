@@ -1,0 +1,35 @@
+{
+  log.info("Shutting down...");
+  shuttingDown=true;
+  List<SegmentIdentifier> pending=appenderator.getSegments();
+  if (pending.isEmpty()) {
+    log.info("No segments to hand off.");
+  }
+ else {
+    log.info("Pushing segments: %s",Joiner.on(", ").join(pending));
+  }
+  try {
+    if (lastCommitterSupplier != null) {
+      mergeAndPush();
+    }
+synchronized (handoffCondition) {
+      while (!segments.isEmpty()) {
+        log.info("Waiting to hand off: %s",Joiner.on(", ").join(pending));
+        handoffCondition.wait();
+        pending=appenderator.getSegments();
+      }
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+ finally {
+    stopped=true;
+    handoffNotifier.close();
+    shutdownExecutors();
+    appenderator.close();
+  }
+  if (!cleanShutdown) {
+    throw new ISE("Exception occurred during persist and merge.");
+  }
+}

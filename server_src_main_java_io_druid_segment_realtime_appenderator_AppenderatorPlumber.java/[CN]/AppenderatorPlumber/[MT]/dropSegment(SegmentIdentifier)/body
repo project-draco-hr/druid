@@ -1,0 +1,13 @@
+{
+  log.info("Dropping segment: %s",identifier);
+  segments.remove(identifier.getInterval().getStartMillis());
+  Futures.addCallback(appenderator.drop(identifier),new FutureCallback<Object>(){
+    @Override public void onSuccess(    Object result){
+      log.info("Dropped segment: %s",identifier);
+    }
+    @Override public void onFailure(    Throwable e){
+      log.warn(e,"Failed to drop segment: %s",identifier);
+    }
+  }
+);
+}

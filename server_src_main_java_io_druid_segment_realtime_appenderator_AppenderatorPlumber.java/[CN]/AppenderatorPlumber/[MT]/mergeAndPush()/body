@@ -1,0 +1,65 @@
+{
+  final Granularity segmentGranularity=schema.getGranularitySpec().getSegmentGranularity();
+  final Period windowPeriod=config.getWindowPeriod();
+  final long windowMillis=windowPeriod.toStandardDuration().getMillis();
+  log.info("Starting merge and push.");
+  DateTime minTimestampAsDate=segmentGranularity.truncate(new DateTime(Math.max(windowMillis,rejectionPolicy.getCurrMaxTime().getMillis()) - windowMillis));
+  long minTimestamp=minTimestampAsDate.getMillis();
+  final List<SegmentIdentifier> appenderatorSegments=appenderator.getSegments();
+  final List<SegmentIdentifier> segmentsToPush=Lists.newArrayList();
+  if (shuttingDown) {
+    log.info("Found [%,d] segments. Attempting to hand off all of them.",appenderatorSegments.size());
+    segmentsToPush.addAll(appenderatorSegments);
+  }
+ else {
+    log.info("Found [%,d] segments. Attempting to hand off segments that start before [%s].",appenderatorSegments.size(),minTimestampAsDate);
+    for (    SegmentIdentifier segment : appenderatorSegments) {
+      final Long intervalStart=segment.getInterval().getStartMillis();
+      if (intervalStart < minTimestamp) {
+        log.info("Adding entry [%s] for merge and push.",segment);
+        segmentsToPush.add(segment);
+      }
+ else {
+        log.info("Skipping persist and merge for entry [%s] : Start time [%s] >= [%s] min timestamp required in this run. Segment will be picked up in a future run.",segment,new DateTime(intervalStart),minTimestampAsDate);
+      }
+    }
+  }
+  log.info("Found [%,d] segments to persist and merge",segmentsToPush.size());
+  final Function<Throwable,Void> errorHandler=new Function<Throwable,Void>(){
+    @Override public Void apply(    Throwable throwable){
+      final List<String> segmentIdentifierStrings=Lists.transform(segmentsToPush,new Function<SegmentIdentifier,String>(){
+        @Override public String apply(        SegmentIdentifier input){
+          return input.getIdentifierAsString();
+        }
+      }
+);
+      log.makeAlert(throwable,"Failed to publish merged indexes[%s]",schema.getDataSource()).addData("segments",segmentIdentifierStrings).emit();
+      if (shuttingDown) {
+        cleanShutdown=false;
+        for (        SegmentIdentifier identifier : segmentsToPush) {
+          dropSegment(identifier);
+        }
+      }
+      return null;
+    }
+  }
+;
+  Futures.addCallback(appenderator.push(segmentsToPush,Committers.nil()),new FutureCallback<SegmentsAndMetadata>(){
+    @Override public void onSuccess(    SegmentsAndMetadata result){
+      for (      DataSegment pushedSegment : result.getSegments()) {
+        try {
+          segmentPublisher.publishSegment(pushedSegment);
+        }
+ catch (        Exception e) {
+          errorHandler.apply(e);
+        }
+      }
+      log.info("Published [%,d] sinks.",segmentsToPush.size());
+    }
+    @Override public void onFailure(    Throwable e){
+      log.warn(e,"Failed to push [%,d] segments.",segmentsToPush.size());
+      errorHandler.apply(e);
+    }
+  }
+);
+}
