@@ -1,0 +1,14 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"topic\": \"my-topic\",\n"+ "  \"consumerProperties\": {\"bootstrap.servers\":\"localhost:9092\"}\n"+ "}";
+  KafkaSupervisorIOConfig config=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,KafkaSupervisorIOConfig.class)),KafkaSupervisorIOConfig.class);
+  Assert.assertEquals("my-topic",config.getTopic());
+  Assert.assertEquals(1,(int)config.getReplicas());
+  Assert.assertEquals(1,(int)config.getTaskCount());
+  Assert.assertEquals(Duration.standardMinutes(60),config.getTaskDuration());
+  Assert.assertEquals(ImmutableMap.of("bootstrap.servers","localhost:9092"),config.getConsumerProperties());
+  Assert.assertEquals(Duration.standardSeconds(5),config.getStartDelay());
+  Assert.assertEquals(Duration.standardSeconds(30),config.getPeriod());
+  Assert.assertEquals(false,config.isUseEarliestOffset());
+  Assert.assertEquals(Duration.standardMinutes(30),config.getCompletionTimeout());
+  Assert.assertFalse("lateMessageRejectionPeriod",config.getLateMessageRejectionPeriod().isPresent());
+}

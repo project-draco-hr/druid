@@ -2,7 +2,8 @@
   for (  Integer groupId : partitionGroups.keySet()) {
     if (!taskGroups.containsKey(groupId)) {
       log.info("Creating new task group [%d] for partitions %s",groupId,partitionGroups.get(groupId).keySet());
-      taskGroups.put(groupId,new TaskGroup(generateStartingOffsetsForPartitionGroup(groupId)));
+      Optional<DateTime> minimumMessageTime=(ioConfig.getLateMessageRejectionPeriod().isPresent() ? Optional.of(DateTime.now().minus(ioConfig.getLateMessageRejectionPeriod().get())) : Optional.<DateTime>absent());
+      taskGroups.put(groupId,new TaskGroup(generateStartingOffsetsForPartitionGroup(groupId),minimumMessageTime));
     }
   }
   boolean createdTask=false;

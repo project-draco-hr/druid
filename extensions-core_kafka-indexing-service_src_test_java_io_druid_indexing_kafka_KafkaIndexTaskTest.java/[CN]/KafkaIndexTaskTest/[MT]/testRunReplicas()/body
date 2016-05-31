@@ -1,6 +1,6 @@
 {
-  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
-  final KafkaIndexTask task2=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false),null);
+  final KafkaIndexTask task1=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false,null),null);
+  final KafkaIndexTask task2=createTask(null,new KafkaIOConfig("sequence0",new KafkaPartitions("topic0",ImmutableMap.of(0,2L)),new KafkaPartitions("topic0",ImmutableMap.of(0,5L)),kafkaServer.consumerProperties(),true,false,null),null);
   final ListenableFuture<TaskStatus> future1=runTask(task1);
   final ListenableFuture<TaskStatus> future2=runTask(task2);
   try (final KafkaProducer<byte[],byte[]> kafkaProducer=kafkaServer.newProducer()){

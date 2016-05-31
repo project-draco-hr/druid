@@ -1,0 +1,7 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"consumerProperties\": {\"bootstrap.servers\":\"localhost:9092\"}\n"+ "}";
+  exception.expect(JsonMappingException.class);
+  exception.expectCause(CoreMatchers.isA(NullPointerException.class));
+  exception.expectMessage(CoreMatchers.containsString("topic"));
+  mapper.readValue(jsonStr,KafkaSupervisorIOConfig.class);
+}

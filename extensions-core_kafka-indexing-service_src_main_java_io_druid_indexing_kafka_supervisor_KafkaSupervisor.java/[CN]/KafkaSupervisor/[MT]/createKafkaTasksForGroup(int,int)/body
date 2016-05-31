@@ -6,7 +6,8 @@
   }
   String sequenceName=generateSequenceName(groupId);
   Map<String,String> consumerProperties=Maps.newHashMap(ioConfig.getConsumerProperties());
-  KafkaIOConfig kafkaIOConfig=new KafkaIOConfig(sequenceName,new KafkaPartitions(ioConfig.getTopic(),startPartitions),new KafkaPartitions(ioConfig.getTopic(),endPartitions),consumerProperties,true,false);
+  DateTime minimumMessageTime=taskGroups.get(groupId).minimumMessageTime.orNull();
+  KafkaIOConfig kafkaIOConfig=new KafkaIOConfig(sequenceName,new KafkaPartitions(ioConfig.getTopic(),startPartitions),new KafkaPartitions(ioConfig.getTopic(),endPartitions),consumerProperties,true,false,minimumMessageTime);
   for (int i=0; i < replicas; i++) {
     String taskId=Joiner.on("_").join(sequenceName,getRandomId());
     KafkaIndexTask indexTask=new KafkaIndexTask(taskId,new TaskResource(sequenceName,1),spec.getDataSchema(),spec.getTuningConfig(),kafkaIOConfig,ImmutableMap.<String,Object>of(),null);

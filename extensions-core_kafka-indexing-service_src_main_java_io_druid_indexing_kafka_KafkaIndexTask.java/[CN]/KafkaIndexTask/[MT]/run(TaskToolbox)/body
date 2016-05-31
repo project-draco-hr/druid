@@ -91,11 +91,16 @@
             }
             try {
               final InputRow row=Preconditions.checkNotNull(parser.parse(ByteBuffer.wrap(record.value())),"row");
-              final SegmentIdentifier identifier=driver.add(row,sequenceNames.get(record.partition()),committerSupplier);
-              if (identifier == null) {
-                throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
+              if (!ioConfig.getMinimumMessageTime().isPresent() || !ioConfig.getMinimumMessageTime().get().isAfter(row.getTimestamp())) {
+                final SegmentIdentifier identifier=driver.add(row,sequenceNames.get(record.partition()),committerSupplier);
+                if (identifier == null) {
+                  throw new ISE("Could not allocate segment for row with timestamp[%s]",row.getTimestamp());
+                }
+                fireDepartmentMetrics.incrementProcessed();
               }
-              fireDepartmentMetrics.incrementProcessed();
+ else {
+                fireDepartmentMetrics.incrementThrownAway();
+              }
             }
  catch (            ParseException e) {
               if (tuningConfig.isReportParseExceptions()) {

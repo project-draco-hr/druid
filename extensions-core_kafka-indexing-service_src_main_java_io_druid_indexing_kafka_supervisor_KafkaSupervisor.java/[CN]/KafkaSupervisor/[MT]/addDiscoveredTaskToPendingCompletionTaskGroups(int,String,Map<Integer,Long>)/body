@@ -13,7 +13,7 @@
     }
   }
   log.info("Creating new pending completion task group for discovered task [%s]",taskId);
-  TaskGroup newTaskGroup=new TaskGroup(startingPartitions);
+  TaskGroup newTaskGroup=new TaskGroup(startingPartitions,Optional.<DateTime>absent());
   newTaskGroup.tasks.put(taskId,new TaskData());
   newTaskGroup.completionTimeout=DateTime.now().plus(ioConfig.getCompletionTimeout());
   taskGroupList.add(newTaskGroup);

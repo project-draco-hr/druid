@@ -1,11 +1,11 @@
 {
-  supervisor=getSupervisor(1,2,true,"PT1H");
+  supervisor=getSupervisor(1,2,true,"PT1H",null);
   addSomeEvents(1);
-  Task id1=createKafkaIndexTask("id1",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,2,Long.MAX_VALUE)));
-  Task id2=createKafkaIndexTask("id2",DATASOURCE,"sequenceName-1",new KafkaPartitions("topic",ImmutableMap.of(1,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE)));
-  Task id3=createKafkaIndexTask("id3",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE,2,Long.MAX_VALUE)));
-  Task id4=createKafkaIndexTask("id4",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE)));
-  Task id5=createKafkaIndexTask("id5",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE,2,Long.MAX_VALUE)));
+  Task id1=createKafkaIndexTask("id1",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,2,Long.MAX_VALUE)),null);
+  Task id2=createKafkaIndexTask("id2",DATASOURCE,"sequenceName-1",new KafkaPartitions("topic",ImmutableMap.of(1,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE)),null);
+  Task id3=createKafkaIndexTask("id3",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE,2,Long.MAX_VALUE)),null);
+  Task id4=createKafkaIndexTask("id4",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE)),null);
+  Task id5=createKafkaIndexTask("id5",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(1,Long.MAX_VALUE,2,Long.MAX_VALUE)),null);
   List<Task> existingTasks=ImmutableList.of(id1,id2,id3,id4,id5);
   expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
   expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();

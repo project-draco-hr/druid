@@ -1,0 +1,14 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"topic\": \"my-topic\",\n"+ "  \"replicas\": 3,\n"+ "  \"taskCount\": 9,\n"+ "  \"taskDuration\": \"PT30M\",\n"+ "  \"consumerProperties\": {\"bootstrap.servers\":\"localhost:9092\"},\n"+ "  \"startDelay\": \"PT1M\",\n"+ "  \"period\": \"PT10S\",\n"+ "  \"useEarliestOffset\": true,\n"+ "  \"completionTimeout\": \"PT45M\",\n"+ "  \"lateMessageRejectionPeriod\": \"PT1H\"\n"+ "}";
+  KafkaSupervisorIOConfig config=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,KafkaSupervisorIOConfig.class)),KafkaSupervisorIOConfig.class);
+  Assert.assertEquals("my-topic",config.getTopic());
+  Assert.assertEquals(3,(int)config.getReplicas());
+  Assert.assertEquals(9,(int)config.getTaskCount());
+  Assert.assertEquals(Duration.standardMinutes(30),config.getTaskDuration());
+  Assert.assertEquals(ImmutableMap.of("bootstrap.servers","localhost:9092"),config.getConsumerProperties());
+  Assert.assertEquals(Duration.standardMinutes(1),config.getStartDelay());
+  Assert.assertEquals(Duration.standardSeconds(10),config.getPeriod());
+  Assert.assertEquals(true,config.isUseEarliestOffset());
+  Assert.assertEquals(Duration.standardMinutes(45),config.getCompletionTimeout());
+  Assert.assertEquals(Duration.standardHours(1),config.getLateMessageRejectionPeriod().get());
+}

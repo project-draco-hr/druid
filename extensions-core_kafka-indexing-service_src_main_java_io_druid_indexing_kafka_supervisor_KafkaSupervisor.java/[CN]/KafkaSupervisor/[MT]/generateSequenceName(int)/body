@@ -5,6 +5,8 @@
     sb.append(String.format("+%d(%d)",entry.getKey(),entry.getValue()));
   }
   String partitionOffsetStr=sb.toString().substring(1);
+  Optional<DateTime> minimumMessageTime=taskGroups.get(groupId).minimumMessageTime;
+  String minMsgTimeStr=(minimumMessageTime.isPresent() ? String.valueOf(minimumMessageTime.get().getMillis()) : "");
   String dataSchema, tuningConfig;
   try {
     dataSchema=sortingMapper.writeValueAsString(spec.getDataSchema());
@@ -13,6 +15,6 @@
  catch (  JsonProcessingException e) {
     throw Throwables.propagate(e);
   }
-  String hashCode=DigestUtils.sha1Hex(dataSchema + tuningConfig + partitionOffsetStr).substring(0,15);
+  String hashCode=DigestUtils.sha1Hex(dataSchema + tuningConfig + partitionOffsetStr+ minMsgTimeStr).substring(0,15);
   return Joiner.on("_").join("index_kafka",dataSource,hashCode);
 }

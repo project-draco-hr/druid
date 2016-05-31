@@ -1,8 +1,8 @@
 {
   final TaskLocation location=new TaskLocation("testHost",1234);
-  supervisor=getSupervisor(1,1,true,"PT1H");
+  supervisor=getSupervisor(1,1,true,"PT1H",null);
   addSomeEvents(1);
-  Task task=createKafkaIndexTask("id1",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE,2,Long.MAX_VALUE)));
+  Task task=createKafkaIndexTask("id1",DATASOURCE,"sequenceName-0",new KafkaPartitions("topic",ImmutableMap.of(0,0L,1,0L,2,0L)),new KafkaPartitions("topic",ImmutableMap.of(0,Long.MAX_VALUE,1,Long.MAX_VALUE,2,Long.MAX_VALUE)),null);
   Collection workItems=new ArrayList<>();
   workItems.add(new TestTaskRunnerWorkItem(task.getId(),null,location));
   Capture<KafkaIndexTask> captured=Capture.newInstance();

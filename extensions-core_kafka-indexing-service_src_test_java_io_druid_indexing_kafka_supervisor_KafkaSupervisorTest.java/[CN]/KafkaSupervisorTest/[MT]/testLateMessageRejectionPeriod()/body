@@ -1,0 +1,19 @@
+{
+  supervisor=getSupervisor(2,1,true,"PT1H",new Period("PT1H"));
+  addSomeEvents(1);
+  Capture<KafkaIndexTask> captured=Capture.newInstance(CaptureType.ALL);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.<TaskRunner>absent()).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
+  expect(taskQueue.add(capture(captured))).andReturn(true).times(2);
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  KafkaIndexTask task1=captured.getValues().get(0);
+  KafkaIndexTask task2=captured.getValues().get(1);
+  Assert.assertTrue("minimumMessageTime",task1.getIOConfig().getMinimumMessageTime().get().plusMinutes(59).isBeforeNow());
+  Assert.assertTrue("minimumMessageTime",task1.getIOConfig().getMinimumMessageTime().get().plusMinutes(61).isAfterNow());
+  Assert.assertEquals(task1.getIOConfig().getMinimumMessageTime().get(),task2.getIOConfig().getMinimumMessageTime().get());
+}

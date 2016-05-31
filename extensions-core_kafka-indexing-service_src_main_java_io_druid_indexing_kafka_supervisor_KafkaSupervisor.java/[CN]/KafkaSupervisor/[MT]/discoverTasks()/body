@@ -37,9 +37,15 @@
  else {
             if (!taskGroups.containsKey(taskGroupId)) {
               log.debug("Creating new task group [%d]",taskGroupId);
-              taskGroups.put(taskGroupId,new TaskGroup(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap()));
+              taskGroups.put(taskGroupId,new TaskGroup(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap(),kafkaTask.getIOConfig().getMinimumMessageTime()));
             }
-            taskGroups.get(taskGroupId).tasks.put(taskId,new TaskData());
+            if (!isTaskCurrent(taskGroupId,taskId)) {
+              log.info("Stopping task [%s] which does not match the expected parameters and ingestion spec",taskId);
+              stopTask(taskId,false);
+            }
+ else {
+              taskGroups.get(taskGroupId).tasks.put(taskId,new TaskData());
+            }
           }
         }
       }

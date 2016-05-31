@@ -1,0 +1,7 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"baseSequenceName\": \"my-sequence-name\",\n"+ "  \"startPartitions\": {\"topic\":\"mytopic\", \"partitionOffsetMap\" : {\"0\":1, \"1\":10}},\n"+ "  \"consumerProperties\": {\"bootstrap.servers\":\"localhost:9092\"},\n"+ "  \"useTransaction\": false,\n"+ "  \"pauseAfterRead\": true,\n"+ "  \"minimumMessageTime\": \"2016-05-31T12:00Z\"\n"+ "}";
+  exception.expect(JsonMappingException.class);
+  exception.expectCause(CoreMatchers.isA(NullPointerException.class));
+  exception.expectMessage(CoreMatchers.containsString("endPartitions"));
+  mapper.readValue(jsonStr,IOConfig.class);
+}

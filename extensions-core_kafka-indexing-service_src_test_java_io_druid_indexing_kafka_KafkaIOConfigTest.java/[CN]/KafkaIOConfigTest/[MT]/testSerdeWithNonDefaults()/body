@@ -1,0 +1,13 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"baseSequenceName\": \"my-sequence-name\",\n"+ "  \"startPartitions\": {\"topic\":\"mytopic\", \"partitionOffsetMap\" : {\"0\":1, \"1\":10}},\n"+ "  \"endPartitions\": {\"topic\":\"mytopic\", \"partitionOffsetMap\" : {\"0\":15, \"1\":200}},\n"+ "  \"consumerProperties\": {\"bootstrap.servers\":\"localhost:9092\"},\n"+ "  \"useTransaction\": false,\n"+ "  \"pauseAfterRead\": true,\n"+ "  \"minimumMessageTime\": \"2016-05-31T12:00Z\"\n"+ "}";
+  KafkaIOConfig config=(KafkaIOConfig)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,IOConfig.class)),IOConfig.class);
+  Assert.assertEquals("my-sequence-name",config.getBaseSequenceName());
+  Assert.assertEquals("mytopic",config.getStartPartitions().getTopic());
+  Assert.assertEquals(ImmutableMap.of(0,1L,1,10L),config.getStartPartitions().getPartitionOffsetMap());
+  Assert.assertEquals("mytopic",config.getEndPartitions().getTopic());
+  Assert.assertEquals(ImmutableMap.of(0,15L,1,200L),config.getEndPartitions().getPartitionOffsetMap());
+  Assert.assertEquals(ImmutableMap.of("bootstrap.servers","localhost:9092"),config.getConsumerProperties());
+  Assert.assertEquals(false,config.isUseTransaction());
+  Assert.assertEquals(true,config.isPauseAfterRead());
+  Assert.assertEquals(new DateTime("2016-05-31T12:00Z"),config.getMinimumMessageTime().get());
+}

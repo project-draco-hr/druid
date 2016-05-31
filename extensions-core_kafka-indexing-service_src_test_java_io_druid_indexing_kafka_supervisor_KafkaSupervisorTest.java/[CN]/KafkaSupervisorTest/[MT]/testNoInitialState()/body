@@ -1,5 +1,5 @@
 {
-  supervisor=getSupervisor(1,1,true,"PT1H");
+  supervisor=getSupervisor(1,1,true,"PT1H",null);
   addSomeEvents(1);
   Capture<KafkaIndexTask> captured=Capture.newInstance();
   expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
@@ -21,6 +21,7 @@
   Assert.assertEquals("sequenceName-0",taskConfig.getBaseSequenceName());
   Assert.assertTrue("isUseTransaction",taskConfig.isUseTransaction());
   Assert.assertFalse("pauseAfterRead",taskConfig.isPauseAfterRead());
+  Assert.assertFalse("minimumMessageTime",taskConfig.getMinimumMessageTime().isPresent());
   Assert.assertEquals(KAFKA_TOPIC,taskConfig.getStartPartitions().getTopic());
   Assert.assertEquals(0L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(0));
   Assert.assertEquals(0L,(long)taskConfig.getStartPartitions().getPartitionOffsetMap().get(1));

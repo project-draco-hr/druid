@@ -1,0 +1,12 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"basePersistDirectory\": \"/tmp/xxx\",\n"+ "  \"maxRowsInMemory\": 100,\n"+ "  \"maxRowsPerSegment\": 100,\n"+ "  \"intermediatePersistPeriod\": \"PT1H\",\n"+ "  \"maxPendingPersists\": 100,\n"+ "  \"buildV9Directly\": true,\n"+ "  \"reportParseExceptions\": true,\n"+ "  \"handoffConditionTimeout\": 100\n"+ "}";
+  KafkaTuningConfig config=(KafkaTuningConfig)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,TuningConfig.class)),TuningConfig.class);
+  Assert.assertEquals(new File("/tmp/xxx"),config.getBasePersistDirectory());
+  Assert.assertEquals(100,config.getMaxRowsInMemory());
+  Assert.assertEquals(100,config.getMaxRowsPerSegment());
+  Assert.assertEquals(new Period("PT1H"),config.getIntermediatePersistPeriod());
+  Assert.assertEquals(100,config.getMaxPendingPersists());
+  Assert.assertEquals(true,config.getBuildV9Directly());
+  Assert.assertEquals(true,config.isReportParseExceptions());
+  Assert.assertEquals(100,config.getHandoffConditionTimeout());
+}
