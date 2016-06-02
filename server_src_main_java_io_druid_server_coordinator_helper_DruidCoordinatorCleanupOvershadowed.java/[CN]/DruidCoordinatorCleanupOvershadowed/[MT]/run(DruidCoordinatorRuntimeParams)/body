@@ -25,6 +25,24 @@
           stats.addToGlobalStat("overShadowedCount",1);
         }
       }
+      for (      LoadQueuePeon loadQueue : coordinator.getLoadManagementPeons().values()) {
+        for (        DataSegment dataSegment : loadQueue.getSegmentsToLoad()) {
+          timeline=timelines.get(dataSegment.getDataSource());
+          if (timeline == null) {
+            continue;
+          }
+          timeline.add(dataSegment.getInterval(),dataSegment.getVersion(),dataSegment.getShardSpec().createChunk(dataSegment));
+          for (          TimelineObjectHolder<String,DataSegment> holder : timeline.findOvershadowed()) {
+            for (            DataSegment segmentToRemove : holder.getObject().payloads()) {
+              if (segmentToRemove == dataSegment) {
+                coordinator.removeSegment(dataSegment);
+                stats.addToGlobalStat("overShadowedCount",1);
+              }
+            }
+          }
+          timeline.remove(dataSegment.getInterval(),dataSegment.getVersion(),dataSegment.getShardSpec().createChunk(dataSegment));
+        }
+      }
     }
   }
   return params.buildFromExisting().withCoordinatorStats(stats).build();
