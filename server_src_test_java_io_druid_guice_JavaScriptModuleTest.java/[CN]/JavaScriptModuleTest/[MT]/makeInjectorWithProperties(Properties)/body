@@ -1,0 +1,10 @@
+{
+  return Guice.createInjector(ImmutableList.of(new DruidGuiceExtensions(),new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bind(Validator.class).toInstance(Validation.buildDefaultValidatorFactory().getValidator());
+      binder.bind(JsonConfigurator.class).in(LazySingleton.class);
+      binder.bind(Properties.class).toInstance(props);
+    }
+  }
+,new JavaScriptModule()));
+}
