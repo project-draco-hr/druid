@@ -1,4 +1,4 @@
 {
-  final LookupExtractor lookupExtractor=Strings.isNullOrEmpty(name) ? this.lookup : Preconditions.checkNotNull(this.lookupReferencesManager.get(name).get(),"can not find lookup with name [%s]",name);
+  final LookupExtractor lookupExtractor=Strings.isNullOrEmpty(name) ? this.lookup : Preconditions.checkNotNull(lookupReferencesManager.get(name),"Lookup [%s] not found",name).get();
   return new LookupExtractionFn(lookupExtractor,retainMissingValue,replaceMissingValueWith,lookupExtractor.isOneToOne(),optimize);
 }
