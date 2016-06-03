@@ -4,7 +4,7 @@
       if (!manager.hasSupervisor(id)) {
         return Response.status(Response.Status.NOT_FOUND).entity(ImmutableMap.of("error",String.format("[%s] does not exist",id))).build();
       }
-      manager.stopAndRemoveSupervisor(id);
+      manager.stopAndRemoveSupervisor(id,true);
       return Response.ok(ImmutableMap.of("id",id)).build();
     }
   }

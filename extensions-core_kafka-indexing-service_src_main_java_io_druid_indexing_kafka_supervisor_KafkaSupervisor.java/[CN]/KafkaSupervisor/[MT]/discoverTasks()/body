@@ -6,18 +6,8 @@
       taskCount++;
       KafkaIndexTask kafkaTask=(KafkaIndexTask)task;
       String taskId=task.getId();
-      Integer taskGroupId=null;
-      for (      Integer partition : kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet()) {
-        if (taskGroupId == null) {
-          taskGroupId=getTaskGroupIdForPartition(partition);
-        }
- else         if (!taskGroupId.equals(getTaskGroupIdForPartition(partition))) {
-          log.warn("Stopping task [%s] which does not match the expected partition allocation",taskId);
-          stopTask(taskId,false);
-          taskGroupId=null;
-          break;
-        }
-      }
+      Iterator<Integer> it=kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet().iterator();
+      Integer taskGroupId=(it.hasNext() ? getTaskGroupIdForPartition(it.next()) : null);
       if (taskGroupId != null) {
         TaskGroup taskGroup=taskGroups.get(taskGroupId);
         if (!isTaskInPendingCompletionGroups(taskId) && (taskGroup == null || !taskGroup.tasks.containsKey(taskId))) {
@@ -25,16 +15,27 @@
           if (status.isPresent() && status.get() == KafkaIndexTask.Status.PUBLISHING) {
             addDiscoveredTaskToPendingCompletionTaskGroups(taskGroupId,taskId,kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap());
             Map<Integer,Long> publishingTaskCurrentOffsets=getCurrentOffsets(taskId,true);
-            Map<Integer,Long> partitionOffsets=partitionGroups.get(taskGroupId);
             for (            Map.Entry<Integer,Long> entry : publishingTaskCurrentOffsets.entrySet()) {
               Integer partition=entry.getKey();
               Long offset=entry.getValue();
+              Map<Integer,Long> partitionOffsets=partitionGroups.get(getTaskGroupIdForPartition(partition));
               if (partitionOffsets.get(partition) == null || partitionOffsets.get(partition) < offset) {
                 partitionOffsets.put(partition,offset);
               }
             }
           }
  else {
+            for (            Integer partition : kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet()) {
+              if (!taskGroupId.equals(getTaskGroupIdForPartition(partition))) {
+                log.warn("Stopping task [%s] which does not match the expected partition allocation",taskId);
+                stopTask(taskId,false);
+                taskGroupId=null;
+                break;
+              }
+            }
+            if (taskGroupId == null) {
+              continue;
+            }
             if (!taskGroups.containsKey(taskGroupId)) {
               log.debug("Creating new task group [%d]",taskGroupId);
               taskGroups.put(taskGroupId,new TaskGroup(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap(),kafkaTask.getIOConfig().getMinimumMessageTime()));

@@ -1,7 +1,9 @@
 {
   Pair<Supervisor,SupervisorSpec> pair=supervisors.get(id);
   if (pair != null) {
-    metadataSupervisorManager.insert(id,new NoopSupervisorSpec());
+    if (writeTombstone) {
+      metadataSupervisorManager.insert(id,new NoopSupervisorSpec());
+    }
     pair.lhs.stop(true);
     supervisors.remove(id);
   }
