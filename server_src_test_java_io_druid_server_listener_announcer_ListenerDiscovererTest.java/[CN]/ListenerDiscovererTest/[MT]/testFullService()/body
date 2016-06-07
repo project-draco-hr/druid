@@ -60,6 +60,8 @@
     Thread.sleep(1);
   }
   Assert.assertEquals(ImmutableSet.of(HostAndPort.fromString(node.toString())),listenerDiscoverer.getNodes(listenerKey));
+  listenerDiscoverer.getNewNodes(listenerKey);
+  Assert.assertEquals(0,listenerDiscoverer.getNewNodes(listenerKey).size());
   Assert.assertEquals(ImmutableSet.of(listenerKey,listenerTier),ImmutableSet.copyOf(listenerDiscoverer.discoverChildren(null)));
   Assert.assertEquals(ImmutableSet.of(listenerTierChild),ImmutableSet.copyOf(listenerDiscoverer.discoverChildren(listenerTier)));
 }
