@@ -1,6 +1,6 @@
 {
-  String jsonStr="{\n" + "  \"millisToWaitBeforeDeleting\": 1,\n" + "  \"mergeBytesLimit\": 1,\n"+ "  \"mergeSegmentsLimit\" : 1,\n"+ "  \"maxSegmentsToMove\": 1,\n"+ "  \"replicantLifetime\": 1,\n"+ "  \"replicationThrottleLimit\": 1,\n"+ "  \"balancerComputeThreads\": 2, \n"+ "  \"emitBalancingStats\": true,\n"+ "  \"killDataSourceWhitelist\": [\"test\"]\n"+ "}\n";
+  String jsonStr="{\n" + "  \"millisToWaitBeforeDeleting\": 1,\n" + "  \"mergeBytesLimit\": 1,\n"+ "  \"mergeSegmentsLimit\" : 1,\n"+ "  \"maxSegmentsToMove\": 1,\n"+ "  \"replicantLifetime\": 1,\n"+ "  \"replicationThrottleLimit\": 1,\n"+ "  \"balancerComputeThreads\": 2, \n"+ "  \"emitBalancingStats\": true,\n"+ "  \"killDataSourceWhitelist\": [\"test1\",\"test2\"]\n"+ "}\n";
   ObjectMapper mapper=TestHelper.getObjectMapper();
   CoordinatorDynamicConfig actual=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,CoordinatorDynamicConfig.class)),CoordinatorDynamicConfig.class);
-  Assert.assertEquals(new CoordinatorDynamicConfig(1,1,1,1,1,1,2,true,ImmutableSet.of("test")),actual);
+  Assert.assertEquals(new CoordinatorDynamicConfig(1,1,1,1,1,1,2,true,ImmutableSet.of("test1","test2")),actual);
 }

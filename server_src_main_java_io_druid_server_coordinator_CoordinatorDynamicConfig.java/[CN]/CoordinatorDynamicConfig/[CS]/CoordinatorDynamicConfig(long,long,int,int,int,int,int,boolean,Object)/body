@@ -1,0 +1,26 @@
+{
+  this.maxSegmentsToMove=maxSegmentsToMove;
+  this.millisToWaitBeforeDeleting=millisToWaitBeforeDeleting;
+  this.mergeSegmentsLimit=mergeSegmentsLimit;
+  this.mergeBytesLimit=mergeBytesLimit;
+  this.replicantLifetime=replicantLifetime;
+  this.replicationThrottleLimit=replicationThrottleLimit;
+  this.emitBalancingStats=emitBalancingStats;
+  this.balancerComputeThreads=Math.max(balancerComputeThreads,1);
+  if (killDataSourceWhitelist instanceof String) {
+    String[] tmp=((String)killDataSourceWhitelist).split(",");
+    this.killDataSourceWhitelist=new HashSet<>();
+    for (int i=0; i < tmp.length; i++) {
+      String trimmed=tmp[i].trim();
+      if (!trimmed.isEmpty()) {
+        this.killDataSourceWhitelist.add(trimmed);
+      }
+    }
+  }
+ else   if (killDataSourceWhitelist instanceof Collection) {
+    this.killDataSourceWhitelist=ImmutableSet.copyOf(((Collection)killDataSourceWhitelist));
+  }
+ else {
+    this.killDataSourceWhitelist=ImmutableSet.of();
+  }
+}
