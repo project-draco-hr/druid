@@ -1,0 +1,24 @@
+{
+  SupervisorReport report=new SupervisorReport("id",DateTime.now()){
+    @Override public Object getPayload(){
+      return null;
+    }
+  }
+;
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.of(supervisorManager)).times(2);
+  EasyMock.expect(supervisorManager.getSupervisorStatus("my-id")).andReturn(Optional.of(report));
+  EasyMock.expect(supervisorManager.getSupervisorStatus("my-id-2")).andReturn(Optional.<SupervisorReport>absent());
+  replayAll();
+  Response response=supervisorResource.specGetStatus("my-id");
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(report,response.getEntity());
+  response=supervisorResource.specGetStatus("my-id-2");
+  Assert.assertEquals(404,response.getStatus());
+  verifyAll();
+  resetAll();
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.<SupervisorManager>absent());
+  replayAll();
+  response=supervisorResource.specGetStatus("my-id");
+  verifyAll();
+  Assert.assertEquals(503,response.getStatus());
+}

@@ -1,0 +1,17 @@
+{
+  Map<String,List<VersionedSupervisorSpec>> history=Maps.newHashMap();
+  history.put("id1",null);
+  history.put("id2",null);
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.of(supervisorManager)).times(2);
+  EasyMock.expect(supervisorManager.getSupervisorHistory()).andReturn(history);
+  replayAll();
+  Response response=supervisorResource.specGetAllHistory();
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(history,response.getEntity());
+  resetAll();
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.<SupervisorManager>absent());
+  replayAll();
+  response=supervisorResource.specGetAllHistory();
+  verifyAll();
+  Assert.assertEquals(503,response.getStatus());
+}

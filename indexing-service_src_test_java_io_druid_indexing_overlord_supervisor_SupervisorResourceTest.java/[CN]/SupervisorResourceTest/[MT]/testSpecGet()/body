@@ -1,0 +1,19 @@
+{
+  SupervisorSpec spec=new TestSupervisorSpec("my-id",null);
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.of(supervisorManager)).times(2);
+  EasyMock.expect(supervisorManager.getSupervisorSpec("my-id")).andReturn(Optional.of(spec));
+  EasyMock.expect(supervisorManager.getSupervisorSpec("my-id-2")).andReturn(Optional.<SupervisorSpec>absent());
+  replayAll();
+  Response response=supervisorResource.specGet("my-id");
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(spec,response.getEntity());
+  response=supervisorResource.specGet("my-id-2");
+  Assert.assertEquals(404,response.getStatus());
+  verifyAll();
+  resetAll();
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.<SupervisorManager>absent());
+  replayAll();
+  response=supervisorResource.specGet("my-id");
+  verifyAll();
+  Assert.assertEquals(503,response.getStatus());
+}

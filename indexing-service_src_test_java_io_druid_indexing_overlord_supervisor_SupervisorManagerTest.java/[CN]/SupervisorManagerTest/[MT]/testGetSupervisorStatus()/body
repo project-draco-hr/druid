@@ -1,0 +1,17 @@
+{
+  SupervisorReport report=new SupervisorReport("id1",DateTime.now()){
+    @Override public Object getPayload(){
+      return null;
+    }
+  }
+;
+  Map<String,SupervisorSpec> existingSpecs=ImmutableMap.<String,SupervisorSpec>of("id1",new TestSupervisorSpec("id1",supervisor1));
+  EasyMock.expect(metadataSupervisorManager.getLatest()).andReturn(existingSpecs);
+  supervisor1.start();
+  EasyMock.expect(supervisor1.getStatus()).andReturn(report);
+  replayAll();
+  manager.start();
+  Assert.assertEquals(Optional.absent(),manager.getSupervisorStatus("non-existent-id"));
+  Assert.assertEquals(report,manager.getSupervisorStatus("id1").get());
+  verifyAll();
+}

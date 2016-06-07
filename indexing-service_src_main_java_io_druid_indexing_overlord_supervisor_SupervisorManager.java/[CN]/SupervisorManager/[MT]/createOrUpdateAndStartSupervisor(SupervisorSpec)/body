@@ -1,0 +1,10 @@
+{
+  Preconditions.checkState(started,"SupervisorManager not started");
+  Preconditions.checkNotNull(spec,"spec");
+  Preconditions.checkNotNull(spec.getId(),"spec.getId()");
+synchronized (lock) {
+    Preconditions.checkState(started,"SupervisorManager not started");
+    possiblyStopAndRemoveSupervisorInternal(spec.getId(),false);
+    return createAndStartSupervisorInternal(spec,true);
+  }
+}

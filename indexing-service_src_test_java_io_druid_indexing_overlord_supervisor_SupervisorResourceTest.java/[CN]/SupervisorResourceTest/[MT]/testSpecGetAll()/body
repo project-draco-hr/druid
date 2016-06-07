@@ -1,0 +1,16 @@
+{
+  Set<String> supervisorIds=ImmutableSet.of("id1","id2");
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.of(supervisorManager));
+  EasyMock.expect(supervisorManager.getSupervisorIds()).andReturn(supervisorIds);
+  replayAll();
+  Response response=supervisorResource.specGetAll();
+  verifyAll();
+  Assert.assertEquals(200,response.getStatus());
+  Assert.assertEquals(supervisorIds,response.getEntity());
+  resetAll();
+  EasyMock.expect(taskMaster.getSupervisorManager()).andReturn(Optional.<SupervisorManager>absent());
+  replayAll();
+  response=supervisorResource.specGetAll();
+  verifyAll();
+  Assert.assertEquals(503,response.getStatus());
+}

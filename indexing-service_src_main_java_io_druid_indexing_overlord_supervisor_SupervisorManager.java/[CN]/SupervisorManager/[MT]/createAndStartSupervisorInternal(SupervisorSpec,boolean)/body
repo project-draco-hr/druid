@@ -1,13 +1,13 @@
 {
   String id=spec.getId();
-  if (!supervisors.containsKey(id)) {
-    Supervisor supervisor=spec.createSupervisor();
-    supervisor.start();
-    if (persistSpec) {
-      metadataSupervisorManager.insert(id,spec);
-    }
-    supervisors.put(id,Pair.of(supervisor,spec));
-    return true;
+  if (supervisors.containsKey(id)) {
+    return false;
   }
-  return false;
+  Supervisor supervisor=spec.createSupervisor();
+  supervisor.start();
+  if (persistSpec) {
+    metadataSupervisorManager.insert(id,spec);
+  }
+  supervisors.put(id,Pair.of(supervisor,spec));
+  return true;
 }

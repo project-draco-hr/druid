@@ -1,10 +1,7 @@
 {
   return asLeaderWithSupervisorManager(new Function<SupervisorManager,Response>(){
     @Override public Response apply(    SupervisorManager manager){
-      if (manager.hasSupervisor(spec.getId())) {
-        manager.stopAndRemoveSupervisor(spec.getId(),false);
-      }
-      manager.createAndStartSupervisor(spec);
+      manager.createOrUpdateAndStartSupervisor(spec);
       return Response.ok(ImmutableMap.of("id",spec.getId())).build();
     }
   }

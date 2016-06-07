@@ -1,0 +1,11 @@
+{
+  Map<String,SupervisorSpec> existingSpecs=ImmutableMap.<String,SupervisorSpec>of("id1",new TestSupervisorSpec("id1",supervisor1));
+  EasyMock.expect(metadataSupervisorManager.getLatest()).andReturn(existingSpecs);
+  supervisor1.start();
+  supervisor1.stop(false);
+  EasyMock.expectLastCall().andThrow(new RuntimeException("RTE"));
+  replayAll();
+  manager.start();
+  manager.stop();
+  verifyAll();
+}

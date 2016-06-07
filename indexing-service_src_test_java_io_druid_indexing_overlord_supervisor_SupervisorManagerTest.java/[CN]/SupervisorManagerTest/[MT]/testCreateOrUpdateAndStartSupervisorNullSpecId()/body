@@ -1,0 +1,8 @@
+{
+  EasyMock.expect(metadataSupervisorManager.getLatest()).andReturn(ImmutableMap.<String,SupervisorSpec>of());
+  replayAll();
+  exception.expect(NullPointerException.class);
+  manager.start();
+  manager.createOrUpdateAndStartSupervisor(new TestSupervisorSpec(null,null));
+  verifyAll();
+}

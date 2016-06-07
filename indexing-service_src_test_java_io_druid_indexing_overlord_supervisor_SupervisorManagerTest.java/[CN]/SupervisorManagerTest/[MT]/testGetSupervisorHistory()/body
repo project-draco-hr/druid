@@ -1,0 +1,8 @@
+{
+  Map<String,List<VersionedSupervisorSpec>> supervisorHistory=ImmutableMap.of();
+  EasyMock.expect(metadataSupervisorManager.getAll()).andReturn(supervisorHistory);
+  replayAll();
+  Map<String,List<VersionedSupervisorSpec>> history=manager.getSupervisorHistory();
+  verifyAll();
+  Assert.assertEquals(supervisorHistory,history);
+}

@@ -1,7 +1,16 @@
 {
-  for (  String id : supervisors.keySet()) {
-    supervisors.get(id).lhs.stop(false);
+  Preconditions.checkState(started,"SupervisorManager not started");
+synchronized (lock) {
+    for (    String id : supervisors.keySet()) {
+      try {
+        supervisors.get(id).lhs.stop(false);
+      }
+ catch (      Exception e) {
+        log.warn(e,"Caught exception while stopping supervisor [%s]",id);
+      }
+    }
+    supervisors.clear();
+    started=false;
   }
-  supervisors.clear();
   log.info("SupervisorManager stopped.");
 }
