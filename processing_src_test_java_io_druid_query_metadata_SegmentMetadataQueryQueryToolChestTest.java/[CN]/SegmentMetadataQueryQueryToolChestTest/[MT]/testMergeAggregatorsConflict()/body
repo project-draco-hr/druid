@@ -7,4 +7,5 @@
   expectedLenient.put("baz",new LongMaxAggregatorFactory("baz","baz"));
   Assert.assertNull(mergeStrict(analysis1,analysis2).getAggregators());
   Assert.assertEquals(expectedLenient,mergeLenient(analysis1,analysis2).getAggregators());
+  Assert.assertEquals(expectedLenient,mergeLenient(mergeLenient(analysis1,analysis2),mergeLenient(analysis1,analysis2)).getAggregators());
 }
