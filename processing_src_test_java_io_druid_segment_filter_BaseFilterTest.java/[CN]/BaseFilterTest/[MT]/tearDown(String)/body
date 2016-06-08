@@ -1,0 +1,10 @@
+{
+  Map<String,Pair<StorageAdapter,Closeable>> adaptersForClass=adapterCache.get().get(className);
+  if (adaptersForClass != null) {
+    for (    Map.Entry<String,Pair<StorageAdapter,Closeable>> entry : adaptersForClass.entrySet()) {
+      Closeable closeable=entry.getValue().rhs;
+      closeable.close();
+    }
+    adapterCache.get().put(className,null);
+  }
+}

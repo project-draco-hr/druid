@@ -1,5 +1,15 @@
 {
-  final Pair<StorageAdapter,Closeable> pair=finisher.apply(indexBuilder.tmpDir(temporaryFolder.newFolder()).add(rows));
+  String className=getClass().getName();
+  Map<String,Pair<StorageAdapter,Closeable>> adaptersForClass=adapterCache.get().get(className);
+  if (adaptersForClass == null) {
+    adaptersForClass=new HashMap<>();
+    adapterCache.get().put(className,adaptersForClass);
+  }
+  Pair<StorageAdapter,Closeable> pair=adaptersForClass.get(testName);
+  if (pair == null) {
+    pair=finisher.apply(indexBuilder.tmpDir(temporaryFolder.newFolder()).add(rows));
+    adaptersForClass.put(testName,pair);
+  }
   this.adapter=pair.lhs;
   this.closeable=pair.rhs;
 }

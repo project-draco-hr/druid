@@ -1,8 +1,14 @@
 {
-  final Cursor cursor=makeCursor(null);
-  final Aggregator agg=new FilteredAggregatorFactory(new CountAggregatorFactory("count"),maybeOptimize(filter)).factorize(cursor);
-  for (; !cursor.isDone(); cursor.advance()) {
-    agg.aggregate();
+  final Sequence<Cursor> cursors=makeCursorSequence(Filters.toFilter(maybeOptimize(filter)));
+  Sequence<Aggregator> aggSeq=Sequences.map(cursors,new Function<Cursor,Aggregator>(){
+    @Override public Aggregator apply(    Cursor input){
+      Aggregator agg=new FilteredAggregatorFactory(new CountAggregatorFactory("count"),maybeOptimize(filter)).factorize(input);
+      for (; !input.isDone(); input.advance()) {
+        agg.aggregate();
+      }
+      return agg;
+    }
   }
-  return agg.getLong();
+);
+  return Sequences.toList(aggSeq,new ArrayList<Aggregator>()).get(0).getLong();
 }
