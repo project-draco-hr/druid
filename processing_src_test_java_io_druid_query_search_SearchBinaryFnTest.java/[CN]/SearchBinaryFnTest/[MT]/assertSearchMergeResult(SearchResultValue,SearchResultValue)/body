@@ -1,0 +1,11 @@
+{
+  Iterator<SearchHit> i1=((Iterable)o1).iterator();
+  Iterator<SearchHit> i2=((Iterable)o2).iterator();
+  while (i1.hasNext() && i2.hasNext()) {
+    SearchHit s1=i1.next();
+    SearchHit s2=i2.next();
+    Assert.assertEquals(s1,s2);
+    Assert.assertEquals(s1.getCount(),s2.getCount());
+  }
+  Assert.assertTrue(!i1.hasNext() && !i2.hasNext());
+}
