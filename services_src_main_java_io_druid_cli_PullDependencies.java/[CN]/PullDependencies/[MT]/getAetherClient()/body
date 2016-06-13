@@ -1,5 +1,9 @@
 {
-  List<String> remoteUriList=remoteRepositories;
+  final List<String> remoteUriList=Lists.newArrayList();
+  if (!noDefaultRemoteRepositories) {
+    remoteUriList.addAll(DEFAULT_REMOTE_REPOSITORIES);
+  }
+  remoteUriList.addAll(remoteRepositories);
   List<Repository> remoteRepositories=Lists.newArrayList();
   for (  String uri : remoteUriList) {
     try {
