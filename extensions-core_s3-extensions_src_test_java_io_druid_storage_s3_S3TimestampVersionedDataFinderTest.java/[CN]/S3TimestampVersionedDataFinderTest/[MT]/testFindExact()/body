@@ -6,7 +6,7 @@
   object0.setBucketName(bucket);
   object0.setKey(keyPrefix + "/renames-0.gz");
   object0.setLastModifiedDate(new Date(0));
-  EasyMock.expect(s3Client.listObjects(EasyMock.eq(bucket),EasyMock.anyString(),EasyMock.eq("/"))).andReturn(new S3Object[]{object0}).once();
+  EasyMock.expect(s3Client.listObjects(EasyMock.eq(bucket),EasyMock.anyString(),EasyMock.<String>isNull())).andReturn(new S3Object[]{object0}).once();
   S3TimestampVersionedDataFinder finder=new S3TimestampVersionedDataFinder(s3Client);
   EasyMock.replay(s3Client);
   URI latest=finder.getLatestVersion(URI.create(String.format("s3://%s/%s",bucket,object0.getKey())),null);

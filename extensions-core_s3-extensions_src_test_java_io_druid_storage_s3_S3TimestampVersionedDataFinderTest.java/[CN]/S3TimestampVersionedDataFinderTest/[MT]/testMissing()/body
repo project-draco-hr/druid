@@ -9,7 +9,7 @@
   object1.setBucketName(bucket);
   object1.setKey(keyPrefix + "/renames-1.gz");
   object1.setLastModifiedDate(new Date(1));
-  EasyMock.expect(s3Client.listObjects(EasyMock.eq(bucket),EasyMock.anyString(),EasyMock.eq("/"))).andReturn(null).once();
+  EasyMock.expect(s3Client.listObjects(EasyMock.eq(bucket),EasyMock.anyString(),EasyMock.<String>isNull())).andReturn(null).once();
   S3TimestampVersionedDataFinder finder=new S3TimestampVersionedDataFinder(s3Client);
   Pattern pattern=Pattern.compile("renames-[0-9]*\\.gz");
   EasyMock.replay(s3Client);
