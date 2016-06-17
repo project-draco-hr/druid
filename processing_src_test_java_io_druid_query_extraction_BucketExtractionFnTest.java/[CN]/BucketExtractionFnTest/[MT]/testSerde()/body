@@ -1,0 +1,13 @@
+{
+  final ObjectMapper objectMapper=new DefaultObjectMapper();
+  final String json1="{ \"type\" : \"bucket\", \"size\" : \"2\", \"offset\" : \"0.5\" }";
+  BucketExtractionFn extractionFn1=(BucketExtractionFn)objectMapper.readValue(json1,ExtractionFn.class);
+  Assert.assertEquals(2,extractionFn1.getSize(),DELTA);
+  Assert.assertEquals(0.5,extractionFn1.getOffset(),DELTA);
+  Assert.assertEquals(extractionFn1,objectMapper.readValue(objectMapper.writeValueAsBytes(extractionFn1),ExtractionFn.class));
+  final String json2="{ \"type\" : \"bucket\"}";
+  BucketExtractionFn extractionFn2=(BucketExtractionFn)objectMapper.readValue(json2,ExtractionFn.class);
+  Assert.assertEquals(1,extractionFn2.getSize(),DELTA);
+  Assert.assertEquals(0,extractionFn2.getOffset(),DELTA);
+  Assert.assertEquals(extractionFn2,objectMapper.readValue(objectMapper.writeValueAsBytes(extractionFn2),ExtractionFn.class));
+}
