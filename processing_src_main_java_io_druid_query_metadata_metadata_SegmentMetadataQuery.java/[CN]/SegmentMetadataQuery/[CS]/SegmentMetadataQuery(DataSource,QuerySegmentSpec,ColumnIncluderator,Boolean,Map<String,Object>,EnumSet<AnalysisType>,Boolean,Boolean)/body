@@ -9,6 +9,6 @@
   this.toInclude=toInclude == null ? new AllColumnIncluderator() : toInclude;
   this.merge=merge == null ? false : merge;
   this.analysisTypes=(analysisTypes == null) ? DEFAULT_ANALYSIS_TYPES : analysisTypes;
-  Preconditions.checkArgument(dataSource instanceof TableDataSource,"SegmentMetadataQuery only supports table datasource");
+  Preconditions.checkArgument(dataSource instanceof TableDataSource || dataSource instanceof UnionDataSource,"SegmentMetadataQuery only supports table or union datasource");
   this.lenientAggregatorMerge=lenientAggregatorMerge == null ? false : lenientAggregatorMerge;
 }
