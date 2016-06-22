@@ -6,7 +6,7 @@
   File testFile=new File("example/wikipedia_list.parquet");
   Path path=new Path(testFile.getAbsoluteFile().toURI());
   FileSplit split=new FileSplit(path,0,testFile.length(),null);
-  InputFormat inputFormat=ReflectionUtils.newInstance(DruidParquetInputFormat.class,job.getConfiguration());
+  DruidParquetInputFormat inputFormat=ReflectionUtils.newInstance(DruidParquetInputFormat.class,job.getConfiguration());
   TaskAttemptContext context=new TaskAttemptContextImpl(job.getConfiguration(),new TaskAttemptID());
   RecordReader reader=inputFormat.createRecordReader(split,context);
   reader.initialize(split,context);
@@ -14,5 +14,6 @@
   GenericRecord data=(GenericRecord)reader.getCurrentValue();
   assertEquals(data.get("added"),null);
   assertEquals(data.get("page"),new Utf8("Gypsy Danger"));
+  assertEquals(config.getParser().parse(data).getDimension("page").get(0),"Gypsy Danger");
   reader.close();
 }
