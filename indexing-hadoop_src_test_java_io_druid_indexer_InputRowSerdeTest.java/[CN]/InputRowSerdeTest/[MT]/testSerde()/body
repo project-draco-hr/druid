@@ -1,8 +1,7 @@
 {
-  new AggregatorsModule();
   InputRow in=new MapBasedInputRow(timestamp,dims,event);
-  AggregatorFactory[] aggregatorFactories=new AggregatorFactory[]{new DoubleSumAggregatorFactory("agg_non_existing","agg_non_existing_in"),new DoubleSumAggregatorFactory("m1out","m1"),new LongSumAggregatorFactory("m2out","m2"),new HyperUniquesAggregatorFactory("m3out","m3")};
-  byte[] data=InputRowSerde.toBytes(in,aggregatorFactories);
+  AggregatorFactory[] aggregatorFactories=new AggregatorFactory[]{new DoubleSumAggregatorFactory("agg_non_existing","agg_non_existing_in"),new DoubleSumAggregatorFactory("m1out","m1"),new LongSumAggregatorFactory("m2out","m2"),new HyperUniquesAggregatorFactory("m3out","m3"),new LongSumAggregatorFactory("unparseable","m3")};
+  byte[] data=InputRowSerde.toBytes(in,aggregatorFactories,false);
   InputRow out=InputRowSerde.fromBytes(data,aggregatorFactories);
   Assert.assertEquals(timestamp,out.getTimestampFromEpoch());
   Assert.assertEquals(dims,out.getDimensions());
@@ -13,4 +12,5 @@
   Assert.assertEquals(5.0f,out.getFloatMetric("m1out"),0.00001);
   Assert.assertEquals(100L,out.getLongMetric("m2out"));
   Assert.assertEquals(1,((HyperLogLogCollector)out.getRaw("m3out")).estimateCardinality(),0.001);
+  Assert.assertEquals(0L,out.getLongMetric("unparseable"));
 }

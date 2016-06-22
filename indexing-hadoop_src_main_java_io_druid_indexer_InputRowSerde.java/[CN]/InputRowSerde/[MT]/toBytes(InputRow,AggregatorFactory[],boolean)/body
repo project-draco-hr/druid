@@ -22,7 +22,15 @@
       String k=aggFactory.getName();
       writeString(k,out);
       Aggregator agg=aggFactory.factorize(IncrementalIndex.makeColumnSelectorFactory(aggFactory,supplier,true));
-      agg.aggregate();
+      try {
+        agg.aggregate();
+      }
+ catch (      ParseException e) {
+        if (reportParseExceptions) {
+          throw new ParseException(e,"Encountered parse error for aggregator[%s]",agg.getName());
+        }
+        log.debug(e,"Encountered parse error, skipping aggregator[%s].",agg.getName());
+      }
       String t=aggFactory.getTypeName();
       if (t.equals("float")) {
         out.writeFloat(agg.getFloat());

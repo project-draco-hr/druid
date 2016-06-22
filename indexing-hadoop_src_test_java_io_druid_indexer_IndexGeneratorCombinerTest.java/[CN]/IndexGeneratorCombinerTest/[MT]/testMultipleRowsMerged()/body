@@ -5,7 +5,7 @@
   BytesWritable key=keySortableBytes.toBytesWritable();
   InputRow row1=new MapBasedInputRow(timestamp,ImmutableList.<String>of(),ImmutableMap.<String,Object>of("host","host1","visited",10));
   InputRow row2=new MapBasedInputRow(timestamp,ImmutableList.<String>of(),ImmutableMap.<String,Object>of("host","host2","visited",5));
-  List<BytesWritable> rows=Lists.newArrayList(new BytesWritable(InputRowSerde.toBytes(row1,aggregators)),new BytesWritable(InputRowSerde.toBytes(row2,aggregators)));
+  List<BytesWritable> rows=Lists.newArrayList(new BytesWritable(InputRowSerde.toBytes(row1,aggregators,true)),new BytesWritable(InputRowSerde.toBytes(row2,aggregators,true)));
   Reducer.Context context=EasyMock.createNiceMock(Reducer.Context.class);
   Capture<BytesWritable> captureKey=Capture.newInstance();
   Capture<BytesWritable> captureVal=Capture.newInstance();

@@ -1,0 +1,5 @@
+{
+  InputRow in=new MapBasedInputRow(timestamp,dims,event);
+  AggregatorFactory[] aggregatorFactories=new AggregatorFactory[]{new DoubleSumAggregatorFactory("agg_non_existing","agg_non_existing_in"),new DoubleSumAggregatorFactory("m1out","m1"),new LongSumAggregatorFactory("m2out","m2"),new HyperUniquesAggregatorFactory("m3out","m3"),new LongSumAggregatorFactory("unparseable","m3")};
+  InputRowSerde.toBytes(in,aggregatorFactories,true);
+}

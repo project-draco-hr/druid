@@ -5,6 +5,6 @@
   }
   final long truncatedTimestamp=granularitySpec.getQueryGranularity().truncate(inputRow.getTimestampFromEpoch());
   final byte[] hashedDimensions=hashFunction.hashBytes(HadoopDruidIndexerConfig.JSON_MAPPER.writeValueAsBytes(Rows.toGroupKey(truncatedTimestamp,inputRow))).asBytes();
-  byte[] serializedInputRow=inputRow instanceof SegmentInputRow ? InputRowSerde.toBytes(inputRow,combiningAggs) : InputRowSerde.toBytes(inputRow,aggregators);
+  byte[] serializedInputRow=inputRow instanceof SegmentInputRow ? InputRowSerde.toBytes(inputRow,combiningAggs,reportParseExceptions) : InputRowSerde.toBytes(inputRow,aggregators,reportParseExceptions);
   context.write(new SortableBytes(bucket.get().toGroupKey(),ByteBuffer.allocate(Longs.BYTES + hashedDimensions.length).putLong(truncatedTimestamp).put(hashedDimensions).array()).toBytesWritable(),new BytesWritable(serializedInputRow));
 }

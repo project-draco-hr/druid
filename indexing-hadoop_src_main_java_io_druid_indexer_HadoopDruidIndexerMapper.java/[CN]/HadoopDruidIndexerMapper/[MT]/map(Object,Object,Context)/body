@@ -4,18 +4,16 @@
     try {
       inputRow=parseInputRow(value,parser);
     }
- catch (    Exception e) {
-      if (config.isIgnoreInvalidRows()) {
-        log.debug(e,"Ignoring invalid row [%s] due to parsing error",value.toString());
-        context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
-        return;
-      }
- else {
+ catch (    ParseException e) {
+      if (reportParseExceptions) {
         throw e;
       }
+      log.debug(e,"Ignoring invalid row [%s] due to parsing error",value.toString());
+      context.getCounter(HadoopDruidIndexerConfig.IndexJobCounters.INVALID_ROW_COUNTER).increment(1);
+      return;
     }
     if (!granularitySpec.bucketIntervals().isPresent() || granularitySpec.bucketInterval(new DateTime(inputRow.getTimestampFromEpoch())).isPresent()) {
-      innerMap(inputRow,value,context);
+      innerMap(inputRow,value,context,reportParseExceptions);
     }
   }
  catch (  RuntimeException e) {
