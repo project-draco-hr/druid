@@ -1,0 +1,19 @@
+{
+  final Filter filter=Filters.convertToCNF(maybeOptimize(dimFilter).toFilter());
+  final Sequence<Cursor> cursors=makeCursorSequence(filter);
+  Sequence<List<String>> seq=Sequences.map(cursors,new Function<Cursor,List<String>>(){
+    @Override public List<String> apply(    Cursor input){
+      final DimensionSelector selector=input.makeDimensionSelector(new DefaultDimensionSpec(selectColumn,selectColumn));
+      final List<String> values=Lists.newArrayList();
+      while (!input.isDone()) {
+        IndexedInts row=selector.getRow();
+        Preconditions.checkState(row.size() == 1);
+        values.add(selector.lookupName(row.get(0)));
+        input.advance();
+      }
+      return values;
+    }
+  }
+);
+  return Sequences.toList(seq,new ArrayList<List<String>>()).get(0);
+}

@@ -1,0 +1,15 @@
+{
+  return Sequences.map(cursors,new Function<Cursor,List<Long>>(){
+    @Override public List<Long> apply(    Cursor input){
+      List<Long> longvals=new ArrayList<Long>();
+      LongColumnSelector selector=input.makeLongColumnSelector("sumLongSequential");
+      while (!input.isDone()) {
+        long rowval=selector.get();
+        blackhole.consume(rowval);
+        input.advance();
+      }
+      return longvals;
+    }
+  }
+);
+}

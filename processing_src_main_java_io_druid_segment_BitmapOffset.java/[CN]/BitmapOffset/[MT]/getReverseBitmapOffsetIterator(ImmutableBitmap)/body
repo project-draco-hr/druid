@@ -1,0 +1,13 @@
+{
+  ImmutableBitmap roaringBitmap=bitmapIndex;
+  if (!(bitmapIndex instanceof WrappedImmutableRoaringBitmap)) {
+    final BitmapFactory factory=RoaringBitmapSerdeFactory.bitmapFactory;
+    final MutableBitmap bitmap=factory.makeEmptyMutableBitmap();
+    final IntIterator iterator=bitmapIndex.iterator();
+    while (iterator.hasNext()) {
+      bitmap.add(iterator.next());
+    }
+    roaringBitmap=factory.makeImmutableBitmap(bitmap);
+  }
+  return ((WrappedImmutableRoaringBitmap)roaringBitmap).getBitmap().getReverseIntIterator();
+}

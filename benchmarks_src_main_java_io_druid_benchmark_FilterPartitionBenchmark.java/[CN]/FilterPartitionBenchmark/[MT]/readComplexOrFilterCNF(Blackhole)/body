@@ -1,0 +1,12 @@
+{
+  DimFilter dimFilter1=new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dimSequential","199",null),new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dimMultivalEnumerated2","Corundum",null),new SelectorDimFilter("dimMultivalEnumerated","Bar",null)))));
+  DimFilter dimFilter2=new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dimSequential","299",null),new SelectorDimFilter("dimSequential","399",null),new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dimMultivalEnumerated2","Xylophone",null),new SelectorDimFilter("dimMultivalEnumerated","Foo",null)))));
+  DimFilter dimFilter3=new OrDimFilter(Arrays.<DimFilter>asList(dimFilter1,dimFilter2,new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dimMultivalEnumerated2","Orange",null),new SelectorDimFilter("dimMultivalEnumerated","World",null)))));
+  StorageAdapter sa=new QueryableIndexStorageAdapter(qIndex);
+  Sequence<Cursor> cursors=sa.makeCursors(Filters.convertToCNF(dimFilter3.toFilter()),schemaInfo.getDataInterval(),QueryGranularities.ALL,false);
+  Sequence<List<String>> stringListSeq=readCursors(cursors,blackhole);
+  List<String> strings=Sequences.toList(Sequences.limit(stringListSeq,1),Lists.<List<String>>newArrayList()).get(0);
+  for (  String st : strings) {
+    blackhole.consume(st);
+  }
+}

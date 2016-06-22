@@ -28,32 +28,11 @@
         }
       }
       final Offset offset=descending ? new DescendingTimestampCheckingOffset(baseOffset,timestamps,timeStart,minDataTimestamp >= timeStart) : new AscendingTimestampCheckingOffset(baseOffset,timestamps,timeEnd,maxDataTimestamp < timeEnd);
-      return new Cursor(){
-        private final Offset initOffset=offset.clone();
-        private final DateTime myBucket=gran.toDateTime(input);
-        private Offset cursorOffset=offset;
-        @Override public DateTime getTime(){
-          return myBucket;
-        }
-        @Override public void advance(){
-          if (Thread.interrupted()) {
-            throw new QueryInterruptedException(new InterruptedException());
-          }
-          cursorOffset.increment();
-        }
-        @Override public void advanceTo(        int offset){
-          int count=0;
-          while (count < offset && !isDone()) {
-            advance();
-            count++;
-          }
-        }
-        @Override public boolean isDone(){
-          return !cursorOffset.withinBounds();
-        }
-        @Override public void reset(){
-          cursorOffset=initOffset.clone();
-        }
+      final Offset initOffset=offset.clone();
+      final DateTime myBucket=gran.toDateTime(input);
+      final CursorOffsetHolder cursorOffsetHolder=new CursorOffsetHolder();
+abstract class QueryableIndexBaseCursor implements Cursor {
+        Offset cursorOffset;
         @Override public DimensionSelector makeDimensionSelector(        DimensionSpec dimensionSpec){
           return dimensionSpec.decorate(makeDimensionSelectorUndecorated(dimensionSpec));
         }
@@ -298,7 +277,103 @@
 ;
         }
       }
+      if (postFilter == null) {
+        return new QueryableIndexBaseCursor(){
+{
+            reset();
+          }
+          @Override public DateTime getTime(){
+            return myBucket;
+          }
+          @Override public void advance(){
+            if (Thread.interrupted()) {
+              throw new QueryInterruptedException(new InterruptedException());
+            }
+            cursorOffset.increment();
+          }
+          @Override public void advanceTo(          int offset){
+            int count=0;
+            while (count < offset && !isDone()) {
+              advance();
+              count++;
+            }
+          }
+          @Override public boolean isDone(){
+            return !cursorOffset.withinBounds();
+          }
+          @Override public void reset(){
+            cursorOffset=initOffset.clone();
+            cursorOffsetHolder.set(cursorOffset);
+          }
+        }
 ;
+      }
+ else {
+        return new QueryableIndexBaseCursor(){
+          CursorOffsetHolderValueMatcherFactory valueMatcherFactory=new CursorOffsetHolderValueMatcherFactory(this);
+          RowOffsetMatcherFactory rowOffsetMatcherFactory=new CursorOffsetHolderRowOffsetMatcherFactory(cursorOffsetHolder,descending);
+          final ValueMatcher filterMatcher;
+{
+            if (postFilter instanceof BooleanFilter) {
+              filterMatcher=((BooleanFilter)postFilter).makeMatcher(bitmapIndexSelector,valueMatcherFactory,rowOffsetMatcherFactory);
+            }
+ else {
+              if (postFilter.supportsBitmapIndex(bitmapIndexSelector)) {
+                filterMatcher=rowOffsetMatcherFactory.makeRowOffsetMatcher(postFilter.getBitmapIndex(bitmapIndexSelector));
+              }
+ else {
+                filterMatcher=postFilter.makeMatcher(valueMatcherFactory);
+              }
+            }
+          }
+{
+            reset();
+          }
+          @Override public DateTime getTime(){
+            return myBucket;
+          }
+          @Override public void advance(){
+            if (Thread.interrupted()) {
+              throw new QueryInterruptedException(new InterruptedException());
+            }
+            cursorOffset.increment();
+            while (!isDone()) {
+              if (Thread.interrupted()) {
+                throw new QueryInterruptedException(new InterruptedException());
+              }
+              if (filterMatcher.matches()) {
+                return;
+              }
+ else {
+                cursorOffset.increment();
+              }
+            }
+          }
+          @Override public void advanceTo(          int offset){
+            int count=0;
+            while (count < offset && !isDone()) {
+              advance();
+              count++;
+            }
+          }
+          @Override public boolean isDone(){
+            return !cursorOffset.withinBounds();
+          }
+          @Override public void reset(){
+            cursorOffset=initOffset.clone();
+            cursorOffsetHolder.set(cursorOffset);
+            if (!isDone()) {
+              if (filterMatcher.matches()) {
+                return;
+              }
+ else {
+                advance();
+              }
+            }
+          }
+        }
+;
+      }
     }
   }
 ),new Closeable(){

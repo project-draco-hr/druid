@@ -1,0 +1,32 @@
+{
+  final IntIterator iter=descending ? BitmapOffset.getReverseBitmapOffsetIterator(rowBitmap) : rowBitmap.iterator();
+  if (!iter.hasNext()) {
+    return new BooleanValueMatcher(false);
+  }
+  if (descending) {
+    return new ValueMatcher(){
+      int iterOffset=Integer.MAX_VALUE;
+      @Override public boolean matches(){
+        int currentOffset=holder.get().getOffset();
+        while (iterOffset > currentOffset && iter.hasNext()) {
+          iterOffset=iter.next();
+        }
+        return iterOffset == currentOffset;
+      }
+    }
+;
+  }
+ else {
+    return new ValueMatcher(){
+      int iterOffset=-1;
+      @Override public boolean matches(){
+        int currentOffset=holder.get().getOffset();
+        while (iterOffset < currentOffset && iter.hasNext()) {
+          iterOffset=iter.next();
+        }
+        return iterOffset == currentOffset;
+      }
+    }
+;
+  }
+}

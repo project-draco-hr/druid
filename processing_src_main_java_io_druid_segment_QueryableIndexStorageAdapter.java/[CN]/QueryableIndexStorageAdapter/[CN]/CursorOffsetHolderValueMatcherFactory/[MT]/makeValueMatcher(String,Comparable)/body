@@ -1,0 +1,25 @@
+{
+  final DimensionSelector selector=cursor.makeDimensionSelector(new DefaultDimensionSpec(dimension,dimension));
+  final boolean matchNull=isComparableNullOrEmpty(value);
+  final int id=selector.lookupId((String)value);
+  if (id < 0) {
+    return new BooleanValueMatcher(false);
+  }
+ else {
+    return new ValueMatcher(){
+      @Override public boolean matches(){
+        IndexedInts row=selector.getRow();
+        if (row.size() == 0) {
+          return matchNull;
+        }
+        for (int i=0; i < row.size(); i++) {
+          if (row.get(i) == id) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+;
+  }
+}

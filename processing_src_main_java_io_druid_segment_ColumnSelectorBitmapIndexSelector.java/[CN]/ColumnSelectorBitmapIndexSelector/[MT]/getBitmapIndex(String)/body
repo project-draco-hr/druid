@@ -1,6 +1,34 @@
 {
   final Column column=index.getColumn(dimension);
-  if (column != null && column.getCapabilities().hasBitmapIndexes()) {
+  if (column == null) {
+    return new BitmapIndex(){
+      @Override public int getCardinality(){
+        return 1;
+      }
+      @Override public String getValue(      int index){
+        return null;
+      }
+      @Override public boolean hasNulls(){
+        return true;
+      }
+      @Override public BitmapFactory getBitmapFactory(){
+        return bitmapFactory;
+      }
+      @Override public int getIndex(      String value){
+        return Strings.isNullOrEmpty(value) ? 0 : -2;
+      }
+      @Override public ImmutableBitmap getBitmap(      int idx){
+        if (idx == 0) {
+          return bitmapFactory.complement(bitmapFactory.makeEmptyImmutableBitmap(),getNumRows());
+        }
+ else {
+          return bitmapFactory.makeEmptyImmutableBitmap();
+        }
+      }
+    }
+;
+  }
+ else   if (column.getCapabilities().hasBitmapIndexes()) {
     return column.getBitmapIndex();
   }
  else {

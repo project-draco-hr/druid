@@ -1,0 +1,35 @@
+{
+  if (root instanceof BooleanFilter) {
+    List<Filter> children=new ArrayList<>();
+    children.addAll(((BooleanFilter)root).getFilters());
+    for (int i=0; i < children.size(); ++i) {
+      Filter child=flatten(children.get(i));
+      if (child.getClass() == root.getClass() && !(child instanceof NotFilter)) {
+        boolean first=true;
+        List<Filter> grandKids=((BooleanFilter)child).getFilters();
+        for (        Filter grandkid : grandKids) {
+          if (first) {
+            first=false;
+            children.set(i,grandkid);
+          }
+ else {
+            children.add(++i,grandkid);
+          }
+        }
+      }
+ else {
+        children.set(i,child);
+      }
+    }
+    if (children.size() == 1 && (root instanceof AndFilter || root instanceof OrFilter)) {
+      return children.get(0);
+    }
+    if (root instanceof AndFilter) {
+      return new AndFilter(children);
+    }
+ else     if (root instanceof OrFilter) {
+      return new OrFilter(children);
+    }
+  }
+  return root;
+}

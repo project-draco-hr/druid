@@ -21,7 +21,8 @@
   List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
   Preconditions.checkArgument(intervals.size() == 1,"Can only handle a single interval, got[%s]",intervals);
   final String segmentId=DataSegmentUtils.withInterval(dataSource,segment.getIdentifier(),intervals.get(0));
-  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),Filters.toFilter(query.getDimensionsFilter()),query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
+  final Filter filter=Filters.convertToCNFFromQueryContext(query,Filters.toFilter(query.getDimensionsFilter()));
+  return QueryRunnerHelper.makeCursorBasedQuery(adapter,query.getQuerySegmentSpec().getIntervals(),filter,query.isDescending(),query.getGranularity(),new Function<Cursor,Result<SelectResultValue>>(){
     @Override public Result<SelectResultValue> apply(    Cursor cursor){
       final SelectResultValueBuilder builder=new SelectResultValueBuilder(cursor.getTime(),query.getPagingSpec(),query.isDescending());
       final LongColumnSelector timestampColumnSelector=cursor.makeLongColumnSelector(Column.TIME_COLUMN_NAME);

@@ -12,13 +12,52 @@
   if (actualInterval.getEnd().isAfter(dataInterval.getEnd())) {
     actualInterval=actualInterval.withEnd(dataInterval.getEnd());
   }
+  final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
   final Offset offset;
+  final List<Filter> postFilters=new ArrayList<>();
   if (filter == null) {
     offset=new NoFilterOffset(0,index.getNumRows(),descending);
   }
  else {
-    final ColumnSelectorBitmapIndexSelector selector=new ColumnSelectorBitmapIndexSelector(index.getBitmapFactoryForDimensions(),index);
-    offset=new BitmapOffset(selector.getBitmapFactory(),filter.getBitmapIndex(selector),descending);
+    final List<Filter> preFilters=new ArrayList<>();
+    if (filter instanceof AndFilter) {
+      for (      Filter subfilter : ((AndFilter)filter).getFilters()) {
+        if (subfilter.supportsBitmapIndex(selector)) {
+          preFilters.add(subfilter);
+        }
+ else {
+          postFilters.add(subfilter);
+        }
+      }
+    }
+ else {
+      if (filter.supportsBitmapIndex(selector)) {
+        preFilters.add(filter);
+      }
+ else {
+        postFilters.add(filter);
+      }
+    }
+    if (preFilters.size() == 0) {
+      offset=new NoFilterOffset(0,index.getNumRows(),descending);
+    }
+ else {
+      List<ImmutableBitmap> bitmaps=Lists.newArrayList();
+      for (      Filter prefilter : preFilters) {
+        bitmaps.add(prefilter.getBitmapIndex(selector));
+      }
+      offset=new BitmapOffset(selector.getBitmapFactory(),selector.getBitmapFactory().intersection(bitmaps),descending);
+    }
   }
-  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset,minDataTimestamp,maxDataTimestamp,descending).build(),Predicates.<Cursor>notNull());
+  final Filter postFilter;
+  if (postFilters.size() == 0) {
+    postFilter=null;
+  }
+ else   if (postFilters.size() == 1) {
+    postFilter=postFilters.get(0);
+  }
+ else {
+    postFilter=new AndFilter(postFilters);
+  }
+  return Sequences.filter(new CursorSequenceBuilder(index,actualInterval,gran,offset,minDataTimestamp,maxDataTimestamp,descending,postFilter,selector).build(),Predicates.<Cursor>notNull());
 }

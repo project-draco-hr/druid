@@ -1,0 +1,16 @@
+{
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim2","a",null),new NoBitmapSelectorDimFilter("dim1",null,null))),ImmutableList.of("0","3"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","abc",null),new NoBitmapSelectorDimFilter("dim2",null,null))),ImmutableList.of("1","2","5","8"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","2",null),new NoBitmapSelectorDimFilter("dim2",null,null))),ImmutableList.of("1","2","5"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","INVALID_VALUE",null),new NoBitmapSelectorDimFilter("dim2","foo",null))),ImmutableList.of("7","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","HELLO",null),new NoBitmapSelectorDimFilter("dim2","bar",null))),ImmutableList.<String>of("7","8","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","HELLO",null),new SelectorDimFilter("dim2","NOT_A_VALUE",null))),ImmutableList.<String>of("7"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","INVALID",null),new SelectorDimFilter("dim2","NOT_A_VALUE",null))),ImmutableList.<String>of());
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim2","super-a",JS_EXTRACTION_FN),new NoBitmapSelectorDimFilter("dim1","super-null",JS_EXTRACTION_FN))),ImmutableList.of("0","3"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","super-abc",JS_EXTRACTION_FN),new NoBitmapSelectorDimFilter("dim2","super-null",JS_EXTRACTION_FN))),ImmutableList.of("1","2","5","8"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","super-2",JS_EXTRACTION_FN),new NoBitmapSelectorDimFilter("dim2","super-null",JS_EXTRACTION_FN))),ImmutableList.of("1","2","5"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","INVALID_VALUE",JS_EXTRACTION_FN),new NoBitmapSelectorDimFilter("dim2","super-foo",JS_EXTRACTION_FN))),ImmutableList.of("7","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim1","super-HELLO",JS_EXTRACTION_FN),new NoBitmapSelectorDimFilter("dim2","super-bar",JS_EXTRACTION_FN))),ImmutableList.<String>of("7","8","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","super-HELLO",JS_EXTRACTION_FN),new SelectorDimFilter("dim2","NOT_A_VALUE",null))),ImmutableList.<String>of("7"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","INVALID",JS_EXTRACTION_FN),new SelectorDimFilter("dim2","NOT_A_VALUE",JS_EXTRACTION_FN))),ImmutableList.<String>of());
+}

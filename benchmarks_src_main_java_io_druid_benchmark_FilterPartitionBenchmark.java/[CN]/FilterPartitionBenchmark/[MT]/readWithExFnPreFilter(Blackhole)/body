@@ -1,0 +1,10 @@
+{
+  Filter filter=new SelectorDimFilter("dimSequential","super-199",JS_EXTRACTION_FN).toFilter();
+  StorageAdapter sa=new QueryableIndexStorageAdapter(qIndex);
+  Sequence<Cursor> cursors=sa.makeCursors(filter,schemaInfo.getDataInterval(),QueryGranularities.ALL,false);
+  Sequence<List<String>> stringListSeq=readCursors(cursors,blackhole);
+  List<String> strings=Sequences.toList(Sequences.limit(stringListSeq,1),Lists.<List<String>>newArrayList()).get(0);
+  for (  String st : strings) {
+    blackhole.consume(st);
+  }
+}

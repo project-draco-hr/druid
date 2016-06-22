@@ -1,0 +1,18 @@
+{
+  ExtractionFn extractionFn=getExtractionFn();
+  String dimension=getDimension();
+  String value=getValue();
+  if (extractionFn == null) {
+    return new NoBitmapSelectorFilter(dimension,value);
+  }
+ else {
+    final String valueOrNull=Strings.emptyToNull(value);
+    final Predicate<String> predicate=new Predicate<String>(){
+      @Override public boolean apply(      String input){
+        return Objects.equals(valueOrNull,input);
+      }
+    }
+;
+    return new NoBitmapDimensionPredicateFilter(dimension,predicate,extractionFn);
+  }
+}

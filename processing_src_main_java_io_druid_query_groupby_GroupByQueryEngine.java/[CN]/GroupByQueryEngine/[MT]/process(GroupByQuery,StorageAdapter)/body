@@ -6,7 +6,8 @@
   if (intervals.size() != 1) {
     throw new IAE("Should only have one interval, got[%s]",intervals);
   }
-  final Sequence<Cursor> cursors=storageAdapter.makeCursors(Filters.toFilter(query.getDimFilter()),intervals.get(0),query.getGranularity(),false);
+  Filter filter=Filters.convertToCNFFromQueryContext(query,Filters.toFilter(query.getDimFilter()));
+  final Sequence<Cursor> cursors=storageAdapter.makeCursors(filter,intervals.get(0),query.getGranularity(),false);
   final ResourceHolder<ByteBuffer> bufferHolder=intermediateResultsBufferPool.take();
   return Sequences.concat(Sequences.withBaggage(Sequences.map(cursors,new Function<Cursor,Sequence<Row>>(){
     @Override public Sequence<Row> apply(    final Cursor cursor){

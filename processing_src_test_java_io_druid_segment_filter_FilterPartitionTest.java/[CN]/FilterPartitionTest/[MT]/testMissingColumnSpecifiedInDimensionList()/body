@@ -1,0 +1,16 @@
+{
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3",null,null),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","",null),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","a",null),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","b",null),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","c",null),ImmutableList.<String>of());
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","abc",null),new SelectorDimFilter("dim3","NOTHERE",null))),ImmutableList.<String>of("5","8"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","abc",null),new SelectorDimFilter("dim3",null,null))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","super-null",JS_EXTRACTION_FN),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","super-null",JS_EXTRACTION_FN),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","a",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","b",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim3","c",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","super-abc",JS_EXTRACTION_FN),new SelectorDimFilter("dim3","NOTHERE",JS_EXTRACTION_FN))),ImmutableList.<String>of("5","8"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","abc",JS_EXTRACTION_FN),new SelectorDimFilter("dim3","super-null",JS_EXTRACTION_FN))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+}

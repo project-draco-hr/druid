@@ -1,0 +1,12 @@
+{
+  Filter filter=new NoBitmapSelectorFilter("dimSequential","199");
+  Filter filter2=new AndFilter(Arrays.<Filter>asList(new SelectorFilter("dimMultivalEnumerated2","Corundum"),new NoBitmapSelectorFilter("dimMultivalEnumerated","Bar")));
+  Filter orFilter=new OrFilter(Arrays.<Filter>asList(filter,filter2));
+  StorageAdapter sa=new QueryableIndexStorageAdapter(qIndex);
+  Sequence<Cursor> cursors=sa.makeCursors(orFilter,schemaInfo.getDataInterval(),QueryGranularities.ALL,false);
+  Sequence<List<String>> stringListSeq=readCursors(cursors,blackhole);
+  List<String> strings=Sequences.toList(Sequences.limit(stringListSeq,1),Lists.<List<String>>newArrayList()).get(0);
+  for (  String st : strings) {
+    blackhole.consume(st);
+  }
+}

@@ -1,0 +1,37 @@
+{
+  if (current instanceof NotFilter) {
+    Filter child=((NotFilter)current).getBaseFilter();
+    if (child instanceof NotFilter) {
+      return pushDownNot(((NotFilter)child).getBaseFilter());
+    }
+    if (child instanceof AndFilter) {
+      List<Filter> children=Lists.newArrayList();
+      for (      Filter grandChild : ((AndFilter)child).getFilters()) {
+        children.add(pushDownNot(new NotFilter(grandChild)));
+      }
+      return new OrFilter(children);
+    }
+    if (child instanceof OrFilter) {
+      List<Filter> children=Lists.newArrayList();
+      for (      Filter grandChild : ((OrFilter)child).getFilters()) {
+        children.add(pushDownNot(new NotFilter(grandChild)));
+      }
+      return new AndFilter(children);
+    }
+  }
+  if (current instanceof AndFilter) {
+    List<Filter> children=Lists.newArrayList();
+    for (    Filter child : ((AndFilter)current).getFilters()) {
+      children.add(pushDownNot(child));
+    }
+    return new AndFilter(children);
+  }
+  if (current instanceof OrFilter) {
+    List<Filter> children=Lists.newArrayList();
+    for (    Filter child : ((OrFilter)current).getFilters()) {
+      children.add(pushDownNot(child));
+    }
+    return new OrFilter(children);
+  }
+  return current;
+}

@@ -1,0 +1,16 @@
+{
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4",null,null),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","",null),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","a",null),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","b",null),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","c",null),ImmutableList.<String>of());
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","abc",null),new SelectorDimFilter("dim4",null,null))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim4",null,null),new SelectorDimFilter("dim1","abc",null))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","super-null",JS_EXTRACTION_FN),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","super-null",JS_EXTRACTION_FN),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","a",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","b",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new NoBitmapSelectorDimFilter("dim4","c",JS_EXTRACTION_FN),ImmutableList.<String>of());
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","super-abc",JS_EXTRACTION_FN),new SelectorDimFilter("dim4","super-null",JS_EXTRACTION_FN))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+  assertFilterMatches(new OrDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim4","super-null",JS_EXTRACTION_FN),new SelectorDimFilter("dim1","super-abc",JS_EXTRACTION_FN))),ImmutableList.of("0","1","2","3","4","5","6","7","8","9"));
+}

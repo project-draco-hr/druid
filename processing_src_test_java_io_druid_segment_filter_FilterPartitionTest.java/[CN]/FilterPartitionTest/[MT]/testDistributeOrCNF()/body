@@ -1,0 +1,17 @@
+{
+  DimFilter dimFilter1=new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim0","6",null),new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","def",null),new SelectorDimFilter("dim2","c",null)))));
+  Filter filter1=dimFilter1.toFilter();
+  Filter filter1CNF=Filters.convertToCNF(filter1);
+  Assert.assertEquals(AndFilter.class,filter1CNF.getClass());
+  Assert.assertEquals(2,((AndFilter)filter1CNF).getFilters().size());
+  assertFilterMatches(dimFilter1,ImmutableList.of("4","6"));
+  assertFilterMatchesCNF(dimFilter1,ImmutableList.of("4","6"));
+  DimFilter dimFilter2=new OrDimFilter(Arrays.<DimFilter>asList(new SelectorDimFilter("dim0","2",null),new SelectorDimFilter("dim0","3",null),new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","HELLO",null),new SelectorDimFilter("dim2","foo",null)))));
+  assertFilterMatches(dimFilter2,ImmutableList.of("2","3","7"));
+  assertFilterMatchesCNF(dimFilter2,ImmutableList.of("2","3","7"));
+  DimFilter dimFilter3=new OrDimFilter(Arrays.<DimFilter>asList(dimFilter1,dimFilter2,new AndDimFilter(Arrays.<DimFilter>asList(new NoBitmapSelectorDimFilter("dim1","1",null),new SelectorDimFilter("dim2","foo",null)))));
+  Filter filter3=dimFilter3.toFilter();
+  Filter filter3CNF=Filters.convertToCNF(dimFilter3.toFilter());
+  assertFilterMatches(dimFilter3,ImmutableList.of("2","3","4","6","7","9"));
+  assertFilterMatchesCNF(dimFilter3,ImmutableList.of("2","3","4","6","7","9"));
+}

@@ -1,0 +1,9 @@
+{
+  StorageAdapter sa=new QueryableIndexStorageAdapter(qIndex);
+  Sequence<Cursor> cursors=sa.makeCursors(null,schemaInfo.getDataInterval(),QueryGranularities.ALL,false);
+  Sequence<List<String>> stringListSeq=readCursors(cursors,blackhole);
+  List<String> strings=Sequences.toList(Sequences.limit(stringListSeq,1),Lists.<List<String>>newArrayList()).get(0);
+  for (  String st : strings) {
+    blackhole.consume(st);
+  }
+}

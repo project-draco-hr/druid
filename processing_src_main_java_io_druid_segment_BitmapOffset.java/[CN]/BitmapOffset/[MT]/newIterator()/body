@@ -2,15 +2,7 @@
   if (!descending) {
     return bitmapIndex.iterator();
   }
-  ImmutableBitmap roaringBitmap=bitmapIndex;
-  if (!(bitmapIndex instanceof WrappedImmutableRoaringBitmap)) {
-    final BitmapFactory factory=RoaringBitmapSerdeFactory.bitmapFactory;
-    final MutableBitmap bitmap=factory.makeEmptyMutableBitmap();
-    final IntIterator iterator=bitmapIndex.iterator();
-    while (iterator.hasNext()) {
-      bitmap.add(iterator.next());
-    }
-    roaringBitmap=factory.makeImmutableBitmap(bitmap);
+ else {
+    return getReverseBitmapOffsetIterator(bitmapIndex);
   }
-  return ((WrappedImmutableRoaringBitmap)roaringBitmap).getBitmap().getReverseIntIterator();
 }

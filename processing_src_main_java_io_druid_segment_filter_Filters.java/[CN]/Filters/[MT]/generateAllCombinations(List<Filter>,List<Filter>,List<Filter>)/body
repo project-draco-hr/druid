@@ -1,0 +1,24 @@
+{
+  List<Filter> children=((AndFilter)andList.get(0)).getFilters();
+  if (result.isEmpty()) {
+    for (    Filter child : children) {
+      List<Filter> a=Lists.newArrayList(nonAndList);
+      a.add(child);
+      result.add(new OrFilter(a));
+    }
+  }
+ else {
+    List<Filter> work=new ArrayList<>(result);
+    result.clear();
+    for (    Filter child : children) {
+      for (      Filter or : work) {
+        List<Filter> a=Lists.newArrayList((((OrFilter)or).getFilters()));
+        a.add(child);
+        result.add(new OrFilter(a));
+      }
+    }
+  }
+  if (andList.size() > 1) {
+    generateAllCombinations(result,andList.subList(1,andList.size()),nonAndList);
+  }
+}

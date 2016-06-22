@@ -1,0 +1,29 @@
+{
+  final List<ValueMatcher> matchers=new ArrayList<>();
+  final List<ImmutableBitmap> bitmaps=new ArrayList<>();
+  for (  Filter filter : filters) {
+    if (filter.supportsBitmapIndex(selector)) {
+      bitmaps.add(filter.getBitmapIndex(selector));
+    }
+ else {
+      ValueMatcher matcher=filter.makeMatcher(valueMatcherFactory);
+      matchers.add(matcher);
+    }
+  }
+  if (bitmaps.size() > 0) {
+    ImmutableBitmap combinedBitmap=selector.getBitmapFactory().union(bitmaps);
+    ValueMatcher offsetMatcher=rowOffsetMatcherFactory.makeRowOffsetMatcher(combinedBitmap);
+    matchers.add(0,offsetMatcher);
+  }
+  return new ValueMatcher(){
+    @Override public boolean matches(){
+      for (      ValueMatcher valueMatcher : matchers) {
+        if (valueMatcher.matches()) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+;
+}

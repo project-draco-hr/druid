@@ -1,0 +1,35 @@
+{
+  if (current instanceof NotFilter) {
+    return new NotFilter(convertToCNFInternal(((NotFilter)current).getBaseFilter()));
+  }
+  if (current instanceof AndFilter) {
+    List<Filter> children=Lists.newArrayList();
+    for (    Filter child : ((AndFilter)current).getFilters()) {
+      children.add(convertToCNFInternal(child));
+    }
+    return new AndFilter(children);
+  }
+  if (current instanceof OrFilter) {
+    List<Filter> nonAndList=new ArrayList<Filter>();
+    List<Filter> andList=new ArrayList<Filter>();
+    for (    Filter child : ((OrFilter)current).getFilters()) {
+      if (child instanceof AndFilter) {
+        andList.add(child);
+      }
+ else       if (child instanceof OrFilter) {
+        for (        Filter grandChild : ((OrFilter)child).getFilters()) {
+          nonAndList.add(grandChild);
+        }
+      }
+ else {
+        nonAndList.add(child);
+      }
+    }
+    if (!andList.isEmpty()) {
+      List<Filter> result=Lists.newArrayList();
+      generateAllCombinations(result,andList,nonAndList);
+      return new AndFilter(result);
+    }
+  }
+  return current;
+}
