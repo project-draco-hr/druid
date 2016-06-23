@@ -1,0 +1,22 @@
+{
+  return ImmutableList.of(new Module(){
+    @Override public void configure(    Binder binder){
+      binder.bindConstant().annotatedWith(Names.named("serviceName")).to("druid/tool");
+      binder.bindConstant().annotatedWith(Names.named("servicePort")).to(9999);
+      binder.bind(DruidProcessingConfig.class).toInstance(new DruidProcessingConfig(){
+        @Override public String getFormatString(){
+          return "processing-%s";
+        }
+        @Override public int intermediateComputeSizeBytes(){
+          return 100 * 1024 * 1024;
+        }
+        @Override public int getNumThreads(){
+          return 1;
+        }
+      }
+);
+      binder.bind(ColumnConfig.class).to(DruidProcessingConfig.class);
+    }
+  }
+);
+}

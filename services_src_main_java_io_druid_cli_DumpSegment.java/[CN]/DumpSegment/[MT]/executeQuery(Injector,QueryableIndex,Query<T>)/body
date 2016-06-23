@@ -1,0 +1,7 @@
+{
+  final QueryRunnerFactoryConglomerate conglomerate=injector.getInstance(QueryRunnerFactoryConglomerate.class);
+  final QueryRunnerFactory factory=conglomerate.findFactory(query);
+  final QueryRunner<T> runner=factory.createRunner(new QueryableIndexSegment("segment",index));
+  final Sequence results=factory.getToolchest().mergeResults(factory.mergeRunners(MoreExecutors.sameThreadExecutor(),ImmutableList.<QueryRunner>of(runner))).run(query,Maps.<String,Object>newHashMap());
+  return (Sequence<T>)results;
+}

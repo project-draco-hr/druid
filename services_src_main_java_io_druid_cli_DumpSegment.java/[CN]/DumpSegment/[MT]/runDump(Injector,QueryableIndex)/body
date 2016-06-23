@@ -1,0 +1,55 @@
+{
+  final ObjectMapper objectMapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
+  final QueryableIndexStorageAdapter adapter=new QueryableIndexStorageAdapter(index);
+  if (columnNames.isEmpty()) {
+    columnNames.add(Column.TIME_COLUMN_NAME);
+    Iterables.addAll(columnNames,index.getColumnNames());
+  }
+ else {
+    for (    String columnName : ImmutableList.copyOf(columnNames)) {
+      if (index.getColumn(columnName) == null) {
+        columnNames.remove(columnName);
+      }
+    }
+  }
+  final DimFilter filter=filterJson != null ? objectMapper.readValue(filterJson,DimFilter.class) : null;
+  final Sequence<Cursor> cursors=adapter.makeCursors(Filters.toFilter(filter),index.getDataInterval().withChronology(ISOChronology.getInstanceUTC()),QueryGranularities.ALL,false);
+  withOutputStream(new Function<OutputStream,Object>(){
+    @Override public Object apply(    final OutputStream out){
+      final Sequence<Object> sequence=Sequences.map(cursors,new Function<Cursor,Object>(){
+        @Override public Object apply(        Cursor cursor){
+          final List<ObjectColumnSelector> selectors=Lists.newArrayList();
+          for (          String columnName : columnNames) {
+            selectors.add(makeSelector(columnName,index.getColumn(columnName),cursor));
+          }
+          while (!cursor.isDone()) {
+            final Map<String,Object> row=Maps.newLinkedHashMap();
+            for (int i=0; i < columnNames.size(); i++) {
+              final String columnName=columnNames.get(i);
+              final Object value=selectors.get(i).get();
+              if (timeISO8601 && columnNames.get(i).equals(Column.TIME_COLUMN_NAME)) {
+                row.put(columnName,new DateTime(value,DateTimeZone.UTC).toString());
+              }
+ else {
+                row.put(columnName,value);
+              }
+            }
+            try {
+              out.write(objectMapper.writeValueAsBytes(row));
+              out.write('\n');
+            }
+ catch (            IOException e) {
+              throw Throwables.propagate(e);
+            }
+            cursor.advance();
+          }
+          return null;
+        }
+      }
+);
+      evaluateSequenceForSideEffects(sequence);
+      return null;
+    }
+  }
+);
+}

@@ -1,0 +1,15 @@
+{
+  final Injector injector=makeInjector();
+  final IndexIO indexIO=injector.getInstance(IndexIO.class);
+  try (final QueryableIndex index=indexIO.loadIndex(new File(directory))){
+    if (metadata) {
+      runMetadata(injector,index);
+    }
+ else {
+      runDump(injector,index);
+    }
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

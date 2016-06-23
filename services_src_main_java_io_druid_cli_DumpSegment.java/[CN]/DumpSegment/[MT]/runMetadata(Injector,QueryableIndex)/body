@@ -1,0 +1,22 @@
+{
+  final ObjectMapper objectMapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
+  final SegmentMetadataQuery query=new SegmentMetadataQuery(new TableDataSource("dataSource"),new SpecificSegmentSpec(new SegmentDescriptor(index.getDataInterval(),"0",0)),null,false,null,EnumSet.allOf(SegmentMetadataQuery.AnalysisType.class),false,false);
+  withOutputStream(new Function<OutputStream,Object>(){
+    @Override public Object apply(    final OutputStream out){
+      evaluateSequenceForSideEffects(Sequences.map(executeQuery(injector,index,query),new Function<SegmentAnalysis,Object>(){
+        @Override public Object apply(        SegmentAnalysis analysis){
+          try {
+            objectMapper.copy().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET,false).writeValue(out,analysis);
+          }
+ catch (          IOException e) {
+            throw Throwables.propagate(e);
+          }
+          return null;
+        }
+      }
+));
+      return null;
+    }
+  }
+);
+}
