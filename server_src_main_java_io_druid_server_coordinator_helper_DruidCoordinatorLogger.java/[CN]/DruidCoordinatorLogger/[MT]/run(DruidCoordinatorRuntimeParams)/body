@@ -68,6 +68,20 @@
     emitter.emit(new ServiceMetricEvent.Builder().setDimension(DruidMetrics.SERVER,serverName).build("segment/loadQueue/count",queuePeon.getSegmentsToLoad().size()));
     emitter.emit(new ServiceMetricEvent.Builder().setDimension(DruidMetrics.SERVER,serverName).build("segment/dropQueue/count",queuePeon.getSegmentsToDrop().size()));
   }
+  for (  Map.Entry<String,AtomicLong> entry : coordinator.getSegmentAvailability().entrySet()) {
+    String datasource=entry.getKey();
+    Long count=entry.getValue().get();
+    emitter.emit(new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE,datasource).build("segment/unavailable/count",count));
+  }
+  for (  Map.Entry<String,CountingMap<String>> entry : coordinator.getReplicationStatus().entrySet()) {
+    String tier=entry.getKey();
+    CountingMap<String> datasourceAvailabilities=entry.getValue();
+    for (    Map.Entry<String,AtomicLong> datasourceAvailability : datasourceAvailabilities.entrySet()) {
+      String datasource=datasourceAvailability.getKey();
+      Long count=datasourceAvailability.getValue().get();
+      emitter.emit(new ServiceMetricEvent.Builder().setDimension(DruidMetrics.TIER,tier).setDimension(DruidMetrics.DATASOURCE,datasource).build("segment/underReplicated/count",count));
+    }
+  }
   CountingMap<String> segmentSizes=new CountingMap<String>();
   CountingMap<String> segmentCounts=new CountingMap<String>();
   for (  DruidDataSource dataSource : params.getDataSources()) {
