@@ -9,8 +9,8 @@
       log.info("added URL[%s]",url);
       urls[i++]=url;
     }
-    loader=new URLClassLoader(urls,Initialization.class.getClassLoader());
-    loadersMap.put(extension.getName(),loader);
+    loadersMap.putIfAbsent(extension,new URLClassLoader(urls,Initialization.class.getClassLoader()));
+    loader=loadersMap.get(extension);
   }
   return loader;
 }

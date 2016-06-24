@@ -1,5 +1,6 @@
 {
-  Initialization.getLoadersMap().put("xyz",(URLClassLoader)Initialization.class.getClassLoader());
+  final File extensionDir=temporaryFolder.newFolder();
+  Initialization.getLoadersMap().put(extensionDir,(URLClassLoader)Initialization.class.getClassLoader());
   Collection<DruidModule> modules=Initialization.getFromExtensions(new ExtensionsConfig(),DruidModule.class);
   Set<String> loadedModuleNames=Sets.newHashSet();
   for (  DruidModule module : modules) {
