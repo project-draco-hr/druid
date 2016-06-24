@@ -1,0 +1,13 @@
+{
+  RangeSet<String> retSet=TreeRangeSet.create();
+  for (  DimFilter field : fields) {
+    RangeSet<String> rangeSet=field.getDimensionRangeSet(dimension);
+    if (rangeSet == null) {
+      return null;
+    }
+ else {
+      retSet.addAll(rangeSet);
+    }
+  }
+  return retSet;
+}

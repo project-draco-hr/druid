@@ -1,0 +1,38 @@
+{
+  DimFilter filter=Druids.newAndDimFilterBuilder().fields(Arrays.asList(Druids.newOrDimFilterBuilder().fields(Arrays.asList(new SelectorDimFilter("dim1","a",null),new BoundDimFilter("dim1","from","to",false,false,false,null))).build(),Druids.newAndDimFilterBuilder().fields(Arrays.asList(new InDimFilter("dim2",Arrays.asList("a","c","e","g"),null),new BoundDimFilter("dim2","aaa","hi",false,false,false,null),new BoundDimFilter("dim2","e","zzz",true,true,false,null))).build())).build();
+  final Druids.TimeseriesQueryBuilder builder=Druids.newTimeseriesQueryBuilder().dataSource(DATA_SOURCE).filters(filter).granularity(GRANULARITY).intervals(SEG_SPEC).context(CONTEXT).intervals("2011-01-05/2011-01-10").aggregators(RENAMED_AGGS).postAggregators(RENAMED_POST_AGGS);
+  TimeseriesQuery query=builder.build();
+  Map<String,List> context=new HashMap<>();
+  final Interval interval1=new Interval("2011-01-06/2011-01-07");
+  final Interval interval2=new Interval("2011-01-07/2011-01-08");
+  final Interval interval3=new Interval("2011-01-08/2011-01-09");
+  QueryRunner runner=new FinalizeResultsQueryRunner(client,new TimeseriesQueryQueryToolChest(QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()));
+  final DruidServer lastServer=servers[random.nextInt(servers.length)];
+  ServerSelector selector1=makeMockSingleDimensionSelector(lastServer,"dim1",null,"b",1);
+  ServerSelector selector2=makeMockSingleDimensionSelector(lastServer,"dim1","e","f",2);
+  ServerSelector selector3=makeMockSingleDimensionSelector(lastServer,"dim1","hi","zzz",3);
+  ServerSelector selector4=makeMockSingleDimensionSelector(lastServer,"dim2","a","e",4);
+  ServerSelector selector5=makeMockSingleDimensionSelector(lastServer,"dim2",null,null,5);
+  ServerSelector selector6=makeMockSingleDimensionSelector(lastServer,"other","b",null,6);
+  timeline.add(interval1,"v",new StringPartitionChunk<>(null,"a",1,selector1));
+  timeline.add(interval1,"v",new StringPartitionChunk<>("a","b",2,selector2));
+  timeline.add(interval1,"v",new StringPartitionChunk<>("b",null,3,selector3));
+  timeline.add(interval2,"v",new StringPartitionChunk<>(null,"d",4,selector4));
+  timeline.add(interval2,"v",new StringPartitionChunk<>("d",null,5,selector5));
+  timeline.add(interval3,"v",new StringPartitionChunk<>(null,null,6,selector6));
+  final Capture<TimeseriesQuery> capture=Capture.newInstance();
+  final Capture<Map<String,List>> contextCap=Capture.newInstance();
+  QueryRunner mockRunner=EasyMock.createNiceMock(QueryRunner.class);
+  EasyMock.expect(mockRunner.run(EasyMock.capture(capture),EasyMock.capture(contextCap))).andReturn(Sequences.empty()).anyTimes();
+  EasyMock.expect(serverView.getQueryRunner(lastServer)).andReturn(mockRunner).anyTimes();
+  EasyMock.replay(serverView);
+  EasyMock.replay(mockRunner);
+  List<SegmentDescriptor> descriptors=new ArrayList<>();
+  descriptors.add(new SegmentDescriptor(interval1,"v",1));
+  descriptors.add(new SegmentDescriptor(interval1,"v",3));
+  descriptors.add(new SegmentDescriptor(interval2,"v",5));
+  descriptors.add(new SegmentDescriptor(interval3,"v",6));
+  MultipleSpecificSegmentSpec expected=new MultipleSpecificSegmentSpec(descriptors);
+  Sequences.toList(runner.run(query,context),Lists.newArrayList());
+  Assert.assertEquals(expected,capture.getValue().getQuerySegmentSpec());
+}

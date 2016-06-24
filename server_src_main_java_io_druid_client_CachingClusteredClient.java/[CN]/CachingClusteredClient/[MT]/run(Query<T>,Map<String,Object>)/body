@@ -62,8 +62,15 @@
     }
   }
   final List<TimelineObjectHolder<String,ServerSelector>> filteredServersLookup=toolChest.filterSegments(query,serversLookup);
+  Map<String,Optional<RangeSet<String>>> dimensionRangeCache=Maps.newHashMap();
   for (  TimelineObjectHolder<String,ServerSelector> holder : filteredServersLookup) {
-    for (    PartitionChunk<ServerSelector> chunk : holder.getObject()) {
+    final Set<PartitionChunk<ServerSelector>> filteredChunks=DimFilterUtils.filterShards(query.getFilter(),holder.getObject(),new Function<PartitionChunk<ServerSelector>,ShardSpec>(){
+      @Override public ShardSpec apply(      PartitionChunk<ServerSelector> input){
+        return input.getObject().getSegment().getShardSpec();
+      }
+    }
+,dimensionRangeCache);
+    for (    PartitionChunk<ServerSelector> chunk : filteredChunks) {
       ServerSelector selector=chunk.getObject();
       final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),holder.getVersion(),chunk.getChunkNumber());
       segments.add(Pair.of(selector,descriptor));

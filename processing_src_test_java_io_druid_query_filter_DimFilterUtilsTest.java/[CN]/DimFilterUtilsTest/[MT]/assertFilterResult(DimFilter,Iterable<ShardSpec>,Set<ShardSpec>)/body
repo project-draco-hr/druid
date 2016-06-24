@@ -1,0 +1,10 @@
+{
+  Set<ShardSpec> result=DimFilterUtils.filterShards(filter,input,CONVERTER);
+  Assert.assertEquals(expected,result);
+  Map<String,Optional<RangeSet<String>>> dimensionRangeMap=Maps.newHashMap();
+  result=Sets.newHashSet();
+  for (  ShardSpec shard : input) {
+    result.addAll(DimFilterUtils.filterShards(filter,ImmutableList.of(shard),CONVERTER,dimensionRangeMap));
+  }
+  Assert.assertEquals(expected,result);
+}

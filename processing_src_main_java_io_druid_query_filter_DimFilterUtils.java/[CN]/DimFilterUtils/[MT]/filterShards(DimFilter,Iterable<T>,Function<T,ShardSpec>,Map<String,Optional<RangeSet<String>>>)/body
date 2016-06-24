@@ -1,0 +1,25 @@
+{
+  Set<T> retSet=Sets.newLinkedHashSet();
+  for (  T obj : input) {
+    ShardSpec shard=converter.apply(obj);
+    boolean include=true;
+    if (dimFilter != null && shard != null) {
+      Map<String,Range<String>> domain=shard.getDomain();
+      for (      Map.Entry<String,Range<String>> entry : domain.entrySet()) {
+        Optional<RangeSet<String>> optFilterRangeSet=dimensionRangeCache.get(entry.getKey());
+        if (optFilterRangeSet == null) {
+          RangeSet<String> filterRangeSet=dimFilter.getDimensionRangeSet(entry.getKey());
+          optFilterRangeSet=Optional.fromNullable(filterRangeSet);
+          dimensionRangeCache.put(entry.getKey(),optFilterRangeSet);
+        }
+        if (optFilterRangeSet.isPresent() && optFilterRangeSet.get().subRangeSet(entry.getValue()).isEmpty()) {
+          include=false;
+        }
+      }
+    }
+    if (include) {
+      retSet.add(obj);
+    }
+  }
+  return retSet;
+}

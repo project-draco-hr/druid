@@ -1,0 +1,20 @@
+{
+  RangeSet expected1=rangeSet(point("a"));
+  Assert.assertEquals(expected1,selector1.getDimensionRangeSet("dim1"));
+  Assert.assertNull(selector1.getDimensionRangeSet("dim2"));
+  RangeSet expected2=rangeSet(point(""));
+  Assert.assertEquals(expected2,selector5.getDimensionRangeSet("dim1"));
+  RangeSet expected3=rangeSet(ImmutableList.of(point("testing"),point("this"),point("filter"),point("tillend")));
+  Assert.assertEquals(expected3,in1.getDimensionRangeSet("dim1"));
+  RangeSet expected4=rangeSet(ImmutableList.of(point("null"),point("")));
+  Assert.assertEquals(expected4,in3.getDimensionRangeSet("dim1"));
+  RangeSet expected5=ImmutableRangeSet.of(Range.closed("from","to"));
+  Assert.assertEquals(expected5,bound1.getDimensionRangeSet("dim1"));
+  RangeSet expected6=ImmutableRangeSet.of(Range.atMost("tillend"));
+  Assert.assertEquals(expected6,bound2.getDimensionRangeSet("dim1"));
+  RangeSet expected7=ImmutableRangeSet.of(Range.greaterThan("notincluded"));
+  Assert.assertEquals(expected7,bound3.getDimensionRangeSet("dim1"));
+  Assert.assertNull(other1.getDimensionRangeSet("someDim"));
+  Assert.assertNull(other2.getDimensionRangeSet("someOtherDim"));
+  Assert.assertNull(other3.getDimensionRangeSet("dim"));
+}

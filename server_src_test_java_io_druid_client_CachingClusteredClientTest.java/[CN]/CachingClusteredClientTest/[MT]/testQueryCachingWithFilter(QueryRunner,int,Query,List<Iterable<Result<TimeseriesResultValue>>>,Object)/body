@@ -1,0 +1,53 @@
+{
+  final List<Interval> queryIntervals=Lists.newArrayListWithCapacity(args.length / 2);
+  final List<List<Iterable<Result<Object>>>> expectedResults=Lists.newArrayListWithCapacity(queryIntervals.size());
+  parseResults(queryIntervals,expectedResults,args);
+  for (int i=0; i < queryIntervals.size(); ++i) {
+    List<Object> mocks=Lists.newArrayList();
+    mocks.add(serverView);
+    final Interval actualQueryInterval=new Interval(queryIntervals.get(0).getStart(),queryIntervals.get(i).getEnd());
+    final List<Map<DruidServer,ServerExpectations>> serverExpectationList=populateTimeline(queryIntervals,expectedResults,i,mocks);
+    final Map<DruidServer,ServerExpectations> finalExpectation=serverExpectationList.get(serverExpectationList.size() - 1);
+    for (    Map.Entry<DruidServer,ServerExpectations> entry : finalExpectation.entrySet()) {
+      DruidServer server=entry.getKey();
+      ServerExpectations expectations=entry.getValue();
+      EasyMock.expect(serverView.getQueryRunner(server)).andReturn(expectations.getQueryRunner()).times(0,1);
+      final Capture<? extends Query> capture=new Capture();
+      final Capture<? extends Map> context=new Capture();
+      QueryRunner queryable=expectations.getQueryRunner();
+      if (query instanceof TimeseriesQuery) {
+        final List<String> segmentIds=Lists.newArrayList();
+        final List<Iterable<Result<TimeseriesResultValue>>> results=Lists.newArrayList();
+        for (        ServerExpectation expectation : expectations) {
+          segmentIds.add(expectation.getSegmentId());
+          results.add(expectation.getResults());
+        }
+        EasyMock.expect(queryable.run(EasyMock.capture(capture),EasyMock.capture(context))).andAnswer(new IAnswer<Sequence>(){
+          @Override public Sequence answer() throws Throwable {
+            return toFilteredQueryableTimeseriesResults((TimeseriesQuery)capture.getValue(),segmentIds,queryIntervals,results);
+          }
+        }
+).times(0,1);
+      }
+ else {
+        throw new ISE("Unknown query type[%s]",query.getClass());
+      }
+    }
+    final Iterable<Result<Object>> expected=new ArrayList<>();
+    for (int intervalNo=0; intervalNo < i + 1; intervalNo++) {
+      Iterables.addAll((List)expected,filteredExpected.get(intervalNo));
+    }
+    runWithMocks(new Runnable(){
+      @Override public void run(){
+        HashMap<String,List> context=new HashMap<String,List>();
+        for (int i=0; i < numTimesToQuery; ++i) {
+          TestHelper.assertExpectedResults(expected,runner.run(query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(ImmutableList.of(actualQueryInterval))),context));
+          if (queryCompletedCallback != null) {
+            queryCompletedCallback.run();
+          }
+        }
+      }
+    }
+,mocks.toArray());
+  }
+}

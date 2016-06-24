@@ -1,0 +1,16 @@
+{
+  DimFilter or1=new OrDimFilter(ImmutableList.of(selector1,selector2,selector5));
+  RangeSet expected1=rangeSet(ImmutableList.of(point(""),point("a"),point("z")));
+  Assert.assertEquals(expected1,or1.getDimensionRangeSet("dim1"));
+  DimFilter or2=new OrDimFilter(ImmutableList.of(selector5,in1,in3));
+  RangeSet expected2=rangeSet(ImmutableList.of(point("testing"),point("this"),point("filter"),point("tillend"),point("null"),point("")));
+  Assert.assertEquals(expected2,or2.getDimensionRangeSet("dim1"));
+  DimFilter or3=new OrDimFilter(ImmutableList.of(bound1,bound2,bound3));
+  Assert.assertEquals(all,or3.getDimensionRangeSet("dim1"));
+  DimFilter or4=new OrDimFilter(ImmutableList.of(selector1,selector2,selector3,selector4,selector5));
+  Assert.assertNull(or4.getDimensionRangeSet("dim1"));
+  Assert.assertNull(or4.getDimensionRangeSet("dim2"));
+  DimFilter or5=new OrDimFilter(ImmutableList.of(or1,or2,bound1));
+  RangeSet expected5=rangeSet(ImmutableList.of(point(""),point("a"),point("filter"),Range.closed("from","to"),point("z")));
+  Assert.assertEquals(expected5,or5.getDimensionRangeSet("dim1"));
+}

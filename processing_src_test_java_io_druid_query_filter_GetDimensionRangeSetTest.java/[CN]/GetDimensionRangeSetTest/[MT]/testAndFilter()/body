@@ -1,0 +1,18 @@
+{
+  DimFilter and1=new AndDimFilter(ImmutableList.of(selector1,selector2,in1));
+  Assert.assertEquals(empty,and1.getDimensionRangeSet("dim1"));
+  Assert.assertNull(and1.getDimensionRangeSet("dim2"));
+  DimFilter and2=new AndDimFilter(ImmutableList.of(selector3,bound1,other1));
+  RangeSet expected2=rangeSet(ImmutableList.of(Range.closed("from","to")));
+  Assert.assertEquals(expected2,and2.getDimensionRangeSet("dim1"));
+  DimFilter and3=new AndDimFilter(ImmutableList.of(in2,bound1,bound2,bound3,bound4));
+  RangeSet expected3=rangeSet(Range.openClosed("notincluded","tillend"));
+  Assert.assertEquals(expected3,and3.getDimensionRangeSet("dim1"));
+  Assert.assertEquals(empty,and3.getDimensionRangeSet("dim2"));
+  DimFilter and4=new AndDimFilter(ImmutableList.of(in3,bound3));
+  RangeSet expected4=rangeSet(point("null"));
+  Assert.assertEquals(expected4,and4.getDimensionRangeSet("dim1"));
+  DimFilter and5=new AndDimFilter(ImmutableList.of(and3,in1));
+  RangeSet expected5=rangeSet(ImmutableList.of(point("testing"),point("this"),point("tillend")));
+  Assert.assertEquals(expected5,and5.getDimensionRangeSet("dim1"));
+}

@@ -1,0 +1,9 @@
+{
+  DataSegment segment=EasyMock.createNiceMock(DataSegment.class);
+  EasyMock.expect(segment.getIdentifier()).andReturn(DATA_SOURCE).anyTimes();
+  EasyMock.expect(segment.getShardSpec()).andReturn(new SingleDimensionShardSpec(dimension,start,end,partitionNum)).anyTimes();
+  EasyMock.replay(segment);
+  ServerSelector selector=new ServerSelector(segment,new HighestPriorityTierSelectorStrategy(new RandomServerSelectorStrategy()));
+  selector.addServerAndUpdateSegment(new QueryableDruidServer(server,null),segment);
+  return selector;
+}

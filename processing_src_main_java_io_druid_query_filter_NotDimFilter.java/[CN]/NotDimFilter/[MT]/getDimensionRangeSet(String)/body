@@ -1,0 +1,15 @@
+{
+  if (field instanceof AndDimFilter) {
+    List<DimFilter> fields=((AndDimFilter)field).getFields();
+    return Druids.newOrDimFilterBuilder().fields(Lists.transform(fields,NEGATE)).build().getDimensionRangeSet(dimension);
+  }
+  if (field instanceof OrDimFilter) {
+    List<DimFilter> fields=((OrDimFilter)field).getFields();
+    return Druids.newAndDimFilterBuilder().fields(Lists.transform(fields,NEGATE)).build().getDimensionRangeSet(dimension);
+  }
+  if (field instanceof NotDimFilter) {
+    return ((NotDimFilter)field).getField().getDimensionRangeSet(dimension);
+  }
+  RangeSet<String> rangeSet=field.getDimensionRangeSet(dimension);
+  return rangeSet == null ? null : rangeSet.complement();
+}

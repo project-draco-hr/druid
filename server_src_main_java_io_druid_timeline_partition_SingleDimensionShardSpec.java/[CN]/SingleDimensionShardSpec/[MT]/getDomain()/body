@@ -1,0 +1,16 @@
+{
+  Range<String> range;
+  if (start == null && end == null) {
+    range=Range.all();
+  }
+ else   if (start == null) {
+    range=Range.atMost(end);
+  }
+ else   if (end == null) {
+    range=Range.atLeast(start);
+  }
+ else {
+    range=Range.closed(start,end);
+  }
+  return ImmutableMap.of(dimension,range);
+}

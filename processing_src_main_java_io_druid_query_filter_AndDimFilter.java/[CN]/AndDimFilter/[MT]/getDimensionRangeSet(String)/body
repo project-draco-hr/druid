@@ -1,0 +1,15 @@
+{
+  RangeSet<String> retSet=null;
+  for (  DimFilter field : fields) {
+    RangeSet<String> rangeSet=field.getDimensionRangeSet(dimension);
+    if (rangeSet != null) {
+      if (retSet == null) {
+        retSet=TreeRangeSet.create(rangeSet);
+      }
+ else {
+        retSet.removeAll(rangeSet.complement());
+      }
+    }
+  }
+  return retSet;
+}

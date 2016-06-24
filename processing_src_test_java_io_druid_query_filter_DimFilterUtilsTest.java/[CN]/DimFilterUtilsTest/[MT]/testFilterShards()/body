@@ -1,0 +1,21 @@
+{
+  DimFilter filter1=EasyMock.createMock(DimFilter.class);
+  EasyMock.expect(filter1.getDimensionRangeSet("dim1")).andReturn(rangeSet(ImmutableList.of(Range.lessThan("abc")))).anyTimes();
+  EasyMock.expect(filter1.getDimensionRangeSet("dim2")).andReturn(null).anyTimes();
+  DimFilter filter2=EasyMock.createMock(DimFilter.class);
+  EasyMock.expect(filter2.getDimensionRangeSet("dim1")).andReturn(rangeSet(ImmutableList.of(Range.singleton("e")))).anyTimes();
+  EasyMock.expect(filter2.getDimensionRangeSet("dim2")).andReturn(rangeSet(ImmutableList.of(Range.singleton("na")))).anyTimes();
+  ShardSpec shard1=shardSpec("dim1",Range.atMost("abc"));
+  ShardSpec shard2=shardSpec("dim1",Range.closed("abc","def"));
+  ShardSpec shard3=shardSpec("dim1",Range.atLeast("def"));
+  ShardSpec shard4=shardSpec("dim2",Range.atMost("hello"));
+  ShardSpec shard5=shardSpec("dim2",Range.closed("hello","jk"));
+  ShardSpec shard6=shardSpec("dim2",Range.closed("jk","na"));
+  ShardSpec shard7=shardSpec("dim2",Range.atLeast("na"));
+  List<ShardSpec> shards=ImmutableList.of(shard1,shard2,shard3,shard4,shard5,shard6,shard7);
+  EasyMock.replay(filter1,filter2,shard1,shard2,shard3,shard4,shard5,shard6,shard7);
+  Set<ShardSpec> expected1=ImmutableSet.of(shard1,shard4,shard5,shard6,shard7);
+  assertFilterResult(filter1,shards,expected1);
+  Set<ShardSpec> expected2=ImmutableSet.of(shard3,shard6,shard7);
+  assertFilterResult(filter2,shards,expected2);
+}

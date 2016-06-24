@@ -1,0 +1,15 @@
+{
+  MultipleSpecificSegmentSpec spec=(MultipleSpecificSegmentSpec)query.getQuerySegmentSpec();
+  List<Result<TimeseriesResultValue>> ret=Lists.newArrayList();
+  for (  SegmentDescriptor descriptor : spec.getDescriptors()) {
+    String id=String.format("%s_%s",queryIntervals.indexOf(descriptor.getInterval()),descriptor.getPartitionNumber());
+    int index=segmentIds.indexOf(id);
+    if (index != -1) {
+      ret.add(new Result(results.get(index).iterator().next().getTimestamp(),new BySegmentResultValueClass(Lists.newArrayList(results.get(index)),id,descriptor.getInterval())));
+    }
+ else {
+      throw new ISE("Descriptor %s not found in server",id);
+    }
+  }
+  return Sequences.simple(ret);
+}

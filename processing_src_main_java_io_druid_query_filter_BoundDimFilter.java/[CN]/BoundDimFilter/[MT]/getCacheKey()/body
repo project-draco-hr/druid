@@ -14,6 +14,6 @@
   byte AlphaNumericByte=(this.isAlphaNumeric() == false) ? 0x0 : (byte)1;
   byte[] extractionFnBytes=extractionFn == null ? new byte[0] : extractionFn.getCacheKey();
   ByteBuffer boundCacheBuffer=ByteBuffer.allocate(9 + dimensionBytes.length + upperBytes.length+ lowerBytes.length+ extractionFnBytes.length);
-  boundCacheBuffer.put(DimFilterCacheHelper.BOUND_CACHE_ID).put(boundType).put(upperStrictByte).put(lowerStrictByte).put(AlphaNumericByte).put(DimFilterCacheHelper.STRING_SEPARATOR).put(dimensionBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(upperBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(lowerBytes).put(DimFilterCacheHelper.STRING_SEPARATOR).put(extractionFnBytes);
+  boundCacheBuffer.put(DimFilterUtils.BOUND_CACHE_ID).put(boundType).put(upperStrictByte).put(lowerStrictByte).put(AlphaNumericByte).put(DimFilterUtils.STRING_SEPARATOR).put(dimensionBytes).put(DimFilterUtils.STRING_SEPARATOR).put(upperBytes).put(DimFilterUtils.STRING_SEPARATOR).put(lowerBytes).put(DimFilterUtils.STRING_SEPARATOR).put(extractionFnBytes);
   return boundCacheBuffer.array();
 }
