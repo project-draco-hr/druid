@@ -7,7 +7,7 @@
   EasyMock.replay(mockPeon);
   EasyMock.expect(databaseRuleManager.getRulesWithDefault(EasyMock.<String>anyObject())).andReturn(Lists.<Rule>newArrayList(new IntervalLoadRule(new Interval("2012-01-01T00:00:00.000Z/2013-01-02T00:00:00.000Z"),ImmutableMap.<String,Integer>of("normal",1)))).atLeastOnce();
   EasyMock.replay(databaseRuleManager);
-  DataSegment overFlowSegment=new DataSegment("test",new Interval("2012-02-01/2012-02-02"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),1,0);
+  DataSegment overFlowSegment=new DataSegment("test",new Interval("2012-02-01/2012-02-02"),new DateTime().toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),1,0);
   List<DataSegment> longerAvailableSegments=Lists.newArrayList(availableSegments);
   longerAvailableSegments.add(overFlowSegment);
   DruidServer server1=new DruidServer("serverNorm1","hostNorm1",1000,"historical","normal",0);

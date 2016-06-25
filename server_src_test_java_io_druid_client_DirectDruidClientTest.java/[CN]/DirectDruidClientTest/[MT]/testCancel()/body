@@ -6,7 +6,7 @@
   EasyMock.expect(httpClient.go(EasyMock.capture(capturedRequest),EasyMock.<HttpResponseHandler>anyObject())).andReturn(cancelledFuture).once();
   EasyMock.expect(httpClient.go(EasyMock.capture(capturedRequest),EasyMock.<HttpResponseHandler>anyObject())).andReturn(cancellationFuture).once();
   EasyMock.replay(httpClient);
-  final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,0L),new HighestPriorityTierSelectorStrategy(new ConnectionCountServerSelectorStrategy()));
+  final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),0,0L),new HighestPriorityTierSelectorStrategy(new ConnectionCountServerSelectorStrategy()));
   DirectDruidClient client1=new DirectDruidClient(new ReflectionQueryToolChestWarehouse(),QueryRunnerTestHelper.NOOP_QUERYWATCHER,new DefaultObjectMapper(),httpClient,"foo",new NoopServiceEmitter());
   QueryableDruidServer queryableDruidServer1=new QueryableDruidServer(new DruidServer("test1","localhost",0,"historical",DruidServer.DEFAULT_TIER,0),client1);
   serverSelector.addServerAndUpdateSegment(queryableDruidServer1,serverSelector.getSegment());

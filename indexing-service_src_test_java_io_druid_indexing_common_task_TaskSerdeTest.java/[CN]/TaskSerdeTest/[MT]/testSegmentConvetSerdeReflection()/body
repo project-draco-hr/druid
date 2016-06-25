@@ -1,5 +1,5 @@
 {
-  final ConvertSegmentTask task=ConvertSegmentTask.create(new DataSegment("dataSource",Interval.parse("1990-01-01/1999-12-31"),"version",ImmutableMap.<String,Object>of(),ImmutableList.of("dim1","dim2"),ImmutableList.of("metric1","metric2"),new NoneShardSpec(),0,12345L),indexSpec,false,true,null);
+  final ConvertSegmentTask task=ConvertSegmentTask.create(new DataSegment("dataSource",Interval.parse("1990-01-01/1999-12-31"),"version",ImmutableMap.<String,Object>of(),ImmutableList.of("dim1","dim2"),ImmutableList.of("metric1","metric2"),NoneShardSpec.instance(),0,12345L),indexSpec,false,true,null);
   final String json=jsonMapper.writeValueAsString(task);
   final ConvertSegmentTask taskFromJson=jsonMapper.readValue(json,ConvertSegmentTask.class);
   Assert.assertEquals(json,jsonMapper.writeValueAsString(taskFromJson));

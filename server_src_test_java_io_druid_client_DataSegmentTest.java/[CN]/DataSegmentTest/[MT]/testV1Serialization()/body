@@ -1,7 +1,7 @@
 {
   final Interval interval=new Interval("2011-10-01/2011-10-02");
   final ImmutableMap<String,Object> loadSpec=ImmutableMap.<String,Object>of("something","or_other");
-  DataSegment segment=new DataSegment("something",interval,"1",loadSpec,Arrays.asList("dim1","dim2"),Arrays.asList("met1","met2"),new NoneShardSpec(),IndexIO.CURRENT_VERSION_ID,1);
+  DataSegment segment=new DataSegment("something",interval,"1",loadSpec,Arrays.asList("dim1","dim2"),Arrays.asList("met1","met2"),NoneShardSpec.instance(),IndexIO.CURRENT_VERSION_ID,1);
   final Map<String,Object> objectMap=mapper.readValue(mapper.writeValueAsString(segment),new TypeReference<Map<String,Object>>(){
   }
 );

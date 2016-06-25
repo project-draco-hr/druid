@@ -4,7 +4,7 @@
   final byte[] data=new byte[]{0x0,0x0,0x0,0x1};
   Files.write(data,tmp);
   final long size=data.length;
-  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,size);
+  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),0,size);
   DataSegment segment=pusher.push(tempFolder.getRoot(),segmentToPush);
   Assert.assertEquals(segmentToPush.getSize(),segment.getSize());
 }

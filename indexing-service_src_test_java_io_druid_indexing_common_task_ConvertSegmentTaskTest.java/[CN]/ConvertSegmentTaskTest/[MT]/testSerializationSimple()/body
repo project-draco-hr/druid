@@ -4,7 +4,7 @@
   ConvertSegmentTask task=ConvertSegmentTask.create(dataSource,interval,null,false,true,null);
   Task task2=jsonMapper.readValue(jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task),Task.class);
   Assert.assertEquals(task,task2);
-  DataSegment segment=new DataSegment(dataSource,interval,new DateTime().toString(),ImmutableMap.<String,Object>of(),ImmutableList.<String>of(),ImmutableList.<String>of(),new NoneShardSpec(),9,102937);
+  DataSegment segment=new DataSegment(dataSource,interval,new DateTime().toString(),ImmutableMap.<String,Object>of(),ImmutableList.<String>of(),ImmutableList.<String>of(),NoneShardSpec.instance(),9,102937);
   task=ConvertSegmentTask.create(segment,null,false,true,null);
   task2=jsonMapper.readValue(jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(task),Task.class);
   Assert.assertEquals(task,task2);

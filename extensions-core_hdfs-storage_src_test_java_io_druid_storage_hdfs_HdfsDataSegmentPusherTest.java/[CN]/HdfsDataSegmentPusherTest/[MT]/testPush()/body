@@ -8,7 +8,7 @@
   HdfsDataSegmentPusherConfig config=new HdfsDataSegmentPusherConfig();
   config.setStorageDirectory(tempFolder.newFolder().getAbsolutePath());
   HdfsDataSegmentPusher pusher=new HdfsDataSegmentPusher(config,conf,new DefaultObjectMapper());
-  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),new NoneShardSpec(),0,size);
+  DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),0,size);
   DataSegment segment=pusher.push(segmentDir,segmentToPush);
   Assert.assertEquals(segmentToPush.getSize(),segment.getSize());
 }

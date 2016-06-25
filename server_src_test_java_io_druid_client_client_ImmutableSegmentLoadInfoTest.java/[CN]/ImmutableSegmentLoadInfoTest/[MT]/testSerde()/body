@@ -1,5 +1,5 @@
 {
-  ImmutableSegmentLoadInfo segmentLoadInfo=new ImmutableSegmentLoadInfo(new DataSegment("test_ds",new Interval("2011-04-01/2011-04-02"),"v1",null,null,null,new NoneShardSpec(),0,0),Sets.newHashSet(new DruidServerMetadata("a","host",10,"type","tier",1)));
+  ImmutableSegmentLoadInfo segmentLoadInfo=new ImmutableSegmentLoadInfo(new DataSegment("test_ds",new Interval("2011-04-01/2011-04-02"),"v1",null,null,null,NoneShardSpec.instance(),0,0),Sets.newHashSet(new DruidServerMetadata("a","host",10,"type","tier",1)));
   ImmutableSegmentLoadInfo serde=mapper.readValue(mapper.writeValueAsBytes(segmentLoadInfo),ImmutableSegmentLoadInfo.class);
   Assert.assertEquals(segmentLoadInfo,serde);
 }
