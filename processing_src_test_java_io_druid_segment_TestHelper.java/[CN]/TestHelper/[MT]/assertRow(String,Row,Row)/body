@@ -1,0 +1,16 @@
+{
+  Assert.assertEquals(String.format("%s: timestamp",msg),expected.getTimestamp(),actual.getTimestamp());
+  final Map<String,Object> expectedMap=((MapBasedRow)expected).getEvent();
+  final Map<String,Object> actualMap=((MapBasedRow)actual).getEvent();
+  Assert.assertEquals(String.format("%s: map keys",msg),expectedMap.keySet(),actualMap.keySet());
+  for (  final String key : expectedMap.keySet()) {
+    final Object expectedValue=expectedMap.get(key);
+    final Object actualValue=actualMap.get(key);
+    if (expectedValue instanceof Float || expectedValue instanceof Double) {
+      Assert.assertEquals(String.format("%s: key[%s]",msg,key),((Number)expectedValue).doubleValue(),((Number)actualValue).doubleValue(),((Number)expectedValue).doubleValue() * 1e-6);
+    }
+ else {
+      Assert.assertEquals(String.format("%s: key[%s]",msg,key),expectedValue,actualValue);
+    }
+  }
+}

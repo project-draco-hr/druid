@@ -1,0 +1,13 @@
+{
+synchronized (files) {
+    if (files.contains(file)) {
+      try {
+        Files.delete(file.toPath());
+      }
+ catch (      IOException e) {
+        log.warn(e,"Cannot delete file: %s",file);
+      }
+      files.remove(file);
+    }
+  }
+}

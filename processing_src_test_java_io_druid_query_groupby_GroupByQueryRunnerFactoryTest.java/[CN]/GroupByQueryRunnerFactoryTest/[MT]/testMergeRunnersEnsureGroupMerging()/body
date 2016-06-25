@@ -1,5 +1,5 @@
 {
-  QueryRunnerFactory factory=createFactory();
+  QueryRunnerFactory factory=GroupByQueryRunnerTest.makeQueryRunnerFactory(new GroupByQueryConfig());
   QueryRunner mergedRunner=factory.mergeRunners(Executors.newSingleThreadExecutor(),ImmutableList.of(factory.createRunner(createSegment()),factory.createRunner(createSegment())));
   GroupByQuery query=GroupByQuery.builder().setDataSource("xx").setQuerySegmentSpec(new LegacySegmentSpec("1970/3000")).setGranularity(QueryGranularities.ALL).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("tags","tags"))).setAggregatorSpecs(Arrays.asList(new AggregatorFactory[]{new CountAggregatorFactory("count")})).build();
   Sequence<Row> result=mergedRunner.run(query,Maps.newHashMap());

@@ -1,5 +1,3 @@
 {
-  final GroupByQueryConfig config=configSupplier.get();
-  Pair<IncrementalIndex,Accumulator<IncrementalIndex,Row>> indexAccumulatorPair=GroupByQueryHelper.createIndexAccumulatorPair(query,config,bufferPool);
-  return rows.accumulate(indexAccumulatorPair.lhs,indexAccumulatorPair.rhs);
+  return GroupByQueryHelper.makeIncrementalIndex(query,configSupplier.get(),bufferPool,rows);
 }

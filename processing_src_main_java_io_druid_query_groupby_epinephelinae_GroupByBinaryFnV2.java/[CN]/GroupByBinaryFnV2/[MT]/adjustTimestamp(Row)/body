@@ -1,0 +1,8 @@
+{
+  if (query.getGranularity() instanceof AllGranularity) {
+    return row.getTimestamp();
+  }
+ else {
+    return query.getGranularity().toDateTime(query.getGranularity().truncate(row.getTimestamp().getMillis()));
+  }
+}

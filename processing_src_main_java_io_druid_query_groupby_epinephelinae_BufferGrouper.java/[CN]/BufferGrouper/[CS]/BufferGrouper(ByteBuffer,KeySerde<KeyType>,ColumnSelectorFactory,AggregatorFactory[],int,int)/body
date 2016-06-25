@@ -1,0 +1,18 @@
+{
+  this.buffer=buffer;
+  this.keySerde=keySerde;
+  this.keySize=keySerde.keySize();
+  this.aggregators=new BufferAggregator[aggregatorFactories.length];
+  this.aggregatorOffsets=new int[aggregatorFactories.length];
+  this.bufferGrouperMaxSize=bufferGrouperMaxSize;
+  this.initialBuckets=initialBuckets > 0 ? initialBuckets : DEFAULT_INITIAL_BUCKETS;
+  int offset=HASH_SIZE + keySize;
+  for (int i=0; i < aggregatorFactories.length; i++) {
+    aggregators[i]=aggregatorFactories[i].factorizeBuffered(columnSelectorFactory);
+    aggregatorOffsets[i]=offset;
+    offset+=aggregatorFactories[i].getMaxIntermediateSize();
+  }
+  this.bucketSize=offset;
+  this.tableArenaSize=(buffer.capacity() / (bucketSize + Ints.BYTES)) * bucketSize;
+  reset();
+}

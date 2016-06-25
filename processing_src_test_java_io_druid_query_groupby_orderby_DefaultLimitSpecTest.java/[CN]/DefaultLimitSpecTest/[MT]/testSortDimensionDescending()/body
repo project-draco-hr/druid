@@ -1,0 +1,5 @@
+{
+  DefaultLimitSpec limitSpec=new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("k1",OrderByColumnSpec.Direction.DESCENDING)),2);
+  Function<Sequence<Row>,Sequence<Row>> limitFn=limitSpec.build(ImmutableList.<DimensionSpec>of(new DefaultDimensionSpec("k1","k1")),ImmutableList.<AggregatorFactory>of(),ImmutableList.<PostAggregator>of());
+  Assert.assertEquals(ImmutableList.of(testRowsList.get(2),testRowsList.get(1)),Sequences.toList(limitFn.apply(testRowsSequence),new ArrayList<Row>()));
+}

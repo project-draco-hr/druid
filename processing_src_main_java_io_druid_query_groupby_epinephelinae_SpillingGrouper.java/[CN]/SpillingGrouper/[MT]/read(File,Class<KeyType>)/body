@@ -1,0 +1,8 @@
+{
+  try {
+    return spillMapper.readValues(spillMapper.getFactory().createParser(new LZ4BlockInputStream(new FileInputStream(file))),spillMapper.getTypeFactory().constructParametricType(Entry.class,keyClazz));
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+}

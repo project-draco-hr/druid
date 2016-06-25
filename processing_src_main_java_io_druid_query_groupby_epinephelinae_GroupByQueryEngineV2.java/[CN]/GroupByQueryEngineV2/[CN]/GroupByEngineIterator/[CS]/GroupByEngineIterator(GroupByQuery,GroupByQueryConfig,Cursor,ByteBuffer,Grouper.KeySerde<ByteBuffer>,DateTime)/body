@@ -1,0 +1,16 @@
+{
+  final int dimCount=query.getDimensions().size();
+  this.query=query;
+  this.config=config;
+  this.cursor=cursor;
+  this.buffer=buffer;
+  this.keySerde=keySerde;
+  this.keyBuffer=ByteBuffer.allocate(keySerde.keySize());
+  this.selectors=new DimensionSelector[dimCount];
+  for (int i=0; i < dimCount; i++) {
+    this.selectors[i]=cursor.makeDimensionSelector(query.getDimensions().get(i));
+  }
+  this.stack=new int[dimCount];
+  this.valuess=new IndexedInts[dimCount];
+  this.timestamp=fudgeTimestamp != null ? fudgeTimestamp : cursor.getTime();
+}

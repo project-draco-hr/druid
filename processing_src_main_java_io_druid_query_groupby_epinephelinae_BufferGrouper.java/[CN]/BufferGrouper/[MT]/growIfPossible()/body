@@ -1,0 +1,55 @@
+{
+  if (tableStart == 0) {
+    return;
+  }
+  final int newBuckets;
+  final int newMaxSize;
+  final int newTableStart;
+  if ((tableStart + buckets * 3 * bucketSize) > tableArenaSize) {
+    newTableStart=0;
+    newBuckets=tableStart / bucketSize;
+    newMaxSize=maxSizeForBuckets(newBuckets);
+  }
+ else {
+    newTableStart=tableStart + tableBuffer.limit();
+    newBuckets=buckets * 2;
+    newMaxSize=maxSizeForBuckets(newBuckets);
+  }
+  if (newBuckets < buckets) {
+    throw new ISE("WTF?! newBuckets[%,d] < buckets[%,d]",newBuckets,buckets);
+  }
+  ByteBuffer newTableBuffer=buffer.duplicate();
+  newTableBuffer.position(newTableStart);
+  newTableBuffer.limit(newTableStart + newBuckets * bucketSize);
+  newTableBuffer=newTableBuffer.slice();
+  int newSize=0;
+  for (int i=0; i < newBuckets; i++) {
+    newTableBuffer.put(i * bucketSize,(byte)0);
+  }
+  final ByteBuffer entryBuffer=tableBuffer.duplicate();
+  final ByteBuffer keyBuffer=tableBuffer.duplicate();
+  for (int oldBucket=0; oldBucket < buckets; oldBucket++) {
+    if (isUsed(oldBucket)) {
+      entryBuffer.limit((oldBucket + 1) * bucketSize);
+      entryBuffer.position(oldBucket * bucketSize);
+      keyBuffer.limit(entryBuffer.position() + HASH_SIZE + keySize);
+      keyBuffer.position(entryBuffer.position() + HASH_SIZE);
+      final int keyHash=entryBuffer.getInt(entryBuffer.position()) & 0x7fffffff;
+      final int newBucket=findBucket(newTableBuffer,newBuckets,bucketSize,true,keyBuffer,keySize,keyHash);
+      if (newBucket < 0) {
+        throw new ISE("WTF?! Couldn't find a bucket while resizing?!");
+      }
+      newTableBuffer.position(newBucket * bucketSize);
+      newTableBuffer.put(entryBuffer);
+      buffer.putInt(tableArenaSize + newSize * Ints.BYTES,newBucket * bucketSize);
+      newSize++;
+    }
+  }
+  buckets=newBuckets;
+  maxSize=newMaxSize;
+  tableBuffer=newTableBuffer;
+  tableStart=newTableStart;
+  if (size != newSize) {
+    throw new ISE("WTF?! size[%,d] != newSize[%,d] after resizing?!",size,maxSize);
+  }
+}

@@ -1,0 +1,5 @@
+{
+  Preconditions.checkState(objects != null,"Pool was initialized with limit = 0, there are no objects to take.");
+  final T theObject=timeout >= 0 ? objects.poll(timeout,TimeUnit.MILLISECONDS) : objects.take();
+  return theObject == null ? null : new ObjectResourceHolder(theObject);
+}

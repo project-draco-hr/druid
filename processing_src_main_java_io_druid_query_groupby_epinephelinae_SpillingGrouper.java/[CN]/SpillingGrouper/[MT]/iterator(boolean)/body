@@ -1,0 +1,22 @@
+{
+  final List<Iterator<Entry<KeyType>>> iterators=new ArrayList<>(1 + files.size());
+  iterators.add(grouper.iterator(sorted));
+  for (  final File file : files) {
+    final MappingIterator<Entry<KeyType>> fileIterator=read(file,keySerde.keyClazz());
+    iterators.add(Iterators.transform(fileIterator,new Function<Entry<KeyType>,Entry<KeyType>>(){
+      @Override public Entry<KeyType> apply(      Entry<KeyType> entry){
+        final Object[] deserializedValues=new Object[entry.getValues().length];
+        for (int i=0; i < deserializedValues.length; i++) {
+          deserializedValues[i]=aggregatorFactories[i].deserialize(entry.getValues()[i]);
+          if (deserializedValues[i] instanceof Integer) {
+            deserializedValues[i]=((Integer)deserializedValues[i]).longValue();
+          }
+        }
+        return new Entry<>(entry.getKey(),deserializedValues);
+      }
+    }
+));
+    closeables.add(fileIterator);
+  }
+  return Groupers.mergeIterators(iterators,sorted);
+}

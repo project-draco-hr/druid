@@ -35,5 +35,5 @@
     QueryableIndex qIndex=INDEX_IO.loadIndex(indexFile);
     qIndexes.add(qIndex);
   }
-  factory=new TopNQueryRunnerFactory(new OffheapBufferPool(250000000,Integer.MAX_VALUE),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()),QueryBenchmarkUtil.NOOP_QUERYWATCHER);
+  factory=new TopNQueryRunnerFactory(new StupidPool<>(new OffheapBufferGenerator("compute",250000000),Integer.MAX_VALUE),new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()),QueryBenchmarkUtil.NOOP_QUERYWATCHER);
 }

@@ -1,0 +1,33 @@
+{
+  if (storageAdapter == null) {
+    throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
+  }
+  final List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
+  if (intervals.size() != 1) {
+    throw new IAE("Should only have one interval, got[%s]",intervals);
+  }
+  final Sequence<Cursor> cursors=storageAdapter.makeCursors(Filters.toFilter(query.getDimFilter()),intervals.get(0),query.getGranularity(),false);
+  final Grouper.KeySerde<ByteBuffer> keySerde=new GroupByEngineKeySerde(query.getDimensions().size());
+  final ResourceHolder<ByteBuffer> bufferHolder=intermediateResultsBufferPool.take();
+  final String fudgeTimestampString=Strings.emptyToNull(query.getContextValue(GroupByStrategyV2.CTX_KEY_FUDGE_TIMESTAMP,""));
+  final DateTime fudgeTimestamp=fudgeTimestampString == null ? null : new DateTime(Long.parseLong(fudgeTimestampString));
+  return Sequences.concat(new ResourceClosingSequence<>(Sequences.map(cursors,new Function<Cursor,Sequence<Row>>(){
+    @Override public Sequence<Row> apply(    final Cursor cursor){
+      return new BaseSequence<>(new BaseSequence.IteratorMaker<Row,GroupByEngineIterator>(){
+        @Override public GroupByEngineIterator make(){
+          return new GroupByEngineIterator(query,config,cursor,bufferHolder.get(),keySerde,fudgeTimestamp);
+        }
+        @Override public void cleanup(        GroupByEngineIterator iterFromMake){
+          iterFromMake.close();
+        }
+      }
+);
+    }
+  }
+),new Closeable(){
+    @Override public void close() throws IOException {
+      CloseQuietly.close(bufferHolder);
+    }
+  }
+));
+}

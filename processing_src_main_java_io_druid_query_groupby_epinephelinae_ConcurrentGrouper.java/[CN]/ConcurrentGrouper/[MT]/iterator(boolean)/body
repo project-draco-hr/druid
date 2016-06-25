@@ -1,0 +1,12 @@
+{
+  if (closed) {
+    throw new ISE("Grouper is closed");
+  }
+  final List<Iterator<Entry<KeyType>>> iterators=new ArrayList<>(groupers.size());
+  for (  Grouper<KeyType> grouper : groupers) {
+synchronized (grouper) {
+      iterators.add(grouper.iterator(sorted));
+    }
+  }
+  return Groupers.mergeIterators(iterators,sorted);
+}

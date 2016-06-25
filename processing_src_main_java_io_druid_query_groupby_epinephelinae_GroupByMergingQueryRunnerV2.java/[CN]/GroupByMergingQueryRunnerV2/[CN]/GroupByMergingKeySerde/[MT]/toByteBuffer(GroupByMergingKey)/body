@@ -1,0 +1,13 @@
+{
+  keyBuffer.rewind();
+  keyBuffer.putLong(key.getTimestamp());
+  for (int i=0; i < key.getDimensions().length; i++) {
+    final int id=addToDictionary(key.getDimensions()[i]);
+    if (id < 0) {
+      return null;
+    }
+    keyBuffer.putInt(id);
+  }
+  keyBuffer.flip();
+  return keyBuffer;
+}

@@ -1,4 +1,9 @@
 {
   final ListeningExecutorService queryExecutor=MoreExecutors.listeningDecorator(exec);
-  return new GroupByMergedQueryRunner(queryExecutor,config,queryWatcher,computationBufferPool,queryRunners);
+  return new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
+      return strategySelector.strategize((GroupByQuery)query).mergeRunners(queryExecutor,queryRunners).run(query,responseContext);
+    }
+  }
+;
 }

@@ -1,0 +1,9 @@
+{
+  if (closed) {
+    throw new ISE("Grouper is closed");
+  }
+  final Grouper<KeyType> grouper=groupers.get(grouperNumberForKeyHash(keyHash));
+synchronized (grouper) {
+    return grouper.aggregate(key,keyHash);
+  }
+}

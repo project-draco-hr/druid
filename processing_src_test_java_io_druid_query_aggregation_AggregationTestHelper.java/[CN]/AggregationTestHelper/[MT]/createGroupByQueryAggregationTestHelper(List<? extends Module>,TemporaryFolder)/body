@@ -1,25 +1,11 @@
 {
   ObjectMapper mapper=new DefaultObjectMapper();
-  Supplier<GroupByQueryConfig> configSupplier=Suppliers.ofInstance(new GroupByQueryConfig());
-  StupidPool<ByteBuffer> pool=new StupidPool<>(new Supplier<ByteBuffer>(){
-    @Override public ByteBuffer get(){
-      return ByteBuffer.allocate(1024 * 1024);
-    }
-  }
-);
-  QueryWatcher noopQueryWatcher=new QueryWatcher(){
-    @Override public void registerQuery(    Query query,    ListenableFuture future){
-    }
-  }
-;
-  GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,pool);
-  GroupByQueryQueryToolChest toolchest=new GroupByQueryQueryToolChest(configSupplier,mapper,engine,pool,NoopIntervalChunkingQueryRunnerDecorator());
-  GroupByQueryRunnerFactory factory=new GroupByQueryRunnerFactory(engine,noopQueryWatcher,configSupplier,toolchest,pool);
+  GroupByQueryRunnerFactory factory=GroupByQueryRunnerTest.makeQueryRunnerFactory(new GroupByQueryConfig());
   IndexIO indexIO=new IndexIO(mapper,new ColumnConfig(){
     @Override public int columnCacheSizeBytes(){
       return 0;
     }
   }
 );
-  return new AggregationTestHelper(mapper,new IndexMerger(mapper,indexIO),indexIO,toolchest,factory,tempFolder,jsonModulesToRegister);
+  return new AggregationTestHelper(mapper,new IndexMerger(mapper,indexIO),indexIO,factory.getToolchest(),factory,tempFolder,jsonModulesToRegister);
 }

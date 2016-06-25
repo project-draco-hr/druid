@@ -8,8 +8,15 @@
     final Object next=resultsIter.next();
     final Object next2=resultsIter2.next();
     String failMsg=msg + "-" + index++;
-    Assert.assertEquals(failMsg,expectedNext,next);
-    Assert.assertEquals(String.format("%s: Second iterator bad, multiple calls to iterator() should be safe",failMsg),expectedNext,next2);
+    String failMsg2=String.format("%s: Second iterator bad, multiple calls to iterator() should be safe",failMsg);
+    if (expectedNext instanceof Row) {
+      assertRow(failMsg,(Row)expectedNext,(Row)next);
+      assertRow(failMsg2,(Row)expectedNext,(Row)next2);
+    }
+ else {
+      Assert.assertEquals(failMsg,expectedNext,next);
+      Assert.assertEquals(failMsg2,expectedNext,next2);
+    }
   }
   if (resultsIter.hasNext()) {
     Assert.fail(String.format("%s: Expected resultsIter to be exhausted, next element was %s",msg,resultsIter.next()));

@@ -1,0 +1,81 @@
+{
+  if (delegate != null && delegate.hasNext()) {
+    return delegate.next();
+  }
+  if (cursor.isDone()) {
+    throw new NoSuchElementException();
+  }
+  if (delegate != null) {
+    delegate.close();
+    delegate=null;
+  }
+  final Grouper<ByteBuffer> grouper=new BufferGrouper<>(buffer,keySerde,cursor,query.getAggregatorSpecs().toArray(new AggregatorFactory[query.getAggregatorSpecs().size()]),config.getBufferGrouperMaxSize(),GroupByStrategyV2.getBufferGrouperInitialBuckets(config,query));
+  outer:   while (!cursor.isDone()) {
+    if (!currentRowWasPartiallyAggregated) {
+      stackp=stack.length - 1;
+      for (int i=0; i < selectors.length; i++) {
+        final DimensionSelector selector=selectors[i];
+        valuess[i]=selector == null ? EmptyIndexedInts.EMPTY_INDEXED_INTS : selector.getRow();
+        final int position=Ints.BYTES * i;
+        if (valuess[i].size() == 0) {
+          stack[i]=0;
+          keyBuffer.putInt(position,-1);
+        }
+ else {
+          stack[i]=1;
+          keyBuffer.putInt(position,valuess[i].get(0));
+        }
+      }
+    }
+    boolean doAggregate=true;
+    while (stackp >= -1) {
+      if (doAggregate) {
+        keyBuffer.rewind();
+        if (!grouper.aggregate(keyBuffer)) {
+          currentRowWasPartiallyAggregated=true;
+          break outer;
+        }
+        doAggregate=false;
+      }
+      if (stackp >= 0 && stack[stackp] < valuess[stackp].size()) {
+        keyBuffer.putInt(Ints.BYTES * stackp,valuess[stackp].get(stack[stackp]));
+        stack[stackp]++;
+        for (int i=stackp + 1; i < stack.length; i++) {
+          final int position=Ints.BYTES * i;
+          if (valuess[i].size() == 0) {
+            stack[i]=0;
+            keyBuffer.putInt(position,-1);
+          }
+ else {
+            stack[i]=1;
+            keyBuffer.putInt(position,valuess[i].get(0));
+          }
+        }
+        stackp=stack.length - 1;
+        doAggregate=true;
+      }
+ else {
+        stackp--;
+      }
+    }
+    cursor.advance();
+    currentRowWasPartiallyAggregated=false;
+  }
+  delegate=new CloseableGrouperIterator<>(grouper,false,new Function<Grouper.Entry<ByteBuffer>,Row>(){
+    @Override public Row apply(    final Grouper.Entry<ByteBuffer> entry){
+      Map<String,Object> theMap=Maps.newLinkedHashMap();
+      for (int i=0; i < selectors.length; i++) {
+        final int id=entry.getKey().getInt(Ints.BYTES * i);
+        if (id >= 0) {
+          theMap.put(query.getDimensions().get(i).getOutputName(),selectors[i].lookupName(id));
+        }
+      }
+      for (int i=0; i < entry.getValues().length; i++) {
+        theMap.put(query.getAggregatorSpecs().get(i).getName(),entry.getValues()[i]);
+      }
+      return new MapBasedRow(timestamp,theMap);
+    }
+  }
+);
+  return delegate.next();
+}

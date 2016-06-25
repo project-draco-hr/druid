@@ -6,15 +6,13 @@
     @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
       final Query query1=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-02/2011-04-03"))));
       final Query query2=query.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(Lists.newArrayList(new Interval("2011-04-03/2011-04-04"))));
-      return Sequences.concat(runner.run(query1,responseContext),runner.run(query2,responseContext));
+      return new MergeSequence(query.getResultOrdering(),Sequences.simple(Arrays.asList(runner.run(query1,responseContext),runner.run(query2,responseContext))));
     }
   }
 );
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","automotive","rows",2L,"idx",269L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","business","rows",2L,"idx",217L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","entertainment","rows",2L,"idx",319L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","health","rows",2L,"idx",216L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","mezzanine","rows",6L,"idx",4420L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","news","rows",2L,"idx",221L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","premium","rows",6L,"idx",4416L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","technology","rows",2L,"idx",177L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","alias","travel","rows",2L,"idx",243L));
   Map<String,Object> context=Maps.newHashMap();
-  TestHelper.assertExpectedObjects(expectedResults,runner.run(fullQuery,context),"direct");
   TestHelper.assertExpectedObjects(expectedResults,mergedRunner.run(fullQuery,context),"merged");
   List<Row> allGranExpectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","automotive","rows",2L,"idx",269L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","business","rows",2L,"idx",217L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","entertainment","rows",2L,"idx",319L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","health","rows",2L,"idx",216L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","mezzanine","rows",6L,"idx",4420L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","news","rows",2L,"idx",221L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","premium","rows",6L,"idx",4416L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","technology","rows",2L,"idx",177L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-02","alias","travel","rows",2L,"idx",243L));
-  TestHelper.assertExpectedObjects(allGranExpectedResults,runner.run(allGranQuery,context),"direct");
   TestHelper.assertExpectedObjects(allGranExpectedResults,mergedRunner.run(allGranQuery,context),"merged");
 }

@@ -1,0 +1,10 @@
+{
+  if (closed) {
+    throw new ISE("Grouper is closed");
+  }
+  for (  Grouper<KeyType> grouper : groupers) {
+synchronized (grouper) {
+      grouper.reset();
+    }
+  }
+}

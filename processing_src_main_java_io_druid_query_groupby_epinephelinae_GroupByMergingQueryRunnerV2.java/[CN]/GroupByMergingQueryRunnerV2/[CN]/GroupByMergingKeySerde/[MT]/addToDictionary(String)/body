@@ -1,0 +1,14 @@
+{
+  Integer idx=reverseDictionary.get(s);
+  if (idx == null) {
+    final long additionalEstimatedSize=(long)s.length() * Chars.BYTES + ROUGH_OVERHEAD_PER_DICTIONARY_ENTRY;
+    if (currentEstimatedSize + additionalEstimatedSize > maxDictionarySize) {
+      return -1;
+    }
+    idx=dictionary.size();
+    reverseDictionary.put(s,idx);
+    dictionary.add(s);
+    currentEstimatedSize+=additionalEstimatedSize;
+  }
+  return idx;
+}

@@ -1,0 +1,15 @@
+{
+  final Comparator naturalNullsFirst=Ordering.natural().nullsFirst();
+  final Ordering<Row> rowOrdering=getRowOrdering(false);
+  return Ordering.from(new Comparator<Object>(){
+    @Override public int compare(    Object lhs,    Object rhs){
+      if (lhs instanceof Row) {
+        return rowOrdering.compare((Row)lhs,(Row)rhs);
+      }
+ else {
+        return naturalNullsFirst.compare(lhs,rhs);
+      }
+    }
+  }
+);
+}

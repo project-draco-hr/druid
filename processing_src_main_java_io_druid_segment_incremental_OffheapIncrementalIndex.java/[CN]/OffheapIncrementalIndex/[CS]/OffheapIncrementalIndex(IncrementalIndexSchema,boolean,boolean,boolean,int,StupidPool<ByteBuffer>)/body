@@ -10,14 +10,8 @@
   }
   ResourceHolder<ByteBuffer> bb=bufferPool.take();
   if (bb.get().capacity() < aggsTotalSize) {
-    RuntimeException ex=new IAE("bufferPool buffers capacity must be >= [%s]",aggsTotalSize);
-    try {
-      bb.close();
-    }
- catch (    IOException ioe) {
-      ex.addSuppressed(ioe);
-    }
-    throw ex;
+    bb.close();
+    throw new IAE("bufferPool buffers capacity must be >= [%s]",aggsTotalSize);
   }
   aggBuffers.add(bb);
 }

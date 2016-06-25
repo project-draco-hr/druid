@@ -1,0 +1,15 @@
+{
+synchronized (files) {
+    if (closed) {
+      return;
+    }
+    closed=true;
+    for (    File file : ImmutableSet.copyOf(files)) {
+      delete(file);
+    }
+    files.clear();
+    if (storageDirectory.exists() && !storageDirectory.delete()) {
+      log.warn("Cannot delete storageDirectory: %s",storageDirectory);
+    }
+  }
+}

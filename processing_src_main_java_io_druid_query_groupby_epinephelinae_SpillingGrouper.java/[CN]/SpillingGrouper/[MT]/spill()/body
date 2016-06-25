@@ -1,0 +1,16 @@
+{
+  try (final LimitedTemporaryStorage.LimitedOutputStream out=temporaryStorage.createFile();final LZ4BlockOutputStream compressedOut=new LZ4BlockOutputStream(out);final JsonGenerator jsonGenerator=spillMapper.getFactory().createGenerator(compressedOut)){
+    files.add(out.getFile());
+    final Iterator<Entry<KeyType>> it=grouper.iterator(true);
+    while (it.hasNext()) {
+      if (Thread.interrupted()) {
+        throw new QueryInterruptedException(new InterruptedException());
+      }
+      jsonGenerator.writeObject(it.next());
+    }
+  }
+ catch (  IOException e) {
+    throw Throwables.propagate(e);
+  }
+  grouper.reset();
+}

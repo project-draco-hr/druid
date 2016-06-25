@@ -1,0 +1,31 @@
+{
+  size=0;
+  buckets=Math.min(tableArenaSize / bucketSize,initialBuckets);
+  maxSize=maxSizeForBuckets(buckets);
+  if (buckets < 1) {
+    throw new IAE("Not enough capacity for even one row! Need[%,d] but have[%,d].",bucketSize + Ints.BYTES,buffer.capacity());
+  }
+  tableStart=tableArenaSize - buckets * bucketSize;
+  int nextBuckets=buckets * 2;
+  while (true) {
+    final int nextTableStart=tableStart - nextBuckets * bucketSize;
+    if (nextTableStart > tableArenaSize / 2) {
+      tableStart=nextTableStart;
+      nextBuckets=nextBuckets * 2;
+    }
+ else {
+      break;
+    }
+  }
+  if (tableStart < tableArenaSize / 2) {
+    tableStart=0;
+  }
+  final ByteBuffer bufferDup=buffer.duplicate();
+  bufferDup.position(tableStart);
+  bufferDup.limit(tableStart + buckets * bucketSize);
+  tableBuffer=bufferDup.slice();
+  for (int i=0; i < buckets; i++) {
+    tableBuffer.put(i * bucketSize,(byte)0);
+  }
+  keySerde.reset();
+}

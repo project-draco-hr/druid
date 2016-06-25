@@ -1,0 +1,56 @@
+{
+  if (sorted) {
+    final List<Integer> wrappedOffsets=new AbstractList<Integer>(){
+      @Override public Integer get(      int index){
+        return buffer.getInt(tableArenaSize + index * Ints.BYTES);
+      }
+      @Override public Integer set(      int index,      Integer element){
+        final Integer oldValue=get(index);
+        buffer.putInt(tableArenaSize + index * Ints.BYTES,element);
+        return oldValue;
+      }
+      @Override public int size(){
+        return size;
+      }
+    }
+;
+    final KeyComparator comparator=keySerde.comparator();
+    Collections.sort(wrappedOffsets,new Comparator<Integer>(){
+      @Override public int compare(      Integer lhs,      Integer rhs){
+        return comparator.compare(tableBuffer,tableBuffer,lhs + HASH_SIZE,rhs + HASH_SIZE);
+      }
+    }
+);
+    return new Iterator<Entry<KeyType>>(){
+      int curr=0;
+      @Override public boolean hasNext(){
+        return curr < size;
+      }
+      @Override public Entry<KeyType> next(){
+        return bucketEntryForOffset(wrappedOffsets.get(curr++));
+      }
+      @Override public void remove(){
+        throw new UnsupportedOperationException();
+      }
+    }
+;
+  }
+ else {
+    return new Iterator<Entry<KeyType>>(){
+      int curr=0;
+      @Override public boolean hasNext(){
+        return curr < size;
+      }
+      @Override public Entry<KeyType> next(){
+        final int offset=buffer.getInt(tableArenaSize + curr * Ints.BYTES);
+        final Entry<KeyType> entry=bucketEntryForOffset(offset);
+        curr++;
+        return entry;
+      }
+      @Override public void remove(){
+        throw new UnsupportedOperationException();
+      }
+    }
+;
+  }
+}

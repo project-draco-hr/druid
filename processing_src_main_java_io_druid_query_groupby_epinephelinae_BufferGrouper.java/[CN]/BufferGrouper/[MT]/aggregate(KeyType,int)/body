@@ -1,0 +1,32 @@
+{
+  final ByteBuffer keyBuffer=keySerde.toByteBuffer(key);
+  if (keyBuffer == null) {
+    return false;
+  }
+  Preconditions.checkArgument(keyBuffer.remaining() == keySize,"keySerde.toByteBuffer(key).remaining[%s] != keySerde.keySize[%s], buffer was the wrong size?!",keyBuffer.remaining(),keySize);
+  int bucket=findBucket(tableBuffer,buckets,bucketSize,size < Math.min(maxSize,bufferGrouperMaxSize),keyBuffer,keySize,keyHash);
+  if (bucket < 0) {
+    if (size < bufferGrouperMaxSize) {
+      growIfPossible();
+      bucket=findBucket(tableBuffer,buckets,bucketSize,size < maxSize,keyBuffer,keySize,keyHash);
+    }
+    if (bucket < 0) {
+      return false;
+    }
+  }
+  final int offset=bucket * bucketSize;
+  if (!isUsed(bucket)) {
+    tableBuffer.position(offset);
+    tableBuffer.putInt(keyHash | 0x80000000);
+    tableBuffer.put(keyBuffer);
+    for (int i=0; i < aggregators.length; i++) {
+      aggregators[i].init(tableBuffer,offset + aggregatorOffsets[i]);
+    }
+    buffer.putInt(tableArenaSize + size * Ints.BYTES,offset);
+    size++;
+  }
+  for (int i=0; i < aggregators.length; i++) {
+    aggregators[i].aggregate(tableBuffer,offset + aggregatorOffsets[i]);
+  }
+  return true;
+}

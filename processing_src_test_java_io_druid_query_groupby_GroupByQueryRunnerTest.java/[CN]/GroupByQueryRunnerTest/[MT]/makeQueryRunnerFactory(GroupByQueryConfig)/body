@@ -1,0 +1,26 @@
+{
+  final Supplier<GroupByQueryConfig> configSupplier=Suppliers.ofInstance(config);
+  final StupidPool<ByteBuffer> bufferPool=new StupidPool<>(new Supplier<ByteBuffer>(){
+    @Override public ByteBuffer get(){
+      return ByteBuffer.allocate(10 * 1024 * 1024);
+    }
+  }
+);
+  final BlockingPool<ByteBuffer> mergeBufferPool=new BlockingPool<>(new Supplier<ByteBuffer>(){
+    @Override public ByteBuffer get(){
+      return ByteBuffer.allocate(10 * 1024 * 1024);
+    }
+  }
+,4);
+  final GroupByStrategySelector strategySelector=new GroupByStrategySelector(configSupplier,new GroupByStrategyV1(configSupplier,new GroupByQueryEngine(configSupplier,bufferPool),QueryRunnerTestHelper.NOOP_QUERYWATCHER,bufferPool),new GroupByStrategyV2(new DruidProcessingConfig(){
+    @Override public String getFormatString(){
+      return null;
+    }
+    @Override public int getNumThreads(){
+      return 2;
+    }
+  }
+,configSupplier,bufferPool,mergeBufferPool,new DefaultObjectMapper(new SmileFactory()),QueryRunnerTestHelper.NOOP_QUERYWATCHER));
+  final GroupByQueryQueryToolChest toolChest=new GroupByQueryQueryToolChest(configSupplier,strategySelector,bufferPool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
+  return new GroupByQueryRunnerFactory(strategySelector,toolChest);
+}

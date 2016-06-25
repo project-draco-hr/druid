@@ -1,0 +1,25 @@
+{
+  final Comparator naturalNullsFirst=Ordering.natural().nullsFirst();
+  return Ordering.from(new Comparator<Row>(){
+    @Override public int compare(    Row lhs,    Row rhs){
+      final int timeCompare;
+      if (granular) {
+        timeCompare=Longs.compare(granularity.truncate(lhs.getTimestampFromEpoch()),granularity.truncate(rhs.getTimestampFromEpoch()));
+      }
+ else {
+        timeCompare=Longs.compare(lhs.getTimestampFromEpoch(),rhs.getTimestampFromEpoch());
+      }
+      if (timeCompare != 0) {
+        return timeCompare;
+      }
+      for (      DimensionSpec dimension : dimensions) {
+        final int dimCompare=naturalNullsFirst.compare(lhs.getRaw(dimension.getOutputName()),rhs.getRaw(dimension.getOutputName()));
+        if (dimCompare != 0) {
+          return dimCompare;
+        }
+      }
+      return 0;
+    }
+  }
+);
+}

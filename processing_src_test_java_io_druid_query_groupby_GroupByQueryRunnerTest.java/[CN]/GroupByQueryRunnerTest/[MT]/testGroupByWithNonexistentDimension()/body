@@ -3,13 +3,6 @@
   final GroupByQuery query=builder.build();
   List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","automotive","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","business","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","entertainment","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","health","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","mezzanine","rows",6L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","news","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","premium","rows",6L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","technology","rows",2L),GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","billy",null,"quality","travel","rows",2L));
   Map<String,Object> context=Maps.newHashMap();
-  TestHelper.assertExpectedObjects(expectedResults,runner.run(query,context),"normal");
-  final GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,new StupidPool<>(new Supplier<ByteBuffer>(){
-    @Override public ByteBuffer get(){
-      return ByteBuffer.allocate(1024 * 1024);
-    }
-  }
-));
-  QueryRunner<Row> mergeRunner=new GroupByQueryQueryToolChest(configSupplier,new DefaultObjectMapper(),engine,TestQueryRunners.pool,QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator()).mergeResults(runner);
+  QueryRunner<Row> mergeRunner=factory.getToolchest().mergeResults(runner);
   TestHelper.assertExpectedObjects(expectedResults,mergeRunner.run(query,context),"no-limit");
 }

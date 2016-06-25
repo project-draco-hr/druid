@@ -1,0 +1,16 @@
+{
+  if (arg1 == null) {
+    return arg2;
+  }
+ else   if (arg2 == null) {
+    return arg1;
+  }
+  final Map<String,Object> newMap=Maps.newHashMapWithExpectedSize(query.getDimensions().size() + query.getAggregatorSpecs().size());
+  for (  DimensionSpec dimension : query.getDimensions()) {
+    newMap.put(dimension.getOutputName(),arg1.getRaw(dimension.getOutputName()));
+  }
+  for (  AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+    newMap.put(aggregatorFactory.getName(),aggregatorFactory.combine(arg1.getRaw(aggregatorFactory.getName()),arg2.getRaw(aggregatorFactory.getName())));
+  }
+  return new MapBasedRow(adjustTimestamp(arg1),newMap);
+}

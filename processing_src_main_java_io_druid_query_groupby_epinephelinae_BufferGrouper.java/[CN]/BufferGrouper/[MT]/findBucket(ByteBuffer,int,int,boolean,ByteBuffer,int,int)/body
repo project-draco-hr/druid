@@ -1,0 +1,23 @@
+{
+  final int startBucket=keyHash % buckets;
+  int bucket=startBucket;
+  outer:   while (true) {
+    final int bucketOffset=bucket * bucketSize;
+    if ((tableBuffer.get(bucketOffset) & 0x80) == 0) {
+      return allowNewBucket ? bucket : -1;
+    }
+    for (int i=bucketOffset + HASH_SIZE, j=keyBuffer.position(); j < keyBuffer.position() + keySize; i++, j++) {
+      if (tableBuffer.get(i) != keyBuffer.get(j)) {
+        bucket+=1;
+        if (bucket == buckets) {
+          bucket=0;
+        }
+        if (bucket == startBucket) {
+          return -1;
+        }
+        continue outer;
+      }
+    }
+    return bucket;
+  }
+}

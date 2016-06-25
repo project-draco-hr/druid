@@ -3,7 +3,7 @@
   if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
     ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
   }
-  executorService=Execs.multiThreaded(numSegments,"GroupByThreadPool");
+  executorService=Execs.multiThreaded(numProcessingThreads,"GroupByThreadPool[%d]");
   setupQueries();
   String[] schemaQuery=schemaAndQuery.split("\\.");
   String schemaName=schemaQuery[0];
@@ -35,13 +35,30 @@
     QueryableIndex qIndex=INDEX_IO.loadIndex(indexFile);
     qIndexes.add(qIndex);
   }
-  OffheapBufferPool bufferPool=new OffheapBufferPool(250000000,Integer.MAX_VALUE);
-  OffheapBufferPool bufferPool2=new OffheapBufferPool(250000000,Integer.MAX_VALUE);
-  final GroupByQueryConfig config=new GroupByQueryConfig();
+  StupidPool<ByteBuffer> bufferPool=new StupidPool<>(new OffheapBufferGenerator("compute",250000000),Integer.MAX_VALUE);
+  BlockingPool<ByteBuffer> mergePool=new BlockingPool<>(new OffheapBufferGenerator("merge",250000000),1);
+  final GroupByQueryConfig config=new GroupByQueryConfig(){
+    @Override public String getDefaultStrategy(){
+      return defaultStrategy;
+    }
+    @Override public int getBufferGrouperInitialBuckets(){
+      return initialBuckets;
+    }
+  }
+;
   config.setSingleThreaded(false);
-  config.setMaxIntermediateRows(1000000);
-  config.setMaxResults(1000000);
+  config.setMaxIntermediateRows(Integer.MAX_VALUE);
+  config.setMaxResults(Integer.MAX_VALUE);
+  DruidProcessingConfig druidProcessingConfig=new DruidProcessingConfig(){
+    @Override public int getNumThreads(){
+      return numProcessingThreads;
+    }
+    @Override public String getFormatString(){
+      return null;
+    }
+  }
+;
   final Supplier<GroupByQueryConfig> configSupplier=Suppliers.ofInstance(config);
-  final GroupByQueryEngine engine=new GroupByQueryEngine(configSupplier,bufferPool);
-  factory=new GroupByQueryRunnerFactory(engine,QueryBenchmarkUtil.NOOP_QUERYWATCHER,configSupplier,new GroupByQueryQueryToolChest(configSupplier,JSON_MAPPER,engine,bufferPool2,QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()),bufferPool2);
+  final GroupByStrategySelector strategySelector=new GroupByStrategySelector(configSupplier,new GroupByStrategyV1(configSupplier,new GroupByQueryEngine(configSupplier,bufferPool),QueryBenchmarkUtil.NOOP_QUERYWATCHER,bufferPool),new GroupByStrategyV2(druidProcessingConfig,configSupplier,bufferPool,mergePool,new ObjectMapper(new SmileFactory()),QueryBenchmarkUtil.NOOP_QUERYWATCHER));
+  factory=new GroupByQueryRunnerFactory(strategySelector,new GroupByQueryQueryToolChest(configSupplier,strategySelector,bufferPool,QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()));
 }

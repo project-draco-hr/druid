@@ -7,20 +7,7 @@
   }
   RuntimeException ex=null;
   for (  ResourceHolder<ByteBuffer> buffHolder : aggBuffers) {
-    try {
-      buffHolder.close();
-    }
- catch (    IOException ioe) {
-      if (ex == null) {
-        ex=Throwables.propagate(ioe);
-      }
- else {
-        ex.addSuppressed(ioe);
-      }
-    }
+    buffHolder.close();
   }
   aggBuffers.clear();
-  if (ex != null) {
-    throw ex;
-  }
 }
