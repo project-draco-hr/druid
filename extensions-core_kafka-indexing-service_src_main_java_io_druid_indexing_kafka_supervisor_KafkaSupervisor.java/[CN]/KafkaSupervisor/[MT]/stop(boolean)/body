@@ -1,28 +1,40 @@
 {
-  Preconditions.checkState(started,"not started");
-  log.info("Beginning shutdown of KafkaSupervisor[%s]",dataSource);
-  try {
-    scheduledExec.shutdownNow();
-    Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
-    if (taskRunner.isPresent()) {
-      taskRunner.get().unregisterListener(supervisorId);
-    }
-    if (stopGracefully) {
-      log.info("Stopping gracefully, signalling managed tasks to complete and publish");
+synchronized (stateChangeLock) {
+    Preconditions.checkState(started,"not started");
+    log.info("Beginning shutdown of KafkaSupervisor[%s]",dataSource);
+    try {
+      scheduledExec.shutdownNow();
+      Optional<TaskRunner> taskRunner=taskMaster.getTaskRunner();
+      if (taskRunner.isPresent()) {
+        taskRunner.get().unregisterListener(supervisorId);
+      }
 synchronized (stopLock) {
-        notices.add(new ShutdownNotice());
+        if (stopGracefully) {
+          log.info("Posting GracefulShutdownNotice, signalling managed tasks to complete and publish");
+          notices.add(new GracefulShutdownNotice());
+        }
+ else {
+          log.info("Posting ShutdownNotice");
+          notices.add(new ShutdownNotice());
+        }
+        long endTime=System.currentTimeMillis() + SHUTDOWN_TIMEOUT_MILLIS;
         while (!stopped) {
-          stopLock.wait();
+          long sleepTime=endTime - System.currentTimeMillis();
+          if (sleepTime <= 0) {
+            log.info("Timed out while waiting for shutdown");
+            stopped=true;
+            break;
+          }
+          stopLock.wait(sleepTime);
         }
       }
       log.info("Shutdown notice handled");
+      exec.shutdownNow();
+      started=false;
+      log.info("KafkaSupervisor[%s] has stopped",dataSource);
     }
-    exec.shutdownNow();
-    consumer.close();
-    started=false;
-    log.info("KafkaSupervisor[%s] has stopped",dataSource);
-  }
- catch (  Exception e) {
-    log.makeAlert(e,"Exception stopping KafkaSupervisor[%s]",dataSource).emit();
+ catch (    Exception e) {
+      log.makeAlert(e,"Exception stopping KafkaSupervisor[%s]",dataSource).emit();
+    }
   }
 }

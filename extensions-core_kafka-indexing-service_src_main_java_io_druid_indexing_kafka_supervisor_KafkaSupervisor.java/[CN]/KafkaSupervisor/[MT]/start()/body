@@ -1,34 +1,36 @@
 {
-  Preconditions.checkState(!started,"already started");
-  Preconditions.checkState(!exec.isShutdown(),"already stopped");
-  try {
-    consumer=getKafkaConsumer();
-    exec.submit(new Runnable(){
-      @Override public void run(){
-        try {
-          while (!Thread.currentThread().isInterrupted()) {
-            final Notice notice=notices.take();
-            try {
-              notice.handle();
-            }
- catch (            Exception e) {
-              log.makeAlert(e,"KafkaSupervisor[%s] failed to handle notice",dataSource).addData("noticeClass",notice.getClass().getSimpleName()).emit();
+synchronized (stateChangeLock) {
+    Preconditions.checkState(!started,"already started");
+    Preconditions.checkState(!exec.isShutdown(),"already stopped");
+    try {
+      consumer=getKafkaConsumer();
+      exec.submit(new Runnable(){
+        @Override public void run(){
+          try {
+            while (!Thread.currentThread().isInterrupted()) {
+              final Notice notice=notices.take();
+              try {
+                notice.handle();
+              }
+ catch (              Exception e) {
+                log.makeAlert(e,"KafkaSupervisor[%s] failed to handle notice",dataSource).addData("noticeClass",notice.getClass().getSimpleName()).emit();
+              }
             }
           }
-        }
- catch (        InterruptedException e) {
-          log.info("KafkaSupervisor[%s] interrupted, exiting",dataSource);
+ catch (          InterruptedException e) {
+            log.info("KafkaSupervisor[%s] interrupted, exiting",dataSource);
+          }
         }
       }
-    }
 );
+    }
+ catch (    Exception e) {
+      log.makeAlert(e,"Exception starting KafkaSupervisor[%s]",dataSource).emit();
+      throw Throwables.propagate(e);
+    }
+    firstRunTime=DateTime.now().plus(ioConfig.getStartDelay());
+    scheduledExec.scheduleAtFixedRate(buildRunTask(),ioConfig.getStartDelay().getMillis(),Math.max(ioConfig.getPeriod().getMillis(),MAX_RUN_FREQUENCY_MILLIS),TimeUnit.MILLISECONDS);
+    started=true;
+    log.info("Started KafkaSupervisor[%s], first run in [%s]",dataSource,ioConfig.getStartDelay());
   }
- catch (  Exception e) {
-    log.makeAlert(e,"Exception starting KafkaSupervisor[%s]",dataSource).emit();
-    throw Throwables.propagate(e);
-  }
-  firstRunTime=DateTime.now().plus(ioConfig.getStartDelay());
-  scheduledExec.scheduleAtFixedRate(buildRunTask(),ioConfig.getStartDelay().getMillis(),Math.max(ioConfig.getPeriod().getMillis(),MAX_RUN_FREQUENCY_MILLIS),TimeUnit.MILLISECONDS);
-  started=true;
-  log.info("Started KafkaSupervisor[%s], first run in [%s]",dataSource,ioConfig.getStartDelay());
 }

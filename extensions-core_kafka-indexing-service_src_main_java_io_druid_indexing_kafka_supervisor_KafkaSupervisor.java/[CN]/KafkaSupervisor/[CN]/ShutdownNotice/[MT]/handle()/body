@@ -1,15 +1,5 @@
 {
-  for (  TaskGroup taskGroup : taskGroups.values()) {
-    for (    Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
-      if (taskInfoProvider.getTaskLocation(entry.getKey()).equals(TaskLocation.unknown())) {
-        killTask(entry.getKey());
-      }
- else {
-        entry.getValue().startTime=new DateTime(0);
-      }
-    }
-  }
-  checkTaskDuration();
+  consumer.close();
 synchronized (stopLock) {
     stopped=true;
     stopLock.notifyAll();
