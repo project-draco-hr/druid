@@ -1,0 +1,7 @@
+{
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  String expectJsonSpec="{\"type\":\"lexicographic\"}";
+  String jsonSpec=jsonMapper.writeValueAsString(StringComparators.LEXICOGRAPHIC);
+  Assert.assertEquals(expectJsonSpec,jsonSpec);
+  Assert.assertEquals(StringComparators.LEXICOGRAPHIC,jsonMapper.readValue(expectJsonSpec,StringComparators.LexicographicComparator.class));
+}

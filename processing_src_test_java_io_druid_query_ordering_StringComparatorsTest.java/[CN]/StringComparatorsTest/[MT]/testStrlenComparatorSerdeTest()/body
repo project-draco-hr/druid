@@ -1,0 +1,7 @@
+{
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  String expectJsonSpec="{\"type\":\"strlen\"}";
+  String jsonSpec=jsonMapper.writeValueAsString(StringComparators.STRLEN);
+  Assert.assertEquals(expectJsonSpec,jsonSpec);
+  Assert.assertEquals(StringComparators.STRLEN,jsonMapper.readValue(expectJsonSpec,StringComparators.StrlenComparator.class));
+}

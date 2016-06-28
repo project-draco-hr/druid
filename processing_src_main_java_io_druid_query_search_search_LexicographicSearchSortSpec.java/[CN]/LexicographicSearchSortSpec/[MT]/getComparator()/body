@@ -1,9 +1,9 @@
 {
   return new Comparator<SearchHit>(){
     @Override public int compare(    SearchHit searchHit,    SearchHit searchHit1){
-      int retVal=searchHit.getValue().compareTo(searchHit1.getValue());
+      int retVal=StringComparators.LEXICOGRAPHIC.compare(searchHit.getValue(),searchHit1.getValue());
       if (retVal == 0) {
-        retVal=searchHit.getDimension().compareTo(searchHit1.getDimension());
+        retVal=StringComparators.LEXICOGRAPHIC.compare(searchHit.getDimension(),searchHit1.getDimension());
       }
       return retVal;
     }

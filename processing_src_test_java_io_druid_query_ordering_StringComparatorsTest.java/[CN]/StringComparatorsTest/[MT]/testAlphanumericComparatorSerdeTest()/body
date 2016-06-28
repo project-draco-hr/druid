@@ -1,0 +1,7 @@
+{
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  String expectJsonSpec="{\"type\":\"alphanumeric\"}";
+  String jsonSpec=jsonMapper.writeValueAsString(StringComparators.ALPHANUMERIC);
+  Assert.assertEquals(expectJsonSpec,jsonSpec);
+  Assert.assertEquals(StringComparators.ALPHANUMERIC,jsonMapper.readValue(expectJsonSpec,StringComparators.AlphanumericComparator.class));
+}
