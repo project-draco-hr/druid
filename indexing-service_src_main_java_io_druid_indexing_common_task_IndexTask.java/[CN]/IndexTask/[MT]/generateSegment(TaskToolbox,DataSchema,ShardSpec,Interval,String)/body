@@ -4,8 +4,11 @@
   final int rowFlushBoundary=ingestionSchema.getTuningConfig().getRowFlushBoundary();
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
   final DataSegmentPusher wrappedDataSegmentPusher=new DataSegmentPusher(){
-    @Override public String getPathForHadoop(    String dataSource){
-      return toolbox.getSegmentPusher().getPathForHadoop(dataSource);
+    @Deprecated @Override public String getPathForHadoop(    String dataSource){
+      return getPathForHadoop();
+    }
+    @Override public String getPathForHadoop(){
+      return toolbox.getSegmentPusher().getPathForHadoop();
     }
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
       final DataSegment pushedSegment=toolbox.getSegmentPusher().push(file,segment);

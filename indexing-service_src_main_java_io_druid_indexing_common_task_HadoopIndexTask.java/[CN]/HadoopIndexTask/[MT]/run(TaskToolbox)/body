@@ -2,7 +2,7 @@
   final ClassLoader loader=buildClassLoader(toolbox);
   boolean determineIntervals=!spec.getDataSchema().getGranularitySpec().bucketIntervals().isPresent();
   spec=HadoopIngestionSpec.updateSegmentListIfDatasourcePathSpecIsUsed(spec,jsonMapper,new OverlordActionBasedUsedSegmentLister(toolbox));
-  final String config=invokeForeignLoader("io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing",new String[]{toolbox.getObjectMapper().writeValueAsString(spec),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop(getDataSource())},loader);
+  final String config=invokeForeignLoader("io.druid.indexing.common.task.HadoopIndexTask$HadoopDetermineConfigInnerProcessing",new String[]{toolbox.getObjectMapper().writeValueAsString(spec),toolbox.getConfig().getHadoopWorkingPath(),toolbox.getSegmentPusher().getPathForHadoop()},loader);
   final HadoopIngestionSpec indexerSchema=toolbox.getObjectMapper().readValue(config,HadoopIngestionSpec.class);
   final String version;
   if (determineIntervals) {

@@ -17,7 +17,10 @@
   emitter.start();
   EmittingLogger.registerEmitter(emitter);
   dataSegmentPusher=new DataSegmentPusher(){
-    @Override public String getPathForHadoop(    String dataSource){
+    @Deprecated @Override public String getPathForHadoop(    String dataSource){
+      return getPathForHadoop();
+    }
+    @Override public String getPathForHadoop(){
       throw new UnsupportedOperationException();
     }
     @Override public DataSegment push(    File file,    DataSegment segment) throws IOException {
