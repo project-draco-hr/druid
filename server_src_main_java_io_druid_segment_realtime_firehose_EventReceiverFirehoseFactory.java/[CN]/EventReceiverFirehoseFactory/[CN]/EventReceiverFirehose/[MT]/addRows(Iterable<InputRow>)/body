@@ -3,6 +3,13 @@
     boolean added=false;
     while (!closed && !added) {
       added=buffer.offer(row,500,TimeUnit.MILLISECONDS);
+      if (!added) {
+        long currTime=System.currentTimeMillis();
+        long lastTime=lastBufferAddFailMsgTime.get();
+        if (currTime - lastTime > 10000 && lastBufferAddFailMsgTime.compareAndSet(lastTime,currTime)) {
+          log.warn("Failed to add event to buffer with current size [%s] . Retrying...",buffer.size());
+        }
+      }
     }
     if (!added) {
       throw new IllegalStateException("Cannot add events to closed firehose!");
