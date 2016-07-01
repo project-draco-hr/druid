@@ -1,4 +1,8 @@
 {
+  if (atLocation.isDirectory()) {
+    log.info("Root extension directory [%s] already exists, skip creating");
+    return;
+  }
   if (!atLocation.mkdirs()) {
     throw new ISE(String.format("Unable to create extensions directory at [%s]",atLocation.getAbsolutePath()));
   }
