@@ -21,6 +21,6 @@
     aggregatorSizes[i]=query.getAggregatorSpecs().get(i).getMaxIntermediateSize();
     numBytesPerRecord+=aggregatorSizes[i];
   }
-  final int numValuesPerPass=numBytesToWorkWith / numBytesPerRecord;
+  final int numValuesPerPass=numBytesPerRecord > 0 ? numBytesToWorkWith / numBytesPerRecord : cardinality;
   return PooledTopNParams.builder().withDimSelector(dimSelector).withCursor(cursor).withCardinality(cardinality).withResultsBufHolder(resultsBufHolder).withResultsBuf(resultsBuf).withArrayProvider(arrayProvider).withNumBytesPerRecord(numBytesPerRecord).withNumValuesPerPass(numValuesPerPass).withAggregatorSizes(aggregatorSizes).build();
 }
