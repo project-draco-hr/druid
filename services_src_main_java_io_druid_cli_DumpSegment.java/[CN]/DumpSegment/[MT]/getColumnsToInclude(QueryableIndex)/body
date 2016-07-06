@@ -1,0 +1,15 @@
+{
+  final Set<String> columnNames=Sets.newLinkedHashSet(columnNamesFromCli);
+  if (columnNames.isEmpty()) {
+    columnNames.add(Column.TIME_COLUMN_NAME);
+    Iterables.addAll(columnNames,index.getColumnNames());
+  }
+ else {
+    for (    String columnName : ImmutableList.copyOf(columnNames)) {
+      if (index.getColumn(columnName) == null) {
+        columnNames.remove(columnName);
+      }
+    }
+  }
+  return ImmutableList.copyOf(columnNames);
+}

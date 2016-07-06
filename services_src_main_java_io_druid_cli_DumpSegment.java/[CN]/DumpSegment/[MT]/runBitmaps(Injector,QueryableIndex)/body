@@ -1,0 +1,62 @@
+{
+  final ObjectMapper objectMapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
+  final BitmapFactory bitmapFactory=index.getBitmapFactoryForDimensions();
+  final BitmapSerdeFactory bitmapSerdeFactory;
+  if (bitmapFactory instanceof ConciseBitmapFactory) {
+    bitmapSerdeFactory=new ConciseBitmapSerdeFactory();
+  }
+ else   if (bitmapFactory instanceof RoaringBitmapFactory) {
+    bitmapSerdeFactory=new RoaringBitmapSerdeFactory();
+  }
+ else {
+    throw new ISE("Don't know which BitmapSerdeFactory to use for BitmapFactory[%s]!",bitmapFactory.getClass().getName());
+  }
+  final List<String> columnNames=getColumnsToInclude(index);
+  withOutputStream(new Function<OutputStream,Object>(){
+    @Override public Object apply(    final OutputStream out){
+      try {
+        final JsonGenerator jg=objectMapper.getFactory().createGenerator(out);
+        jg.writeStartObject();
+        jg.writeObjectField("bitmapSerdeFactory",bitmapSerdeFactory);
+        jg.writeFieldName("bitmaps");
+        jg.writeStartObject();
+        for (        final String columnName : columnNames) {
+          final Column column=index.getColumn(columnName);
+          final BitmapIndex bitmapIndex=column.getBitmapIndex();
+          if (bitmapIndex == null) {
+            jg.writeNullField(columnName);
+          }
+ else {
+            jg.writeFieldName(columnName);
+            jg.writeStartObject();
+            for (int i=0; i < bitmapIndex.getCardinality(); i++) {
+              jg.writeFieldName(Strings.nullToEmpty(bitmapIndex.getValue(i)));
+              final ImmutableBitmap bitmap=bitmapIndex.getBitmap(i);
+              if (decompressBitmaps) {
+                jg.writeStartArray();
+                final IntIterator iterator=bitmap.iterator();
+                while (iterator.hasNext()) {
+                  final int rowNum=iterator.next();
+                  jg.writeNumber(rowNum);
+                }
+                jg.writeEndArray();
+              }
+ else {
+                jg.writeBinary(bitmapSerdeFactory.getObjectStrategy().toBytes(bitmap));
+              }
+            }
+            jg.writeEndObject();
+          }
+        }
+        jg.writeEndObject();
+        jg.writeEndObject();
+        jg.close();
+      }
+ catch (      IOException e) {
+        throw Throwables.propagate(e);
+      }
+      return null;
+    }
+  }
+);
+}

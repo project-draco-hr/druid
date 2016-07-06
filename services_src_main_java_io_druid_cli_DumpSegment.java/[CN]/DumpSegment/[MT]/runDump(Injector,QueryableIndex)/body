@@ -1,17 +1,7 @@
 {
   final ObjectMapper objectMapper=injector.getInstance(Key.get(ObjectMapper.class,Json.class));
   final QueryableIndexStorageAdapter adapter=new QueryableIndexStorageAdapter(index);
-  if (columnNames.isEmpty()) {
-    columnNames.add(Column.TIME_COLUMN_NAME);
-    Iterables.addAll(columnNames,index.getColumnNames());
-  }
- else {
-    for (    String columnName : ImmutableList.copyOf(columnNames)) {
-      if (index.getColumn(columnName) == null) {
-        columnNames.remove(columnName);
-      }
-    }
-  }
+  final List<String> columnNames=getColumnsToInclude(index);
   final DimFilter filter=filterJson != null ? objectMapper.readValue(filterJson,DimFilter.class) : null;
   final Sequence<Cursor> cursors=adapter.makeCursors(Filters.toFilter(filter),index.getDataInterval().withChronology(ISOChronology.getInstanceUTC()),QueryGranularities.ALL,false);
   withOutputStream(new Function<OutputStream,Object>(){

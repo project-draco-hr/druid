@@ -1,15 +1,29 @@
 {
   final Injector injector=makeInjector();
   final IndexIO indexIO=injector.getInstance(IndexIO.class);
-  try (final QueryableIndex index=indexIO.loadIndex(new File(directory))){
-    if (metadata) {
-      runMetadata(injector,index);
-    }
- else {
-      runDump(injector,index);
-    }
+  final DumpType dumpType;
+  try {
+    dumpType=DumpType.valueOf(dumpTypeString.toUpperCase());
   }
  catch (  Exception e) {
-    throw Throwables.propagate(e);
+    throw new IAE("Not a valid dump type: %s",dumpTypeString);
   }
+  try (final QueryableIndex index=indexIO.loadIndex(new File(directory))){
+switch (dumpType) {
+case ROWS:
+      runDump(injector,index);
+    break;
+case METADATA:
+  runMetadata(injector,index);
+break;
+case BITMAPS:
+runBitmaps(injector,index);
+break;
+default :
+throw new ISE("WTF?! dumpType[%s] has no handler?",dumpType);
+}
+}
+ catch (Exception e) {
+throw Throwables.propagate(e);
+}
 }
