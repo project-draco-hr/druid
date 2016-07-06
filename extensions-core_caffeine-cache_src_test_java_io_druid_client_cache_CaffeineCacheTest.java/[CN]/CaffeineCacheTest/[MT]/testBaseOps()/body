@@ -1,0 +1,21 @@
+{
+  final Cache.NamedKey aKey=new Cache.NamedKey("a",HI);
+  Assert.assertNull(cache.get(aKey));
+  put(cache,aKey,1);
+  Assert.assertEquals(1,get(cache,aKey));
+  cache.close("a");
+  Assert.assertNull(cache.get(aKey));
+  final Cache.NamedKey hiKey=new Cache.NamedKey("the",HI);
+  final Cache.NamedKey hoKey=new Cache.NamedKey("the",HO);
+  put(cache,hiKey,10);
+  put(cache,hoKey,20);
+  Assert.assertEquals(10,get(cache,hiKey));
+  Assert.assertEquals(20,get(cache,hoKey));
+  cache.close("the");
+  Assert.assertNull(cache.get(hiKey));
+  Assert.assertNull(cache.get(hoKey));
+  Assert.assertNull(cache.get(new Cache.NamedKey("miss",HI)));
+  final CacheStats stats=cache.getStats();
+  Assert.assertEquals(3,stats.getNumHits());
+  Assert.assertEquals(5,stats.getNumMisses());
+}

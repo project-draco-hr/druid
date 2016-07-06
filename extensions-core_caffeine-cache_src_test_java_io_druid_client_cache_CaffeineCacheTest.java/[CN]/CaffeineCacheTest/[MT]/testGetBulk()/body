@@ -1,0 +1,15 @@
+{
+  Assert.assertNull(cache.get(new Cache.NamedKey("the",HI)));
+  Cache.NamedKey key1=new Cache.NamedKey("the",HI);
+  put(cache,key1,2);
+  Cache.NamedKey key2=new Cache.NamedKey("the",HO);
+  put(cache,key2,10);
+  Map<Cache.NamedKey,byte[]> result=cache.getBulk(Lists.newArrayList(key1,key2));
+  Assert.assertEquals(2,Ints.fromByteArray(result.get(key1)));
+  Assert.assertEquals(10,Ints.fromByteArray(result.get(key2)));
+  Cache.NamedKey missingKey=new Cache.NamedKey("missing",HI);
+  result=cache.getBulk(Lists.newArrayList(missingKey));
+  Assert.assertEquals(result.size(),0);
+  result=cache.getBulk(Lists.<Cache.NamedKey>newArrayList());
+  Assert.assertEquals(result.size(),0);
+}

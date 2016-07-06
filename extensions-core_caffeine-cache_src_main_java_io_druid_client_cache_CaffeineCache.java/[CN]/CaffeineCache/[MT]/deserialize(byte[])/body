@@ -1,0 +1,9 @@
+{
+  if (bytes == null) {
+    return null;
+  }
+  final int decompressedLen=ByteBuffer.wrap(bytes).getInt();
+  final byte[] out=new byte[decompressedLen];
+  LZ4_DECOMPRESSOR.decompress(bytes,Ints.BYTES,out,0,out.length);
+  return out;
+}

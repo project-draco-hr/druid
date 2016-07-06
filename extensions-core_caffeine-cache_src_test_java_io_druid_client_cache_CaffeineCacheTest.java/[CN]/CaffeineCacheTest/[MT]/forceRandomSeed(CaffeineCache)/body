@@ -1,0 +1,9 @@
+{
+  final Map map=cache.getCache().asMap();
+  final Method getFrequencySketch=map.getClass().getDeclaredMethod("frequencySketch");
+  getFrequencySketch.setAccessible(true);
+  final Object frequencySketch=getFrequencySketch.invoke(map);
+  final Field seedField=frequencySketch.getClass().getDeclaredField("randomSeed");
+  seedField.setAccessible(true);
+  seedField.setInt(frequencySketch,RANDOM_SEED);
+}
