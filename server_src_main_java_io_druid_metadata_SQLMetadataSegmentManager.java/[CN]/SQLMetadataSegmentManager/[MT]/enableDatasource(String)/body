@@ -1,7 +1,7 @@
 {
   try {
     final IDBI dbi=connector.getDBI();
-    VersionedIntervalTimeline<String,DataSegment> segmentTimeline=inReadOnlyTransaction(new TransactionCallback<VersionedIntervalTimeline<String,DataSegment>>(){
+    VersionedIntervalTimeline<String,DataSegment> segmentTimeline=connector.inReadOnlyTransaction(new TransactionCallback<VersionedIntervalTimeline<String,DataSegment>>(){
       @Override public VersionedIntervalTimeline<String,DataSegment> inTransaction(      Handle handle,      TransactionStatus status) throws Exception {
         return handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource",getSegmentsTable())).setFetchSize(connector.getStreamingFetchSize()).bind("dataSource",ds).map(ByteArrayMapper.FIRST).fold(new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural()),new Folder3<VersionedIntervalTimeline<String,DataSegment>,byte[]>(){
           @Override public VersionedIntervalTimeline<String,DataSegment> fold(          VersionedIntervalTimeline<String,DataSegment> timeline,          byte[] payload,          FoldController foldController,          StatementContext statementContext) throws SQLException {

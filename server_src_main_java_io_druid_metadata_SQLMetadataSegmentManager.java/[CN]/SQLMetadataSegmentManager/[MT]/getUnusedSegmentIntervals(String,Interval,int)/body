@@ -1,5 +1,5 @@
 {
-  return inReadOnlyTransaction(new TransactionCallback<List<Interval>>(){
+  return connector.inReadOnlyTransaction(new TransactionCallback<List<Interval>>(){
     @Override public List<Interval> inTransaction(    Handle handle,    TransactionStatus status) throws Exception {
       Iterator<Interval> iter=handle.createQuery(String.format("SELECT start, \"end\" FROM %s WHERE dataSource = :dataSource and start >= :start and \"end\" <= :end and used = false ORDER BY start, \"end\"",getSegmentsTable())).setFetchSize(connector.getStreamingFetchSize()).bind("dataSource",dataSource).bind("start",interval.getStart().toString()).bind("end",interval.getEnd().toString()).map(new BaseResultSetMapper<Interval>(){
         @Override protected Interval mapInternal(        int index,        Map<String,Object> row){
