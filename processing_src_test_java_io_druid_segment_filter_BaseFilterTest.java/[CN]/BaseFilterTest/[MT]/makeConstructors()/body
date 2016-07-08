@@ -1,6 +1,6 @@
 {
   final List<Object[]> constructors=Lists.newArrayList();
-  final Map<String,BitmapSerdeFactory> bitmapSerdeFactories=ImmutableMap.<String,BitmapSerdeFactory>of("concise",new ConciseBitmapSerdeFactory(),"roaring",new RoaringBitmapSerdeFactory());
+  final Map<String,BitmapSerdeFactory> bitmapSerdeFactories=ImmutableMap.<String,BitmapSerdeFactory>of("concise",new ConciseBitmapSerdeFactory(),"roaring",new RoaringBitmapSerdeFactory(true));
   final Map<String,IndexMerger> indexMergers=ImmutableMap.<String,IndexMerger>of("IndexMerger",TestHelper.getTestIndexMerger(),"IndexMergerV9",TestHelper.getTestIndexMergerV9());
   final Map<String,Function<IndexBuilder,Pair<StorageAdapter,Closeable>>> finishers=ImmutableMap.of("incremental",new Function<IndexBuilder,Pair<StorageAdapter,Closeable>>(){
     @Override public Pair<StorageAdapter,Closeable> apply(    IndexBuilder input){
