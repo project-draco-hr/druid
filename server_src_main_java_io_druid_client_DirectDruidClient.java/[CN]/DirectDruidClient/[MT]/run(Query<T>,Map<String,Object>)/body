@@ -24,7 +24,6 @@
     final long requestStartTime=System.currentTimeMillis();
     final ServiceMetricEvent.Builder builder=toolChest.makeMetricBuilder(query);
     builder.setDimension("server",host);
-    builder.setDimension(DruidMetrics.ID,Strings.nullToEmpty(query.getId()));
     final HttpResponseHandler<InputStream,InputStream> responseHandler=new HttpResponseHandler<InputStream,InputStream>(){
       private long responseStartTime;
       private final AtomicLong byteCount=new AtomicLong(0);

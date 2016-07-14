@@ -4,6 +4,7 @@
     toolChests.addBinding(entry.getKey()).to(entry.getValue());
     binder.bind(entry.getValue()).in(LazySingleton.class);
   }
+  binder.bind(QueryToolChestWarehouse.class).to(MapQueryToolChestWarehouse.class);
   JsonConfigProvider.bind(binder,"druid.query.groupBy",GroupByQueryConfig.class);
   JsonConfigProvider.bind(binder,"druid.query.search",SearchQueryConfig.class);
   JsonConfigProvider.bind(binder,"druid.query.topN",TopNQueryConfig.class);

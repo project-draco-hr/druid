@@ -1,0 +1,4 @@
+{
+  final ServiceMetricEvent.Builder baseMetric=toolChest == null ? makePartialQueryTimeMetric(query) : toolChest.makeMetricBuilder(query);
+  return baseMetric.setDimension("context",jsonMapper.writeValueAsString(query.getContext() == null ? ImmutableMap.of() : query.getContext())).setDimension("remoteAddress",remoteAddr);
+}

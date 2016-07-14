@@ -1,6 +1,7 @@
 {
   final long start=System.currentTimeMillis();
   Query query=null;
+  QueryToolChest toolChest=null;
   String queryId=null;
   final String reqContentType=req.getContentType();
   final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType) || APPLICATION_SMILE.equals(reqContentType);
@@ -18,6 +19,7 @@
     if (query.getContextValue(QueryContextKeys.TIMEOUT) == null) {
       query=query.withOverriddenContext(ImmutableMap.of(QueryContextKeys.TIMEOUT,config.getMaxIdleTime().toStandardDuration().getMillis()));
     }
+    toolChest=warehouse.getToolChest(query);
     Thread.currentThread().setName(String.format("%s[%s_%s_%s]",currThreadName,query.getType(),query.getDataSource(),queryId));
     if (log.isDebugEnabled()) {
       log.debug("Got query [%s]",query);
@@ -54,6 +56,7 @@
 );
     try {
       final Query theQuery=query;
+      final QueryToolChest theToolChest=toolChest;
       Response.ResponseBuilder builder=Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
           CountingOutputStream os=new CountingOutputStream(outputStream);
@@ -61,8 +64,8 @@
           os.flush();
           os.close();
           final long queryTime=System.currentTimeMillis() - start;
-          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).setDimension("success","true").build("query/time",queryTime));
-          emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,theQuery,req.getRemoteAddr()).build("query/bytes",os.getCount()));
+          emitter.emit(DruidMetrics.makeQueryTimeMetric(theToolChest,jsonMapper,theQuery,req.getRemoteAddr()).setDimension("success","true").build("query/time",queryTime));
+          emitter.emit(DruidMetrics.makeQueryTimeMetric(theToolChest,jsonMapper,theQuery,req.getRemoteAddr()).build("query/bytes",os.getCount()));
           requestLogger.log(new RequestLogLine(new DateTime(start),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"query/bytes",os.getCount(),"success",true))));
         }
       }
@@ -85,7 +88,7 @@
     try {
       log.info("%s [%s]",e.getMessage(),queryId);
       final long queryTime=System.currentTimeMillis() - start;
-      emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
+      emitter.emit(DruidMetrics.makeQueryTimeMetric(toolChest,jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
       requestLogger.log(new RequestLogLine(new DateTime(start),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",false,"interrupted",true,"reason",e.toString()))));
     }
  catch (    Exception e2) {
@@ -98,7 +101,7 @@ catch (  Exception e) {
     log.warn(e,"Exception occurred on request [%s]",queryString);
     try {
       final long queryTime=System.currentTimeMillis() - start;
-      emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
+      emitter.emit(DruidMetrics.makeQueryTimeMetric(toolChest,jsonMapper,query,req.getRemoteAddr()).setDimension("success","false").build("query/time",queryTime));
       requestLogger.log(new RequestLogLine(new DateTime(start),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"success",false,"exception",e.toString()))));
     }
  catch (    Exception e2) {

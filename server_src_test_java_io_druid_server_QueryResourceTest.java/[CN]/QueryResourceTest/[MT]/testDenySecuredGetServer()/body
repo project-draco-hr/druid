@@ -20,7 +20,7 @@
   }
 ).times(2);
   EasyMock.replay(testServletRequest);
-  queryResource=new QueryResource(serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),queryManager,new AuthConfig(true));
+  queryResource=new QueryResource(warehouse,serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),queryManager,new AuthConfig(true));
   final String queryString="{\"queryType\":\"timeBoundary\", \"dataSource\":\"allow\"," + "\"context\":{\"queryId\":\"id_1\"}}";
   ObjectMapper mapper=new DefaultObjectMapper();
   Query query=mapper.readValue(queryString,Query.class);

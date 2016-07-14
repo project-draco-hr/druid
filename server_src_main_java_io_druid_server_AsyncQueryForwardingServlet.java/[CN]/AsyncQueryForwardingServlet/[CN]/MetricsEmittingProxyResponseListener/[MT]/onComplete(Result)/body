@@ -1,7 +1,7 @@
 {
   final long requestTime=System.currentTimeMillis() - start;
   try {
-    emitter.emit(DruidMetrics.makeQueryTimeMetric(jsonMapper,query,req.getRemoteAddr()).build("query/time",requestTime));
+    emitter.emit(DruidMetrics.makeQueryTimeMetric(warehouse.getToolChest(query),jsonMapper,query,req.getRemoteAddr()).build("query/time",requestTime));
     requestLogger.log(new RequestLogLine(new DateTime(),req.getRemoteAddr(),query,new QueryStats(ImmutableMap.<String,Object>of("query/time",requestTime,"success",result.isSucceeded() && result.getResponse().getStatus() == javax.ws.rs.core.Response.Status.OK.getStatusCode()))));
   }
  catch (  Exception e) {

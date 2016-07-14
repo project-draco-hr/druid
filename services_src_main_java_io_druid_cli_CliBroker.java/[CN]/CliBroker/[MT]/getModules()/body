@@ -3,7 +3,6 @@
     @Override public void configure(    Binder binder){
       binder.bindConstant().annotatedWith(Names.named("serviceName")).to(TieredBrokerConfig.DEFAULT_BROKER_SERVICE_NAME);
       binder.bindConstant().annotatedWith(Names.named("servicePort")).to(8082);
-      binder.bind(QueryToolChestWarehouse.class).to(MapQueryToolChestWarehouse.class);
       binder.bind(CachingClusteredClient.class).in(LazySingleton.class);
       binder.bind(BrokerServerView.class).in(LazySingleton.class);
       binder.bind(TimelineServerView.class).to(BrokerServerView.class).in(LazySingleton.class);

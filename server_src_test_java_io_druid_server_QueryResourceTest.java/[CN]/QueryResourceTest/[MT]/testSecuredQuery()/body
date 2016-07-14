@@ -11,7 +11,7 @@
   }
 ).times(2);
   EasyMock.replay(testServletRequest);
-  queryResource=new QueryResource(serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),queryManager,new AuthConfig(true));
+  queryResource=new QueryResource(warehouse,serverConfig,jsonMapper,jsonMapper,testSegmentWalker,new NoopServiceEmitter(),new NoopRequestLogger(),queryManager,new AuthConfig(true));
   Response response=queryResource.doPost(new ByteArrayInputStream(simpleTimeSeriesQuery.getBytes("UTF-8")),null,testServletRequest);
   Assert.assertEquals(Response.Status.FORBIDDEN.getStatusCode(),response.getStatus());
   response=queryResource.doPost(new ByteArrayInputStream("{\"queryType\":\"timeBoundary\", \"dataSource\":\"allow\"}".getBytes("UTF-8")),null,testServletRequest);
