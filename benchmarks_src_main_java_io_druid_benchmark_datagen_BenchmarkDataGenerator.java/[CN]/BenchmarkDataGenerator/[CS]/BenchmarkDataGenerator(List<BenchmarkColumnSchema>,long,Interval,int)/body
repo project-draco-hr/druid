@@ -2,7 +2,8 @@
   this.columnSchemas=columnSchemas;
   this.seed=seed;
   this.startTime=interval.getStartMillis();
-  this.endTime=interval.getEndMillis();
+  this.endTime=interval.getEndMillis() - 1;
+  Preconditions.checkArgument(endTime >= startTime,"endTime >= startTime");
   long timeDelta=endTime - startTime;
   this.timestampIncrement=timeDelta / (numRows * 1.0);
   this.numConsecutiveTimestamps=0;
