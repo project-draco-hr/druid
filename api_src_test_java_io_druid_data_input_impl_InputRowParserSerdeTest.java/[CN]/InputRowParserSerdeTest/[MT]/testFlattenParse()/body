@@ -10,7 +10,7 @@
   fields.add(JSONPathFieldSpec.createRootField("timestamp"));
   fields.add(JSONPathFieldSpec.createRootField("foo.bar1"));
   JSONPathSpec flattenSpec=new JSONPathSpec(true,fields);
-  final StringInputRowParser parser=new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(null,null,null),flattenSpec,null));
+  final StringInputRowParser parser=new StringInputRowParser(new JSONParseSpec(new TimestampSpec("timestamp","iso",null),new DimensionsSpec(null,null,null),flattenSpec,null),null);
   final StringInputRowParser parser2=jsonMapper.readValue(jsonMapper.writeValueAsBytes(parser),StringInputRowParser.class);
   final InputRow parsed=parser2.parse("{\"blah\":[4,5,6], \"newmet\":5, \"foo\":{\"bar1\":\"aaa\", \"bar2\":\"bbb\"}, \"baz\":[1,2,3], \"timestamp\":\"2999\", \"foo.bar1\":\"Hello world!\", \"hey\":[{\"barx\":\"asdf\"}], \"met\":{\"a\":456}}");
   Assert.assertEquals(ImmutableList.of("foobar1","foobar2","baz0","baz1","baz2","hey0barx","metA","timestamp","foo.bar1","blah","newmet","baz"),parsed.getDimensions());

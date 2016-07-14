@@ -2,7 +2,7 @@
   String jsonStr="{" + "\"dataSource\":\"test\"," + "\"parser\":{"+ "\"type\":\"string\","+ "\"parseSpec\":{"+ "\"format\":\"json\","+ "\"timestampSpec\":{\"column\":\"xXx\", \"format\": \"auto\", \"missingValue\": null},"+ "\"dimensionsSpec\":{\"dimensions\":[], \"dimensionExclusions\":[]},"+ "\"flattenSpec\":{\"useFieldDiscovery\":true, \"fields\":[]},"+ "\"featureSpec\":{}},"+ "\"encoding\":\"UTF-8\""+ "},"+ "\"metricsSpec\":[{\"type\":\"doubleSum\",\"name\":\"metric1\",\"fieldName\":\"col1\"}],"+ "\"granularitySpec\":{"+ "\"type\":\"arbitrary\","+ "\"queryGranularity\":{\"type\":\"duration\",\"duration\":86400000,\"origin\":\"1970-01-01T00:00:00.000Z\"},"+ "\"intervals\":[\"2014-01-01T00:00:00.000Z/2015-01-01T00:00:00.000Z\"]}}";
   DataSchema actual=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonStr,DataSchema.class)),DataSchema.class);
   Assert.assertEquals(actual.getDataSource(),"test");
-  Assert.assertEquals(actual.getParser().getParseSpec(),new JSONParseSpec(new TimestampSpec("xXx",null,null),new DimensionsSpec(null,Arrays.asList("metric1","xXx","col1"),null)));
+  Assert.assertEquals(actual.getParser().getParseSpec(),new JSONParseSpec(new TimestampSpec("xXx",null,null),new DimensionsSpec(null,Arrays.asList("metric1","xXx","col1"),null),null,null));
   Assert.assertEquals(actual.getAggregators(),new AggregatorFactory[]{new DoubleSumAggregatorFactory("metric1","col1")});
   Assert.assertEquals(actual.getGranularitySpec(),new ArbitraryGranularitySpec(QueryGranularities.DAY,ImmutableList.of(Interval.parse("2014/2015"))));
 }
