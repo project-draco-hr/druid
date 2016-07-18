@@ -7,6 +7,7 @@
   this.replicationThrottleLimit=replicationThrottleLimit;
   this.emitBalancingStats=emitBalancingStats;
   this.balancerComputeThreads=Math.max(balancerComputeThreads,1);
+  this.killAllDataSources=killAllDataSources;
   if (killDataSourceWhitelist instanceof String) {
     String[] tmp=((String)killDataSourceWhitelist).split(",");
     this.killDataSourceWhitelist=new HashSet<>();
@@ -22,5 +23,8 @@
   }
  else {
     this.killDataSourceWhitelist=ImmutableSet.of();
+  }
+  if (this.killAllDataSources && !this.killDataSourceWhitelist.isEmpty()) {
+    throw new IAE("can't have killAllDataSources and non-empty killDataSourceWhitelist");
   }
 }

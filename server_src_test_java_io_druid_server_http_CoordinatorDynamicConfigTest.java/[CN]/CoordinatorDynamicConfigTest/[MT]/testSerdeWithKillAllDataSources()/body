@@ -1,0 +1,14 @@
+{
+  String jsonStr="{\n" + "  \"millisToWaitBeforeDeleting\": 1,\n" + "  \"mergeBytesLimit\": 1,\n"+ "  \"mergeSegmentsLimit\" : 1,\n"+ "  \"maxSegmentsToMove\": 1,\n"+ "  \"replicantLifetime\": 1,\n"+ "  \"replicationThrottleLimit\": 1,\n"+ "  \"balancerComputeThreads\": 2, \n"+ "  \"emitBalancingStats\": true,\n"+ "  \"killAllDataSources\": true\n"+ "}\n";
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  CoordinatorDynamicConfig actual=mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,CoordinatorDynamicConfig.class)),CoordinatorDynamicConfig.class);
+  Assert.assertEquals(new CoordinatorDynamicConfig(1,1,1,1,1,1,2,true,ImmutableSet.of(),true),actual);
+  try {
+    jsonStr="{\n" + "  \"killDataSourceWhitelist\": [\"test1\",\"test2\"],\n" + "  \"killAllDataSources\": true\n"+ "}\n";
+    mapper.readValue(jsonStr,CoordinatorDynamicConfig.class);
+    Assert.fail("deserialization should fail.");
+  }
+ catch (  JsonMappingException e) {
+    Assert.assertTrue(e.getCause() instanceof IAE);
+  }
+}
