@@ -4,7 +4,7 @@
   Path path2=new Path(JobHelper.getURIFromSegment(segments.get(1).getSegment()));
   Path path3=new Path(JobHelper.getURIFromSegment(segments.get(2).getSegment()));
   locations=ImmutableList.of(new LocatedFileStatus(1000,false,0,0,0,0,null,null,null,null,path1,new BlockLocation[]{new BlockLocation(null,new String[]{"s1","s2"},0,600),new BlockLocation(null,new String[]{"s2","s3"},600,400)}),new LocatedFileStatus(4000,false,0,0,0,0,null,null,null,null,path2,new BlockLocation[]{new BlockLocation(null,new String[]{"s1","s2"},0,1000),new BlockLocation(null,new String[]{"s1","s3"},1000,1200),new BlockLocation(null,new String[]{"s2","s3"},2200,1100),new BlockLocation(null,new String[]{"s1","s2"},3300,700)}),new LocatedFileStatus(500,false,0,0,0,0,null,null,null,null,path3,new BlockLocation[]{new BlockLocation(null,new String[]{"s2","s3"},0,500)}));
-  config=new Configuration();
+  config=new JobConf();
   config.set(DatasourceInputFormat.CONF_INPUT_SEGMENTS,new DefaultObjectMapper().writeValueAsString(segments));
   context=EasyMock.createMock(JobContext.class);
   EasyMock.expect(context.getConfiguration()).andReturn(config);
