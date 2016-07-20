@@ -1,0 +1,13 @@
+{
+  this.dataSource=Preconditions.checkNotNull(dataSource,"dataSource");
+  this.sinkTimeline=Preconditions.checkNotNull(sinkTimeline,"sinkTimeline");
+  this.objectMapper=Preconditions.checkNotNull(objectMapper,"objectMapper");
+  this.emitter=Preconditions.checkNotNull(emitter,"emitter");
+  this.conglomerate=Preconditions.checkNotNull(conglomerate,"conglomerate");
+  this.queryExecutorService=Preconditions.checkNotNull(queryExecutorService,"queryExecutorService");
+  this.cache=Preconditions.checkNotNull(cache,"cache");
+  this.cacheConfig=Preconditions.checkNotNull(cacheConfig,"cacheConfig");
+  if (!cache.isLocal()) {
+    log.warn("Configured cache[%s] is not local, caching will not be enabled.",cache.getClass().getName());
+  }
+}

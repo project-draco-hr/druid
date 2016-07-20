@@ -1,0 +1,4 @@
+{
+  final ImmutableMap<String,String> dims=ImmutableMap.of("segment",sinkSegmentIdentifier);
+  return CPUTimeMetricQueryRunner.safeBuild(new MetricsEmittingQueryRunner<>(emitter,builderFn,new MetricsEmittingQueryRunner<>(emitter,builderFn,sinkRunner,"query/segment/time",dims),"query/segmentAndCache/time",dims).withWaitMeasuredFromNow(),builderFn,emitter,cpuTimeAccumulator,false);
+}

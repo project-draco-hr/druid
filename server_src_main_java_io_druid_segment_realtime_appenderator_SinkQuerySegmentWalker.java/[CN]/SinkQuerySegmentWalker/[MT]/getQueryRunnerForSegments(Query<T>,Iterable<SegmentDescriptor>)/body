@@ -1,0 +1,57 @@
+{
+  if (!(query.getDataSource() instanceof TableDataSource) || !dataSource.equals(((TableDataSource)query.getDataSource()).getName())) {
+    log.makeAlert("Received query for unknown dataSource").addData("dataSource",query.getDataSource()).emit();
+    return new NoopQueryRunner<>();
+  }
+  final QueryRunnerFactory<T,Query<T>> factory=conglomerate.findFactory(query);
+  if (factory == null) {
+    throw new ISE("Unknown query type[%s].",query.getClass());
+  }
+  final QueryToolChest<T,Query<T>> toolChest=factory.getToolchest();
+  final Function<Query<T>,ServiceMetricEvent.Builder> builderFn=new Function<Query<T>,ServiceMetricEvent.Builder>(){
+    @Override public ServiceMetricEvent.Builder apply(    @Nullable Query<T> input){
+      return toolChest.makeMetricBuilder(query);
+    }
+  }
+;
+  final boolean skipIncrementalSegment=query.getContextValue(CONTEXT_SKIP_INCREMENTAL_SEGMENT,false);
+  final AtomicLong cpuTimeAccumulator=new AtomicLong(0L);
+  return CPUTimeMetricQueryRunner.safeBuild(toolChest.mergeResults(factory.mergeRunners(queryExecutorService,FunctionalIterable.create(specs).transform(new Function<SegmentDescriptor,QueryRunner<T>>(){
+    @Override public QueryRunner<T> apply(    final SegmentDescriptor descriptor){
+      final PartitionHolder<Sink> holder=sinkTimeline.findEntry(descriptor.getInterval(),descriptor.getVersion());
+      if (holder == null) {
+        return new ReportTimelineMissingSegmentQueryRunner<>(descriptor);
+      }
+      final PartitionChunk<Sink> chunk=holder.getChunk(descriptor.getPartitionNumber());
+      if (chunk == null) {
+        return new ReportTimelineMissingSegmentQueryRunner<>(descriptor);
+      }
+      final Sink theSink=chunk.getObject();
+      final String sinkSegmentIdentifier=theSink.getSegment().getIdentifier();
+      return new SpecificSegmentQueryRunner<>(withPerSinkMetrics(new BySegmentQueryRunner<>(sinkSegmentIdentifier,descriptor.getInterval().getStart(),factory.mergeRunners(MoreExecutors.sameThreadExecutor(),Iterables.transform(theSink,new Function<FireHydrant,QueryRunner<T>>(){
+        @Override public QueryRunner<T> apply(        final FireHydrant hydrant){
+          final boolean hydrantDefinitelySwapped=hydrant.hasSwapped();
+          if (skipIncrementalSegment && !hydrantDefinitelySwapped) {
+            return new NoopQueryRunner<>();
+          }
+          final Pair<Segment,Closeable> segment=hydrant.getAndIncrementSegment();
+          try {
+            QueryRunner<T> baseRunner=QueryRunnerHelper.makeClosingQueryRunner(factory.createRunner(segment.lhs),segment.rhs);
+            if (hydrantDefinitelySwapped && cache.isLocal()) {
+              return new CachingQueryRunner<>(makeHydrantCacheIdentifier(hydrant),descriptor,objectMapper,cache,toolChest,baseRunner,MoreExecutors.sameThreadExecutor(),cacheConfig);
+            }
+ else {
+              return baseRunner;
+            }
+          }
+ catch (          RuntimeException e) {
+            CloseQuietly.close(segment.rhs);
+            throw e;
+          }
+        }
+      }
+))),builderFn,sinkSegmentIdentifier,cpuTimeAccumulator),new SpecificSegmentSpec(descriptor));
+    }
+  }
+))),builderFn,emitter,cpuTimeAccumulator,true);
+}

@@ -1,5 +1,8 @@
 {
 synchronized (swapLock) {
+    if (adapter != null && newAdapter != null && !newAdapter.getIdentifier().equals(adapter.getIdentifier())) {
+      throw new ISE("WTF?! Cannot swap identifier[%s] -> [%s]!",adapter.getIdentifier(),newAdapter.getIdentifier());
+    }
     if (this.adapter != null) {
       try {
         this.adapter.close();
@@ -8,7 +11,7 @@ synchronized (swapLock) {
         throw Throwables.propagate(e);
       }
     }
-    this.adapter=new ReferenceCountingSegment(adapter);
+    this.adapter=new ReferenceCountingSegment(newAdapter);
     this.index=null;
   }
 }

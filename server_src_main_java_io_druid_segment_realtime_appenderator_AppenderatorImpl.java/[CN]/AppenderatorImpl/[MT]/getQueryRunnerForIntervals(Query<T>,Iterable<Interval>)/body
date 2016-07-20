@@ -1,22 +1,6 @@
 {
-  if (conglomerate == null) {
+  if (texasRanger == null) {
     throw new IllegalStateException("Don't query me, bro.");
   }
-  final Iterable<SegmentDescriptor> specs=FunctionalIterable.create(intervals).transformCat(new Function<Interval,Iterable<TimelineObjectHolder<String,Sink>>>(){
-    @Override public Iterable<TimelineObjectHolder<String,Sink>> apply(    final Interval interval){
-      return sinkTimeline.lookup(interval);
-    }
-  }
-).transformCat(new Function<TimelineObjectHolder<String,Sink>,Iterable<SegmentDescriptor>>(){
-    @Override public Iterable<SegmentDescriptor> apply(    final TimelineObjectHolder<String,Sink> holder){
-      return FunctionalIterable.create(holder.getObject()).transform(new Function<PartitionChunk<Sink>,SegmentDescriptor>(){
-        @Override public SegmentDescriptor apply(        final PartitionChunk<Sink> chunk){
-          return new SegmentDescriptor(holder.getInterval(),holder.getVersion(),chunk.getChunkNumber());
-        }
-      }
-);
-    }
-  }
-);
-  return getQueryRunnerForSegments(query,specs);
+  return texasRanger.getQueryRunnerForIntervals(query,intervals);
 }

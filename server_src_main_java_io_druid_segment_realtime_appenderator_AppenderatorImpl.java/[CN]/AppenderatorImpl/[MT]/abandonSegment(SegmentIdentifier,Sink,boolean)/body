@@ -30,6 +30,9 @@
       sinks.remove(identifier);
       droppingSinks.remove(identifier);
       sinkTimeline.remove(sink.getInterval(),sink.getVersion(),identifier.getShardSpec().createChunk(sink));
+      for (      FireHydrant hydrant : sink) {
+        cache.close(SinkQuerySegmentWalker.makeHydrantCacheIdentifier(hydrant));
+      }
       if (removeOnDiskData) {
         removeDirectory(computePersistDir(identifier));
       }

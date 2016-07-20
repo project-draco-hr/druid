@@ -4,23 +4,10 @@
   this.metrics=Preconditions.checkNotNull(metrics,"metrics");
   this.dataSegmentPusher=Preconditions.checkNotNull(dataSegmentPusher,"dataSegmentPusher");
   this.objectMapper=Preconditions.checkNotNull(objectMapper,"objectMapper");
-  this.conglomerate=conglomerate;
-  this.segmentAnnouncer=segmentAnnouncer;
-  this.emitter=emitter;
-  this.queryExecutorService=queryExecutorService;
-  this.indexIO=indexIO;
-  this.indexMerger=indexMerger;
-  this.cache=cache;
-  this.cacheConfig=cacheConfig;
-  if (conglomerate != null) {
-    Preconditions.checkNotNull(segmentAnnouncer,"segmentAnnouncer");
-    Preconditions.checkNotNull(emitter,"emitter");
-    Preconditions.checkNotNull(queryExecutorService,"queryExecutorService");
-    Preconditions.checkNotNull(cache,"cache");
-    Preconditions.checkNotNull(cacheConfig,"cacheConfig");
-    if (!cache.isLocal()) {
-      log.error("Configured cache is not local, caching will not be enabled");
-    }
-  }
-  log.info("Creating appenderator for dataSource[%s]",schema.getDataSource());
+  this.segmentAnnouncer=Preconditions.checkNotNull(segmentAnnouncer,"segmentAnnouncer");
+  this.indexIO=Preconditions.checkNotNull(indexIO,"indexIO");
+  this.indexMerger=Preconditions.checkNotNull(indexMerger,"indexMerger");
+  this.cache=Preconditions.checkNotNull(cache,"cache");
+  this.texasRanger=conglomerate == null ? null : new SinkQuerySegmentWalker(schema.getDataSource(),sinkTimeline,objectMapper,emitter,conglomerate,queryExecutorService,cache,cacheConfig);
+  log.info("Created Appenderator for dataSource[%s].",schema.getDataSource());
 }
