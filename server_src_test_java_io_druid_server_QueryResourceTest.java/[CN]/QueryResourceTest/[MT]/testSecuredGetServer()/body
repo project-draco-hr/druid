@@ -7,6 +7,7 @@
     @Override public Access isAuthorized(    Resource resource,    Action action){
       if (action.equals(Action.READ)) {
         try {
+          startAwaitLatch.countDown();
           waitForCancellationLatch.await();
         }
  catch (        InterruptedException e) {
@@ -29,7 +30,6 @@
   ListenableFuture future=MoreExecutors.listeningDecorator(Execs.singleThreaded("test_query_resource_%s")).submit(new Runnable(){
     @Override public void run(){
       try {
-        startAwaitLatch.countDown();
         Response response=queryResource.doPost(new ByteArrayInputStream(queryString.getBytes("UTF-8")),null,testServletRequest);
         Assert.assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),response.getStatus());
       }
