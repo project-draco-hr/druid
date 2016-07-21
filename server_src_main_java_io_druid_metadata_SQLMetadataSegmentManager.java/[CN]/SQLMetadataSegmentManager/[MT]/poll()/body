@@ -10,7 +10,7 @@
         return handle.createQuery(String.format("SELECT payload FROM %s WHERE used=true",getSegmentsTable())).setFetchSize(connector.getStreamingFetchSize()).map(new ResultSetMapper<DataSegment>(){
           @Override public DataSegment map(          int index,          ResultSet r,          StatementContext ctx) throws SQLException {
             try {
-              return jsonMapper.readValue(r.getBytes("payload"),DataSegment.class);
+              return DATA_SEGMENT_INTERNER.intern(jsonMapper.readValue(r.getBytes("payload"),DataSegment.class));
             }
  catch (            IOException e) {
               log.makeAlert(e,"Failed to read segment from db.");

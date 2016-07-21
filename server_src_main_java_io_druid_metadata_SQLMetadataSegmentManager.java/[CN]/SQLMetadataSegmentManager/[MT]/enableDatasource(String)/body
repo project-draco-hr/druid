@@ -6,7 +6,7 @@
         return handle.createQuery(String.format("SELECT payload FROM %s WHERE dataSource = :dataSource",getSegmentsTable())).setFetchSize(connector.getStreamingFetchSize()).bind("dataSource",ds).map(ByteArrayMapper.FIRST).fold(new VersionedIntervalTimeline<String,DataSegment>(Ordering.natural()),new Folder3<VersionedIntervalTimeline<String,DataSegment>,byte[]>(){
           @Override public VersionedIntervalTimeline<String,DataSegment> fold(          VersionedIntervalTimeline<String,DataSegment> timeline,          byte[] payload,          FoldController foldController,          StatementContext statementContext) throws SQLException {
             try {
-              DataSegment segment=jsonMapper.readValue(payload,DataSegment.class);
+              final DataSegment segment=DATA_SEGMENT_INTERNER.intern(jsonMapper.readValue(payload,DataSegment.class));
               timeline.add(segment.getInterval(),segment.getVersion(),segment.getShardSpec().createChunk(segment));
               return timeline;
             }
