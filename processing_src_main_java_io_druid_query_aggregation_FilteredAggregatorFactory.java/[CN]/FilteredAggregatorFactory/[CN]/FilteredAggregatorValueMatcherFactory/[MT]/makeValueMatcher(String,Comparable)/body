@@ -1,4 +1,7 @@
 {
+  if (getTypeForDimension(dimension) == ValueType.LONG) {
+    return Filters.getLongValueMatcher(columnSelectorFactory.makeLongColumnSelector(dimension),value);
+  }
   final DimensionSelector selector=columnSelectorFactory.makeDimensionSelector(new DefaultDimensionSpec(dimension,dimension));
   final String valueString=value == null ? null : Strings.emptyToNull(value.toString());
   if (selector == null) {

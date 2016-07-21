@@ -1,0 +1,21 @@
+{
+  return new DruidPredicateFactory(){
+    @Override public Predicate<String> makeStringPredicate(){
+      return new Predicate<String>(){
+        @Override public boolean apply(        String input){
+          return doesMatch(input);
+        }
+      }
+;
+    }
+    @Override public DruidLongPredicate makeLongPredicate(){
+      return new DruidLongPredicate(){
+        @Override public boolean applyLong(        long input){
+          return doesMatch(String.valueOf(input));
+        }
+      }
+;
+    }
+  }
+;
+}

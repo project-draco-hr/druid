@@ -4,15 +4,37 @@
   }
  else {
     final String valueOrNull=Strings.emptyToNull(value);
-    final Predicate<String> predicate=new Predicate<String>(){
-      @Override public boolean apply(      String input){
-        return Objects.equals(valueOrNull,input);
+    final DruidPredicateFactory predicateFactory=new DruidPredicateFactory(){
+      @Override public Predicate<String> makeStringPredicate(){
+        return new Predicate<String>(){
+          @Override public boolean apply(          String input){
+            return Objects.equals(valueOrNull,input);
+          }
+        }
+;
       }
-      @Override public String toString(){
-        return value;
+      @Override public DruidLongPredicate makeLongPredicate(){
+        initLongValue();
+        if (valueAsLong == null) {
+          return new DruidLongPredicate(){
+            @Override public boolean applyLong(            long input){
+              return false;
+            }
+          }
+;
+        }
+ else {
+          final long unboxedLong=valueAsLong.longValue();
+          return new DruidLongPredicate(){
+            @Override public boolean applyLong(            long input){
+              return input == unboxedLong;
+            }
+          }
+;
+        }
       }
     }
 ;
-    return new DimensionPredicateFilter(dimension,predicate,extractionFn);
+    return new DimensionPredicateFilter(dimension,predicateFactory,extractionFn);
   }
 }

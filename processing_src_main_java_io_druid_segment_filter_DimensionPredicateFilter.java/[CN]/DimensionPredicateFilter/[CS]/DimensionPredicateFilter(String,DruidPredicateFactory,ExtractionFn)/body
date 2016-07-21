@@ -1,0 +1,31 @@
+{
+  Preconditions.checkNotNull(predicateFactory,"predicateFactory");
+  this.dimension=Preconditions.checkNotNull(dimension,"dimension");
+  this.basePredicateString=predicateFactory.toString();
+  this.extractionFn=extractionFn;
+  if (extractionFn == null) {
+    this.predicateFactory=predicateFactory;
+  }
+ else {
+    this.predicateFactory=new DruidPredicateFactory(){
+      final Predicate<String> baseStringPredicate=predicateFactory.makeStringPredicate();
+      @Override public Predicate<String> makeStringPredicate(){
+        return new Predicate<String>(){
+          @Override public boolean apply(          String input){
+            return baseStringPredicate.apply(extractionFn.apply(input));
+          }
+        }
+;
+      }
+      @Override public DruidLongPredicate makeLongPredicate(){
+        return new DruidLongPredicate(){
+          @Override public boolean applyLong(          long input){
+            return baseStringPredicate.apply(extractionFn.apply(input));
+          }
+        }
+;
+      }
+    }
+;
+  }
+}

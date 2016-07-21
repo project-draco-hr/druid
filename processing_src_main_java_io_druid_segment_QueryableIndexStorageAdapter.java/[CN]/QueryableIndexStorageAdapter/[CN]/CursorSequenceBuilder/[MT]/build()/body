@@ -276,6 +276,9 @@ abstract class QueryableIndexBaseCursor implements Cursor {
           }
 ;
         }
+        @Override public ColumnCapabilities getColumnCapabilities(        String columnName){
+          return getColumnCapabilites(index,columnName);
+        }
       }
       if (postFilter == null) {
         return new QueryableIndexBaseCursor(){
@@ -310,7 +313,7 @@ abstract class QueryableIndexBaseCursor implements Cursor {
       }
  else {
         return new QueryableIndexBaseCursor(){
-          CursorOffsetHolderValueMatcherFactory valueMatcherFactory=new CursorOffsetHolderValueMatcherFactory(this);
+          CursorOffsetHolderValueMatcherFactory valueMatcherFactory=new CursorOffsetHolderValueMatcherFactory(index,this);
           RowOffsetMatcherFactory rowOffsetMatcherFactory=new CursorOffsetHolderRowOffsetMatcherFactory(cursorOffsetHolder,descending);
           final ValueMatcher filterMatcher;
 {

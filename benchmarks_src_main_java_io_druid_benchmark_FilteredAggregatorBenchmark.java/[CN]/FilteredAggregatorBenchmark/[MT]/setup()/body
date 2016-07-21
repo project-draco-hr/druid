@@ -1,0 +1,33 @@
+{
+  log.info("SETUP CALLED AT " + System.currentTimeMillis());
+  if (ComplexMetrics.getSerdeForType("hyperUnique") == null) {
+    ComplexMetrics.registerSerde("hyperUnique",new HyperUniquesSerde(Hashing.murmur3_128()));
+  }
+  schemaInfo=BenchmarkSchemas.SCHEMA_MAP.get(schema);
+  BenchmarkDataGenerator gen=new BenchmarkDataGenerator(schemaInfo.getColumnSchemas(),RNG_SEED,schemaInfo.getDataInterval(),rowsPerSegment);
+  incIndex=makeIncIndex(schemaInfo.getAggsArray());
+  filter=new OrDimFilter(Arrays.asList(new BoundDimFilter("dimSequential","-1","-1",true,true,true,null),new JavaScriptDimFilter("dimSequential","function(x) { return false }",null,JavaScriptConfig.getDefault()),new RegexDimFilter("dimSequential","X",null),new SearchQueryDimFilter("dimSequential",new ContainsSearchQuerySpec("X",false),null),new InDimFilter("dimSequential",Arrays.asList("X"),null)));
+  filteredMetrics=new AggregatorFactory[1];
+  filteredMetrics[0]=new FilteredAggregatorFactory(new CountAggregatorFactory("rows"),filter);
+  incIndexFilteredAgg=makeIncIndex(filteredMetrics);
+  inputRows=new ArrayList<>();
+  for (int j=0; j < rowsPerSegment; j++) {
+    InputRow row=gen.nextRow();
+    if (j % 10000 == 0) {
+      log.info(j + " rows generated.");
+    }
+    incIndex.add(row);
+    inputRows.add(row);
+  }
+  File tmpFile=Files.createTempDir();
+  log.info("Using temp dir: " + tmpFile.getAbsolutePath());
+  tmpFile.deleteOnExit();
+  indexFile=INDEX_MERGER_V9.persist(incIndex,tmpFile,new IndexSpec());
+  qIndex=INDEX_IO.loadIndex(indexFile);
+  factory=new TimeseriesQueryRunnerFactory(new TimeseriesQueryQueryToolChest(QueryBenchmarkUtil.NoopIntervalChunkingQueryRunnerDecorator()),new TimeseriesQueryEngine(),QueryBenchmarkUtil.NOOP_QUERYWATCHER);
+  BenchmarkSchemaInfo basicSchema=BenchmarkSchemas.SCHEMA_MAP.get("basic");
+  QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+  List<AggregatorFactory> queryAggs=new ArrayList<>();
+  queryAggs.add(filteredMetrics[0]);
+  query=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
+}

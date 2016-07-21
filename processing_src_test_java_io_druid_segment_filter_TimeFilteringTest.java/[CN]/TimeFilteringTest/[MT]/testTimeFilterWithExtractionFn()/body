@@ -1,0 +1,22 @@
+{
+  final Map<String,String> stringMap=new HashMap<>();
+  stringMap.put("0","Monday");
+  stringMap.put("1","Tuesday");
+  stringMap.put("2","Wednesday");
+  stringMap.put("3","Thursday");
+  stringMap.put("4","Friday");
+  stringMap.put("5","Saturday");
+  LookupExtractor mapExtractor=new MapLookupExtractor(stringMap,false);
+  LookupExtractionFn exfn=new LookupExtractionFn(mapExtractor,false,"UNKNOWN",false,true);
+  assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"Monday",exfn),ImmutableList.<String>of("0"));
+  assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"Notaday",exfn),ImmutableList.<String>of());
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"Fridax","Fridaz",false,false,true,exfn),ImmutableList.<String>of("4"));
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"Friday","Friday",true,true,true,exfn),ImmutableList.<String>of());
+  assertFilterMatches(new InDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList("Caturday","Saturday","Tuesday"),exfn),ImmutableList.<String>of("1","5"));
+  List<String> bigList=Arrays.asList("Saturday","Tuesday","Caturday","Xanaday","Vojuday","Gribaday","Kipoday","Dheferday","Fakeday","Qeearaday","Hello","World","1","2","3","4","5","6","7");
+  assertFilterMatches(new InDimFilter(Column.TIME_COLUMN_NAME,bigList,exfn),ImmutableList.<String>of("1","5"));
+  String jsFn="function(x) { return(x === 'Wednesday' || x === 'Thursday') }";
+  assertFilterMatches(new JavaScriptDimFilter(Column.TIME_COLUMN_NAME,jsFn,exfn,JavaScriptConfig.getDefault()),ImmutableList.<String>of("2","3"));
+  assertFilterMatches(new RegexDimFilter(Column.TIME_COLUMN_NAME,".*day",exfn),ImmutableList.<String>of("0","1","2","3","4","5"));
+  assertFilterMatches(new SearchQueryDimFilter(Column.TIME_COLUMN_NAME,new ContainsSearchQuerySpec("s",true),exfn),ImmutableList.<String>of("1","2","3"));
+}

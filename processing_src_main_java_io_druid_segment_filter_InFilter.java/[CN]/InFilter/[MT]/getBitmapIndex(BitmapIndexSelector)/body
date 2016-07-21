@@ -8,11 +8,6 @@
 ));
   }
  else {
-    return Filters.matchPredicate(dimension,selector,new Predicate<String>(){
-      @Override public boolean apply(      String input){
-        return values.contains(Strings.nullToEmpty(extractionFn.apply(input)));
-      }
-    }
-);
+    return Filters.matchPredicate(dimension,selector,getPredicateFactory().makeStringPredicate());
   }
 }

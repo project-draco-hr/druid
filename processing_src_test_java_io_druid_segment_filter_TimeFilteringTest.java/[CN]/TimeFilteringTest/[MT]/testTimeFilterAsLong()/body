@@ -1,0 +1,16 @@
+{
+  assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"0",null),ImmutableList.<String>of("0"));
+  assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"9000",null),ImmutableList.<String>of());
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",false,false,true,null),ImmutableList.<String>of("0","1","2","3","4"));
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",true,true,true,null),ImmutableList.<String>of("1","2","3"));
+  assertFilterMatches(new InDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList("2","4","8"),null),ImmutableList.<String>of("2","4"));
+  List<String> infilterValues=new ArrayList<>(InDimFilter.LONG_HASHING_THRESHOLD * 2);
+  for (int i=0; i < InDimFilter.LONG_HASHING_THRESHOLD * 2; i++) {
+    infilterValues.add(String.valueOf(i * 2));
+  }
+  assertFilterMatches(new InDimFilter(Column.TIME_COLUMN_NAME,infilterValues,null),ImmutableList.<String>of("0","2","4"));
+  String jsFn="function(x) { return(x === 3 || x === 5) }";
+  assertFilterMatches(new JavaScriptDimFilter(Column.TIME_COLUMN_NAME,jsFn,null,JavaScriptConfig.getDefault()),ImmutableList.<String>of("3","5"));
+  assertFilterMatches(new RegexDimFilter(Column.TIME_COLUMN_NAME,"4",null),ImmutableList.<String>of("4"));
+  assertFilterMatches(new SearchQueryDimFilter(Column.TIME_COLUMN_NAME,new ContainsSearchQuerySpec("2",true),null),ImmutableList.<String>of("2"));
+}

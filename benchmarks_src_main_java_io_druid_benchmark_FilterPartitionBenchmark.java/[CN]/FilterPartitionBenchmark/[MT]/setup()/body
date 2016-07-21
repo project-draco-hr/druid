@@ -18,4 +18,9 @@
   tmpFile.deleteOnExit();
   indexFile=INDEX_MERGER_V9.persist(incIndex,tmpFile,new IndexSpec());
   qIndex=INDEX_IO.loadIndex(indexFile);
+  Interval interval=schemaInfo.getDataInterval();
+  timeFilterNone=new BoundFilter(new BoundDimFilter(Column.TIME_COLUMN_NAME,String.valueOf(Long.MAX_VALUE),String.valueOf(Long.MAX_VALUE),true,true,true,null));
+  long halfEnd=(interval.getEndMillis() + interval.getStartMillis()) / 2;
+  timeFilterHalf=new BoundFilter(new BoundDimFilter(Column.TIME_COLUMN_NAME,String.valueOf(interval.getStartMillis()),String.valueOf(halfEnd),true,true,true,null));
+  timeFilterAll=new BoundFilter(new BoundDimFilter(Column.TIME_COLUMN_NAME,String.valueOf(interval.getStartMillis()),String.valueOf(interval.getEndMillis()),true,true,true,null));
 }

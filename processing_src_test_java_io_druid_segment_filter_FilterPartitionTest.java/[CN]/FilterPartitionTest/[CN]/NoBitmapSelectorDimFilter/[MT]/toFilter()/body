@@ -7,12 +7,25 @@
   }
  else {
     final String valueOrNull=Strings.emptyToNull(value);
-    final Predicate<String> predicate=new Predicate<String>(){
-      @Override public boolean apply(      String input){
-        return Objects.equals(valueOrNull,input);
+    final DruidPredicateFactory predicateFactory=new DruidPredicateFactory(){
+      @Override public Predicate<String> makeStringPredicate(){
+        return new Predicate<String>(){
+          @Override public boolean apply(          String input){
+            return Objects.equals(valueOrNull,input);
+          }
+        }
+;
+      }
+      @Override public DruidLongPredicate makeLongPredicate(){
+        return new DruidLongPredicate(){
+          @Override public boolean applyLong(          long input){
+            return Objects.equals(valueOrNull,String.valueOf(input));
+          }
+        }
+;
       }
     }
 ;
-    return new NoBitmapDimensionPredicateFilter(dimension,predicate,extractionFn);
+    return new NoBitmapDimensionPredicateFilter(dimension,predicateFactory,extractionFn);
   }
 }

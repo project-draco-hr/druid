@@ -1,0 +1,16 @@
+{
+  if (value == null) {
+    return new BooleanValueMatcher(false);
+  }
+  final Long longValue=Longs.tryParse(value.toString());
+  if (longValue == null) {
+    return new BooleanValueMatcher(false);
+  }
+  return new ValueMatcher(){
+    final long unboxedLong=longValue.longValue();
+    @Override public boolean matches(){
+      return longSelector.get() == unboxedLong;
+    }
+  }
+;
+}

@@ -1,0 +1,11 @@
+{
+  ValueType type=getTypeForDimension(dimension);
+switch (type) {
+case LONG:
+    return makeLongValueMatcher(dimension,predicateFactory.makeLongPredicate());
+case STRING:
+  return makeStringValueMatcher(dimension,predicateFactory.makeStringPredicate());
+default :
+return new BooleanValueMatcher(predicateFactory.makeStringPredicate().apply(null));
+}
+}

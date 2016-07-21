@@ -1,13 +1,24 @@
 {
-  return factory.makeValueMatcher(dimension,new Predicate(){
-    @Override public boolean apply(    Object input){
-      if (input instanceof String) {
-        final float[] coordinate=SpatialDimensionRowTransformer.decode((String)input);
-        return bound.contains(coordinate);
+  return factory.makeValueMatcher(dimension,new DruidPredicateFactory(){
+    @Override public Predicate<String> makeStringPredicate(){
+      return new Predicate<String>(){
+        @Override public boolean apply(        String input){
+          if (input == null) {
+            return false;
+          }
+          final float[] coordinate=SpatialDimensionRowTransformer.decode(input);
+          return bound.contains(coordinate);
+        }
       }
- else {
-        return false;
+;
+    }
+    @Override public DruidLongPredicate makeLongPredicate(){
+      return new DruidLongPredicate(){
+        @Override public boolean applyLong(        long input){
+          return false;
+        }
       }
+;
     }
   }
 );

@@ -1,0 +1,58 @@
+{
+  return new Supplier<DruidLongPredicate>(){
+    private final Object initLock=new Object();
+    private volatile boolean longsInitialized=false;
+    private volatile boolean useLongHash;
+    private volatile long[] longArray;
+    private volatile HashSet<Long> longHashSet;
+    private void initLongValues(){
+      if (longsInitialized) {
+        return;
+      }
+synchronized (initLock) {
+        if (longsInitialized) {
+          return;
+        }
+        List<Long> longs=new ArrayList<>();
+        for (        String value : values) {
+          Long longValue=Longs.tryParse(value);
+          if (longValue != null) {
+            longs.add(longValue);
+          }
+        }
+        useLongHash=longs.size() > LONG_HASHING_THRESHOLD;
+        if (useLongHash) {
+          longHashSet=new HashSet<Long>(longs);
+        }
+ else {
+          longArray=new long[longs.size()];
+          for (int i=0; i < longs.size(); i++) {
+            longArray[i]=longs.get(i).longValue();
+          }
+          Arrays.sort(longArray);
+        }
+        longsInitialized=true;
+      }
+    }
+    @Override public DruidLongPredicate get(){
+      initLongValues();
+      if (useLongHash) {
+        return new DruidLongPredicate(){
+          @Override public boolean applyLong(          long input){
+            return longHashSet.contains(input);
+          }
+        }
+;
+      }
+ else {
+        return new DruidLongPredicate(){
+          @Override public boolean applyLong(          long input){
+            return Arrays.binarySearch(longArray,input) >= 0;
+          }
+        }
+;
+      }
+    }
+  }
+;
+}

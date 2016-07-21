@@ -30,6 +30,9 @@
     }
     columnCapabilities.put(dimSchema.getName(),capabilities);
   }
+  ColumnCapabilitiesImpl timeCapabilities=new ColumnCapabilitiesImpl();
+  timeCapabilities.setType(ValueType.LONG);
+  columnCapabilities.put(Column.TIME_COLUMN_NAME,timeCapabilities);
   List<SpatialDimensionSchema> spatialDimensions=dimensionsSpec.getSpatialDimensions();
   if (!spatialDimensions.isEmpty()) {
     this.rowTransformers.add(new SpatialDimensionRowTransformer(spatialDimensions));

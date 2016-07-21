@@ -1,11 +1,6 @@
 {
   if (boundDimFilter.isAlphaNumeric() || extractionFn != null) {
-    return Filters.matchPredicate(boundDimFilter.getDimension(),selector,new Predicate<String>(){
-      @Override public boolean apply(      String input){
-        return doesMatch(input);
-      }
-    }
-);
+    return Filters.matchPredicate(boundDimFilter.getDimension(),selector,getPredicateFactory().makeStringPredicate());
   }
  else {
     final BitmapIndex bitmapIndex=selector.getBitmapIndex(boundDimFilter.getDimension());

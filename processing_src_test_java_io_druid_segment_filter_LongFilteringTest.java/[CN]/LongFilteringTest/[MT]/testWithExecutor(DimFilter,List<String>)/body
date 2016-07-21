@@ -1,0 +1,16 @@
+{
+  ListeningExecutorService executor=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(EXECUTOR_NUM_THREADS));
+  List<ListenableFuture<?>> futures=new ArrayList<>();
+  for (int i=0; i < EXECUTOR_NUM_TASKS; i++) {
+    Runnable runnable=makeFilterRunner(filter,expectedRows);
+    ListenableFuture fut=executor.submit(runnable);
+    futures.add(fut);
+  }
+  try {
+    Futures.allAsList(futures).get(60,TimeUnit.SECONDS);
+  }
+ catch (  Exception ex) {
+    Assert.fail(ex.getMessage());
+  }
+  executor.shutdown();
+}

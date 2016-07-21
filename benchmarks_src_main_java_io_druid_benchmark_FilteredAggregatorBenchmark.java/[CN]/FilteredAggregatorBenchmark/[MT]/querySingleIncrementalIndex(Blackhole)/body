@@ -1,0 +1,7 @@
+{
+  QueryRunner<Result<TimeseriesResultValue>> runner=QueryBenchmarkUtil.makeQueryRunner(factory,"incIndex",new IncrementalIndexSegment(incIndex,"incIndex"));
+  List<Result<TimeseriesResultValue>> results=FilteredAggregatorBenchmark.runQuery(factory,runner,query);
+  for (  Result<TimeseriesResultValue> result : results) {
+    blackhole.consume(result);
+  }
+}

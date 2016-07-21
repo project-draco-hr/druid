@@ -1,10 +1,20 @@
 {
-  super(dimension,new Predicate<String>(){
-    @Override public boolean apply(    @Nullable String input){
-      return query.accept(input);
+  super(dimension,new DruidPredicateFactory(){
+    @Override public Predicate<String> makeStringPredicate(){
+      return new Predicate<String>(){
+        @Override public boolean apply(        @Nullable String input){
+          return query.accept(input);
+        }
+      }
+;
     }
-    @Override public String toString(){
-      return "SearchQueryFilter{" + ", query=" + query + '}';
+    @Override public DruidLongPredicate makeLongPredicate(){
+      return new DruidLongPredicate(){
+        @Override public boolean applyLong(        long input){
+          return query.accept(String.valueOf(input));
+        }
+      }
+;
     }
   }
 ,extractionFn);

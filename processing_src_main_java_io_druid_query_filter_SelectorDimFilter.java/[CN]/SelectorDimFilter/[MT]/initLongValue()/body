@@ -1,0 +1,12 @@
+{
+  if (longsInitialized) {
+    return;
+  }
+synchronized (initLock) {
+    if (longsInitialized) {
+      return;
+    }
+    valueAsLong=Longs.tryParse(value);
+    longsInitialized=true;
+  }
+}

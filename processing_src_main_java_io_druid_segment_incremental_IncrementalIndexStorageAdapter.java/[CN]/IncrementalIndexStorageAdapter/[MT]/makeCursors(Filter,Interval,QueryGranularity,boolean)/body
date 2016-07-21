@@ -20,13 +20,10 @@
   }
   return Sequences.map(Sequences.simple(iterable),new Function<Long,Cursor>(){
     EntryHolder currEntry=new EntryHolder();
-    private final ValueMatcher filterMatcher;
-{
-      filterMatcher=makeFilterMatcher(filter,currEntry);
-    }
     @Override public Cursor apply(    @Nullable final Long input){
       final long timeStart=Math.max(input,actualInterval.getStartMillis());
       return new Cursor(){
+        private final ValueMatcher filterMatcher=makeFilterMatcher(filter,this,currEntry);
         private Iterator<Map.Entry<IncrementalIndex.TimeAndDims,Integer>> baseIter;
         private ConcurrentNavigableMap<IncrementalIndex.TimeAndDims,Integer> cursorMap;
         final DateTime time;
@@ -270,6 +267,9 @@
 ;
           }
           return null;
+        }
+        @Override public ColumnCapabilities getColumnCapabilities(        String columnName){
+          return index.getCapabilities(columnName);
         }
       }
 ;
