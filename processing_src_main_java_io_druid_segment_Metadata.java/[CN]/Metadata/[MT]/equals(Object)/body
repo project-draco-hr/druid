@@ -12,5 +12,8 @@
   if (!Arrays.equals(aggregators,metadata.aggregators)) {
     return false;
   }
-  return !(queryGranularity != null ? !queryGranularity.equals(metadata.queryGranularity) : metadata.queryGranularity != null);
+  if (timestampSpec != null ? !timestampSpec.equals(metadata.timestampSpec) : metadata.timestampSpec != null) {
+    return false;
+  }
+  return queryGranularity != null ? queryGranularity.equals(metadata.queryGranularity) : metadata.queryGranularity == null;
 }

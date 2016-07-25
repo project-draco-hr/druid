@@ -39,6 +39,16 @@
  else {
         aggregators=null;
       }
+      final TimestampSpec timestampSpec;
+      if (query.hasTimestampSpec()) {
+        if (metadata == null) {
+          metadata=segment.asStorageAdapter().getMetadata();
+        }
+        timestampSpec=metadata != null ? metadata.getTimestampSpec() : null;
+      }
+ else {
+        timestampSpec=null;
+      }
       final QueryGranularity queryGranularity;
       if (query.hasQueryGranularity()) {
         if (metadata == null) {
@@ -49,7 +59,7 @@
  else {
         queryGranularity=null;
       }
-      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators,queryGranularity)));
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators,timestampSpec,queryGranularity)));
     }
   }
 ;

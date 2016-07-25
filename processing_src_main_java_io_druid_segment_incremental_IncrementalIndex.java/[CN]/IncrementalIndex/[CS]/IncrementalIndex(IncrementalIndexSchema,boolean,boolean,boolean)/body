@@ -6,7 +6,7 @@
   this.deserializeComplexMetrics=deserializeComplexMetrics;
   this.reportParseExceptions=reportParseExceptions;
   this.sortFacts=sortFacts;
-  this.metadata=new Metadata().setAggregators(getCombiningAggregators(metrics)).setQueryGranularity(this.gran);
+  this.metadata=new Metadata().setAggregators(getCombiningAggregators(metrics)).setTimestampSpec(incrementalIndexSchema.getTimestampSpec()).setQueryGranularity(this.gran);
   this.aggs=initAggs(metrics,rowSupplier,deserializeComplexMetrics);
   this.columnCapabilities=Maps.newHashMap();
   this.metricDescs=Maps.newLinkedHashMap();

@@ -5,12 +5,16 @@
   boolean foundSomeMetadata=false;
   Map<String,Object> mergedContainer=new HashMap<>();
   List<AggregatorFactory[]> aggregatorsToMerge=overrideMergedAggregators == null ? new ArrayList<AggregatorFactory[]>() : null;
+  List<TimestampSpec> timestampSpecsToMerge=new ArrayList<>();
   List<QueryGranularity> gransToMerge=new ArrayList<>();
   for (  Metadata metadata : toBeMerged) {
     if (metadata != null) {
       foundSomeMetadata=true;
       if (aggregatorsToMerge != null) {
         aggregatorsToMerge.add(metadata.getAggregators());
+      }
+      if (timestampSpecsToMerge != null && metadata.getTimestampSpec() != null) {
+        timestampSpecsToMerge.add(metadata.getTimestampSpec());
       }
       if (gransToMerge != null) {
         gransToMerge.add(metadata.getQueryGranularity());
@@ -19,6 +23,7 @@
     }
  else {
       aggregatorsToMerge=null;
+      timestampSpecsToMerge=null;
       gransToMerge=null;
     }
   }
@@ -31,6 +36,9 @@
   }
  else {
     result.setAggregators(overrideMergedAggregators);
+  }
+  if (timestampSpecsToMerge != null) {
+    result.setTimestampSpec(TimestampSpec.mergeTimestampSpec(timestampSpecsToMerge));
   }
   if (gransToMerge != null) {
     result.setQueryGranularity(QueryGranularity.mergeQueryGranularities(gransToMerge));
