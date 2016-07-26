@@ -1,0 +1,18 @@
+{
+  File outputFile=new File(outputDir,"test.orc");
+  TypeDescription schema=TypeDescription.createStruct().addField("timestamp",TypeDescription.createString()).addField("host",TypeDescription.createString()).addField("visited_num",TypeDescription.createInt());
+  Configuration conf=new Configuration();
+  org.apache.orc.Writer writer=OrcFile.createWriter(new Path(outputFile.getPath()),OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000).bufferSize(10000).compress(CompressionKind.ZLIB).version(OrcFile.Version.CURRENT));
+  VectorizedRowBatch batch=schema.createRowBatch();
+  batch.size=data.size();
+  for (int idx=0; idx < data.size(); idx++) {
+    String line=data.get(idx);
+    String[] lineSplit=line.split(",");
+    ((BytesColumnVector)batch.cols[0]).setRef(idx,lineSplit[0].getBytes(),0,lineSplit[0].length());
+    ((BytesColumnVector)batch.cols[1]).setRef(idx,lineSplit[1].getBytes(),0,lineSplit[1].length());
+    ((LongColumnVector)batch.cols[2]).vector[idx]=Long.parseLong(lineSplit[2]);
+  }
+  writer.addRowBatch(batch);
+  writer.close();
+  return outputFile;
+}

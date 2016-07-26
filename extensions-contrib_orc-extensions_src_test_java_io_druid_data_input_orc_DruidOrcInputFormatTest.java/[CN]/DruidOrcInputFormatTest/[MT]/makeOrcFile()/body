@@ -1,0 +1,21 @@
+{
+  final File dir=temporaryFolder.newFolder();
+  final File testOrc=new File(dir,"test.orc");
+  TypeDescription schema=TypeDescription.createStruct().addField("timestamp",TypeDescription.createString()).addField("col1",TypeDescription.createString()).addField("col2",TypeDescription.createList(TypeDescription.createString())).addField("val1",TypeDescription.createFloat());
+  Configuration conf=new Configuration();
+  Writer writer=OrcFile.createWriter(new Path(testOrc.getPath()),OrcFile.writerOptions(conf).setSchema(schema).stripeSize(100000).bufferSize(10000).compress(CompressionKind.ZLIB).version(OrcFile.Version.CURRENT));
+  VectorizedRowBatch batch=schema.createRowBatch();
+  batch.size=1;
+  ((BytesColumnVector)batch.cols[0]).setRef(0,timestamp.getBytes(),0,timestamp.length());
+  ((BytesColumnVector)batch.cols[1]).setRef(0,col1.getBytes(),0,col1.length());
+  ListColumnVector listColumnVector=(ListColumnVector)batch.cols[2];
+  listColumnVector.childCount=col2.length;
+  listColumnVector.lengths[0]=3;
+  for (int idx=0; idx < col2.length; idx++) {
+    ((BytesColumnVector)listColumnVector.child).setRef(idx,col2[idx].getBytes(),0,col2[idx].length());
+  }
+  ((DoubleColumnVector)batch.cols[3]).vector[0]=val1;
+  writer.addRowBatch(batch);
+  writer.close();
+  return testOrc;
+}

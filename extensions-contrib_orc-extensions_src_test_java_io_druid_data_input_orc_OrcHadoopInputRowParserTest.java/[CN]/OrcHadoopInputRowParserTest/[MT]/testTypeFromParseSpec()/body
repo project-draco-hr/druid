@@ -1,0 +1,6 @@
+{
+  ParseSpec parseSpec=new TimeAndDimsParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(ImmutableList.<DimensionSchema>of(new StringDimensionSchema("col1"),new StringDimensionSchema("col2")),null,null));
+  String typeString=OrcHadoopInputRowParser.typeStringFromParseSpec(parseSpec);
+  String expected="struct<timestamp:string,col1:string,col2:string>";
+  Assert.assertEquals(expected,typeString);
+}

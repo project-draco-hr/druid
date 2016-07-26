@@ -1,0 +1,16 @@
+{
+  InputFormat inputFormat=ReflectionUtils.newInstance(OrcNewInputFormat.class,job.getConfiguration());
+  TaskAttemptContext context=new TaskAttemptContextImpl(job.getConfiguration(),new TaskAttemptID());
+  RecordReader reader=inputFormat.createRecordReader(split,context);
+  OrcHadoopInputRowParser parser=(OrcHadoopInputRowParser)config.getParser();
+  reader.initialize(split,context);
+  reader.nextKeyValue();
+  OrcStruct data=(OrcStruct)reader.getCurrentValue();
+  MapBasedInputRow row=(MapBasedInputRow)parser.parse(data);
+  Assert.assertTrue(row.getEvent().keySet().size() == 4);
+  Assert.assertEquals(new DateTime(timestamp),row.getTimestamp());
+  Assert.assertEquals(parser.getParseSpec().getDimensionsSpec().getDimensionNames(),row.getDimensions());
+  Assert.assertEquals(col1,row.getEvent().get("col1"));
+  Assert.assertEquals(Arrays.asList(col2),row.getDimension("col2"));
+  reader.close();
+}

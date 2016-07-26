@@ -1,0 +1,46 @@
+{
+  JobHelper.runJobs(ImmutableList.<Jobby>of(job),config);
+  int segmentNum=0;
+  for (DateTime currTime=interval.getStart(); currTime.isBefore(interval.getEnd()); currTime=currTime.plusDays(1)) {
+    Integer[][] shardInfo=shardInfoForEachSegment[segmentNum++];
+    File segmentOutputFolder=new File(String.format("%s/%s/%s_%s/%s",config.getSchema().getIOConfig().getSegmentOutputPath(),config.getSchema().getDataSchema().getDataSource(),currTime.toString(),currTime.plusDays(1).toString(),config.getSchema().getTuningConfig().getVersion()));
+    Assert.assertTrue(segmentOutputFolder.exists());
+    Assert.assertEquals(shardInfo.length,segmentOutputFolder.list().length);
+    int rowCount=0;
+    for (int partitionNum=0; partitionNum < shardInfo.length; ++partitionNum) {
+      File individualSegmentFolder=new File(segmentOutputFolder,Integer.toString(partitionNum));
+      Assert.assertTrue(individualSegmentFolder.exists());
+      File descriptor=new File(individualSegmentFolder,"descriptor.json");
+      File indexZip=new File(individualSegmentFolder,"index.zip");
+      Assert.assertTrue(descriptor.exists());
+      Assert.assertTrue(indexZip.exists());
+      DataSegment dataSegment=mapper.readValue(descriptor,DataSegment.class);
+      Assert.assertEquals(config.getSchema().getTuningConfig().getVersion(),dataSegment.getVersion());
+      Assert.assertEquals(new Interval(currTime,currTime.plusDays(1)),dataSegment.getInterval());
+      Assert.assertEquals("local",dataSegment.getLoadSpec().get("type"));
+      Assert.assertEquals(indexZip.getCanonicalPath(),dataSegment.getLoadSpec().get("path"));
+      Assert.assertEquals(Integer.valueOf(9),dataSegment.getBinaryVersion());
+      Assert.assertEquals(dataSourceName,dataSegment.getDataSource());
+      Assert.assertTrue(dataSegment.getDimensions().size() == 1);
+      String[] dimensions=dataSegment.getDimensions().toArray(new String[dataSegment.getDimensions().size()]);
+      Arrays.sort(dimensions);
+      Assert.assertEquals("host",dimensions[0]);
+      Assert.assertEquals("visited_num",dataSegment.getMetrics().get(0));
+      Assert.assertEquals("unique_hosts",dataSegment.getMetrics().get(1));
+      Integer[] hashShardInfo=shardInfo[partitionNum];
+      HashBasedNumberedShardSpec spec=(HashBasedNumberedShardSpec)dataSegment.getShardSpec();
+      Assert.assertEquals((int)hashShardInfo[0],spec.getPartitionNum());
+      Assert.assertEquals((int)hashShardInfo[1],spec.getPartitions());
+      File dir=Files.createTempDir();
+      unzip(indexZip,dir);
+      QueryableIndex index=HadoopDruidIndexerConfig.INDEX_IO.loadIndex(dir);
+      QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(index);
+      for (      Rowboat row : adapter.getRows()) {
+        Object[] metrics=row.getMetrics();
+        rowCount++;
+        Assert.assertTrue(metrics.length == 2);
+      }
+    }
+    Assert.assertEquals(rowCount,data.size());
+  }
+}

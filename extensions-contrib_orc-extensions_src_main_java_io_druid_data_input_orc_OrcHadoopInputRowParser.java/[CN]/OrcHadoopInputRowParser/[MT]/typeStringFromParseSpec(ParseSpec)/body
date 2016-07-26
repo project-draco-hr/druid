@@ -1,0 +1,10 @@
+{
+  StringBuilder builder=new StringBuilder("struct<");
+  builder.append(parseSpec.getTimestampSpec().getTimestampColumn()).append(":string");
+  if (parseSpec.getDimensionsSpec().getDimensionNames().size() > 0) {
+    builder.append(",");
+    builder.append(StringUtils.join(parseSpec.getDimensionsSpec().getDimensionNames(),":string,")).append(":string");
+  }
+  builder.append(">");
+  return builder.toString();
+}

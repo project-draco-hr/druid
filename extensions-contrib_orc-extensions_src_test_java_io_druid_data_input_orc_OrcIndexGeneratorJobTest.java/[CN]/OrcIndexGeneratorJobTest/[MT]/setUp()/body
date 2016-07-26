@@ -1,0 +1,14 @@
+{
+  mapper=HadoopDruidIndexerConfig.JSON_MAPPER;
+  mapper.registerSubtypes(new NamedType(HashBasedNumberedShardSpec.class,"hashed"));
+  dataRoot=temporaryFolder.newFolder("data");
+  outputRoot=temporaryFolder.newFolder("output");
+  File dataFile=writeDataToLocalOrcFile(dataRoot,data);
+  HashMap<String,Object> inputSpec=new HashMap<String,Object>();
+  inputSpec.put("paths",dataFile.getCanonicalPath());
+  inputSpec.put("type","static");
+  inputSpec.put("inputFormat","org.apache.hadoop.hive.ql.io.orc.OrcNewInputFormat");
+  config=new HadoopDruidIndexerConfig(new HadoopIngestionSpec(new DataSchema(dataSourceName,mapper.convertValue(inputRowParser,Map.class),aggs,new UniformGranularitySpec(Granularity.DAY,QueryGranularities.NONE,ImmutableList.of(this.interval)),mapper),new HadoopIOConfig(ImmutableMap.copyOf(inputSpec),null,outputRoot.getCanonicalPath()),new HadoopTuningConfig(outputRoot.getCanonicalPath(),null,null,null,null,null,false,false,false,false,ImmutableMap.of(JobContext.NUM_REDUCES,"0"),false,true,null,true,null)));
+  config.setShardSpecs(loadShardSpecs(shardInfoForEachSegment));
+  config=HadoopDruidIndexerConfig.fromSpec(config.getSchema());
+}

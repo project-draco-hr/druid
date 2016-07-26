@@ -1,0 +1,6 @@
+{
+  String parserString="{\n" + "        \"type\": \"orc\",\n" + "        \"parseSpec\": {\n"+ "          \"format\": \"timeAndDims\",\n"+ "          \"timestampSpec\": {\n"+ "            \"column\": \"timestamp\",\n"+ "            \"format\": \"auto\"\n"+ "          },\n"+ "          \"dimensionsSpec\": {\n"+ "            \"dimensions\": [\n"+ "              \"col1\",\n"+ "              \"col2\"\n"+ "            ],\n"+ "            \"dimensionExclusions\": [],\n"+ "            \"spatialDimensions\": []\n"+ "          }\n"+ "        },\n"+ "        \"typeString\": \"struct<timestamp:string,col1:string,col2:array<string>,val1:float>\"\n"+ "      }";
+  InputRowParser parser=mapper.readValue(parserString,InputRowParser.class);
+  InputRowParser expected=new OrcHadoopInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec("timestamp","auto",null),new DimensionsSpec(ImmutableList.<DimensionSchema>of(new StringDimensionSchema("col1"),new StringDimensionSchema("col2")),null,null)),"struct<timestamp:string,col1:string,col2:array<string>,val1:float>");
+  Assert.assertEquals(expected,parser);
+}

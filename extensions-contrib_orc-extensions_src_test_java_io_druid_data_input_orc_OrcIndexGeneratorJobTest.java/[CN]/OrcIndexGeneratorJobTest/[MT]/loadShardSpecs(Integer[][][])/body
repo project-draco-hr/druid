@@ -1,0 +1,17 @@
+{
+  Map<DateTime,List<HadoopyShardSpec>> shardSpecs=Maps.newTreeMap(DateTimeComparator.getInstance());
+  int shardCount=0;
+  int segmentNum=0;
+  for (  Interval segmentGranularity : config.getSegmentGranularIntervals().get()) {
+    List<ShardSpec> specs=Lists.newArrayList();
+    for (    Integer[] shardInfo : shardInfoForEachShard[segmentNum++]) {
+      specs.add(new HashBasedNumberedShardSpec(shardInfo[0],shardInfo[1],null,HadoopDruidIndexerConfig.JSON_MAPPER));
+    }
+    List<HadoopyShardSpec> actualSpecs=Lists.newArrayListWithExpectedSize(specs.size());
+    for (    ShardSpec spec : specs) {
+      actualSpecs.add(new HadoopyShardSpec(spec,shardCount++));
+    }
+    shardSpecs.put(segmentGranularity.getStart(),actualSpecs);
+  }
+  return shardSpecs;
+}

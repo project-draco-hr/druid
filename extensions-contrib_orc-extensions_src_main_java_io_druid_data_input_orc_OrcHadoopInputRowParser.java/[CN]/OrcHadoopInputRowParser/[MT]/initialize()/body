@@ -1,0 +1,15 @@
+{
+  if (typeString == null) {
+    typeString=typeStringFromParseSpec(parseSpec);
+  }
+  TypeInfo typeInfo=TypeInfoUtils.getTypeInfoFromTypeString(typeString);
+  Preconditions.checkArgument(typeInfo instanceof StructTypeInfo,String.format("typeString should be struct type but not [%s]",typeString));
+  Properties table=getTablePropertiesFromStructTypeInfo((StructTypeInfo)typeInfo);
+  serde.initialize(new Configuration(),table);
+  try {
+    oip=(StructObjectInspector)serde.getObjectInspector();
+  }
+ catch (  SerDeException e) {
+    e.printStackTrace();
+  }
+}

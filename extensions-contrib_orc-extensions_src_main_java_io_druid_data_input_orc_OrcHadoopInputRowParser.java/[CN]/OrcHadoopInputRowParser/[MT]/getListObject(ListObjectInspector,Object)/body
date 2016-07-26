@@ -1,0 +1,19 @@
+{
+  List objectList=listObjectInspector.getList(listObject);
+  List list=null;
+  ObjectInspector child=listObjectInspector.getListElementObjectInspector();
+switch (child.getCategory()) {
+case PRIMITIVE:
+    final PrimitiveObjectInspector primitiveObjectInspector=(PrimitiveObjectInspector)child;
+  list=Lists.transform(objectList,new Function(){
+    @Nullable @Override public Object apply(    @Nullable Object input){
+      return primitiveObjectInspector.getPrimitiveJavaObject(input);
+    }
+  }
+);
+break;
+default :
+break;
+}
+return list;
+}

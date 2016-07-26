@@ -1,0 +1,22 @@
+{
+  Map<String,Object> map=Maps.newHashMap();
+  List<? extends StructField> fields=oip.getAllStructFieldRefs();
+  for (  StructField field : fields) {
+    ObjectInspector objectInspector=field.getFieldObjectInspector();
+switch (objectInspector.getCategory()) {
+case PRIMITIVE:
+      PrimitiveObjectInspector primitiveObjectInspector=(PrimitiveObjectInspector)objectInspector;
+    map.put(field.getFieldName(),primitiveObjectInspector.getPrimitiveJavaObject(oip.getStructFieldData(input,field)));
+  break;
+case LIST:
+ListObjectInspector listObjectInspector=(ListObjectInspector)objectInspector;
+map.put(field.getFieldName(),getListObject(listObjectInspector,oip.getStructFieldData(input,field)));
+break;
+default :
+break;
+}
+}
+TimestampSpec timestampSpec=parseSpec.getTimestampSpec();
+DateTime dateTime=timestampSpec.extractTimestamp(map);
+return new MapBasedInputRow(dateTime,dimensions,map);
+}

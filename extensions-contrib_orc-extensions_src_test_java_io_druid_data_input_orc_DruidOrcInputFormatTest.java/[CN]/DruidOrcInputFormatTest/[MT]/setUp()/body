@@ -1,0 +1,9 @@
+{
+  Configuration conf=new Configuration();
+  job=Job.getInstance(conf);
+  config=HadoopDruidIndexerConfig.fromFile(new File("example/hadoop_orc_job.json"));
+  config.intoConfiguration(job);
+  testFile=makeOrcFile();
+  path=new Path(testFile.getAbsoluteFile().toURI());
+  split=new FileSplit(path,0,testFile.length(),null);
+}
