@@ -19,7 +19,7 @@
     }
     @Override public InventoryType deserializeInventory(    byte[] bytes){
       try {
-        return internInventory(jsonMapper.<InventoryType>readValue(bytes,typeReference));
+        return jsonMapper.readValue(bytes,typeReference);
       }
  catch (      IOException e) {
         CharBuffer.wrap(StringUtils.fromUtf8(bytes).toCharArray());
