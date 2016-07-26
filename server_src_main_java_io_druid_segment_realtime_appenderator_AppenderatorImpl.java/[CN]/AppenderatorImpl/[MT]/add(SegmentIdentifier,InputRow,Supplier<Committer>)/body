@@ -3,21 +3,21 @@
     throw new IAE("Expected dataSource[%s] but was asked to insert row for dataSource[%s]?!",schema.getDataSource(),identifier.getDataSource());
   }
   final Sink sink=getOrCreateSink(identifier);
-  int sinkRetVal;
+  final int sinkRowsInMemoryBeforeAdd=sink.getNumRowsInMemory();
+  final int sinkRowsInMemoryAfterAdd;
   try {
-    sinkRetVal=sink.add(row);
+    sinkRowsInMemoryAfterAdd=sink.add(row);
   }
  catch (  IndexSizeExceededException e) {
-    persistAll(committerSupplier.get());
-    sinkRetVal=sink.add(row);
+    log.error(e,"Sink for segment[%s] was unexpectedly full!",identifier);
+    throw e;
   }
-  if (!sink.canAppendRow() || System.currentTimeMillis() > nextFlush) {
-    persistAll(committerSupplier.get());
-  }
-  if (sinkRetVal < 0) {
+  if (sinkRowsInMemoryAfterAdd < 0) {
     throw new SegmentNotWritableException("Attempt to add row to swapped-out sink for segment[%s].",identifier);
   }
- else {
-    return sink.getNumRows();
+  rowsCurrentlyInMemory.addAndGet(sinkRowsInMemoryAfterAdd - sinkRowsInMemoryBeforeAdd);
+  if (!sink.canAppendRow() || System.currentTimeMillis() > nextFlush || rowsCurrentlyInMemory.get() >= tuningConfig.getMaxRowsInMemory()) {
+    persistAll(committerSupplier.get());
   }
+  return sink.getNumRows();
 }

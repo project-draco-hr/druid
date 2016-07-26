@@ -1,6 +1,8 @@
 {
+  sink.finishWriting();
   droppingSinks.add(identifier);
-  return Futures.transform(mergeBarrier(),new Function<Object,Object>(){
+  rowsCurrentlyInMemory.addAndGet(-sink.getNumRowsInMemory());
+  return Futures.transform(pushBarrier(),new Function<Object,Object>(){
     @Nullable @Override public Object apply(    @Nullable Object input){
       if (sinks.get(identifier) != sink) {
         log.warn("Sink for segment[%s] no longer valid, not abandoning.");

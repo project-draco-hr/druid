@@ -1,3 +1,4 @@
 {
-  return Appenderators.createRealtime(dataSchema,tuningConfig.withBasePersistDirectory(new File(toolbox.getTaskWorkDir(),"persist")),metrics,toolbox.getSegmentPusher(),toolbox.getObjectMapper(),toolbox.getIndexIO(),tuningConfig.getBuildV9Directly() ? toolbox.getIndexMergerV9() : toolbox.getIndexMerger(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentAnnouncer(),toolbox.getEmitter(),toolbox.getQueryExecutorService(),toolbox.getCache(),toolbox.getCacheConfig());
+  final int maxRowsInMemoryPerPartition=(tuningConfig.getMaxRowsInMemory() / ioConfig.getStartPartitions().getPartitionOffsetMap().size());
+  return Appenderators.createRealtime(dataSchema,tuningConfig.withBasePersistDirectory(new File(toolbox.getTaskWorkDir(),"persist")).withMaxRowsInMemory(maxRowsInMemoryPerPartition),metrics,toolbox.getSegmentPusher(),toolbox.getObjectMapper(),toolbox.getIndexIO(),tuningConfig.getBuildV9Directly() ? toolbox.getIndexMergerV9() : toolbox.getIndexMerger(),toolbox.getQueryRunnerFactoryConglomerate(),toolbox.getSegmentAnnouncer(),toolbox.getEmitter(),toolbox.getQueryExecutorService(),toolbox.getCache(),toolbox.getCacheConfig());
 }
