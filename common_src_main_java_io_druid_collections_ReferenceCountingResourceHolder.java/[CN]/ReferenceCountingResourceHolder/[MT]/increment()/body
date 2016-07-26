@@ -1,0 +1,26 @@
+{
+synchronized (lock) {
+    if (refcount <= 0) {
+      throw new ISE("Already closed!");
+    }
+    refcount++;
+    return new Releaser(){
+      final AtomicBoolean didRelease=new AtomicBoolean();
+      @Override public void close(){
+        if (didRelease.compareAndSet(false,true)) {
+          decrement();
+        }
+ else {
+          log.warn("WTF?! release called but we are already released!");
+        }
+      }
+      @Override protected void finalize() throws Throwable {
+        if (didRelease.compareAndSet(false,true)) {
+          log.warn("Not released! Object was[%s], releasing on finalize of releaser.",object);
+          decrement();
+        }
+      }
+    }
+;
+  }
+}

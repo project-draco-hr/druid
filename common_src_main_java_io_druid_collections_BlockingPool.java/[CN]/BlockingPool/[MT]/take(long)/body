@@ -1,5 +1,12 @@
 {
   Preconditions.checkState(objects != null,"Pool was initialized with limit = 0, there are no objects to take.");
   final T theObject=timeout >= 0 ? objects.poll(timeout,TimeUnit.MILLISECONDS) : objects.take();
-  return theObject == null ? null : new ObjectResourceHolder(theObject);
+  return theObject == null ? null : new ReferenceCountingResourceHolder<>(theObject,new Closeable(){
+    @Override public void close() throws IOException {
+      if (!objects.offer(theObject)) {
+        log.error("WTF?! Queue offer failed, uh oh...");
+      }
+    }
+  }
+);
 }

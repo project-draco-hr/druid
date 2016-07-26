@@ -1,0 +1,13 @@
+{
+synchronized (lock) {
+    refcount--;
+    if (refcount <= 0) {
+      try {
+        closer.close();
+      }
+ catch (      Exception e) {
+        log.error(e,"WTF?! Close failed, uh oh...");
+      }
+    }
+  }
+}
