@@ -1,13 +1,13 @@
 {
   final long proposalSegmentSize=proposalSegment.getSize();
-  if (includeCurrentServer || !server.isServingSegment(proposalSegment)) {
-    if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
-      return Double.POSITIVE_INFINITY;
-    }
-    double cost=0d;
-    cost+=computeJointSegmentsCost(proposalSegment,Iterables.filter(server.getServer().getSegments().values(),Predicates.not(Predicates.equalTo(proposalSegment))));
-    cost+=computeJointSegmentsCost(proposalSegment,server.getPeon().getSegmentsToLoad());
-    return cost;
+  if (!includeCurrentServer && server.isServingSegment(proposalSegment)) {
+    return Double.POSITIVE_INFINITY;
   }
-  return Double.POSITIVE_INFINITY;
+  if (proposalSegmentSize > server.getAvailableSize() || server.isLoadingSegment(proposalSegment)) {
+    return Double.POSITIVE_INFINITY;
+  }
+  double cost=0d;
+  cost+=computeJointSegmentsCost(proposalSegment,Iterables.filter(server.getServer().getSegments().values(),Predicates.not(Predicates.equalTo(proposalSegment))));
+  cost+=computeJointSegmentsCost(proposalSegment,server.getPeon().getSegmentsToLoad());
+  return cost;
 }
