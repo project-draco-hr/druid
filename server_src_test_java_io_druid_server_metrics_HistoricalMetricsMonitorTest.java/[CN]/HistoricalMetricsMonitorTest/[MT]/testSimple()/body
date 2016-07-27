@@ -1,0 +1,45 @@
+{
+  final long size=5;
+  final String dataSource="dataSource";
+  final DataSegment dataSegment=new DataSegment(dataSource,Interval.parse("2014/2015"),"version",ImmutableMap.<String,Object>of(),ImmutableList.<String>of(),ImmutableList.<String>of(),null,1,size);
+  final long maxSize=10;
+  final int priority=111;
+  final String tier="tier";
+  EasyMock.expect(druidServerConfig.getMaxSize()).andReturn(maxSize).once();
+  EasyMock.expect(zkCoordinator.getPendingDeleteSnapshot()).andReturn(ImmutableList.of(dataSegment)).once();
+  EasyMock.expect(druidServerConfig.getTier()).andReturn(tier).once();
+  EasyMock.expect(druidServerConfig.getPriority()).andReturn(priority).once();
+  EasyMock.expect(serverManager.getDataSourceSizes()).andReturn(ImmutableMap.of(dataSource,size));
+  EasyMock.expect(druidServerConfig.getTier()).andReturn(tier).once();
+  EasyMock.expect(druidServerConfig.getPriority()).andReturn(priority).once();
+  EasyMock.expect(druidServerConfig.getMaxSize()).andReturn(maxSize).times(2);
+  EasyMock.expect(serverManager.getDataSourceCounts()).andReturn(ImmutableMap.of(dataSource,1L));
+  EasyMock.expect(druidServerConfig.getTier()).andReturn(tier).once();
+  EasyMock.expect(druidServerConfig.getPriority()).andReturn(priority).once();
+  final HistoricalMetricsMonitor monitor=new HistoricalMetricsMonitor(druidServerConfig,serverManager,zkCoordinator);
+  final Capture<ServiceEventBuilder<ServiceMetricEvent>> eventCapture=EasyMock.newCapture(CaptureType.ALL);
+  serviceEmitter.emit(EasyMock.capture(eventCapture));
+  EasyMock.expectLastCall().times(5);
+  EasyMock.replay(druidServerConfig,serverManager,zkCoordinator,serviceEmitter);
+  monitor.doMonitor(serviceEmitter);
+  EasyMock.verify(druidServerConfig,serverManager,zkCoordinator,serviceEmitter);
+  final String host="host";
+  final String service="service";
+  Assert.assertTrue(eventCapture.hasCaptured());
+  final List<Map<String,Object>> events=Lists.transform(eventCapture.getValues(),new Function<ServiceEventBuilder<ServiceMetricEvent>,Map<String,Object>>(){
+    @Nullable @Override public Map<String,Object> apply(    @Nullable ServiceEventBuilder<ServiceMetricEvent> input){
+      final HashMap<String,Object> map=new HashMap<>(input.build(host,service).toMap());
+      Assert.assertNotNull(map.remove("feed"));
+      Assert.assertNotNull(map.remove("timestamp"));
+      Assert.assertNotNull(map.remove("service"));
+      Assert.assertNotNull(map.remove("host"));
+      return map;
+    }
+  }
+);
+  Assert.assertEquals(ImmutableMap.<String,Object>of("metric","segment/max","value",maxSize),events.get(0));
+  Assert.assertEquals(ImmutableMap.<String,Object>of("dataSource",dataSource,"metric","segment/pendingDelete","priority",String.valueOf(priority),"tier",tier,"value",dataSegment.getSize()),events.get(1));
+  Assert.assertEquals(ImmutableMap.<String,Object>of("metric","segment/used","value",dataSegment.getSize(),"tier",tier,"priority",String.valueOf(priority),"dataSource",dataSource),events.get(2));
+  Assert.assertEquals(ImmutableMap.<String,Object>of("metric","segment/usedPercent","value",dataSegment.getSize() * 1.0D / maxSize,"tier",tier,"priority",String.valueOf(priority),"dataSource",dataSource),events.get(3));
+  Assert.assertEquals(ImmutableMap.<String,Object>of("metric","segment/count","value",1L,"tier",tier,"priority",String.valueOf(priority),"dataSource",dataSource),events.get(4));
+}

@@ -1,5 +1,14 @@
 {
   emitter.emit(new ServiceMetricEvent.Builder().build("segment/max",serverConfig.getMaxSize()));
+  final CountingMap<String> pendingDeleteSizes=new CountingMap<String>();
+  for (  DataSegment segment : zkCoordinator.getPendingDeleteSnapshot()) {
+    pendingDeleteSizes.add(segment.getDataSource(),segment.getSize());
+  }
+  for (  Map.Entry<String,Long> entry : pendingDeleteSizes.entrySet()) {
+    final String dataSource=entry.getKey();
+    final long pendingDeleteSize=entry.getValue();
+    emitter.emit(new ServiceMetricEvent.Builder().setDimension(DruidMetrics.DATASOURCE,dataSource).setDimension("tier",serverConfig.getTier()).setDimension("priority",String.valueOf(serverConfig.getPriority())).build("segment/pendingDelete",pendingDeleteSize));
+  }
   for (  Map.Entry<String,Long> entry : serverManager.getDataSourceSizes().entrySet()) {
     String dataSource=entry.getKey();
     long used=entry.getValue();
