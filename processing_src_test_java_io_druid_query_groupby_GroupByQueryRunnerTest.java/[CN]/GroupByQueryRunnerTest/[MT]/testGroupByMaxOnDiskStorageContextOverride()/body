@@ -1,0 +1,8 @@
+{
+  GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).setContext(ImmutableMap.<String,Object>of("maxOnDiskStorage",0,"bufferGrouperMaxSize",1)).build();
+  if (config.getDefaultStrategy().equals(GroupByStrategySelector.STRATEGY_V2)) {
+    expectedException.expect(ISE.class);
+    expectedException.expectMessage("Grouping resources exhausted");
+  }
+  GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
+}

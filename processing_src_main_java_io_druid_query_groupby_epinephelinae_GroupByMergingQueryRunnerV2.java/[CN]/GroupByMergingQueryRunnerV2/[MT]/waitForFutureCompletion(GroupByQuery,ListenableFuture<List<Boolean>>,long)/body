@@ -1,15 +1,12 @@
 {
   try {
-    final List<Boolean> results;
     if (queryWatcher != null) {
       queryWatcher.registerQuery(query,future);
     }
     if (timeout <= 0) {
-      results=future.get();
+      throw new TimeoutException();
     }
- else {
-      results=future.get(timeout,TimeUnit.MILLISECONDS);
-    }
+    final List<Boolean> results=future.get(timeout,TimeUnit.MILLISECONDS);
     for (    Boolean result : results) {
       if (!result) {
         future.cancel(true);

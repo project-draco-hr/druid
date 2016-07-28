@@ -17,7 +17,7 @@
  else {
     fudgeTimestamp=query.getContextValue(CTX_KEY_FUDGE_TIMESTAMP,"");
   }
-  return query.applyLimit(Sequences.map(mergingQueryRunner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),gran,query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByStrategySelector.CTX_KEY_STRATEGY,GroupByStrategySelector.STRATEGY_V2,CTX_KEY_FUDGE_TIMESTAMP,fudgeTimestamp)),responseContext),new Function<Row,Row>(){
+  return query.applyLimit(Sequences.map(mergingQueryRunner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),gran,query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryConfig.CTX_KEY_STRATEGY,GroupByStrategySelector.STRATEGY_V2,CTX_KEY_FUDGE_TIMESTAMP,fudgeTimestamp)),responseContext),new Function<Row,Row>(){
     @Override public Row apply(    final Row row){
       if (query.getPostAggregatorSpecs().isEmpty()) {
         return row;

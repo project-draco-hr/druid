@@ -9,7 +9,7 @@
     delegate.close();
     delegate=null;
   }
-  final Grouper<ByteBuffer> grouper=new BufferGrouper<>(buffer,keySerde,cursor,query.getAggregatorSpecs().toArray(new AggregatorFactory[query.getAggregatorSpecs().size()]),config.getBufferGrouperMaxSize(),GroupByStrategyV2.getBufferGrouperInitialBuckets(config,query));
+  final Grouper<ByteBuffer> grouper=new BufferGrouper<>(buffer,keySerde,cursor,query.getAggregatorSpecs().toArray(new AggregatorFactory[query.getAggregatorSpecs().size()]),querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets());
   outer:   while (!cursor.isDone()) {
     if (!currentRowWasPartiallyAggregated) {
       stackp=stack.length - 1;

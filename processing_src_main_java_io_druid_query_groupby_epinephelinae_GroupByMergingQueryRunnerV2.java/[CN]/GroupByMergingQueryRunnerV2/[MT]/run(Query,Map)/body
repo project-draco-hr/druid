@@ -1,5 +1,6 @@
 {
   final GroupByQuery query=(GroupByQuery)queryParam;
+  final GroupByQueryConfig querySpecificConfig=config.withOverrides(query);
   final boolean forceChainedExecution=query.getContextBoolean(CTX_KEY_MERGE_RUNNERS_USING_CHAINED_EXECUTION,false);
   final GroupByQuery queryForRunners=query.withOverriddenContext(ImmutableMap.<String,Object>of(CTX_KEY_MERGE_RUNNERS_USING_CHAINED_EXECUTION,true));
   if (BaseQuery.getContextBySegment(query,false) || forceChainedExecution) {
@@ -9,27 +10,33 @@
   for (int i=0; i < query.getAggregatorSpecs().size(); i++) {
     combiningAggregatorFactories[i]=query.getAggregatorSpecs().get(i).getCombiningFactory();
   }
-  final GroupByMergingKeySerdeFactory keySerdeFactory=new GroupByMergingKeySerdeFactory(query.getDimensions().size(),config.getMaxMergingDictionarySize() / concurrencyHint);
-  final GroupByMergingColumnSelectorFactory columnSelectorFactory=new GroupByMergingColumnSelectorFactory();
   final File temporaryStorageDirectory=new File(System.getProperty("java.io.tmpdir"),String.format("druid-groupBy-%s_%s",UUID.randomUUID(),query.getId()));
-  final LimitedTemporaryStorage temporaryStorage=new LimitedTemporaryStorage(temporaryStorageDirectory,config.getMaxOnDiskStorage());
-  final long startTime=System.currentTimeMillis();
-  final Number timeout=query.getContextValue(QueryContextKeys.TIMEOUT,null);
-  final long timeoutAt=timeout == null ? -1L : startTime + timeout.longValue();
-  final ReferenceCountingResourceHolder<ByteBuffer> mergeBufferHolder;
-  try {
-    mergeBufferHolder=mergeBufferPool.take(timeout != null && timeout.longValue() > 0 ? timeout.longValue() : -1);
-  }
- catch (  InterruptedException e) {
-    CloseQuietly.close(temporaryStorage);
-    Thread.currentThread().interrupt();
-    throw Throwables.propagate(e);
-  }
-  final long processingStartTime=System.currentTimeMillis();
-  try {
-    return new ResourceClosingSequence<>(new BaseSequence<>(new BaseSequence.IteratorMaker<Row,CloseableGrouperIterator<GroupByMergingKey,Row>>(){
-      @Override public CloseableGrouperIterator<GroupByMergingKey,Row> make(){
-        final Grouper<GroupByMergingKey> grouper=new ConcurrentGrouper<>(mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,config.getBufferGrouperMaxSize(),GroupByStrategyV2.getBufferGrouperInitialBuckets(config,query),keySerdeFactory,columnSelectorFactory,combiningAggregatorFactories);
+  final Number queryTimeout=query.getContextValue(QueryContextKeys.TIMEOUT,null);
+  final long timeoutAt=queryTimeout == null ? JodaUtils.MAX_INSTANT : System.currentTimeMillis() + queryTimeout.longValue();
+  return new BaseSequence<>(new BaseSequence.IteratorMaker<Row,CloseableGrouperIterator<GroupByMergingKey,Row>>(){
+    @Override public CloseableGrouperIterator<GroupByMergingKey,Row> make(){
+      final List<Closeable> closeOnFailure=Lists.newArrayList();
+      try {
+        final ReferenceCountingResourceHolder<ByteBuffer> mergeBufferHolder;
+        final LimitedTemporaryStorage temporaryStorage;
+        final Grouper<GroupByMergingKey> grouper;
+        temporaryStorage=new LimitedTemporaryStorage(temporaryStorageDirectory,querySpecificConfig.getMaxOnDiskStorage());
+        closeOnFailure.add(temporaryStorage);
+        try {
+          final long timeout=timeoutAt - System.currentTimeMillis();
+          if (timeout <= 0 || (mergeBufferHolder=mergeBufferPool.take(timeout)) == null) {
+            throw new QueryInterruptedException(new TimeoutException());
+          }
+          closeOnFailure.add(mergeBufferHolder);
+        }
+ catch (        InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw Throwables.propagate(e);
+        }
+        final GroupByMergingKeySerdeFactory keySerdeFactory=new GroupByMergingKeySerdeFactory(query.getDimensions().size(),querySpecificConfig.getMaxMergingDictionarySize() / concurrencyHint);
+        final GroupByMergingColumnSelectorFactory columnSelectorFactory=new GroupByMergingColumnSelectorFactory();
+        grouper=new ConcurrentGrouper<>(mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets(),keySerdeFactory,columnSelectorFactory,combiningAggregatorFactories);
+        closeOnFailure.add(grouper);
         final Accumulator<Grouper<GroupByMergingKey>,Row> accumulator=new Accumulator<Grouper<GroupByMergingKey>,Row>(){
           @Override public Grouper<GroupByMergingKey> accumulate(          final Grouper<GroupByMergingKey> theGrouper,          final Row row){
             if (theGrouper == null) {
@@ -58,55 +65,49 @@
           }
         }
 );
-        try {
-          ListenableFuture<List<Boolean>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<Row>,ListenableFuture<Boolean>>(){
-            @Override public ListenableFuture<Boolean> apply(            final QueryRunner<Row> input){
-              if (input == null) {
-                throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
-              }
-              final Releaser bufferReleaser=mergeBufferHolder.increment();
+        ListenableFuture<List<Boolean>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<Row>,ListenableFuture<Boolean>>(){
+          @Override public ListenableFuture<Boolean> apply(          final QueryRunner<Row> input){
+            if (input == null) {
+              throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
+            }
+            final Releaser bufferReleaser=mergeBufferHolder.increment();
+            try {
+              final Releaser grouperReleaser=grouperHolder.increment();
               try {
-                final Releaser grouperReleaser=grouperHolder.increment();
-                try {
-                  return exec.submit(new AbstractPrioritizedCallable<Boolean>(priority){
-                    @Override public Boolean call() throws Exception {
-                      try {
-                        final Object retVal=input.run(queryForRunners,responseContext).accumulate(grouper,accumulator);
-                        return retVal == grouper;
-                      }
- catch (                      QueryInterruptedException e) {
-                        throw e;
-                      }
-catch (                      Exception e) {
-                        log.error(e,"Exception with one of the sequences!");
-                        throw Throwables.propagate(e);
-                      }
+                return exec.submit(new AbstractPrioritizedCallable<Boolean>(priority){
+                  @Override public Boolean call() throws Exception {
+                    try {
+                      final Object retVal=input.run(queryForRunners,responseContext).accumulate(grouper,accumulator);
+                      return retVal == grouper;
+                    }
+ catch (                    QueryInterruptedException e) {
+                      throw e;
+                    }
+catch (                    Exception e) {
+                      log.error(e,"Exception with one of the sequences!");
+                      throw Throwables.propagate(e);
+                    }
  finally {
-                        grouperReleaser.close();
-                        bufferReleaser.close();
-                      }
+                      grouperReleaser.close();
+                      bufferReleaser.close();
                     }
                   }
+                }
 );
-                }
- catch (                Exception e) {
-                  grouperReleaser.close();
-                  throw e;
-                }
               }
  catch (              Exception e) {
-                bufferReleaser.close();
+                grouperReleaser.close();
                 throw e;
               }
             }
+ catch (            Exception e) {
+              bufferReleaser.close();
+              throw e;
+            }
           }
+        }
 )));
-          waitForFutureCompletion(query,futures,timeoutAt - processingStartTime);
-        }
- catch (        Exception e) {
-          grouperHolder.close();
-          throw e;
-        }
+        waitForFutureCompletion(query,futures,timeoutAt - System.currentTimeMillis());
         return new CloseableGrouperIterator<>(grouper,true,new Function<Grouper.Entry<GroupByMergingKey>,Row>(){
           @Override public Row apply(          Grouper.Entry<GroupByMergingKey> entry){
             Map<String,Object> theMap=Maps.newLinkedHashMap();
@@ -122,25 +123,22 @@ catch (                      Exception e) {
 ,new Closeable(){
           @Override public void close() throws IOException {
             grouperHolder.close();
+            mergeBufferHolder.close();
+            CloseQuietly.close(temporaryStorage);
           }
         }
 );
       }
-      @Override public void cleanup(      CloseableGrouperIterator<GroupByMergingKey,Row> iterFromMake){
-        iterFromMake.close();
+ catch (      Throwable e) {
+        for (        Closeable closeable : Lists.reverse(closeOnFailure)) {
+          CloseQuietly.close(closeable);
+        }
+        throw e;
       }
     }
-),new Closeable(){
-      @Override public void close() throws IOException {
-        mergeBufferHolder.close();
-        CloseQuietly.close(temporaryStorage);
-      }
+    @Override public void cleanup(    CloseableGrouperIterator<GroupByMergingKey,Row> iterFromMake){
+      iterFromMake.close();
     }
+  }
 );
-  }
- catch (  Exception e) {
-    mergeBufferHolder.close();
-    CloseQuietly.close(temporaryStorage);
-    throw e;
-  }
 }
