@@ -1,0 +1,8 @@
+{
+  final Properties properties=new Properties();
+  properties.put(propertyPrefix + ".type","slf4j");
+  provider.inject(properties,injector.getInstance(JsonConfigurator.class));
+  final LoggingRequestLogger requestLogger=(LoggingRequestLogger)provider.get().get().get();
+  Assert.assertFalse(requestLogger.isSetContextMDC());
+  Assert.assertFalse(requestLogger.isSetMDC());
+}

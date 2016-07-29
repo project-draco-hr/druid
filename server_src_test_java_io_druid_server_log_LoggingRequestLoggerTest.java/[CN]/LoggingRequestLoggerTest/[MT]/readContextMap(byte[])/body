@@ -1,0 +1,19 @@
+{
+  final Map<String,Object> rawMap=mapper.readValue(bytes,new TypeReference<Map<String,Object>>(){
+  }
+);
+  final Object contextMap=rawMap.get("contextMap");
+  if (contextMap == null) {
+    return null;
+  }
+  final Collection<Map<String,Object>> contextList=(Collection<Map<String,Object>>)contextMap;
+  final Map<String,Object> context=new HashMap<>();
+  for (  Map<String,Object> microContext : contextList) {
+    final String key=microContext.get("key").toString();
+    final Object value=microContext.get("value");
+    if (key != null && value != null) {
+      context.put(key,value);
+    }
+  }
+  return ImmutableMap.copyOf(context);
+}

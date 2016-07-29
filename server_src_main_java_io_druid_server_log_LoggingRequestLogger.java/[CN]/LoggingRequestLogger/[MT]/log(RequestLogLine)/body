@@ -1,0 +1,38 @@
+{
+  final Map mdc=MDC.getCopyOfContextMap();
+  try {
+    if (setMDC) {
+      try {
+        final Query query=requestLogLine.getQuery();
+        MDC.put("queryId",query.getId());
+        MDC.put("dataSource",query.getDataSource().toString());
+        MDC.put("queryType",query.getType());
+        MDC.put("hasFilters",Boolean.toString(query.hasFilters()));
+        MDC.put("remoteAddr",requestLogLine.getRemoteAddr());
+        MDC.put("duration",query.getDuration().toString());
+        MDC.put("descending",Boolean.toString(query.isDescending()));
+        if (setContextMDC) {
+          final Iterable<Map.Entry<String,Object>> entries=query.getContext() == null ? ImmutableList.<Map.Entry<String,Object>>of() : query.getContext().entrySet();
+          for (          Map.Entry<String,Object> entry : entries) {
+            MDC.put(entry.getKey(),entry.getValue() == null ? "NULL" : entry.getValue().toString());
+          }
+        }
+      }
+ catch (      RuntimeException re) {
+        LOG.error(re,"Error preparing MDC");
+      }
+    }
+    final String line=requestLogLine.getLine(mapper);
+    LOG.info("%s",line);
+  }
+  finally {
+    if (setMDC) {
+      if (mdc != null) {
+        MDC.setContextMap(mdc);
+      }
+ else {
+        MDC.clear();
+      }
+    }
+  }
+}
