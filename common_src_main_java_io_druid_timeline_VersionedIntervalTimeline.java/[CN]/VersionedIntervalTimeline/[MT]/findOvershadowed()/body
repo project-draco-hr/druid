@@ -29,7 +29,7 @@
     for (    Map.Entry<Interval,Map<VersionType,TimelineEntry>> versionEntry : overShadowed.entrySet()) {
       for (      Map.Entry<VersionType,TimelineEntry> entry : versionEntry.getValue().entrySet()) {
         TimelineEntry object=entry.getValue();
-        retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(object.getTrueInterval(),object.getVersion(),object.getPartitionHolder()));
+        retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(object.getTrueInterval(),object.getVersion(),new PartitionHolder<ObjectType>(object.getPartitionHolder())));
       }
     }
     return retVal;

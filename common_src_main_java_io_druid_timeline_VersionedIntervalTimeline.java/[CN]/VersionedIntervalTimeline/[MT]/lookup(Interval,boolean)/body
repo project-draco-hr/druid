@@ -5,7 +5,7 @@
     Interval timelineInterval=entry.getKey();
     TimelineEntry val=entry.getValue();
     if (timelineInterval.overlaps(interval)) {
-      retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(timelineInterval,val.getVersion(),val.getPartitionHolder()));
+      retVal.add(new TimelineObjectHolder<VersionType,ObjectType>(timelineInterval,val.getVersion(),new PartitionHolder<ObjectType>(val.getPartitionHolder())));
     }
   }
   if (retVal.isEmpty()) {
