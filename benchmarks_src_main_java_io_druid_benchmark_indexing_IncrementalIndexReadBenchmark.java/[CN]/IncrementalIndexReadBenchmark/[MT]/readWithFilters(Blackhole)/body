@@ -1,5 +1,5 @@
 {
-  DimFilter filter=new OrDimFilter(Arrays.asList(new BoundDimFilter("dimSequential","-1","-1",true,true,true,null),new JavaScriptDimFilter("dimSequential","function(x) { return false }",null,JavaScriptConfig.getDefault()),new RegexDimFilter("dimSequential","X",null),new SearchQueryDimFilter("dimSequential",new ContainsSearchQuerySpec("X",false),null),new InDimFilter("dimSequential",Arrays.asList("X"),null)));
+  DimFilter filter=new OrDimFilter(Arrays.asList(new BoundDimFilter("dimSequential","-1","-1",true,true,null,null,StringComparators.ALPHANUMERIC),new JavaScriptDimFilter("dimSequential","function(x) { return false }",null,JavaScriptConfig.getDefault()),new RegexDimFilter("dimSequential","X",null),new SearchQueryDimFilter("dimSequential",new ContainsSearchQuerySpec("X",false),null),new InDimFilter("dimSequential",Arrays.asList("X"),null)));
   IncrementalIndexStorageAdapter sa=new IncrementalIndexStorageAdapter(incIndex);
   Sequence<Cursor> cursors=sa.makeCursors(filter.toFilter(),schemaInfo.getDataInterval(),QueryGranularities.ALL,false);
   Cursor cursor=Sequences.toList(Sequences.limit(cursors,1),Lists.<Cursor>newArrayList()).get(0);

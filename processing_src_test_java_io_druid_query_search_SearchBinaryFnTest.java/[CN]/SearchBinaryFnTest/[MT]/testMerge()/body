@@ -2,7 +2,7 @@
   Result<SearchResultValue> r1=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah","foo"))));
   Result<SearchResultValue> r2=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah2","foo2"))));
   Result<SearchResultValue> expected=new Result<SearchResultValue>(currTime,new SearchResultValue(ImmutableList.<SearchHit>of(new SearchHit("blah","foo"),new SearchHit("blah2","foo2"))));
-  Result<SearchResultValue> actual=new SearchBinaryFn(new LexicographicSearchSortSpec(),QueryGranularities.ALL,Integer.MAX_VALUE).apply(r1,r2);
+  Result<SearchResultValue> actual=new SearchBinaryFn(new SearchSortSpec(StringComparators.LEXICOGRAPHIC),QueryGranularities.ALL,Integer.MAX_VALUE).apply(r1,r2);
   Assert.assertEquals(expected.getTimestamp(),actual.getTimestamp());
   assertSearchMergeResult(expected.getValue(),actual.getValue());
 }

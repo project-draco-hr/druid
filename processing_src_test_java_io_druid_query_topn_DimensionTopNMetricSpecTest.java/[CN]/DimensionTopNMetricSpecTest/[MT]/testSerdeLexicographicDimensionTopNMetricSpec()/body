@@ -1,0 +1,11 @@
+{
+  DimensionTopNMetricSpec expectedMetricSpec=new DimensionTopNMetricSpec(null,StringComparators.LEXICOGRAPHIC);
+  DimensionTopNMetricSpec expectedMetricSpec1=new DimensionTopNMetricSpec("test",StringComparators.LEXICOGRAPHIC);
+  String jsonSpec="{\n" + "    \"type\": \"dimension\"," + "    \"ordering\": \"lexicographic\"\n"+ "}";
+  String jsonSpec1="{\n" + "    \"type\": \"dimension\"," + "    \"ordering\": \"lexicographic\",\n"+ "    \"previousStop\": \"test\"\n"+ "}";
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  TopNMetricSpec actualMetricSpec=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonSpec,TopNMetricSpec.class)),DimensionTopNMetricSpec.class);
+  TopNMetricSpec actualMetricSpec1=jsonMapper.readValue(jsonMapper.writeValueAsString(jsonMapper.readValue(jsonSpec1,TopNMetricSpec.class)),DimensionTopNMetricSpec.class);
+  Assert.assertEquals(expectedMetricSpec,actualMetricSpec);
+  Assert.assertEquals(expectedMetricSpec1,actualMetricSpec1);
+}

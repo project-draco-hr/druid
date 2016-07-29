@@ -12,5 +12,19 @@
     TopNQueryBuilder queryBuilderA=new TopNQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).dimension("dimSequential").metric("sumFloatNormal").intervals(intervalSpec).aggregators(queryAggs);
     basicQueries.put("A",queryBuilderA);
   }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    queryAggs.add(new LongSumAggregatorFactory("sumLongSequential","sumLongSequential"));
+    TopNQueryBuilder queryBuilderA=new TopNQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).dimension("dimUniform").metric(new DimensionTopNMetricSpec(null,StringComparators.NUMERIC)).intervals(intervalSpec).aggregators(queryAggs);
+    basicQueries.put("numericSort",queryBuilderA);
+  }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    queryAggs.add(new LongSumAggregatorFactory("sumLongSequential","sumLongSequential"));
+    TopNQueryBuilder queryBuilderA=new TopNQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).dimension("dimUniform").metric(new DimensionTopNMetricSpec(null,StringComparators.ALPHANUMERIC)).intervals(intervalSpec).aggregators(queryAggs);
+    basicQueries.put("alphanumericSort",queryBuilderA);
+  }
   SCHEMA_QUERY_MAP.put("basic",basicQueries);
 }

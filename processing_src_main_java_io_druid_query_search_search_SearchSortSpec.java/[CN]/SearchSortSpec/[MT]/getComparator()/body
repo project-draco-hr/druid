@@ -1,0 +1,12 @@
+{
+  return new Comparator<SearchHit>(){
+    @Override public int compare(    SearchHit searchHit,    SearchHit searchHit1){
+      int retVal=ordering.compare(searchHit.getValue(),searchHit1.getValue());
+      if (retVal == 0) {
+        retVal=StringComparators.LEXICOGRAPHIC.compare(searchHit.getDimension(),searchHit1.getDimension());
+      }
+      return retVal;
+    }
+  }
+;
+}

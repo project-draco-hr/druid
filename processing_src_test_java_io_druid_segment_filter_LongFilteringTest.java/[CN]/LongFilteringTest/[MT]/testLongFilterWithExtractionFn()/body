@@ -10,8 +10,8 @@
   LookupExtractionFn exfn=new LookupExtractionFn(mapExtractor,false,"UNKNOWN",false,true);
   assertFilterMatches(new SelectorDimFilter(COUNT_COLUMN,"Monday",exfn),ImmutableList.<String>of("1"));
   assertFilterMatches(new SelectorDimFilter(COUNT_COLUMN,"Notaday",exfn),ImmutableList.<String>of());
-  assertFilterMatches(new BoundDimFilter(COUNT_COLUMN,"Fridax","Fridaz",false,false,true,exfn),ImmutableList.<String>of("5"));
-  assertFilterMatches(new BoundDimFilter(COUNT_COLUMN,"Friday","Friday",true,true,true,exfn),ImmutableList.<String>of());
+  assertFilterMatches(new BoundDimFilter(COUNT_COLUMN,"Fridax","Fridaz",false,false,null,exfn,StringComparators.ALPHANUMERIC),ImmutableList.<String>of("5"));
+  assertFilterMatches(new BoundDimFilter(COUNT_COLUMN,"Friday","Friday",true,true,null,exfn,StringComparators.ALPHANUMERIC),ImmutableList.<String>of());
   assertFilterMatches(new InDimFilter(COUNT_COLUMN,Arrays.asList("Caturday","Saturday","Tuesday"),exfn),ImmutableList.<String>of("2","6"));
   List<String> bigList=Arrays.asList("Saturday","Tuesday","Caturday","Xanaday","Vojuday","Gribaday","Kipoday","Dheferday","Fakeday","Qeearaday","Hello","World","1","2","3","4","5","6","7");
   assertFilterMatches(new InDimFilter(COUNT_COLUMN,bigList,exfn),ImmutableList.<String>of("2","6"));

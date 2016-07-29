@@ -1,0 +1,68 @@
+{
+  return new Supplier<DruidLongPredicate>(){
+    private final Object initLock=new Object();
+    private volatile boolean longsInitialized=false;
+    private volatile boolean hasLowerLongBoundVolatile;
+    private volatile boolean hasUpperLongBoundVolatile;
+    private volatile long lowerLongBoundVolatile;
+    private volatile long upperLongBoundVolatile;
+    @Override public DruidLongPredicate get(){
+      initLongData();
+      return new DruidLongPredicate(){
+        private final boolean hasLowerLongBound=hasLowerLongBoundVolatile;
+        private final boolean hasUpperLongBound=hasUpperLongBoundVolatile;
+        private final long lowerLongBound=hasLowerLongBound ? lowerLongBoundVolatile : 0L;
+        private final long upperLongBound=hasUpperLongBound ? upperLongBoundVolatile : 0L;
+        @Override public boolean applyLong(        long input){
+          int lowerComparing=1;
+          int upperComparing=1;
+          if (hasLowerLongBound) {
+            lowerComparing=Long.compare(input,lowerLongBound);
+          }
+          if (hasUpperLongBound) {
+            upperComparing=Long.compare(upperLongBound,input);
+          }
+          if (lowerStrict && upperStrict) {
+            return ((lowerComparing > 0)) && (upperComparing > 0);
+          }
+ else           if (lowerStrict) {
+            return (lowerComparing > 0) && (upperComparing >= 0);
+          }
+ else           if (upperStrict) {
+            return (lowerComparing >= 0) && (upperComparing > 0);
+          }
+          return (lowerComparing >= 0) && (upperComparing >= 0);
+        }
+      }
+;
+    }
+    private void initLongData(){
+      if (longsInitialized) {
+        return;
+      }
+synchronized (initLock) {
+        if (longsInitialized) {
+          return;
+        }
+        Long lowerLong=Longs.tryParse(Strings.nullToEmpty(lower));
+        if (hasLowerBound() && lowerLong != null) {
+          hasLowerLongBoundVolatile=true;
+          lowerLongBoundVolatile=lowerLong;
+        }
+ else {
+          hasLowerLongBoundVolatile=false;
+        }
+        Long upperLong=Longs.tryParse(Strings.nullToEmpty(upper));
+        if (hasUpperBound() && upperLong != null) {
+          hasUpperLongBoundVolatile=true;
+          upperLongBoundVolatile=upperLong;
+        }
+ else {
+          hasUpperLongBoundVolatile=false;
+        }
+        longsInitialized=true;
+      }
+    }
+  }
+;
+}

@@ -12,5 +12,31 @@
     TimeseriesQuery queryA=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
     basicQueries.put("A",queryA);
   }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    LongSumAggregatorFactory lsaf=new LongSumAggregatorFactory("sumLongSequential","sumLongSequential");
+    BoundDimFilter timeFilter=new BoundDimFilter(Column.TIME_COLUMN_NAME,"200000","300000",false,false,null,null,StringComparators.NUMERIC);
+    queryAggs.add(new FilteredAggregatorFactory(lsaf,timeFilter));
+    TimeseriesQuery timeFilterQuery=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
+    basicQueries.put("timeFilter",timeFilterQuery);
+  }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    LongSumAggregatorFactory lsaf=new LongSumAggregatorFactory("sumLongSequential","sumLongSequential");
+    BoundDimFilter timeFilter=new BoundDimFilter(Column.TIME_COLUMN_NAME,"200000","300000",false,false,null,null,StringComparators.ALPHANUMERIC);
+    queryAggs.add(new FilteredAggregatorFactory(lsaf,timeFilter));
+    TimeseriesQuery timeFilterQuery=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
+    basicQueries.put("timeFilterAlphanumeric",timeFilterQuery);
+  }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(new Interval(200000,300000)));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    LongSumAggregatorFactory lsaf=new LongSumAggregatorFactory("sumLongSequential","sumLongSequential");
+    queryAggs.add(lsaf);
+    TimeseriesQuery timeFilterQuery=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
+    basicQueries.put("timeFilterByInterval",timeFilterQuery);
+  }
   SCHEMA_QUERY_MAP.put("basic",basicQueries);
 }

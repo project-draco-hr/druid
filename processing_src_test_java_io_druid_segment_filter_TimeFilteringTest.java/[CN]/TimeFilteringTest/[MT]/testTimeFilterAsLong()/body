@@ -1,8 +1,8 @@
 {
   assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"0",null),ImmutableList.<String>of("0"));
   assertFilterMatches(new SelectorDimFilter(Column.TIME_COLUMN_NAME,"9000",null),ImmutableList.<String>of());
-  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",false,false,true,null),ImmutableList.<String>of("0","1","2","3","4"));
-  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",true,true,true,null),ImmutableList.<String>of("1","2","3"));
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",false,false,null,null,StringComparators.NUMERIC),ImmutableList.<String>of("0","1","2","3","4"));
+  assertFilterMatches(new BoundDimFilter(Column.TIME_COLUMN_NAME,"0","4",true,true,null,null,StringComparators.NUMERIC),ImmutableList.<String>of("1","2","3"));
   assertFilterMatches(new InDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList("2","4","8"),null),ImmutableList.<String>of("2","4"));
   List<String> infilterValues=new ArrayList<>(InDimFilter.LONG_HASHING_THRESHOLD * 2);
   for (int i=0; i < InDimFilter.LONG_HASHING_THRESHOLD * 2; i++) {

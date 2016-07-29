@@ -1,5 +1,5 @@
 {
-  SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(Arrays.asList(QueryRunnerTestHelper.placementDimension,QueryRunnerTestHelper.placementishDimension)).sortSpec(new StrlenSearchSortSpec()).query("e").build();
+  SearchQuery searchQuery=Druids.newSearchQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).intervals(QueryRunnerTestHelper.fullOnInterval).dimensions(Arrays.asList(QueryRunnerTestHelper.placementDimension,QueryRunnerTestHelper.placementishDimension)).sortSpec(new SearchSortSpec(StringComparators.STRLEN)).query("e").build();
   List<SearchHit> expectedHits=Lists.newLinkedList();
   expectedHits.add(new SearchHit(QueryRunnerTestHelper.placementishDimension,"e",93));
   expectedHits.add(new SearchHit(QueryRunnerTestHelper.placementDimension,"preferred",1209));

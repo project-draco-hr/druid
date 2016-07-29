@@ -3,5 +3,7 @@
   String expectJsonSpec="{\"type\":\"alphanumeric\"}";
   String jsonSpec=jsonMapper.writeValueAsString(StringComparators.ALPHANUMERIC);
   Assert.assertEquals(expectJsonSpec,jsonSpec);
-  Assert.assertEquals(StringComparators.ALPHANUMERIC,jsonMapper.readValue(expectJsonSpec,StringComparators.AlphanumericComparator.class));
+  Assert.assertEquals(StringComparators.ALPHANUMERIC,jsonMapper.readValue(expectJsonSpec,StringComparator.class));
+  String makeFromJsonSpec="\"alphanumeric\"";
+  Assert.assertEquals(StringComparators.ALPHANUMERIC,jsonMapper.readValue(makeFromJsonSpec,StringComparator.class));
 }

@@ -1,0 +1,27 @@
+{
+  if (o1 == o2) {
+    return 0;
+  }
+  if (o1 == null) {
+    return -1;
+  }
+  if (o2 == null) {
+    return 1;
+  }
+  Long long1=Longs.tryParse(o1);
+  Long long2=Longs.tryParse(o2);
+  final BigDecimal bd1=long1 == null ? convertStringToBigDecimal(o1) : new BigDecimal(long1);
+  final BigDecimal bd2=long2 == null ? convertStringToBigDecimal(o2) : new BigDecimal(long2);
+  if (bd1 != null && bd2 != null) {
+    return bd1.compareTo(bd2);
+  }
+  if (bd1 == null && bd2 == null) {
+    return StringComparators.LEXICOGRAPHIC.compare(o1,o2);
+  }
+  if (bd1 == null) {
+    return -1;
+  }
+ else {
+    return 1;
+  }
+}

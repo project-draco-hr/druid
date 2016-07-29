@@ -1,0 +1,6 @@
+{
+  byte[] previousStopBytes=previousStop == null ? new byte[]{} : StringUtils.toUtf8(previousStop);
+  byte[] orderingBytes=ordering.getCacheKey();
+  int totalLen=2 + previousStopBytes.length + orderingBytes.length;
+  return ByteBuffer.allocate(totalLen).put(CACHE_TYPE_ID).put(previousStopBytes).put(STRING_SEPARATOR).put(orderingBytes).array();
+}

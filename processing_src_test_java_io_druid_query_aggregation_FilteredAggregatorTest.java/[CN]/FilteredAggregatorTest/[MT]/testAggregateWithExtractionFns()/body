@@ -10,7 +10,7 @@
   factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new InDimFilter("dim",Arrays.asList("NOT-aAARDVARK","FOOBAR","aAARDVARK"),extractionFn));
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
-  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","aAARDVARK","aAARDVARK",false,false,true,extractionFn));
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","aAARDVARK","aAARDVARK",false,false,true,extractionFn,StringComparators.ALPHANUMERIC));
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
   factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new RegexDimFilter("dim","aAARDVARK",extractionFn));

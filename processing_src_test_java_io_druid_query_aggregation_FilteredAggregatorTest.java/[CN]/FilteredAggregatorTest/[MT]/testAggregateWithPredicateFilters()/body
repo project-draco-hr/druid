@@ -2,7 +2,7 @@
   final float[] values={0.15f,0.27f};
   TestFloatColumnSelector selector;
   FilteredAggregatorFactory factory;
-  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","a","a",false,false,true,null));
+  factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new BoundDimFilter("dim","a","a",false,false,true,null,StringComparators.ALPHANUMERIC));
   selector=new TestFloatColumnSelector(values);
   validateFilteredAggs(factory,values,selector);
   factory=new FilteredAggregatorFactory(new DoubleSumAggregatorFactory("billy","value"),new RegexDimFilter("dim","a",null));

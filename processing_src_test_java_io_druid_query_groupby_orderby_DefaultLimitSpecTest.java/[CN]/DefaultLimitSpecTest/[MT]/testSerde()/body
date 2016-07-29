@@ -3,7 +3,16 @@
   String json="{\"type\": \"default\"}";
   DefaultLimitSpec spec=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,DefaultLimitSpec.class)),DefaultLimitSpec.class);
   Assert.assertEquals(new DefaultLimitSpec(null,null),spec);
-  json="{\n" + "  \"type\":\"default\",\n" + "  \"columns\":[{\"dimension\":\"d\",\"direction\":\"ASCENDING\"}],\n"+ "  \"limit\":10\n"+ "}";
+  json="{\n" + "  \"type\":\"default\",\n" + "  \"columns\":[{\"dimension\":\"d\",\"direction\":\"DESCENDING\", \"dimensionOrder\":\"numeric\"}],\n"+ "  \"limit\":10\n"+ "}";
   spec=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,DefaultLimitSpec.class)),DefaultLimitSpec.class);
-  Assert.assertEquals(new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("d",OrderByColumnSpec.Direction.ASCENDING)),10),spec);
+  Assert.assertEquals(new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("d",OrderByColumnSpec.Direction.DESCENDING,StringComparators.NUMERIC)),10),spec);
+  json="{\n" + "  \"type\":\"default\",\n" + "  \"columns\":[{\"dimension\":\"d\",\"direction\":\"DES\", \"dimensionOrder\":\"numeric\"}],\n"+ "  \"limit\":10\n"+ "}";
+  spec=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,DefaultLimitSpec.class)),DefaultLimitSpec.class);
+  Assert.assertEquals(new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("d",OrderByColumnSpec.Direction.DESCENDING,StringComparators.NUMERIC)),10),spec);
+  json="{\n" + "  \"type\":\"default\",\n" + "  \"columns\":[{\"dimension\":\"d\"}],\n"+ "  \"limit\":10\n"+ "}";
+  spec=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,DefaultLimitSpec.class)),DefaultLimitSpec.class);
+  Assert.assertEquals(new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("d",OrderByColumnSpec.Direction.ASCENDING,StringComparators.LEXICOGRAPHIC)),10),spec);
+  json="{\n" + "  \"type\":\"default\",\n" + "  \"columns\":[\"d\"],\n"+ "  \"limit\":10\n"+ "}";
+  spec=mapper.readValue(mapper.writeValueAsString(mapper.readValue(json,DefaultLimitSpec.class)),DefaultLimitSpec.class);
+  Assert.assertEquals(new DefaultLimitSpec(ImmutableList.of(new OrderByColumnSpec("d",OrderByColumnSpec.Direction.ASCENDING,StringComparators.LEXICOGRAPHIC)),10),spec);
 }

@@ -1,0 +1,15 @@
+{
+  final String upperName=name.toUpperCase();
+  Direction direction=stupidEnumMap.get(upperName);
+  if (direction == null) {
+    for (    Direction dir : Direction.values()) {
+      if (dir.name().startsWith(upperName)) {
+        if (direction != null) {
+          throw new ISE("Ambiguous directions[%s] and [%s]",direction,dir);
+        }
+        direction=dir;
+      }
+    }
+  }
+  return direction;
+}

@@ -11,9 +11,9 @@
   }
   byte lowerStrictByte=(this.isLowerStrict() == false) ? 0x0 : (byte)1;
   byte upperStrictByte=(this.isUpperStrict() == false) ? 0x0 : (byte)1;
-  byte AlphaNumericByte=(this.isAlphaNumeric() == false) ? 0x0 : (byte)1;
   byte[] extractionFnBytes=extractionFn == null ? new byte[0] : extractionFn.getCacheKey();
-  ByteBuffer boundCacheBuffer=ByteBuffer.allocate(9 + dimensionBytes.length + upperBytes.length+ lowerBytes.length+ extractionFnBytes.length);
-  boundCacheBuffer.put(DimFilterUtils.BOUND_CACHE_ID).put(boundType).put(upperStrictByte).put(lowerStrictByte).put(AlphaNumericByte).put(DimFilterUtils.STRING_SEPARATOR).put(dimensionBytes).put(DimFilterUtils.STRING_SEPARATOR).put(upperBytes).put(DimFilterUtils.STRING_SEPARATOR).put(lowerBytes).put(DimFilterUtils.STRING_SEPARATOR).put(extractionFnBytes);
+  byte[] orderingBytes=ordering.getCacheKey();
+  ByteBuffer boundCacheBuffer=ByteBuffer.allocate(9 + dimensionBytes.length + upperBytes.length+ lowerBytes.length+ extractionFnBytes.length+ orderingBytes.length);
+  boundCacheBuffer.put(DimFilterUtils.BOUND_CACHE_ID).put(boundType).put(upperStrictByte).put(lowerStrictByte).put(DimFilterUtils.STRING_SEPARATOR).put(dimensionBytes).put(DimFilterUtils.STRING_SEPARATOR).put(upperBytes).put(DimFilterUtils.STRING_SEPARATOR).put(lowerBytes).put(DimFilterUtils.STRING_SEPARATOR).put(extractionFnBytes).put(DimFilterUtils.STRING_SEPARATOR).put(orderingBytes);
   return boundCacheBuffer.array();
 }

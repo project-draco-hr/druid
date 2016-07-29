@@ -1,0 +1,9 @@
+{
+  ObjectMapper jsonMapper=new DefaultObjectMapper();
+  String expectJsonSpec="{\"type\":\"numeric\"}";
+  String jsonSpec=jsonMapper.writeValueAsString(StringComparators.NUMERIC);
+  Assert.assertEquals(expectJsonSpec,jsonSpec);
+  Assert.assertEquals(StringComparators.NUMERIC,jsonMapper.readValue(expectJsonSpec,StringComparator.class));
+  String makeFromJsonSpec="\"numeric\"";
+  Assert.assertEquals(StringComparators.NUMERIC,jsonMapper.readValue(makeFromJsonSpec,StringComparator.class));
+}

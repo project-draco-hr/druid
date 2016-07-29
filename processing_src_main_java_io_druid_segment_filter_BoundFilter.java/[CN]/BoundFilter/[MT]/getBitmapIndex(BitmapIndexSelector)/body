@@ -1,5 +1,5 @@
 {
-  if (boundDimFilter.isAlphaNumeric() || extractionFn != null) {
+  if (!boundDimFilter.getOrdering().equals(StringComparators.LEXICOGRAPHIC_NAME) || extractionFn != null) {
     return Filters.matchPredicate(boundDimFilter.getDimension(),selector,getPredicateFactory().makeStringPredicate());
   }
  else {

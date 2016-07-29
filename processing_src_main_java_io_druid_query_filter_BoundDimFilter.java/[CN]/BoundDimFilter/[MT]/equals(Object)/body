@@ -12,9 +12,6 @@
   if (isUpperStrict() != that.isUpperStrict()) {
     return false;
   }
-  if (isAlphaNumeric() != that.isAlphaNumeric()) {
-    return false;
-  }
   if (!getDimension().equals(that.getDimension())) {
     return false;
   }
@@ -24,5 +21,8 @@
   if (getLower() != null ? !getLower().equals(that.getLower()) : that.getLower() != null) {
     return false;
   }
-  return getExtractionFn() != null ? getExtractionFn().equals(that.getExtractionFn()) : that.getExtractionFn() == null;
+  if (getExtractionFn() != null ? !getExtractionFn().equals(that.getExtractionFn()) : that.getExtractionFn() != null) {
+    return false;
+  }
+  return getOrdering().equals(that.getOrdering());
 }

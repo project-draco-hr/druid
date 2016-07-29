@@ -11,7 +11,7 @@
   List<DimFilter> superFilterList=new ArrayList<>();
   superFilterList.add(new SelectorDimFilter("quality","super-mezzanine",extractionFn));
   superFilterList.add(new InDimFilter("quality",Arrays.asList("not-super-mezzanine","FOOBAR","super-mezzanine"),extractionFn));
-  superFilterList.add(new BoundDimFilter("quality","super-mezzanine","super-mezzanine",false,false,true,extractionFn));
+  superFilterList.add(new BoundDimFilter("quality","super-mezzanine","super-mezzanine",false,false,true,extractionFn,StringComparators.ALPHANUMERIC));
   superFilterList.add(new RegexDimFilter("quality","super-mezzanine",extractionFn));
   superFilterList.add(new SearchQueryDimFilter("quality",new ContainsSearchQuerySpec("super-mezzanine",true),extractionFn));
   superFilterList.add(new JavaScriptDimFilter("quality",jsFn,extractionFn,JavaScriptConfig.getDefault()));
