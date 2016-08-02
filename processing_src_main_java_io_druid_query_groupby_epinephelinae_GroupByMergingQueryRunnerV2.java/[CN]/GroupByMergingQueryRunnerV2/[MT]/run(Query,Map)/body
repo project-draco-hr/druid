@@ -28,8 +28,7 @@
           closeOnFailure.add(mergeBufferHolder);
         }
  catch (        InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw Throwables.propagate(e);
+          throw new QueryInterruptedException(e);
         }
         Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,false,config,mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,combiningAggregatorFactories);
         final Grouper<RowBasedKey> grouper=pair.lhs;

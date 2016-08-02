@@ -6,7 +6,8 @@
     aggregatorFactories[i]=query.getAggregatorSpecs().get(i);
   }
   final File temporaryStorageDirectory=new File(System.getProperty("java.io.tmpdir"),String.format("druid-groupBy-%s_%s",UUID.randomUUID(),query.getId()));
-  final long timeout=query.getContextValue(QueryContextKeys.TIMEOUT,JodaUtils.MAX_INSTANT);
+  final Number queryTimeout=query.getContextValue(QueryContextKeys.TIMEOUT,null);
+  final long timeout=queryTimeout == null ? JodaUtils.MAX_INSTANT : queryTimeout.longValue();
   final List<Interval> queryIntervals=query.getIntervals();
   final Filter filter=Filters.convertToCNFFromQueryContext(query,Filters.toFilter(query.getDimFilter()));
   final RowBasedValueMatcherFactory filterMatcherFactory=new RowBasedValueMatcherFactory();
@@ -42,8 +43,7 @@
           closeOnFailure.add(mergeBufferHolder);
         }
  catch (        InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw Throwables.propagate(e);
+          throw new QueryInterruptedException(e);
         }
         Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,true,config,mergeBufferHolder.get(),-1,temporaryStorage,spillMapper,aggregatorFactories);
         final Grouper<RowBasedKey> grouper=pair.lhs;

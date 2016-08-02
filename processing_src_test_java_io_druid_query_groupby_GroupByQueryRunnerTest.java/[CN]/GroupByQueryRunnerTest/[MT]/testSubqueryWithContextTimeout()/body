@@ -1,0 +1,7 @@
+{
+  final GroupByQuery subquery=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.fullOnInterval).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  final GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList()).setAggregatorSpecs(ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("count"))).setGranularity(QueryRunnerTestHelper.allGran).setContext(ImmutableMap.<String,Object>of("timeout",10000)).build();
+  List<Row> expectedResults=Arrays.asList(GroupByQueryRunnerTestHelper.createExpectedRow("2011-04-01","count",18L));
+  Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
+  TestHelper.assertExpectedObjects(expectedResults,results,"");
+}
