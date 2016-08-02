@@ -1,0 +1,18 @@
+{
+  if (dimension.equals(Column.TIME_COLUMN_NAME)) {
+    return new ValueMatcher(){
+      @Override public boolean matches(){
+        return value.equals(row.getTimestampFromEpoch());
+      }
+    }
+;
+  }
+ else {
+    return new ValueMatcher(){
+      @Override public boolean matches(){
+        return row.getDimension(dimension).contains(value);
+      }
+    }
+;
+  }
+}

@@ -13,15 +13,13 @@
   final File temporaryStorageDirectory=new File(System.getProperty("java.io.tmpdir"),String.format("druid-groupBy-%s_%s",UUID.randomUUID(),query.getId()));
   final Number queryTimeout=query.getContextValue(QueryContextKeys.TIMEOUT,null);
   final long timeoutAt=queryTimeout == null ? JodaUtils.MAX_INSTANT : System.currentTimeMillis() + queryTimeout.longValue();
-  return new BaseSequence<>(new BaseSequence.IteratorMaker<Row,CloseableGrouperIterator<GroupByMergingKey,Row>>(){
-    @Override public CloseableGrouperIterator<GroupByMergingKey,Row> make(){
+  return new BaseSequence<>(new BaseSequence.IteratorMaker<Row,CloseableGrouperIterator<RowBasedKey,Row>>(){
+    @Override public CloseableGrouperIterator<RowBasedKey,Row> make(){
       final List<Closeable> closeOnFailure=Lists.newArrayList();
       try {
-        final ReferenceCountingResourceHolder<ByteBuffer> mergeBufferHolder;
-        final LimitedTemporaryStorage temporaryStorage;
-        final Grouper<GroupByMergingKey> grouper;
-        temporaryStorage=new LimitedTemporaryStorage(temporaryStorageDirectory,querySpecificConfig.getMaxOnDiskStorage());
+        final LimitedTemporaryStorage temporaryStorage=new LimitedTemporaryStorage(temporaryStorageDirectory,querySpecificConfig.getMaxOnDiskStorage());
         closeOnFailure.add(temporaryStorage);
+        final ReferenceCountingResourceHolder<ByteBuffer> mergeBufferHolder;
         try {
           final long timeout=timeoutAt - System.currentTimeMillis();
           if (timeout <= 0 || (mergeBufferHolder=mergeBufferPool.take(timeout)) == null) {
@@ -33,33 +31,12 @@
           Thread.currentThread().interrupt();
           throw Throwables.propagate(e);
         }
-        final GroupByMergingKeySerdeFactory keySerdeFactory=new GroupByMergingKeySerdeFactory(query.getDimensions().size(),querySpecificConfig.getMaxMergingDictionarySize() / concurrencyHint);
-        final GroupByMergingColumnSelectorFactory columnSelectorFactory=new GroupByMergingColumnSelectorFactory();
-        grouper=new ConcurrentGrouper<>(mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets(),keySerdeFactory,columnSelectorFactory,combiningAggregatorFactories);
+        Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,false,config,mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,combiningAggregatorFactories);
+        final Grouper<RowBasedKey> grouper=pair.lhs;
+        final Accumulator<Grouper<RowBasedKey>,Row> accumulator=pair.rhs;
         closeOnFailure.add(grouper);
-        final Accumulator<Grouper<GroupByMergingKey>,Row> accumulator=new Accumulator<Grouper<GroupByMergingKey>,Row>(){
-          @Override public Grouper<GroupByMergingKey> accumulate(          final Grouper<GroupByMergingKey> theGrouper,          final Row row){
-            if (theGrouper == null) {
-              return null;
-            }
-            final long timestamp=row.getTimestampFromEpoch();
-            final String[] dimensions=new String[query.getDimensions().size()];
-            for (int i=0; i < dimensions.length; i++) {
-              final Object dimValue=row.getRaw(query.getDimensions().get(i).getOutputName());
-              dimensions[i]=Strings.nullToEmpty((String)dimValue);
-            }
-            columnSelectorFactory.setRow(row);
-            final boolean didAggregate=theGrouper.aggregate(new GroupByMergingKey(timestamp,dimensions));
-            if (!didAggregate) {
-              return null;
-            }
-            columnSelectorFactory.setRow(null);
-            return theGrouper;
-          }
-        }
-;
         final int priority=BaseQuery.getContextPriority(query,0);
-        final ReferenceCountingResourceHolder<Grouper<GroupByMergingKey>> grouperHolder=new ReferenceCountingResourceHolder<>(grouper,new Closeable(){
+        final ReferenceCountingResourceHolder<Grouper<RowBasedKey>> grouperHolder=new ReferenceCountingResourceHolder<>(grouper,new Closeable(){
           @Override public void close() throws IOException {
             grouper.close();
           }
@@ -108,19 +85,7 @@ catch (                    Exception e) {
         }
 )));
         waitForFutureCompletion(query,futures,timeoutAt - System.currentTimeMillis());
-        return new CloseableGrouperIterator<>(grouper,true,new Function<Grouper.Entry<GroupByMergingKey>,Row>(){
-          @Override public Row apply(          Grouper.Entry<GroupByMergingKey> entry){
-            Map<String,Object> theMap=Maps.newLinkedHashMap();
-            for (int i=0; i < entry.getKey().getDimensions().length; i++) {
-              theMap.put(query.getDimensions().get(i).getOutputName(),Strings.emptyToNull(entry.getKey().getDimensions()[i]));
-            }
-            for (int i=0; i < entry.getValues().length; i++) {
-              theMap.put(query.getAggregatorSpecs().get(i).getName(),entry.getValues()[i]);
-            }
-            return new MapBasedRow(query.getGranularity().toDateTime(entry.getKey().getTimestamp()),theMap);
-          }
-        }
-,new Closeable(){
+        return RowBasedGrouperHelper.makeGrouperIterator(grouper,query,new Closeable(){
           @Override public void close() throws IOException {
             grouperHolder.close();
             mergeBufferHolder.close();
@@ -136,7 +101,7 @@ catch (                    Exception e) {
         throw e;
       }
     }
-    @Override public void cleanup(    CloseableGrouperIterator<GroupByMergingKey,Row> iterFromMake){
+    @Override public void cleanup(    CloseableGrouperIterator<RowBasedKey,Row> iterFromMake){
       iterFromMake.close();
     }
   }

@@ -1,0 +1,26 @@
+{
+  if (dimension.equals(Column.TIME_COLUMN_NAME)) {
+    return new ValueMatcher(){
+      final DruidLongPredicate predicate=predicateFactory.makeLongPredicate();
+      @Override public boolean matches(){
+        return predicate.applyLong(row.getTimestampFromEpoch());
+      }
+    }
+;
+  }
+ else {
+    return new ValueMatcher(){
+      final Predicate<String> predicate=predicateFactory.makeStringPredicate();
+      @Override public boolean matches(){
+        List<String> values=row.getDimension(dimension);
+        for (        String value : values) {
+          if (predicate.apply(value)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+;
+  }
+}

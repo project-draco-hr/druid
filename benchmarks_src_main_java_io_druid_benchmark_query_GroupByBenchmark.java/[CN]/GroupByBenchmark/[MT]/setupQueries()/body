@@ -8,5 +8,13 @@
     GroupByQuery queryA=GroupByQuery.builder().setDataSource("blah").setQuerySegmentSpec(intervalSpec).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dimSequential",null),new DefaultDimensionSpec("dimZipf",null))).setAggregatorSpecs(queryAggs).setGranularity(QueryGranularities.DAY).build();
     basicQueries.put("A",queryA);
   }
+{
+    QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
+    List<AggregatorFactory> queryAggs=new ArrayList<>();
+    queryAggs.add(new LongSumAggregatorFactory("sumLongSequential","sumLongSequential"));
+    GroupByQuery subqueryA=GroupByQuery.builder().setDataSource("blah").setQuerySegmentSpec(intervalSpec).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dimSequential",null),new DefaultDimensionSpec("dimZipf",null))).setAggregatorSpecs(queryAggs).setGranularity(QueryGranularities.DAY).build();
+    GroupByQuery queryA=GroupByQuery.builder().setDataSource(subqueryA).setQuerySegmentSpec(intervalSpec).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dimSequential",null))).setAggregatorSpecs(queryAggs).setGranularity(QueryGranularities.WEEK).build();
+    basicQueries.put("nested",queryA);
+  }
   SCHEMA_QUERY_MAP.put("basic",basicQueries);
 }

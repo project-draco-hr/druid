@@ -1,0 +1,46 @@
+{
+  final String dimension=dimensionSpec.getDimension();
+  final ExtractionFn extractionFn=dimensionSpec.getExtractionFn();
+  return new DimensionSelector(){
+    @Override public IndexedInts getRow(){
+      final List<String> dimensionValues=row.get().getDimension(dimension);
+      final ArrayList<Integer> vals=Lists.newArrayList();
+      if (dimensionValues != null) {
+        for (int i=0; i < dimensionValues.size(); ++i) {
+          vals.add(i);
+        }
+      }
+      return new IndexedInts(){
+        @Override public int size(){
+          return vals.size();
+        }
+        @Override public int get(        int index){
+          return vals.get(index);
+        }
+        @Override public Iterator<Integer> iterator(){
+          return vals.iterator();
+        }
+        @Override public void close() throws IOException {
+        }
+        @Override public void fill(        int index,        int[] toFill){
+          throw new UnsupportedOperationException("fill not supported");
+        }
+      }
+;
+    }
+    @Override public int getValueCardinality(){
+      throw new UnsupportedOperationException("value cardinality is unknown");
+    }
+    @Override public String lookupName(    int id){
+      final String value=row.get().getDimension(dimension).get(id);
+      return extractionFn == null ? value : extractionFn.apply(value);
+    }
+    @Override public int lookupId(    String name){
+      if (extractionFn != null) {
+        throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
+      }
+      return row.get().getDimension(dimension).indexOf(name);
+    }
+  }
+;
+}

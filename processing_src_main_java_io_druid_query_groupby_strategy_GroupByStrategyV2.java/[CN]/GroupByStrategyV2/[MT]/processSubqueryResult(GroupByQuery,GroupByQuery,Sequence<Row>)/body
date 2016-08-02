@@ -1,0 +1,9 @@
+{
+  final Sequence<Row> results=GroupByRowProcessor.process(query,subqueryResult,configSupplier.get(),mergeBufferPool,spillMapper);
+  return mergeResults(new QueryRunner<Row>(){
+    @Override public Sequence<Row> run(    Query<Row> query,    Map<String,Object> responseContext){
+      return results;
+    }
+  }
+,query,null);
+}

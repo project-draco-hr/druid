@@ -1,0 +1,27 @@
+{
+  final Set<AggregatorFactory> aggs=Sets.newHashSet();
+  for (  AggregatorFactory aggregatorFactory : query.getAggregatorSpecs()) {
+    for (    final AggregatorFactory transferAgg : aggregatorFactory.getRequiredColumns()) {
+      if (Iterables.any(aggs,new Predicate<AggregatorFactory>(){
+        @Override public boolean apply(        AggregatorFactory agg){
+          return agg.getName().equals(transferAgg.getName()) && !agg.equals(transferAgg);
+        }
+      }
+)) {
+        throw new IAE("Inner aggregator can currently only be referenced by a single type of outer aggregator" + " for '%s'",transferAgg.getName());
+      }
+      aggs.add(transferAgg);
+    }
+  }
+  final GroupByQuery innerQuery=new GroupByQuery.Builder(subquery).setAggregatorSpecs(Lists.newArrayList(aggs)).setInterval(subquery.getIntervals()).setPostAggregatorSpecs(Lists.<PostAggregator>newArrayList()).build();
+  final GroupByQuery outerQuery=new GroupByQuery.Builder(query).setLimitSpec(query.getLimitSpec().merge(subquery.getLimitSpec())).build();
+  final IncrementalIndex innerQueryResultIndex=makeIncrementalIndex(innerQuery.withOverriddenContext(ImmutableMap.<String,Object>of(GroupByQueryHelper.CTX_KEY_SORT_RESULTS,true)),subqueryResult);
+  final IncrementalIndex outerQueryResultIndex=makeIncrementalIndex(outerQuery,Sequences.concat(Sequences.map(Sequences.simple(outerQuery.getIntervals()),new Function<Interval,Sequence<Row>>(){
+    @Override public Sequence<Row> apply(    Interval interval){
+      return process(outerQuery.withQuerySegmentSpec(new MultipleIntervalSegmentSpec(ImmutableList.of(interval))),new IncrementalIndexStorageAdapter(innerQueryResultIndex));
+    }
+  }
+)));
+  innerQueryResultIndex.close();
+  return new ResourceClosingSequence<>(outerQuery.applyLimit(GroupByQueryHelper.postAggregate(query,outerQueryResultIndex)),outerQueryResultIndex);
+}

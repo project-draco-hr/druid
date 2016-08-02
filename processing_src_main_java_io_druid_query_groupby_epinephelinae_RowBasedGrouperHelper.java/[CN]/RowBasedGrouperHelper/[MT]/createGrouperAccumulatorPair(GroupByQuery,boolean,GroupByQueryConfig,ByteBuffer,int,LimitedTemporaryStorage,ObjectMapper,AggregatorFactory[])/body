@@ -1,0 +1,60 @@
+{
+  Preconditions.checkArgument(concurrencyHint >= 1 || concurrencyHint == -1,"invalid concurrencyHint");
+  final GroupByQueryConfig querySpecificConfig=config.withOverrides(query);
+  final Grouper.KeySerdeFactory<RowBasedKey> keySerdeFactory=new RowBasedKeySerdeFactory(query.getDimensions().size(),querySpecificConfig.getMaxMergingDictionarySize() / (concurrencyHint == -1 ? 1 : concurrencyHint));
+  final RowBasedColumnSelectorFactory columnSelectorFactory=new RowBasedColumnSelectorFactory();
+  final Grouper<RowBasedKey> grouper;
+  if (concurrencyHint == -1) {
+    grouper=new SpillingGrouper<>(buffer,keySerdeFactory,columnSelectorFactory,aggregatorFactories,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets());
+  }
+ else {
+    grouper=new ConcurrentGrouper<>(buffer,concurrencyHint,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets(),keySerdeFactory,columnSelectorFactory,aggregatorFactories);
+  }
+  final DimensionSelector[] dimensionSelectors;
+  if (isInputRaw) {
+    dimensionSelectors=new DimensionSelector[query.getDimensions().size()];
+    for (int i=0; i < dimensionSelectors.length; i++) {
+      dimensionSelectors[i]=columnSelectorFactory.makeDimensionSelector(query.getDimensions().get(i));
+    }
+  }
+ else {
+    dimensionSelectors=null;
+  }
+  final Accumulator<Grouper<RowBasedKey>,Row> accumulator=new Accumulator<Grouper<RowBasedKey>,Row>(){
+    @Override public Grouper<RowBasedKey> accumulate(    final Grouper<RowBasedKey> theGrouper,    final Row row){
+      if (theGrouper == null) {
+        return null;
+      }
+      long timestamp=row.getTimestampFromEpoch();
+      if (isInputRaw) {
+        if (query.getGranularity() instanceof AllGranularity) {
+          timestamp=query.getIntervals().get(0).getStartMillis();
+        }
+ else {
+          timestamp=query.getGranularity().truncate(timestamp);
+        }
+      }
+      columnSelectorFactory.setRow(row);
+      final String[] dimensions=new String[query.getDimensions().size()];
+      for (int i=0; i < dimensions.length; i++) {
+        final String value;
+        if (isInputRaw) {
+          IndexedInts index=dimensionSelectors[i].getRow();
+          value=index.size() == 0 ? "" : dimensionSelectors[i].lookupName(index.get(0));
+        }
+ else {
+          value=(String)row.getRaw(query.getDimensions().get(i).getOutputName());
+        }
+        dimensions[i]=Strings.nullToEmpty(value);
+      }
+      final boolean didAggregate=theGrouper.aggregate(new RowBasedKey(timestamp,dimensions));
+      if (!didAggregate) {
+        return null;
+      }
+      columnSelectorFactory.setRow(null);
+      return theGrouper;
+    }
+  }
+;
+  return new Pair<>(grouper,accumulator);
+}

@@ -1,0 +1,16 @@
+{
+  if (columnName.equals(Column.TIME_COLUMN_NAME)) {
+    return new LongColumnSelector(){
+      @Override public long get(){
+        return row.get().getTimestampFromEpoch();
+      }
+    }
+;
+  }
+  return new LongColumnSelector(){
+    @Override public long get(){
+      return row.get().getLongMetric(columnName);
+    }
+  }
+;
+}
