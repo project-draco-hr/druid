@@ -1,16 +1,3 @@
 {
-  this.segmentGranularity=segmentGranularity == null ? DEFAULT_SEGMENT_GRANULARITY : segmentGranularity;
-  this.queryGranularity=queryGranularity == null ? DEFAULT_QUERY_GRANULARITY : queryGranularity;
-  if (inputIntervals != null) {
-    List<Interval> granularIntervals=Lists.newArrayList();
-    for (    Interval inputInterval : inputIntervals) {
-      Iterables.addAll(granularIntervals,this.segmentGranularity.getIterable(inputInterval));
-    }
-    this.inputIntervals=ImmutableList.copyOf(inputIntervals);
-    this.wrappedSpec=new ArbitraryGranularitySpec(queryGranularity,granularIntervals);
-  }
- else {
-    this.inputIntervals=null;
-    this.wrappedSpec=null;
-  }
+  this(segmentGranularity,queryGranularity,true,inputIntervals);
 }

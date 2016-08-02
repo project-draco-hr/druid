@@ -1,0 +1,10 @@
+{
+synchronized (log) {
+    if (noRollupMmappedIndex != null) {
+      return noRollupMmappedIndex;
+    }
+  }
+  IncrementalIndex incrementalIndex=getNoRollupIncrementalTestIndex();
+  noRollupMmappedIndex=persistRealtimeAndLoadMMapped(incrementalIndex);
+  return noRollupMmappedIndex;
+}

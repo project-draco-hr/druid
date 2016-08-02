@@ -30,7 +30,7 @@
     INDEX_MERGER.persist(first,DATA_INTERVAL,firstFile,indexSpec);
     INDEX_MERGER.persist(second,DATA_INTERVAL,secondFile,indexSpec);
     INDEX_MERGER.persist(third,DATA_INTERVAL,thirdFile,indexSpec);
-    QueryableIndex mergedRealtime=INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(INDEX_IO.loadIndex(firstFile),INDEX_IO.loadIndex(secondFile),INDEX_IO.loadIndex(thirdFile)),METRIC_AGGS,mergedFile,indexSpec));
+    QueryableIndex mergedRealtime=INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(INDEX_IO.loadIndex(firstFile),INDEX_IO.loadIndex(secondFile),INDEX_IO.loadIndex(thirdFile)),true,METRIC_AGGS,mergedFile,indexSpec));
     return mergedRealtime;
   }
  catch (  IOException e) {

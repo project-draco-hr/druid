@@ -49,7 +49,7 @@
             indexes.add(indexIO.loadIndex(oneSpill));
           }
           fileToUpload=new File(tmpSegmentDir,"merged");
-          theIndexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),fileToUpload,config.getIndexSpec());
+          theIndexMerger.mergeQueryableIndex(indexes,schema.getGranularitySpec().isRollup(),schema.getAggregators(),fileToUpload,config.getIndexSpec());
         }
         final QueryableIndex mappedSegment=indexIO.loadIndex(fileToUpload);
         final DataSegment segmentToUpload=theSink.getSegment().withDimensions(ImmutableList.copyOf(mappedSegment.getAvailableDimensions())).withBinaryVersion(SegmentUtils.getVersionFromDir(fileToUpload));

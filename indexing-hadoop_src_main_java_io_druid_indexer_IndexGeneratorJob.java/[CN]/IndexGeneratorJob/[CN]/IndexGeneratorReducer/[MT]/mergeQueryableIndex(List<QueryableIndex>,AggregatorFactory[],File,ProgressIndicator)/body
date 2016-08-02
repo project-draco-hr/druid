@@ -1,8 +1,9 @@
 {
+  boolean rollup=config.getSchema().getDataSchema().getGranularitySpec().isRollup();
   if (config.isBuildV9Directly()) {
-    return HadoopDruidIndexerConfig.INDEX_MERGER_V9.mergeQueryableIndex(indexes,aggs,file,config.getIndexSpec(),progressIndicator);
+    return HadoopDruidIndexerConfig.INDEX_MERGER_V9.mergeQueryableIndex(indexes,rollup,aggs,file,config.getIndexSpec(),progressIndicator);
   }
  else {
-    return HadoopDruidIndexerConfig.INDEX_MERGER.mergeQueryableIndex(indexes,aggs,file,config.getIndexSpec(),progressIndicator);
+    return HadoopDruidIndexerConfig.INDEX_MERGER.mergeQueryableIndex(indexes,rollup,aggs,file,config.getIndexSpec(),progressIndicator);
   }
 }

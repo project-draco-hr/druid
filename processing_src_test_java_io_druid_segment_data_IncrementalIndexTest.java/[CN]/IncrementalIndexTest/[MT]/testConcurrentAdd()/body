@@ -23,15 +23,16 @@
 );
   }
   Assert.assertTrue(latch.await(60,TimeUnit.SECONDS));
+  boolean isRollup=index.isRollup();
   Assert.assertEquals(dimensionCount,index.getDimensionNames().size());
-  Assert.assertEquals(elementsPerThread,index.size());
+  Assert.assertEquals(elementsPerThread * (isRollup ? 1 : threadCount),index.size());
   Iterator<Row> iterator=index.iterator();
   int curr=0;
   while (iterator.hasNext()) {
     Row row=iterator.next();
-    Assert.assertEquals(timestamp + curr,row.getTimestampFromEpoch());
-    Assert.assertEquals(Float.valueOf(threadCount),(Float)row.getFloatMetric("count"));
+    Assert.assertEquals(timestamp + (isRollup ? curr : curr / threadCount),row.getTimestampFromEpoch());
+    Assert.assertEquals(Float.valueOf(isRollup ? threadCount : 1),(Float)row.getFloatMetric("count"));
     curr++;
   }
-  Assert.assertEquals(elementsPerThread,curr);
+  Assert.assertEquals(elementsPerThread * (isRollup ? 1 : threadCount),curr);
 }

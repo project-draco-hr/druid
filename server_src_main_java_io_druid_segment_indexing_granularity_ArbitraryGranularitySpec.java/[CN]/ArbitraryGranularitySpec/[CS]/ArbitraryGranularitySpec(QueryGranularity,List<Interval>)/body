@@ -1,20 +1,3 @@
 {
-  this.queryGranularity=queryGranularity;
-  this.intervals=Sets.newTreeSet(Comparators.intervalsByStartThenEnd());
-  if (inputIntervals == null) {
-    inputIntervals=Lists.newArrayList();
-  }
-  for (  final Interval inputInterval : inputIntervals) {
-    intervals.add(inputInterval);
-  }
-  final PeekingIterator<Interval> intervalIterator=Iterators.peekingIterator(intervals.iterator());
-  while (intervalIterator.hasNext()) {
-    final Interval currentInterval=intervalIterator.next();
-    if (intervalIterator.hasNext()) {
-      final Interval nextInterval=intervalIterator.peek();
-      if (currentInterval.overlaps(nextInterval)) {
-        throw new IllegalArgumentException(String.format("Overlapping intervals: %s, %s",currentInterval,nextInterval));
-      }
-    }
-  }
+  this(queryGranularity,true,inputIntervals);
 }

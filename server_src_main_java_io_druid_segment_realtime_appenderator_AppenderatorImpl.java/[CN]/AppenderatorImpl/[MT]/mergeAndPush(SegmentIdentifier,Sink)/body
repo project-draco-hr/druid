@@ -34,7 +34,7 @@ synchronized (hydrant) {
       indexes.add(queryableIndex);
     }
     final File mergedFile;
-    mergedFile=indexMerger.mergeQueryableIndex(indexes,schema.getAggregators(),mergedTarget,tuningConfig.getIndexSpec());
+    mergedFile=indexMerger.mergeQueryableIndex(indexes,schema.getGranularitySpec().isRollup(),schema.getAggregators(),mergedTarget,tuningConfig.getIndexSpec());
     QueryableIndex index=indexIO.loadIndex(mergedFile);
     DataSegment segment=dataSegmentPusher.push(mergedFile,sink.getSegment().withDimensions(Lists.newArrayList(index.getAvailableDimensions())));
     objectMapper.writeValue(descriptorFile,segment);

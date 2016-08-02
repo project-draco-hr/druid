@@ -7,6 +7,7 @@
   List<AggregatorFactory[]> aggregatorsToMerge=overrideMergedAggregators == null ? new ArrayList<AggregatorFactory[]>() : null;
   List<TimestampSpec> timestampSpecsToMerge=new ArrayList<>();
   List<QueryGranularity> gransToMerge=new ArrayList<>();
+  List<Boolean> rollupToMerge=new ArrayList<>();
   for (  Metadata metadata : toBeMerged) {
     if (metadata != null) {
       foundSomeMetadata=true;
@@ -19,12 +20,16 @@
       if (gransToMerge != null) {
         gransToMerge.add(metadata.getQueryGranularity());
       }
+      if (rollupToMerge != null) {
+        rollupToMerge.add(metadata.isRollup());
+      }
       mergedContainer.putAll(metadata.container);
     }
  else {
       aggregatorsToMerge=null;
       timestampSpecsToMerge=null;
       gransToMerge=null;
+      rollupToMerge=null;
     }
   }
   if (!foundSomeMetadata) {
@@ -43,6 +48,24 @@
   if (gransToMerge != null) {
     result.setQueryGranularity(QueryGranularity.mergeQueryGranularities(gransToMerge));
   }
+  Boolean rollup=null;
+  if (rollupToMerge != null && !rollupToMerge.isEmpty()) {
+    rollup=rollupToMerge.get(0);
+    for (    Boolean r : rollupToMerge) {
+      if (r == null) {
+        rollup=null;
+        break;
+      }
+ else       if (!r.equals(rollup)) {
+        rollup=null;
+        break;
+      }
+ else {
+        rollup=r;
+      }
+    }
+  }
+  result.setRollup(rollup);
   result.container.putAll(mergedContainer);
   return result;
 }

@@ -1,7 +1,7 @@
 {
   final List<DataSegment> segments=ImmutableList.<DataSegment>of(DataSegment.builder().dataSource("foo").interval(new Interval("2010-01-01/P1D")).version("1234").build());
   final List<AggregatorFactory> aggregators=ImmutableList.<AggregatorFactory>of(new CountAggregatorFactory("cnt"));
-  final MergeTask task=new MergeTask(null,"foo",segments,aggregators,indexSpec,null);
+  final MergeTask task=new MergeTask(null,"foo",segments,aggregators,true,indexSpec,null);
   final String json=jsonMapper.writeValueAsString(task);
   Thread.sleep(100);
   final MergeTask task2=(MergeTask)jsonMapper.readValue(json,Task.class);

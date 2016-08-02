@@ -1,10 +1,5 @@
 {
-  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions,sortFacts);
+  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions);
   this.maxRowCount=maxRowCount;
-  if (sortFacts) {
-    this.facts=new ConcurrentSkipListMap<>(dimsComparator());
-  }
- else {
-    this.facts=new ConcurrentHashMap<>();
-  }
+  this.facts=incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts,dimsComparator()) : new PlainFactsHolder(sortFacts);
 }

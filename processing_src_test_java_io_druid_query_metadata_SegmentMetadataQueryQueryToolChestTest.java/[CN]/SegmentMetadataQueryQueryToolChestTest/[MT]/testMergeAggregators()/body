@@ -1,6 +1,6 @@
 {
-  final SegmentAnalysis analysis1=new SegmentAnalysis("id",null,Maps.<String,ColumnAnalysis>newHashMap(),0,0,ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"baz",new DoubleSumAggregatorFactory("baz","baz")),null,null);
-  final SegmentAnalysis analysis2=new SegmentAnalysis("id",null,Maps.<String,ColumnAnalysis>newHashMap(),0,0,ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"bar",new DoubleSumAggregatorFactory("bar","bar")),null,null);
+  final SegmentAnalysis analysis1=new SegmentAnalysis("id",null,Maps.<String,ColumnAnalysis>newHashMap(),0,0,ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"baz",new DoubleSumAggregatorFactory("baz","baz")),null,null,null);
+  final SegmentAnalysis analysis2=new SegmentAnalysis("id",null,Maps.<String,ColumnAnalysis>newHashMap(),0,0,ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"bar",new DoubleSumAggregatorFactory("bar","bar")),null,null,null);
   Assert.assertEquals(ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"bar",new DoubleSumAggregatorFactory("bar","bar"),"baz",new DoubleSumAggregatorFactory("baz","baz")),mergeStrict(analysis1,analysis2).getAggregators());
   Assert.assertEquals(ImmutableMap.of("foo",new LongSumAggregatorFactory("foo","foo"),"bar",new DoubleSumAggregatorFactory("bar","bar"),"baz",new DoubleSumAggregatorFactory("baz","baz")),mergeLenient(analysis1,analysis2).getAggregators());
 }

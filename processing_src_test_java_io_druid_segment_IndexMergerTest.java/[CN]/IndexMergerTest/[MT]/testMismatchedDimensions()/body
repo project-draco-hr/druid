@@ -9,5 +9,5 @@
   RoaringBitmapFactory factory=new RoaringBitmapFactory();
   ArrayList<IndexableAdapter> toMerge=Lists.<IndexableAdapter>newArrayList(new IncrementalIndexAdapter(interval,index1,factory),new IncrementalIndexAdapter(interval,index2,factory));
   final File tmpDirMerged=temporaryFolder.newFolder();
-  INDEX_MERGER.merge(toMerge,new AggregatorFactory[]{new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("C","C")},tmpDirMerged,indexSpec);
+  INDEX_MERGER.merge(toMerge,true,new AggregatorFactory[]{new LongSumAggregatorFactory("A","A"),new LongSumAggregatorFactory("C","C")},tmpDirMerged,indexSpec);
 }

@@ -59,7 +59,17 @@
  else {
         queryGranularity=null;
       }
-      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators,timestampSpec,queryGranularity)));
+      Boolean rollup=null;
+      if (query.hasRollup()) {
+        if (metadata == null) {
+          metadata=segment.asStorageAdapter().getMetadata();
+        }
+        rollup=metadata != null ? metadata.isRollup() : null;
+        if (rollup == null) {
+          rollup=Boolean.TRUE;
+        }
+      }
+      return Sequences.simple(Arrays.asList(new SegmentAnalysis(segment.getIdentifier(),retIntervals,columns,totalSize,numRows,aggregators,timestampSpec,queryGranularity,rollup)));
     }
   }
 ;

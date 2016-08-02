@@ -4,7 +4,7 @@
   tmpFile.mkdirs();
   log.info(tmpFile.getAbsolutePath() + " isFile: " + tmpFile.isFile()+ " isDir:"+ tmpFile.isDirectory());
   tmpFile.deleteOnExit();
-  File mergedFile=INDEX_MERGER.mergeQueryableIndex(indexesToMerge,schemaInfo.getAggsArray(),tmpFile,new IndexSpec());
+  File mergedFile=INDEX_MERGER.mergeQueryableIndex(indexesToMerge,rollup,schemaInfo.getAggsArray(),tmpFile,new IndexSpec());
   blackhole.consume(mergedFile);
   tmpFile.delete();
 }

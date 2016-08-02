@@ -1,0 +1,10 @@
+{
+  if (!sortFacts) {
+    throw new UnsupportedOperationException("can't get timeRange from unsorted facts data.");
+  }
+  TimeAndDims start=new TimeAndDims(timeStart,new int[][]{});
+  TimeAndDims end=new TimeAndDims(timeEnd,new int[][]{});
+  ConcurrentNavigableMap<TimeAndDims,Integer> subMap=((ConcurrentNavigableMap<TimeAndDims,Integer>)facts).subMap(start,end);
+  final Map<TimeAndDims,Integer> rangeMap=descending ? subMap.descendingMap() : subMap;
+  return rangeMap.entrySet();
+}

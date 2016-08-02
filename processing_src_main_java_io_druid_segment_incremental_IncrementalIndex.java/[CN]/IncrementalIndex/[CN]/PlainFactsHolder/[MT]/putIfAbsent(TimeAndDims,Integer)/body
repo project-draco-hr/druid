@@ -1,0 +1,10 @@
+{
+  Long time=key.getTimestamp();
+  Deque<Map.Entry<TimeAndDims,Integer>> rows=facts.get(time);
+  if (rows == null) {
+    facts.putIfAbsent(time,new ConcurrentLinkedDeque<Map.Entry<TimeAndDims,Integer>>());
+    rows=facts.get(time);
+  }
+  rows.add(new FactsEntry(key,rowIndex));
+  return null;
+}

@@ -8,7 +8,7 @@
   toPersist2.add(new MapBasedInputRow(1L,ImmutableList.of("dim1","dim2"),ImmutableMap.<String,Object>of("dim1",ImmutableList.of(),"dim2","bar")));
   final QueryableIndex index1=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist1,tmpDir1,indexSpec)));
   final QueryableIndex index2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersist2,tmpDir2,indexSpec)));
-  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2),new AggregatorFactory[]{},tmpDir3,indexSpec)));
+  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2),true,new AggregatorFactory[]{},tmpDir3,indexSpec)));
   Assert.assertEquals(1,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(ImmutableList.of("dim2"),ImmutableList.copyOf(index1.getAvailableDimensions()));
   Assert.assertEquals(1,index2.getColumn(Column.TIME_COLUMN_NAME).getLength());

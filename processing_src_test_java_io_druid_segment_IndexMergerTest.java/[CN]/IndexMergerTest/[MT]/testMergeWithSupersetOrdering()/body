@@ -20,8 +20,8 @@
   QueryableIndex indexBA=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistBA,tmpDirBA,indexSpec)));
   QueryableIndex indexBA2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistBA2,tmpDirBA2,indexSpec)));
   QueryableIndex indexC=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistC,tmpDirC,indexSpec)));
-  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB,indexBA,indexBA2),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
-  final QueryableIndex merged2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB,indexBA,indexC),new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged2,indexSpec)));
+  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB,indexBA,indexBA2),true,new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
+  final QueryableIndex merged2=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB,indexBA,indexC),true,new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged2,indexSpec)));
   final QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
   final List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
   final QueryableIndexIndexableAdapter adapter2=new QueryableIndexIndexableAdapter(merged2);

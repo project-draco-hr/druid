@@ -1,7 +1,7 @@
 {
   DimensionsSpec dimensions=new DimensionsSpec(Arrays.asList(new StringDimensionSchema("string"),new FloatDimensionSchema("float"),new LongDimensionSchema("long")),null,null);
   AggregatorFactory[] metrics={new FilteredAggregatorFactory(new CountAggregatorFactory("cnt"),new SelectorDimFilter("billy","A",null))};
-  final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withMinTimestamp(0).withQueryGranularity(QueryGranularities.MINUTE).withDimensionsSpec(dimensions).withMetrics(metrics).build();
+  final IncrementalIndexSchema schema=new IncrementalIndexSchema.Builder().withMinTimestamp(0).withQueryGranularity(QueryGranularities.MINUTE).withDimensionsSpec(dimensions).withMetrics(metrics).withRollup(true).build();
   final List<Object[]> constructors=Lists.newArrayList();
   for (  final Boolean sortFacts : ImmutableList.of(false,true)) {
     constructors.add(new Object[]{new IndexCreator(){

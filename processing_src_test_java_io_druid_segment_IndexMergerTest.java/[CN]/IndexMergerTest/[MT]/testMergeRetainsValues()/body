@@ -11,7 +11,7 @@
   Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
   Assert.assertEquals(3,index1.getColumnNames().size());
-  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),new AggregatorFactory[]{new CountAggregatorFactory("count")},mergedDir,indexSpec)));
+  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),true,new AggregatorFactory[]{new CountAggregatorFactory("count")},mergedDir,indexSpec)));
   Assert.assertEquals(2,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());

@@ -14,5 +14,5 @@
     throw new ISE("Can only persist to directories, [%s] wasn't a directory",outDir);
   }
   log.info("Starting persist for interval[%s], rows[%,d]",dataInterval,index.size());
-  return merge(Arrays.<IndexableAdapter>asList(new IncrementalIndexAdapter(dataInterval,index,indexSpec.getBitmapSerdeFactory().getBitmapFactory())),index.getMetricAggs(),outDir,indexSpec,progress);
+  return merge(Arrays.<IndexableAdapter>asList(new IncrementalIndexAdapter(dataInterval,index,indexSpec.getBitmapSerdeFactory().getBitmapFactory())),false,index.getMetricAggs(),outDir,indexSpec,progress);
 }

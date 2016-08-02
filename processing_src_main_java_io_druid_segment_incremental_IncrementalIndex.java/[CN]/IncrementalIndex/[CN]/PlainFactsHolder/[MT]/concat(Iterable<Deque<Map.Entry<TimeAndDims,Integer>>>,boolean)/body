@@ -1,0 +1,13 @@
+{
+  return new Iterable<Map.Entry<TimeAndDims,Integer>>(){
+    @Override public Iterator<Map.Entry<TimeAndDims,Integer>> iterator(){
+      return Iterators.concat(Iterators.transform(iterable.iterator(),new Function<Deque<Map.Entry<TimeAndDims,Integer>>,Iterator<Map.Entry<TimeAndDims,Integer>>>(){
+        @Override public Iterator<Map.Entry<TimeAndDims,Integer>> apply(        Deque<Map.Entry<TimeAndDims,Integer>> input){
+          return descending ? input.descendingIterator() : input.iterator();
+        }
+      }
+));
+    }
+  }
+;
+}

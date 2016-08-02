@@ -1,0 +1,14 @@
+{
+  this.sortFacts=sortFacts;
+  if (sortFacts) {
+    this.facts=new ConcurrentSkipListMap<>(new Comparator<Long>(){
+      @Override public int compare(      Long lhs,      Long rhs){
+        return Longs.compare(lhs,rhs);
+      }
+    }
+);
+  }
+ else {
+    this.facts=new ConcurrentHashMap<>();
+  }
+}

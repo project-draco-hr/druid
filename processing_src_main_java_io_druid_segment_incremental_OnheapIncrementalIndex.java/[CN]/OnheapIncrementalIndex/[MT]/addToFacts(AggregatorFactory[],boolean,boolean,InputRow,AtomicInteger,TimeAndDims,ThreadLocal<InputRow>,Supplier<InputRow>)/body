@@ -1,5 +1,5 @@
 {
-  final Integer priorIndex=facts.get(key);
+  final Integer priorIndex=facts.getPriorIndex(key);
   Aggregator[] aggs;
   if (null != priorIndex) {
     aggs=concurrentGet(priorIndex);
@@ -11,7 +11,7 @@
     doAggregate(aggs,rowContainer,row,reportParseExceptions);
     final Integer rowIndex=indexIncrement.getAndIncrement();
     concurrentSet(rowIndex,aggs);
-    if (numEntries.get() >= maxRowCount && !facts.containsKey(key)) {
+    if (numEntries.get() >= maxRowCount && facts.getPriorIndex(key) == null) {
       throw new IndexSizeExceededException("Maximum number of rows [%d] reached",maxRowCount);
     }
     final Integer prev=facts.putIfAbsent(key,rowIndex);

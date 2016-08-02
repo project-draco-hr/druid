@@ -1,0 +1,32 @@
+{
+  IncrementalIndexSchema indexSchema=new IncrementalIndexSchema.Builder().withMinTimestamp(0L).withQueryGranularity(QueryGranularities.NONE).withMetrics(new AggregatorFactory[]{new CountAggregatorFactory("count")}).withRollup(false).build();
+  IncrementalIndex toPersistA=new OnheapIncrementalIndex(indexSchema,true,1000);
+  toPersistA.add(new MapBasedInputRow(1,Arrays.asList("d1","d2","d3","d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d1","","d2","","d3","310","d7","","d9","910")));
+  toPersistA.add(new MapBasedInputRow(1,Arrays.asList("d1","d2","d3","d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d1","","d2","","d3","310","d7","","d9","910")));
+  IncrementalIndex toPersistB=new OnheapIncrementalIndex(indexSchema,true,1000);
+  toPersistB.add(new MapBasedInputRow(1,Arrays.asList("d1","d2","d3","d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d1","","d2","","d3","310","d7","","d9","910")));
+  toPersistB.add(new MapBasedInputRow(4,Arrays.asList("d4","d5","d6","d7","d8","d9"),ImmutableMap.<String,Object>of("d5","","d6","621","d7","","d8","821","d9","921")));
+  final File tmpDirA=temporaryFolder.newFolder();
+  final File tmpDirB=temporaryFolder.newFolder();
+  final File tmpDirMerged=temporaryFolder.newFolder();
+  QueryableIndex indexA=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistA,tmpDirA,indexSpec)));
+  QueryableIndex indexB=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(toPersistB,tmpDirB,indexSpec)));
+  final QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(indexA,indexB),false,new AggregatorFactory[]{new CountAggregatorFactory("count")},tmpDirMerged,indexSpec)));
+  final QueryableIndexIndexableAdapter adapter=new QueryableIndexIndexableAdapter(merged);
+  final List<Rowboat> boatList=ImmutableList.copyOf(adapter.getRows());
+  Assert.assertEquals(ImmutableList.of("d3","d6","d8","d9"),ImmutableList.copyOf(adapter.getDimensionNames()));
+  Assert.assertEquals(4,boatList.size());
+  Assert.assertArrayEquals(new int[][]{{1},{0},{0},{0}},boatList.get(0).getDims());
+  Assert.assertArrayEquals(new int[][]{{1},{0},{0},{0}},boatList.get(1).getDims());
+  Assert.assertArrayEquals(new int[][]{{1},{0},{0},{0}},boatList.get(2).getDims());
+  Assert.assertArrayEquals(new int[][]{{0},{1},{1},{1}},boatList.get(3).getDims());
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("d3",""));
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("d3","310"));
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("d6",""));
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("d6","621"));
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("d8",""));
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("d8","821"));
+  checkBitmapIndex(new ArrayList<Integer>(),adapter.getBitmapIndex("d9",""));
+  checkBitmapIndex(Lists.newArrayList(0,1,2),adapter.getBitmapIndex("d9","910"));
+  checkBitmapIndex(Lists.newArrayList(3),adapter.getBitmapIndex("d9","921"));
+}

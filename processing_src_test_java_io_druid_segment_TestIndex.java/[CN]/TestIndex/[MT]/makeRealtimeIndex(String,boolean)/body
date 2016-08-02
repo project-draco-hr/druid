@@ -1,0 +1,9 @@
+{
+  final URL resource=TestIndex.class.getClassLoader().getResource(resourceFilename);
+  if (resource == null) {
+    throw new IllegalArgumentException("cannot find resource " + resourceFilename);
+  }
+  log.info("Realtime loading index file[%s]",resource);
+  CharSource stream=Resources.asByteSource(resource).asCharSource(Charsets.UTF_8);
+  return makeRealtimeIndex(stream,rollup);
+}

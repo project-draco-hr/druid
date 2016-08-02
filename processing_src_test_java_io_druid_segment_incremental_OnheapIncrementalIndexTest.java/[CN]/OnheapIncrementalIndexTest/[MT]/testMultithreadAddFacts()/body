@@ -23,8 +23,8 @@
   Thread checkThread=new Thread(new Runnable(){
     @Override public void run(){
       while (!Thread.interrupted()) {
-        for (        int row : index.getFacts().values()) {
-          if (index.getMetricLongValue(row,0) != 1) {
+        for (        Map.Entry<IncrementalIndex.TimeAndDims,Integer> row : index.getFacts().entrySet()) {
+          if (index.getMetricLongValue(row.getValue(),0) != 1) {
             checkFailedCount.addAndGet(1);
           }
         }

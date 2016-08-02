@@ -1,13 +1,8 @@
 {
-  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions,sortFacts);
+  super(incrementalIndexSchema,deserializeComplexMetrics,reportParseExceptions);
   this.maxRowCount=maxRowCount;
   this.bufferPool=bufferPool;
-  if (sortFacts) {
-    this.facts=new ConcurrentSkipListMap<>(dimsComparator());
-  }
- else {
-    this.facts=new ConcurrentHashMap<>();
-  }
+  this.facts=incrementalIndexSchema.isRollup() ? new RollupFactsHolder(sortFacts,dimsComparator()) : new PlainFactsHolder(sortFacts);
   ResourceHolder<ByteBuffer> bb=bufferPool.take();
   if (bb.get().capacity() < aggsTotalSize) {
     bb.close();

@@ -13,7 +13,7 @@
   Assert.assertEquals(3,index1.getColumnNames().size());
   Assert.assertArrayEquals(IncrementalIndexTest.getDefaultCombiningAggregatorFactories(),index1.getMetadata().getAggregators());
   AggregatorFactory[] mergedAggregators=new AggregatorFactory[]{new CountAggregatorFactory("count")};
-  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),mergedAggregators,mergedDir,indexSpec)));
+  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),true,mergedAggregators,mergedDir,indexSpec)));
   Assert.assertEquals(2,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());

@@ -17,7 +17,7 @@
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index2.getAvailableDimensions()));
   Assert.assertEquals(3,index2.getColumnNames().size());
   AggregatorFactory[] mergedAggregators=new AggregatorFactory[]{new CountAggregatorFactory("count")};
-  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2),mergedAggregators,mergedDir,indexSpec)));
+  QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(Arrays.asList(index1,index2),true,mergedAggregators,mergedDir,indexSpec)));
   Assert.assertEquals(3,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());

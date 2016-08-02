@@ -71,5 +71,12 @@
  else {
     mergedId="merged";
   }
-  return new SegmentAnalysis(mergedId,newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows(),aggregators.isEmpty() ? null : aggregators,timestampSpec,queryGranularity);
+  final Boolean rollup;
+  if (arg1.isRollup() != null && arg2.isRollup() != null && arg1.isRollup().equals(arg2.isRollup())) {
+    rollup=arg1.isRollup();
+  }
+ else {
+    rollup=null;
+  }
+  return new SegmentAnalysis(mergedId,newIntervals,columns,arg1.getSize() + arg2.getSize(),arg1.getNumRows() + arg2.getNumRows(),aggregators.isEmpty() ? null : aggregators,timestampSpec,queryGranularity,rollup);
 }

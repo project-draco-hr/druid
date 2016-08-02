@@ -5,6 +5,7 @@
   AggregatorFactory[] aggregators=new AggregatorFactory[]{new LongSumAggregatorFactory("out","in")};
   metadata.setAggregators(aggregators);
   metadata.setQueryGranularity(QueryGranularities.ALL);
+  metadata.setRollup(Boolean.FALSE);
   Metadata other=jsonMapper.readValue(jsonMapper.writeValueAsString(metadata),Metadata.class);
   Assert.assertEquals(metadata,other);
 }

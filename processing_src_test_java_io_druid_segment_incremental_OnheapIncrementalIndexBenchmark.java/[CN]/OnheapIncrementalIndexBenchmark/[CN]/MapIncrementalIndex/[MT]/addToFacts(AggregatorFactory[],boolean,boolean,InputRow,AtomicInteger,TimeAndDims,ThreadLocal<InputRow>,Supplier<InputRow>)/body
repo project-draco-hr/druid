@@ -1,5 +1,5 @@
 {
-  final Integer priorIdex=getFacts().get(key);
+  final Integer priorIdex=getFacts().getPriorIndex(key);
   Aggregator[] aggs;
   if (null != priorIdex) {
     aggs=indexedMap.get(priorIdex);
@@ -15,7 +15,7 @@
       rowIndex=indexIncrement.incrementAndGet();
     }
  while (null != indexedMap.putIfAbsent(rowIndex,aggs));
-    if (numEntries.get() >= maxRowCount && !getFacts().containsKey(key)) {
+    if (numEntries.get() >= maxRowCount && getFacts().getPriorIndex(key) == null) {
       throw new IndexSizeExceededException("Maximum number of rows reached");
     }
     final Integer prev=getFacts().putIfAbsent(key,rowIndex);

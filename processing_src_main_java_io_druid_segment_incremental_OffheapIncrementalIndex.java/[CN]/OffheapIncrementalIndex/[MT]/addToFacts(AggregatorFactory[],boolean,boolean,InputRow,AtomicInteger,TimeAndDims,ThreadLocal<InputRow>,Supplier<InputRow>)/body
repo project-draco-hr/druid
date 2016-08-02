@@ -3,7 +3,7 @@
   int bufferIndex;
   int bufferOffset;
 synchronized (this) {
-    final Integer priorIndex=facts.get(key);
+    final Integer priorIndex=facts.getPriorIndex(key);
     if (null != priorIndex) {
       final int[] indexAndOffset=indexAndOffsets.get(priorIndex);
       bufferIndex=indexAndOffset[0];
@@ -39,7 +39,7 @@ synchronized (this) {
       for (int i=0; i < metrics.length; i++) {
         getAggs()[i].init(aggBuffer,bufferOffset + aggOffsetInBuffer[i]);
       }
-      if (numEntries.get() >= maxRowCount && !facts.containsKey(key)) {
+      if (numEntries.get() >= maxRowCount && facts.getPriorIndex(key) == null) {
         throw new IndexSizeExceededException("Maximum number of rows [%d] reached",maxRowCount);
       }
       final Integer rowIndex=indexIncrement.getAndIncrement();

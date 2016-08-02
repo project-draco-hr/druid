@@ -1,0 +1,8 @@
+{
+  SegmentAnalysis mergedSegmentAnalysis=new SegmentAnalysis(differentIds ? "merged" : "testSegment",null,ImmutableMap.of("placement",new ColumnAnalysis(ValueType.STRING.toString(),false,0,0,null,null,null),"placementish",new ColumnAnalysis(ValueType.STRING.toString(),true,0,0,null,null,null)),0,expectedSegmentAnalysis1.getNumRows() + expectedSegmentAnalysis2.getNumRows(),null,null,null,rollup1 != rollup2 ? null : rollup1);
+  QueryToolChest toolChest=FACTORY.getToolchest();
+  ExecutorService exec=Executors.newCachedThreadPool();
+  QueryRunner myRunner=new FinalizeResultsQueryRunner<>(toolChest.mergeResults(FACTORY.mergeRunners(MoreExecutors.sameThreadExecutor(),Lists.<QueryRunner<SegmentAnalysis>>newArrayList(toolChest.preMergeQueryDecoration(runner1),toolChest.preMergeQueryDecoration(runner2)))),toolChest);
+  TestHelper.assertExpectedObjects(ImmutableList.of(mergedSegmentAnalysis),myRunner.run(Druids.newSegmentMetadataQueryBuilder().dataSource("testing").intervals("2013/2014").toInclude(new ListColumnIncluderator(Arrays.asList("placement","placementish"))).analysisTypes(SegmentMetadataQuery.AnalysisType.ROLLUP).merge(true).build(),Maps.newHashMap()),"failed SegmentMetadata merging query");
+  exec.shutdownNow();
+}
