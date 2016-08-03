@@ -3,6 +3,9 @@
   ByteBuffer resultsBuf=resultsBufHolder.get();
   resultsBuf.clear();
   final int cardinality=dimSelector.getValueCardinality();
+  if (cardinality < 0) {
+    throw new UnsupportedOperationException("Cannot operate on a dimension with no dictionary");
+  }
   final TopNMetricSpecBuilder<int[]> arrayProvider=new BaseArrayProvider<int[]>(dimSelector,query,capabilities){
     private final int[] positions=new int[cardinality];
     @Override public int[] build(){
@@ -22,5 +25,5 @@
     numBytesPerRecord+=aggregatorSizes[i];
   }
   final int numValuesPerPass=numBytesPerRecord > 0 ? numBytesToWorkWith / numBytesPerRecord : cardinality;
-  return PooledTopNParams.builder().withDimSelector(dimSelector).withCursor(cursor).withCardinality(cardinality).withResultsBufHolder(resultsBufHolder).withResultsBuf(resultsBuf).withArrayProvider(arrayProvider).withNumBytesPerRecord(numBytesPerRecord).withNumValuesPerPass(numValuesPerPass).withAggregatorSizes(aggregatorSizes).build();
+  return PooledTopNParams.builder().withDimSelector(dimSelector).withCursor(cursor).withResultsBufHolder(resultsBufHolder).withResultsBuf(resultsBuf).withArrayProvider(arrayProvider).withNumBytesPerRecord(numBytesPerRecord).withNumValuesPerPass(numValuesPerPass).withAggregatorSizes(aggregatorSizes).build();
 }
