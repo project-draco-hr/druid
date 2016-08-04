@@ -14,7 +14,7 @@
   }
   final ByteBuffer denseStorageBuffer;
   if (storageBuffer.remaining() != getNumBytesForDenseStorage()) {
-    HyperLogLogCollector denseCollector=HyperLogLogCollector.makeCollector(storageBuffer);
+    HyperLogLogCollector denseCollector=HyperLogLogCollector.makeCollector(storageBuffer.duplicate());
     denseCollector.convertToDenseStorage();
     denseStorageBuffer=denseCollector.storageBuffer;
   }
@@ -22,7 +22,7 @@
     denseStorageBuffer=storageBuffer;
   }
   if (otherBuffer.remaining() != getNumBytesForDenseStorage()) {
-    HyperLogLogCollector otherCollector=HyperLogLogCollector.makeCollector(otherBuffer);
+    HyperLogLogCollector otherCollector=HyperLogLogCollector.makeCollector(otherBuffer.duplicate());
     otherCollector.convertToDenseStorage();
     otherBuffer=otherCollector.storageBuffer;
   }
