@@ -16,17 +16,18 @@
   final long timeoutAt=queryTimeout == null ? JodaUtils.MAX_INSTANT : System.currentTimeMillis() + queryTimeout.longValue();
   return new BaseSequence<>(new BaseSequence.IteratorMaker<Row,CloseableGrouperIterator<RowBasedKey,Row>>(){
     @Override public CloseableGrouperIterator<RowBasedKey,Row> make(){
-      final List<Closeable> closeOnFailure=Lists.newArrayList();
+      final List<ReferenceCountingResourceHolder> resources=Lists.newArrayList();
       try {
         final LimitedTemporaryStorage temporaryStorage=new LimitedTemporaryStorage(temporaryStorageDirectory,querySpecificConfig.getMaxOnDiskStorage());
-        closeOnFailure.add(temporaryStorage);
+        final ReferenceCountingResourceHolder<LimitedTemporaryStorage> temporaryStorageHolder=ReferenceCountingResourceHolder.fromCloseable(temporaryStorage);
+        resources.add(temporaryStorageHolder);
         final ReferenceCountingResourceHolder<ByteBuffer> mergeBufferHolder;
         try {
           final long timeout=timeoutAt - System.currentTimeMillis();
           if (timeout <= 0 || (mergeBufferHolder=mergeBufferPool.take(timeout)) == null) {
             throw new QueryInterruptedException(new TimeoutException());
           }
-          closeOnFailure.add(mergeBufferHolder);
+          resources.add(mergeBufferHolder);
         }
  catch (        InterruptedException e) {
           throw new QueryInterruptedException(e);
@@ -34,13 +35,8 @@
         Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,false,config,mergeBufferHolder.get(),concurrencyHint,temporaryStorage,spillMapper,combiningAggregatorFactories);
         final Grouper<RowBasedKey> grouper=pair.lhs;
         final Accumulator<Grouper<RowBasedKey>,Row> accumulator=pair.rhs;
-        final ReferenceCountingResourceHolder<Grouper<RowBasedKey>> grouperHolder=new ReferenceCountingResourceHolder<>(grouper,new Closeable(){
-          @Override public void close() throws IOException {
-            grouper.close();
-          }
-        }
-);
-        closeOnFailure.add(grouperHolder);
+        final ReferenceCountingResourceHolder<Grouper<RowBasedKey>> grouperHolder=ReferenceCountingResourceHolder.fromCloseable(grouper);
+        resources.add(grouperHolder);
         ListenableFuture<List<Boolean>> futures=Futures.allAsList(Lists.newArrayList(Iterables.transform(queryables,new Function<QueryRunner<Row>,ListenableFuture<Boolean>>(){
           @Override public ListenableFuture<Boolean> apply(          final QueryRunner<Row> input){
             if (input == null) {
@@ -86,15 +82,15 @@ catch (                    Exception e) {
         waitForFutureCompletion(query,futures,timeoutAt - System.currentTimeMillis());
         return RowBasedGrouperHelper.makeGrouperIterator(grouper,query,new Closeable(){
           @Override public void close() throws IOException {
-            grouperHolder.close();
-            mergeBufferHolder.close();
-            CloseQuietly.close(temporaryStorage);
+            for (            Closeable closeable : Lists.reverse(resources)) {
+              CloseQuietly.close(closeable);
+            }
           }
         }
 );
       }
  catch (      Throwable e) {
-        for (        Closeable closeable : Lists.reverse(closeOnFailure)) {
+        for (        Closeable closeable : Lists.reverse(resources)) {
           CloseQuietly.close(closeable);
         }
         throw e;

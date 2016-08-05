@@ -22,6 +22,9 @@
   }
   final Accumulator<Grouper<RowBasedKey>,Row> accumulator=new Accumulator<Grouper<RowBasedKey>,Row>(){
     @Override public Grouper<RowBasedKey> accumulate(    final Grouper<RowBasedKey> theGrouper,    final Row row){
+      if (Thread.interrupted()) {
+        throw new QueryInterruptedException(new InterruptedException());
+      }
       if (theGrouper == null) {
         return null;
       }
