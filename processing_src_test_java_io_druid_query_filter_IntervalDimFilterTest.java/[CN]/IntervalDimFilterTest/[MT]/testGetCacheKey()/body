@@ -1,0 +1,9 @@
+{
+  DimFilter intervalFilter1=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1975-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),null);
+  DimFilter intervalFilter2=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1976-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),null);
+  Assert.assertNotEquals(intervalFilter1.getCacheKey(),intervalFilter2.getCacheKey());
+  RegexDimExtractionFn regexFn=new RegexDimExtractionFn(".*",false,null);
+  DimFilter intervalFilter3=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1975-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),regexFn);
+  DimFilter intervalFilter4=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1976-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),regexFn);
+  Assert.assertNotEquals(intervalFilter3.getCacheKey(),intervalFilter4.getCacheKey());
+}

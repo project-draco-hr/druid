@@ -1,0 +1,10 @@
+{
+  Preconditions.checkNotNull(dimension,"dimension can not be null");
+  Preconditions.checkNotNull(intervals,"intervals can not be null");
+  Preconditions.checkArgument(intervals.size() > 0,"must specify at least one interval");
+  this.dimension=dimension;
+  this.intervals=Collections.unmodifiableList(JodaUtils.condenseIntervals(intervals));
+  this.extractionFn=extractionFn;
+  this.intervalLongs=makeIntervalLongs();
+  this.convertedFilter=new OrDimFilter(makeBoundDimFilters());
+}

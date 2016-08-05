@@ -1,0 +1,10 @@
+{
+  DimFilter intervalFilter=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1975-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),null);
+  String filterStr=mapper.writeValueAsString(intervalFilter);
+  IntervalDimFilter actualFilter=mapper.reader(DimFilter.class).readValue(filterStr);
+  Assert.assertEquals(intervalFilter,actualFilter);
+  intervalFilter=new IntervalDimFilter(Column.TIME_COLUMN_NAME,Arrays.asList(Interval.parse("1970-01-01T00:00:00.001Z/1970-01-01T00:00:00.004Z"),Interval.parse("1975-01-01T00:00:00.001Z/1980-01-01T00:00:00.004Z")),new RegexDimExtractionFn(".*",false,null));
+  filterStr=mapper.writeValueAsString(intervalFilter);
+  actualFilter=mapper.reader(DimFilter.class).readValue(filterStr);
+  Assert.assertEquals(intervalFilter,actualFilter);
+}
