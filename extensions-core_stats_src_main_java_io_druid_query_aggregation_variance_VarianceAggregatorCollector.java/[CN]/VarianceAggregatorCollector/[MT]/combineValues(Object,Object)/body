@@ -1,0 +1,19 @@
+{
+  final VarianceAggregatorCollector holder1=(VarianceAggregatorCollector)lhs;
+  final VarianceAggregatorCollector holder2=(VarianceAggregatorCollector)rhs;
+  if (holder2.count == 0) {
+    return holder1;
+  }
+  if (holder1.count == 0) {
+    holder1.nvariance=holder2.nvariance;
+    holder1.count=holder2.count;
+    holder1.sum=holder2.sum;
+    return holder1;
+  }
+  final double ratio=holder1.count / (double)holder2.count;
+  final double t=holder1.sum / ratio - holder2.sum;
+  holder1.nvariance+=holder2.nvariance + (ratio / (holder1.count + holder2.count) * t * t);
+  holder1.count+=holder2.count;
+  holder1.sum+=holder2.sum;
+  return holder1;
+}

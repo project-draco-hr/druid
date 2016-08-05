@@ -221,10 +221,10 @@
           final Integer metricIndexInt=index.getMetricIndex(column);
           if (metricIndexInt != null) {
             final int metricIndex=metricIndexInt;
-            final ComplexMetricSerde serde=ComplexMetrics.getSerdeForType(index.getMetricType(column));
+            final Class classOfObject=index.getMetricClass(column);
             return new ObjectColumnSelector(){
               @Override public Class classOfObject(){
-                return serde.getObjectStrategy().getClazz();
+                return classOfObject;
               }
               @Override public Object get(){
                 return index.getMetricObjectValue(currEntry.getValue(),metricIndex);

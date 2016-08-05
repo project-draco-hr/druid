@@ -1,0 +1,7 @@
+{
+  final TopNQueryQueryToolChest chest=new TopNQueryQueryToolChest(new TopNQueryConfig(),QueryRunnerTestHelper.NoopIntervalChunkingQueryRunnerDecorator());
+  final QueryRunner<Result<TopNResultValue>> mergeRunner=chest.mergeResults(runner);
+  final Sequence<Result<TopNResultValue>> retval=mergeRunner.run(query,ImmutableMap.<String,Object>of());
+  TestHelper.assertExpectedResults(expectedResults,retval);
+  return retval;
+}

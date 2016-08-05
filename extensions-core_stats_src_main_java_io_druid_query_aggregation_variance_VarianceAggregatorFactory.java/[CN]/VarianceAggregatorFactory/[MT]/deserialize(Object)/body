@@ -1,0 +1,12 @@
+{
+  if (object instanceof byte[]) {
+    return VarianceAggregatorCollector.from(ByteBuffer.wrap((byte[])object));
+  }
+ else   if (object instanceof ByteBuffer) {
+    return VarianceAggregatorCollector.from((ByteBuffer)object);
+  }
+ else   if (object instanceof String) {
+    return VarianceAggregatorCollector.from(ByteBuffer.wrap(Base64.decodeBase64(StringUtils.toUtf8((String)object))));
+  }
+  return object;
+}

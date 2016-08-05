@@ -1,0 +1,5 @@
+{
+  byte[] fieldNameBytes=StringUtils.toUtf8(fieldName);
+  byte[] inputTypeBytes=StringUtils.toUtf8(inputType);
+  return ByteBuffer.allocate(2 + fieldNameBytes.length + 1+ inputTypeBytes.length).put(CACHE_TYPE_ID).put(isVariancePop ? (byte)1 : 0).put(fieldNameBytes).put((byte)0xFF).put(inputTypeBytes).array();
+}

@@ -1,0 +1,15 @@
+{
+  VarianceAggregator agg=(VarianceAggregator)aggFactory.factorize(colSelectorFactory);
+  Assert.assertEquals("billy",agg.getName());
+  assertValues((VarianceAggregatorCollector)agg.get(),0,0d,0d);
+  aggregate(selector,agg);
+  assertValues((VarianceAggregatorCollector)agg.get(),1,1.1d,0d);
+  aggregate(selector,agg);
+  assertValues((VarianceAggregatorCollector)agg.get(),2,3.8d,1.28d);
+  aggregate(selector,agg);
+  assertValues((VarianceAggregatorCollector)agg.get(),3,7.3d,2.9866d);
+  aggregate(selector,agg);
+  assertValues((VarianceAggregatorCollector)agg.get(),4,8.6d,3.95d);
+  agg.reset();
+  assertValues((VarianceAggregatorCollector)agg.get(),0,0d,0d);
+}

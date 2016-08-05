@@ -1,0 +1,19 @@
+{
+  return new ObjectStrategy<VarianceAggregatorCollector>(){
+    @Override public Class<? extends VarianceAggregatorCollector> getClazz(){
+      return VarianceAggregatorCollector.class;
+    }
+    @Override public VarianceAggregatorCollector fromByteBuffer(    ByteBuffer buffer,    int numBytes){
+      final ByteBuffer readOnlyBuffer=buffer.asReadOnlyBuffer();
+      readOnlyBuffer.limit(readOnlyBuffer.position() + numBytes);
+      return VarianceAggregatorCollector.from(readOnlyBuffer);
+    }
+    @Override public byte[] toBytes(    VarianceAggregatorCollector collector){
+      return collector == null ? new byte[]{} : collector.toByteArray();
+    }
+    @Override public int compare(    VarianceAggregatorCollector o1,    VarianceAggregatorCollector o2){
+      return comparator.compare(o1,o2);
+    }
+  }
+;
+}

@@ -1,0 +1,7 @@
+{
+  GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.firstToThird).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.<AggregatorFactory>asList(VarianceTestHelper.indexVarianceAggr)).setPostAggregatorSpecs(Arrays.<PostAggregator>asList(VarianceTestHelper.stddevOfIndexPostAggr)).setGranularity(QueryRunnerTestHelper.dayGran).build();
+  VarianceTestHelper.RowBuilder builder=new VarianceTestHelper.RowBuilder(new String[]{"alias","index_stddev","index_var"});
+  List<Row> expectedResults=builder.add("2011-04-01","automotive",0d,0d).add("2011-04-01","business",0d,0d).add("2011-04-01","entertainment",0d,0d).add("2011-04-01","health",0d,0d).add("2011-04-01","mezzanine",737.0179286322613d,543195.4271253889d).add("2011-04-01","news",0d,0d).add("2011-04-01","premium",726.6322593583996d,527994.4403402924d).add("2011-04-01","technology",0d,0d).add("2011-04-01","travel",0d,0d).add("2011-04-02","automotive",0d,0d).add("2011-04-02","business",0d,0d).add("2011-04-02","entertainment",0d,0d).add("2011-04-02","health",0d,0d).add("2011-04-02","mezzanine",611.3420766546617d,373739.13468843425d).add("2011-04-02","news",0d,0d).add("2011-04-02","premium",621.3898134843073d,386125.30030206224d).add("2011-04-02","technology",0d,0d).add("2011-04-02","travel",0d,0d).build();
+  Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
+  TestHelper.assertExpectedObjects(expectedResults,results,"");
+}
