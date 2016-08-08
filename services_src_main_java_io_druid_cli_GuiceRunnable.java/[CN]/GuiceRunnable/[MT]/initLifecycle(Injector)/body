@@ -5,9 +5,17 @@
     final StartupLoggingConfig startupLoggingConfig=injector.getInstance(StartupLoggingConfig.class);
     log.info("Starting up with processors[%,d], memory[%,d].",Runtime.getRuntime().availableProcessors(),Runtime.getRuntime().totalMemory());
     if (startupLoggingConfig.isLogProperties()) {
+      final Set<String> maskProperties=Sets.newHashSet(startupLoggingConfig.getMaskProperties());
       final Properties props=injector.getInstance(Properties.class);
       for (      String propertyName : Ordering.natural().sortedCopy(props.stringPropertyNames())) {
-        log.info("* %s: %s",propertyName,props.getProperty(propertyName));
+        String property=props.getProperty(propertyName);
+        for (        String masked : maskProperties) {
+          if (propertyName.contains(masked)) {
+            property="<masked>";
+            break;
+          }
+        }
+        log.info("* %s: %s",propertyName,property);
       }
     }
     try {
