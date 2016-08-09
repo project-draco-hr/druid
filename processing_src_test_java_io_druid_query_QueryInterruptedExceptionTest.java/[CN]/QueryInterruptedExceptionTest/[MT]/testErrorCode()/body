@@ -1,0 +1,9 @@
+{
+  Assert.assertEquals("Query cancelled",new QueryInterruptedException(new QueryInterruptedException(new CancellationException())).getErrorCode());
+  Assert.assertEquals("Query cancelled",new QueryInterruptedException(new CancellationException()).getErrorCode());
+  Assert.assertEquals("Query interrupted",new QueryInterruptedException(new InterruptedException()).getErrorCode());
+  Assert.assertEquals("Query timeout",new QueryInterruptedException(new TimeoutException()).getErrorCode());
+  Assert.assertEquals("Unknown exception",new QueryInterruptedException(null).getErrorCode());
+  Assert.assertEquals("Unknown exception",new QueryInterruptedException(new ISE("Something bad!")).getErrorCode());
+  Assert.assertEquals("Unknown exception",new QueryInterruptedException(new QueryInterruptedException(new ISE("Something bad!"))).getErrorCode());
+}

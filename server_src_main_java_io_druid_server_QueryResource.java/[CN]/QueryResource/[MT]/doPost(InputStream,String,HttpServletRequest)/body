@@ -94,7 +94,7 @@
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",query);
     }
-    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
+    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(new QueryInterruptedException(e))).build();
   }
 catch (  Exception e) {
     final String queryString=query == null ? "unparsable query" : query.toString();
@@ -108,7 +108,7 @@ catch (  Exception e) {
       log.error(e2,"Unable to log query [%s]!",queryString);
     }
     log.makeAlert(e,"Exception handling request").addData("exception",e.toString()).addData("query",queryString).addData("peer",req.getRemoteAddr()).emit();
-    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(ImmutableMap.of("error",e.getMessage() == null ? "null exception" : e.getMessage()))).build();
+    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(new QueryInterruptedException(e))).build();
   }
  finally {
     Thread.currentThread().setName(currThreadName);

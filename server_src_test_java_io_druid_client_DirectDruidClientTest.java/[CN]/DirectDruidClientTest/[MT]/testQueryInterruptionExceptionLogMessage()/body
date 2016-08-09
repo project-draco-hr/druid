@@ -12,7 +12,7 @@
   serverSelector.addServerAndUpdateSegment(queryableDruidServer,dataSegment);
   TimeBoundaryQuery query=Druids.newTimeBoundaryQueryBuilder().dataSource("test").build();
   HashMap<String,List> context=Maps.newHashMap();
-  interruptionFuture.set(new ByteArrayInputStream("{\"error\":\"testing\"}".getBytes()));
+  interruptionFuture.set(new ByteArrayInputStream("{\"error\":\"testing1\",\"errorMessage\":\"testing2\"}".getBytes()));
   Sequence results=client1.run(query,context);
   QueryInterruptedException actualException=null;
   try {
@@ -22,8 +22,8 @@
     actualException=e;
   }
   Assert.assertNotNull(actualException);
-  Assert.assertEquals(actualException.getMessage(),QueryInterruptedException.UNKNOWN_EXCEPTION);
-  Assert.assertEquals(actualException.getCauseMessage(),"testing");
-  Assert.assertEquals(actualException.getHost(),hostName);
+  Assert.assertEquals("testing1",actualException.getErrorCode());
+  Assert.assertEquals("testing2",actualException.getMessage());
+  Assert.assertEquals(hostName,actualException.getHost());
   EasyMock.verify(httpClient);
 }
