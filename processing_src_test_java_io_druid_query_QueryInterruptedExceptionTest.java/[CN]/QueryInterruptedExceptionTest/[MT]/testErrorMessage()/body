@@ -4,6 +4,7 @@
   Assert.assertEquals(null,new QueryInterruptedException(new InterruptedException()).getMessage());
   Assert.assertEquals(null,new QueryInterruptedException(new TimeoutException()).getMessage());
   Assert.assertEquals(null,new QueryInterruptedException(null).getMessage());
+  Assert.assertEquals("too many!",new QueryInterruptedException(new ResourceLimitExceededException("too many!")).getMessage());
   Assert.assertEquals("Something bad!",new QueryInterruptedException(new ISE("Something bad!")).getMessage());
   Assert.assertEquals("Something bad!",new QueryInterruptedException(new QueryInterruptedException(new ISE("Something bad!"))).getMessage());
 }
