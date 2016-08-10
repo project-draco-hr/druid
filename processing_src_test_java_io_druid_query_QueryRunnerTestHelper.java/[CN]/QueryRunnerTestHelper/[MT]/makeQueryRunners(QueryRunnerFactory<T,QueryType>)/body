@@ -4,5 +4,5 @@
   final QueryableIndex mMappedTestIndex=TestIndex.getMMappedTestIndex();
   final QueryableIndex noRollupMMappedTestIndex=TestIndex.getNoRollupMMappedTestIndex();
   final QueryableIndex mergedRealtimeIndex=TestIndex.mergedRealtimeIndex();
-  return ImmutableList.of(makeQueryRunner(factory,new IncrementalIndexSegment(rtIndex,segmentId)),makeQueryRunner(factory,new IncrementalIndexSegment(noRollupRtIndex,segmentId)),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,mMappedTestIndex)),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,noRollupMMappedTestIndex)),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,mergedRealtimeIndex)));
+  return ImmutableList.of(makeQueryRunner(factory,new IncrementalIndexSegment(rtIndex,segmentId),"rtIndex"),makeQueryRunner(factory,new IncrementalIndexSegment(noRollupRtIndex,segmentId),"noRollupRtIndex"),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,mMappedTestIndex),"mMappedTestIndex"),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,noRollupMMappedTestIndex),"noRollupMMappedTestIndex"),makeQueryRunner(factory,new QueryableIndexSegment(segmentId,mergedRealtimeIndex),"mergedRealtimeIndex"));
 }

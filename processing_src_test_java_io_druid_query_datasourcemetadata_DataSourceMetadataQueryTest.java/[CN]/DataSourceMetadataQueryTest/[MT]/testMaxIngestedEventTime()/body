@@ -1,7 +1,7 @@
 {
   final IncrementalIndex rtIndex=new OnheapIncrementalIndex(0L,QueryGranularities.NONE,new AggregatorFactory[]{new CountAggregatorFactory("count")},1000);
   ;
-  final QueryRunner runner=QueryRunnerTestHelper.makeQueryRunner((QueryRunnerFactory)new DataSourceMetadataQueryRunnerFactory(QueryRunnerTestHelper.NOOP_QUERYWATCHER),new IncrementalIndexSegment(rtIndex,"test"));
+  final QueryRunner runner=QueryRunnerTestHelper.makeQueryRunner((QueryRunnerFactory)new DataSourceMetadataQueryRunnerFactory(QueryRunnerTestHelper.NOOP_QUERYWATCHER),new IncrementalIndexSegment(rtIndex,"test"),null);
   DateTime timestamp=new DateTime(System.currentTimeMillis());
   rtIndex.add(new MapBasedInputRow(timestamp.getMillis(),ImmutableList.of("dim1"),ImmutableMap.<String,Object>of("dim1","x")));
   DataSourceMetadataQuery dataSourceMetadataQuery=Druids.newDataSourceMetadataQueryBuilder().dataSource("testing").build();

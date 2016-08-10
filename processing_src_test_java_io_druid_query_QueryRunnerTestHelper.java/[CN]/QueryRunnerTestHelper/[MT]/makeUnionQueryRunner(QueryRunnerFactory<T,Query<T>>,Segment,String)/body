@@ -1,0 +1,12 @@
+{
+  final QueryRunner<T> qr=new FluentQueryRunnerBuilder<T>(factory.getToolchest()).create(new UnionQueryRunner<T>(new BySegmentQueryRunner<T>(segmentId,adapter.getDataInterval().getStart(),factory.createRunner(adapter)))).mergeResults().applyPostMergeDecoration();
+  return new QueryRunner<T>(){
+    @Override public Sequence<T> run(    Query<T> query,    Map<String,Object> responseContext){
+      return qr.run(query,responseContext);
+    }
+    @Override public String toString(){
+      return runnerName;
+    }
+  }
+;
+}

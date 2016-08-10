@@ -2,5 +2,5 @@
   final IncrementalIndex rtIndex=TestIndex.getIncrementalTestIndex();
   final QueryableIndex mMappedTestIndex=TestIndex.getMMappedTestIndex();
   final QueryableIndex mergedRealtimeIndex=TestIndex.mergedRealtimeIndex();
-  return Arrays.asList(makeUnionQueryRunner(factory,new IncrementalIndexSegment(rtIndex,segmentId)),makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mMappedTestIndex)),makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mergedRealtimeIndex)));
+  return Arrays.asList(makeUnionQueryRunner(factory,new IncrementalIndexSegment(rtIndex,segmentId),"rtIndex"),makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mMappedTestIndex),"mMappedTestIndex"),makeUnionQueryRunner(factory,new QueryableIndexSegment(segmentId,mergedRealtimeIndex),"mergedRealtimeIndex"));
 }

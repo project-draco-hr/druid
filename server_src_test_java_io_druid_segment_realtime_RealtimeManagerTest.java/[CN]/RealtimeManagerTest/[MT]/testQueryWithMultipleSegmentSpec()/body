@@ -10,7 +10,7 @@
   final SegmentDescriptor descriptor_26_28_1=new SegmentDescriptor(interval_26_28,"ver0",1);
   final SegmentDescriptor descriptor_28_29_1=new SegmentDescriptor(interval_28_29,"ver1",1);
   GroupByQuery query=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(new MultipleSpecificSegmentSpec(ImmutableList.<SegmentDescriptor>of(descriptor_26_28_0,descriptor_28_29_0,descriptor_26_28_1,descriptor_28_29_1))).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("quality","alias"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("idx","index"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
-  final Map<Interval,QueryRunner> runnerMap=ImmutableMap.<Interval,QueryRunner>of(interval_26_28,QueryRunnerTestHelper.makeQueryRunner(factory,"druid.sample.tsv.top"),interval_28_29,QueryRunnerTestHelper.makeQueryRunner(factory,"druid.sample.tsv.bottom"));
+  final Map<Interval,QueryRunner> runnerMap=ImmutableMap.<Interval,QueryRunner>of(interval_26_28,QueryRunnerTestHelper.makeQueryRunner(factory,"druid.sample.tsv.top",null),interval_28_29,QueryRunnerTestHelper.makeQueryRunner(factory,"druid.sample.tsv.bottom",null));
   plumber.setRunners(runnerMap);
   plumber2.setRunners(runnerMap);
   Iterable<Row> results=GroupByQueryRunnerTestHelper.runQuery(factory,query.getQuerySegmentSpec().lookup(query,realtimeManager3),query);
