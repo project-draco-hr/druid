@@ -19,7 +19,7 @@
     BoundDimFilter timeFilter=new BoundDimFilter(Column.TIME_COLUMN_NAME,"200000","300000",false,false,null,null,StringComparators.NUMERIC);
     queryAggs.add(new FilteredAggregatorFactory(lsaf,timeFilter));
     TimeseriesQuery timeFilterQuery=Druids.newTimeseriesQueryBuilder().dataSource("blah").granularity(QueryGranularities.ALL).intervals(intervalSpec).aggregators(queryAggs).descending(false).build();
-    basicQueries.put("timeFilter",timeFilterQuery);
+    basicQueries.put("timeFilterNumeric",timeFilterQuery);
   }
 {
     QuerySegmentSpec intervalSpec=new MultipleIntervalSegmentSpec(Arrays.asList(basicSchema.getDataInterval()));
