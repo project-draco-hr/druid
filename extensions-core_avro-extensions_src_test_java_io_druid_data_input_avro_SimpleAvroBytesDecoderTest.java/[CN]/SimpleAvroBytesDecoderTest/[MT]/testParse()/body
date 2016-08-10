@@ -1,0 +1,9 @@
+{
+  GenericRecord someAvroDatum=AvroStreamInputRowParserTest.buildSomeAvroDatum();
+  Schema schema=SomeAvroDatum.getClassSchema();
+  ByteArrayOutputStream out=new ByteArrayOutputStream();
+  DatumWriter<GenericRecord> writer=new GenericDatumWriter<GenericRecord>(schema);
+  writer.write(someAvroDatum,EncoderFactory.get().directBinaryEncoder(out,null));
+  GenericRecord actual=new SimpleAvroBytesDecoder(schema).parse(ByteBuffer.wrap(out.toByteArray()));
+  Assert.assertEquals(someAvroDatum.get("id"),actual.get("id"));
+}

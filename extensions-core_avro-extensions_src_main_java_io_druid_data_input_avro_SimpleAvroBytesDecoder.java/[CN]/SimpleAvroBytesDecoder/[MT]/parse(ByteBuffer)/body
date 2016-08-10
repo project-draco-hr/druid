@@ -1,0 +1,10 @@
+{
+  DatumReader<GenericRecord> reader=new GenericDatumReader<GenericRecord>(schemaObj);
+  ByteBufferInputStream inputStream=new ByteBufferInputStream(Collections.singletonList(bytes));
+  try {
+    return reader.read(null,DecoderFactory.get().binaryDecoder(inputStream,null));
+  }
+ catch (  Exception e) {
+    throw new ParseException(e,"Fail to decode avro message!");
+  }
+}
