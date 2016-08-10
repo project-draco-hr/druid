@@ -8,7 +8,7 @@
   this.feed=feed;
   Preconditions.checkArgument(feed != null && !feed.isEmpty(),"feed is null/empty");
   this.queueBufferLength=queueBufferLength == null ? DEFAULT_QUEUE_BUFFER_LENGTH : queueBufferLength;
-  Preconditions.checkArgument(queueBufferLength > 0,"queueBufferLength must be positive number");
+  Preconditions.checkArgument(this.queueBufferLength > 0,"queueBufferLength must be positive number");
   log.info("queueBufferLength loaded as[%s]",this.queueBufferLength);
   this.earliest=resetOffsetToEarliest == null ? true : resetOffsetToEarliest.booleanValue();
   log.info("if old offsets are not known, data from partition will be read from [%s] available offset.",this.earliest ? "earliest" : "latest");
