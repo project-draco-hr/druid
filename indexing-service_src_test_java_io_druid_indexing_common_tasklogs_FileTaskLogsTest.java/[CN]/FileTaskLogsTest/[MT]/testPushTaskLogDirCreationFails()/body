@@ -1,24 +1,13 @@
 {
   final File tmpDir=temporaryFolder.newFolder();
-  try {
-    IOException thrown=null;
-    final File logDir=new File(tmpDir,"druid/logs");
-    final File logFile=new File(tmpDir,"log");
-    Files.write("blah",logFile,Charsets.UTF_8);
-    if (!tmpDir.setWritable(false)) {
-      new RuntimeException("failed to make tmp dir read-only");
-    }
-    final TaskLogs taskLogs=new FileTaskLogs(new FileTaskLogsConfig(logDir));
-    try {
-      taskLogs.pushTaskLog("foo",logFile);
-    }
- catch (    IOException ex) {
-      thrown=ex;
-    }
-    Assert.assertNotNull("pushTaskLog should fail with exception of dir creation error",thrown);
+  final File logDir=new File(tmpDir,"druid/logs");
+  final File logFile=new File(tmpDir,"log");
+  Files.write("blah",logFile,Charsets.UTF_8);
+  if (!tmpDir.setWritable(false)) {
+    throw new RuntimeException("failed to make tmp dir read-only");
   }
-  finally {
-    tmpDir.setWritable(true);
-    FileUtils.deleteDirectory(tmpDir);
-  }
+  final TaskLogs taskLogs=new FileTaskLogs(new FileTaskLogsConfig(logDir));
+  expectedException.expect(IOException.class);
+  expectedException.expectMessage("Unable to create task log dir");
+  taskLogs.pushTaskLog("foo",logFile);
 }
