@@ -2,26 +2,26 @@
   if (!hasNext()) {
     throw new NoSuchElementException();
   }
-  final PeekingIterator<T> it;
+  final PeekingIterator<T> littleIt;
   if (!iterOfIterators.hasNext()) {
-    it=pQueue.remove();
+    littleIt=firstElementComparedPQueue.remove();
   }
- else   if (pQueue.isEmpty()) {
-    it=iterOfIterators.next();
+ else   if (firstElementComparedPQueue.isEmpty()) {
+    littleIt=iterOfIterators.next();
   }
  else {
-    T pQueueValue=pQueue.peek().peek();
+    T pQueueValue=firstElementComparedPQueue.peek().peek();
     T iterItersValue=iterOfIterators.peek().peek();
     if (comparator.compare(pQueueValue,iterItersValue) <= 0) {
-      it=pQueue.remove();
+      littleIt=firstElementComparedPQueue.remove();
     }
  else {
-      it=iterOfIterators.next();
+      littleIt=iterOfIterators.next();
     }
   }
-  T retVal=it.next();
-  if (it.hasNext()) {
-    pQueue.add(it);
+  T retVal=littleIt.next();
+  if (littleIt.hasNext()) {
+    firstElementComparedPQueue.add(littleIt);
   }
   return retVal;
 }
