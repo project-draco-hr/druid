@@ -3,7 +3,7 @@
   for (  Integer partition : partitionIdList) {
     final KafkaSimpleConsumer kafkaSimpleConsumer=new KafkaSimpleConsumer(feed,partition,clientId,brokerList,earliest);
     Long startOffset=lastOffsets.get(partition);
-    PartitionConsumerWorker worker=new PartitionConsumerWorker(feed,kafkaSimpleConsumer,partition,startOffset == null ? 0 : startOffset);
+    PartitionConsumerWorker worker=new PartitionConsumerWorker(feed,kafkaSimpleConsumer,partition,startOffset == null ? -1 : startOffset);
     consumerWorkers.add(worker);
   }
   final LinkedBlockingQueue<BytesMessageWithOffset> messageQueue=new LinkedBlockingQueue<BytesMessageWithOffset>(queueBufferLength);
