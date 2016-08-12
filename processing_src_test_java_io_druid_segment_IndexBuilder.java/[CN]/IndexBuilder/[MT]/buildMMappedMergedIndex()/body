@@ -4,7 +4,7 @@
   final List<QueryableIndex> persisted=Lists.newArrayList();
   try {
     for (int i=0; i < rows.size(); i+=ROWS_PER_INDEX_FOR_MERGING) {
-      persisted.add(TestHelper.getTestIndexIO().loadIndex(indexMerger.persist(buildIncrementalIndexWithRows(schema,rows.subList(i,Math.min(rows.size(),i + ROWS_PER_INDEX_FOR_MERGING))),new File(tmpDir,String.format("testIndex-%s",UUID.randomUUID().toString())),indexSpec)));
+      persisted.add(TestHelper.getTestIndexIO().loadIndex(indexMerger.persist(buildIncrementalIndexWithRows(schema,maxRows,rows.subList(i,Math.min(rows.size(),i + ROWS_PER_INDEX_FOR_MERGING))),new File(tmpDir,String.format("testIndex-%s",UUID.randomUUID().toString())),indexSpec)));
     }
     final QueryableIndex merged=TestHelper.getTestIndexIO().loadIndex(indexMerger.merge(Lists.transform(persisted,new Function<QueryableIndex,IndexableAdapter>(){
       @Override public IndexableAdapter apply(      QueryableIndex input){
