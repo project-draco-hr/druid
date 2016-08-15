@@ -1,0 +1,13 @@
+{
+  QueryRunner customRunner=getCustomRunner();
+  TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").filters("quality","automotive").build();
+  Assert.assertTrue(timeBoundaryQuery.hasFilters());
+  HashMap<String,Object> context=new HashMap<String,Object>();
+  Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(customRunner.run(timeBoundaryQuery,context),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
+  Assert.assertTrue(Iterables.size(results) > 0);
+  TimeBoundaryResultValue val=results.iterator().next().getValue();
+  DateTime minTime=val.getMinTime();
+  DateTime maxTime=val.getMaxTime();
+  Assert.assertEquals(new DateTime("2011-01-13T00:00:00.000Z"),minTime);
+  Assert.assertEquals(new DateTime("2011-01-16T00:00:00.000Z"),maxTime);
+}

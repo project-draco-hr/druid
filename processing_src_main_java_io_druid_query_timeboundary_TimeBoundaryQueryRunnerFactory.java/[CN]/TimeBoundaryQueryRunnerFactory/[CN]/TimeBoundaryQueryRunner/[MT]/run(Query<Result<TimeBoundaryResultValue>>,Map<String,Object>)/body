@@ -8,8 +8,21 @@
       if (adapter == null) {
         throw new ISE("Null storage adapter found. Probably trying to issue a query against a segment being memory unmapped.");
       }
-      final DateTime minTime=legacyQuery.getBound().equalsIgnoreCase(TimeBoundaryQuery.MAX_TIME) ? null : adapter.getMinTime();
-      final DateTime maxTime=legacyQuery.getBound().equalsIgnoreCase(TimeBoundaryQuery.MIN_TIME) ? null : adapter.getMaxTime();
+      final DateTime minTime;
+      final DateTime maxTime;
+      if (legacyQuery.getDimensionsFilter() != null) {
+        minTime=getTimeBoundary(adapter,legacyQuery,false);
+        if (minTime == null) {
+          maxTime=null;
+        }
+ else {
+          maxTime=getTimeBoundary(adapter,legacyQuery,true);
+        }
+      }
+ else {
+        minTime=legacyQuery.getBound().equalsIgnoreCase(TimeBoundaryQuery.MAX_TIME) ? null : adapter.getMinTime();
+        maxTime=legacyQuery.getBound().equalsIgnoreCase(TimeBoundaryQuery.MIN_TIME) ? null : adapter.getMaxTime();
+      }
       return legacyQuery.buildResult(adapter.getInterval().getStart(),minTime,maxTime).iterator();
     }
     @Override public void cleanup(    Iterator<Result<TimeBoundaryResultValue>> toClean){

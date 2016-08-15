@@ -1,3 +1,14 @@
 {
   this.adapter=segment.asStorageAdapter();
+  this.skipToFirstMatching=new Function<Cursor,Result<DateTime>>(){
+    @Override public Result<DateTime> apply(    Cursor cursor){
+      if (cursor.isDone()) {
+        return null;
+      }
+      final LongColumnSelector timestampColumnSelector=cursor.makeLongColumnSelector(Column.TIME_COLUMN_NAME);
+      final DateTime timestamp=new DateTime(timestampColumnSelector.get());
+      return new Result<>(adapter.getInterval().getStart(),timestamp);
+    }
+  }
+;
 }

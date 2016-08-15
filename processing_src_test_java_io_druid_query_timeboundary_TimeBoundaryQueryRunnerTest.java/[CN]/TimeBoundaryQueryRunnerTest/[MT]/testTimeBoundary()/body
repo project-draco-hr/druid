@@ -1,5 +1,6 @@
 {
   TimeBoundaryQuery timeBoundaryQuery=Druids.newTimeBoundaryQueryBuilder().dataSource("testing").build();
+  Assert.assertFalse(timeBoundaryQuery.hasFilters());
   HashMap<String,Object> context=new HashMap<String,Object>();
   Iterable<Result<TimeBoundaryResultValue>> results=Sequences.toList(runner.run(timeBoundaryQuery,context),Lists.<Result<TimeBoundaryResultValue>>newArrayList());
   TimeBoundaryResultValue val=results.iterator().next().getValue();

@@ -1,6 +1,6 @@
 {
   List<Result<TimeBoundaryResultValue>> results=Arrays.asList(new Result<>(new DateTime(),new TimeBoundaryResultValue(ImmutableMap.of("maxTime","2012-01-01","minTime","2011-01-01"))),new Result<>(new DateTime(),new TimeBoundaryResultValue(ImmutableMap.of("maxTime","2012-02-01","minTime","2011-01-01"))));
-  TimeBoundaryQuery query=new TimeBoundaryQuery(new TableDataSource("test"),null,null,null);
+  TimeBoundaryQuery query=new TimeBoundaryQuery(new TableDataSource("test"),null,null,null,null);
   Iterable<Result<TimeBoundaryResultValue>> actual=query.mergeResults(results);
   Assert.assertTrue(actual.iterator().next().getValue().getMaxTime().equals(new DateTime("2012-02-01")));
 }

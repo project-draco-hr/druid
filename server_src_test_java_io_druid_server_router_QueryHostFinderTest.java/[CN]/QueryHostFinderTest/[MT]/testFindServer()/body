@@ -4,6 +4,6 @@
   EasyMock.expect(selector.pick()).andReturn(server).once();
   EasyMock.replay(selector);
   QueryHostFinder queryRunner=new QueryHostFinder(brokerSelector);
-  Server server=queryRunner.findServer(new TimeBoundaryQuery(new TableDataSource("test"),new MultipleIntervalSegmentSpec(Arrays.<Interval>asList(new Interval("2011-08-31/2011-09-01"))),null,null));
+  Server server=queryRunner.findServer(new TimeBoundaryQuery(new TableDataSource("test"),new MultipleIntervalSegmentSpec(Arrays.<Interval>asList(new Interval("2011-08-31/2011-09-01"))),null,null,null));
   Assert.assertEquals("foo",server.getHost());
 }
