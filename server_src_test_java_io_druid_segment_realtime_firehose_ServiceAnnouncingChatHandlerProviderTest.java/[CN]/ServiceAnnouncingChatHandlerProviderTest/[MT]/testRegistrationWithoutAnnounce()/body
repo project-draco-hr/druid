@@ -1,0 +1,9 @@
+{
+  ChatHandler testChatHandler=new TestChatHandler();
+  Assert.assertFalse("bad initial state",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+  chatHandlerProvider.register(TEST_SERVICE_NAME,testChatHandler,false);
+  Assert.assertTrue("chatHandler did not register",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+  Assert.assertEquals(testChatHandler,chatHandlerProvider.get(TEST_SERVICE_NAME).get());
+  chatHandlerProvider.unregister(TEST_SERVICE_NAME);
+  Assert.assertFalse("chatHandler did not deregister",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+}

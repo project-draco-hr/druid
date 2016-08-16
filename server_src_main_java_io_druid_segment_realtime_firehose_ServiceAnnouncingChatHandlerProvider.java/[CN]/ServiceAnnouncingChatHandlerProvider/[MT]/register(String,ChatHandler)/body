@@ -1,14 +1,3 @@
 {
-  final DruidNode node=makeDruidNode(service);
-  log.info("Registering Eventhandler[%s]",service);
-  if (handlers.putIfAbsent(service,handler) != null) {
-    throw new ISE("handler already registered for service[%s]",service);
-  }
-  try {
-    serviceAnnouncer.announce(node);
-  }
- catch (  Exception e) {
-    log.warn(e,"Failed to register service[%s]",service);
-    handlers.remove(service,handler);
-  }
+  register(service,handler,true);
 }

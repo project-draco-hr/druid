@@ -1,0 +1,35 @@
+{
+  ChatHandler testChatHandler=new TestChatHandler();
+  Capture<DruidNode> captured=Capture.newInstance();
+  EasyMock.expect(node.getHost()).andReturn(TEST_HOST);
+  EasyMock.expect(node.getPort()).andReturn(TEST_PORT);
+  serviceAnnouncer.announce(EasyMock.capture(captured));
+  replayAll();
+  Assert.assertFalse("bad initial state",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+  if (useThreeArgConstructor) {
+    chatHandlerProvider.register(TEST_SERVICE_NAME,testChatHandler,true);
+  }
+ else {
+    chatHandlerProvider.register(TEST_SERVICE_NAME,testChatHandler);
+  }
+  verifyAll();
+  DruidNode param=captured.getValues().get(0);
+  Assert.assertEquals(TEST_SERVICE_NAME,param.getServiceName());
+  Assert.assertEquals(TEST_HOST,param.getHost());
+  Assert.assertEquals(TEST_PORT,param.getPort());
+  Assert.assertTrue("chatHandler did not register",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+  Assert.assertEquals(testChatHandler,chatHandlerProvider.get(TEST_SERVICE_NAME).get());
+  captured.reset();
+  resetAll();
+  EasyMock.expect(node.getHost()).andReturn(TEST_HOST);
+  EasyMock.expect(node.getPort()).andReturn(TEST_PORT);
+  serviceAnnouncer.unannounce(EasyMock.capture(captured));
+  replayAll();
+  chatHandlerProvider.unregister(TEST_SERVICE_NAME);
+  verifyAll();
+  param=captured.getValues().get(0);
+  Assert.assertEquals(TEST_SERVICE_NAME,param.getServiceName());
+  Assert.assertEquals(TEST_HOST,param.getHost());
+  Assert.assertEquals(TEST_PORT,param.getPort());
+  Assert.assertFalse("chatHandler did not deregister",chatHandlerProvider.get(TEST_SERVICE_NAME).isPresent());
+}

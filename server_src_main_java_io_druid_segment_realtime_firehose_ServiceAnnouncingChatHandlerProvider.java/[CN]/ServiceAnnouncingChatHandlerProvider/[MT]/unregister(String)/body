@@ -3,12 +3,16 @@
   final ChatHandler handler=handlers.get(service);
   if (handler == null) {
     log.warn("handler[%s] not currently registered, ignoring.",service);
+    return;
   }
-  try {
-    serviceAnnouncer.unannounce(makeDruidNode(service));
-  }
- catch (  Exception e) {
-    log.warn(e,"Failed to unregister service[%s]",service);
+  if (announcements.contains(service)) {
+    try {
+      serviceAnnouncer.unannounce(makeDruidNode(service));
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to unregister service[%s]",service);
+    }
+    announcements.remove(service);
   }
   handlers.remove(service,handler);
 }

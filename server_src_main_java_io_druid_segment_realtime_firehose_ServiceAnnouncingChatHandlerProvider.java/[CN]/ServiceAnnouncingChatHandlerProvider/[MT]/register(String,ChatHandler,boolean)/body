@@ -1,0 +1,18 @@
+{
+  log.info("Registering Eventhandler[%s]",service);
+  if (handlers.putIfAbsent(service,handler) != null) {
+    throw new ISE("handler already registered for service[%s]",service);
+  }
+  if (announce) {
+    try {
+      serviceAnnouncer.announce(makeDruidNode(service));
+      if (!announcements.add(service)) {
+        throw new ISE("announcements already has an entry for service[%s]",service);
+      }
+    }
+ catch (    Exception e) {
+      log.warn(e,"Failed to register service[%s]",service);
+      handlers.remove(service,handler);
+    }
+  }
+}
