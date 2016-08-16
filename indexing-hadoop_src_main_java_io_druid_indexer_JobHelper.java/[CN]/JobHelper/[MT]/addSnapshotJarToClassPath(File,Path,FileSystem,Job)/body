@@ -1,8 +1,7 @@
 {
   final Path hdfsPath=new Path(intermediateClassPath,jarFile.getName());
-  if (!existing.contains(hdfsPath)) {
+  if (!fs.exists(hdfsPath)) {
     uploadJar(jarFile,hdfsPath,fs);
-    existing.add(hdfsPath);
   }
   job.addFileToClassPath(hdfsPath);
 }
