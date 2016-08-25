@@ -43,7 +43,7 @@
     @Override public Function<Result<SelectResultValue>,Object> prepareForCache(){
       return new Function<Result<SelectResultValue>,Object>(){
         @Override public Object apply(        final Result<SelectResultValue> input){
-          return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getPagingIdentifiers(),input.getValue().getEvents());
+          return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getPagingIdentifiers(),input.getValue().getDimensions(),input.getValue().getMetrics(),input.getValue().getEvents());
         }
       }
 ;
@@ -56,6 +56,10 @@
           Iterator<Object> resultIter=results.iterator();
           DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
           return new Result<SelectResultValue>(timestamp,new SelectResultValue((Map<String,Integer>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Map<String,Integer>>(){
+          }
+),(Set<String>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
+          }
+),(Set<String>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
           }
 ),(List<EventHolder>)jsonMapper.convertValue(resultIter.next(),new TypeReference<List<EventHolder>>(){
           }

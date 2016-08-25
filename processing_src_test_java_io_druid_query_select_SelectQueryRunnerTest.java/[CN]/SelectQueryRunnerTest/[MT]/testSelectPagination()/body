@@ -2,6 +2,6 @@
   SelectQuery query=newTestQuery().intervals(I_0112_0114).dimensionSpecs(DefaultDimensionSpec.toSpec(QueryRunnerTestHelper.qualityDimension)).metrics(Arrays.asList(QueryRunnerTestHelper.indexMetric)).pagingSpec(new PagingSpec(toPagingIdentifier(3,descending),3)).build();
   Iterable<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,Maps.newHashMap()),Lists.<Result<SelectResultValue>>newArrayList());
   PagingOffset offset=query.getPagingOffset(QueryRunnerTestHelper.segmentId);
-  List<Result<SelectResultValue>> expectedResults=toExpected(toEvents(new String[]{EventHolder.timestampKey + ":TIME","foo:NULL","foo2:NULL"},V_0112_0114),offset.startOffset(),offset.threshold());
+  List<Result<SelectResultValue>> expectedResults=toExpected(toEvents(new String[]{EventHolder.timestampKey + ":TIME","foo:NULL","foo2:NULL"},V_0112_0114),Lists.newArrayList("quality"),Lists.<String>newArrayList("index"),offset.startOffset(),offset.threshold());
   verify(expectedResults,results);
 }

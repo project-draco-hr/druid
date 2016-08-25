@@ -8,6 +8,8 @@
     for (    Map.Entry<String,Integer> entry : expected.getValue().getPagingIdentifiers().entrySet()) {
       Assert.assertEquals(entry.getValue(),actual.getValue().getPagingIdentifiers().get(entry.getKey()));
     }
+    Assert.assertEquals(expected.getValue().getDimensions(),actual.getValue().getDimensions());
+    Assert.assertEquals(expected.getValue().getMetrics(),actual.getValue().getMetrics());
     Iterator<EventHolder> expectedEvts=expected.getValue().getEvents().iterator();
     Iterator<EventHolder> actualEvts=actual.getValue().getEvents().iterator();
     while (expectedEvts.hasNext()) {

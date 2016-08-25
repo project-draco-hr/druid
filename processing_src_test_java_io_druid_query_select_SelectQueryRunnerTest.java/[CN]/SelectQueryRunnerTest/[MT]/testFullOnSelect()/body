@@ -3,6 +3,6 @@
   HashMap<String,Object> context=new HashMap<String,Object>();
   Iterable<Result<SelectResultValue>> results=Sequences.toList(runner.run(query,context),Lists.<Result<SelectResultValue>>newArrayList());
   PagingOffset offset=query.getPagingOffset(QueryRunnerTestHelper.segmentId);
-  List<Result<SelectResultValue>> expectedResults=toExpected(toEvents(new String[]{EventHolder.timestampKey + ":TIME"},V_0112_0114),offset.startOffset(),offset.threshold());
-  verify(expectedResults,results);
+  List<Result<SelectResultValue>> expectedResults=toExpected(toEvents(new String[]{EventHolder.timestampKey + ":TIME"},V_0112_0114),Lists.newArrayList("market","quality","placement","placementish","partial_null_column","null_column"),Lists.<String>newArrayList("index","quality_uniques"),offset.startOffset(),offset.threshold());
+  verify(expectedResults,populateNullColumnAtLastForQueryableIndexCase(results,"null_column"));
 }

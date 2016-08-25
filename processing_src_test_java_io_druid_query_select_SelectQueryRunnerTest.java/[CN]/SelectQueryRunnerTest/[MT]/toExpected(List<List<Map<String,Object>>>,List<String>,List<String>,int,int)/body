@@ -20,7 +20,7 @@
       }
     }
     int lastOffset=holders.isEmpty() ? offset : holders.get(holders.size() - 1).getOffset();
-    expected.add(new Result(new DateTime(group.get(0).get(EventHolder.timestampKey)),new SelectResultValue(ImmutableMap.of(QueryRunnerTestHelper.segmentId,lastOffset),holders)));
+    expected.add(new Result(new DateTime(group.get(0).get(EventHolder.timestampKey)),new SelectResultValue(ImmutableMap.of(QueryRunnerTestHelper.segmentId,lastOffset),Sets.<String>newHashSet(dimensions),Sets.<String>newHashSet(metrics),holders)));
   }
   return expected;
 }
