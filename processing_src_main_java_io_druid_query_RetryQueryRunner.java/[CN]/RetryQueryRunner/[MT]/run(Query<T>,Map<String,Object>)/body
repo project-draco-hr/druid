@@ -3,7 +3,7 @@
   listOfSequences.add(baseRunner.run(query,context));
   return new YieldingSequenceBase<T>(){
     @Override public <OutType>Yielder<OutType> toYielder(    OutType initValue,    YieldingAccumulator<OutType,T> accumulator){
-      final List<SegmentDescriptor> missingSegments=getMissingSegments(context);
+      List<SegmentDescriptor> missingSegments=getMissingSegments(context);
       if (!missingSegments.isEmpty()) {
         for (int i=0; i < config.getNumTries(); i++) {
           log.info("[%,d] missing segments found. Retry attempt [%,d]",missingSegments.size(),i);
@@ -11,7 +11,8 @@
           final Query<T> retryQuery=query.withQuerySegmentSpec(new MultipleSpecificSegmentSpec(missingSegments));
           Sequence<T> retrySequence=baseRunner.run(retryQuery,context);
           listOfSequences.add(retrySequence);
-          if (getMissingSegments(context).isEmpty()) {
+          missingSegments=getMissingSegments(context);
+          if (missingSegments.isEmpty()) {
             break;
           }
         }
