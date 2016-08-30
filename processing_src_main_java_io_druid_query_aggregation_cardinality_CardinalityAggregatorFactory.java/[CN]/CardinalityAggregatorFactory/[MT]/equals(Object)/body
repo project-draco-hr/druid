@@ -6,14 +6,11 @@
     return false;
   }
   CardinalityAggregatorFactory that=(CardinalityAggregatorFactory)o;
-  if (byRow != that.byRow) {
+  if (isByRow() != that.isByRow()) {
     return false;
   }
-  if (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null) {
+  if (!getName().equals(that.getName())) {
     return false;
   }
-  if (name != null ? !name.equals(that.name) : that.name != null) {
-    return false;
-  }
-  return true;
+  return getFields().equals(that.getFields());
 }

@@ -1,5 +1,9 @@
 {
-  CardinalityAggregatorFactory factory=new CardinalityAggregatorFactory("billy",ImmutableList.of("b","a","c"),true);
+  CardinalityAggregatorFactory factory=new CardinalityAggregatorFactory("billy",ImmutableList.<DimensionSpec>of(new DefaultDimensionSpec("b","b"),new DefaultDimensionSpec("a","a"),new DefaultDimensionSpec("c","c")),true);
   ObjectMapper objectMapper=new DefaultObjectMapper();
   Assert.assertEquals(factory,objectMapper.readValue(objectMapper.writeValueAsString(factory),AggregatorFactory.class));
+  String fieldNamesOnly="{\"type\":\"cardinality\",\"name\":\"billy\",\"fields\":[\"b\",\"a\",\"c\"],\"byRow\":true}";
+  Assert.assertEquals(factory,objectMapper.readValue(fieldNamesOnly,AggregatorFactory.class));
+  CardinalityAggregatorFactory factory2=new CardinalityAggregatorFactory("billy",ImmutableList.<DimensionSpec>of(new ExtractionDimensionSpec("b","b",new RegexDimExtractionFn(".*",false,null)),new RegexFilteredDimensionSpec(new DefaultDimensionSpec("a","a"),".*"),new DefaultDimensionSpec("c","c")),true);
+  Assert.assertEquals(factory2,objectMapper.readValue(objectMapper.writeValueAsString(factory2),AggregatorFactory.class));
 }

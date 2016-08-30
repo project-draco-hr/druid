@@ -1,0 +1,8 @@
+{
+  String helloJsFn="function(str) { return 'hello' }";
+  ExtractionFn helloFn=new JavaScriptExtractionFn(helloJsFn,false,JavaScriptConfig.getDefault());
+  DimensionSpec dimSpec=new ExtractionDimensionSpec(QueryRunnerTestHelper.marketDimension,QueryRunnerTestHelper.marketDimension,helloFn);
+  TopNQuery query=new TopNQueryBuilder().dataSource(QueryRunnerTestHelper.dataSource).granularity(QueryRunnerTestHelper.allGran).dimension(dimSpec).metric(new NumericTopNMetricSpec("numVals")).threshold(10).intervals(QueryRunnerTestHelper.firstToThird).aggregators(Lists.<AggregatorFactory>newArrayList(new CardinalityAggregatorFactory("numVals",ImmutableList.<DimensionSpec>of(new ExtractionDimensionSpec(QueryRunnerTestHelper.qualityDimension,QueryRunnerTestHelper.qualityDimension,helloFn)),false))).build();
+  List<Result<TopNResultValue>> expectedResults=Arrays.asList(new Result<>(new DateTime("2011-04-01T00:00:00.000Z"),new TopNResultValue(Arrays.<Map<String,Object>>asList(ImmutableMap.<String,Object>of("market","hello","numVals",1.0002442201269182d)))));
+  assertExpectedResults(expectedResults,query);
+}

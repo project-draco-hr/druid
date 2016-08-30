@@ -1,7 +1,17 @@
 {
-  dim1=new TestDimensionSelector(values1);
-  dim2=new TestDimensionSelector(values2);
+  dim1=new TestDimensionSelector(values1,null);
+  dim2=new TestDimensionSelector(values2,null);
   selectorList=Lists.newArrayList((DimensionSelector)dim1,dim2);
-  rowAggregatorFactory=new CardinalityAggregatorFactory("billy",Lists.newArrayList("dim1","dim2"),true);
-  valueAggregatorFactory=new CardinalityAggregatorFactory("billy",Lists.newArrayList("dim1","dim2"),true);
+  rowAggregatorFactory=new CardinalityAggregatorFactory("billy",Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dim1","dim1"),new DefaultDimensionSpec("dim2","dim2")),true);
+  valueAggregatorFactory=new CardinalityAggregatorFactory("billy",Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dim1","dim1"),new DefaultDimensionSpec("dim2","dim2")),false);
+  String superJsFn="function(str) { return 'super-' + str; }";
+  ExtractionFn superFn=new JavaScriptExtractionFn(superJsFn,false,JavaScriptConfig.getDefault());
+  dim1WithExtraction=new TestDimensionSelector(values1,superFn);
+  dim2WithExtraction=new TestDimensionSelector(values2,superFn);
+  selectorListWithExtraction=Lists.newArrayList((DimensionSelector)dim1WithExtraction,dim2WithExtraction);
+  String helloJsFn="function(str) { return 'hello' }";
+  ExtractionFn helloFn=new JavaScriptExtractionFn(helloJsFn,false,JavaScriptConfig.getDefault());
+  dim1ConstantVal=new TestDimensionSelector(values1,helloFn);
+  dim2ConstantVal=new TestDimensionSelector(values2,helloFn);
+  selectorListConstantVal=Lists.newArrayList((DimensionSelector)dim1ConstantVal,dim2ConstantVal);
 }

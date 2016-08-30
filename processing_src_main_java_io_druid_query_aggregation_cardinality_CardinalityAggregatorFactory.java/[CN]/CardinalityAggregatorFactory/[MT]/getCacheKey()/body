@@ -1,4 +1,17 @@
 {
-  byte[] fieldNameBytes=StringUtils.toUtf8(Joiner.on("\u0001").join(fieldNames));
-  return ByteBuffer.allocate(2 + fieldNameBytes.length).put(CACHE_TYPE_ID).put(fieldNameBytes).put((byte)(byRow ? 1 : 0)).array();
+  List<byte[]> dimSpecKeys=new ArrayList<>();
+  int dimSpecKeysLength=fields.size();
+  for (  DimensionSpec dimSpec : fields) {
+    byte[] dimSpecKey=dimSpec.getCacheKey();
+    dimSpecKeysLength+=dimSpecKey.length;
+    dimSpecKeys.add(dimSpec.getCacheKey());
+  }
+  ByteBuffer retBuf=ByteBuffer.allocate(2 + dimSpecKeysLength);
+  retBuf.put(CACHE_TYPE_ID);
+  for (  byte[] dimSpecKey : dimSpecKeys) {
+    retBuf.put(dimSpecKey);
+    retBuf.put(CACHE_KEY_SEPARATOR);
+  }
+  retBuf.put((byte)(byRow ? 1 : 0));
+  return retBuf.array();
 }

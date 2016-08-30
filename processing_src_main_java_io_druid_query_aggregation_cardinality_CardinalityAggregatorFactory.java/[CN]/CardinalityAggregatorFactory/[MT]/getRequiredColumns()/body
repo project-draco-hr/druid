@@ -1,7 +1,7 @@
 {
-  return Lists.transform(fieldNames,new Function<String,AggregatorFactory>(){
-    @Override public AggregatorFactory apply(    String input){
-      return new CardinalityAggregatorFactory(input,fieldNames,byRow);
+  return Lists.transform(fields,new Function<DimensionSpec,AggregatorFactory>(){
+    @Override public AggregatorFactory apply(    DimensionSpec input){
+      return new CardinalityAggregatorFactory(input.getOutputName(),Collections.singletonList(input),byRow);
     }
   }
 );

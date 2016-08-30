@@ -15,10 +15,10 @@
     }
   }
 ).cycle().limit(MAX);
-  final CardinalityAggregatorTest.TestDimensionSelector dim1=new CardinalityAggregatorTest.TestDimensionSelector(values);
+  final CardinalityAggregatorTest.TestDimensionSelector dim1=new CardinalityAggregatorTest.TestDimensionSelector(values,null);
   selectorList=Lists.newArrayList((DimensionSelector)dim1);
   agg=new CardinalityBufferAggregator(selectorList,byRow);
-  CardinalityAggregatorFactory factory=new CardinalityAggregatorFactory("billy",Lists.newArrayList("dim1"),byRow);
+  CardinalityAggregatorFactory factory=new CardinalityAggregatorFactory("billy",Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("dim1","dim1")),byRow);
   int maxSize=factory.getMaxIntermediateSize();
   buf=ByteBuffer.allocate(maxSize + 64);
   pos=10;
