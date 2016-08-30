@@ -3,6 +3,7 @@
     @Override public Void call() throws Exception {
       try {
         List<RemoteTaskRunnerWorkItem> copy=Lists.newArrayList(pendingTasks.values());
+        sortByInsertionTime(copy);
         for (        RemoteTaskRunnerWorkItem taskRunnerWorkItem : copy) {
           String taskId=taskRunnerWorkItem.getTaskId();
           if (tryAssignTasks.putIfAbsent(taskId,taskId) == null) {

@@ -1,0 +1,10 @@
+{
+  RemoteTaskRunnerWorkItem item1=new RemoteTaskRunnerWorkItem("b",null,null).withQueueInsertionTime(new DateTime("2015-01-01T00:00:03Z"));
+  RemoteTaskRunnerWorkItem item2=new RemoteTaskRunnerWorkItem("a",null,null).withQueueInsertionTime(new DateTime("2015-01-01T00:00:02Z"));
+  RemoteTaskRunnerWorkItem item3=new RemoteTaskRunnerWorkItem("c",null,null).withQueueInsertionTime(new DateTime("2015-01-01T00:00:01Z"));
+  ArrayList<RemoteTaskRunnerWorkItem> workItems=Lists.newArrayList(item1,item2,item3);
+  RemoteTaskRunner.sortByInsertionTime(workItems);
+  Assert.assertEquals(item3,workItems.get(0));
+  Assert.assertEquals(item2,workItems.get(1));
+  Assert.assertEquals(item1,workItems.get(2));
+}
