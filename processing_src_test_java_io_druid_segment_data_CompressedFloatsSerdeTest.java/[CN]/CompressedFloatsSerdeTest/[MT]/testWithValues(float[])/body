@@ -1,0 +1,29 @@
+{
+  FloatSupplierSerializer serializer=CompressionFactory.getFloatSerializer(new IOPeonForTesting(),"test",order,compressionStrategy);
+  serializer.open();
+  for (  float value : values) {
+    serializer.add(value);
+  }
+  Assert.assertEquals(values.length,serializer.size());
+  final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  serializer.closeAndConsolidate(new ByteSink(){
+    @Override public OutputStream openStream() throws IOException {
+      return baos;
+    }
+  }
+);
+  Assert.assertEquals(baos.size(),serializer.getSerializedSize());
+  CompressedFloatsIndexedSupplier supplier=CompressedFloatsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(baos.toByteArray()),order);
+  IndexedFloats floats=supplier.get();
+  assertIndexMatchesVals(floats,values);
+  for (int i=0; i < 10; i++) {
+    int a=(int)(Math.random() * values.length);
+    int b=(int)(Math.random() * values.length);
+    int start=a < b ? a : b;
+    int end=a < b ? b : a;
+    tryFill(floats,values,start,end - start);
+  }
+  testSupplierSerde(supplier,values);
+  testConcurrentThreadReads(supplier,floats,values);
+  floats.close();
+}

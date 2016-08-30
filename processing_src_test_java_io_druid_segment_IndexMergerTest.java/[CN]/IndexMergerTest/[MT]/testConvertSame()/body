@@ -17,7 +17,7 @@
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(converted.getAvailableDimensions()));
   Assert.assertEquals(4,converted.getColumnNames().size());
   INDEX_IO.validateTwoSegments(tempDir1,convertDir);
-  assertDimCompression(index1,indexSpec.getDimensionCompressionStrategy());
-  assertDimCompression(converted,indexSpec.getDimensionCompressionStrategy());
+  assertDimCompression(index1,indexSpec.getDimensionCompression());
+  assertDimCompression(converted,indexSpec.getDimensionCompression());
   Assert.assertArrayEquals(getCombiningAggregators(aggregators),converted.getMetadata().getAggregators());
 }

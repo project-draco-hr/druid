@@ -1,0 +1,7 @@
+{
+  close();
+  try (OutputStream out=consolidatedOut.openStream();InputStream meta=ioPeon.makeInputStream(metaFile);InputStream value=ioPeon.makeInputStream(valueFile)){
+    ByteStreams.copy(meta,out);
+    ByteStreams.copy(value,out);
+  }
+ }

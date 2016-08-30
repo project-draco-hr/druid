@@ -1,0 +1,13 @@
+{
+  tempOut.write(Longs.toByteArray(value));
+  ++numInserted;
+  if (uniqueValues.size() <= CompressionFactory.MAX_TABLE_SIZE && !uniqueValues.containsKey(value)) {
+    uniqueValues.put(value,uniqueValues.size());
+  }
+  if (value > maxVal) {
+    maxVal=value;
+  }
+  if (value < minVal) {
+    minVal=value;
+  }
+}

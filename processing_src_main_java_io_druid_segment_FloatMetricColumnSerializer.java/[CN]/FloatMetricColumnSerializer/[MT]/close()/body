@@ -1,7 +1,7 @@
 {
   final File outFile=IndexIO.makeMetricFile(outDir,metricName,IndexIO.BYTE_ORDER);
   outFile.delete();
-  MetricHolder.writeFloatMetric(Files.newOutputStreamSupplier(outFile,true),metricName,writer);
+  MetricHolder.writeFloatMetric(Files.asByteSink(outFile,FileWriteMode.APPEND),metricName,writer);
   IndexIO.checkFileSize(outFile);
   writer=null;
 }

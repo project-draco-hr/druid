@@ -1,21 +1,3 @@
 {
-  final int div=Integer.numberOfTrailingZeros(sizePer);
-  final int rem=sizePer - 1;
-  final boolean powerOf2=sizePer == (1 << div);
-  if (powerOf2) {
-    return new CompressedIndexedFloats(){
-      @Override public float get(      int index){
-        final int bufferNum=index >> div;
-        if (bufferNum != currIndex) {
-          loadBuffer(bufferNum);
-        }
-        final int bufferIndex=index & rem;
-        return buffer.get(buffer.position() + bufferIndex);
-      }
-    }
-;
-  }
- else {
-    return new CompressedIndexedFloats();
-  }
+  return supplier.get();
 }

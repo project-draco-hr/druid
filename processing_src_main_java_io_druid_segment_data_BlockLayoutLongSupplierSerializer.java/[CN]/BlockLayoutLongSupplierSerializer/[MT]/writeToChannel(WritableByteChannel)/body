@@ -1,0 +1,7 @@
+{
+  try (InputStream meta=ioPeon.makeInputStream(metaFile);InputStream input=flattener.combineStreams().openStream()){
+    ByteStreams.copy(Channels.newChannel(meta),channel);
+    final ReadableByteChannel from=Channels.newChannel(input);
+    ByteStreams.copy(from,channel);
+  }
+ }

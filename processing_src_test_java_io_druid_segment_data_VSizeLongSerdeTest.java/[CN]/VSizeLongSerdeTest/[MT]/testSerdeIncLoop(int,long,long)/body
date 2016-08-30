@@ -1,0 +1,21 @@
+{
+  outBuffer.rewind();
+  outStream.reset();
+  VSizeLongSerde.LongSerializer streamSer=VSizeLongSerde.getSerializer(longSize,outStream);
+  VSizeLongSerde.LongSerializer bufferSer=VSizeLongSerde.getSerializer(longSize,outBuffer,0);
+  for (long i=start; i < end; i++) {
+    streamSer.write(i);
+    bufferSer.write(i);
+  }
+  streamSer.close();
+  bufferSer.close();
+  buffer=ByteBuffer.wrap(outStream.toByteArray());
+  Assert.assertEquals(VSizeLongSerde.getSerializedSize(longSize,(int)(end - start)),buffer.capacity());
+  Assert.assertEquals(VSizeLongSerde.getSerializedSize(longSize,(int)(end - start)),outBuffer.position());
+  VSizeLongSerde.LongDeserializer streamDes=VSizeLongSerde.getDeserializer(longSize,buffer,0);
+  VSizeLongSerde.LongDeserializer bufferDes=VSizeLongSerde.getDeserializer(longSize,outBuffer,0);
+  for (int i=0; i < end - start; i++) {
+    Assert.assertEquals(start + i,streamDes.get(i));
+    Assert.assertEquals(start + i,bufferDes.get(i));
+  }
+}

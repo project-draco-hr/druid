@@ -3,7 +3,7 @@
   progress.startSection(section);
   long startTime=System.currentTimeMillis();
   final BitmapSerdeFactory bitmapSerdeFactory=indexSpec.getBitmapSerdeFactory();
-  final CompressedObjectStrategy.CompressionStrategy compressionStrategy=indexSpec.getDimensionCompressionStrategy();
+  final CompressedObjectStrategy.CompressionStrategy compressionStrategy=indexSpec.getDimensionCompression();
   for (int i=0; i < mergedDimensions.size(); ++i) {
     long dimStartTime=System.currentTimeMillis();
     final String dim=mergedDimensions.get(i);
@@ -22,7 +22,7 @@
     final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
     builder.setValueType(ValueType.STRING);
     builder.setHasMultipleValues(hasMultiValue);
-    final DictionaryEncodedColumnPartSerde.SerializerBuilder partBuilder=DictionaryEncodedColumnPartSerde.serializerBuilder().withDictionary(dimValueWriters.get(i)).withValue(dimWriters.get(i),hasMultiValue,compressionStrategy != null).withBitmapSerdeFactory(bitmapSerdeFactory).withBitmapIndex(bitmapIndexWriters.get(i)).withSpatialIndex(spatialIndexWriters.get(i)).withByteOrder(IndexIO.BYTE_ORDER);
+    final DictionaryEncodedColumnPartSerde.SerializerBuilder partBuilder=DictionaryEncodedColumnPartSerde.serializerBuilder().withDictionary(dimValueWriters.get(i)).withValue(dimWriters.get(i),hasMultiValue,compressionStrategy != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED).withBitmapSerdeFactory(bitmapSerdeFactory).withBitmapIndex(bitmapIndexWriters.get(i)).withSpatialIndex(spatialIndexWriters.get(i)).withByteOrder(IndexIO.BYTE_ORDER);
     final ColumnDescriptor serdeficator=builder.addSerde(partBuilder.build()).build();
     makeColumn(v9Smoosher,dim,serdeficator);
     log.info("Completed dimension column[%s] in %,d millis.",dim,System.currentTimeMillis() - dimStartTime);

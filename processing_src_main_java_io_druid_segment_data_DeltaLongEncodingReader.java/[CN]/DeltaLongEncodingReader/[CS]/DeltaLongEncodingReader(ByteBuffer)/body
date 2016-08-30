@@ -1,0 +1,13 @@
+{
+  this.buffer=fromBuffer.asReadOnlyBuffer();
+  byte version=buffer.get();
+  if (version == CompressionFactory.DELTA_ENCODING_VERSION) {
+    base=buffer.getLong();
+    bitsPerValue=buffer.getInt();
+    fromBuffer.position(buffer.position());
+    deserializer=VSizeLongSerde.getDeserializer(bitsPerValue,buffer,buffer.position());
+  }
+ else {
+    throw new IAE("Unknown version[%s]",version);
+  }
+}

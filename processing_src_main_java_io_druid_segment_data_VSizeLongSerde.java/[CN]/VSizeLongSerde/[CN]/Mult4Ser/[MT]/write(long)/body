@@ -1,0 +1,20 @@
+{
+  int shift=0;
+  if (first) {
+    shift=4;
+    curByte=(byte)value;
+    first=false;
+  }
+ else {
+    curByte=(byte)((curByte << 4) | ((value >> (numBytes << 3)) & 0xF));
+    buffer.put(curByte);
+    first=true;
+  }
+  for (int i=numBytes - 1; i >= 0; i--) {
+    buffer.put((byte)(value >>> (i * 8 + shift)));
+  }
+  if (!buffer.hasRemaining() && output != null) {
+    output.write(buffer.array());
+    buffer.rewind();
+  }
+}

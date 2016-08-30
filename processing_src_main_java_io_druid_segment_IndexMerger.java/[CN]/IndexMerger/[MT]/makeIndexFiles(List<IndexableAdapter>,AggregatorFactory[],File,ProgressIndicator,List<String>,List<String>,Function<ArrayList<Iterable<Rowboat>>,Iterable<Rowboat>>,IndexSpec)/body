@@ -149,7 +149,7 @@
     progress.progress();
     startTime=System.currentTimeMillis();
     Iterable<Rowboat> theRows=makeRowIterable(indexes,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
-    CompressedLongsSupplierSerializer timeWriter=CompressedLongsSupplierSerializer.create(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
+    LongSupplierSerializer timeWriter=CompressionFactory.getLongSerializer(ioPeon,"little_end_time",IndexIO.BYTE_ORDER,indexSpec.getLongEncoding(),CompressedObjectStrategy.DEFAULT_COMPRESSION_STRATEGY);
     timeWriter.open();
     ArrayList<VSizeIndexedWriter> forwardDimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
     for (    String dimension : mergedDimensions) {
@@ -158,14 +158,16 @@
       forwardDimWriters.add(writer);
     }
     ArrayList<MetricColumnSerializer> metWriters=Lists.newArrayListWithCapacity(mergedMetrics.size());
+    final CompressedObjectStrategy.CompressionStrategy metCompression=indexSpec.getMetricCompression();
+    final CompressionFactory.LongEncodingStrategy longEncoding=indexSpec.getLongEncoding();
     for (    String metric : mergedMetrics) {
       ValueType type=valueTypes.get(metric);
 switch (type) {
 case LONG:
-        metWriters.add(new LongMetricColumnSerializer(metric,v8OutDir,ioPeon));
+        metWriters.add(new LongMetricColumnSerializer(metric,v8OutDir,ioPeon,metCompression,longEncoding));
       break;
 case FLOAT:
-    metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon));
+    metWriters.add(new FloatMetricColumnSerializer(metric,v8OutDir,ioPeon,metCompression));
   break;
 case COMPLEX:
 final String typeName=metricTypeNames.get(metric);
@@ -227,7 +229,7 @@ rowNumConversion.rewind();
 }
 final File timeFile=IndexIO.makeTimeFile(v8OutDir,IndexIO.BYTE_ORDER);
 timeFile.delete();
-OutputSupplier<FileOutputStream> out=Files.newOutputStreamSupplier(timeFile,true);
+ByteSink out=Files.asByteSink(timeFile,FileWriteMode.APPEND);
 timeWriter.closeAndConsolidate(out);
 IndexIO.checkFileSize(timeFile);
 for (int i=0; i < mergedDimensions.size(); ++i) {
@@ -242,7 +244,7 @@ log.info("outDir[%s] completed walk through of %,d rows in %,d millis.",v8OutDir
 startTime=System.currentTimeMillis();
 final File invertedFile=new File(v8OutDir,"inverted.drd");
 Files.touch(invertedFile);
-out=Files.newOutputStreamSupplier(invertedFile,true);
+out=Files.asByteSink(invertedFile,FileWriteMode.APPEND);
 final File geoFile=new File(v8OutDir,"spatial.drd");
 Files.touch(geoFile);
 OutputSupplier<FileOutputStream> spatialOut=Files.newOutputStreamSupplier(geoFile,true);

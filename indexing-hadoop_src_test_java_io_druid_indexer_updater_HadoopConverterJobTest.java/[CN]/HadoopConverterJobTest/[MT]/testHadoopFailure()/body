@@ -7,7 +7,7 @@
 ,metadataStorageTablesConfigSupplier,connector);
   final List<DataSegment> oldSemgments=getDataSegments(manager);
   final File tmpDir=temporaryFolder.newFolder();
-  final HadoopConverterJob converterJob=new HadoopConverterJob(new HadoopDruidConverterConfig(DATASOURCE,interval,new IndexSpec(new RoaringBitmapSerdeFactory(null),"uncompressed","uncompressed"),oldSemgments,true,tmpDir.toURI(),ImmutableMap.<String,String>of(),null,tmpSegmentDir.toURI().toString()));
+  final HadoopConverterJob converterJob=new HadoopConverterJob(new HadoopDruidConverterConfig(DATASOURCE,interval,new IndexSpec(new RoaringBitmapSerdeFactory(null),CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED,CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED,CompressionFactory.LongEncodingStrategy.LONGS),oldSemgments,true,tmpDir.toURI(),ImmutableMap.<String,String>of(),null,tmpSegmentDir.toURI().toString()));
   corrupt(oldSemgments.get(0));
   final List<DataSegment> result=converterJob.run();
   Assert.assertNull("result should be null",result);

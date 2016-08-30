@@ -1,8 +1,8 @@
 {
-  return ByteStreams.join(Iterables.transform(Arrays.asList("meta","header","values"),new Function<String,InputSupplier<InputStream>>(){
-    @Override public InputSupplier<InputStream> apply(    final String input){
-      return new InputSupplier<InputStream>(){
-        @Override public InputStream getInput() throws IOException {
+  return ByteSource.concat(Iterables.transform(Arrays.asList("meta","header","values"),new Function<String,ByteSource>(){
+    @Override public ByteSource apply(    final String input){
+      return new ByteSource(){
+        @Override public InputStream openStream() throws IOException {
           return ioPeon.makeInputStream(makeFilename(input));
         }
       }

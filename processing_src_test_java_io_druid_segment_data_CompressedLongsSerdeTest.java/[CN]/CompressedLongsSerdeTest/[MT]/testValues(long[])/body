@@ -1,0 +1,29 @@
+{
+  LongSupplierSerializer serializer=CompressionFactory.getLongSerializer(new IOPeonForTesting(),"test",order,encodingStrategy,compressionStrategy);
+  serializer.open();
+  for (  long value : values) {
+    serializer.add(value);
+  }
+  Assert.assertEquals(values.length,serializer.size());
+  final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  serializer.closeAndConsolidate(new ByteSink(){
+    @Override public OutputStream openStream() throws IOException {
+      return baos;
+    }
+  }
+);
+  Assert.assertEquals(baos.size(),serializer.getSerializedSize());
+  CompressedLongsIndexedSupplier supplier=CompressedLongsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(baos.toByteArray()),order);
+  IndexedLongs longs=supplier.get();
+  assertIndexMatchesVals(longs,values);
+  for (int i=0; i < 10; i++) {
+    int a=(int)(Math.random() * values.length);
+    int b=(int)(Math.random() * values.length);
+    int start=a < b ? a : b;
+    int end=a < b ? b : a;
+    tryFill(longs,values,start,end - start);
+  }
+  testSupplierSerde(supplier,values);
+  testConcurrentThreadReads(supplier,longs,values);
+  longs.close();
+}

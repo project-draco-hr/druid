@@ -1,16 +1,20 @@
 {
   byte versionFromBuffer=buffer.get();
-  if (versionFromBuffer == version) {
+  if (versionFromBuffer == LZF_VERSION || versionFromBuffer == version) {
     final int totalSize=buffer.getInt();
     final int sizePer=buffer.getInt();
-    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.forId(buffer.get());
-    return new CompressedLongsIndexedSupplier(totalSize,sizePer,GenericIndexed.read(buffer,CompressedLongBufferObjectStrategy.getBufferForOrder(order,compression,sizePer)),compression);
-  }
- else   if (versionFromBuffer == LZF_VERSION) {
-    final int totalSize=buffer.getInt();
-    final int sizePer=buffer.getInt();
-    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.LZF;
-    return new CompressedLongsIndexedSupplier(totalSize,sizePer,GenericIndexed.read(buffer,CompressedLongBufferObjectStrategy.getBufferForOrder(order,compression,sizePer)),compression);
+    CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.LZF;
+    CompressionFactory.LongEncodingFormat encoding=CompressionFactory.LEGACY_LONG_ENCODING_FORMAT;
+    if (versionFromBuffer == version) {
+      byte compressionId=buffer.get();
+      if (CompressionFactory.hasEncodingFlag(compressionId)) {
+        encoding=CompressionFactory.LongEncodingFormat.forId(buffer.get());
+        compressionId=CompressionFactory.clearEncodingFlag(compressionId);
+      }
+      compression=CompressedObjectStrategy.CompressionStrategy.forId(compressionId);
+    }
+    Supplier<IndexedLongs> supplier=CompressionFactory.getLongSupplier(totalSize,sizePer,buffer.asReadOnlyBuffer(),order,encoding,compression);
+    return new CompressedLongsIndexedSupplier(totalSize,sizePer,buffer,supplier,compression,encoding);
   }
   throw new IAE("Unknown version[%s]",versionFromBuffer);
 }

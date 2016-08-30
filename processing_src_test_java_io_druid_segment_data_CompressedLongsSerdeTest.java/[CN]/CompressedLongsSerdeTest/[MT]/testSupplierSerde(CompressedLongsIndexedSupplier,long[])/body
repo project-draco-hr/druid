@@ -1,0 +1,9 @@
+{
+  ByteArrayOutputStream baos=new ByteArrayOutputStream();
+  supplier.writeToChannel(Channels.newChannel(baos));
+  final byte[] bytes=baos.toByteArray();
+  Assert.assertEquals(supplier.getSerializedSize(),bytes.length);
+  CompressedLongsIndexedSupplier anotherSupplier=CompressedLongsIndexedSupplier.fromByteBuffer(ByteBuffer.wrap(bytes),order);
+  IndexedLongs indexed=anotherSupplier.get();
+  assertIndexMatchesVals(indexed,vals);
+}

@@ -1,0 +1,32 @@
+{
+switch (longSize) {
+case 1:
+    return new Size1Ser(buffer,bufferOffset);
+case 2:
+  return new Size2Ser(buffer,bufferOffset);
+case 4:
+return new Mult4Ser(buffer,bufferOffset,0);
+case 8:
+return new Mult8Ser(buffer,bufferOffset,1);
+case 12:
+return new Mult4Ser(buffer,bufferOffset,1);
+case 16:
+return new Mult8Ser(buffer,bufferOffset,2);
+case 20:
+return new Mult4Ser(buffer,bufferOffset,2);
+case 24:
+return new Mult8Ser(buffer,bufferOffset,3);
+case 32:
+return new Mult8Ser(buffer,bufferOffset,4);
+case 40:
+return new Mult8Ser(buffer,bufferOffset,5);
+case 48:
+return new Mult8Ser(buffer,bufferOffset,6);
+case 56:
+return new Mult8Ser(buffer,bufferOffset,7);
+case 64:
+return new Mult8Ser(buffer,bufferOffset,8);
+default :
+throw new IAE("Unsupported size %s",longSize);
+}
+}

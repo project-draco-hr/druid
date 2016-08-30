@@ -1,12 +1,13 @@
 {
   ArrayList<GenericColumnSerializer> metWriters=Lists.newArrayListWithCapacity(mergedMetrics.size());
-  final CompressedObjectStrategy.CompressionStrategy metCompression=indexSpec.getMetricCompressionStrategy();
+  final CompressedObjectStrategy.CompressionStrategy metCompression=indexSpec.getMetricCompression();
+  final CompressionFactory.LongEncodingStrategy longEncoding=indexSpec.getLongEncoding();
   for (  String metric : mergedMetrics) {
     ValueType type=metricsValueTypes.get(metric);
     GenericColumnSerializer writer;
 switch (type) {
 case LONG:
-      writer=LongColumnSerializer.create(ioPeon,metric,metCompression);
+      writer=LongColumnSerializer.create(ioPeon,metric,metCompression,longEncoding);
     break;
 case FLOAT:
   writer=FloatColumnSerializer.create(ioPeon,metric,metCompression);

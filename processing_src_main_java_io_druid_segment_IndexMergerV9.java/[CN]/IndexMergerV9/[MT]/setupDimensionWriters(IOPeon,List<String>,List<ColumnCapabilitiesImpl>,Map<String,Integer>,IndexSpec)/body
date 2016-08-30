@@ -1,6 +1,6 @@
 {
   ArrayList<IndexedIntsWriter> dimWriters=Lists.newArrayListWithCapacity(mergedDimensions.size());
-  final CompressedObjectStrategy.CompressionStrategy dimCompression=indexSpec.getDimensionCompressionStrategy();
+  final CompressedObjectStrategy.CompressionStrategy dimCompression=indexSpec.getDimensionCompression();
   for (int dimIndex=0; dimIndex < mergedDimensions.size(); ++dimIndex) {
     String dim=mergedDimensions.get(dimIndex);
     int cardinality=dimCardinalities.get(dim);
@@ -8,10 +8,10 @@
     String filenameBase=String.format("%s.forward_dim",dim);
     IndexedIntsWriter writer;
     if (capabilities.hasMultipleValues()) {
-      writer=(dimCompression != null) ? CompressedVSizeIndexedV3Writer.create(ioPeon,filenameBase,cardinality,dimCompression) : new VSizeIndexedWriter(ioPeon,filenameBase,cardinality);
+      writer=(dimCompression != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED) ? CompressedVSizeIndexedV3Writer.create(ioPeon,filenameBase,cardinality,dimCompression) : new VSizeIndexedWriter(ioPeon,filenameBase,cardinality);
     }
  else {
-      writer=(dimCompression != null) ? CompressedVSizeIntsIndexedWriter.create(ioPeon,filenameBase,cardinality,dimCompression) : new VSizeIndexedIntsWriter(ioPeon,filenameBase,cardinality);
+      writer=(dimCompression != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED) ? CompressedVSizeIntsIndexedWriter.create(ioPeon,filenameBase,cardinality,dimCompression) : new VSizeIndexedIntsWriter(ioPeon,filenameBase,cardinality);
     }
     writer.open();
     dimWriters.add(writer);

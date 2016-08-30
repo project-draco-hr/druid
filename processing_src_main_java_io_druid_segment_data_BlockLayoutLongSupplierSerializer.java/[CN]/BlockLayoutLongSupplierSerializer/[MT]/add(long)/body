@@ -1,0 +1,14 @@
+{
+  if (numInserted % sizePer == 0) {
+    if (endBuffer != null) {
+      writer.flush();
+      endBuffer.limit(endBuffer.position());
+      endBuffer.rewind();
+      flattener.write(StupidResourceHolder.create(endBuffer));
+    }
+    endBuffer=ByteBuffer.allocate(writer.getNumBytes(sizePer));
+    writer.setBuffer(endBuffer);
+  }
+  writer.write(value);
+  ++numInserted;
+}

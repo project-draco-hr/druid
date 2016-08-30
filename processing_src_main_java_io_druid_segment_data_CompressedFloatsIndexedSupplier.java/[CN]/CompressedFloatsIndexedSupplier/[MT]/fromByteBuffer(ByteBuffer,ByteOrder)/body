@@ -1,16 +1,15 @@
 {
   byte versionFromBuffer=buffer.get();
-  if (versionFromBuffer == version) {
+  if (versionFromBuffer == LZF_VERSION || versionFromBuffer == version) {
     final int totalSize=buffer.getInt();
     final int sizePer=buffer.getInt();
-    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.forId(buffer.get());
-    return new CompressedFloatsIndexedSupplier(totalSize,sizePer,GenericIndexed.read(buffer,CompressedFloatBufferObjectStrategy.getBufferForOrder(order,compression,sizePer)),compression);
-  }
- else   if (versionFromBuffer == LZF_VERSION) {
-    final int totalSize=buffer.getInt();
-    final int sizePer=buffer.getInt();
-    final CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.LZF;
-    return new CompressedFloatsIndexedSupplier(totalSize,sizePer,GenericIndexed.read(buffer,CompressedFloatBufferObjectStrategy.getBufferForOrder(order,compression,sizePer)),compression);
+    CompressedObjectStrategy.CompressionStrategy compression=CompressedObjectStrategy.CompressionStrategy.LZF;
+    if (versionFromBuffer == version) {
+      byte compressionId=buffer.get();
+      compression=CompressedObjectStrategy.CompressionStrategy.forId(compressionId);
+    }
+    Supplier<IndexedFloats> supplier=CompressionFactory.getFloatSupplier(totalSize,sizePer,buffer.asReadOnlyBuffer(),order,compression);
+    return new CompressedFloatsIndexedSupplier(totalSize,sizePer,buffer,supplier,compression);
   }
   throw new IAE("Unknown version[%s]",versionFromBuffer);
 }

@@ -11,13 +11,13 @@
   Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
   Assert.assertEquals(3,index1.getColumnNames().size());
-  IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),"lz4".equals(indexSpec.getDimensionCompression()) ? "lzf" : "lz4","lz4".equals(indexSpec.getMetricCompression()) ? "lzf" : "lz4");
+  IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZ4.equals(indexSpec.getDimensionCompression()) ? CompressedObjectStrategy.CompressionStrategy.LZF : CompressedObjectStrategy.CompressionStrategy.LZ4,CompressedObjectStrategy.CompressionStrategy.LZ4.equals(indexSpec.getDimensionCompression()) ? CompressedObjectStrategy.CompressionStrategy.LZF : CompressedObjectStrategy.CompressionStrategy.LZ4,CompressionFactory.LongEncodingStrategy.LONGS.equals(indexSpec.getLongEncoding()) ? CompressionFactory.LongEncodingStrategy.AUTO : CompressionFactory.LongEncodingStrategy.LONGS);
   AggregatorFactory[] mergedAggregators=new AggregatorFactory[]{new CountAggregatorFactory("count")};
   QueryableIndex merged=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.mergeQueryableIndex(ImmutableList.of(index1),true,mergedAggregators,mergedDir,newSpec)));
   Assert.assertEquals(2,merged.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(merged.getAvailableDimensions()));
   Assert.assertEquals(3,merged.getColumnNames().size());
   INDEX_IO.validateTwoSegments(tempDir1,mergedDir);
-  assertDimCompression(index1,indexSpec.getDimensionCompressionStrategy());
-  assertDimCompression(merged,newSpec.getDimensionCompressionStrategy());
+  assertDimCompression(index1,indexSpec.getDimensionCompression());
+  assertDimCompression(merged,newSpec.getDimensionCompression());
 }

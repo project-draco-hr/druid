@@ -1,0 +1,9 @@
+{
+  this.ioPeon=ioPeon;
+  this.sizePer=CompressedPools.BUFFER_SIZE / Floats.BYTES;
+  this.flattener=new GenericIndexedWriter<>(ioPeon,filenameBase,CompressedFloatBufferObjectStrategy.getBufferForOrder(order,compression,sizePer));
+  this.metaFile=filenameBase + ".format";
+  this.compression=compression;
+  endBuffer=FloatBuffer.allocate(sizePer);
+  endBuffer.mark();
+}

@@ -1,0 +1,17 @@
+{
+  if (value < 0) {
+    throw new IAE("maxValue[%s] must be positive",value);
+  }
+  byte numBits=0;
+  long maxValue=1;
+  for (int i=0; i < SUPPORTED_SIZE.length; i++) {
+    while (numBits < SUPPORTED_SIZE[i] && maxValue < Long.MAX_VALUE / 2) {
+      numBits++;
+      maxValue*=2;
+    }
+    if (value <= maxValue || maxValue >= Long.MAX_VALUE / 2) {
+      return SUPPORTED_SIZE[i];
+    }
+  }
+  return 64;
+}

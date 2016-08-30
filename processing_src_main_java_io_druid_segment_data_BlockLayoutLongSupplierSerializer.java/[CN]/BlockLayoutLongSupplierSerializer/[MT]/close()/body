@@ -1,0 +1,18 @@
+{
+  if (endBuffer != null) {
+    writer.flush();
+    endBuffer.limit(endBuffer.position());
+    endBuffer.rewind();
+    flattener.write(StupidResourceHolder.create(endBuffer));
+  }
+  endBuffer=null;
+  flattener.close();
+  try (CountingOutputStream metaOut=new CountingOutputStream(ioPeon.makeOutputStream(metaFile))){
+    metaOut.write(CompressedLongsIndexedSupplier.version);
+    metaOut.write(Ints.toByteArray(numInserted));
+    metaOut.write(Ints.toByteArray(sizePer));
+    writer.putMeta(metaOut,compression);
+    metaOut.close();
+    metaCount=metaOut.getCount();
+  }
+ }

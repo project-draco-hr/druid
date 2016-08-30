@@ -1,0 +1,43 @@
+{
+  final int div=Integer.numberOfTrailingZeros(sizePer);
+  final int rem=sizePer - 1;
+  final boolean powerOf2=sizePer == (1 << div);
+  if (powerOf2) {
+    if (baseReader instanceof LongsLongEncodingReader) {
+      return new BlockLayoutIndexedLongs(){
+        @Override public long get(        int index){
+          final int bufferNum=index >> div;
+          if (bufferNum != currIndex) {
+            loadBuffer(bufferNum);
+          }
+          final int bufferIndex=index & rem;
+          return longBuffer.get(longBuffer.position() + bufferIndex);
+        }
+        protected void loadBuffer(        int bufferNum){
+          CloseQuietly.close(holder);
+          holder=singleThreadedLongBuffers.get(bufferNum);
+          buffer=holder.get();
+          longBuffer=buffer.asLongBuffer();
+          currIndex=bufferNum;
+        }
+      }
+;
+    }
+ else {
+      return new BlockLayoutIndexedLongs(){
+        @Override public long get(        int index){
+          final int bufferNum=index >> div;
+          if (bufferNum != currIndex) {
+            loadBuffer(bufferNum);
+          }
+          final int bufferIndex=index & rem;
+          return reader.read(bufferIndex);
+        }
+      }
+;
+    }
+  }
+ else {
+    return new BlockLayoutIndexedLongs();
+  }
+}

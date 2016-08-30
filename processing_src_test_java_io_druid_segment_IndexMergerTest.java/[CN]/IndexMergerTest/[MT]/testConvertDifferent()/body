@@ -12,13 +12,13 @@
   Assert.assertEquals(2,index1.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(index1.getAvailableDimensions()));
   Assert.assertEquals(4,index1.getColumnNames().size());
-  IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),"lz4".equals(indexSpec.getDimensionCompression()) ? "lzf" : "lz4","lz4".equals(indexSpec.getMetricCompression()) ? "lzf" : "lz4");
+  IndexSpec newSpec=new IndexSpec(indexSpec.getBitmapSerdeFactory(),CompressedObjectStrategy.CompressionStrategy.LZ4.equals(indexSpec.getDimensionCompression()) ? CompressedObjectStrategy.CompressionStrategy.LZF : CompressedObjectStrategy.CompressionStrategy.LZ4,CompressedObjectStrategy.CompressionStrategy.LZ4.equals(indexSpec.getDimensionCompression()) ? CompressedObjectStrategy.CompressionStrategy.LZF : CompressedObjectStrategy.CompressionStrategy.LZ4,CompressionFactory.LongEncodingStrategy.LONGS.equals(indexSpec.getLongEncoding()) ? CompressionFactory.LongEncodingStrategy.AUTO : CompressionFactory.LongEncodingStrategy.LONGS);
   QueryableIndex converted=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.convert(tempDir1,convertDir,newSpec)));
   Assert.assertEquals(2,converted.getColumn(Column.TIME_COLUMN_NAME).getLength());
   Assert.assertEquals(Arrays.asList("dim1","dim2"),Lists.newArrayList(converted.getAvailableDimensions()));
   Assert.assertEquals(4,converted.getColumnNames().size());
   INDEX_IO.validateTwoSegments(tempDir1,convertDir);
-  assertDimCompression(index1,indexSpec.getDimensionCompressionStrategy());
-  assertDimCompression(converted,newSpec.getDimensionCompressionStrategy());
+  assertDimCompression(index1,indexSpec.getDimensionCompression());
+  assertDimCompression(converted,newSpec.getDimensionCompression());
   Assert.assertArrayEquals(getCombiningAggregators(aggregators),converted.getMetadata().getAggregators());
 }

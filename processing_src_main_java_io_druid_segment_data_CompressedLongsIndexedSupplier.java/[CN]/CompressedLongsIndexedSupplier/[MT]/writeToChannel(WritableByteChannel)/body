@@ -2,6 +2,12 @@
   channel.write(ByteBuffer.wrap(new byte[]{version}));
   channel.write(ByteBuffer.wrap(Ints.toByteArray(totalSize)));
   channel.write(ByteBuffer.wrap(Ints.toByteArray(sizePer)));
-  channel.write(ByteBuffer.wrap(new byte[]{compression.getId()}));
-  baseLongBuffers.writeToChannel(channel);
+  if (encoding == CompressionFactory.LEGACY_LONG_ENCODING_FORMAT) {
+    channel.write(ByteBuffer.wrap(new byte[]{compression.getId()}));
+  }
+ else {
+    channel.write(ByteBuffer.wrap(new byte[]{CompressionFactory.setEncodingFlag(compression.getId())}));
+    channel.write(ByteBuffer.wrap(new byte[]{encoding.getId()}));
+  }
+  channel.write(buffer.asReadOnlyBuffer());
 }

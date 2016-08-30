@@ -1,0 +1,30 @@
+{
+  CompressionFactory.LongEncodingWriter writer;
+  long delta;
+  try {
+    delta=LongMath.checkedSubtract(maxVal,minVal);
+  }
+ catch (  ArithmeticException e) {
+    delta=-1;
+  }
+  if (uniqueValues.size() <= CompressionFactory.MAX_TABLE_SIZE) {
+    writer=new TableLongEncodingWriter(uniqueValues);
+  }
+ else   if (delta != -1 && delta != Long.MAX_VALUE) {
+    writer=new DeltaLongEncodingWriter(minVal,delta);
+  }
+ else {
+    writer=new LongsLongEncodingWriter(order);
+  }
+  if (compression == CompressedObjectStrategy.CompressionStrategy.NONE) {
+    delegate=new EntireLayoutLongSupplierSerializer(ioPeon,filenameBase,order,writer);
+  }
+ else {
+    delegate=new BlockLayoutLongSupplierSerializer(ioPeon,filenameBase,order,writer,compression);
+  }
+  DataInputStream tempIn=new DataInputStream(new BufferedInputStream(ioPeon.makeInputStream(tempFile)));
+  delegate.open();
+  while (tempIn.available() > 0) {
+    delegate.add(tempIn.readLong());
+  }
+}

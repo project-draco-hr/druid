@@ -1,0 +1,12 @@
+{
+  if (count == 8) {
+    buffer.put(curByte);
+    count=0;
+    if (!buffer.hasRemaining() && output != null) {
+      output.write(buffer.array());
+      buffer.rewind();
+    }
+  }
+  curByte=(byte)((curByte << 2) | (value & 3));
+  count+=2;
+}

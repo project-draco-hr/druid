@@ -1,0 +1,9 @@
+{
+  Preconditions.checkArgument(dimensionCompression == null || DIMENSION_COMPRESSION.contains(dimensionCompression),"Unknown compression type[%s]",dimensionCompression);
+  Preconditions.checkArgument(metricCompression == null || METRIC_COMPRESSION.contains(metricCompression),"Unknown compression type[%s]",metricCompression);
+  Preconditions.checkArgument(longEncoding == null || LONG_ENCODING_NAMES.contains(longEncoding),"Unknown long encoding type[%s]",longEncoding);
+  this.bitmapSerdeFactory=bitmapSerdeFactory != null ? bitmapSerdeFactory : new ConciseBitmapSerdeFactory();
+  this.dimensionCompression=dimensionCompression == null ? DEFAULT_DIMENSION_COMPRESSION : dimensionCompression;
+  this.metricCompression=metricCompression == null ? DEFAULT_METRIC_COMPRESSION : metricCompression;
+  this.longEncoding=longEncoding == null ? DEFAULT_LONG_ENCODING : longEncoding;
+}
