@@ -8,6 +8,11 @@
   final SearchQuerySpec searchQuerySpec=query.getQuery();
   final int limit=query.getLimit();
   final boolean descending=query.isDescending();
+  final List<Interval> intervals=query.getQuerySegmentSpec().getIntervals();
+  if (intervals.size() != 1) {
+    throw new IAE("Should only have one interval, got[%s]",intervals);
+  }
+  final Interval interval=intervals.get(0);
   final QueryableIndex index=segment.asQueryableIndex();
   if (index != null) {
     final TreeMap<SearchHit,MutableInt> retVal=Maps.newTreeMap(query.getSort().getComparator());
@@ -20,6 +25,22 @@
     }
     final BitmapFactory bitmapFactory=index.getBitmapFactoryForDimensions();
     final ImmutableBitmap baseFilter=filter == null ? null : filter.getBitmapIndex(new ColumnSelectorBitmapIndexSelector(bitmapFactory,index));
+    ImmutableBitmap timeFilteredBitmap;
+    if (!interval.contains(segment.getDataInterval())) {
+      MutableBitmap timeBitmap=bitmapFactory.makeEmptyMutableBitmap();
+      final Column timeColumn=index.getColumn(Column.TIME_COLUMN_NAME);
+      final GenericColumn timeValues=timeColumn.getGenericColumn();
+      int startIndex=Math.max(0,getStartIndexOfTime(timeValues,interval.getStartMillis(),true));
+      int endIndex=Math.min(timeValues.length() - 1,getStartIndexOfTime(timeValues,interval.getEndMillis(),false));
+      for (int i=startIndex; i <= endIndex; i++) {
+        timeBitmap.add(i);
+      }
+      final ImmutableBitmap finalTimeBitmap=bitmapFactory.makeImmutableBitmap(timeBitmap);
+      timeFilteredBitmap=(baseFilter == null) ? finalTimeBitmap : finalTimeBitmap.intersection(baseFilter);
+    }
+ else {
+      timeFilteredBitmap=baseFilter;
+    }
     for (    DimensionSpec dimension : dimsToSearch) {
       final Column column=index.getColumn(dimension.getDimension());
       if (column == null) {
@@ -37,8 +58,8 @@
             continue;
           }
           ImmutableBitmap bitmap=bitmapIndex.getBitmap(i);
-          if (baseFilter != null) {
-            bitmap=bitmapFactory.intersection(Arrays.asList(baseFilter,bitmap));
+          if (timeFilteredBitmap != null) {
+            bitmap=bitmapFactory.intersection(Arrays.asList(timeFilteredBitmap,bitmap));
           }
           if (bitmap.size() > 0) {
             MutableInt counter=new MutableInt(bitmap.size());
@@ -67,7 +88,7 @@
  else {
     dimsToSearch=dimensions;
   }
-  final Sequence<Cursor> cursors=adapter.makeCursors(filter,segment.getDataInterval(),QueryGranularities.ALL,descending);
+  final Sequence<Cursor> cursors=adapter.makeCursors(filter,interval,query.getGranularity(),descending);
   final TreeMap<SearchHit,MutableInt> retVal=cursors.accumulate(Maps.<SearchHit,SearchHit,MutableInt>newTreeMap(query.getSort().getComparator()),new Accumulator<TreeMap<SearchHit,MutableInt>,Cursor>(){
     @Override public TreeMap<SearchHit,MutableInt> accumulate(    TreeMap<SearchHit,MutableInt> set,    Cursor cursor){
       if (set.size() >= limit) {

@@ -1,0 +1,8 @@
+{
+  SearchQuery searchQuery;
+  Druids.SearchQueryBuilder builder=testBuilder().dimensions(Arrays.asList(qualityDimension)).intervals("2011-01-12T00:00:00.000Z/2011-01-13T00:00:00.000Z");
+  Map<String,Set<String>> expectedResults=Maps.newTreeMap(String.CASE_INSENSITIVE_ORDER);
+  searchQuery=builder.query("otive").build();
+  expectedResults.put(qualityDimension,Sets.newHashSet("AutoMotive"));
+  checkSearchQuery(searchQuery,expectedResults);
+}
