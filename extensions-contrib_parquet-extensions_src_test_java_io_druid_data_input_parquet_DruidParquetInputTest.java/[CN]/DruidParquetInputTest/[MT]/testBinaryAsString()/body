@@ -1,0 +1,9 @@
+{
+  HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromFile(new File("example/impala_hadoop_parquet_job.json"));
+  Job job=Job.getInstance(new Configuration());
+  config.intoConfiguration(job);
+  GenericRecord data=getFirstRecord(job,((StaticPathSpec)config.getPathSpec()).getPaths());
+  InputRow row=config.getParser().parse(data);
+  assertEquals(row.getDimension("field").get(0),"hey this is &??(-??_????)=^$??*! ??^^");
+  assertEquals(row.getTimestampFromEpoch(),1471800234);
+}

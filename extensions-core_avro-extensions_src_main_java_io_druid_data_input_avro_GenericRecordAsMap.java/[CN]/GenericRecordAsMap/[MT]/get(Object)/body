@@ -4,7 +4,12 @@
     return Lists.transform((List)field,PIG_AVRO_STORAGE_ARRAY_TO_STRING_INCLUDING_NULL);
   }
   if (field instanceof ByteBuffer) {
-    return Arrays.toString(((ByteBuffer)field).array());
+    if (binaryAsString) {
+      return new String(((ByteBuffer)field).array());
+    }
+ else {
+      return Arrays.toString(((ByteBuffer)field).array());
+    }
   }
   if (field instanceof Utf8) {
     return field.toString();

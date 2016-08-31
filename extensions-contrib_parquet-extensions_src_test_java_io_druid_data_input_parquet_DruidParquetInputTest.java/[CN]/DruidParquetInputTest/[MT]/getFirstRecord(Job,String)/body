@@ -1,0 +1,13 @@
+{
+  File testFile=new File(parquetPath);
+  Path path=new Path(testFile.getAbsoluteFile().toURI());
+  FileSplit split=new FileSplit(path,0,testFile.length(),null);
+  DruidParquetInputFormat inputFormat=ReflectionUtils.newInstance(DruidParquetInputFormat.class,job.getConfiguration());
+  TaskAttemptContext context=new TaskAttemptContextImpl(job.getConfiguration(),new TaskAttemptID());
+  RecordReader reader=inputFormat.createRecordReader(split,context);
+  reader.initialize(split,context);
+  reader.nextKeyValue();
+  GenericRecord data=(GenericRecord)reader.getCurrentValue();
+  reader.close();
+  return data;
+}
