@@ -1,0 +1,32 @@
+{
+  super(new IteratorMaker<T,Iterator<T>>(){
+    @Override public Iterator<T> make(){
+      if (limit <= 0) {
+        return Iterators.emptyIterator();
+      }
+      final MinMaxPriorityQueue<T> queue=MinMaxPriorityQueue.orderedBy(ordering).maximumSize(limit).create();
+      input.accumulate(queue,new Accumulator<MinMaxPriorityQueue<T>,T>(){
+        @Override public MinMaxPriorityQueue<T> accumulate(        MinMaxPriorityQueue<T> theQueue,        T row){
+          theQueue.offer(row);
+          return theQueue;
+        }
+      }
+);
+      return new Iterator<T>(){
+        @Override public boolean hasNext(){
+          return !queue.isEmpty();
+        }
+        @Override public T next(){
+          return queue.poll();
+        }
+        @Override public void remove(){
+          throw new UnsupportedOperationException();
+        }
+      }
+;
+    }
+    @Override public void cleanup(    Iterator<T> rowIterator){
+    }
+  }
+);
+}

@@ -1,7 +1,7 @@
 {
-  boolean materializationNeeded=false;
+  boolean sortingNeeded=false;
   if (dimensions.size() < columns.size()) {
-    materializationNeeded=true;
+    sortingNeeded=true;
   }
   final Set<String> aggAndPostAggNames=Sets.newHashSet();
   for (  AggregatorFactory agg : aggs) {
@@ -10,17 +10,17 @@
   for (  PostAggregator postAgg : postAggs) {
     aggAndPostAggNames.add(postAgg.getName());
   }
-  if (!materializationNeeded) {
+  if (!sortingNeeded) {
     for (int i=0; i < columns.size(); i++) {
       final OrderByColumnSpec columnSpec=columns.get(i);
       if (columnSpec.getDirection() != OrderByColumnSpec.Direction.ASCENDING || !columnSpec.getDimensionComparator().equals(StringComparators.LEXICOGRAPHIC) || !columnSpec.getDimension().equals(dimensions.get(i).getOutputName()) || aggAndPostAggNames.contains(columnSpec.getDimension())) {
-        materializationNeeded=true;
+        sortingNeeded=true;
         break;
       }
     }
   }
-  if (!materializationNeeded) {
-    return new LimitingFn(limit);
+  if (!sortingNeeded) {
+    return limit == Integer.MAX_VALUE ? Functions.<Sequence<Row>>identity() : new LimitingFn(limit);
   }
   final Ordering<Row> ordering=makeComparator(dimensions,aggs,postAggs);
   if (limit == Integer.MAX_VALUE) {

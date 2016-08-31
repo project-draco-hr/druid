@@ -1,0 +1,7 @@
+{
+  List<String> expected=rawInput.subList(0,Math.min(limit,rawInput.size()));
+  List<String> inputs=Lists.newArrayList(rawInput);
+  Collections.shuffle(inputs,new Random(2));
+  Sequence<String> result=new TopNSequence<String>(Sequences.simple(inputs),ordering,limit);
+  Assert.assertEquals(expected,Sequences.toList(result,Lists.<String>newArrayList()));
+}
