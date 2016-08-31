@@ -1,10 +1,10 @@
 {
-  TimeFormatExtractionFn fn=new TimeFormatExtractionFn("'In Berlin ist es schon 'EEEE",DateTimeZone.forID("Europe/Berlin"),"de");
+  TimeFormatExtractionFn fn=new TimeFormatExtractionFn("'In Berlin ist es schon 'EEEE",DateTimeZone.forID("Europe/Berlin"),"de",null);
   Assert.assertEquals("In Berlin ist es schon Freitag",fn.apply(timestamps[0]));
   Assert.assertEquals("In Berlin ist es schon Samstag",fn.apply(timestamps[1]));
   Assert.assertEquals("In Berlin ist es schon Mittwoch",fn.apply(timestamps[2]));
   Assert.assertEquals("In Berlin ist es schon Donnerstag",fn.apply(timestamps[3]));
   Assert.assertEquals("In Berlin ist es schon Sonntag",fn.apply(timestamps[4]));
   Assert.assertEquals("In Berlin ist es schon Dienstag",fn.apply(timestamps[5]));
-  testSerde(fn,"'In Berlin ist es schon 'EEEE",DateTimeZone.forID("Europe/Berlin"),"de");
+  testSerde(fn,"'In Berlin ist es schon 'EEEE",DateTimeZone.forID("Europe/Berlin"),"de",QueryGranularities.NONE);
 }
