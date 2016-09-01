@@ -10,20 +10,36 @@
       sortableIds[id]=index++;
     }
   }
-  return new Grouper.KeyComparator(){
-    @Override public int compare(    ByteBuffer lhsBuffer,    ByteBuffer rhsBuffer,    int lhsPosition,    int rhsPosition){
-      final int timeCompare=Longs.compare(lhsBuffer.getLong(lhsPosition),rhsBuffer.getLong(rhsPosition));
-      if (timeCompare != 0) {
-        return timeCompare;
-      }
-      for (int i=0; i < dimCount; i++) {
-        final int cmp=Ints.compare(sortableIds[lhsBuffer.getInt(lhsPosition + Longs.BYTES + (Ints.BYTES * i))],sortableIds[rhsBuffer.getInt(rhsPosition + Longs.BYTES + (Ints.BYTES * i))]);
-        if (cmp != 0) {
-          return cmp;
+  if (fudgeTimestamp == null) {
+    return new Grouper.KeyComparator(){
+      @Override public int compare(      ByteBuffer lhsBuffer,      ByteBuffer rhsBuffer,      int lhsPosition,      int rhsPosition){
+        final int timeCompare=Longs.compare(lhsBuffer.getLong(lhsPosition),rhsBuffer.getLong(rhsPosition));
+        if (timeCompare != 0) {
+          return timeCompare;
         }
+        for (int i=0; i < dimCount; i++) {
+          final int cmp=Ints.compare(sortableIds[lhsBuffer.getInt(lhsPosition + Longs.BYTES + (Ints.BYTES * i))],sortableIds[rhsBuffer.getInt(rhsPosition + Longs.BYTES + (Ints.BYTES * i))]);
+          if (cmp != 0) {
+            return cmp;
+          }
+        }
+        return 0;
       }
-      return 0;
     }
-  }
 ;
+  }
+ else {
+    return new Grouper.KeyComparator(){
+      @Override public int compare(      ByteBuffer lhsBuffer,      ByteBuffer rhsBuffer,      int lhsPosition,      int rhsPosition){
+        for (int i=0; i < dimCount; i++) {
+          final int cmp=Ints.compare(sortableIds[lhsBuffer.getInt(lhsPosition + (Ints.BYTES * i))],sortableIds[rhsBuffer.getInt(rhsPosition + (Ints.BYTES * i))]);
+          if (cmp != 0) {
+            return cmp;
+          }
+        }
+        return 0;
+      }
+    }
+;
+  }
 }

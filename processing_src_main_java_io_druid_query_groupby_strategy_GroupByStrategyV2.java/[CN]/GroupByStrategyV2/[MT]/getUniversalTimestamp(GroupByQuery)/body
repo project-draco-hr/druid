@@ -1,0 +1,14 @@
+{
+  final QueryGranularity gran=query.getGranularity();
+  final String timestampStringFromContext=query.getContextValue(CTX_KEY_FUDGE_TIMESTAMP,"");
+  if (!timestampStringFromContext.isEmpty()) {
+    return new DateTime(Long.parseLong(timestampStringFromContext));
+  }
+ else   if (QueryGranularities.ALL.equals(gran)) {
+    final long timeStart=query.getIntervals().get(0).getStartMillis();
+    return new DateTime(gran.iterable(timeStart,timeStart + 1).iterator().next());
+  }
+ else {
+    return null;
+  }
+}

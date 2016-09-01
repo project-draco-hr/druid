@@ -1,6 +1,7 @@
 {
+  this.fudgeTimestamp=fudgeTimestamp;
   this.dimCount=dimCount;
   this.maxDictionarySize=maxDictionarySize;
-  this.keySize=Longs.BYTES + dimCount * Ints.BYTES;
+  this.keySize=(fudgeTimestamp == null ? Longs.BYTES : 0) + dimCount * Ints.BYTES;
   this.keyBuffer=ByteBuffer.allocate(keySize);
 }

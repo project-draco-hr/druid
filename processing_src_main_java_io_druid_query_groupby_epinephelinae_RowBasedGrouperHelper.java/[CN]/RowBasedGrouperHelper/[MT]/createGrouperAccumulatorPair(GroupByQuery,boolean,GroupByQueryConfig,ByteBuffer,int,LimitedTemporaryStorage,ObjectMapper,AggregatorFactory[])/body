@@ -1,7 +1,8 @@
 {
   Preconditions.checkArgument(concurrencyHint >= 1 || concurrencyHint == -1,"invalid concurrencyHint");
   final GroupByQueryConfig querySpecificConfig=config.withOverrides(query);
-  final Grouper.KeySerdeFactory<RowBasedKey> keySerdeFactory=new RowBasedKeySerdeFactory(query.getDimensions().size(),querySpecificConfig.getMaxMergingDictionarySize() / (concurrencyHint == -1 ? 1 : concurrencyHint));
+  final DateTime fudgeTimestamp=GroupByStrategyV2.getUniversalTimestamp(query);
+  final Grouper.KeySerdeFactory<RowBasedKey> keySerdeFactory=new RowBasedKeySerdeFactory(fudgeTimestamp,query.getDimensions().size(),querySpecificConfig.getMaxMergingDictionarySize() / (concurrencyHint == -1 ? 1 : concurrencyHint));
   final RowBasedColumnSelectorFactory columnSelectorFactory=new RowBasedColumnSelectorFactory();
   final Grouper<RowBasedKey> grouper;
   if (concurrencyHint == -1) {

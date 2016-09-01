@@ -8,16 +8,8 @@
     }
   }
 ;
-  final QueryGranularity gran=query.getGranularity();
-  final String fudgeTimestamp;
-  if (query.getContextValue(CTX_KEY_FUDGE_TIMESTAMP,"").isEmpty() && gran instanceof AllGranularity) {
-    final long timeStart=query.getIntervals().get(0).getStartMillis();
-    fudgeTimestamp=String.valueOf(new DateTime(gran.iterable(timeStart,timeStart + 1).iterator().next()).getMillis());
-  }
- else {
-    fudgeTimestamp=query.getContextValue(CTX_KEY_FUDGE_TIMESTAMP,"");
-  }
-  return query.applyLimit(Sequences.map(mergingQueryRunner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),gran,query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryConfig.CTX_KEY_STRATEGY,GroupByStrategySelector.STRATEGY_V2,CTX_KEY_FUDGE_TIMESTAMP,fudgeTimestamp)),responseContext),new Function<Row,Row>(){
+  final DateTime fudgeTimestamp=getUniversalTimestamp(query);
+  return query.applyLimit(Sequences.map(mergingQueryRunner.run(new GroupByQuery(query.getDataSource(),query.getQuerySegmentSpec(),query.getDimFilter(),query.getGranularity(),query.getDimensions(),query.getAggregatorSpecs(),ImmutableList.<PostAggregator>of(),null,null,query.getContext()).withOverriddenContext(ImmutableMap.<String,Object>of("finalize",false,GroupByQueryConfig.CTX_KEY_STRATEGY,GroupByStrategySelector.STRATEGY_V2,CTX_KEY_FUDGE_TIMESTAMP,fudgeTimestamp == null ? "" : String.valueOf(fudgeTimestamp.getMillis()))),responseContext),new Function<Row,Row>(){
     @Override public Row apply(    final Row row){
       if (query.getPostAggregatorSpecs().isEmpty()) {
         return row;
