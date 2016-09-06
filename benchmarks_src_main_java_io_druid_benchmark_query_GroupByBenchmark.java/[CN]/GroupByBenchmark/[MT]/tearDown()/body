@@ -1,0 +1,19 @@
+{
+  try {
+    if (anIncrementalIndex != null) {
+      anIncrementalIndex.close();
+    }
+    if (queryableIndexes != null) {
+      for (      QueryableIndex index : queryableIndexes) {
+        index.close();
+      }
+    }
+    if (tmpDir != null) {
+      FileUtils.deleteDirectory(tmpDir);
+    }
+  }
+ catch (  IOException e) {
+    log.warn(e,"Failed to tear down, temp dir was: %s",tmpDir);
+    throw Throwables.propagate(e);
+  }
+}
