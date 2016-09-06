@@ -11,7 +11,7 @@
   expect(taskStorage.getActiveTasks()).andReturn(existingTasks).anyTimes();
   expect(taskStorage.getStatus("id1")).andReturn(Optional.of(TaskStatus.running("id1"))).anyTimes();
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(id1)).anyTimes();
-  expect(taskClient.getStartTime(anyString(),eq(false))).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
+  expect(taskClient.getStartTime(anyString())).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
   expect(taskQueue.add(capture(captured))).andReturn(true);
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));

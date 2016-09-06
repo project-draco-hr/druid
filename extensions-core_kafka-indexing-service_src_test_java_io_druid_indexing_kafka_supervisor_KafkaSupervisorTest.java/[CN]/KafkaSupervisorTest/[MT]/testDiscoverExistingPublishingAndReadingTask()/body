@@ -20,7 +20,7 @@
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
   expect(taskClient.getStatus("id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
   expect(taskClient.getStatus("id2")).andReturn(KafkaIndexTask.Status.READING);
-  expect(taskClient.getStartTime("id2",false)).andReturn(startTime);
+  expect(taskClient.getStartTime("id2")).andReturn(startTime);
   expect(taskClient.getCurrentOffsets("id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
   expect(taskClient.getCurrentOffsets("id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
   expect(taskClient.getCurrentOffsets("id2",false)).andReturn(ImmutableMap.of(0,40L,1,50L,2,60L));

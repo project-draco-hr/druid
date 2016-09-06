@@ -28,8 +28,8 @@
   }
   expect(taskRunner.getRunningTasks()).andReturn(workItems).anyTimes();
   expect(taskClient.getStatus(anyString())).andReturn(KafkaIndexTask.Status.READING).anyTimes();
-  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-0"),eq(false))).andReturn(DateTime.now().minusMinutes(2)).andReturn(DateTime.now());
-  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-1"),eq(false))).andReturn(DateTime.now()).times(2);
+  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-0"))).andReturn(DateTime.now().minusMinutes(2)).andReturn(DateTime.now());
+  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-1"))).andReturn(DateTime.now()).times(2);
   expect(taskClient.pause(EasyMock.contains("sequenceName-0"))).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L)).andReturn(ImmutableMap.of(0,10L,1,15L,2,35L));
   taskClient.setEndOffsets(EasyMock.contains("sequenceName-0"),EasyMock.eq(ImmutableMap.of(0,10L,1,20L,2,35L)),EasyMock.eq(true));
   expectLastCall().times(2);
