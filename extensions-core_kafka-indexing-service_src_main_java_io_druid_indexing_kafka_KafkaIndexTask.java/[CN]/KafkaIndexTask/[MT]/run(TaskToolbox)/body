@@ -52,6 +52,7 @@
 ;
     Set<Integer> assignment=assignPartitionsAndSeekToNext(consumer,topic);
     boolean stillReading=!assignment.isEmpty();
+    status=Status.READING;
     try {
       while (stillReading) {
         if (possiblyPause(assignment)) {
@@ -65,22 +66,23 @@
         if (stopRequested) {
           break;
         }
-        final ConsumerRecords<byte[],byte[]> records=RetryUtils.retry(new Callable<ConsumerRecords<byte[],byte[]>>(){
-          @Override public ConsumerRecords<byte[],byte[]> call() throws Exception {
-            try {
-              return consumer.poll(POLL_TIMEOUT);
+        ConsumerRecords<byte[],byte[]> records=ConsumerRecords.empty();
+        try {
+          records=consumer.poll(POLL_TIMEOUT);
+        }
+ catch (        OffsetOutOfRangeException e) {
+          log.warn("OffsetOutOfRangeException with message [%s], retrying in %dms",e.getMessage(),POLL_RETRY_MS);
+          pollRetryLock.lockInterruptibly();
+          try {
+            long nanos=TimeUnit.MILLISECONDS.toNanos(POLL_RETRY_MS);
+            while (nanos > 0L && !pauseRequested) {
+              nanos=isAwaitingRetry.awaitNanos(nanos);
             }
+          }
   finally {
-              status=Status.READING;
-            }
+            pollRetryLock.unlock();
           }
         }
-,new Predicate<Throwable>(){
-          @Override public boolean apply(          Throwable input){
-            return input instanceof OffsetOutOfRangeException;
-          }
-        }
-,Integer.MAX_VALUE);
         for (        ConsumerRecord<byte[],byte[]> record : records) {
           if (log.isTraceEnabled()) {
             log.trace("Got topic[%s] partition[%d] offset[%,d].",record.topic(),record.partition(),record.offset());

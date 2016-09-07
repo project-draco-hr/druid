@@ -6,6 +6,13 @@
   try {
     pauseMillis=timeout <= 0 ? PAUSE_FOREVER : timeout;
     pauseRequested=true;
+    pollRetryLock.lockInterruptibly();
+    try {
+      isAwaitingRetry.signalAll();
+    }
+  finally {
+      pollRetryLock.unlock();
+    }
     if (isPaused()) {
       shouldResume.signalAll();
     }
