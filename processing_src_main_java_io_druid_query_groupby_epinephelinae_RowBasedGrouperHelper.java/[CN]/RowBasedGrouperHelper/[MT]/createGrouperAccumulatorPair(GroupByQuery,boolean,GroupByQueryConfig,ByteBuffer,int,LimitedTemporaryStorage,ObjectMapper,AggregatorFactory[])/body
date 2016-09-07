@@ -6,10 +6,10 @@
   final RowBasedColumnSelectorFactory columnSelectorFactory=new RowBasedColumnSelectorFactory();
   final Grouper<RowBasedKey> grouper;
   if (concurrencyHint == -1) {
-    grouper=new SpillingGrouper<>(buffer,keySerdeFactory,columnSelectorFactory,aggregatorFactories,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets());
+    grouper=new SpillingGrouper<>(buffer,keySerdeFactory,columnSelectorFactory,aggregatorFactories,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperMaxLoadFactor(),querySpecificConfig.getBufferGrouperInitialBuckets());
   }
  else {
-    grouper=new ConcurrentGrouper<>(buffer,concurrencyHint,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperInitialBuckets(),keySerdeFactory,columnSelectorFactory,aggregatorFactories);
+    grouper=new ConcurrentGrouper<>(buffer,concurrencyHint,temporaryStorage,spillMapper,querySpecificConfig.getBufferGrouperMaxSize(),querySpecificConfig.getBufferGrouperMaxLoadFactor(),querySpecificConfig.getBufferGrouperInitialBuckets(),keySerdeFactory,columnSelectorFactory,aggregatorFactories);
   }
   final DimensionSelector[] dimensionSelectors;
   if (isInputRaw) {

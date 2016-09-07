@@ -1,6 +1,6 @@
 {
   final TestColumnSelectorFactory columnSelectorFactory=GrouperTestUtil.newColumnSelectorFactory();
-  final Grouper<Integer> grouper=new BufferGrouper<>(ByteBuffer.allocate(1000),GrouperTestUtil.intKeySerde(),columnSelectorFactory,new AggregatorFactory[]{new LongSumAggregatorFactory("valueSum","value"),new CountAggregatorFactory("count")},Integer.MAX_VALUE,-1);
+  final Grouper<Integer> grouper=new BufferGrouper<>(ByteBuffer.allocate(1000),GrouperTestUtil.intKeySerde(),columnSelectorFactory,new AggregatorFactory[]{new LongSumAggregatorFactory("valueSum","value"),new CountAggregatorFactory("count")},Integer.MAX_VALUE,0,0);
   columnSelectorFactory.setRow(new MapBasedRow(0,ImmutableMap.<String,Object>of("value",10L)));
   grouper.aggregate(12);
   grouper.aggregate(6);

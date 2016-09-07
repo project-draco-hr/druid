@@ -5,6 +5,6 @@
     final ByteBuffer slice=buffer.duplicate();
     slice.position(sliceSize * i);
     slice.limit(slice.position() + sliceSize);
-    groupers.add(new SpillingGrouper<>(slice.slice(),keySerdeFactory,columnSelectorFactory,aggregatorFactories,temporaryStorage,spillMapper,bufferGrouperMaxSize,bufferGrouperInitialBuckets));
+    groupers.add(new SpillingGrouper<>(slice.slice(),keySerdeFactory,columnSelectorFactory,aggregatorFactories,temporaryStorage,spillMapper,bufferGrouperMaxSize,bufferGrouperMaxLoadFactor,bufferGrouperInitialBuckets));
   }
 }
