@@ -253,6 +253,12 @@ long dimStartTime=System.currentTimeMillis();
 String dimension=mergedDimensions.get(i);
 File dimOutFile=dimOuts.get(i).getFile();
 final MappedByteBuffer dimValsMapped=Files.map(dimOutFile);
+closer.register(new Closeable(){
+@Override public void close() throws IOException {
+ByteBufferUtils.unmap(dimValsMapped);
+}
+}
+);
 if (!dimension.equals(serializerUtils.readString(dimValsMapped))) {
 throw new ISE("dimensions[%s] didn't equate!?  This is a major WTF moment.",dimension);
 }
@@ -343,7 +349,10 @@ createIndexDrdFile(IndexIO.V8_VERSION,v8OutDir,GenericIndexed.fromIterable(merge
 indexIO.getDefaultIndexIOHandler().convertV8toV9(v8OutDir,outDir,indexSpec);
 return outDir;
 }
-  finally {
+ catch (Throwable t) {
+throw closer.rethrow(t);
+}
+ finally {
 closer.close();
 }
 }

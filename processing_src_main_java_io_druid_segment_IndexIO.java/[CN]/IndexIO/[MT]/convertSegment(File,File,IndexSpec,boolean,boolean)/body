@@ -11,9 +11,10 @@ case 5:
 case 6:
 case 7:
 log.info("Old version, re-persisting.");
-QueryableIndex segmentToConvert=loadIndex(toConvert);
+try (QueryableIndex segmentToConvert=loadIndex(toConvert)){
 new IndexMerger(mapper,this).append(Arrays.<IndexableAdapter>asList(new QueryableIndexIndexableAdapter(segmentToConvert)),null,converted,indexSpec);
-return true;
+}
+ return true;
 case 8:
 defaultIndexIOHandler.convertV8toV9(toConvert,converted,indexSpec);
 return true;
