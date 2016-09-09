@@ -25,7 +25,11 @@
       emitter.emit(event);
     }
   }
+ else   if (event instanceof AlertEvent) {
+    AlertEvent alertEvent=(AlertEvent)event;
+    log.error("The following alert is dropped, description is [%s], severity is [%s]",alertEvent.getDescription(),alertEvent.getSeverity());
+  }
  else {
-    throw new ISE("unknown event type [%s]",event.getClass());
+    log.error("unknown event type [%s]",event.getClass());
   }
 }
