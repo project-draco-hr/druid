@@ -1,0 +1,17 @@
+{
+  Preconditions.checkArgument(concurrencyHint > 0,"concurrencyHint > 0");
+  this.groupers=new ArrayList<>(concurrencyHint);
+  this.threadLocalGrouper=new ThreadLocal<SpillingGrouper<KeyType>>(){
+    @Override protected SpillingGrouper<KeyType> initialValue(){
+      return groupers.get(threadNumber.getAndIncrement());
+    }
+  }
+;
+  final int sliceSize=(buffer.capacity() / concurrencyHint);
+  for (int i=0; i < concurrencyHint; i++) {
+    final ByteBuffer slice=buffer.duplicate();
+    slice.position(sliceSize * i);
+    slice.limit(slice.position() + sliceSize);
+    groupers.add(new SpillingGrouper<>(slice.slice(),keySerdeFactory,columnSelectorFactory,aggregatorFactories,bufferGrouperMaxSize,bufferGrouperMaxLoadFactor,bufferGrouperInitialBuckets,temporaryStorage,spillMapper,false));
+  }
+}

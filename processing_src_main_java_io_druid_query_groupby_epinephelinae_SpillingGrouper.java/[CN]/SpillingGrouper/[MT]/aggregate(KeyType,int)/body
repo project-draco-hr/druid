@@ -2,7 +2,7 @@
   if (grouper.aggregate(key,keyHash)) {
     return true;
   }
- else {
+ else   if (spillingAllowed) {
     try {
       spill();
     }
@@ -13,5 +13,8 @@ catch (    IOException e) {
       throw Throwables.propagate(e);
     }
     return grouper.aggregate(key,keyHash);
+  }
+ else {
+    return false;
   }
 }
