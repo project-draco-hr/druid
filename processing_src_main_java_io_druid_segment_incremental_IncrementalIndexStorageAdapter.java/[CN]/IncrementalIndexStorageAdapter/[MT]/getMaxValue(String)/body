@@ -1,4 +1,8 @@
 {
-  IncrementalIndex.DimDim dimDim=index.getDimensionValues(column);
-  return dimDim == null ? null : dimDim.getMaxValue();
+  IncrementalIndex.DimensionDesc desc=index.getDimension(column);
+  if (desc == null) {
+    return null;
+  }
+  DimensionIndexer indexer=desc.getIndexer();
+  return indexer.getMaxValue();
 }

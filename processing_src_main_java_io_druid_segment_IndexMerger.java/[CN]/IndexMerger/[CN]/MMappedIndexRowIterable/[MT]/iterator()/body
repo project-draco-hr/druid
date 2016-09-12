@@ -1,33 +1,15 @@
 {
-  final IntBuffer[] converterArray=FluentIterable.from(convertedDims).transform(new Function<String,IntBuffer>(){
-    @Override public IntBuffer apply(    String input){
-      return converters.get(input);
-    }
-  }
-).toArray(IntBuffer.class);
   return Iterators.transform(index.iterator(),new Function<Rowboat,Rowboat>(){
     @Override public Rowboat apply(    @Nullable Rowboat input){
-      int[][] dims=input.getDims();
-      int[][] newDims=new int[convertedDims.size()][];
+      Object[] dims=input.getDims();
+      Object[] newDims=new Object[convertedDims.size()];
       for (int i=0; i < convertedDims.size(); ++i) {
-        IntBuffer converter=converterArray[i];
         if (i >= dims.length) {
           continue;
         }
-        if (dims[i] == null && convertMissingDimsFlags.get(i)) {
-          newDims[i]=EMPTY_STR_DIM;
-          continue;
-        }
-        if (converter == null) {
-          newDims[i]=dims[i];
-          continue;
-        }
-        newDims[i]=new int[dims[i].length];
-        for (int j=0; j < dims[i].length; ++j) {
-          newDims[i][j]=converter.get(dims[i][j]);
-        }
+        newDims[i]=mergers.get(i).convertSegmentRowValuesToMergedRowValues(dims[i],indexNumber);
       }
-      final Rowboat retVal=new Rowboat(input.getTimestamp(),newDims,input.getMetrics(),input.getRowNum());
+      final Rowboat retVal=new Rowboat(input.getTimestamp(),newDims,input.getMetrics(),input.getRowNum(),input.getHandlers());
       retVal.addRow(indexNumber,input.getRowNum());
       return retVal;
     }

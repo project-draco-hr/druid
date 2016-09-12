@@ -11,17 +11,21 @@ synchronized (hydrantLock) {
         FireHydrant lastHydrant=hydrants.get(numHydrants - 1);
         newCount=lastHydrant.getCount() + 1;
         if (!indexSchema.getDimensionsSpec().hasCustomDimensions()) {
+          Map<String,ColumnCapabilitiesImpl> oldCapabilities;
           if (lastHydrant.hasSwapped()) {
+            oldCapabilities=Maps.newHashMap();
             QueryableIndex oldIndex=lastHydrant.getSegment().asQueryableIndex();
             for (            String dim : oldIndex.getAvailableDimensions()) {
               dimOrder.add(dim);
+              oldCapabilities.put(dim,(ColumnCapabilitiesImpl)oldIndex.getColumn(dim).getCapabilities());
             }
           }
  else {
             IncrementalIndex oldIndex=lastHydrant.getIndex();
             dimOrder.addAll(oldIndex.getDimensionOrder());
+            oldCapabilities=oldIndex.getColumnCapabilities();
           }
-          newIndex.loadDimensionIterable(dimOrder);
+          newIndex.loadDimensionIterable(dimOrder,oldCapabilities);
         }
       }
       currHydrant=new FireHydrant(newIndex,newCount,getSegment().getIdentifier());

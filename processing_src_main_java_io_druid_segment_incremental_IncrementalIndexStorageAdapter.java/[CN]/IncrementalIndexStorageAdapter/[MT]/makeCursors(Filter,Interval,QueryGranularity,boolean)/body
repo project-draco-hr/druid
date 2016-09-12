@@ -90,79 +90,26 @@
           done=!foundMatched && (emptyRange || !baseIter.hasNext());
         }
         @Override public DimensionSelector makeDimensionSelector(        DimensionSpec dimensionSpec){
-          return dimensionSpec.decorate(makeDimensionSelectorUndecorated(dimensionSpec));
-        }
-        private DimensionSelector makeDimensionSelectorUndecorated(        DimensionSpec dimensionSpec){
           final String dimension=dimensionSpec.getDimension();
           final ExtractionFn extractionFn=dimensionSpec.getExtractionFn();
           if (dimension.equals(Column.TIME_COLUMN_NAME)) {
-            return new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn,descending);
+            DimensionSelector selector=new SingleScanTimeDimSelector(makeLongColumnSelector(dimension),extractionFn,descending);
+            return dimensionSpec.decorate(selector);
           }
-          final IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
+          final IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimensionSpec.getDimension());
           if (dimensionDesc == null) {
-            return NULL_DIMENSION_SELECTOR;
+            return dimensionSpec.decorate(NULL_DIMENSION_SELECTOR);
           }
-          final int dimIndex=dimensionDesc.getIndex();
-          final IncrementalIndex.DimDim dimValLookup=dimensionDesc.getValues();
-          final int maxId=dimValLookup.size();
-          return new DimensionSelector(){
-            @Override public IndexedInts getRow(){
-              final int[][] dims=currEntry.getKey().getDims();
-              int[] indices=dimIndex < dims.length ? dims[dimIndex] : null;
-              List<Integer> valsTmp=null;
-              if ((indices == null || indices.length == 0) && dimValLookup.contains(null)) {
-                int id=dimValLookup.getId(null);
-                if (id < maxId) {
-                  valsTmp=new ArrayList<>(1);
-                  valsTmp.add(id);
-                }
-              }
- else               if (indices != null && indices.length > 0) {
-                valsTmp=new ArrayList<>(indices.length);
-                for (int i=0; i < indices.length; i++) {
-                  int id=indices[i];
-                  if (id < maxId) {
-                    valsTmp.add(id);
-                  }
-                }
-              }
-              final List<Integer> vals=valsTmp == null ? Collections.EMPTY_LIST : valsTmp;
-              return new IndexedInts(){
-                @Override public int size(){
-                  return vals.size();
-                }
-                @Override public int get(                int index){
-                  return vals.get(index);
-                }
-                @Override public Iterator<Integer> iterator(){
-                  return vals.iterator();
-                }
-                @Override public void fill(                int index,                int[] toFill){
-                  throw new UnsupportedOperationException("fill not supported");
-                }
-                @Override public void close() throws IOException {
-                }
-              }
-;
-            }
-            @Override public int getValueCardinality(){
-              return maxId;
-            }
-            @Override public String lookupName(            int id){
-              final Comparable value=dimValLookup.getValue(id);
-              final String strValue=value == null ? null : value.toString();
-              return extractionFn == null ? strValue : extractionFn.apply(strValue);
-            }
-            @Override public int lookupId(            String name){
-              if (extractionFn != null) {
-                throw new UnsupportedOperationException("cannot perform lookup when applying an extraction function");
-              }
-              return dimValLookup.getId(name);
-            }
-          }
-;
+          final DimensionIndexer indexer=dimensionDesc.getIndexer();
+          return dimensionSpec.decorate((DimensionSelector)indexer.makeColumnValueSelector(dimensionSpec,currEntry,dimensionDesc));
         }
         @Override public FloatColumnSelector makeFloatColumnSelector(        String columnName){
+          final Integer dimIndex=index.getDimensionIndex(columnName);
+          if (dimIndex != null) {
+            final IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(columnName);
+            final DimensionIndexer indexer=dimensionDesc.getIndexer();
+            return (FloatColumnSelector)indexer.makeColumnValueSelector(new DefaultDimensionSpec(columnName,null),currEntry,dimensionDesc);
+          }
           final Integer metricIndexInt=index.getMetricIndex(columnName);
           if (metricIndexInt == null) {
             return new FloatColumnSelector(){
@@ -188,6 +135,12 @@
               }
             }
 ;
+          }
+          final Integer dimIndex=index.getDimensionIndex(columnName);
+          if (dimIndex != null) {
+            final IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(columnName);
+            final DimensionIndexer indexer=dimensionDesc.getIndexer();
+            return (LongColumnSelector)indexer.makeColumnValueSelector(new DefaultDimensionSpec(columnName,null),currEntry,dimensionDesc);
           }
           final Integer metricIndexInt=index.getMetricIndex(columnName);
           if (metricIndexInt == null) {
@@ -235,7 +188,8 @@
           IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(column);
           if (dimensionDesc != null) {
             final int dimensionIndex=dimensionDesc.getIndex();
-            final IncrementalIndex.DimDim dimDim=dimensionDesc.getValues();
+            final DimensionIndexer indexer=dimensionDesc.getIndexer();
+            final ColumnCapabilities capabilities=dimensionDesc.getCapabilities();
             return new ObjectColumnSelector<Object>(){
               @Override public Class classOfObject(){
                 return Object.class;
@@ -245,21 +199,11 @@
                 if (key == null) {
                   return null;
                 }
-                int[][] dims=key.getDims();
+                Object[] dims=key.getDims();
                 if (dimensionIndex >= dims.length) {
                   return null;
                 }
-                final int[] dimIdx=dims[dimensionIndex];
-                if (dimIdx == null || dimIdx.length == 0) {
-                  return null;
-                }
-                if (dimIdx.length == 1) {
-                  return dimDim.getValue(dimIdx[0]);
-                }
-                Comparable[] dimVals=new String[dimIdx.length];
-                for (int i=0; i < dimIdx.length; i++) {
-                  dimVals[i]=dimDim.getValue(dimIdx[i]);
-                }
+                Object dimVals=indexer.convertUnsortedEncodedArrayToActualArrayOrList(dims[dimensionIndex],false);
                 return dimVals;
               }
             }

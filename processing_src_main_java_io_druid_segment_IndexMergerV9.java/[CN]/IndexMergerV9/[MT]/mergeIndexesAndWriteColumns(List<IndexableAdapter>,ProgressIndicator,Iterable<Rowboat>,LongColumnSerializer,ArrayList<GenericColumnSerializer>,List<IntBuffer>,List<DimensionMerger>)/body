@@ -1,0 +1,46 @@
+{
+  final String section="walk through and merge rows";
+  progress.startSection(section);
+  long startTime=System.currentTimeMillis();
+  int rowCount=0;
+  for (  IndexableAdapter adapter : adapters) {
+    int[] arr=new int[adapter.getNumRows()];
+    Arrays.fill(arr,INVALID_ROW);
+    rowNumConversions.add(IntBuffer.wrap(arr));
+  }
+  long time=System.currentTimeMillis();
+  for (  Rowboat theRow : theRows) {
+    progress.progress();
+    timeWriter.serialize(theRow.getTimestamp());
+    final Object[] metrics=theRow.getMetrics();
+    for (int i=0; i < metrics.length; ++i) {
+      metWriters.get(i).serialize(metrics[i]);
+    }
+    Object[] dims=theRow.getDims();
+    for (int i=0; i < dims.length; ++i) {
+      DimensionMerger merger=mergers.get(i);
+      if (merger.canSkip()) {
+        continue;
+      }
+      merger.processMergedRow(dims[i]);
+    }
+    for (    Map.Entry<Integer,TreeSet<Integer>> comprisedRow : theRow.getComprisedRows().entrySet()) {
+      final IntBuffer conversionBuffer=rowNumConversions.get(comprisedRow.getKey());
+      for (      Integer rowNum : comprisedRow.getValue()) {
+        while (conversionBuffer.position() < rowNum) {
+          conversionBuffer.put(INVALID_ROW);
+        }
+        conversionBuffer.put(rowCount);
+      }
+    }
+    if ((++rowCount % 500000) == 0) {
+      log.info("walked 500,000/%d rows in %,d millis.",rowCount,System.currentTimeMillis() - time);
+      time=System.currentTimeMillis();
+    }
+  }
+  for (  IntBuffer rowNumConversion : rowNumConversions) {
+    rowNumConversion.rewind();
+  }
+  log.info("completed walk through of %,d rows in %,d millis.",rowCount,System.currentTimeMillis() - startTime);
+  progress.stopSection(section);
+}

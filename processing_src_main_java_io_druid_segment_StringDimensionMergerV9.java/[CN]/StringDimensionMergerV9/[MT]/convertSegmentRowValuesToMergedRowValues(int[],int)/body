@@ -1,0 +1,17 @@
+{
+  int[] dimVals=(int[])segmentRow;
+  if (dimVals == null) {
+    return convertMissingValues ? EMPTY_STR_DIM_ARRAY : null;
+  }
+  int[] newDimVals=new int[dimVals.length];
+  IntBuffer converter=dimConversions.get(segmentIndexNumber);
+  for (int i=0; i < dimVals.length; i++) {
+    if (converter != null) {
+      newDimVals[i]=converter.get(dimVals[i]);
+    }
+ else {
+      newDimVals[i]=dimVals[i];
+    }
+  }
+  return newDimVals;
+}

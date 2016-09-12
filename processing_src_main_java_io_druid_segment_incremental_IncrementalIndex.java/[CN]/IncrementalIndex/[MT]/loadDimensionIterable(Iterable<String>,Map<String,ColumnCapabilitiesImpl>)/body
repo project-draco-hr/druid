@@ -1,0 +1,15 @@
+{
+synchronized (dimensionDescs) {
+    if (!dimensionDescs.isEmpty()) {
+      throw new ISE("Cannot load dimension order when existing order[%s] is not empty.",dimensionDescs.keySet());
+    }
+    for (    String dim : oldDimensionOrder) {
+      if (dimensionDescs.get(dim) == null) {
+        ColumnCapabilitiesImpl capabilities=oldColumnCapabilities.get(dim);
+        columnCapabilities.put(dim,capabilities);
+        DimensionHandler handler=DimensionHandlerUtil.getHandlerFromCapabilities(dim,capabilities);
+        addNewDimension(dim,capabilities,handler);
+      }
+    }
+  }
+}

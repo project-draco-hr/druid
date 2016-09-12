@@ -1,11 +1,23 @@
 {
-  ValueType type=getTypeForDimension(dimension);
+  IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
+  if (dimensionDesc == null) {
+    final Integer metricIndexInt=index.getMetricIndex(dimension);
+    if (metricIndexInt != null || dimension.equals(Column.TIME_COLUMN_NAME)) {
+      ValueType type=getTypeForDimension(dimension);
 switch (type) {
 case LONG:
-    return makeLongValueMatcher(dimension,predicateFactory.makeLongPredicate());
-case STRING:
-  return makeStringValueMatcher(dimension,predicateFactory.makeStringPredicate());
+        return makeLongValueMatcher(dimension,predicateFactory.makeLongPredicate());
 default :
-return new BooleanValueMatcher(predicateFactory.makeStringPredicate().apply(null));
+      return new BooleanValueMatcher(predicateFactory.makeStringPredicate().apply(null));
+  }
+}
+ else {
+  return new BooleanValueMatcher(predicateFactory.makeStringPredicate().apply(null));
+}
+}
+ else {
+final DimensionIndexer indexer=dimensionDesc.getIndexer();
+final int dimIndex=dimensionDesc.getIndex();
+return indexer.makeIndexingValueMatcher(predicateFactory,holder,dimIndex);
 }
 }

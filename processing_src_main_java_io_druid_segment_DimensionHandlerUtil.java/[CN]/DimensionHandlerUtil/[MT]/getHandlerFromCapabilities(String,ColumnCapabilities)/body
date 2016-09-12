@@ -1,0 +1,13 @@
+{
+  DimensionHandler handler=null;
+  if (capabilities.getType() == ValueType.STRING) {
+    if (!capabilities.isDictionaryEncoded() || !capabilities.hasBitmapIndexes()) {
+      throw new IAE("String column must have dictionary encoding and bitmap index.");
+    }
+    handler=new StringDimensionHandler(dimensionName);
+  }
+  if (handler == null) {
+    throw new IAE("Could not create handler from invalid column type: " + capabilities.getType());
+  }
+  return handler;
+}

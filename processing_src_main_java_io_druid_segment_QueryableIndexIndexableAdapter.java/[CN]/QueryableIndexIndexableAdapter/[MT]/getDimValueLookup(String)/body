@@ -7,20 +7,20 @@
   if (dict == null) {
     return null;
   }
-  return new Indexed<String>(){
-    @Override public Class<? extends String> getClazz(){
-      return String.class;
+  return new Indexed<Comparable>(){
+    @Override public Class<? extends Comparable> getClazz(){
+      return Comparable.class;
     }
     @Override public int size(){
       return dict.getCardinality();
     }
-    @Override public String get(    int index){
+    @Override public Comparable get(    int index){
       return dict.lookupName(index);
     }
-    @Override public int indexOf(    String value){
+    @Override public int indexOf(    Comparable value){
       return dict.lookupId(value);
     }
-    @Override public Iterator<String> iterator(){
+    @Override public Iterator<Comparable> iterator(){
       return IndexedIterable.create(this).iterator();
     }
   }

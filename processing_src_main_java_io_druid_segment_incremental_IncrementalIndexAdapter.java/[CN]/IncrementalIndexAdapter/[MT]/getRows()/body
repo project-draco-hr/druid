@@ -2,35 +2,33 @@
   return new Iterable<Rowboat>(){
     @Override public Iterator<Rowboat> iterator(){
       final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
-      final IncrementalIndex.SortedDimLookup[] sortedDimLookups=new IncrementalIndex.SortedDimLookup[dimensions.size()];
+      final DimensionHandler[] handlers=new DimensionHandler[dimensions.size()];
+      final DimensionIndexer[] indexers=new DimensionIndexer[dimensions.size()];
       for (      IncrementalIndex.DimensionDesc dimension : dimensions) {
-        sortedDimLookups[dimension.getIndex()]=indexers.get(dimension.getName()).getDimLookup();
+        handlers[dimension.getIndex()]=dimension.getHandler();
+        indexers[dimension.getIndex()]=dimension.getIndexer();
       }
       return Iterators.transform(index.getFacts().entrySet().iterator(),new Function<Map.Entry<IncrementalIndex.TimeAndDims,Integer>,Rowboat>(){
         int count=0;
         @Override public Rowboat apply(        Map.Entry<IncrementalIndex.TimeAndDims,Integer> input){
           final IncrementalIndex.TimeAndDims timeAndDims=input.getKey();
-          final int[][] dimValues=timeAndDims.getDims();
+          final Object[] dimValues=timeAndDims.getDims();
           final int rowOffset=input.getValue();
-          int[][] dims=new int[dimValues.length][];
+          Object[] dims=new Object[dimValues.length];
           for (          IncrementalIndex.DimensionDesc dimension : dimensions) {
             final int dimIndex=dimension.getIndex();
             if (dimIndex >= dimValues.length || dimValues[dimIndex] == null) {
               continue;
             }
-            dims[dimIndex]=new int[dimValues[dimIndex].length];
-            if (dimIndex >= dims.length || dims[dimIndex] == null) {
-              continue;
-            }
-            for (int i=0; i < dimValues[dimIndex].length; ++i) {
-              dims[dimIndex][i]=sortedDimLookups[dimIndex].getSortedIdFromUnsortedId(dimValues[dimIndex][i]);
-            }
+            final DimensionIndexer indexer=indexers[dimIndex];
+            Object sortedDimVals=indexer.convertUnsortedEncodedArrayToSortedEncodedArray(dimValues[dimIndex]);
+            dims[dimIndex]=sortedDimVals;
           }
           Object[] metrics=new Object[index.getMetricAggs().length];
           for (int i=0; i < metrics.length; i++) {
             metrics[i]=index.getMetricObjectValue(rowOffset,i);
           }
-          return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++);
+          return new Rowboat(timeAndDims.getTimestamp(),dims,metrics,count++,handlers);
         }
       }
 );

@@ -1,0 +1,11 @@
+{
+  boolean hasMultiValue=capabilities.hasMultipleValues();
+  final CompressedObjectStrategy.CompressionStrategy compressionStrategy=indexSpec.getDimensionCompression();
+  final BitmapSerdeFactory bitmapSerdeFactory=indexSpec.getBitmapSerdeFactory();
+  final ColumnDescriptor.Builder builder=ColumnDescriptor.builder();
+  builder.setValueType(ValueType.STRING);
+  builder.setHasMultipleValues(hasMultiValue);
+  final DictionaryEncodedColumnPartSerde.SerializerBuilder partBuilder=DictionaryEncodedColumnPartSerde.serializerBuilder().withDictionary(dictionaryWriter).withValue(encodedValueWriter,hasMultiValue,compressionStrategy != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED).withBitmapSerdeFactory(bitmapSerdeFactory).withBitmapIndex(bitmapWriter).withSpatialIndex(spatialWriter).withByteOrder(IndexIO.BYTE_ORDER);
+  final ColumnDescriptor serdeficator=builder.addSerde(partBuilder.build()).build();
+  return serdeficator;
+}

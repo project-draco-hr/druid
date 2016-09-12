@@ -4,51 +4,53 @@
     throw new IAE("Cannot add row[%s] because it is below the minTimestamp[%s]",row,new DateTime(minTimestamp));
   }
   final List<String> rowDimensions=row.getDimensions();
-  int[][] dims;
-  List<int[]> overflow=null;
-  List<ValueType> overflowTypes=null;
+  Object[] dims;
+  List<Object> overflow=null;
 synchronized (dimensionDescs) {
-    dims=new int[dimensionDescs.size()][];
+    dims=new Object[dimensionDescs.size()];
     for (    String dimension : rowDimensions) {
-      List<Comparable> dimensionValues;
+      boolean wasNewDim=false;
       ColumnCapabilitiesImpl capabilities;
-      final ValueType valType;
+      ValueType valType=null;
       DimensionDesc desc=dimensionDescs.get(dimension);
       if (desc != null) {
         capabilities=desc.getCapabilities();
       }
  else {
+        wasNewDim=true;
         capabilities=columnCapabilities.get(dimension);
         if (capabilities == null) {
           capabilities=new ColumnCapabilitiesImpl();
           capabilities.setType(ValueType.STRING);
+          capabilities.setDictionaryEncoded(true);
+          capabilities.setHasBitmapIndexes(true);
           columnCapabilities.put(dimension,capabilities);
         }
+        DimensionHandler handler=DimensionHandlerUtil.getHandlerFromCapabilities(dimension,capabilities);
+        desc=addNewDimension(dimension,capabilities,handler);
       }
-      valType=capabilities.getType();
-      dimensionValues=getRowDimensionAsComparables(row,dimension,valType);
-      if (!capabilities.hasMultipleValues() && dimensionValues.size() > 1) {
+      DimensionHandler handler=desc.getHandler();
+      DimensionIndexer indexer=desc.getIndexer();
+      Object dimsKey=indexer.processRowValsToUnsortedEncodedArray(row.getRaw(dimension));
+      if (!capabilities.hasMultipleValues() && dimsKey != null && handler.getLengthFromEncodedArray(dimsKey) > 1) {
         capabilities.setHasMultipleValues(true);
       }
-      if (desc == null) {
-        desc=addNewDimension(dimension,capabilities);
+      if (wasNewDim) {
         if (overflow == null) {
           overflow=Lists.newArrayList();
-          overflowTypes=Lists.newArrayList();
         }
-        overflow.add(getDimVals(desc.getValues(),dimensionValues));
-        overflowTypes.add(valType);
+        overflow.add(dimsKey);
       }
  else       if (desc.getIndex() > dims.length || dims[desc.getIndex()] != null) {
         throw new ISE("Dimension[%s] occurred more than once in InputRow",dimension);
       }
  else {
-        dims[desc.getIndex()]=getDimVals(desc.getValues(),dimensionValues);
+        dims[desc.getIndex()]=dimsKey;
       }
     }
   }
   if (overflow != null) {
-    int[][] newDims=new int[dims.length + overflow.size()][];
+    Object[] newDims=new Object[dims.length + overflow.size()];
     System.arraycopy(dims,0,newDims,0,dims.length);
     for (int i=0; i < overflow.size(); ++i) {
       newDims[dims.length + i]=overflow.get(i);
@@ -56,5 +58,5 @@ synchronized (dimensionDescs) {
     dims=newDims;
   }
   long truncated=gran.truncate(row.getTimestampFromEpoch());
-  return new TimeAndDims(Math.max(truncated,minTimestamp),dims);
+  return new TimeAndDims(Math.max(truncated,minTimestamp),dims,dimensionDescsList);
 }

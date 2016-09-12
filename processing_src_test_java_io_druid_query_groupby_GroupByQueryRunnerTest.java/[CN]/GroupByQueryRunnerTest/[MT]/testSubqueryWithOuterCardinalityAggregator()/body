@@ -2,7 +2,7 @@
   final GroupByQuery subquery=GroupByQuery.builder().setDataSource(QueryRunnerTestHelper.dataSource).setQuerySegmentSpec(QueryRunnerTestHelper.fullOnInterval).setDimensions(Lists.<DimensionSpec>newArrayList(new DefaultDimensionSpec("market","market"),new DefaultDimensionSpec("quality","quality"))).setAggregatorSpecs(Arrays.asList(QueryRunnerTestHelper.rowsCount,new LongSumAggregatorFactory("index","index"))).setGranularity(QueryRunnerTestHelper.dayGran).build();
   final GroupByQuery query=GroupByQuery.builder().setDataSource(subquery).setQuerySegmentSpec(QueryRunnerTestHelper.fullOnInterval).setDimensions(Lists.<DimensionSpec>newArrayList()).setAggregatorSpecs(ImmutableList.<AggregatorFactory>of(new CardinalityAggregatorFactory("car",ImmutableList.<DimensionSpec>of(new DefaultDimensionSpec("quality","quality")),false))).setGranularity(QueryRunnerTestHelper.allGran).build();
   if (config.getDefaultStrategy().equals(GroupByStrategySelector.STRATEGY_V1)) {
-    expectedException.expect(NullPointerException.class);
+    expectedException.expect(IAE.class);
     GroupByQueryRunnerTestHelper.runQuery(factory,runner,query);
   }
  else {

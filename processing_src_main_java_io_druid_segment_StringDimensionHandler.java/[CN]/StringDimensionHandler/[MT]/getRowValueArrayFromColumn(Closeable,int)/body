@@ -1,0 +1,16 @@
+{
+  DictionaryEncodedColumn dict=(DictionaryEncodedColumn)column;
+  int[] theVals;
+  if (dict.hasMultipleValues()) {
+    final IndexedInts dimVals=dict.getMultiValueRow(currRow);
+    theVals=new int[dimVals.size()];
+    for (int i=0; i < theVals.length; ++i) {
+      theVals[i]=dimVals.get(i);
+    }
+  }
+ else {
+    theVals=new int[1];
+    theVals[0]=dict.getSingleValueRow(currRow);
+  }
+  return theVals;
+}

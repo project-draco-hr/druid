@@ -14,6 +14,7 @@
       throw new SegmentValidationException("Metric names differ. Expected [%s] found [%s]",metNames1,metNames2);
     }
   }
+  final Map<String,DimensionHandler> dimHandlers=adapter1.getDimensionHandlers();
   final Iterator<Rowboat> it1=adapter1.getRows().iterator();
   final Iterator<Rowboat> it2=adapter2.getRows().iterator();
   long row=0L;
@@ -29,7 +30,7 @@
     }
     if (rb1.compareTo(rb2) != 0) {
       try {
-        validateRowValues(rb1,adapter1,rb2,adapter2);
+        validateRowValues(dimHandlers,rb1,adapter1,rb2,adapter2);
       }
  catch (      SegmentValidationException ex) {
         throw new SegmentValidationException(ex,"Validation failure on row %d: [%s] vs [%s]",row,rb1,rb2);

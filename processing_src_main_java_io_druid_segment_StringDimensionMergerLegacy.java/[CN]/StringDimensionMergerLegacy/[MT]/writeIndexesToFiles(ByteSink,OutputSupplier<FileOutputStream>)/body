@@ -1,0 +1,12 @@
+{
+  final SerializerUtils serializerUtils=new SerializerUtils();
+  bitmapWriter.close();
+  serializerUtils.writeString(invertedIndexFile,dimensionName);
+  ByteStreams.copy(bitmapWriter.combineStreams(),invertedIndexFile);
+  if (capabilities.hasSpatialIndexes()) {
+    spatialWriter.close();
+    serializerUtils.writeString(spatialIndexFile,dimensionName);
+    ByteStreams.copy(spatialWriter.combineStreams(),spatialIndexFile);
+    spatialIoPeon.cleanup();
+  }
+}

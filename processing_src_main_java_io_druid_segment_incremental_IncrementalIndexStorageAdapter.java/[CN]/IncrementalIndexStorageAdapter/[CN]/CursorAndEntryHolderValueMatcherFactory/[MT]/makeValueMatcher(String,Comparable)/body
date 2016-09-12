@@ -1,37 +1,23 @@
 {
-  if (getTypeForDimension(dimension) == ValueType.LONG) {
-    return Filters.getLongValueMatcher(cursor.makeLongColumnSelector(dimension),value);
-  }
   IncrementalIndex.DimensionDesc dimensionDesc=index.getDimension(dimension);
   if (dimensionDesc == null) {
-    return new BooleanValueMatcher(isComparableNullOrEmpty(value));
+    final Integer metricIndexInt=index.getMetricIndex(dimension);
+    if (metricIndexInt != null || dimension.equals(Column.TIME_COLUMN_NAME)) {
+      ValueType type=getTypeForDimension(dimension);
+switch (type) {
+case LONG:
+        return Filters.getLongValueMatcher(cursor.makeLongColumnSelector(dimension),originalValue);
+default :
+      return new BooleanValueMatcher(isComparableNullOrEmpty(originalValue));
   }
-  final int dimIndex=dimensionDesc.getIndex();
-  final IncrementalIndex.DimDim dimDim=dimensionDesc.getValues();
-  final Integer id=dimDim.getId(value);
-  if (id == null) {
-    if (isComparableNullOrEmpty(value)) {
-      return new ValueMatcher(){
-        @Override public boolean matches(){
-          int[][] dims=holder.getKey().getDims();
-          if (dimIndex >= dims.length || dims[dimIndex] == null) {
-            return true;
-          }
-          return false;
-        }
-      }
-;
-    }
-    return new BooleanValueMatcher(false);
-  }
-  return new ValueMatcher(){
-    @Override public boolean matches(){
-      int[][] dims=holder.getKey().getDims();
-      if (dimIndex >= dims.length || dims[dimIndex] == null) {
-        return isComparableNullOrEmpty(value);
-      }
-      return Ints.indexOf(dims[dimIndex],id) >= 0;
-    }
-  }
-;
+}
+ else {
+  return new BooleanValueMatcher(isComparableNullOrEmpty(originalValue));
+}
+}
+ else {
+final DimensionIndexer indexer=dimensionDesc.getIndexer();
+final int dimIndex=dimensionDesc.getIndex();
+return indexer.makeIndexingValueMatcher(originalValue,holder,dimIndex);
+}
 }

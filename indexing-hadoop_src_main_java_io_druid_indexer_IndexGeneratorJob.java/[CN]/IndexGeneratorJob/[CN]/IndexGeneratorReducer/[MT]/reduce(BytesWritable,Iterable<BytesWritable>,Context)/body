@@ -4,7 +4,7 @@
   final Interval interval=config.getGranularitySpec().bucketInterval(bucket.time).get();
   ListeningExecutorService persistExecutor=null;
   List<ListenableFuture<?>> persistFutures=Lists.newArrayList();
-  IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,null);
+  IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,null,null);
   try {
     File baseFlushFile=File.createTempFile("base","flush");
     baseFlushFile.delete();
@@ -65,7 +65,7 @@
           }
         }
 ));
-        index=makeIncrementalIndex(bucket,combiningAggs,config,allDimensionNames);
+        index=makeIncrementalIndex(bucket,combiningAggs,config,allDimensionNames,persistIndex.getColumnCapabilities());
         startTime=System.currentTimeMillis();
         ++indexCount;
       }

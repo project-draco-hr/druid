@@ -1,0 +1,28 @@
+{
+  final int[] encodedDimensionValues;
+  final int oldDictSize=dimLookup.size();
+  if (dimValues == null) {
+    dimLookup.add(null);
+    encodedDimensionValues=null;
+  }
+ else   if (dimValues instanceof List) {
+    List<Object> dimValuesList=(List)dimValues;
+    final String[] dimensionValues=new String[dimValuesList.size()];
+    for (int i=0; i < dimValuesList.size(); i++) {
+      dimensionValues[i]=StringDimensionHandler.STRING_TRANSFORMER.apply(dimValuesList.get(i));
+    }
+    Arrays.sort(dimensionValues,StringDimensionHandler.UNENCODED_COMPARATOR);
+    encodedDimensionValues=new int[dimensionValues.length];
+    for (int i=0; i < dimensionValues.length; i++) {
+      encodedDimensionValues[i]=dimLookup.add(dimensionValues[i]);
+    }
+  }
+ else {
+    String transformedVal=StringDimensionHandler.STRING_TRANSFORMER.apply(dimValues);
+    encodedDimensionValues=new int[]{dimLookup.add(transformedVal)};
+  }
+  if (oldDictSize != dimLookup.size()) {
+    sortedLookup=null;
+  }
+  return encodedDimensionValues;
+}

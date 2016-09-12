@@ -1,29 +1,8 @@
 {
-  final DimensionIndexer indexer=indexers.get(dimension);
-  if (indexer == null) {
+  final DimensionAccessor accessor=accessors.get(dimension);
+  if (accessor == null) {
     return null;
   }
-  final IncrementalIndex.DimDim dimDim=indexer.getDimValues();
-  final IncrementalIndex.SortedDimLookup dimLookup=indexer.getDimLookup();
-  return new Indexed<String>(){
-    @Override public Class<? extends String> getClazz(){
-      return String.class;
-    }
-    @Override public int size(){
-      return dimLookup.size();
-    }
-    @Override public String get(    int index){
-      Comparable val=dimLookup.getValueFromSortedId(index);
-      String strVal=val != null ? val.toString() : null;
-      return strVal;
-    }
-    @Override public int indexOf(    String value){
-      int id=dimDim.getId(value);
-      return id < 0 ? -1 : dimLookup.getSortedIdFromUnsortedId(id);
-    }
-    @Override public Iterator<String> iterator(){
-      return IndexedIterable.create(this).iterator();
-    }
-  }
-;
+  final DimensionIndexer indexer=accessor.dimensionDesc.getIndexer();
+  return indexer.getSortedIndexedValues();
 }

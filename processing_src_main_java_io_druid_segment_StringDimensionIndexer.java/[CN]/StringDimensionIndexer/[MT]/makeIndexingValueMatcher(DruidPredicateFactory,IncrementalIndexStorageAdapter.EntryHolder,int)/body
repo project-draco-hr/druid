@@ -1,0 +1,24 @@
+{
+  final Predicate<String> predicate=predicateFactory.makeStringPredicate();
+  final boolean matchOnNull=predicate.apply(null);
+  return new ValueMatcher(){
+    @Override public boolean matches(){
+      Object[] dims=holder.getKey().getDims();
+      if (dimIndex >= dims.length) {
+        return matchOnNull;
+      }
+      int[] dimsInt=(int[])dims[dimIndex];
+      if (dimsInt == null || dimsInt.length == 0) {
+        return matchOnNull;
+      }
+      for (int i=0; i < dimsInt.length; i++) {
+        String finalDimVal=getActualValue(dimsInt[i],false);
+        if (predicate.apply(finalDimVal)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+;
+}

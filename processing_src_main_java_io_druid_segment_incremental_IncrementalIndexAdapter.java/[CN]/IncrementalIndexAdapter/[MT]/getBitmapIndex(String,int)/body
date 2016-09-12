@@ -1,11 +1,15 @@
 {
-  DimensionIndexer accessor=indexers.get(dimension);
+  DimensionAccessor accessor=accessors.get(dimension);
   if (accessor == null) {
     return EmptyIndexedInts.EMPTY_INDEXED_INTS;
   }
-  IncrementalIndex.SortedDimLookup dimLookup=accessor.getDimLookup();
-  final int id=dimLookup.getUnsortedIdFromSortedId(index);
-  if (id < 0 || id >= dimLookup.size()) {
+  ColumnCapabilities capabilities=accessor.dimensionDesc.getCapabilities();
+  DimensionIndexer indexer=accessor.dimensionDesc.getIndexer();
+  if (!capabilities.hasBitmapIndexes()) {
+    return EmptyIndexedInts.EMPTY_INDEXED_INTS;
+  }
+  final int id=(Integer)indexer.getUnsortedEncodedValueFromSorted(index);
+  if (id < 0 || id >= indexer.getCardinality()) {
     return EmptyIndexedInts.EMPTY_INDEXED_INTS;
   }
   MutableBitmap bitmapIndex=accessor.invertedIndexes[id];

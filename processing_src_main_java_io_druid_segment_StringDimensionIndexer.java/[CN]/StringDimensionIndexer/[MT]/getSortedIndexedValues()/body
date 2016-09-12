@@ -1,0 +1,22 @@
+{
+  updateSortedLookup();
+  return new Indexed<String>(){
+    @Override public Class<? extends String> getClazz(){
+      return String.class;
+    }
+    @Override public int size(){
+      return getCardinality();
+    }
+    @Override public String get(    int index){
+      return getActualValue(index,true);
+    }
+    @Override public int indexOf(    String value){
+      int id=getEncodedValue(value,false);
+      return id < 0 ? -1 : getSortedEncodedValueFromUnsorted(id);
+    }
+    @Override public Iterator<String> iterator(){
+      return IndexedIterable.create(this).iterator();
+    }
+  }
+;
+}

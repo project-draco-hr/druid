@@ -2,9 +2,10 @@
   if (dimension.equals(Column.TIME_COLUMN_NAME)) {
     return Integer.MAX_VALUE;
   }
-  IncrementalIndex.DimDim dimDim=index.getDimensionValues(dimension);
-  if (dimDim == null) {
+  IncrementalIndex.DimensionDesc desc=index.getDimension(dimension);
+  if (desc == null) {
     return 0;
   }
-  return dimDim.size();
+  DimensionIndexer indexer=index.getDimension(dimension).getIndexer();
+  return indexer.getCardinality();
 }

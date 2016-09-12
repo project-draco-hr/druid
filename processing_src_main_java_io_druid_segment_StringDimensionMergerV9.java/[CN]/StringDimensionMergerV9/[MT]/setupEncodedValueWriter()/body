@@ -1,0 +1,11 @@
+{
+  final CompressedObjectStrategy.CompressionStrategy compressionStrategy=indexSpec.getDimensionCompression();
+  String filenameBase=String.format("%s.forward_dim",dimensionName);
+  if (capabilities.hasMultipleValues()) {
+    encodedValueWriter=(compressionStrategy != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED) ? CompressedVSizeIndexedV3Writer.create(ioPeon,filenameBase,cardinality,compressionStrategy) : new VSizeIndexedWriter(ioPeon,filenameBase,cardinality);
+  }
+ else {
+    encodedValueWriter=(compressionStrategy != CompressedObjectStrategy.CompressionStrategy.UNCOMPRESSED) ? CompressedVSizeIntsIndexedWriter.create(ioPeon,filenameBase,cardinality,compressionStrategy) : new VSizeIndexedIntsWriter(ioPeon,filenameBase,cardinality);
+  }
+  encodedValueWriter.open();
+}

@@ -1,0 +1,56 @@
+{
+  boolean dimHasValues=false;
+  boolean dimAbsentFromSomeIndex=false;
+  long dimStartTime=System.currentTimeMillis();
+  this.adapters=adapters;
+  dimConversions=Lists.newArrayListWithCapacity(adapters.size());
+  for (int i=0; i < adapters.size(); ++i) {
+    dimConversions.add(null);
+  }
+  int numMergeIndex=0;
+  Indexed<String> dimValueLookup=null;
+  Indexed<String>[] dimValueLookups=new Indexed[adapters.size() + 1];
+  for (int i=0; i < adapters.size(); i++) {
+    Indexed<String> dimValues=(Indexed)adapters.get(i).getDimValueLookup(dimensionName);
+    if (!isNullColumn(dimValues)) {
+      dimHasValues=true;
+      hasNull|=dimValues.indexOf(null) >= 0;
+      dimValueLookups[i]=dimValueLookup=dimValues;
+      numMergeIndex++;
+    }
+ else {
+      dimAbsentFromSomeIndex=true;
+    }
+  }
+  convertMissingValues=dimHasValues && dimAbsentFromSomeIndex;
+  if (convertMissingValues && !hasNull) {
+    hasNull=true;
+    dimValueLookups[adapters.size()]=dimValueLookup=EMPTY_STR_DIM_VAL;
+    numMergeIndex++;
+  }
+  String dictFilename=String.format("%s.dim_values",dimensionName);
+  dictionaryWriter=new GenericIndexedWriter<>(ioPeon,dictFilename,GenericIndexed.STRING_STRATEGY);
+  dictionaryWriter.open();
+  cardinality=0;
+  if (numMergeIndex > 1) {
+    IndexMerger.DictionaryMergeIterator iterator=new IndexMerger.DictionaryMergeIterator(dimValueLookups,true);
+    while (iterator.hasNext()) {
+      dictionaryWriter.write(iterator.next());
+    }
+    for (int i=0; i < adapters.size(); i++) {
+      if (dimValueLookups[i] != null && iterator.needConversion(i)) {
+        dimConversions.set(i,iterator.conversions[i]);
+      }
+    }
+    cardinality=iterator.counter;
+  }
+ else   if (numMergeIndex == 1) {
+    for (    String value : dimValueLookup) {
+      dictionaryWriter.write(value);
+    }
+    cardinality=dimValueLookup.size();
+  }
+  log.info("Completed dim[%s] conversions with cardinality[%,d] in %,d millis.",dimensionName,cardinality,System.currentTimeMillis() - dimStartTime);
+  dictionaryWriter.close();
+  setupEncodedValueWriter();
+}

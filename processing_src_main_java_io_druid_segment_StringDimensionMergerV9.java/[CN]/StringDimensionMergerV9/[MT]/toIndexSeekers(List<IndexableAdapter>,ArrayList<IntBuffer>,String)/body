@@ -1,0 +1,14 @@
+{
+  IndexSeeker[] seekers=new IndexSeeker[adapters.size()];
+  for (int i=0; i < adapters.size(); i++) {
+    IntBuffer dimConversion=dimConversions.get(i);
+    if (dimConversion != null) {
+      seekers[i]=new IndexSeekerWithConversion((IntBuffer)dimConversion.asReadOnlyBuffer().rewind());
+    }
+ else {
+      Indexed<String> dimValueLookup=(Indexed)adapters.get(i).getDimValueLookup(dimension);
+      seekers[i]=new IndexSeekerWithoutConversion(dimValueLookup == null ? 0 : dimValueLookup.size());
+    }
+  }
+  return seekers;
+}

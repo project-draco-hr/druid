@@ -1,0 +1,28 @@
+{
+  if (key == null || key.length == 0) {
+    return null;
+  }
+  if (key.length == 1) {
+    String val=getActualValue(key[0],false);
+    val=Strings.nullToEmpty(val);
+    return val;
+  }
+ else {
+    if (asList) {
+      List<Comparable> rowVals=new ArrayList<>(key.length);
+      for (int i=0; i < key.length; i++) {
+        String val=getActualValue(key[i],false);
+        rowVals.add(Strings.nullToEmpty(val));
+      }
+      return rowVals;
+    }
+ else {
+      String[] rowArray=new String[key.length];
+      for (int i=0; i < key.length; i++) {
+        String val=getActualValue(key[i],false);
+        rowArray[i]=Strings.nullToEmpty(val);
+      }
+      return rowArray;
+    }
+  }
+}

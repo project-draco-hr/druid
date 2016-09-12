@@ -5,7 +5,7 @@
     LinkedHashSet<String> dimOrder=Sets.newLinkedHashSet();
     SortableBytes keyBytes=SortableBytes.fromBytesWritable(key);
     Bucket bucket=Bucket.fromGroupKey(keyBytes.getGroupKey()).lhs;
-    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,null);
+    IncrementalIndex index=makeIncrementalIndex(bucket,combiningAggs,config,null,null);
     index.add(InputRowSerde.fromBytes(first.getBytes(),aggregators));
     while (iter.hasNext()) {
       context.progress();
@@ -14,7 +14,7 @@
         dimOrder.addAll(index.getDimensionOrder());
         log.info("current index full due to [%s]. creating new index.",index.getOutOfRowsReason());
         flushIndexToContextAndClose(key,index,context);
-        index=makeIncrementalIndex(bucket,combiningAggs,config,dimOrder);
+        index=makeIncrementalIndex(bucket,combiningAggs,config,dimOrder,index.getColumnCapabilities());
       }
       index.add(value);
     }

@@ -5,8 +5,8 @@
   }
   int index=0;
   while (retVal == 0 && index < dims.length) {
-    int[] lhsVals=dims[index];
-    int[] rhsVals=rhs.dims[index];
+    Object lhsVals=dims[index];
+    Object rhsVals=rhs.dims[index];
     if (lhsVals == null) {
       if (rhsVals == null) {
         index++;
@@ -17,12 +17,8 @@
     if (rhsVals == null) {
       return 1;
     }
-    retVal=Ints.compare(lhsVals.length,rhsVals.length);
-    int valsIndex=0;
-    while (retVal == 0 && valsIndex < lhsVals.length) {
-      retVal=Ints.compare(lhsVals[valsIndex],rhsVals[valsIndex]);
-      ++valsIndex;
-    }
+    DimensionHandler handler=handlers[index];
+    retVal=handler.compareSortedEncodedArrays(lhsVals,rhsVals);
     ++index;
   }
   return retVal;

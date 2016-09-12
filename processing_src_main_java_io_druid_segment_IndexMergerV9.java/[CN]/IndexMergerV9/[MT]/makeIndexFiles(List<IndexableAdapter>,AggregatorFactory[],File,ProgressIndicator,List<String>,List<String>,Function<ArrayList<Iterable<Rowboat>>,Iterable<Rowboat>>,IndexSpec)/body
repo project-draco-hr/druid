@@ -45,37 +45,40 @@
     final Map<String,String> metricTypeNames=Maps.newTreeMap(Ordering.<String>natural().nullsFirst());
     final List<ColumnCapabilitiesImpl> dimCapabilities=Lists.newArrayListWithCapacity(mergedDimensions.size());
     mergeCapabilities(adapters,mergedDimensions,metricsValueTypes,metricTypeNames,dimCapabilities);
+    final DimensionHandler[] handlers=makeDimensionHandlers(mergedDimensions,dimCapabilities);
+    final List<DimensionMerger> mergers=new ArrayList<>();
+    for (int i=0; i < mergedDimensions.size(); i++) {
+      mergers.add(handlers[i].makeMerger(indexSpec,v9TmpDir,ioPeon,dimCapabilities.get(i),progress));
+    }
     progress.progress();
     startTime=System.currentTimeMillis();
-    final Map<String,Integer> dimCardinalities=Maps.newHashMap();
-    final ArrayList<GenericIndexedWriter<String>> dimValueWriters=setupDimValueWriters(ioPeon,mergedDimensions);
     final ArrayList<Map<String,IntBuffer>> dimConversions=Lists.newArrayListWithCapacity(adapters.size());
     final ArrayList<Boolean> dimensionSkipFlag=Lists.newArrayListWithCapacity(mergedDimensions.size());
-    final ArrayList<Boolean> dimHasNullFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
     final ArrayList<Boolean> convertMissingDimsFlags=Lists.newArrayListWithCapacity(mergedDimensions.size());
-    writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,dimCardinalities,dimValueWriters,dimensionSkipFlag,dimConversions,convertMissingDimsFlags,dimHasNullFlags);
+    writeDimValueAndSetupDimConversion(adapters,progress,mergedDimensions,mergers);
     log.info("Completed dim conversions in %,d millis.",System.currentTimeMillis() - startTime);
     progress.progress();
-    final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,dimConversions,convertMissingDimsFlags,rowMergerFn);
+    final Iterable<Rowboat> theRows=makeRowIterable(adapters,mergedDimensions,mergedMetrics,rowMergerFn,dimCapabilities,handlers,mergers);
     final LongColumnSerializer timeWriter=setupTimeWriter(ioPeon,indexSpec);
-    final ArrayList<IndexedIntsWriter> dimWriters=setupDimensionWriters(ioPeon,mergedDimensions,dimCapabilities,dimCardinalities,indexSpec);
     final ArrayList<GenericColumnSerializer> metWriters=setupMetricsWriters(ioPeon,mergedMetrics,metricsValueTypes,metricTypeNames,indexSpec);
     final List<IntBuffer> rowNumConversions=Lists.newArrayListWithCapacity(adapters.size());
-    final ArrayList<MutableBitmap> nullRowsList=Lists.newArrayListWithCapacity(mergedDimensions.size());
-    for (int i=0; i < mergedDimensions.size(); ++i) {
-      nullRowsList.add(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap());
-    }
-    mergeIndexesAndWriteColumns(adapters,progress,theRows,timeWriter,dimWriters,metWriters,dimensionSkipFlag,rowNumConversions,nullRowsList,dimHasNullFlags);
-    progress.progress();
-    final ArrayList<GenericIndexedWriter<ImmutableBitmap>> bitmapIndexWriters=setupBitmapIndexWriters(ioPeon,mergedDimensions,indexSpec);
-    final ArrayList<ByteBufferWriter<ImmutableRTree>> spatialIndexWriters=setupSpatialIndexWriters(ioPeon,mergedDimensions,indexSpec,dimCapabilities);
-    makeInvertedIndexes(adapters,progress,mergedDimensions,indexSpec,v9TmpDir,rowNumConversions,nullRowsList,dimValueWriters,bitmapIndexWriters,spatialIndexWriters,dimConversions);
-    progress.progress();
+    mergeIndexesAndWriteColumns(adapters,progress,theRows,timeWriter,metWriters,rowNumConversions,mergers);
+    final String section="build inverted index and columns";
+    progress.startSection(section);
     makeTimeColumn(v9Smoosher,progress,timeWriter);
     makeMetricsColumns(v9Smoosher,progress,mergedMetrics,metricsValueTypes,metricTypeNames,metWriters);
-    makeDimensionColumns(v9Smoosher,progress,indexSpec,mergedDimensions,dimensionSkipFlag,dimCapabilities,dimValueWriters,dimWriters,bitmapIndexWriters,spatialIndexWriters);
+    for (int i=0; i < mergedDimensions.size(); i++) {
+      DimensionMergerV9 merger=(DimensionMergerV9)mergers.get(i);
+      merger.writeIndexes(rowNumConversions,closer);
+      if (merger.canSkip()) {
+        continue;
+      }
+      ColumnDescriptor columnDesc=merger.makeColumnDescriptor();
+      makeColumn(v9Smoosher,mergedDimensions.get(i),columnDesc);
+    }
+    progress.stopSection(section);
     progress.progress();
-    makeIndexBinary(v9Smoosher,adapters,outDir,mergedDimensions,dimensionSkipFlag,mergedMetrics,progress,indexSpec);
+    makeIndexBinary(v9Smoosher,adapters,outDir,mergedDimensions,mergedMetrics,progress,indexSpec,mergers);
     makeMetadataBinary(v9Smoosher,progress,segmentMetadata);
     v9Smoosher.close();
     progress.stop();

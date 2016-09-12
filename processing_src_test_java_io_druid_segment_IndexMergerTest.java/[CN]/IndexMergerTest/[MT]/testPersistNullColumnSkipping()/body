@@ -1,0 +1,18 @@
+{
+  IncrementalIndex index1=IncrementalIndexTest.createIndex(new AggregatorFactory[]{new LongSumAggregatorFactory("A","A")});
+  index1.add(new MapBasedInputRow(1L,Lists.newArrayList("d1","d2"),ImmutableMap.<String,Object>of("d1","a","d2","","A",1)));
+  index1.add(new MapBasedInputRow(1L,Lists.newArrayList("d1","d2"),ImmutableMap.<String,Object>of("d1","b","d2","","A",1)));
+  final File tempDir=temporaryFolder.newFolder();
+  QueryableIndex index=closer.closeLater(INDEX_IO.loadIndex(INDEX_MERGER.persist(index1,tempDir,indexSpec)));
+  List<String> expectedColumnNames=Arrays.asList("A","d1");
+  List<String> actualColumnNames=Lists.newArrayList(index.getColumnNames());
+  Collections.sort(expectedColumnNames);
+  Collections.sort(actualColumnNames);
+  Assert.assertEquals(expectedColumnNames,actualColumnNames);
+  SmooshedFileMapper sfm=closer.closeLater(SmooshedFileMapper.load(tempDir));
+  List<String> expectedFilenames=Arrays.asList("A","__time","d1","index.drd","metadata.drd");
+  List<String> actualFilenames=new ArrayList<>(sfm.getInternalFilenames());
+  Collections.sort(expectedFilenames);
+  Collections.sort(actualFilenames);
+  Assert.assertEquals(expectedFilenames,actualFilenames);
+}

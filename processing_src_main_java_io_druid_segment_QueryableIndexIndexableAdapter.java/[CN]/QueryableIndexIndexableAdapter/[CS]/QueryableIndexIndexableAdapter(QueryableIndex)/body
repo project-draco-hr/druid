@@ -7,11 +7,11 @@
     if (col == null) {
       log.warn("Wtf!? column[%s] didn't exist!?!?!?",dim);
     }
- else     if (col.getDictionaryEncoding() != null) {
-      availableDimensions.add(dim);
-    }
  else {
-      log.info("No dictionary on dimension[%s]",dim);
+      if (col.getDictionaryEncoding() == null) {
+        log.info("No dictionary on dimension[%s]",dim);
+      }
+      availableDimensions.add(dim);
     }
   }
   this.metadata=input.getMetadata();

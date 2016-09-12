@@ -3,7 +3,7 @@
   aggOffsetInBuffer=new int[metrics.length];
   for (int i=0; i < metrics.length; i++) {
     AggregatorFactory agg=metrics[i];
-    ColumnSelectorFactory columnSelectorFactory=makeColumnSelectorFactory(agg,rowSupplier,deserializeComplexMetrics);
+    ColumnSelectorFactory columnSelectorFactory=makeColumnSelectorFactory(agg,rowSupplier,deserializeComplexMetrics,getColumnCapabilities());
     selectors.put(agg.getName(),new OnheapIncrementalIndex.ObjectCachingColumnSelectorFactory(columnSelectorFactory));
     if (i == 0) {
       aggOffsetInBuffer[i]=0;

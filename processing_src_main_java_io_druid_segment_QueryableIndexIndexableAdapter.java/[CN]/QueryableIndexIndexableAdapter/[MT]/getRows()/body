@@ -4,17 +4,21 @@
       return new Iterator<Rowboat>(){
         final GenericColumn timestamps=input.getColumn(Column.TIME_COLUMN_NAME).getGenericColumn();
         final Object[] metrics;
-        final DictionaryEncodedColumn[] dictionaryEncodedColumns;
+        final Closeable[] columns;
         final int numMetrics=getMetricNames().size();
+        final DimensionHandler[] handlers=new DimensionHandler[availableDimensions.size()];
+        Collection<DimensionHandler> handlerSet=input.getDimensionHandlers().values();
         int currRow=0;
         boolean done=false;
 {
-          this.dictionaryEncodedColumns=FluentIterable.from(getDimensionNames()).transform(new Function<String,DictionaryEncodedColumn>(){
-            @Override public DictionaryEncodedColumn apply(            String dimName){
-              return input.getColumn(dimName).getDictionaryEncoding();
+          handlerSet.toArray(handlers);
+          this.columns=FluentIterable.from(handlerSet).transform(new Function<DimensionHandler,Closeable>(){
+            @Override public Closeable apply(            DimensionHandler handler){
+              Column column=input.getColumn(handler.getDimensionName());
+              return handler.getSubColumn(column);
             }
           }
-).toArray(DictionaryEncodedColumn.class);
+).toArray(Closeable.class);
           final Indexed<String> availableMetrics=getMetricNames();
           metrics=new Object[availableMetrics.size()];
           for (int i=0; i < metrics.length; ++i) {
@@ -42,10 +46,8 @@ if (!hasNext && !done) {
       CloseQuietly.close((Closeable)metric);
     }
   }
-  for (  Object dimension : dictionaryEncodedColumns) {
-    if (dimension instanceof Closeable) {
-      CloseQuietly.close((Closeable)dimension);
-    }
+  for (  Closeable dimension : columns) {
+    CloseQuietly.close(dimension);
   }
   done=true;
 }
@@ -55,21 +57,11 @@ return hasNext;
 if (!hasNext()) {
   throw new NoSuchElementException();
 }
-final int[][] dims=new int[dictionaryEncodedColumns.length][];
+final Object[] dims=new Object[columns.length];
 int dimIndex=0;
-for (final DictionaryEncodedColumn dict : dictionaryEncodedColumns) {
-  final IndexedInts dimVals;
-  if (dict.hasMultipleValues()) {
-    dimVals=dict.getMultiValueRow(currRow);
-  }
- else {
-    dimVals=new ArrayBasedIndexedInts(new int[]{dict.getSingleValueRow(currRow)});
-  }
-  int[] theVals=new int[dimVals.size()];
-  for (int j=0; j < theVals.length; ++j) {
-    theVals[j]=dimVals.get(j);
-  }
-  dims[dimIndex++]=theVals;
+for (final Closeable column : columns) {
+  dims[dimIndex]=handlers[dimIndex].getRowValueArrayFromColumn(column,currRow);
+  dimIndex++;
 }
 Object[] metricArray=new Object[numMetrics];
 for (int i=0; i < metricArray.length; ++i) {
@@ -83,7 +75,7 @@ for (int i=0; i < metricArray.length; ++i) {
     metricArray[i]=((ComplexColumn)metrics[i]).getRowValue(currRow);
   }
 }
-final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow);
+final Rowboat retVal=new Rowboat(timestamps.getLongSingleValueRow(currRow),dims,metricArray,currRow,handlers);
 ++currRow;
 return retVal;
 }

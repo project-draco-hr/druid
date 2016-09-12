@@ -6,38 +6,23 @@
         @Override public Row apply(        final Map.Entry<TimeAndDims,Integer> input){
           final TimeAndDims timeAndDims=input.getKey();
           final int rowOffset=input.getValue();
-          int[][] theDims=timeAndDims.getDims();
+          Object[] theDims=timeAndDims.getDims();
           Map<String,Object> theVals=Maps.newLinkedHashMap();
           for (int i=0; i < theDims.length; ++i) {
-            int[] dim=theDims[i];
+            Object dim=theDims[i];
             DimensionDesc dimensionDesc=dimensions.get(i);
             if (dimensionDesc == null) {
               continue;
             }
-            ValueType type=dimensionDesc.getCapabilities().getType();
             String dimensionName=dimensionDesc.getName();
-            if (dim == null || dim.length == 0) {
+            DimensionHandler handler=dimensionDesc.getHandler();
+            if (dim == null || handler.getLengthFromEncodedArray(dim) == 0) {
               theVals.put(dimensionName,null);
               continue;
             }
-            if (dim.length == 1) {
-              Comparable val=dimensionDesc.getValues().getValue(dim[0]);
-              if (type == ValueType.STRING) {
-                val=Strings.nullToEmpty((String)val);
-              }
-              theVals.put(dimensionName,val);
-            }
- else {
-              List<Comparable> dimVals=new ArrayList<Comparable>(dim.length);
-              for (int j=0; j < dim.length; j++) {
-                Comparable val=dimensionDesc.getValues().getValue(dim[j]);
-                if (type == ValueType.STRING) {
-                  val=Strings.nullToEmpty((String)val);
-                }
-                dimVals.add(val);
-              }
-              theVals.put(dimensionName,dimVals);
-            }
+            final DimensionIndexer indexer=dimensionDesc.getIndexer();
+            Object rowVals=indexer.convertUnsortedEncodedArrayToActualArrayOrList(dim,true);
+            theVals.put(dimensionName,rowVals);
           }
           AggregatorType[] aggs=getAggsForRow(rowOffset);
           for (int i=0; i < aggs.length; ++i) {

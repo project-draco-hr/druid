@@ -1,0 +1,22 @@
+{
+  int lhsLen=lhs.length;
+  int rhsLen=rhs.length;
+  int retVal=Ints.compare(lhsLen,rhsLen);
+  int valsIndex=0;
+  while (retVal == 0 && valsIndex < lhsLen) {
+    int lhsVal=lhs[valsIndex];
+    int rhsVal=rhs[valsIndex];
+    if (lhsVal != rhsVal) {
+      final String lhsValActual=getActualValue(lhsVal,false);
+      final String rhsValActual=getActualValue(rhsVal,false);
+      if (lhsValActual != null && rhsValActual != null) {
+        retVal=lhsValActual.compareTo(rhsValActual);
+      }
+ else       if (lhsValActual == null ^ rhsValActual == null) {
+        retVal=lhsValActual == null ? -1 : 1;
+      }
+    }
+    ++valsIndex;
+  }
+  return retVal;
+}

@@ -13,7 +13,8 @@
     return false;
   }
   for (int i=0; i < dims.length; i++) {
-    if (!Arrays.equals(dims[i],that.dims[i])) {
+    final DimensionIndexer indexer=dimensionDescsList.get(i).getIndexer();
+    if (!indexer.checkUnsortedEncodedArraysEqual(dims[i],that.dims[i])) {
       return false;
     }
   }

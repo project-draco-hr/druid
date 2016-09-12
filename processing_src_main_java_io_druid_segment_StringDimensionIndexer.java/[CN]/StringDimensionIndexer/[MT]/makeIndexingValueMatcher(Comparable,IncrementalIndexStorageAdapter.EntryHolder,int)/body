@@ -1,0 +1,27 @@
+{
+  final String value=StringDimensionHandler.STRING_TRANSFORMER.apply(matchValue);
+  final int encodedVal=getEncodedValue(value,false);
+  final boolean matchOnNull=Strings.isNullOrEmpty(value);
+  if (encodedVal < 0 && !matchOnNull) {
+    return new BooleanValueMatcher(false);
+  }
+  return new ValueMatcher(){
+    @Override public boolean matches(){
+      Object[] dims=holder.getKey().getDims();
+      if (dimIndex >= dims.length) {
+        return matchOnNull;
+      }
+      int[] dimsInt=(int[])dims[dimIndex];
+      if (dimsInt == null || dimsInt.length == 0) {
+        return matchOnNull;
+      }
+      for (int i=0; i < dimsInt.length; i++) {
+        if (dimsInt[i] == encodedVal) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+;
+}

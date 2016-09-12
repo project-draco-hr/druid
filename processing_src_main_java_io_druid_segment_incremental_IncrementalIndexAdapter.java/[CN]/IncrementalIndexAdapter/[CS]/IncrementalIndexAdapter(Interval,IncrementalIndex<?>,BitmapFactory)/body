@@ -1,33 +1,26 @@
 {
   this.dataInterval=dataInterval;
   this.index=index;
-  this.hasNullValueDimensions=Sets.newHashSet();
   final List<IncrementalIndex.DimensionDesc> dimensions=index.getDimensions();
-  indexers=Maps.newHashMapWithExpectedSize(dimensions.size());
+  accessors=Maps.newHashMapWithExpectedSize(dimensions.size());
   for (  IncrementalIndex.DimensionDesc dimension : dimensions) {
-    indexers.put(dimension.getName(),new DimensionIndexer(dimension));
+    accessors.put(dimension.getName(),new DimensionAccessor(dimension));
   }
   int rowNum=0;
   for (  IncrementalIndex.TimeAndDims timeAndDims : index.getFacts().keySet()) {
-    final int[][] dims=timeAndDims.getDims();
+    final Object[] dims=timeAndDims.getDims();
     for (    IncrementalIndex.DimensionDesc dimension : dimensions) {
       final int dimIndex=dimension.getIndex();
-      DimensionIndexer indexer=indexers.get(dimension.getName());
+      DimensionAccessor accessor=accessors.get(dimension.getName());
       if (dimIndex >= dims.length || dims[dimIndex] == null) {
-        hasNullValueDimensions.add(dimension.getName());
+        accessor.indexer.processRowValsToUnsortedEncodedArray(null);
         continue;
       }
-      final IncrementalIndex.DimDim values=dimension.getValues();
-      if (hasNullValue(values,dims[dimIndex])) {
-        hasNullValueDimensions.add(dimension.getName());
-      }
-      final MutableBitmap[] bitmapIndexes=indexer.invertedIndexes;
-      for (      Comparable dimIdxComparable : dims[dimIndex]) {
-        Integer dimIdx=(Integer)dimIdxComparable;
-        if (bitmapIndexes[dimIdx] == null) {
-          bitmapIndexes[dimIdx]=bitmapFactory.makeEmptyMutableBitmap();
-        }
-        bitmapIndexes[dimIdx].add(rowNum);
+      final ColumnCapabilities capabilities=dimension.getCapabilities();
+      if (capabilities.hasBitmapIndexes()) {
+        final MutableBitmap[] bitmapIndexes=accessor.invertedIndexes;
+        final DimensionIndexer indexer=accessor.indexer;
+        indexer.fillBitmapsFromUnsortedEncodedArray(dims[dimIndex],rowNum,bitmapIndexes,bitmapFactory);
       }
     }
     ++rowNum;

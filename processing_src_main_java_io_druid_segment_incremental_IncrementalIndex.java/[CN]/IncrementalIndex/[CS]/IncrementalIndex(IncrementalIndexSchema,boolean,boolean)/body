@@ -6,9 +6,9 @@
   this.rowTransformers=new CopyOnWriteArrayList<>();
   this.deserializeComplexMetrics=deserializeComplexMetrics;
   this.reportParseExceptions=reportParseExceptions;
+  this.columnCapabilities=Maps.newHashMap();
   this.metadata=new Metadata().setAggregators(getCombiningAggregators(metrics)).setTimestampSpec(incrementalIndexSchema.getTimestampSpec()).setQueryGranularity(this.gran).setRollup(this.rollup);
   this.aggs=initAggs(metrics,rowSupplier,deserializeComplexMetrics);
-  this.columnCapabilities=Maps.newHashMap();
   this.metricDescs=Maps.newLinkedHashMap();
   for (  AggregatorFactory metric : metrics) {
     MetricDesc metricDesc=new MetricDesc(metricDescs.size(),metric);
@@ -17,18 +17,19 @@
   }
   DimensionsSpec dimensionsSpec=incrementalIndexSchema.getDimensionsSpec();
   this.dimensionDescs=Maps.newLinkedHashMap();
-  this.dimValues=Collections.synchronizedList(Lists.<DimDim>newArrayList());
+  this.dimensionDescsList=new ArrayList<>();
   for (  DimensionSchema dimSchema : dimensionsSpec.getDimensions()) {
-    ColumnCapabilitiesImpl capabilities=new ColumnCapabilitiesImpl();
     ValueType type=TYPE_MAP.get(dimSchema.getValueType());
-    capabilities.setType(type);
+    String dimName=dimSchema.getName();
+    ColumnCapabilitiesImpl capabilities=makeCapabilitesFromValueType(type);
     if (dimSchema.getTypeName().equals(DimensionSchema.SPATIAL_TYPE_NAME)) {
       capabilities.setHasSpatialIndexes(true);
     }
  else {
-      addNewDimension(dimSchema.getName(),capabilities);
+      DimensionHandler handler=DimensionHandlerUtil.getHandlerFromCapabilities(dimName,capabilities);
+      addNewDimension(dimName,capabilities,handler);
     }
-    columnCapabilities.put(dimSchema.getName(),capabilities);
+    columnCapabilities.put(dimName,capabilities);
   }
   ColumnCapabilitiesImpl timeCapabilities=new ColumnCapabilitiesImpl();
   timeCapabilities.setType(ValueType.LONG);
