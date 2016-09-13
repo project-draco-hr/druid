@@ -2,6 +2,6 @@
   String jsonStr="{\n" + "  \"type\": \"schema_inline\",\n" + "  \"schema\": {\n"+ "    \"namespace\": \"io.druid.data.input\",\n"+ "   \"name\": \"SomeData\",\n"+ "    \"type\": \"record\",\n"+ "    \"fields\" : [\n"+ "      {\"name\":\"timestamp\",\"type\":\"long\"},\n"+ "      {\"name\":\"eventType\",\"type\":\"string\"},\n"+ "      {\"name\":\"id\",\"type\":\"long\"}\n"+ "    ]\n"+ "  }\n"+ "}";
   final ObjectMapper mapper=new DefaultObjectMapper();
   mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class,mapper));
-  SimpleAvroBytesDecoder actual=(SimpleAvroBytesDecoder)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,AvroBytesDecoder.class)),AvroBytesDecoder.class);
+  InlineSchemaAvroBytesDecoder actual=(InlineSchemaAvroBytesDecoder)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,AvroBytesDecoder.class)),AvroBytesDecoder.class);
   Assert.assertEquals(actual.getSchema().get("name"),"SomeData");
 }

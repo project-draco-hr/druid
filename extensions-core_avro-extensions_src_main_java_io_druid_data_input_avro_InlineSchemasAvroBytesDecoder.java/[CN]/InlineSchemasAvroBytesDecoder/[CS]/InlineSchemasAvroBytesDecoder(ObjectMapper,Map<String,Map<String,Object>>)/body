@@ -1,0 +1,13 @@
+{
+  Preconditions.checkArgument(schemas != null && schemas.size() > 0,"at least one schema must be provided in schemas attribute");
+  this.schemas=schemas;
+  schemaObjs=new HashMap<>(schemas.size());
+  for (  Map.Entry<String,Map<String,Object>> e : schemas.entrySet()) {
+    int id=Integer.parseInt(e.getKey());
+    Map<String,Object> schema=e.getValue();
+    String schemaStr=mapper.writeValueAsString(schema);
+    ;
+    logger.info("Schema string [%s] = [%s]",id,schemaStr);
+    schemaObjs.put(id,new Schema.Parser().parse(schemaStr));
+  }
+}

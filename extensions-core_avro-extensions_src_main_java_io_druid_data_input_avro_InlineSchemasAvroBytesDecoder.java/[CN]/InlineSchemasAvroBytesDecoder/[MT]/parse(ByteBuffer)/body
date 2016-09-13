@@ -1,0 +1,22 @@
+{
+  if (bytes.remaining() < 5) {
+    throw new ParseException("record must have at least 5 bytes carrying version and schemaId");
+  }
+  byte version=bytes.get();
+  if (version != V1) {
+    throw new ParseException("found record of arbitrary version [%s]",version);
+  }
+  int schemaId=bytes.getInt();
+  Schema schemaObj=schemaObjs.get(schemaId);
+  if (schemaObj == null) {
+    throw new ParseException("Failed to find schema for id [%s]",schemaId);
+  }
+  try {
+    DatumReader<GenericRecord> reader=new GenericDatumReader<GenericRecord>(schemaObj);
+    ByteBufferInputStream inputStream=new ByteBufferInputStream(Collections.singletonList(bytes));
+    return reader.read(null,DecoderFactory.get().binaryDecoder(inputStream,null));
+  }
+ catch (  Exception e) {
+    throw new ParseException(e,"Fail to decode avro message with schemaId [%s].",schemaId);
+  }
+}

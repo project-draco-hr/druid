@@ -1,0 +1,8 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"multiple_schemas_inline\",\n" + "  \"schemas\": {\n"+ "    \"5\": {\n"+ "      \"namespace\": \"io.druid.data.input\",\n"+ "      \"name\": \"name5\",\n"+ "      \"type\": \"record\",\n"+ "      \"fields\" : [\n"+ "        {\"name\":\"eventType\",\"type\":\"string\"},\n"+ "        {\"name\":\"id\",\"type\":\"long\"}\n"+ "      ]\n"+ "    },\n"+ "    \"8\": {\n"+ "      \"namespace\": \"io.druid.data.input\",\n"+ "      \"name\": \"name8\",\n"+ "      \"type\": \"record\",\n"+ "      \"fields\" : [\n"+ "       {\"name\":\"eventType\",\"type\":\"string\"},\n"+ "       {\"name\":\"id\",\"type\":\"long\"}\n"+ "      ]\n"+ "    }\n"+ "  }\n"+ "}\n";
+  final ObjectMapper mapper=new DefaultObjectMapper();
+  mapper.setInjectableValues(new InjectableValues.Std().addValue(ObjectMapper.class,mapper));
+  InlineSchemasAvroBytesDecoder actual=(InlineSchemasAvroBytesDecoder)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,AvroBytesDecoder.class)),AvroBytesDecoder.class);
+  Assert.assertEquals(actual.getSchemas().get("5").get("name"),"name5");
+  Assert.assertEquals(actual.getSchemas().get("8").get("name"),"name8");
+}
