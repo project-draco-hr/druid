@@ -1,0 +1,18 @@
+{
+  String principal=hdfsKerberosConfig.getPrincipal();
+  String keytab=hdfsKerberosConfig.getKeytab();
+  if (!Strings.isNullOrEmpty(principal) && !Strings.isNullOrEmpty(keytab)) {
+    UserGroupInformation.setConfiguration(hadoopConf);
+    if (UserGroupInformation.isSecurityEnabled()) {
+      try {
+        if (UserGroupInformation.getCurrentUser().hasKerberosCredentials() == false || !UserGroupInformation.getCurrentUser().getUserName().equals(principal)) {
+          log.info("Trying to authenticate user [%s] with keytab [%s]..",principal,keytab);
+          UserGroupInformation.loginUserFromKeytab(principal,keytab);
+        }
+      }
+ catch (      IOException e) {
+        throw new ISE(e,"Failed to authenticate user principal [%s] with keytab [%s]",principal,keytab);
+      }
+    }
+  }
+}

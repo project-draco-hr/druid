@@ -29,4 +29,7 @@
   Binders.taskLogsBinder(binder).addBinding("hdfs").to(HdfsTaskLogs.class);
   JsonConfigProvider.bind(binder,"druid.indexer.logs",HdfsTaskLogsConfig.class);
   binder.bind(HdfsTaskLogs.class).in(LazySingleton.class);
+  JsonConfigProvider.bind(binder,"druid.hadoop.security.kerberos",HdfsKerberosConfig.class);
+  binder.bind(HdfsStorageAuthentication.class).in(ManageLifecycle.class);
+  LifecycleModule.register(binder,HdfsStorageAuthentication.class);
 }

@@ -1,0 +1,19 @@
+{
+  String principal=config.HADOOP_KERBEROS_CONFIG.getPrincipal();
+  String keytab=config.HADOOP_KERBEROS_CONFIG.getKeytab();
+  if (!Strings.isNullOrEmpty(principal) && !Strings.isNullOrEmpty(keytab)) {
+    Configuration conf=new Configuration();
+    UserGroupInformation.setConfiguration(conf);
+    if (UserGroupInformation.isSecurityEnabled()) {
+      try {
+        if (UserGroupInformation.getCurrentUser().hasKerberosCredentials() == false || !UserGroupInformation.getCurrentUser().getUserName().equals(principal)) {
+          log.info("trying to authenticate user [%s] with keytab [%s]",principal,keytab);
+          UserGroupInformation.loginUserFromKeytab(principal,keytab);
+        }
+      }
+ catch (      IOException e) {
+        throw new ISE(e,"Failed to authenticate user principal [%s] with keytab [%s]",principal,keytab);
+      }
+    }
+  }
+}
