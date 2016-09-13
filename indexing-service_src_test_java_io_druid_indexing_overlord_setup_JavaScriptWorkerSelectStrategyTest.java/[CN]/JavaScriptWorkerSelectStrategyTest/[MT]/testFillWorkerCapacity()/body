@@ -1,5 +1,5 @@
 {
   ImmutableMap<String,ImmutableWorkerInfo> workerMap=ImmutableMap.of("10.0.0.1",createMockWorker(1,true,true),"10.0.0.2",createMockWorker(5,true,true));
-  Optional<ImmutableWorkerInfo> workerForBatchTask=strategy.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("index_hadoop"));
+  Optional<ImmutableWorkerInfo> workerForBatchTask=STRATEGY.findWorkerForTask(new TestRemoteTaskRunnerConfig(new Period("PT1S")),workerMap,createMockTask("index_hadoop"));
   Assert.assertEquals(workerMap.get("10.0.0.2"),workerForBatchTask.get());
 }

@@ -1,4 +1,5 @@
 {
   ObjectMapper mapper=new DefaultObjectMapper();
-  Assert.assertEquals(jsStrategy,mapper.readValue(mapper.writeValueAsString(jsStrategy),JavaScriptTieredBrokerSelectorStrategy.class));
+  mapper.setInjectableValues(new InjectableValues.Std().addValue(JavaScriptConfig.class,JavaScriptConfig.getDefault()));
+  Assert.assertEquals(STRATEGY,mapper.readValue(mapper.writeValueAsString(STRATEGY),JavaScriptTieredBrokerSelectorStrategy.class));
 }
