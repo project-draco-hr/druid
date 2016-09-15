@@ -26,7 +26,7 @@ synchronized (started) {
     final CountDownLatch startingReads=new CountDownLatch(1);
     final ListenableFuture<?> future=executorService.submit(new Runnable(){
       @Override public void run(){
-        while (!executorService.isShutdown() && !Thread.currentThread().isInterrupted()) {
+        while (!executorService.isShutdown()) {
           final ConsumerConnector consumerConnector=buildConnector(kafkaProperties);
           try {
             final List<KafkaStream<String,String>> streams=consumerConnector.createMessageStreamsByFilter(new Whitelist(Pattern.quote(topic)),1,DEFAULT_STRING_DECODER,DEFAULT_STRING_DECODER);
@@ -90,7 +90,8 @@ synchronized (started) {
       }
     }
  catch (    InterruptedException|ExecutionException|TimeoutException e) {
-      if (!future.isDone() && !future.cancel(true) && !future.isDone()) {
+      executorService.shutdown();
+      if (!future.isDone() && !future.cancel(false)) {
         LOG.warn("Could not cancel kafka listening thread");
       }
       LOG.error(e,"Failed to start kafka extraction factory");

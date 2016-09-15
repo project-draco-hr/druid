@@ -5,10 +5,10 @@ synchronized (started) {
       return !started.get();
     }
     started.set(false);
-    executorService.shutdownNow();
+    executorService.shutdown();
     final ListenableFuture<?> future=this.future;
     if (future != null) {
-      if (!future.isDone() && !future.cancel(true) && !future.isDone()) {
+      if (!future.isDone() && !future.cancel(false)) {
         LOG.error("Error cancelling future for topic [%s]",getKafkaTopic());
         return false;
       }
