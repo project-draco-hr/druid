@@ -3,7 +3,7 @@
   lock.lock();
   try {
     if (super.delete(namespaceKey)) {
-      final String mmapDBkey=currentNamespaceCache.get(namespaceKey);
+      final String mmapDBkey=currentNamespaceCache.remove(namespaceKey);
       if (mmapDBkey != null) {
         final long pre=tmpFile.length();
         mmapDB.delete(mmapDBkey);

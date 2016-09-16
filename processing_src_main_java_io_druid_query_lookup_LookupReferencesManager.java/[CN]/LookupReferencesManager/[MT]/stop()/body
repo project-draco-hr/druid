@@ -1,5 +1,6 @@
 {
-synchronized (lock) {
+  startStopLock.writeLock().lock();
+  try {
     if (started.getAndSet(false)) {
       if (lookupSnapshotTaker != null) {
         lookupSnapshotTaker.takeSnapshot(getAllAsList());
@@ -9,5 +10,8 @@ synchronized (lock) {
         lookupMap.remove(lookupName).close();
       }
     }
+  }
+  finally {
+    startStopLock.writeLock().unlock();
   }
 }

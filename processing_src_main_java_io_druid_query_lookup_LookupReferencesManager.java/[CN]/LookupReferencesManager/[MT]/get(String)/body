@@ -1,5 +1,16 @@
 {
-  final LookupExtractorFactory lookupExtractorFactory=lookupMap.get(lookupName);
-  assertStarted();
-  return lookupExtractorFactory;
+  try {
+    startStopLock.readLock().lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+  try {
+    final LookupExtractorFactory lookupExtractorFactory=lookupMap.get(lookupName);
+    assertStarted();
+    return lookupExtractorFactory;
+  }
+  finally {
+    startStopLock.readLock().unlock();
+  }
 }

@@ -1,6 +1,11 @@
 {
   final Lock readLock=startStopSync.readLock();
-  readLock.lock();
+  try {
+    readLock.lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
   try {
     if (!started) {
       throw new ISE("Factory [%s] not started",extractorID);

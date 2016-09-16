@@ -1,6 +1,12 @@
 {
   Map<String,LookupExtractorFactory> failedExtractorFactoryMap=new HashMap<>();
-synchronized (lock) {
+  try {
+    startStopLock.readLock().lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+  try {
     assertStarted();
     for (    Map.Entry<String,LookupExtractorFactory> entry : lookups.entrySet()) {
       final String lookupName=entry.getKey();
@@ -13,7 +19,13 @@ synchronized (lock) {
         failedExtractorFactoryMap.put(lookupName,lookupExtractorFactory);
         continue;
       }
-      lookupMap.put(lookupName,lookupExtractorFactory);
+      if (null != lookupMap.putIfAbsent(lookupName,lookupExtractorFactory)) {
+        LOGGER.warn("lookup [%s] is not add, another lookup with the same name already exist",lookupName);
+        if (!lookupExtractorFactory.close()) {
+          LOGGER.error("Failed to properly close stale lookup [%s]",lookupExtractorFactory);
+        }
+        continue;
+      }
       if (lookupSnapshotTaker != null) {
         lookupSnapshotTaker.takeSnapshot(getAllAsList());
       }
@@ -21,5 +33,8 @@ synchronized (lock) {
     if (!failedExtractorFactoryMap.isEmpty()) {
       throw new ISE("was not able to start the following lookup(s) [%s]",failedExtractorFactoryMap.keySet().toString());
     }
+  }
+  finally {
+    startStopLock.readLock().unlock();
   }
 }

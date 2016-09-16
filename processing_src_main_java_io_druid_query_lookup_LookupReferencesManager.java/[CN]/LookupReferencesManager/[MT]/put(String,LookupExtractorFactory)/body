@@ -1,5 +1,11 @@
 {
-synchronized (lock) {
+  try {
+    startStopLock.readLock().lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+  try {
     assertStarted();
     if (lookupMap.containsKey(lookupName)) {
       LOGGER.warn("lookup [%s] is not add, another lookup with the same name already exist",lookupName);
@@ -20,5 +26,8 @@ synchronized (lock) {
       }
     }
     return noPrior;
+  }
+  finally {
+    startStopLock.readLock().unlock();
   }
 }

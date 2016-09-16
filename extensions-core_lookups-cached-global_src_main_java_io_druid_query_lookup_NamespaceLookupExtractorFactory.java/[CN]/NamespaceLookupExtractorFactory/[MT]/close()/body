@@ -1,6 +1,11 @@
 {
   final Lock writeLock=startStopSync.writeLock();
-  writeLock.lock();
+  try {
+    writeLock.lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
   try {
     if (!started) {
       LOG.warn("Not started! [%s]",extractorID);

@@ -1,0 +1,48 @@
+{
+  final int concurrentThreads=100;
+  final Lifecycle lifecycle=new Lifecycle();
+  final ServiceEmitter emitter=new NoopServiceEmitter();
+  final OffHeapNamespaceExtractionCacheManager manager=new OffHeapNamespaceExtractionCacheManager(lifecycle,emitter,ImmutableMap.<Class<? extends ExtractionNamespace>,ExtractionNamespaceCacheFactory<?>>of());
+  final ListeningExecutorService service=MoreExecutors.listeningDecorator(Execs.multiThreaded(concurrentThreads,"offheaptest-%s"));
+  final List<ListenableFuture<?>> futures=new ArrayList<>();
+  final CountDownLatch thunder=new CountDownLatch(1);
+  final List<String> namespaceIds=new ArrayList<>();
+  for (int i=0; i < 5; ++i) {
+    final String namespace="namespace-" + UUID.randomUUID().toString();
+    final String cacheKey="initial-cache-" + namespace;
+    namespaceIds.add(namespace);
+    manager.getCacheMap(cacheKey).put("foo","bar");
+    Assert.assertFalse(manager.swapAndClearCache(namespace,cacheKey));
+  }
+  final Random random=new Random(3748218904L);
+  try {
+    for (int i=0; i < concurrentThreads; ++i) {
+      final int j=i;
+      final String namespace=namespaceIds.get(random.nextInt(namespaceIds.size()));
+      futures.add(service.submit(new Runnable(){
+        @Override public void run(){
+          try {
+            thunder.await();
+          }
+ catch (          InterruptedException e) {
+            throw Throwables.propagate(e);
+          }
+          for (int i=0; i < 1000; ++i) {
+            final String cacheKey=String.format("%s-%d-key-%d",namespace,j,i);
+            manager.getCacheMap(cacheKey).put("foo","bar" + Integer.toString(i));
+            Assert.assertTrue(manager.swapAndClearCache(namespace,cacheKey));
+          }
+        }
+      }
+));
+    }
+    thunder.countDown();
+    Futures.allAsList(futures).get();
+  }
+  finally {
+    service.shutdownNow();
+  }
+  for (  final String namespace : namespaceIds) {
+    Assert.assertEquals(ImmutableMap.of("foo","bar999"),manager.getCacheMap(namespace));
+  }
+}

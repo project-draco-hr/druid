@@ -2,8 +2,7 @@
   super(jsonMapper,smileMapper,new AbstractListenerHandler<LookupExtractorFactory>(new TypeReference<LookupExtractorFactory>(){
   }
 ){
-    private final Object deleteLock=new Object();
-    @Override public synchronized Object post(    final Map<String,LookupExtractorFactory> lookups) throws Exception {
+    @Override public Object post(    final Map<String,LookupExtractorFactory> lookups) throws Exception {
       final Map<String,LookupExtractorFactory> failedUpdates=new HashMap<>();
       for (      final String name : lookups.keySet()) {
         final LookupExtractorFactory factory=lookups.get(name);
@@ -26,15 +25,16 @@
       return manager.getAll();
     }
     @Override public Object delete(    String id){
-synchronized (deleteLock) {
+      if (manager.get(id) == null) {
+        return null;
+      }
+      if (!manager.remove(id)) {
         if (manager.get(id) == null) {
           return null;
         }
-        if (!manager.remove(id)) {
-          throw new RE("Could not remove lookup [%s]",id);
-        }
-        return id;
+        throw new RE("Could not remove lookup [%s]",id);
       }
+      return id;
     }
   }
 );

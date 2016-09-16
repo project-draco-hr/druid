@@ -1,5 +1,11 @@
 {
-synchronized (lock) {
+  try {
+    startStopLock.readLock().lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+  try {
     final LookupExtractorFactory lookupExtractorFactory=lookupMap.remove(lookupName);
     if (lookupExtractorFactory != null) {
       LOGGER.debug("Removed lookup [%s]",lookupName);
@@ -8,6 +14,9 @@ synchronized (lock) {
       }
       return lookupExtractorFactory.close();
     }
+  }
+  finally {
+    startStopLock.readLock().unlock();
   }
   return false;
 }

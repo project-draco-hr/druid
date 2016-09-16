@@ -1,4 +1,15 @@
 {
-  assertStarted();
-  return Maps.newHashMap(lookupMap);
+  try {
+    startStopLock.readLock().lockInterruptibly();
+  }
+ catch (  InterruptedException e) {
+    throw Throwables.propagate(e);
+  }
+  try {
+    assertStarted();
+    return Maps.newHashMap(lookupMap);
+  }
+  finally {
+    startStopLock.readLock().unlock();
+  }
 }

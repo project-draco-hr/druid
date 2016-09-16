@@ -1,5 +1,6 @@
 {
-synchronized (lock) {
+  startStopLock.writeLock().lock();
+  try {
     if (!started.getAndSet(true)) {
       if (lookupSnapshotTaker != null) {
         final List<LookupBean> lookupBeanList=lookupSnapshotTaker.pullExistingSnapshot();
@@ -9,5 +10,8 @@ synchronized (lock) {
       }
       LOGGER.info("Started lookup factory references manager");
     }
+  }
+  finally {
+    startStopLock.writeLock().unlock();
   }
 }

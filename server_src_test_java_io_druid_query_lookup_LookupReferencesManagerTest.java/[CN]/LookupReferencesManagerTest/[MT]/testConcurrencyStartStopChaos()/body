@@ -1,0 +1,95 @@
+{
+  final LookupReferencesManager manager=new LookupReferencesManager(new LookupConfig(null),mapper);
+  final Runnable chaosStart=new Runnable(){
+    @Override public void run(){
+      manager.start();
+    }
+  }
+;
+  final Runnable chaosStop=new Runnable(){
+    @Override public void run(){
+      manager.stop();
+    }
+  }
+;
+  final CountDownLatch runnableStartBarrier=new CountDownLatch(1);
+  final Random random=new Random(478137498L);
+  final int numUpdates=100000;
+  final int numNamespaces=100;
+  final CountDownLatch runnablesFinishedBarrier=new CountDownLatch(numUpdates);
+  final List<Runnable> runnables=new ArrayList<>(numUpdates);
+  final Map<String,Integer> maxNumber=new HashMap<>();
+  for (int i=1; i <= numUpdates; ++i) {
+    final boolean shouldStart=random.nextInt(10) == 1;
+    final boolean shouldClose=random.nextInt(10) == 1;
+    final String name=Integer.toString(random.nextInt(numNamespaces));
+    final int position=i;
+    final LookupExtractorFactory lookupExtractorFactory=new LookupExtractorFactory(){
+      @Override public boolean start(){
+        return shouldStart;
+      }
+      @Override public boolean close(){
+        return shouldClose;
+      }
+      @Override public boolean replaces(      @Nullable LookupExtractorFactory other){
+        if (other == null) {
+          return true;
+        }
+        final NamedIntrospectionHandler introspectionHandler=(NamedIntrospectionHandler)other.getIntrospectHandler();
+        return position > introspectionHandler.position;
+      }
+      @Nullable @Override public LookupIntrospectHandler getIntrospectHandler(){
+        return new NamedIntrospectionHandler(position);
+      }
+      @Override public String toString(){
+        return String.format("TestFactroy position %d",position);
+      }
+      @Override public LookupExtractor get(){
+        return null;
+      }
+    }
+;
+    if (random.nextFloat() < 0.001) {
+      if (random.nextBoolean()) {
+        runnables.add(chaosStart);
+      }
+ else {
+        runnables.add(chaosStop);
+      }
+    }
+ else {
+      if (shouldStart && (!maxNumber.containsKey(name) || maxNumber.get(name) < position)) {
+        maxNumber.put(name,position);
+      }
+      runnables.add(new LookupUpdatingRunnable(name,lookupExtractorFactory,runnableStartBarrier,manager));
+    }
+  }
+  Collections.shuffle(runnables,random);
+  final Runnable decrementFinished=new Runnable(){
+    @Override public void run(){
+      runnablesFinishedBarrier.countDown();
+    }
+  }
+;
+  for (  Runnable runnable : runnables) {
+    executorService.submit(runnable).addListener(decrementFinished,MoreExecutors.sameThreadExecutor());
+  }
+  runnableStartBarrier.countDown();
+  do {
+    for (    String name : maxNumber.keySet()) {
+      final LookupExtractorFactory factory;
+      try {
+        factory=manager.get(name);
+      }
+ catch (      ISE e) {
+        continue;
+      }
+      if (null == factory) {
+        continue;
+      }
+      final NamedIntrospectionHandler introspectionHandler=(NamedIntrospectionHandler)factory.getIntrospectHandler();
+      Assert.assertTrue(introspectionHandler.position >= 0);
+    }
+  }
+ while (runnablesFinishedBarrier.getCount() > 0);
+}

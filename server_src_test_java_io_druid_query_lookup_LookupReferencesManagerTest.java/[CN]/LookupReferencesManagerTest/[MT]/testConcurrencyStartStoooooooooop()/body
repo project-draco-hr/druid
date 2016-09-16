@@ -1,0 +1,25 @@
+{
+  lookupReferencesManager.stop();
+  lookupReferencesManager.start();
+  final CyclicBarrier cyclicBarrier=new CyclicBarrier(CONCURRENT_THREADS);
+  final Runnable start=new Runnable(){
+    @Override public void run(){
+      try {
+        cyclicBarrier.await();
+      }
+ catch (      InterruptedException|BrokenBarrierException e) {
+        throw Throwables.propagate(e);
+      }
+      lookupReferencesManager.stop();
+    }
+  }
+;
+  final Collection<ListenableFuture<?>> futures=new ArrayList<>(CONCURRENT_THREADS);
+  for (int i=0; i < CONCURRENT_THREADS; ++i) {
+    futures.add(executorService.submit(start));
+  }
+  Futures.allAsList(futures).get(100,TimeUnit.MILLISECONDS);
+  for (  ListenableFuture future : futures) {
+    Assert.assertNull(future.get());
+  }
+}
