@@ -1,0 +1,14 @@
+{
+  if (value == null) {
+    return Collections.EMPTY_LIST;
+  }
+  final List<String> retList;
+  try {
+    retList=reverseLoadingCache.get(value,new unapplyCallable(value));
+    return retList;
+  }
+ catch (  ExecutionException e) {
+    LOGGER.debug("list of keys not found for value [%s]",value);
+    return Collections.EMPTY_LIST;
+  }
+}

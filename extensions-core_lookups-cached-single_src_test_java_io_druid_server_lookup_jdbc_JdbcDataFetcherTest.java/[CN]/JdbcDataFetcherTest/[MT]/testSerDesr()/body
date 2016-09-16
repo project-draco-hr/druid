@@ -1,0 +1,6 @@
+{
+  JdbcDataFetcher jdbcDataFetcher=new JdbcDataFetcher(new MetadataStorageConnectorConfig(),"table","keyColumn","ValueColumn",100);
+  DefaultObjectMapper mapper=new DefaultObjectMapper();
+  String jdbcDataFetcherSer=mapper.writeValueAsString(jdbcDataFetcher);
+  Assert.assertEquals(jdbcDataFetcher,mapper.reader(DataFetcher.class).readValue(jdbcDataFetcherSer));
+}

@@ -1,0 +1,10 @@
+{
+  int result;
+  long temp;
+  temp=Double.doubleToLongBits(maxStoreSize);
+  result=(int)(temp ^ (temp >>> 32));
+  result=31 * result + (int)(maxEntriesSize ^ (maxEntriesSize >>> 32));
+  result=31 * result + (int)(expireAfterWrite ^ (expireAfterWrite >>> 32));
+  result=31 * result + (int)(expireAfterAccess ^ (expireAfterAccess >>> 32));
+  return result;
+}

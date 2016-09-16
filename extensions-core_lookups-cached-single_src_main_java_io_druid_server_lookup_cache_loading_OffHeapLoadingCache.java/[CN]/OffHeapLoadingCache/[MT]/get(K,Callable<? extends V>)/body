@@ -1,0 +1,16 @@
+{
+synchronized (key) {
+    V value=cache.get(key);
+    if (value != null) {
+      return value;
+    }
+    try {
+      value=valueLoader.call();
+      cache.put(key,value);
+      return value;
+    }
+ catch (    Exception e) {
+      throw new ISE(e,"got an exception while loading key [%s]",key);
+    }
+  }
+}

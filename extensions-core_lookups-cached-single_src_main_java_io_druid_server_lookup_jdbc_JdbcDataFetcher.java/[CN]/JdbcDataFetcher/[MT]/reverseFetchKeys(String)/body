@@ -1,0 +1,9 @@
+{
+  List<String> results=inReadOnlyTransaction(new TransactionCallback<List<String>>(){
+    @Override public List<String> inTransaction(    Handle handle,    TransactionStatus status) throws Exception {
+      return handle.createQuery(reverseFetchQuery).bind("val",value).map(StringMapper.FIRST).list();
+    }
+  }
+);
+  return results;
+}

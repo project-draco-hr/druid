@@ -1,0 +1,21 @@
+{
+  return getDbi().withHandle(new HandleCallback<T>(){
+    @Override public T withHandle(    Handle handle) throws Exception {
+      final Connection connection=handle.getConnection();
+      final boolean readOnly=connection.isReadOnly();
+      connection.setReadOnly(true);
+      try {
+        return handle.inTransaction(callback);
+      }
+  finally {
+        try {
+          connection.setReadOnly(readOnly);
+        }
+ catch (        SQLException e) {
+          LOGGER.error(e,"Unable to reset connection read-only state");
+        }
+      }
+    }
+  }
+);
+}

@@ -1,0 +1,11 @@
+{
+  if (isOpen.getAndSet(false)) {
+    LOGGER.info("Closing loading cache [%s]",id);
+    loadingCache.close();
+    reverseLoadingCache.close();
+  }
+ else {
+    LOGGER.info("Closing already closed lookup");
+    return;
+  }
+}

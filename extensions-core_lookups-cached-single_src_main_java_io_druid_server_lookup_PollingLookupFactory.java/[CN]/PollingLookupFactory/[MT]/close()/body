@@ -1,0 +1,9 @@
+{
+synchronized (started) {
+    if (started.getAndSet(false)) {
+      LOGGER.info("closing polling lookup [%s]",id);
+      pollingLookup.close();
+    }
+    return !started.get();
+  }
+}

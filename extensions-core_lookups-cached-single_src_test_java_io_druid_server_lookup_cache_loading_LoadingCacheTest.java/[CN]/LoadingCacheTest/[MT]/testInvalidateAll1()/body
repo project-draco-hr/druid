@@ -1,0 +1,10 @@
+{
+  loadingCache.invalidateAll();
+  loadingCache.get("key2",new Callable(){
+    @Override public Object call() throws Exception {
+      return "value2";
+    }
+  }
+);
+  Assert.assertEquals(loadingCache.getAllPresent(IMMUTABLE_MAP.keySet()),Collections.EMPTY_MAP);
+}

@@ -1,0 +1,21 @@
+{
+  this.concurrencyLevel=concurrencyLevel <= 0 ? DEFAULT_CONCURRENCY_LEVEL : concurrencyLevel;
+  this.initialCapacity=initialCapacity <= 0 ? DEFAULT_INITIAL_CAPACITY : initialCapacity;
+  this.maximumSize=maximumSize;
+  this.expireAfterAccess=expireAfterAccess;
+  this.expireAfterWrite=expireAfterWrite;
+  CacheBuilder builder=CacheBuilder.newBuilder().concurrencyLevel(this.concurrencyLevel).initialCapacity(this.initialCapacity).recordStats();
+  if (this.expireAfterAccess != null) {
+    builder.expireAfterAccess(expireAfterAccess,TimeUnit.MILLISECONDS);
+  }
+  if (this.expireAfterWrite != null) {
+    builder.expireAfterWrite(this.expireAfterWrite,TimeUnit.MILLISECONDS);
+  }
+  if (this.maximumSize != null) {
+    builder.maximumSize(this.maximumSize);
+  }
+  this.cache=builder.build();
+  if (isClosed.getAndSet(false)) {
+    log.info("Guava Based OnHeapCache started with spec [%s]",cache.toString());
+  }
+}

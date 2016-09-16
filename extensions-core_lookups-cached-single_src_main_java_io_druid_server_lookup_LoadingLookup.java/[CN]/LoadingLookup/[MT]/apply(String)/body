@@ -1,0 +1,14 @@
+{
+  if (key == null) {
+    return null;
+  }
+  final String presentVal;
+  try {
+    presentVal=loadingCache.get(key,new applyCallable(key));
+    return Strings.emptyToNull(presentVal);
+  }
+ catch (  ExecutionException e) {
+    LOGGER.debug("value not found for key [%s]",key);
+    return null;
+  }
+}

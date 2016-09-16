@@ -1,0 +1,16 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof PollingLookupFactory)) {
+    return false;
+  }
+  PollingLookupFactory that=(PollingLookupFactory)o;
+  if (pollPeriod != null ? !pollPeriod.equals(that.pollPeriod) : that.pollPeriod != null) {
+    return false;
+  }
+  if (dataFetcher != null ? !dataFetcher.equals(that.dataFetcher) : that.dataFetcher != null) {
+    return false;
+  }
+  return cacheFactory != null ? (that.cacheFactory != null && cacheFactory.getClass() == (that.cacheFactory).getClass()) : that.cacheFactory == null;
+}

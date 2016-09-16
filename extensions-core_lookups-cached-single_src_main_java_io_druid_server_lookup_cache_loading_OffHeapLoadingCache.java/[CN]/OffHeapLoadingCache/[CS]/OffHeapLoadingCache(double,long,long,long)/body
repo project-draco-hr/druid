@@ -1,0 +1,16 @@
+{
+  this.maxStoreSize=maxStoreSize;
+  this.maxEntriesSize=maxEntriesSize;
+  this.expireAfterWrite=expireAfterWrite;
+  this.expireAfterAccess=expireAfterAccess;
+  this.cache=DB.createHashMap(name).expireStoreSize(this.maxStoreSize).expireAfterWrite(this.expireAfterWrite,TimeUnit.MILLISECONDS).expireAfterAccess(this.expireAfterAccess,TimeUnit.MILLISECONDS).expireMaxSize(this.maxEntriesSize).make();
+  cache.modificationListenerAdd(new Bind.MapListener<K,V>(){
+    @Override public void update(    K key,    V oldVal,    V newVal){
+      if (oldVal != null && newVal == null) {
+        evictionCount.getAndIncrement();
+      }
+    }
+  }
+);
+  this.closed.set(false);
+}

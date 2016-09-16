@@ -1,0 +1,9 @@
+{
+synchronized (started) {
+    if (!started.get()) {
+      LOGGER.info("started polling lookup [%s]",id);
+      started.set(pollingLookup.isOpen());
+    }
+    return started.get();
+  }
+}

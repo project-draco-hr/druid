@@ -1,0 +1,7 @@
+{
+  final String query;
+  handle.createStatement(String.format("DELETE FROM %s WHERE %s='%s'",tableName,keyColumn,key)).setQueryTimeout(1).execute();
+  query=String.format("INSERT INTO %s (%s, %s) VALUES ('%s', '%s')",tableName,keyColumn,valueColumn,key,val);
+  Assert.assertEquals(1,handle.createStatement(query).setQueryTimeout(1).execute());
+  handle.commit();
+}

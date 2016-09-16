@@ -1,0 +1,7 @@
+{
+  ObjectMapper mapper=TestHelper.getObjectMapper();
+  LoadingLookupFactory loadingLookupFactory=new LoadingLookupFactory(new MockDataFetcher(),new OnHeapLoadingCache<String,String>(0,100,100L,0L,0L),new OffHeapLoadingCache<String,List<String>>(100,100L,0L,0L));
+  mapper.registerSubtypes(MockDataFetcher.class);
+  mapper.registerSubtypes(LoadingLookupFactory.class);
+  Assert.assertEquals(loadingLookupFactory,mapper.reader(LookupExtractorFactory.class).readValue(mapper.writeValueAsString(loadingLookupFactory)));
+}

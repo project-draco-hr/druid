@@ -1,0 +1,13 @@
+{
+  return new Runnable(){
+    @Override public void run(){
+      LOGGER.debug("Polling and swapping of PollingLookup [%s]",id);
+      CacheRefKeeper newCacheKeeper=new CacheRefKeeper(cacheFactory.makeOf(dataFetcher.fetchAll()));
+      CacheRefKeeper oldCacheKeeper=refOfCacheKeeper.getAndSet(newCacheKeeper);
+      if (oldCacheKeeper != null) {
+        oldCacheKeeper.doneWithIt();
+      }
+    }
+  }
+;
+}

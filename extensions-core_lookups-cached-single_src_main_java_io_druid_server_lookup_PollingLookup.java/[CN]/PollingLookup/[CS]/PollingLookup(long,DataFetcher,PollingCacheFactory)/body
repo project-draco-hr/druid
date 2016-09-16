@@ -1,0 +1,15 @@
+{
+  this.pollPeriodMs=pollPeriodMs;
+  this.dataFetcher=Preconditions.checkNotNull(dataFetcher);
+  this.cacheFactory=cacheFactory == null ? new OnHeapPollingCache.OnHeapPollingCacheProvider() : cacheFactory;
+  refOfCacheKeeper.set(new CacheRefKeeper(this.cacheFactory.makeOf(dataFetcher.fetchAll())));
+  if (pollPeriodMs > 0) {
+    scheduledExecutorService=MoreExecutors.listeningDecorator(Executors.newSingleThreadScheduledExecutor(Execs.makeThreadFactory("PollingLookup-" + id,Thread.MIN_PRIORITY)));
+    pollFuture=scheduledExecutorService.scheduleWithFixedDelay(pollAndSwap(),pollPeriodMs,pollPeriodMs,TimeUnit.MILLISECONDS);
+  }
+ else {
+    scheduledExecutorService=null;
+    pollFuture=null;
+  }
+  this.isOpen.set(true);
+}

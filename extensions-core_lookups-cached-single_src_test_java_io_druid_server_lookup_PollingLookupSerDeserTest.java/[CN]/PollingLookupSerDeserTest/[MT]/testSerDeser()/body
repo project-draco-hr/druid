@@ -1,0 +1,7 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  PollingLookupFactory pollingLookupFactory=new PollingLookupFactory(Period.ZERO,dataFetcher,cacheFactory);
+  mapper.registerSubtypes(MockDataFetcher.class);
+  mapper.registerSubtypes(PollingLookupFactory.class);
+  Assert.assertEquals(pollingLookupFactory,mapper.reader(LookupExtractorFactory.class).readValue(mapper.writeValueAsString(pollingLookupFactory)));
+}

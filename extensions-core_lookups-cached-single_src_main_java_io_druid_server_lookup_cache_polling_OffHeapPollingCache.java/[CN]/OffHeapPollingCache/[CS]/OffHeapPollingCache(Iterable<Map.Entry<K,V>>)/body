@@ -1,0 +1,30 @@
+{
+synchronized (started) {
+    this.cacheName=String.format("cache-%s",UUID.randomUUID());
+    this.reverseCacheName=String.format("reverseCache-%s",UUID.randomUUID());
+    mapCache=DB.createHashMap(cacheName).make();
+    reverseCache=DB.createHashMap(reverseCacheName).make();
+    ImmutableSet.Builder<V> setOfValuesBuilder=ImmutableSet.builder();
+    for (    Map.Entry<K,V> entry : entries) {
+      mapCache.put(entry.getKey(),entry.getValue());
+      setOfValuesBuilder.add(entry.getValue());
+    }
+    final Set<V> setOfValues=setOfValuesBuilder.build();
+    reverseCache.putAll(Maps.asMap(setOfValues,new Function<V,List<K>>(){
+      @Override public List<K> apply(      final V input){
+        return Lists.newArrayList(Maps.filterKeys(mapCache,new Predicate<K>(){
+          @Override public boolean apply(          K key){
+            V retVal=mapCache.get(key);
+            if (retVal == null) {
+              return false;
+            }
+            return retVal.equals(input);
+          }
+        }
+).keySet());
+      }
+    }
+));
+    started.getAndSet(true);
+  }
+}

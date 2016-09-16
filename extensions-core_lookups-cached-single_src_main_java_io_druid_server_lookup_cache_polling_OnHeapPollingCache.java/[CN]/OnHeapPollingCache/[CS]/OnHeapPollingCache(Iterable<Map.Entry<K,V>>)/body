@@ -1,0 +1,31 @@
+{
+  if (entries == null) {
+    immutableMap=ImmutableMap.of();
+    immutableReverseMap=ImmutableMap.of();
+  }
+ else {
+    ImmutableSet.Builder<V> setOfValuesBuilder=ImmutableSet.builder();
+    ImmutableMap.Builder<K,V> mapBuilder=ImmutableMap.builder();
+    for (    Map.Entry<K,V> entry : entries) {
+      setOfValuesBuilder.add(entry.getValue());
+      mapBuilder.put(entry.getKey(),entry.getValue());
+    }
+    final Set<V> setOfValues=setOfValuesBuilder.build();
+    immutableMap=mapBuilder.build();
+    immutableReverseMap=ImmutableMap.copyOf(Maps.asMap(setOfValues,new Function<V,List<K>>(){
+      @Override public List<K> apply(      final V input){
+        return Lists.newArrayList(Maps.filterKeys(immutableMap,new Predicate<K>(){
+          @Override public boolean apply(          K key){
+            V retVal=immutableMap.get(key);
+            if (retVal == null) {
+              return false;
+            }
+            return retVal.equals(input);
+          }
+        }
+).keySet());
+      }
+    }
+));
+  }
+}

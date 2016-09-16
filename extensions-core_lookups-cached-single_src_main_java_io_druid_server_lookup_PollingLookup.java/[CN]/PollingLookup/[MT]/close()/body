@@ -1,0 +1,14 @@
+{
+  LOGGER.info("Closing polling lookup [%s]",id);
+synchronized (isOpen) {
+    isOpen.getAndSet(false);
+    if (pollFuture != null) {
+      pollFuture.cancel(true);
+      scheduledExecutorService.shutdown();
+    }
+    CacheRefKeeper cacheRefKeeper=refOfCacheKeeper.getAndSet(null);
+    if (cacheRefKeeper != null) {
+      cacheRefKeeper.doneWithIt();
+    }
+  }
+}

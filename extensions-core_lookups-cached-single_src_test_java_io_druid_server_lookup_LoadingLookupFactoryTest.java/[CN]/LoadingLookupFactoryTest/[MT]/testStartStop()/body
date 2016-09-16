@@ -1,0 +1,9 @@
+{
+  EasyMock.expect(loadingLookup.isOpen()).andReturn(true).once();
+  loadingLookup.close();
+  EasyMock.expectLastCall().once();
+  EasyMock.replay(loadingLookup);
+  Assert.assertTrue(loadingLookupFactory.start());
+  Assert.assertTrue(loadingLookupFactory.close());
+  EasyMock.verify(loadingLookup);
+}

@@ -1,0 +1,11 @@
+{
+  PollingCache mockPollingCache=EasyMock.createStrictMock(PollingCache.class);
+  PollingLookup.CacheRefKeeper cacheRefKeeper=new PollingLookup.CacheRefKeeper(mockPollingCache);
+  mockPollingCache.close();
+  EasyMock.expectLastCall().atLeastOnce();
+  EasyMock.replay(mockPollingCache);
+  cacheRefKeeper.doneWithIt();
+  EasyMock.verify(mockPollingCache);
+  Assert.assertEquals(null,cacheRefKeeper.getAndIncrementRef());
+  Assert.assertEquals(null,cacheRefKeeper.getAndIncrementRef());
+}

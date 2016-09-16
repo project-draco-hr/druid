@@ -1,0 +1,7 @@
+{
+  ImmutableMap.Builder<String,String> mapBuilder=ImmutableMap.builder();
+  for (  Map.Entry<String,String> entry : jdbcDataFetcher.fetchAll()) {
+    mapBuilder.put(entry.getKey(),entry.getValue());
+  }
+  Assert.assertEquals("maps should match",lookupMap,mapBuilder.build());
+}

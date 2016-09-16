@@ -1,0 +1,8 @@
+{
+  return inReadOnlyTransaction(new TransactionCallback<List<Map.Entry<String,String>>>(){
+    @Override public List<Map.Entry<String,String>> inTransaction(    Handle handle,    TransactionStatus status) throws Exception {
+      return handle.createQuery(fetchAllQuery).setFetchSize(streamingFetchSize).map(new KeyValueResultSetMapper(keyColumn,valueColumn)).list();
+    }
+  }
+);
+}

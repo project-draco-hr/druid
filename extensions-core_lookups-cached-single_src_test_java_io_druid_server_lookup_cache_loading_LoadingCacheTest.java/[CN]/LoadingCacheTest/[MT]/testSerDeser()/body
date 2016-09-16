@@ -1,0 +1,5 @@
+{
+  ObjectMapper mapper=new DefaultObjectMapper();
+  Assert.assertEquals(loadingCache,mapper.reader(LoadingCache.class).readValue(mapper.writeValueAsString(loadingCache)));
+  Assert.assertTrue(loadingCache.hashCode() == mapper.reader(LoadingCache.class).readValue(mapper.writeValueAsString(loadingCache)).hashCode());
+}

@@ -1,0 +1,18 @@
+{
+  final CacheRefKeeper cacheRefKeeper=refOfCacheKeeper.get();
+  if (cacheRefKeeper == null) {
+    throw new ISE("Cache reference is null WTF");
+  }
+  final PollingCache cache=cacheRefKeeper.getAndIncrementRef();
+  try {
+    if (cache == null) {
+      return this.apply(key);
+    }
+    return Strings.emptyToNull((String)cache.get(key));
+  }
+  finally {
+    if (cacheRefKeeper != null && cache != null) {
+      cacheRefKeeper.doneWithIt();
+    }
+  }
+}

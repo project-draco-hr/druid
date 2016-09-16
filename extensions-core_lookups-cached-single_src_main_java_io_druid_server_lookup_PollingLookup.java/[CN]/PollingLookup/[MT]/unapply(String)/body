@@ -1,0 +1,18 @@
+{
+  CacheRefKeeper cacheRefKeeper=refOfCacheKeeper.get();
+  if (cacheRefKeeper == null) {
+    throw new ISE("pollingLookup id [%s] is closed",id);
+  }
+  PollingCache cache=cacheRefKeeper.getAndIncrementRef();
+  try {
+    if (cache == null) {
+      return this.unapply(value);
+    }
+    return cache.getKeys(value);
+  }
+  finally {
+    if (cacheRefKeeper != null && cache != null) {
+      cacheRefKeeper.doneWithIt();
+    }
+  }
+}

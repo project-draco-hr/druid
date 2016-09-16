@@ -1,0 +1,22 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof OnHeapLoadingCache)) {
+    return false;
+  }
+  OnHeapLoadingCache<?,?> that=(OnHeapLoadingCache<?,?>)o;
+  if (concurrencyLevel != that.concurrencyLevel) {
+    return false;
+  }
+  if (initialCapacity != that.initialCapacity) {
+    return false;
+  }
+  if (maximumSize != null ? !maximumSize.equals(that.maximumSize) : that.maximumSize != null) {
+    return false;
+  }
+  if (expireAfterAccess != null ? !expireAfterAccess.equals(that.expireAfterAccess) : that.expireAfterAccess != null) {
+    return false;
+  }
+  return expireAfterWrite != null ? expireAfterWrite.equals(that.expireAfterWrite) : that.expireAfterWrite == null;
+}

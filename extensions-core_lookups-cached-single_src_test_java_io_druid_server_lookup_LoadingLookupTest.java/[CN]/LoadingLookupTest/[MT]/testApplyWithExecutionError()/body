@@ -1,0 +1,6 @@
+{
+  EasyMock.expect(lookupCache.get(EasyMock.eq("key"),EasyMock.anyObject(Callable.class))).andThrow(new ExecutionException(null)).once();
+  EasyMock.replay(lookupCache);
+  Assert.assertEquals(null,loadingLookup.apply("key"));
+  EasyMock.verify(lookupCache);
+}

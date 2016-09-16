@@ -1,0 +1,16 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof PollingLookup)) {
+    return false;
+  }
+  PollingLookup that=(PollingLookup)o;
+  if (pollPeriodMs != that.pollPeriodMs) {
+    return false;
+  }
+  if (!dataFetcher.equals(that.dataFetcher)) {
+    return false;
+  }
+  return cacheFactory.equals(that.cacheFactory);
+}

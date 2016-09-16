@@ -1,0 +1,13 @@
+{
+  this.connectorConfig=Preconditions.checkNotNull(connectorConfig,"connectorConfig");
+  this.streamingFetchSize=streamingFetchSize == null ? DEFAULT_STREAMING_FETCH_SIZE : streamingFetchSize;
+  Preconditions.checkNotNull(connectorConfig.getConnectURI(),"connectorConfig.connectURI");
+  this.table=Preconditions.checkNotNull(table,"table");
+  this.keyColumn=Preconditions.checkNotNull(keyColumn,"keyColumn");
+  this.valueColumn=Preconditions.checkNotNull(valueColumn,"valueColumn");
+  this.fetchAllQuery=String.format("SELECT %s, %s FROM %s",this.keyColumn,this.valueColumn,this.table);
+  this.fetchQuery=String.format("SELECT %s FROM %s WHERE %s = :val",this.valueColumn,this.table,this.keyColumn);
+  this.reverseFetchQuery=String.format("SELECT %s FROM %s WHERE %s = :val",this.keyColumn,this.table,this.valueColumn);
+  dbi=new DBI(connectorConfig.getConnectURI(),connectorConfig.getUser(),connectorConfig.getPassword());
+  dbi.registerMapper(new KeyValueResultSetMapper(keyColumn,valueColumn));
+}

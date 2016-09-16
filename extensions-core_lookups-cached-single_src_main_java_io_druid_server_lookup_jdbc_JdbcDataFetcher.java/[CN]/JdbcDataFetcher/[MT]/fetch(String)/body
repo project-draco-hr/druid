@@ -1,0 +1,12 @@
+{
+  List<String> pairs=inReadOnlyTransaction(new TransactionCallback<List<String>>(){
+    @Override public List<String> inTransaction(    Handle handle,    TransactionStatus status) throws Exception {
+      return handle.createQuery(fetchQuery).bind("val",key).map(StringMapper.FIRST).list();
+    }
+  }
+);
+  if (pairs.isEmpty()) {
+    return null;
+  }
+  return Strings.nullToEmpty(pairs.get(0));
+}

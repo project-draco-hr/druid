@@ -1,0 +1,19 @@
+{
+  if (this == o) {
+    return true;
+  }
+  if (!(o instanceof OffHeapLoadingCache)) {
+    return false;
+  }
+  OffHeapLoadingCache<?,?> that=(OffHeapLoadingCache<?,?>)o;
+  if (Double.compare(that.maxStoreSize,maxStoreSize) != 0) {
+    return false;
+  }
+  if (maxEntriesSize != that.maxEntriesSize) {
+    return false;
+  }
+  if (expireAfterWrite != that.expireAfterWrite) {
+    return false;
+  }
+  return expireAfterAccess == that.expireAfterAccess;
+}

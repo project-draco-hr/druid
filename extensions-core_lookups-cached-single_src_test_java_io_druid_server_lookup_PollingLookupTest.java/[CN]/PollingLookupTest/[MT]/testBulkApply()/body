@@ -1,0 +1,9 @@
+{
+  Map<String,String> map=pollingLookup.applyAll(firstLookupMap.keySet());
+  Assert.assertEquals(firstLookupMap,Maps.transformValues(map,new Function<String,String>(){
+    @Override public String apply(    String input){
+      return Strings.nullToEmpty(input);
+    }
+  }
+));
+}

@@ -1,0 +1,6 @@
+{
+  EasyMock.expect(reverseLookupCache.get(EasyMock.eq("value"),EasyMock.anyObject(Callable.class))).andThrow(new ExecutionException(null)).once();
+  EasyMock.replay(reverseLookupCache);
+  Assert.assertEquals(Collections.EMPTY_LIST,loadingLookup.unapply("value"));
+  EasyMock.verify(reverseLookupCache);
+}
