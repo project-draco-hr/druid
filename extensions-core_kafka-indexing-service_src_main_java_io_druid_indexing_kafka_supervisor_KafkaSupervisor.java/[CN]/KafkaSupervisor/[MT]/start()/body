@@ -31,6 +31,6 @@ synchronized (stateChangeLock) {
     firstRunTime=DateTime.now().plus(ioConfig.getStartDelay());
     scheduledExec.scheduleAtFixedRate(buildRunTask(),ioConfig.getStartDelay().getMillis(),Math.max(ioConfig.getPeriod().getMillis(),MAX_RUN_FREQUENCY_MILLIS),TimeUnit.MILLISECONDS);
     started=true;
-    log.info("Started KafkaSupervisor[%s], first run in [%s]",dataSource,ioConfig.getStartDelay());
+    log.info("Started KafkaSupervisor[%s], first run in [%s], with spec: [%s]",dataSource,ioConfig.getStartDelay(),spec.toString());
   }
 }

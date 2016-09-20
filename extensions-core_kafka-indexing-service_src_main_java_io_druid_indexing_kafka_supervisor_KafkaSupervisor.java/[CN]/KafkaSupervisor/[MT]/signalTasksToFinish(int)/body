@@ -1,14 +1,17 @@
 {
-  TaskGroup taskGroup=taskGroups.get(groupId);
-  Map<Integer,Long> endOffsets=new HashMap<>();
+  final TaskGroup taskGroup=taskGroups.get(groupId);
   Iterator<Map.Entry<String,TaskData>> i=taskGroup.tasks.entrySet().iterator();
   while (i.hasNext()) {
     Map.Entry<String,TaskData> taskEntry=i.next();
     String taskId=taskEntry.getKey();
     TaskData task=taskEntry.getValue();
     if (task.status.isSuccess()) {
-      stopTasksInGroup(taskGroup);
-      return null;
+      return Futures.transform(stopTasksInGroup(taskGroup),new Function<Void,Map<Integer,Long>>(){
+        @Nullable @Override public Map<Integer,Long> apply(        @Nullable Void input){
+          return null;
+        }
+      }
+,workerExec);
     }
     if (task.status.isRunnable()) {
       if (taskInfoProvider.getTaskLocation(taskId).equals(TaskLocation.unknown())) {
@@ -16,41 +19,62 @@
         killTask(taskId);
         i.remove();
       }
- else {
-        Map<Integer,Long> currentOffsets;
-        try {
-          currentOffsets=taskClient.pause(taskId);
-        }
- catch (        Exception e) {
-          log.warn(e,"Task [%s] failed to respond to [pause] in a timely manner, killing task",taskId);
+    }
+  }
+  final List<ListenableFuture<Map<Integer,Long>>> pauseFutures=Lists.newArrayList();
+  final List<String> pauseTaskIds=ImmutableList.copyOf(taskGroup.tasks.keySet());
+  for (  final String taskId : pauseTaskIds) {
+    pauseFutures.add(taskClient.pauseAsync(taskId));
+  }
+  return Futures.transform(Futures.successfulAsList(pauseFutures),new Function<List<Map<Integer,Long>>,Map<Integer,Long>>(){
+    @Nullable @Override public Map<Integer,Long> apply(    List<Map<Integer,Long>> input){
+      final Map<Integer,Long> endOffsets=new HashMap<>();
+      for (int i=0; i < input.size(); i++) {
+        Map<Integer,Long> result=input.get(i);
+        if (result == null || result.isEmpty()) {
+          String taskId=pauseTaskIds.get(i);
+          log.warn("Task [%s] failed to respond to [pause] in a timely manner, killing task",taskId);
           killTask(taskId);
-          i.remove();
-          continue;
+          taskGroup.tasks.remove(taskId);
         }
-        for (        Map.Entry<Integer,Long> offset : currentOffsets.entrySet()) {
-          if (!endOffsets.containsKey(offset.getKey()) || endOffsets.get(offset.getKey()).compareTo(offset.getValue()) < 0) {
-            endOffsets.put(offset.getKey(),offset.getValue());
+ else {
+          for (          Map.Entry<Integer,Long> offset : result.entrySet()) {
+            if (!endOffsets.containsKey(offset.getKey()) || endOffsets.get(offset.getKey()).compareTo(offset.getValue()) < 0) {
+              endOffsets.put(offset.getKey(),offset.getValue());
+            }
           }
         }
       }
-    }
-  }
-  log.info("Setting endOffsets for tasks in taskGroup [%d] to %s and resuming",groupId,endOffsets);
-  i=taskGroup.tasks.entrySet().iterator();
-  while (i.hasNext()) {
-    Map.Entry<String,TaskData> taskEntry=i.next();
-    String taskId=taskEntry.getKey();
-    TaskData task=taskEntry.getValue();
-    if (task.status.isRunnable()) {
+      final List<ListenableFuture<Boolean>> setEndOffsetFutures=Lists.newArrayList();
+      final List<String> setEndOffsetTaskIds=ImmutableList.copyOf(taskGroup.tasks.keySet());
+      if (setEndOffsetTaskIds.isEmpty()) {
+        log.info("All tasks in taskGroup [%d] have failed, tasks will be re-created",groupId);
+        return null;
+      }
+      log.info("Setting endOffsets for tasks in taskGroup [%d] to %s and resuming",groupId,endOffsets);
+      for (      final String taskId : setEndOffsetTaskIds) {
+        setEndOffsetFutures.add(taskClient.setEndOffsetsAsync(taskId,endOffsets,true));
+      }
       try {
-        taskClient.setEndOffsets(taskId,endOffsets,true);
+        List<Boolean> results=Futures.successfulAsList(setEndOffsetFutures).get();
+        for (int i=0; i < results.size(); i++) {
+          if (results.get(i) == null || !results.get(i)) {
+            String taskId=setEndOffsetTaskIds.get(i);
+            log.warn("Task [%s] failed to respond to [set end offsets] in a timely manner, killing task",taskId);
+            killTask(taskId);
+            taskGroup.tasks.remove(taskId);
+          }
+        }
       }
  catch (      Exception e) {
-        log.warn(e,"Task [%s] failed to respond to [set end offsets] in a timely manner, killing task",taskId);
-        killTask(taskId);
-        i.remove();
+        Throwables.propagate(e);
       }
+      if (taskGroup.tasks.isEmpty()) {
+        log.info("All tasks in taskGroup [%d] have failed, tasks will be re-created",groupId);
+        return null;
+      }
+      return endOffsets;
     }
   }
-  return endOffsets;
+,workerExec);
 }

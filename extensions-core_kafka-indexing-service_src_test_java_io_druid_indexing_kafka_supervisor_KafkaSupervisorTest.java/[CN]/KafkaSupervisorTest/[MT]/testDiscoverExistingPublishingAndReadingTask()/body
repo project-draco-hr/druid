@@ -18,12 +18,12 @@
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(id1)).anyTimes();
   expect(taskStorage.getTask("id2")).andReturn(Optional.of(id2)).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
-  expect(taskClient.getStatus("id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
-  expect(taskClient.getStatus("id2")).andReturn(KafkaIndexTask.Status.READING);
-  expect(taskClient.getStartTime("id2")).andReturn(startTime);
-  expect(taskClient.getCurrentOffsets("id1",false)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
+  expect(taskClient.getStatusAsync("id1")).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.PUBLISHING));
+  expect(taskClient.getStatusAsync("id2")).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.READING));
+  expect(taskClient.getStartTimeAsync("id2")).andReturn(Futures.immediateFuture(startTime));
+  expect(taskClient.getCurrentOffsetsAsync("id1",false)).andReturn(Futures.immediateFuture((Map<Integer,Long>)ImmutableMap.of(0,10L,1,20L,2,30L)));
   expect(taskClient.getCurrentOffsets("id1",true)).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L));
-  expect(taskClient.getCurrentOffsets("id2",false)).andReturn(ImmutableMap.of(0,40L,1,50L,2,60L));
+  expect(taskClient.getCurrentOffsetsAsync("id2",false)).andReturn(Futures.immediateFuture((Map<Integer,Long>)ImmutableMap.of(0,40L,1,50L,2,60L)));
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
   replayAll();
   supervisor.start();
@@ -40,8 +40,8 @@
   Assert.assertEquals(KAFKA_TOPIC,payload.getTopic());
   Assert.assertEquals(1,payload.getActiveTasks().size());
   Assert.assertEquals(1,payload.getPublishingTasks().size());
-  KafkaSupervisorReport.TaskReportData activeReport=payload.getActiveTasks().get(0);
-  KafkaSupervisorReport.TaskReportData publishingReport=payload.getPublishingTasks().get(0);
+  TaskReportData activeReport=payload.getActiveTasks().get(0);
+  TaskReportData publishingReport=payload.getPublishingTasks().get(0);
   Assert.assertEquals("id2",activeReport.getId());
   Assert.assertEquals(startTime,activeReport.getStartTime());
   Assert.assertEquals(ImmutableMap.of(0,10L,1,20L,2,30L),activeReport.getStartingOffsets());

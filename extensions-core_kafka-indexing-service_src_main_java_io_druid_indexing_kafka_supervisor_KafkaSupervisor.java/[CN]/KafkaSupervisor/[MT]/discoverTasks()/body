@@ -1,55 +1,84 @@
 {
   int taskCount=0;
+  List<String> futureTaskIds=Lists.newArrayList();
+  List<ListenableFuture<Boolean>> futures=Lists.newArrayList();
   List<Task> tasks=taskStorage.getActiveTasks();
   for (  Task task : tasks) {
-    if (task instanceof KafkaIndexTask && dataSource.equals(task.getDataSource())) {
-      taskCount++;
-      KafkaIndexTask kafkaTask=(KafkaIndexTask)task;
-      String taskId=task.getId();
-      Iterator<Integer> it=kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet().iterator();
-      Integer taskGroupId=(it.hasNext() ? getTaskGroupIdForPartition(it.next()) : null);
-      if (taskGroupId != null) {
-        TaskGroup taskGroup=taskGroups.get(taskGroupId);
-        if (!isTaskInPendingCompletionGroups(taskId) && (taskGroup == null || !taskGroup.tasks.containsKey(taskId))) {
-          Optional<KafkaIndexTask.Status> status=getTaskStatus(taskId);
-          if (status.isPresent() && status.get() == KafkaIndexTask.Status.PUBLISHING) {
-            addDiscoveredTaskToPendingCompletionTaskGroups(taskGroupId,taskId,kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap());
-            Map<Integer,Long> publishingTaskCurrentOffsets=getCurrentOffsets(taskId,true);
-            for (            Map.Entry<Integer,Long> entry : publishingTaskCurrentOffsets.entrySet()) {
-              Integer partition=entry.getKey();
-              Long offset=entry.getValue();
-              Map<Integer,Long> partitionOffsets=partitionGroups.get(getTaskGroupIdForPartition(partition));
-              if (partitionOffsets.get(partition) == null || partitionOffsets.get(partition) < offset) {
-                partitionOffsets.put(partition,offset);
+    if (!(task instanceof KafkaIndexTask) || !dataSource.equals(task.getDataSource())) {
+      continue;
+    }
+    taskCount++;
+    final KafkaIndexTask kafkaTask=(KafkaIndexTask)task;
+    final String taskId=task.getId();
+    Iterator<Integer> it=kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet().iterator();
+    final Integer taskGroupId=(it.hasNext() ? getTaskGroupIdForPartition(it.next()) : null);
+    if (taskGroupId != null) {
+      TaskGroup taskGroup=taskGroups.get(taskGroupId);
+      if (!isTaskInPendingCompletionGroups(taskId) && (taskGroup == null || !taskGroup.tasks.containsKey(taskId))) {
+        futureTaskIds.add(taskId);
+        futures.add(Futures.transform(taskClient.getStatusAsync(taskId),new Function<KafkaIndexTask.Status,Boolean>(){
+          @Override public Boolean apply(          KafkaIndexTask.Status status){
+            if (status == KafkaIndexTask.Status.PUBLISHING) {
+              addDiscoveredTaskToPendingCompletionTaskGroups(taskGroupId,taskId,kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap());
+              Map<Integer,Long> publishingTaskCurrentOffsets=taskClient.getCurrentOffsets(taskId,true);
+              for (              Map.Entry<Integer,Long> entry : publishingTaskCurrentOffsets.entrySet()) {
+                Integer partition=entry.getKey();
+                Long offset=entry.getValue();
+                ConcurrentHashMap<Integer,Long> partitionOffsets=partitionGroups.get(getTaskGroupIdForPartition(partition));
+                boolean succeeded;
+                do {
+                  succeeded=true;
+                  Long previousOffset=partitionOffsets.putIfAbsent(partition,offset);
+                  if (previousOffset != null && previousOffset < offset) {
+                    succeeded=partitionOffsets.replace(partition,previousOffset,offset);
+                  }
+                }
+ while (!succeeded);
               }
             }
-          }
  else {
-            for (            Integer partition : kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet()) {
-              if (!taskGroupId.equals(getTaskGroupIdForPartition(partition))) {
-                log.warn("Stopping task [%s] which does not match the expected partition allocation",taskId);
-                stopTask(taskId,false);
-                taskGroupId=null;
-                break;
+              for (              Integer partition : kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap().keySet()) {
+                if (!taskGroupId.equals(getTaskGroupIdForPartition(partition))) {
+                  log.warn("Stopping task [%s] which does not match the expected partition allocation",taskId);
+                  try {
+                    stopTask(taskId,false).get();
+                  }
+ catch (                  InterruptedException|ExecutionException e) {
+                    log.warn(e,"Exception while stopping task");
+                  }
+                  return false;
+                }
+              }
+              if (taskGroups.putIfAbsent(taskGroupId,new TaskGroup(ImmutableMap.copyOf(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap()),kafkaTask.getIOConfig().getMinimumMessageTime())) == null) {
+                log.debug("Created new task group [%d]",taskGroupId);
+              }
+              if (!isTaskCurrent(taskGroupId,taskId)) {
+                log.info("Stopping task [%s] which does not match the expected parameters and ingestion spec",taskId);
+                try {
+                  stopTask(taskId,false).get();
+                }
+ catch (                InterruptedException|ExecutionException e) {
+                  log.warn(e,"Exception while stopping task");
+                }
+                return false;
+              }
+ else {
+                taskGroups.get(taskGroupId).tasks.putIfAbsent(taskId,new TaskData());
               }
             }
-            if (taskGroupId == null) {
-              continue;
-            }
-            if (!taskGroups.containsKey(taskGroupId)) {
-              log.debug("Creating new task group [%d]",taskGroupId);
-              taskGroups.put(taskGroupId,new TaskGroup(kafkaTask.getIOConfig().getStartPartitions().getPartitionOffsetMap(),kafkaTask.getIOConfig().getMinimumMessageTime()));
-            }
-            if (!isTaskCurrent(taskGroupId,taskId)) {
-              log.info("Stopping task [%s] which does not match the expected parameters and ingestion spec",taskId);
-              stopTask(taskId,false);
-            }
- else {
-              taskGroups.get(taskGroupId).tasks.put(taskId,new TaskData());
-            }
+            return true;
           }
         }
+,workerExec));
       }
+    }
+  }
+  List<Boolean> results=Futures.successfulAsList(futures).get();
+  for (int i=0; i < results.size(); i++) {
+    if (results.get(i) == null) {
+      String taskId=futureTaskIds.get(i);
+      log.warn("Task [%s] failed to return status, killing task",taskId);
+      killTask(taskId);
     }
   }
   log.debug("Found [%d] Kafka indexing tasks for dataSource [%s]",taskCount,dataSource);

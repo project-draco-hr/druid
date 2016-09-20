@@ -3,25 +3,27 @@
   while (true) {
     FullResponseHolder response=null;
     Request request=null;
+    TaskLocation location=TaskLocation.unknown();
+    String path=String.format("%s/%s/%s",BASE_PATH,id,pathSuffix);
     Optional<TaskStatus> status=taskInfoProvider.getTaskStatus(id);
     if (!status.isPresent() || !status.get().isRunnable()) {
       throw new TaskNotRunnableException(String.format("Aborting request because task [%s] is not runnable",id));
     }
     try {
-      TaskLocation location=taskInfoProvider.getTaskLocation(id);
+      location=taskInfoProvider.getTaskLocation(id);
       if (location.equals(TaskLocation.unknown())) {
-        log.info("No TaskLocation available for task [%s], this task may not have been assigned to a worker yet",id);
         throw new NoTaskLocationException(String.format("No TaskLocation available for task [%s]",id));
       }
       checkConnection(location.getHost(),location.getPort());
       try {
-        URI serviceUri=new URI("http",null,location.getHost(),location.getPort(),String.format("%s/%s/%s",BASE_PATH,id,pathSuffix),query,null);
+        URI serviceUri=new URI("http",null,location.getHost(),location.getPort(),path,query,null);
         request=new Request(method,serviceUri.toURL());
         request.addHeader(ChatHandlerResource.TASK_ID_HEADER,id);
         if (content.length > 0) {
           request.setContent(MediaType.APPLICATION_JSON,content);
         }
-        response=httpClient.go(request,new FullResponseHandler(Charsets.UTF_8)).get();
+        log.debug("HTTP %s: %s",method.getName(),serviceUri.toString());
+        response=httpClient.go(request,new FullResponseHandler(Charsets.UTF_8),httpTimeout).get();
       }
  catch (      Exception e) {
         Throwables.propagateIfInstanceOf(e.getCause(),IOException.class);
@@ -54,19 +56,33 @@
  else {
         delay=retryPolicy.getAndIncrementRetryDelay();
       }
-      if (!retry || delay == null) {
+      String urlForLog=(request != null ? request.getUrl().toString() : String.format("http://%s:%d%s",location.getHost(),location.getPort(),path));
+      if (!retry) {
+        log.info("submitRequest failed for [%s], with message [%s]",urlForLog,e.getMessage());
+        Throwables.propagate(e);
+      }
+ else       if (delay == null) {
+        log.warn(e,"Retries exhausted for [%s], last exception:",urlForLog);
         Throwables.propagate(e);
       }
  else {
         try {
           final long sleepTime=delay.getMillis();
-          log.debug("Bad response HTTP [%d] from %s; will try again in [%s] (body: [%s])",(response != null ? response.getStatus().getCode() : 0),(request != null ? request.getUrl() : "-"),new Duration(sleepTime).toString(),(response != null ? response.getContent() : "[empty]"));
+          log.debug("Bad response HTTP [%s] from [%s]; will try again in [%s] (body/exception: [%s])",(response != null ? response.getStatus().getCode() : "no response"),urlForLog,new Duration(sleepTime).toString(),(response != null ? response.getContent() : e.getMessage()));
           Thread.sleep(sleepTime);
         }
  catch (        InterruptedException e2) {
           Throwables.propagate(e2);
         }
       }
+    }
+catch (    NoTaskLocationException e) {
+      log.info("No TaskLocation available for task [%s], this task may not have been assigned to a worker yet or " + "may have already completed",id);
+      throw e;
+    }
+catch (    Exception e) {
+      log.warn(e,"Exception while sending request");
+      throw e;
     }
   }
 }

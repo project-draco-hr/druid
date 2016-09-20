@@ -4,6 +4,8 @@
     numPartitions+=partitionGroup.size();
   }
   KafkaSupervisorReport report=new KafkaSupervisorReport(dataSource,DateTime.now(),ioConfig.getTopic(),numPartitions,ioConfig.getReplicas(),ioConfig.getTaskDuration().getMillis() / 1000);
+  List<TaskReportData> taskReports=Lists.newArrayList();
+  List<ListenableFuture<Map<Integer,Long>>> futures=Lists.newArrayList();
   try {
     for (    TaskGroup taskGroup : taskGroups.values()) {
       for (      Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
@@ -13,7 +15,10 @@
         if (startTime != null) {
           remainingSeconds=Math.max(0,ioConfig.getTaskDuration().getMillis() - (DateTime.now().getMillis() - startTime.getMillis())) / 1000;
         }
-        report.addActiveTask(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),(includeOffsets ? getCurrentOffsets(taskId,false) : null),startTime,remainingSeconds);
+        taskReports.add(new TaskReportData(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),null,startTime,remainingSeconds,TaskReportData.TaskType.ACTIVE));
+        if (includeOffsets) {
+          futures.add(taskClient.getCurrentOffsetsAsync(taskId,false));
+        }
       }
     }
     for (    List<TaskGroup> taskGroups : pendingCompletionTaskGroups.values()) {
@@ -25,9 +30,20 @@
           if (taskGroup.completionTimeout != null) {
             remainingSeconds=Math.max(0,taskGroup.completionTimeout.getMillis() - DateTime.now().getMillis()) / 1000;
           }
-          report.addPublishingTask(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),(includeOffsets ? getCurrentOffsets(taskId,false) : null),startTime,remainingSeconds);
+          taskReports.add(new TaskReportData(taskId,(includeOffsets ? taskGroup.partitionOffsets : null),null,startTime,remainingSeconds,TaskReportData.TaskType.PUBLISHING));
+          if (includeOffsets) {
+            futures.add(taskClient.getCurrentOffsetsAsync(taskId,false));
+          }
         }
       }
+    }
+    List<Map<Integer,Long>> results=Futures.successfulAsList(futures).get();
+    for (int i=0; i < taskReports.size(); i++) {
+      TaskReportData reportData=taskReports.get(i);
+      if (includeOffsets) {
+        reportData.setCurrentOffsets(results.get(i));
+      }
+      report.addTask(reportData);
     }
   }
  catch (  Exception e) {

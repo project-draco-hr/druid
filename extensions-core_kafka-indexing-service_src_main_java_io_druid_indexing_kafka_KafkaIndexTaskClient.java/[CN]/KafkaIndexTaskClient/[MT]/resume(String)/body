@@ -1,3 +1,10 @@
 {
-  submitRequest(id,HttpMethod.POST,"resume",null,true);
+  log.debug("Resume task[%s]",id);
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"resume",null,true);
+    return response.getStatus().getCode() / 100 == 2;
+  }
+ catch (  NoTaskLocationException e) {
+    return false;
+  }
 }

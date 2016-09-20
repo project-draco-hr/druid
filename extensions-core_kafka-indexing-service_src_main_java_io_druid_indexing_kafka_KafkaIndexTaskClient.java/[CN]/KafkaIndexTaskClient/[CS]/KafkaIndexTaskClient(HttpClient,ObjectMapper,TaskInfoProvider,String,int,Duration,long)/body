@@ -1,0 +1,9 @@
+{
+  this.httpClient=httpClient;
+  this.jsonMapper=jsonMapper;
+  this.taskInfoProvider=taskInfoProvider;
+  this.httpTimeout=httpTimeout;
+  this.numRetries=numRetries;
+  this.retryPolicyFactory=createRetryPolicyFactory();
+  this.executorService=MoreExecutors.listeningDecorator(Execs.multiThreaded(numThreads,String.format("KafkaIndexTaskClient-%s-%%d",dataSource)));
+}

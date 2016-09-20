@@ -1,0 +1,17 @@
+{
+  reset(taskInfoProvider);
+  expect(taskInfoProvider.getTaskLocation(TEST_ID)).andReturn(TaskLocation.unknown()).anyTimes();
+  expect(taskInfoProvider.getTaskStatus(TEST_ID)).andReturn(Optional.of(TaskStatus.running(TEST_ID))).anyTimes();
+  replayAll();
+  Assert.assertEquals(false,client.stop(TEST_ID,true));
+  Assert.assertEquals(false,client.resume(TEST_ID));
+  Assert.assertEquals(ImmutableMap.of(),client.pause(TEST_ID));
+  Assert.assertEquals(ImmutableMap.of(),client.pause(TEST_ID,10));
+  Assert.assertEquals(KafkaIndexTask.Status.NOT_STARTED,client.getStatus(TEST_ID));
+  Assert.assertEquals(null,client.getStartTime(TEST_ID));
+  Assert.assertEquals(ImmutableMap.of(),client.getCurrentOffsets(TEST_ID,true));
+  Assert.assertEquals(ImmutableMap.of(),client.getEndOffsets(TEST_ID));
+  Assert.assertEquals(false,client.setEndOffsets(TEST_ID,ImmutableMap.<Integer,Long>of()));
+  Assert.assertEquals(false,client.setEndOffsets(TEST_ID,ImmutableMap.<Integer,Long>of(),true));
+  verifyAll();
+}

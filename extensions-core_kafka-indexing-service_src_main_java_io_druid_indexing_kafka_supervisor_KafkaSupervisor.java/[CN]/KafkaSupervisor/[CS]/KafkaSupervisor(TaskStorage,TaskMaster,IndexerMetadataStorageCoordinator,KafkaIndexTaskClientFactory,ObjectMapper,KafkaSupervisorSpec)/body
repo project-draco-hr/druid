@@ -6,9 +6,14 @@
   this.spec=spec;
   this.dataSource=spec.getDataSchema().getDataSource();
   this.ioConfig=spec.getIoConfig();
+  this.tuningConfig=spec.getTuningConfig();
+  this.taskTuningConfig=KafkaTuningConfig.copyOf(this.tuningConfig);
   this.supervisorId=String.format("KafkaSupervisor-%s",dataSource);
-  this.exec=Execs.singleThreaded(supervisorId + "-%d");
+  this.exec=Execs.singleThreaded(supervisorId);
   this.scheduledExec=Execs.scheduledSingleThreaded(supervisorId + "-Scheduler-%d");
+  int workerThreads=(this.tuningConfig.getWorkerThreads() != null ? this.tuningConfig.getWorkerThreads() : Math.min(10,this.ioConfig.getTaskCount()));
+  this.workerExec=MoreExecutors.listeningDecorator(Execs.multiThreaded(workerThreads,supervisorId + "-Worker-%d"));
+  log.info("Created worker pool with [%d] threads for dataSource [%s]",workerThreads,this.dataSource);
   this.taskInfoProvider=new TaskInfoProvider(){
     @Override public TaskLocation getTaskLocation(    final String id){
       Preconditions.checkNotNull(id,"id");
@@ -34,5 +39,7 @@
     }
   }
 ;
-  this.taskClient=taskClientFactory.build(taskInfoProvider);
+  int chatThreads=(this.tuningConfig.getChatThreads() != null ? this.tuningConfig.getChatThreads() : Math.min(10,this.ioConfig.getTaskCount() * this.ioConfig.getReplicas()));
+  this.taskClient=taskClientFactory.build(taskInfoProvider,dataSource,chatThreads,this.tuningConfig.getHttpTimeout(),this.tuningConfig.getChatRetries());
+  log.info("Created taskClient with dataSource[%s] chatThreads[%d] httpTimeout[%s] chatRetries[%d]",dataSource,chatThreads,this.tuningConfig.getHttpTimeout(),this.tuningConfig.getChatRetries());
 }

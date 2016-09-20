@@ -2,7 +2,7 @@
   Capture<Request> captured=Capture.newInstance();
   expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK).times(2);
   expect(responseHolder.getContent()).andReturn("{\"0\":1, \"1\":10}").anyTimes();
-  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder));
   replayAll();
   Map<Integer,Long> results=client.pause(TEST_ID,101);
   verifyAll();

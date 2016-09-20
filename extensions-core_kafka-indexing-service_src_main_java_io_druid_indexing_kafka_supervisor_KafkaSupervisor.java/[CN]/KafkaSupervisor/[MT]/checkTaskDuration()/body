@@ -1,9 +1,9 @@
 {
-  Iterator<Map.Entry<Integer,TaskGroup>> i=taskGroups.entrySet().iterator();
-  while (i.hasNext()) {
-    Map.Entry<Integer,TaskGroup> groupEntry=i.next();
-    Integer groupId=groupEntry.getKey();
-    TaskGroup group=groupEntry.getValue();
+  final List<ListenableFuture<Map<Integer,Long>>> futures=Lists.newArrayList();
+  final List<Integer> futureGroupIds=Lists.newArrayList();
+  for (  Map.Entry<Integer,TaskGroup> entry : taskGroups.entrySet()) {
+    Integer groupId=entry.getKey();
+    TaskGroup group=entry.getValue();
     DateTime earliestTaskStart=DateTime.now();
     for (    TaskData taskData : group.tasks.values()) {
       if (earliestTaskStart.isAfter(taskData.startTime)) {
@@ -12,18 +12,29 @@
     }
     if (earliestTaskStart.plus(ioConfig.getTaskDuration()).isBeforeNow()) {
       log.info("Task group [%d] has run for [%s]",groupId,ioConfig.getTaskDuration());
-      Map<Integer,Long> endOffsets=signalTasksToFinish(groupId);
-      group.completionTimeout=DateTime.now().plus(ioConfig.getCompletionTimeout());
-      if (!pendingCompletionTaskGroups.containsKey(groupId)) {
-        pendingCompletionTaskGroups.put(groupId,Lists.<TaskGroup>newArrayList());
-      }
-      pendingCompletionTaskGroups.get(groupId).add(group);
-      if (endOffsets != null) {
-        for (        Map.Entry<Integer,Long> entry : endOffsets.entrySet()) {
-          partitionGroups.get(groupId).put(entry.getKey(),entry.getValue());
-        }
-      }
-      i.remove();
+      futureGroupIds.add(groupId);
+      futures.add(signalTasksToFinish(groupId));
     }
+  }
+  List<Map<Integer,Long>> results=Futures.successfulAsList(futures).get();
+  for (int j=0; j < results.size(); j++) {
+    Integer groupId=futureGroupIds.get(j);
+    TaskGroup group=taskGroups.get(groupId);
+    Map<Integer,Long> endOffsets=results.get(j);
+    if (endOffsets != null) {
+      group.completionTimeout=DateTime.now().plus(ioConfig.getCompletionTimeout());
+      pendingCompletionTaskGroups.putIfAbsent(groupId,Lists.<TaskGroup>newCopyOnWriteArrayList());
+      pendingCompletionTaskGroups.get(groupId).add(group);
+      for (      Map.Entry<Integer,Long> entry : endOffsets.entrySet()) {
+        partitionGroups.get(groupId).put(entry.getKey(),entry.getValue());
+      }
+    }
+ else {
+      log.warn("All tasks in group [%s] failed to transition to publishing state, killing tasks [%s]",groupId,group.tasks.keySet());
+      for (      String id : group.tasks.keySet()) {
+        killTask(id);
+      }
+    }
+    taskGroups.remove(groupId);
   }
 }

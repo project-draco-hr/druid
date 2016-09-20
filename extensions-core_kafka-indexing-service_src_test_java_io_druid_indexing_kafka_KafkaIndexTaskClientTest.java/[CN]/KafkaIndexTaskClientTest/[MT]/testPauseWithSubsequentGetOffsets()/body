@@ -4,9 +4,9 @@
   Capture<Request> captured3=Capture.newInstance();
   expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.ACCEPTED).times(2).andReturn(HttpResponseStatus.OK).times(2);
   expect(responseHolder.getContent()).andReturn("\"PAUSED\"").andReturn("{\"0\":1, \"1\":10}").anyTimes();
-  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
-  expect(httpClient.go(capture(captured2),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
-  expect(httpClient.go(capture(captured3),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(httpClient.go(capture(captured2),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(httpClient.go(capture(captured3),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder));
   replayAll();
   Map<Integer,Long> results=client.pause(TEST_ID);
   verifyAll();

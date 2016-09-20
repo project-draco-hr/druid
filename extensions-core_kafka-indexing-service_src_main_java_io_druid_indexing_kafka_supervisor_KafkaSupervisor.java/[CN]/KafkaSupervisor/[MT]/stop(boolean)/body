@@ -29,6 +29,8 @@ synchronized (stopLock) {
         }
       }
       log.info("Shutdown notice handled");
+      taskClient.close();
+      workerExec.shutdownNow();
       exec.shutdownNow();
       started=false;
       log.info("KafkaSupervisor[%s] has stopped",dataSource);

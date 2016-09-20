@@ -1,0 +1,12 @@
+{
+  try {
+    StatusResponseHolder response=httpClient.go(new Request(HttpMethod.POST,new URL(String.format("%ssupervisor/%s/shutdown",getIndexerURL(),id))),responseHandler).get();
+    if (!response.getStatus().equals(HttpResponseStatus.OK)) {
+      throw new ISE("Error while shutting down supervisor, response [%s %s]",response.getStatus(),response.getContent());
+    }
+    LOG.info("Shutdown supervisor with id[%s]",id);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

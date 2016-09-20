@@ -1,8 +1,13 @@
 {
+  log.debug("SetEndOffsets task[%s] endOffsets[%s] resume[%s]",id,endOffsets,resume);
   try {
-    submitRequest(id,HttpMethod.POST,"offsets/end",resume ? "resume=true" : null,jsonMapper.writeValueAsBytes(endOffsets),true);
+    final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"offsets/end",resume ? "resume=true" : null,jsonMapper.writeValueAsBytes(endOffsets),true);
+    return response.getStatus().getCode() / 100 == 2;
   }
- catch (  IOException e) {
+ catch (  NoTaskLocationException e) {
+    return false;
+  }
+catch (  IOException e) {
     throw Throwables.propagate(e);
   }
 }

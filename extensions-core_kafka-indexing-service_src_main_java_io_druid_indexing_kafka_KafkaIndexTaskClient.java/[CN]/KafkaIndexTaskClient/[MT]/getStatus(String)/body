@@ -1,9 +1,13 @@
 {
+  log.debug("GetStatus task[%s]",id);
   try {
     final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"status",null,true);
     return jsonMapper.readValue(response.getContent(),KafkaIndexTask.Status.class);
   }
- catch (  IOException e) {
+ catch (  NoTaskLocationException e) {
+    return KafkaIndexTask.Status.NOT_STARTED;
+  }
+catch (  IOException e) {
     throw Throwables.propagate(e);
   }
 }

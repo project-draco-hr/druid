@@ -1,7 +1,7 @@
 {
   Capture<Request> captured=Capture.newInstance();
-  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK);
-  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder));
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK).anyTimes();
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder));
   replayAll();
   client.resume(TEST_ID);
   verifyAll();

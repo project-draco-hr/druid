@@ -1,4 +1,5 @@
 {
+  log.debug("Pause task[%s] timeout[%d]",id,timeout);
   try {
     final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"pause",timeout > 0 ? String.format("timeout=%d",timeout) : null,true);
     if (response.getStatus().equals(HttpResponseStatus.OK)) {
@@ -22,7 +23,10 @@
       }
     }
   }
- catch (  IOException|InterruptedException e) {
+ catch (  NoTaskLocationException e) {
+    return ImmutableMap.of();
+  }
+catch (  IOException|InterruptedException e) {
     throw Throwables.propagate(e);
   }
 }

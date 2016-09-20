@@ -11,7 +11,8 @@
   expect(taskStorage.getActiveTasks()).andReturn(existingTasks).anyTimes();
   expect(taskStorage.getStatus("id1")).andReturn(Optional.of(TaskStatus.running("id1"))).anyTimes();
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(id1)).anyTimes();
-  expect(taskClient.getStartTime(anyString())).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
+  expect(taskClient.getStatusAsync("id1")).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.READING));
+  expect(taskClient.getStartTimeAsync("id1")).andReturn(Futures.immediateFuture(now)).anyTimes();
   expect(taskQueue.add(capture(captured))).andReturn(true);
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
@@ -25,14 +26,18 @@
   KafkaIndexTask iHaveFailed=(KafkaIndexTask)existingTasks.get(0);
   reset(taskStorage);
   reset(taskQueue);
+  reset(taskClient);
   expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.of(captured.getValue())).anyTimes();
   expect(taskStorage.getStatus(iHaveFailed.getId())).andReturn(Optional.of(TaskStatus.failure(iHaveFailed.getId())));
   expect(taskStorage.getStatus(runningTaskId)).andReturn(Optional.of(TaskStatus.running(runningTaskId))).anyTimes();
   expect(taskStorage.getTask(iHaveFailed.getId())).andReturn(Optional.of((Task)iHaveFailed)).anyTimes();
   expect(taskStorage.getTask(runningTaskId)).andReturn(Optional.of(captured.getValue())).anyTimes();
+  expect(taskClient.getStatusAsync(runningTaskId)).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.READING));
+  expect(taskClient.getStartTimeAsync(runningTaskId)).andReturn(Futures.immediateFuture(now)).anyTimes();
   expect(taskQueue.add(capture(aNewTaskCapture))).andReturn(true);
   replay(taskStorage);
   replay(taskQueue);
+  replay(taskClient);
   supervisor.runInternal();
   verifyAll();
   Assert.assertNotEquals(iHaveFailed.getId(),aNewTaskCapture.getValue().getId());

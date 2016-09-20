@@ -1,14 +1,14 @@
 {
-  Map<Integer,Long> startingOffsets=new HashMap<>();
+  ImmutableMap.Builder<Integer,Long> builder=ImmutableMap.builder();
   for (  Map.Entry<Integer,Long> entry : partitionGroups.get(groupId).entrySet()) {
     Integer partition=entry.getKey();
     Long offset=entry.getValue();
-    if (offset != null) {
-      startingOffsets.put(partition,offset);
+    if (offset != null && offset != NOT_SET) {
+      builder.put(partition,offset);
     }
  else {
-      startingOffsets.put(partition,getOffsetFromStorageForPartition(partition));
+      builder.put(partition,getOffsetFromStorageForPartition(partition));
     }
   }
-  return startingOffsets;
+  return builder.build();
 }

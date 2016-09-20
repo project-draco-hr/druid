@@ -1,0 +1,23 @@
+{
+  final int numRequests=TEST_IDS.size();
+  Capture<Request> captured=Capture.newInstance(CaptureType.ALL);
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.OK).anyTimes();
+  expect(httpClient.go(capture(captured),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder)).times(numRequests);
+  replayAll();
+  List<URL> expectedUrls=Lists.newArrayList();
+  List<ListenableFuture<Boolean>> futures=Lists.newArrayList();
+  for (int i=0; i < numRequests; i++) {
+    expectedUrls.add(new URL(String.format(URL_FORMATTER,TEST_HOST,TEST_PORT,TEST_IDS.get(i),"stop")));
+    futures.add(client.stopAsync(TEST_IDS.get(i),false));
+  }
+  List<Boolean> responses=Futures.allAsList(futures).get();
+  verifyAll();
+  List<Request> requests=captured.getValues();
+  Assert.assertEquals(numRequests,requests.size());
+  Assert.assertEquals(numRequests,responses.size());
+  for (int i=0; i < numRequests; i++) {
+    Assert.assertEquals(HttpMethod.POST,requests.get(i).getMethod());
+    Assert.assertTrue("unexpectedURL",expectedUrls.contains(requests.get(i).getUrl()));
+    Assert.assertTrue(responses.get(i));
+  }
+}

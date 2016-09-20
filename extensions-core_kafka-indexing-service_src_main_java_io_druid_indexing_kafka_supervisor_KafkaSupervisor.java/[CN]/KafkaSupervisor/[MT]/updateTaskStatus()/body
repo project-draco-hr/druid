@@ -1,22 +1,26 @@
 {
+  final List<ListenableFuture<Boolean>> futures=Lists.newArrayList();
+  final List<String> futureTaskIds=Lists.newArrayList();
   for (  TaskGroup group : taskGroups.values()) {
     for (    Map.Entry<String,TaskData> entry : group.tasks.entrySet()) {
-      String taskId=entry.getKey();
-      TaskData taskData=entry.getValue();
+      final String taskId=entry.getKey();
+      final TaskData taskData=entry.getValue();
       if (taskData.startTime == null) {
-        try {
-          taskData.startTime=getTaskStartTime(taskId);
-          if (taskData.startTime != null) {
+        futureTaskIds.add(taskId);
+        futures.add(Futures.transform(taskClient.getStartTimeAsync(taskId),new Function<DateTime,Boolean>(){
+          @Nullable @Override public Boolean apply(          @Nullable DateTime startTime){
+            if (startTime == null) {
+              return false;
+            }
+            taskData.startTime=startTime;
             long millisRemaining=ioConfig.getTaskDuration().getMillis() - (System.currentTimeMillis() - taskData.startTime.getMillis());
             if (millisRemaining > 0) {
               scheduledExec.schedule(buildRunTask(),millisRemaining + MAX_RUN_FREQUENCY_MILLIS,TimeUnit.MILLISECONDS);
             }
+            return true;
           }
         }
- catch (        Exception e) {
-          log.warn(e,"Task [%s] failed to return start time, killing task",taskId);
-          killTask(taskId);
-        }
+,workerExec));
       }
       taskData.status=taskStorage.getStatus(taskId).get();
     }
@@ -26,6 +30,14 @@
       for (      Map.Entry<String,TaskData> entry : group.tasks.entrySet()) {
         entry.getValue().status=taskStorage.getStatus(entry.getKey()).get();
       }
+    }
+  }
+  List<Boolean> results=Futures.successfulAsList(futures).get();
+  for (int i=0; i < results.size(); i++) {
+    if (results.get(i) == null) {
+      String taskId=futureTaskIds.get(i);
+      log.warn("Task [%s] failed to return start time, killing task",taskId);
+      killTask(taskId);
     }
   }
 }

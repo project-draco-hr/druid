@@ -1,0 +1,11 @@
+{
+  if (data.getType().equals(TaskReportData.TaskType.ACTIVE)) {
+    payload.activeTasks.add(data);
+  }
+ else   if (data.getType().equals(TaskReportData.TaskType.PUBLISHING)) {
+    payload.publishingTasks.add(data);
+  }
+ else {
+    throw new IAE("Unknown task type [%s]",data.getType().name());
+  }
+}

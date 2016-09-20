@@ -10,7 +10,7 @@
   KafkaIOConfig kafkaIOConfig=new KafkaIOConfig(sequenceName,new KafkaPartitions(ioConfig.getTopic(),startPartitions),new KafkaPartitions(ioConfig.getTopic(),endPartitions),consumerProperties,true,false,minimumMessageTime);
   for (int i=0; i < replicas; i++) {
     String taskId=Joiner.on("_").join(sequenceName,getRandomId());
-    KafkaIndexTask indexTask=new KafkaIndexTask(taskId,new TaskResource(sequenceName,1),spec.getDataSchema(),spec.getTuningConfig(),kafkaIOConfig,ImmutableMap.<String,Object>of(),null);
+    KafkaIndexTask indexTask=new KafkaIndexTask(taskId,new TaskResource(sequenceName,1),spec.getDataSchema(),taskTuningConfig,kafkaIOConfig,ImmutableMap.<String,Object>of(),null);
     Optional<TaskQueue> taskQueue=taskMaster.getTaskQueue();
     if (taskQueue.isPresent()) {
       try {

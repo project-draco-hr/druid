@@ -1,4 +1,5 @@
 {
+  List<ListenableFuture<Void>> futures=Lists.newArrayList();
   Iterator<Map.Entry<Integer,TaskGroup>> iTaskGroups=taskGroups.entrySet().iterator();
   while (iTaskGroups.hasNext()) {
     Map.Entry<Integer,TaskGroup> taskGroupEntry=iTaskGroups.next();
@@ -12,7 +13,7 @@
       TaskData taskData=task.getValue();
       if (!isTaskCurrent(groupId,taskId)) {
         log.info("Stopping task [%s] which does not match the expected offset range and ingestion spec",taskId);
-        stopTask(taskId,false);
+        futures.add(stopTask(taskId,false));
         iTasks.remove();
         continue;
       }
@@ -21,11 +22,12 @@
         continue;
       }
       if (taskData.status.isSuccess()) {
-        stopTasksInGroup(taskGroup);
+        futures.add(stopTasksInGroup(taskGroup));
         iTaskGroups.remove();
         break;
       }
     }
     log.debug("Task group [%d] post-pruning: %s",groupId,taskGroup.tasks.keySet());
   }
+  Futures.successfulAsList(futures).get();
 }

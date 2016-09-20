@@ -1,9 +1,15 @@
 {
+  taskStorage=createMock(TaskStorage.class);
+  taskMaster=createMock(TaskMaster.class);
+  taskRunner=createMock(TaskRunner.class);
+  indexerMetadataStorageCoordinator=createMock(IndexerMetadataStorageCoordinator.class);
+  taskClient=createMock(KafkaIndexTaskClient.class);
+  taskQueue=createMock(TaskQueue.class);
   zkServer=new TestingCluster(1);
   zkServer.start();
   kafkaServer=new TestBroker(zkServer.getConnectString(),tempFolder.newFolder(),1,ImmutableMap.of("num.partitions",String.valueOf(NUM_PARTITIONS)));
   kafkaServer.start();
   kafkaHost=String.format("localhost:%d",kafkaServer.getPort());
   dataSchema=getDataSchema(DATASOURCE);
-  tuningConfig=new KafkaTuningConfig(1000,50000,new Period("P1Y"),new File("/test"),null,null,true,false,null);
+  tuningConfig=new KafkaSupervisorTuningConfig(1000,50000,new Period("P1Y"),new File("/test"),null,null,true,false,null,numThreads,TEST_CHAT_THREADS,TEST_CHAT_RETRIES,TEST_HTTP_TIMEOUT);
 }

@@ -1,5 +1,6 @@
 {
   expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  taskClient.close();
   taskRunner.unregisterListener(String.format("KafkaSupervisor-%s",DATASOURCE));
   replayAll();
   supervisor=getSupervisor(1,1,true,"PT1H",null);

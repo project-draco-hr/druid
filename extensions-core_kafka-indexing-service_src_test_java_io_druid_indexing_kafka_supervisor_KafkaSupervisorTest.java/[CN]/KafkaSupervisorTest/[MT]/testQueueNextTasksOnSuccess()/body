@@ -6,8 +6,8 @@
   expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
   expect(taskRunner.getRunningTasks()).andReturn(Collections.EMPTY_LIST).anyTimes();
   expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
-  expect(taskClient.getStatus(anyString())).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
-  expect(taskClient.getStartTime(anyString())).andThrow(taskClient.new NoTaskLocationException("test-id")).anyTimes();
+  expect(taskClient.getStatusAsync(anyString())).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.NOT_STARTED)).anyTimes();
+  expect(taskClient.getStartTimeAsync(anyString())).andReturn(Futures.immediateFuture(DateTime.now())).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
   expect(taskQueue.add(capture(captured))).andReturn(true).times(4);
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
@@ -31,6 +31,7 @@
   KafkaIndexTask iAmSuccess=(KafkaIndexTask)tasks.get(0);
   reset(taskStorage);
   reset(taskQueue);
+  reset(taskClient);
   expect(taskStorage.getActiveTasks()).andReturn(imStillRunning).anyTimes();
   for (  Task task : imStillRunning) {
     expect(taskStorage.getStatus(task.getId())).andReturn(Optional.of(TaskStatus.running(task.getId()))).anyTimes();
@@ -38,10 +39,11 @@
   }
   expect(taskStorage.getStatus(iAmSuccess.getId())).andReturn(Optional.of(TaskStatus.success(iAmSuccess.getId())));
   expect(taskStorage.getTask(iAmSuccess.getId())).andReturn(Optional.of((Task)iAmSuccess)).anyTimes();
-  taskQueue.shutdown(capture(shutdownTaskIdCapture));
   expect(taskQueue.add(capture(newTasksCapture))).andReturn(true).times(2);
+  expect(taskClient.stopAsync(capture(shutdownTaskIdCapture),eq(false))).andReturn(Futures.immediateFuture(true));
   replay(taskStorage);
   replay(taskQueue);
+  replay(taskClient);
   supervisor.runInternal();
   verifyAll();
   Assert.assertTrue(shutdownTaskIdCapture.getValue().contains(iAmSuccess.getIOConfig().getBaseSequenceName()));

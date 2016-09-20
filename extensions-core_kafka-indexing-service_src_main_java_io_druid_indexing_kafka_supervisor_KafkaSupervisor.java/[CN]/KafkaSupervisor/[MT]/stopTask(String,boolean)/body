@@ -1,14 +1,12 @@
 {
-  if (!taskInfoProvider.getTaskLocation(id).equals(TaskLocation.unknown())) {
-    try {
-      taskClient.stop(id,publish);
-    }
- catch (    Exception e) {
-      log.warn(e,"Task [%s] failed to stop in a timely manner, killing task",id);
-      killTask(id);
+  return Futures.transform(taskClient.stopAsync(id,publish),new Function<Boolean,Void>(){
+    @Nullable @Override public Void apply(    @Nullable Boolean result){
+      if (result == null || !result) {
+        log.info("Task [%s] failed to stop in a timely manner, killing task",id);
+        killTask(id);
+      }
+      return null;
     }
   }
- else {
-    killTask(id);
-  }
+,workerExec);
 }

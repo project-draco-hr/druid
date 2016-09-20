@@ -1,9 +1,13 @@
 {
+  log.debug("GetStartTime task[%s]",id);
   try {
     final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"time/start",null,true);
     return response.getContent() == null || response.getContent().isEmpty() ? null : jsonMapper.readValue(response.getContent(),DateTime.class);
   }
- catch (  IOException e) {
+ catch (  NoTaskLocationException e) {
+    return null;
+  }
+catch (  IOException e) {
     throw Throwables.propagate(e);
   }
 }

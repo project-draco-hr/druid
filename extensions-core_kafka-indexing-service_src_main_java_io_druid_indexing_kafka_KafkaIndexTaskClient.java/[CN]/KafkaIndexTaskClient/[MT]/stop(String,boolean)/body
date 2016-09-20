@@ -1,3 +1,18 @@
 {
-  submitRequest(id,HttpMethod.POST,"stop",publish ? "publish=true" : null,true);
+  log.debug("Stop task[%s] publish[%s]",id,publish);
+  try {
+    final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"stop",publish ? "publish=true" : null,true);
+    return response.getStatus().getCode() / 100 == 2;
+  }
+ catch (  NoTaskLocationException e) {
+    return false;
+  }
+catch (  TaskNotRunnableException e) {
+    log.info("Task [%s] couldn't be stopped because it is no longer running",id);
+    return true;
+  }
+catch (  Exception e) {
+    log.warn(e,"Exception while stopping task [%s]",id);
+    return false;
+  }
 }

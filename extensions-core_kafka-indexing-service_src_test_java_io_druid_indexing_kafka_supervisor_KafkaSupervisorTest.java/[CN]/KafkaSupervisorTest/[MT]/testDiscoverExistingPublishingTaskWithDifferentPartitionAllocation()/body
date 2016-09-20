@@ -13,8 +13,8 @@
   expect(taskStorage.getStatus("id1")).andReturn(Optional.of(TaskStatus.running("id1"))).anyTimes();
   expect(taskStorage.getTask("id1")).andReturn(Optional.of(task)).anyTimes();
   expect(indexerMetadataStorageCoordinator.getDataSourceMetadata(DATASOURCE)).andReturn(new KafkaDataSourceMetadata(null)).anyTimes();
-  expect(taskClient.getStatus("id1")).andReturn(KafkaIndexTask.Status.PUBLISHING);
-  expect(taskClient.getCurrentOffsets("id1",false)).andReturn(ImmutableMap.of(0,10L,2,30L));
+  expect(taskClient.getStatusAsync("id1")).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.PUBLISHING));
+  expect(taskClient.getCurrentOffsetsAsync("id1",false)).andReturn(Futures.immediateFuture((Map<Integer,Long>)ImmutableMap.of(0,10L,2,30L)));
   expect(taskClient.getCurrentOffsets("id1",true)).andReturn(ImmutableMap.of(0,10L,2,30L));
   expect(taskQueue.add(capture(captured))).andReturn(true);
   taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
@@ -33,13 +33,13 @@
   Assert.assertEquals(KAFKA_TOPIC,payload.getTopic());
   Assert.assertEquals(0,payload.getActiveTasks().size());
   Assert.assertEquals(1,payload.getPublishingTasks().size());
-  KafkaSupervisorReport.TaskReportData publishingReport=payload.getPublishingTasks().get(0);
+  TaskReportData publishingReport=payload.getPublishingTasks().get(0);
   Assert.assertEquals("id1",publishingReport.getId());
   Assert.assertEquals(ImmutableMap.of(0,0L,2,0L),publishingReport.getStartingOffsets());
   Assert.assertEquals(ImmutableMap.of(0,10L,2,30L),publishingReport.getCurrentOffsets());
   KafkaIndexTask capturedTask=captured.getValue();
   Assert.assertEquals(dataSchema,capturedTask.getDataSchema());
-  Assert.assertEquals(tuningConfig,capturedTask.getTuningConfig());
+  Assert.assertEquals(KafkaTuningConfig.copyOf(tuningConfig),capturedTask.getTuningConfig());
   KafkaIOConfig capturedTaskConfig=capturedTask.getIOConfig();
   Assert.assertEquals(kafkaHost,capturedTaskConfig.getConsumerProperties().get("bootstrap.servers"));
   Assert.assertEquals("myCustomValue",capturedTaskConfig.getConsumerProperties().get("myCustomKey"));

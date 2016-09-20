@@ -27,12 +27,11 @@
     expect(taskStorage.getTask(task.getId())).andReturn(Optional.of(task)).anyTimes();
   }
   expect(taskRunner.getRunningTasks()).andReturn(workItems).anyTimes();
-  expect(taskClient.getStatus(anyString())).andReturn(KafkaIndexTask.Status.READING).anyTimes();
-  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-0"))).andReturn(DateTime.now().minusMinutes(2)).andReturn(DateTime.now());
-  expect(taskClient.getStartTime(EasyMock.contains("sequenceName-1"))).andReturn(DateTime.now()).times(2);
-  expect(taskClient.pause(EasyMock.contains("sequenceName-0"))).andReturn(ImmutableMap.of(0,10L,1,20L,2,30L)).andReturn(ImmutableMap.of(0,10L,1,15L,2,35L));
-  taskClient.setEndOffsets(EasyMock.contains("sequenceName-0"),EasyMock.eq(ImmutableMap.of(0,10L,1,20L,2,35L)),EasyMock.eq(true));
-  expectLastCall().times(2);
+  expect(taskClient.getStatusAsync(anyString())).andReturn(Futures.immediateFuture(KafkaIndexTask.Status.READING)).anyTimes();
+  expect(taskClient.getStartTimeAsync(EasyMock.contains("sequenceName-0"))).andReturn(Futures.immediateFuture(DateTime.now().minusMinutes(2))).andReturn(Futures.immediateFuture(DateTime.now()));
+  expect(taskClient.getStartTimeAsync(EasyMock.contains("sequenceName-1"))).andReturn(Futures.immediateFuture(DateTime.now())).times(2);
+  expect(taskClient.pauseAsync(EasyMock.contains("sequenceName-0"))).andReturn(Futures.immediateFuture((Map<Integer,Long>)ImmutableMap.of(0,10L,1,20L,2,30L))).andReturn(Futures.immediateFuture((Map<Integer,Long>)ImmutableMap.of(0,10L,1,15L,2,35L)));
+  expect(taskClient.setEndOffsetsAsync(EasyMock.contains("sequenceName-0"),EasyMock.eq(ImmutableMap.of(0,10L,1,20L,2,35L)),EasyMock.eq(true))).andReturn(Futures.immediateFuture(true)).times(2);
   expect(taskQueue.add(capture(captured))).andReturn(true).times(2);
   replay(taskStorage,taskRunner,taskClient,taskQueue);
   supervisor.runInternal();
@@ -40,7 +39,7 @@
   for (  Task task : captured.getValues()) {
     KafkaIndexTask kafkaIndexTask=(KafkaIndexTask)task;
     Assert.assertEquals(dataSchema,kafkaIndexTask.getDataSchema());
-    Assert.assertEquals(tuningConfig,kafkaIndexTask.getTuningConfig());
+    Assert.assertEquals(KafkaTuningConfig.copyOf(tuningConfig),kafkaIndexTask.getTuningConfig());
     KafkaIOConfig taskConfig=kafkaIndexTask.getIOConfig();
     Assert.assertEquals("sequenceName-0",taskConfig.getBaseSequenceName());
     Assert.assertTrue("isUseTransaction",taskConfig.isUseTransaction());

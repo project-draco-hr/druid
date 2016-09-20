@@ -1,0 +1,102 @@
+{
+  LOG.info("Starting test: ITKafkaIndexingServiceTest");
+  try {
+    int sessionTimeoutMs=10000;
+    int connectionTimeoutMs=10000;
+    String zkHosts=config.getZookeeperHosts();
+    zkClient=new ZkClient(zkHosts,sessionTimeoutMs,connectionTimeoutMs,ZKStringSerializer$.MODULE$);
+    int numPartitions=4;
+    int replicationFactor=1;
+    Properties topicConfig=new Properties();
+    AdminUtils.createTopic(zkClient,TOPIC_NAME,numPartitions,replicationFactor,topicConfig);
+  }
+ catch (  TopicExistsException e) {
+  }
+catch (  Exception e) {
+    throw new ISE(e,"could not create kafka topic");
+  }
+  String spec;
+  try {
+    LOG.info("supervisorSpec name: [%s]",INDEXER_FILE);
+    spec=getTaskAsString(INDEXER_FILE).replaceAll("%%DATASOURCE%%",DATASOURCE).replaceAll("%%TOPIC%%",TOPIC_NAME).replaceAll("%%KAFKA_BROKER%%",config.getKafkaHost());
+    LOG.info("supervisorSpec: [%s]\n",spec);
+  }
+ catch (  Exception e) {
+    LOG.error("could not read file [%s]",INDEXER_FILE);
+    throw new ISE(e,"could not read file [%s]",INDEXER_FILE);
+  }
+  supervisorId=indexer.submitSupervisor(spec);
+  LOG.info("Submitted supervisor");
+  Properties properties=new Properties();
+  properties.put("bootstrap.servers",config.getKafkaHost());
+  LOG.info("Kafka bootstrap.servers: [%s]",config.getKafkaHost());
+  properties.put("acks","all");
+  properties.put("retries","3");
+  KafkaProducer<String,String> producer=new KafkaProducer<>(properties,new StringSerializer(),new StringSerializer());
+  DateTimeZone zone=DateTimeZone.forID("UTC");
+  DateTimeFormatter event_fmt=DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+  DateTime dt=new DateTime(zone);
+  dtFirst=dt;
+  dtLast=dt;
+  DateTime dtStop=dtFirst.plusMinutes(MINUTES_TO_SEND).plusSeconds(30);
+  int added=0;
+  int num_events=0;
+  while (dt.compareTo(dtStop) < 0) {
+    num_events++;
+    added+=num_events;
+    String event=String.format(event_template,event_fmt.print(dt),num_events,0,num_events);
+    LOG.info("sending event: [%s]",event);
+    try {
+      producer.send(new ProducerRecord<String,String>(TOPIC_NAME,event)).get();
+    }
+ catch (    Exception ioe) {
+      throw Throwables.propagate(ioe);
+    }
+    try {
+      Thread.sleep(DELAY_BETWEEN_EVENTS_SECS * 1000);
+    }
+ catch (    InterruptedException ex) {
+    }
+    dtLast=dt;
+    dt=new DateTime(zone);
+  }
+  producer.close();
+  InputStream is=ITKafkaIndexingServiceTest.class.getResourceAsStream(QUERIES_FILE);
+  if (null == is) {
+    throw new ISE("could not open query file: %s",QUERIES_FILE);
+  }
+  String query_response_template;
+  try {
+    query_response_template=IOUtils.toString(is,"UTF-8");
+  }
+ catch (  IOException e) {
+    throw new ISE(e,"could not read query file: %s",QUERIES_FILE);
+  }
+  String queryStr=query_response_template.replaceAll("%%DATASOURCE%%",DATASOURCE).replace("%%TIMEBOUNDARY_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMEBOUNDARY_RESPONSE_MAXTIME%%",TIMESTAMP_FMT.print(dtLast)).replace("%%TIMEBOUNDARY_RESPONSE_MINTIME%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_START%%",INTERVAL_FMT.print(dtFirst)).replace("%%TIMESERIES_QUERY_END%%",INTERVAL_FMT.print(dtFirst.plusMinutes(MINUTES_TO_SEND + 2))).replace("%%TIMESERIES_RESPONSE_TIMESTAMP%%",TIMESTAMP_FMT.print(dtFirst)).replace("%%TIMESERIES_ADDED%%",Integer.toString(added)).replace("%%TIMESERIES_NUMEVENTS%%",Integer.toString(num_events));
+  try {
+    this.queryHelper.testQueriesFromString(queryStr,2);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  indexer.shutdownSupervisor(supervisorId);
+  try {
+    RetryUtil.retryUntil(new Callable<Boolean>(){
+      @Override public Boolean call() throws Exception {
+        return coordinator.areSegmentsLoaded(DATASOURCE);
+      }
+    }
+,true,30000,10,"Real-time generated segments loaded");
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+  LOG.info("segments are present");
+  segmentsExist=true;
+  try {
+    this.queryHelper.testQueriesFromString(queryStr,2);
+  }
+ catch (  Exception e) {
+    throw Throwables.propagate(e);
+  }
+}

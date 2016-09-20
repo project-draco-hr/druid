@@ -1,5 +1,14 @@
 {
+  httpClient=createMock(HttpClient.class);
+  taskInfoProvider=createMock(TaskInfoProvider.class);
+  responseHolder=createMock(FullResponseHolder.class);
+  response=createMock(HttpResponse.class);
+  headers=createMock(HttpHeaders.class);
   client=new TestableKafkaIndexTaskClient(httpClient,objectMapper,taskInfoProvider);
   expect(taskInfoProvider.getTaskLocation(TEST_ID)).andReturn(new TaskLocation(TEST_HOST,TEST_PORT)).anyTimes();
   expect(taskInfoProvider.getTaskStatus(TEST_ID)).andReturn(Optional.of(TaskStatus.running(TEST_ID))).anyTimes();
+  for (int i=0; i < TEST_IDS.size(); i++) {
+    expect(taskInfoProvider.getTaskLocation(TEST_IDS.get(i))).andReturn(new TaskLocation(TEST_HOST,TEST_PORT)).anyTimes();
+    expect(taskInfoProvider.getTaskStatus(TEST_IDS.get(i))).andReturn(Optional.of(TaskStatus.running(TEST_IDS.get(i)))).anyTimes();
+  }
 }

@@ -1,14 +1,15 @@
 {
-  for (  Map.Entry<Integer,List<TaskGroup>> pendingGroupList : pendingCompletionTaskGroups.entrySet()) {
+  List<ListenableFuture<Void>> futures=Lists.newArrayList();
+  for (  Map.Entry<Integer,CopyOnWriteArrayList<TaskGroup>> pendingGroupList : pendingCompletionTaskGroups.entrySet()) {
     boolean stopTasksInTaskGroup=false;
     Integer groupId=pendingGroupList.getKey();
-    Iterator<TaskGroup> iTaskGroup=pendingGroupList.getValue().iterator();
-    while (iTaskGroup.hasNext()) {
+    CopyOnWriteArrayList<TaskGroup> taskGroupList=pendingGroupList.getValue();
+    List<TaskGroup> toRemove=Lists.newArrayList();
+    for (    TaskGroup group : taskGroupList) {
       boolean foundSuccess=false, entireTaskGroupFailed=false;
-      TaskGroup group=iTaskGroup.next();
       if (stopTasksInTaskGroup) {
-        stopTasksInGroup(group);
-        iTaskGroup.remove();
+        futures.add(stopTasksInGroup(group));
+        toRemove.add(group);
         continue;
       }
       Iterator<Map.Entry<String,TaskData>> iTask=group.tasks.entrySet().iterator();
@@ -23,9 +24,9 @@
         }
         if (task.getValue().status.isSuccess()) {
           log.info("Task [%s] completed successfully, stopping tasks %s",task.getKey(),group.tasks.keySet());
-          stopTasksInGroup(group);
+          futures.add(stopTasksInGroup(group));
           foundSuccess=true;
-          iTaskGroup.remove();
+          toRemove.add(group);
           break;
         }
       }
@@ -37,11 +38,13 @@
           log.makeAlert("No task in [%s] succeeded before the completion timeout elapsed [%s]!",group.tasks.keySet(),ioConfig.getCompletionTimeout()).emit();
         }
         partitionGroups.remove(groupId);
-        stopTasksInGroup(group);
+        futures.add(stopTasksInGroup(group));
         stopTasksInTaskGroup=true;
-        stopTasksInGroup(taskGroups.remove(groupId));
-        iTaskGroup.remove();
+        futures.add(stopTasksInGroup(taskGroups.remove(groupId)));
+        toRemove.add(group);
       }
     }
+    taskGroupList.removeAll(toRemove);
   }
+  Futures.successfulAsList(futures).get();
 }

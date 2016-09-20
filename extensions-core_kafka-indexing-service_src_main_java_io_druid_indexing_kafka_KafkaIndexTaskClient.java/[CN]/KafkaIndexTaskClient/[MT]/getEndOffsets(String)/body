@@ -1,11 +1,15 @@
 {
+  log.debug("GetEndOffsets task[%s]",id);
   try {
     final FullResponseHolder response=submitRequest(id,HttpMethod.GET,"offsets/end",null,true);
     return jsonMapper.readValue(response.getContent(),new TypeReference<Map<Integer,Long>>(){
     }
 );
   }
- catch (  IOException e) {
+ catch (  NoTaskLocationException e) {
+    return ImmutableMap.of();
+  }
+catch (  IOException e) {
     throw Throwables.propagate(e);
   }
 }

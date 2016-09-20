@@ -12,13 +12,10 @@
   log.debug("Found [%d] Kafka partitions for topic [%s]",numPartitions,ioConfig.getTopic());
   for (int partition=0; partition < numPartitions; partition++) {
     int taskGroupId=getTaskGroupIdForPartition(partition);
-    if (partitionGroups.get(taskGroupId) == null) {
-      partitionGroups.put(taskGroupId,new HashMap<Integer,Long>());
-    }
-    Map<Integer,Long> partitionMap=partitionGroups.get(taskGroupId);
-    if (!partitionMap.containsKey(partition)) {
-      log.info("New partition [%d] discovered for topic [%s], adding to task group [%d]",partition,ioConfig.getTopic(),taskGroupId);
-      partitionMap.put(partition,null);
+    partitionGroups.putIfAbsent(taskGroupId,new ConcurrentHashMap<Integer,Long>());
+    ConcurrentHashMap<Integer,Long> partitionMap=partitionGroups.get(taskGroupId);
+    if (partitionMap.putIfAbsent(partition,NOT_SET) == null) {
+      log.info("New partition [%d] discovered for topic [%s], added to task group [%d]",partition,ioConfig.getTopic(),taskGroupId);
     }
   }
 }

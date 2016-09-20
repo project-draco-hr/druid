@@ -1,0 +1,16 @@
+{
+  String jsonStr="{\n" + "  \"type\": \"kafka\",\n" + "  \"basePersistDirectory\": \"/tmp/xxx\",\n"+ "  \"maxRowsInMemory\": 100,\n"+ "  \"maxRowsPerSegment\": 100,\n"+ "  \"intermediatePersistPeriod\": \"PT1H\",\n"+ "  \"maxPendingPersists\": 100,\n"+ "  \"buildV9Directly\": true,\n"+ "  \"reportParseExceptions\": true,\n"+ "  \"handoffConditionTimeout\": 100,\n"+ "  \"workerThreads\": 12,\n"+ "  \"chatThreads\": 13,\n"+ "  \"chatRetries\": 14,\n"+ "  \"httpTimeout\": \"PT15S\"\n"+ "}";
+  KafkaSupervisorTuningConfig config=(KafkaSupervisorTuningConfig)mapper.readValue(mapper.writeValueAsString(mapper.readValue(jsonStr,TuningConfig.class)),TuningConfig.class);
+  Assert.assertEquals(new File("/tmp/xxx"),config.getBasePersistDirectory());
+  Assert.assertEquals(100,config.getMaxRowsInMemory());
+  Assert.assertEquals(100,config.getMaxRowsPerSegment());
+  Assert.assertEquals(new Period("PT1H"),config.getIntermediatePersistPeriod());
+  Assert.assertEquals(100,config.getMaxPendingPersists());
+  Assert.assertEquals(true,config.getBuildV9Directly());
+  Assert.assertEquals(true,config.isReportParseExceptions());
+  Assert.assertEquals(100,config.getHandoffConditionTimeout());
+  Assert.assertEquals(12,(int)config.getWorkerThreads());
+  Assert.assertEquals(13,(int)config.getChatThreads());
+  Assert.assertEquals(14L,(long)config.getChatRetries());
+  Assert.assertEquals(Duration.standardSeconds(15),config.getHttpTimeout());
+}

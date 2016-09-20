@@ -1,0 +1,12 @@
+{
+  client=new TestableKafkaIndexTaskClient(httpClient,objectMapper,taskInfoProvider,2);
+  expect(responseHolder.getStatus()).andReturn(HttpResponseStatus.NOT_FOUND).anyTimes();
+  expect(responseHolder.getContent()).andReturn("").anyTimes();
+  expect(responseHolder.getResponse()).andReturn(response).anyTimes();
+  expect(response.headers()).andReturn(headers).anyTimes();
+  expect(headers.get("X-Druid-Task-Id")).andReturn(TEST_ID).anyTimes();
+  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder)).anyTimes();
+  replayAll();
+  client.getCurrentOffsets(TEST_ID,true);
+  verifyAll();
+}

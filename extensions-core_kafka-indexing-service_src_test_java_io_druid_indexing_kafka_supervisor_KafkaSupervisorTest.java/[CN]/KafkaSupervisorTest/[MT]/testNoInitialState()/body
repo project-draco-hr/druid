@@ -14,7 +14,7 @@
   verifyAll();
   KafkaIndexTask task=captured.getValue();
   Assert.assertEquals(dataSchema,task.getDataSchema());
-  Assert.assertEquals(tuningConfig,task.getTuningConfig());
+  Assert.assertEquals(KafkaTuningConfig.copyOf(tuningConfig),task.getTuningConfig());
   KafkaIOConfig taskConfig=task.getIOConfig();
   Assert.assertEquals(kafkaHost,taskConfig.getConsumerProperties().get("bootstrap.servers"));
   Assert.assertEquals("myCustomValue",taskConfig.getConsumerProperties().get("myCustomKey"));

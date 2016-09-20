@@ -4,7 +4,7 @@
   expect(responseHolder.getContent()).andReturn("").andReturn("{}");
   expect(response.headers()).andReturn(headers);
   expect(headers.get("X-Druid-Task-Id")).andReturn("a-different-task-id");
-  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class))).andReturn(Futures.immediateFuture(responseHolder)).times(2);
+  expect(httpClient.go(anyObject(Request.class),anyObject(FullResponseHandler.class),eq(TEST_HTTP_TIMEOUT))).andReturn(Futures.immediateFuture(responseHolder)).times(2);
   replayAll();
   Map<Integer,Long> results=client.getCurrentOffsets(TEST_ID,true);
   verifyAll();

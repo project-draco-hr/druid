@@ -1,10 +1,17 @@
 {
   if (taskGroup == null) {
-    return;
+    return Futures.immediateFuture(null);
   }
+  final List<ListenableFuture<Void>> futures=Lists.newArrayList();
   for (  Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
     if (!entry.getValue().status.isComplete()) {
-      stopTask(entry.getKey(),false);
+      futures.add(stopTask(entry.getKey(),false));
     }
   }
+  return Futures.transform(Futures.successfulAsList(futures),new Function<List<Void>,Void>(){
+    @Nullable @Override public Void apply(    @Nullable List<Void> input){
+      return null;
+    }
+  }
+,workerExec);
 }
