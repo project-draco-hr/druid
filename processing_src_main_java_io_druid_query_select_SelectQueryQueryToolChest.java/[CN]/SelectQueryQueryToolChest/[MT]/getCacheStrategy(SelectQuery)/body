@@ -1,13 +1,17 @@
 {
   return new CacheStrategy<Result<SelectResultValue>,Object,SelectQuery>(){
+    private final List<DimensionSpec> dimensionSpecs=query.getDimensions() != null ? query.getDimensions() : Collections.<DimensionSpec>emptyList();
+    private final List<String> dimOutputNames=dimensionSpecs.size() > 0 ? Lists.transform(dimensionSpecs,new Function<DimensionSpec,String>(){
+      @Override public String apply(      DimensionSpec input){
+        return input.getOutputName();
+      }
+    }
+) : Collections.<String>emptyList();
     @Override public byte[] computeCacheKey(    SelectQuery query){
       final DimFilter dimFilter=query.getDimensionsFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
       final byte[] granularityBytes=query.getGranularity().cacheKey();
-      List<DimensionSpec> dimensionSpecs=query.getDimensions();
-      if (dimensionSpecs == null) {
-        dimensionSpecs=Collections.emptyList();
-      }
+      final List<DimensionSpec> dimensionSpecs=query.getDimensions() != null ? query.getDimensions() : Collections.<DimensionSpec>emptyList();
       final byte[][] dimensionsBytes=new byte[dimensionSpecs.size()][];
       int dimensionsBytesSize=0;
       int index=0;
@@ -43,6 +47,9 @@
     @Override public Function<Result<SelectResultValue>,Object> prepareForCache(){
       return new Function<Result<SelectResultValue>,Object>(){
         @Override public Object apply(        final Result<SelectResultValue> input){
+          if (!dimOutputNames.isEmpty()) {
+            return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getPagingIdentifiers(),input.getValue().getDimensions(),input.getValue().getMetrics(),input.getValue().getEvents(),dimOutputNames);
+          }
           return Arrays.asList(input.getTimestamp().getMillis(),input.getValue().getPagingIdentifiers(),input.getValue().getDimensions(),input.getValue().getMetrics(),input.getValue().getEvents());
         }
       }
@@ -55,15 +62,33 @@
           List<Object> results=(List<Object>)input;
           Iterator<Object> resultIter=results.iterator();
           DateTime timestamp=granularity.toDateTime(((Number)resultIter.next()).longValue());
-          return new Result<SelectResultValue>(timestamp,new SelectResultValue((Map<String,Integer>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Map<String,Integer>>(){
+          Map<String,Integer> pageIdentifier=jsonMapper.convertValue(resultIter.next(),new TypeReference<Map<String,Integer>>(){
           }
-),(Set<String>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
+);
+          Set<String> dimensionSet=jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
           }
-),(Set<String>)jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
+);
+          Set<String> metricSet=jsonMapper.convertValue(resultIter.next(),new TypeReference<Set<String>>(){
           }
-),(List<EventHolder>)jsonMapper.convertValue(resultIter.next(),new TypeReference<List<EventHolder>>(){
+);
+          List<EventHolder> eventHolders=jsonMapper.convertValue(resultIter.next(),new TypeReference<List<EventHolder>>(){
           }
-)));
+);
+          if (resultIter.hasNext()) {
+            List<String> cachedOutputNames=(List<String>)resultIter.next();
+            Preconditions.checkArgument(cachedOutputNames.size() == dimOutputNames.size(),"Cache hit but different number of dimensions??");
+            for (int idx=0; idx < dimOutputNames.size(); idx++) {
+              if (!cachedOutputNames.get(idx).equals(dimOutputNames.get(idx))) {
+                for (                EventHolder eventHolder : eventHolders) {
+                  Object obj=eventHolder.getEvent().remove(cachedOutputNames.get(idx));
+                  if (obj != null) {
+                    eventHolder.getEvent().put(dimOutputNames.get(idx),obj);
+                  }
+                }
+              }
+            }
+          }
+          return new Result<>(timestamp,new SelectResultValue(pageIdentifier,dimensionSet,metricSet,eventHolders));
         }
       }
 ;

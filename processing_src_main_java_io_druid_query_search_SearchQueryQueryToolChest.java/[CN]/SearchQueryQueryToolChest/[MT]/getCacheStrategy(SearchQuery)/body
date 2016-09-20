@@ -1,16 +1,23 @@
 {
   return new CacheStrategy<Result<SearchResultValue>,Object,SearchQuery>(){
+    private final List<DimensionSpec> dimensionSpecs=query.getDimensions() != null ? query.getDimensions() : Collections.<DimensionSpec>emptyList();
+    private final List<String> dimOutputNames=dimensionSpecs.size() > 0 ? Lists.transform(dimensionSpecs,new Function<DimensionSpec,String>(){
+      @Override public String apply(      DimensionSpec input){
+        return input.getOutputName();
+      }
+    }
+) : Collections.<String>emptyList();
     @Override public byte[] computeCacheKey(    SearchQuery query){
       final DimFilter dimFilter=query.getDimensionsFilter();
       final byte[] filterBytes=dimFilter == null ? new byte[]{} : dimFilter.getCacheKey();
       final byte[] querySpecBytes=query.getQuery().getCacheKey();
       final byte[] granularityBytes=query.getGranularity().cacheKey();
-      final Collection<DimensionSpec> dimensions=query.getDimensions() == null ? ImmutableList.<DimensionSpec>of() : query.getDimensions();
-      final byte[][] dimensionsBytes=new byte[dimensions.size()][];
+      final List<DimensionSpec> dimensionSpecs=query.getDimensions() != null ? query.getDimensions() : Collections.<DimensionSpec>emptyList();
+      final byte[][] dimensionsBytes=new byte[dimensionSpecs.size()][];
       int dimensionsBytesSize=0;
       int index=0;
-      for (      DimensionSpec dimension : dimensions) {
-        dimensionsBytes[index]=dimension.getCacheKey();
+      for (      DimensionSpec dimensionSpec : dimensionSpecs) {
+        dimensionsBytes[index]=dimensionSpec.getCacheKey();
         dimensionsBytesSize+=dimensionsBytes[index].length;
         ++index;
       }
@@ -27,7 +34,7 @@
     @Override public Function<Result<SearchResultValue>,Object> prepareForCache(){
       return new Function<Result<SearchResultValue>,Object>(){
         @Override public Object apply(        Result<SearchResultValue> input){
-          return Lists.newArrayList(input.getTimestamp().getMillis(),input.getValue());
+          return dimensionSpecs.size() > 0 ? Lists.newArrayList(input.getTimestamp().getMillis(),input.getValue(),dimOutputNames) : Lists.newArrayList(input.getTimestamp().getMillis(),input.getValue());
         }
       }
 ;
@@ -36,7 +43,22 @@
       return new Function<Object,Result<SearchResultValue>>(){
         @Override @SuppressWarnings("unchecked") public Result<SearchResultValue> apply(        Object input){
           List<Object> result=(List<Object>)input;
-          return new Result<>(new DateTime(((Number)result.get(0)).longValue()),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
+          boolean needsRename=false;
+          final Map<String,String> outputNameMap=Maps.newHashMap();
+          if (hasOutputName(result)) {
+            List<String> cachedOutputNames=(List)result.get(2);
+            Preconditions.checkArgument(cachedOutputNames.size() == dimOutputNames.size(),"cache hit, but number of dimensions mismatch");
+            needsRename=false;
+            for (int idx=0; idx < cachedOutputNames.size(); idx++) {
+              String cachedOutputName=cachedOutputNames.get(idx);
+              String outputName=dimOutputNames.get(idx);
+              if (!cachedOutputName.equals(outputName)) {
+                needsRename=true;
+              }
+              outputNameMap.put(cachedOutputName,outputName);
+            }
+          }
+          return !needsRename ? new Result<>(new DateTime(((Number)result.get(0)).longValue()),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
             @Override public SearchHit apply(            @Nullable Object input){
               if (input instanceof Map) {
                 return new SearchHit((String)((Map)input).get("dimension"),(String)((Map)input).get("value"),(Integer)((Map)input).get("count"));
@@ -49,10 +71,35 @@
               }
             }
           }
+))) : new Result<>(new DateTime(((Number)result.get(0)).longValue()),new SearchResultValue(Lists.transform((List)result.get(1),new Function<Object,SearchHit>(){
+            @Override public SearchHit apply(            @Nullable Object input){
+              String dim=null;
+              String val=null;
+              Integer cnt=null;
+              if (input instanceof Map) {
+                dim=outputNameMap.get((String)((Map)input).get("dimension"));
+                val=(String)((Map)input).get("value");
+                cnt=(Integer)((Map)input).get("count");
+              }
+ else               if (input instanceof SearchHit) {
+                SearchHit cached=(SearchHit)input;
+                dim=outputNameMap.get(cached.getDimension());
+                val=cached.getValue();
+                cnt=cached.getCount();
+              }
+ else {
+                throw new IAE("Unknown format [%s]",input.getClass());
+              }
+              return new SearchHit(dim,val,cnt);
+            }
+          }
 )));
         }
       }
 ;
+    }
+    private boolean hasOutputName(    List<Object> cachedEntry){
+      return cachedEntry.size() == 3;
     }
   }
 ;
