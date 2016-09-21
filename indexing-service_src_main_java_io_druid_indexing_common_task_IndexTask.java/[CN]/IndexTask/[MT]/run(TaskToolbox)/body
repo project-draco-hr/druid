@@ -25,7 +25,14 @@
       }
     }
     for (    final ShardSpec shardSpec : shardSpecs) {
-      final DataSegment segment=generateSegment(toolbox,ingestionSchema.getDataSchema(),shardSpec,bucket,myLock.getVersion());
+      final ShardSpec shardSpecForPublishing;
+      if (ingestionSchema.getTuningConfig().isForceExtendableShardSpecs()) {
+        shardSpecForPublishing=new NumberedShardSpec(shardSpec.getPartitionNum(),shardSpecs.size());
+      }
+ else {
+        shardSpecForPublishing=shardSpec;
+      }
+      final DataSegment segment=generateSegment(toolbox,ingestionSchema.getDataSchema(),shardSpec,shardSpecForPublishing,bucket,myLock.getVersion());
       segments.add(segment);
     }
   }

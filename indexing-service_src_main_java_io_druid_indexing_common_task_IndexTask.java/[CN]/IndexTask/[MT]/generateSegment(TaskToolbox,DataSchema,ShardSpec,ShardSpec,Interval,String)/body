@@ -1,5 +1,5 @@
 {
-  final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),version,shardSpec.getPartitionNum()));
+  final File tmpDir=new File(toolbox.getTaskWorkDir(),String.format("%s_%s_%s_%s_%s",this.getDataSource(),interval.getStart(),interval.getEnd(),version,shardSpecForPartitioning.getPartitionNum()));
   final FirehoseFactory firehoseFactory=ingestionSchema.getIOConfig().getFirehoseFactory();
   final int rowFlushBoundary=ingestionSchema.getTuningConfig().getRowFlushBoundary();
   final List<DataSegment> pushedSegments=new CopyOnWriteArrayList<DataSegment>();
@@ -21,13 +21,13 @@
   final FireDepartmentMetrics metrics=new FireDepartmentMetrics();
   final Firehose firehose=firehoseFactory.connect(ingestionSchema.getDataSchema().getParser());
   final Supplier<Committer> committerSupplier=Committers.supplierFromFirehose(firehose);
-  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir,toolbox.getIndexMerger(),toolbox.getIndexMergerV9(),toolbox.getIndexIO()).findPlumber(schema,convertTuningConfig(shardSpec,myRowFlushBoundary,ingestionSchema.getTuningConfig().getIndexSpec(),ingestionSchema.tuningConfig.getBuildV9Directly()),metrics);
+  final Plumber plumber=new YeOldePlumberSchool(interval,version,wrappedDataSegmentPusher,tmpDir,toolbox.getIndexMerger(),toolbox.getIndexMergerV9(),toolbox.getIndexIO()).findPlumber(schema,convertTuningConfig(shardSpecForPublishing,myRowFlushBoundary,ingestionSchema.getTuningConfig().getIndexSpec(),ingestionSchema.tuningConfig.getBuildV9Directly()),metrics);
   final QueryGranularity rollupGran=ingestionSchema.getDataSchema().getGranularitySpec().getQueryGranularity();
   try {
     plumber.startJob();
     while (firehose.hasMore()) {
       final InputRow inputRow=firehose.nextRow();
-      if (shouldIndex(shardSpec,interval,inputRow,rollupGran)) {
+      if (shouldIndex(shardSpecForPartitioning,interval,inputRow,rollupGran)) {
         int numRows=plumber.add(inputRow,committerSupplier);
         if (numRows == -1) {
           throw new ISE(String.format("Was expecting non-null sink for timestamp[%s]",new DateTime(inputRow.getTimestampFromEpoch())));
@@ -47,7 +47,7 @@
     plumber.finishJob();
   }
   finally {
-    log.info("Task[%s] interval[%s] partition[%d] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away)" + " and output %,d rows",getId(),interval,shardSpec.getPartitionNum(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
+    log.info("Task[%s] interval[%s] partition[%d] took in %,d rows (%,d processed, %,d unparseable, %,d thrown away)" + " and output %,d rows",getId(),interval,shardSpecForPartitioning.getPartitionNum(),metrics.processed() + metrics.unparseable() + metrics.thrownAway(),metrics.processed(),metrics.unparseable(),metrics.thrownAway(),metrics.rowOutput());
   }
   return Iterables.getOnlyElement(pushedSegments);
 }

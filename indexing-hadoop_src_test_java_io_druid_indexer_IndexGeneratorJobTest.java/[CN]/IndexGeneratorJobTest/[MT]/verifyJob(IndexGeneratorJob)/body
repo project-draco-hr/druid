@@ -38,7 +38,12 @@
  else {
         Assert.fail("Test did not specify supported datasource name");
       }
-      if (partitionType.equals("hashed")) {
+      if (forceExtendableShardSpecs) {
+        NumberedShardSpec spec=(NumberedShardSpec)dataSegment.getShardSpec();
+        Assert.assertEquals(partitionNum,spec.getPartitionNum());
+        Assert.assertEquals(shardInfo.length,spec.getPartitions());
+      }
+ else       if (partitionType.equals("hashed")) {
         Integer[] hashShardInfo=(Integer[])shardInfo[partitionNum];
         HashBasedNumberedShardSpec spec=(HashBasedNumberedShardSpec)dataSegment.getShardSpec();
         Assert.assertEquals((int)hashShardInfo[0],spec.getPartitionNum());

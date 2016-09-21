@@ -95,7 +95,15 @@
       mergedBase=mergeQueryableIndex(indexes,aggregators,new File(baseFlushFile,"merged"),progressIndicator);
     }
     final FileSystem outputFS=new Path(config.getSchema().getIOConfig().getSegmentOutputPath()).getFileSystem(context.getConfiguration());
-    final DataSegment segmentTemplate=new DataSegment(config.getDataSource(),interval,config.getSchema().getTuningConfig().getVersion(),null,ImmutableList.copyOf(allDimensionNames),metricNames,config.getShardSpec(bucket).getActualSpec(),-1,-1);
+    final ShardSpec shardSpecForPartitioning=config.getShardSpec(bucket).getActualSpec();
+    final ShardSpec shardSpecForPublishing;
+    if (config.isForceExtendableShardSpecs()) {
+      shardSpecForPublishing=new NumberedShardSpec(shardSpecForPartitioning.getPartitionNum(),config.getShardSpecCount(bucket));
+    }
+ else {
+      shardSpecForPublishing=shardSpecForPartitioning;
+    }
+    final DataSegment segmentTemplate=new DataSegment(config.getDataSource(),interval,config.getSchema().getTuningConfig().getVersion(),null,ImmutableList.copyOf(allDimensionNames),metricNames,shardSpecForPublishing,-1,-1);
     final DataSegment segment=JobHelper.serializeOutIndex(segmentTemplate,context.getConfiguration(),context,context.getTaskAttemptID(),mergedBase,JobHelper.makeSegmentOutputPath(new Path(config.getSchema().getIOConfig().getSegmentOutputPath()),outputFS,segmentTemplate));
     Path descriptorPath=config.makeDescriptorInfoPath(segment);
     descriptorPath=JobHelper.prependFSIfNullScheme(FileSystem.get(descriptorPath.toUri(),context.getConfiguration()),descriptorPath);

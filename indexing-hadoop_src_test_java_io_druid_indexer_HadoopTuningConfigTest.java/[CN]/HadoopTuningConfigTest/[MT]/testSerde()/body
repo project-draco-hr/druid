@@ -1,5 +1,5 @@
 {
-  HadoopTuningConfig expected=new HadoopTuningConfig("/tmp/workingpath","version",null,null,null,100,true,true,true,true,null,true,true,null,null,null);
+  HadoopTuningConfig expected=new HadoopTuningConfig("/tmp/workingpath","version",null,null,null,100,true,true,true,true,null,true,true,null,null,null,true);
   HadoopTuningConfig actual=jsonReadWriteRead(jsonMapper.writeValueAsString(expected),HadoopTuningConfig.class);
   Assert.assertEquals("/tmp/workingpath",actual.getWorkingPath());
   Assert.assertEquals("version",actual.getVersion());
@@ -15,4 +15,5 @@
   Assert.assertEquals(true,actual.isCombineText());
   Assert.assertEquals(true,actual.getUseCombiner());
   Assert.assertEquals(0,actual.getNumBackgroundPersistThreads());
+  Assert.assertEquals(true,actual.isForceExtendableShardSpecs());
 }

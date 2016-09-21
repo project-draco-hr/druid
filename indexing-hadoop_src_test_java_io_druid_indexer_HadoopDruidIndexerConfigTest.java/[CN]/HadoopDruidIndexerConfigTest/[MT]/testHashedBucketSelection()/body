@@ -4,7 +4,7 @@
   for (int i=0; i < partitionCount; i++) {
     specs.add(new HadoopyShardSpec(new HashBasedNumberedShardSpec(i,partitionCount,null,new DefaultObjectMapper()),i));
   }
-  HadoopIngestionSpec spec=new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.MINUTE,QueryGranularities.MINUTE,ImmutableList.of(new Interval("2010-01-01/P1D"))),jsonMapper),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","bar","type","static"),null,null),new HadoopTuningConfig(null,null,null,ImmutableMap.of(new DateTime("2010-01-01T01:00:00"),specs),null,null,false,false,false,false,null,false,false,null,null,null));
+  HadoopIngestionSpec spec=new HadoopIngestionSpec(new DataSchema("foo",null,new AggregatorFactory[0],new UniformGranularitySpec(Granularity.MINUTE,QueryGranularities.MINUTE,ImmutableList.of(new Interval("2010-01-01/P1D"))),jsonMapper),new HadoopIOConfig(ImmutableMap.<String,Object>of("paths","bar","type","static"),null,null),new HadoopTuningConfig(null,null,null,ImmutableMap.of(new DateTime("2010-01-01T01:00:00"),specs),null,null,false,false,false,false,null,false,false,null,null,null,false));
   HadoopDruidIndexerConfig config=HadoopDruidIndexerConfig.fromSpec(spec);
   final List<String> dims=Arrays.asList("diM1","dIM2");
   final ImmutableMap<String,Object> values=ImmutableMap.<String,Object>of("Dim1","1","DiM2","2","dim1","3","dim2","4");
