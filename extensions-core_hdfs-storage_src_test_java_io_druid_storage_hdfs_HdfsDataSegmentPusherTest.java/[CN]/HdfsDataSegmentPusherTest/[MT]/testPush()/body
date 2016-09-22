@@ -11,4 +11,17 @@
   DataSegment segmentToPush=new DataSegment("foo",new Interval("2015/2016"),"0",Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),0,size);
   DataSegment segment=pusher.push(segmentDir,segmentToPush);
   Assert.assertEquals(segmentToPush.getSize(),segment.getSize());
+  final String storageDir=DataSegmentPusherUtil.getHdfsStorageDir(segment);
+  File indexFile=new File(String.format("%s/%s/index.zip",config.getStorageDirectory(),storageDir));
+  Assert.assertTrue(indexFile.exists());
+  File descriptorFile=new File(String.format("%s/%s/descriptor.json",config.getStorageDirectory(),storageDir));
+  Assert.assertTrue(descriptorFile.exists());
+  File outDir=new File(String.format("%s/%s",config.getStorageDirectory(),storageDir));
+  outDir.setReadOnly();
+  try {
+    pusher.push(segmentDir,segmentToPush);
+  }
+ catch (  IOException e) {
+    Assert.fail("should not throw exception");
+  }
 }
