@@ -1,0 +1,5 @@
+{
+  boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(requestType) || APPLICATION_SMILE.equals(requestType);
+  String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
+  return new ResponseContext(contentType,isSmile ? smileMapper : jsonMapper,pretty);
+}

@@ -1,0 +1,15 @@
+{
+  final ServerSelector serverSelector=new ServerSelector(new DataSegment("test",new Interval("2013-01-01/2013-01-02"),new DateTime("2013-01-01").toString(),com.google.common.collect.Maps.<String,Object>newHashMap(),Lists.<String>newArrayList(),Lists.<String>newArrayList(),NoneShardSpec.instance(),0,0L),tierSelectorStrategy);
+  List<QueryableDruidServer> servers=Lists.newArrayList(expectedSelection);
+  List<DruidServerMetadata> expectedCandidates=Lists.newArrayList();
+  for (  QueryableDruidServer server : servers) {
+    expectedCandidates.add(server.getServer().getMetadata());
+  }
+  Collections.shuffle(servers);
+  for (  QueryableDruidServer server : servers) {
+    serverSelector.addServerAndUpdateSegment(server,serverSelector.getSegment());
+  }
+  Assert.assertEquals(expectedSelection[0],serverSelector.pick());
+  Assert.assertEquals(expectedCandidates,serverSelector.getCandidates(-1));
+  Assert.assertEquals(expectedCandidates.subList(0,2),serverSelector.getCandidates(2));
+}

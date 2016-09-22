@@ -1,0 +1,10 @@
+{
+  final ResponseContext context=createContext(req.getContentType(),pretty != null);
+  try {
+    Query<?> query=context.getObjectMapper().readValue(in,Query.class);
+    return context.ok(ServerViewUtil.getTargetLocations(brokerServerView,query.getDataSource(),query.getIntervals(),numCandidates));
+  }
+ catch (  Exception e) {
+    return context.gotError(e);
+  }
+}

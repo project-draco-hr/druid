@@ -15,10 +15,10 @@
       JsonConfigProvider.bind(binder,"druid.broker.segment",BrokerSegmentWatcherConfig.class);
       binder.bind(QuerySegmentWalker.class).to(ClientQuerySegmentWalker.class).in(LazySingleton.class);
       binder.bind(JettyServerInitializer.class).to(QueryJettyServerInitializer.class).in(LazySingleton.class);
-      Jerseys.addResource(binder,QueryResource.class);
+      Jerseys.addResource(binder,BrokerQueryResource.class);
       Jerseys.addResource(binder,BrokerResource.class);
       Jerseys.addResource(binder,ClientInfoResource.class);
-      LifecycleModule.register(binder,QueryResource.class);
+      LifecycleModule.register(binder,BrokerQueryResource.class);
       LifecycleModule.register(binder,DruidBroker.class);
       MetricsModule.register(binder,CacheMonitor.class);
       LifecycleModule.register(binder,Server.class);

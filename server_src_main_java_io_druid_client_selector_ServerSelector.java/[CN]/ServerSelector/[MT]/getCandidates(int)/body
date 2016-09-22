@@ -1,0 +1,23 @@
+{
+  List<DruidServerMetadata> result=Lists.newArrayList();
+synchronized (this) {
+    final DataSegment target=segment.get();
+    for (    Map.Entry<Integer,Set<QueryableDruidServer>> entry : toPrioritizedServers().entrySet()) {
+      Set<QueryableDruidServer> servers=entry.getValue();
+      TreeMap<Integer,Set<QueryableDruidServer>> tieredMap=Maps.newTreeMap();
+      while (!servers.isEmpty()) {
+        tieredMap.put(entry.getKey(),servers);
+        QueryableDruidServer server=strategy.pick(tieredMap,target);
+        if (server == null) {
+          break;
+        }
+        result.add(server.getServer().getMetadata());
+        if (numCandidates > 0 && result.size() >= numCandidates) {
+          return result;
+        }
+        servers.remove(server);
+      }
+    }
+  }
+  return result;
+}

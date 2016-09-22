@@ -3,14 +3,10 @@
   Query query=null;
   QueryToolChest toolChest=null;
   String queryId=null;
-  final String reqContentType=req.getContentType();
-  final boolean isSmile=SmileMediaTypes.APPLICATION_JACKSON_SMILE.equals(reqContentType) || APPLICATION_SMILE.equals(reqContentType);
-  final String contentType=isSmile ? SmileMediaTypes.APPLICATION_JACKSON_SMILE : MediaType.APPLICATION_JSON;
-  ObjectMapper objectMapper=isSmile ? smileMapper : jsonMapper;
-  final ObjectWriter jsonWriter=pretty != null ? objectMapper.writerWithDefaultPrettyPrinter() : objectMapper.writer();
+  final ResponseContext context=createContext(req.getContentType(),pretty != null);
   final String currThreadName=Thread.currentThread().getName();
   try {
-    query=objectMapper.readValue(in,Query.class);
+    query=context.getObjectMapper().readValue(in,Query.class);
     queryId=query.getId();
     if (queryId == null) {
       queryId=UUID.randomUUID().toString();
@@ -57,6 +53,7 @@
     try {
       final Query theQuery=query;
       final QueryToolChest theToolChest=toolChest;
+      final ObjectWriter jsonWriter=context.newOutputWriter();
       Response.ResponseBuilder builder=Response.ok(new StreamingOutput(){
         @Override public void write(        OutputStream outputStream) throws IOException, WebApplicationException {
           CountingOutputStream os=new CountingOutputStream(outputStream);
@@ -69,7 +66,7 @@
           requestLogger.log(new RequestLogLine(new DateTime(start),req.getRemoteAddr(),theQuery,new QueryStats(ImmutableMap.<String,Object>of("query/time",queryTime,"query/bytes",os.getCount(),"success",true))));
         }
       }
-,contentType).header("X-Druid-Query-Id",queryId);
+,context.getContentType()).header("X-Druid-Query-Id",queryId);
       String responseCtxString=jsonMapper.writeValueAsString(responseContext);
       if (responseCtxString.length() > RESPONSE_CTX_HEADER_LEN_LIMIT) {
         log.warn("Response Context truncated for id [%s] . Full context is [%s].",queryId,responseCtxString);
@@ -94,7 +91,7 @@
  catch (    Exception e2) {
       log.error(e2,"Unable to log query [%s]!",query);
     }
-    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(new QueryInterruptedException(e))).build();
+    return context.gotError(e);
   }
 catch (  Exception e) {
     final String queryString=query == null ? "unparsable query" : query.toString();
@@ -108,7 +105,7 @@ catch (  Exception e) {
       log.error(e2,"Unable to log query [%s]!",queryString);
     }
     log.makeAlert(e,"Exception handling request").addData("exception",e.toString()).addData("query",queryString).addData("peer",req.getRemoteAddr()).emit();
-    return Response.serverError().type(contentType).entity(jsonWriter.writeValueAsBytes(new QueryInterruptedException(e))).build();
+    return context.gotError(e);
   }
  finally {
     Thread.currentThread().setName(currThreadName);

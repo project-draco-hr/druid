@@ -1,0 +1,8 @@
+{
+  List<Interval> intervalList=Lists.newArrayList();
+  for (  String interval : intervals.split(",")) {
+    intervalList.add(Interval.parse(interval.trim()));
+  }
+  List<Interval> condensed=JodaUtils.condenseIntervals(intervalList);
+  return ServerViewUtil.getTargetLocations(timelineServerView,datasource,condensed,numCandidates);
+}

@@ -1,0 +1,5 @@
+{
+  LocatedSegmentDescriptor expected=new LocatedSegmentDescriptor(new SegmentDescriptor(new Interval(100,200),"version",100),65535,Arrays.asList(new DruidServerMetadata("server1","host1",30000L,"historical","tier1",0),new DruidServerMetadata("server2","host2",40000L,"historical","tier1",1),new DruidServerMetadata("server3","host3",50000L,"realtime","tier2",2)));
+  LocatedSegmentDescriptor actual=mapper.readValue(mapper.writeValueAsString(expected),LocatedSegmentDescriptor.class);
+  Assert.assertEquals(expected,actual);
+}

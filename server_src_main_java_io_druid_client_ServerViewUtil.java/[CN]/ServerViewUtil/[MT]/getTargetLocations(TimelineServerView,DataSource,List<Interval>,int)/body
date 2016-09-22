@@ -1,0 +1,19 @@
+{
+  TimelineLookup<String,ServerSelector> timeline=serverView.getTimeline(datasource);
+  if (timeline == null) {
+    return Collections.emptyList();
+  }
+  List<LocatedSegmentDescriptor> located=Lists.newArrayList();
+  for (  Interval interval : intervals) {
+    for (    TimelineObjectHolder<String,ServerSelector> holder : timeline.lookup(interval)) {
+      for (      PartitionChunk<ServerSelector> chunk : holder.getObject()) {
+        ServerSelector selector=chunk.getObject();
+        final SegmentDescriptor descriptor=new SegmentDescriptor(holder.getInterval(),holder.getVersion(),chunk.getChunkNumber());
+        long size=selector.getSegment().getSize();
+        List<DruidServerMetadata> candidates=selector.getCandidates(numCandidates);
+        located.add(new LocatedSegmentDescriptor(descriptor,size,candidates));
+      }
+    }
+  }
+  return located;
+}
