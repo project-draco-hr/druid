@@ -1,0 +1,12 @@
+{
+  final GroupByQueryConfig config=MAPPER.convertValue(CONFIG_MAP,GroupByQueryConfig.class);
+  final GroupByQueryConfig config2=config.withOverrides(GroupByQuery.builder().setDataSource("test").setInterval(new Interval("2000/P1D")).setGranularity(QueryGranularities.ALL).setContext(ImmutableMap.<String,Object>of("groupByStrategy","v1","maxOnDiskStorage",0,"maxResults",2,"maxMergingDictionarySize",3)).build());
+  Assert.assertEquals(true,config2.isSingleThreaded());
+  Assert.assertEquals("v1",config2.getDefaultStrategy());
+  Assert.assertEquals(1,config2.getBufferGrouperInitialBuckets());
+  Assert.assertEquals(2,config2.getMaxIntermediateRows());
+  Assert.assertEquals(2,config2.getMaxResults());
+  Assert.assertEquals(0,config2.getMaxOnDiskStorage());
+  Assert.assertEquals(3,config2.getMaxMergingDictionarySize());
+  Assert.assertEquals(6.0,config2.getBufferGrouperMaxLoadFactor(),0.0);
+}
