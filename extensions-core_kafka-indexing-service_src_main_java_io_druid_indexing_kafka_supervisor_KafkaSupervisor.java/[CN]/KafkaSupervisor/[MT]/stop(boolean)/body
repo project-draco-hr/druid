@@ -17,11 +17,12 @@ synchronized (stopLock) {
           log.info("Posting ShutdownNotice");
           notices.add(new ShutdownNotice());
         }
-        long endTime=System.currentTimeMillis() + SHUTDOWN_TIMEOUT_MILLIS;
+        long shutdownTimeoutMillis=tuningConfig.getShutdownTimeout().getMillis();
+        long endTime=System.currentTimeMillis() + shutdownTimeoutMillis;
         while (!stopped) {
           long sleepTime=endTime - System.currentTimeMillis();
           if (sleepTime <= 0) {
-            log.info("Timed out while waiting for shutdown");
+            log.info("Timed out while waiting for shutdown (timeout [%,dms])",shutdownTimeoutMillis);
             stopped=true;
             break;
           }
