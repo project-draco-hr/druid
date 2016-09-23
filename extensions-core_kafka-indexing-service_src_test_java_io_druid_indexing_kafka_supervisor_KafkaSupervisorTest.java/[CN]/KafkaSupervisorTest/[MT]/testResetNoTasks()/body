@@ -1,0 +1,17 @@
+{
+  supervisor=getSupervisor(1,1,true,"PT1H",null);
+  expect(taskMaster.getTaskQueue()).andReturn(Optional.of(taskQueue)).anyTimes();
+  expect(taskMaster.getTaskRunner()).andReturn(Optional.of(taskRunner)).anyTimes();
+  expect(taskRunner.getRunningTasks()).andReturn(Collections.EMPTY_LIST).anyTimes();
+  expect(taskStorage.getActiveTasks()).andReturn(ImmutableList.<Task>of()).anyTimes();
+  taskRunner.registerListener(anyObject(TaskRunnerListener.class),anyObject(Executor.class));
+  replayAll();
+  supervisor.start();
+  supervisor.runInternal();
+  verifyAll();
+  reset(indexerMetadataStorageCoordinator);
+  expect(indexerMetadataStorageCoordinator.deleteDataSourceMetadata(DATASOURCE)).andReturn(true);
+  replay(indexerMetadataStorageCoordinator);
+  supervisor.resetInternal();
+  verifyAll();
+}

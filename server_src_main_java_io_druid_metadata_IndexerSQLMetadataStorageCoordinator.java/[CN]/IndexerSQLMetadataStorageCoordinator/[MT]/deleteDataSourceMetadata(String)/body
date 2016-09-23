@@ -1,0 +1,9 @@
+{
+  return connector.retryWithHandle(new HandleCallback<Boolean>(){
+    @Override public Boolean withHandle(    Handle handle) throws Exception {
+      int rows=handle.createStatement(String.format("DELETE from %s WHERE dataSource = :dataSource",dbTables.getDataSourceTable())).bind("dataSource",dataSource).execute();
+      return rows > 0;
+    }
+  }
+);
+}

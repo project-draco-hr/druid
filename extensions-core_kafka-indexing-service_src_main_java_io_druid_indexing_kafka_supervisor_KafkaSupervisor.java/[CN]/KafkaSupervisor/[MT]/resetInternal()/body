@@ -1,0 +1,13 @@
+{
+  boolean result=indexerMetadataStorageCoordinator.deleteDataSourceMetadata(dataSource);
+  log.info("Reset dataSource[%s] - dataSource metadata entry deleted? [%s]",dataSource,result);
+  for (  TaskGroup taskGroup : taskGroups.values()) {
+    for (    Map.Entry<String,TaskData> entry : taskGroup.tasks.entrySet()) {
+      String taskId=entry.getKey();
+      log.info("Reset dataSource[%s] - killing task [%s]",dataSource,taskId);
+      killTask(taskId);
+    }
+  }
+  partitionGroups.clear();
+  taskGroups.clear();
+}
