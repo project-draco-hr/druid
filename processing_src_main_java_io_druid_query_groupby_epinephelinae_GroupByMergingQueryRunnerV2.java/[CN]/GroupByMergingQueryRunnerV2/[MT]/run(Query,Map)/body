@@ -42,40 +42,22 @@
             if (input == null) {
               throw new ISE("Null queryRunner! Looks to be some segment unmapping action happening");
             }
-            final Releaser bufferReleaser=mergeBufferHolder.increment();
-            try {
-              final Releaser grouperReleaser=grouperHolder.increment();
-              try {
-                return exec.submit(new AbstractPrioritizedCallable<Boolean>(priority){
-                  @Override public Boolean call() throws Exception {
-                    try {
-                      final Object retVal=input.run(queryForRunners,responseContext).accumulate(grouper,accumulator);
-                      return retVal == grouper;
-                    }
- catch (                    QueryInterruptedException e) {
-                      throw e;
-                    }
-catch (                    Exception e) {
-                      log.error(e,"Exception with one of the sequences!");
-                      throw Throwables.propagate(e);
-                    }
- finally {
-                      grouperReleaser.close();
-                      bufferReleaser.close();
-                    }
-                  }
+            return exec.submit(new AbstractPrioritizedCallable<Boolean>(priority){
+              @Override public Boolean call() throws Exception {
+                try (Releaser bufferReleaser=mergeBufferHolder.increment();Releaser grouperReleaser=grouperHolder.increment()){
+                  final Object retVal=input.run(queryForRunners,responseContext).accumulate(grouper,accumulator);
+                  return retVal == grouper;
                 }
+ catch (                QueryInterruptedException e) {
+                  throw e;
+                }
+catch (                Exception e) {
+                  log.error(e,"Exception with one of the sequences!");
+                  throw Throwables.propagate(e);
+                }
+              }
+            }
 );
-              }
- catch (              Exception e) {
-                grouperReleaser.close();
-                throw e;
-              }
-            }
- catch (            Exception e) {
-              bufferReleaser.close();
-              throw e;
-            }
           }
         }
 )));
