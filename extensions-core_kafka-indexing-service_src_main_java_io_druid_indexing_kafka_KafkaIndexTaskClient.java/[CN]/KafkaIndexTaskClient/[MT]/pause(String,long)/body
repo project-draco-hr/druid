@@ -3,6 +3,7 @@
   try {
     final FullResponseHolder response=submitRequest(id,HttpMethod.POST,"pause",timeout > 0 ? String.format("timeout=%d",timeout) : null,true);
     if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      log.info("Task [%s] paused successfully",id);
       return jsonMapper.readValue(response.getContent(),new TypeReference<Map<Integer,Long>>(){
       }
 );
@@ -14,6 +15,7 @@
       }
       final Duration delay=retryPolicy.getAndIncrementRetryDelay();
       if (delay == null) {
+        log.error("Task [%s] failed to pause, aborting",id);
         throw new ISE("Task [%s] failed to pause, aborting",id);
       }
  else {
@@ -24,9 +26,11 @@
     }
   }
  catch (  NoTaskLocationException e) {
+    log.error("Exception [%s] while pausing Task [%s]",e.getMessage(),id);
     return ImmutableMap.of();
   }
 catch (  IOException|InterruptedException e) {
+    log.error("Exception [%s] while pausing Task [%s]",e.getMessage(),id);
     throw Throwables.propagate(e);
   }
 }
