@@ -45,11 +45,14 @@
  catch (        InterruptedException e) {
           throw new QueryInterruptedException(e);
         }
-        Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,true,config,mergeBufferHolder.get(),-1,temporaryStorage,spillMapper,aggregatorFactories);
+        Pair<Grouper<RowBasedKey>,Accumulator<Grouper<RowBasedKey>,Row>> pair=RowBasedGrouperHelper.createGrouperAccumulatorPair(query,true,querySpecificConfig,mergeBufferHolder.get(),-1,temporaryStorage,spillMapper,aggregatorFactories);
         final Grouper<RowBasedKey> grouper=pair.lhs;
         final Accumulator<Grouper<RowBasedKey>,Row> accumulator=pair.rhs;
         closeOnFailure.add(grouper);
-        filteredSequence.accumulate(grouper,accumulator);
+        final Grouper<RowBasedKey> retVal=filteredSequence.accumulate(grouper,accumulator);
+        if (retVal != grouper) {
+          throw new ResourceLimitExceededException("Grouping resources exhausted");
+        }
         return RowBasedGrouperHelper.makeGrouperIterator(grouper,query,new Closeable(){
           @Override public void close() throws IOException {
             grouper.close();
