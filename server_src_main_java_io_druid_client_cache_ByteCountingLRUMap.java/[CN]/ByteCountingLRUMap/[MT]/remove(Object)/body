@@ -1,7 +1,8 @@
 {
   byte[] value=super.remove(key);
   if (value != null) {
-    numBytes-=((ByteBuffer)key).remaining() + value.length;
+    long delta=-((ByteBuffer)key).remaining() - value.length;
+    numBytes.addAndGet(delta);
   }
   return value;
 }
