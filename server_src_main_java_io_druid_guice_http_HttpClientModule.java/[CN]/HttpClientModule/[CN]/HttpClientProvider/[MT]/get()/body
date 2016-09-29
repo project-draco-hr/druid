@@ -1,6 +1,6 @@
 {
   final DruidHttpClientConfig config=getConfigProvider().get().get();
-  final HttpClientConfig.Builder builder=HttpClientConfig.builder().withNumConnections(config.getNumConnections()).withReadTimeout(config.getReadTimeout());
+  final HttpClientConfig.Builder builder=HttpClientConfig.builder().withNumConnections(config.getNumConnections()).withReadTimeout(config.getReadTimeout()).withWorkerCount(config.getNumMaxThreads());
   if (getSslContextBinding() != null) {
     builder.withSslContext(getSslContextBinding().getProvider().get());
   }
